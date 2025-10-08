@@ -151,6 +151,54 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Based off of `PetscIntViewNumColumns()`
+static PetscErrorCode PetscIntViewPairs(PetscInt N, PetscInt Ncol, const PetscInt idx1[], const PetscInt idx2[], PetscViewer viewer)
+{
+  PetscMPIInt rank, size;
+  PetscInt    j, i, n = N / Ncol, p = N % Ncol;
+  PetscBool   isascii;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  if (N) PetscAssertPointer(idx1, 3);
+  if (N) PetscAssertPointer(idx2, 4);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
+  PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    for (i = 0; i < n; i++) {
+      if (size > 1) {
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, Ncol * i));
+      } else {
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", Ncol * i));
+      }
+      for (j = 0; j < Ncol; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%" PetscInt_FMT ", %" PetscInt_FMT ")", idx1[i * Ncol + j], idx2[i * Ncol + j]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+    }
+    if (p) {
+      if (size > 1) {
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, Ncol * n));
+      } else {
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", Ncol * n));
+      }
+      for (i = 0; i < p; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%" PetscInt_FMT ", %" PetscInt_FMT ")", idx1[Ncol * n + i], idx2[Ncol * n + i]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+    }
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+  } else {
+    const char *tname;
+    PetscCall(PetscObjectGetName((PetscObject)viewer, &tname));
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle that PetscViewer of type %s", tname);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 // Determine if any of the local adjacencies match a leaf and root of the pointSF.
 // When using isoperiodic boundary conditions, it is possible for periodic (leaf) and donor (root) pairs to be on the same rank.
 // This check is done to ensure the adjacency in these cases is only counted for one of the mesh points rather than both.
@@ -232,8 +280,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscCall(PetscIntSortSemiOrdered(numMyRankPair, rootsMyRankPair));
   PetscCall(PetscIntSortSemiOrdered(numMyRankPair, leavesMyRankPair));
   if (debug) {
-    PetscCall(PetscPrintf(comm, "Roots on the same rank:\n"));
-    PetscCall(PetscIntView(numMyRankPair, rootsMyRankPair, NULL));
+    PetscCall(PetscPrintf(comm, "Root/leaf pairs on the same rank:\n"));
+    PetscCall(PetscIntViewPairs(numMyRankPair, 5, rootsMyRankPair, leavesMyRankPair, NULL));
   }
   /*
    section        - maps points to (# dofs, local dofs)
