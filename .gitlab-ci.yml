@@ -573,7 +573,7 @@ linux-sycl-double:
   variables:
     MODULEPATH: /nfs/gce/projects/petsc/soft/oneapi/2025.2.0/modulefiles
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: tbb/latest compiler-rt/latest umf/latest compiler/latest mpi/latest
+    LOAD_MODULES: tbb/latest compiler-rt/latest umf/latest compiler/latest mpi/latest dpl/latest
     TEST_OPTS: query=requires queryval=kokkos_kernels
     MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
