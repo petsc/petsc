@@ -4673,7 +4673,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Sort by row if not already */
   if (!isorted) PetscCall(PetscSortIntWithIntCountArrayPair(coo_n, i, j, perm));
-  PetscCheck(i == NULL || i[coo_n - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i[coo_n - 1], M);
+  PetscCheck(coo_n == 0 || i[coo_n - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i[coo_n - 1], M);
 
   /* Advance k to the first row with a non-negative index */
   for (k = 0; k < coo_n; k++)
