@@ -155,8 +155,6 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
     }
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
   }
-  if (d->packer_status == DEOBJECT_FINALIZED) { }
-  if (d->communication_status == DEOBJECT_FINALIZED) { }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
