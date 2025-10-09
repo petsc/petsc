@@ -387,15 +387,17 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_RTLD_NOW', 1)
         self.addDefine('HAVE_RTLD_LOCAL', 1)
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
-        return
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY)'):
-        self.addDefine('HAVE_RTLD_LAZY', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOW)'):
-        self.addDefine('HAVE_RTLD_NOW', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LOCAL)'):
-        self.addDefine('HAVE_RTLD_LOCAL', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_GLOBAL)'):
-        self.addDefine('HAVE_RTLD_GLOBAL', 1)
+      else:
+        if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY)'):
+          self.addDefine('HAVE_RTLD_LAZY', 1)
+        if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOW)'):
+          self.addDefine('HAVE_RTLD_NOW', 1)
+        if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LOCAL)'):
+          self.addDefine('HAVE_RTLD_LOCAL', 1)
+        if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_GLOBAL)'):
+          self.addDefine('HAVE_RTLD_GLOBAL', 1)
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOLOAD)'):
+        self.addDefine('HAVE_RTLD_NOLOAD', 1)
     return
 
   def checkCxxOptionalExtensions(self):

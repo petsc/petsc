@@ -1537,9 +1537,7 @@ PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[], PetscDLMode, PetscDLHandle
 PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle, const char[], void **);
 PETSC_EXTERN PetscErrorCode PetscDLAddr(PetscVoidFn *, char *[]);
-#ifdef PETSC_HAVE_CXX
 PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char *[]);
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
 
