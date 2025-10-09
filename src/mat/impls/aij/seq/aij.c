@@ -2679,7 +2679,7 @@ static PetscErrorCode MatILUFactor_SeqAIJ(Mat inA, IS row, IS col, const MatFact
   PetscCall(ISInvertPermutation(col, PETSC_DECIDE, &a->icol));
 
   if (!a->solve_work) { /* this matrix may have been factored before */
-    PetscCall(PetscMalloc1(inA->rmap->n + 1, &a->solve_work));
+    PetscCall(PetscMalloc1(inA->rmap->n, &a->solve_work));
   }
 
   PetscCall(MatMarkDiagonal_SeqAIJ(inA));

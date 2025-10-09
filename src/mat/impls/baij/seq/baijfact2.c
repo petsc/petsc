@@ -260,8 +260,8 @@ static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isro
   b = (Mat_SeqBAIJ *)fact->data;
 
   /* allocate matrix arrays for new data structure */
-  PetscCall(PetscShmgetAllocateArray(bs2 * ai[n] + 1, sizeof(PetscScalar), (void **)&b->a));
-  PetscCall(PetscShmgetAllocateArray(ai[n] + 1, sizeof(PetscInt), (void **)&b->j));
+  PetscCall(PetscShmgetAllocateArray(bs2 * ai[n], sizeof(PetscScalar), (void **)&b->a));
+  PetscCall(PetscShmgetAllocateArray(ai[n], sizeof(PetscInt), (void **)&b->j));
   PetscCall(PetscShmgetAllocateArray(n + 1, sizeof(PetscInt), (void **)&b->i));
   b->free_a          = PETSC_TRUE;
   b->free_ij         = PETSC_TRUE;
@@ -458,7 +458,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscCall(ISRestoreIndices(isicol, &ic));
 
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
-  PetscCall(PetscMalloc1(bi[n] + 1, &bj));
+  PetscCall(PetscMalloc1(bi[n], &bj));
   PetscCall(PetscFreeSpaceContiguous_LU(&free_space, bj, n, bi, bdiag));
 
   PetscCall(PetscIncompleteLLDestroy(lnk, lnkbt));

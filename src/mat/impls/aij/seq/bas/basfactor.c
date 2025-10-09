@@ -61,7 +61,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
   /* put together the new matrix in MATSEQSBAIJ format */
 
   b = (Mat_SeqSBAIJ *)fact->data;
-  PetscCall(PetscMalloc1(ui[am] + 1, &b->a));
+  PetscCall(PetscMalloc1(ui[am], &b->a));
 
   b->j    = uj;
   b->i    = ui;
@@ -76,7 +76,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
 
   b->icol          = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  PetscCall(PetscMalloc1(am + 1, &b->solve_work));
+  PetscCall(PetscMalloc1(am, &b->solve_work));
   b->maxnz = b->nz = ui[am];
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;

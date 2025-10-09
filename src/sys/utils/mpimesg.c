@@ -251,8 +251,8 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   s_waits = PetscSafePointerPlusOffset(r_waits, nrecvs);
 
   /* Post the Irecv to get the message length-info */
-  PetscCall(PetscMalloc1(nrecvs + 1, olengths1));
-  PetscCall(PetscMalloc1(nrecvs + 1, olengths2));
+  PetscCall(PetscMalloc1(nrecvs, olengths1));
+  PetscCall(PetscMalloc1(nrecvs, olengths2));
   for (i = 0; i < nrecvs; i++) {
     buf_j = buf_r + (2 * i);
     PetscCallMPI(MPIU_Irecv(buf_j, 2, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
@@ -274,7 +274,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   if (nrecvs + nsends) PetscCallMPI(MPI_Waitall(nrecvs + nsends, r_waits, w_status));
 
   /* Pack up the received data */
-  PetscCall(PetscMalloc1(nrecvs + 1, onodes));
+  PetscCall(PetscMalloc1(nrecvs, onodes));
   for (i = 0; i < nrecvs; ++i) {
     (*onodes)[i]    = w_status[i].MPI_SOURCE;
     buf_j           = buf_r + (2 * i);
