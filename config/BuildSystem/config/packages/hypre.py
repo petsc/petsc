@@ -155,16 +155,9 @@ class Configure(config.package.GNUPackage):
         args.append('--without-umpire')
       else:
         args.append('--with-umpire')
-        # Include path
-        try:
-          incdir = self.umpire.include[0]
-        except Exception:
-          incdir = os.path.join(self.umpire.installDir,'include')
-        args.append('--with-umpire-include="'+incdir+'"')
-        # Library path and libs
-        libdir = os.path.join(self.umpire.installDir,'lib')
-        args.append('--with-umpire-lib-dirs="'+libdir+'"')
-        args.append('--with-umpire-libs="camp umpire"')
+        args.append('--with-umpire-include="'+self.umpire.include[0]+'"')
+        args.append('--with-umpire-lib="'+self.libraries.toString(self.umpire.dlib)+'"')
+        args.append('--with-umpire-lib-dirs=')
 
     if self.usesopenmp == 'no':
       if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):
