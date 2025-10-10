@@ -17,7 +17,7 @@
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
 #include <petsc/finclude/petscts.h>
-module ex1f_mod
+module ex1fmodule
   use petscts
   implicit none
 contains
@@ -176,10 +176,10 @@ contains
     end do
     PetscCall(VecRestoreArray(X, xx, ierr))
   end
-end module ex1f_mod
+end module ex1fmodule
 program main
   use petscts
-  use ex1f_mod
+  use ex1fmodule
   implicit none
 !
 !  Create an application context to contain data needed by the

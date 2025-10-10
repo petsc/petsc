@@ -2,7 +2,7 @@
 !  Description: Uses the Newton method to solve a two-variable system.
 !
 #include <petsc/finclude/petsc.h>
-module ex1f_mod
+module ex1fmodule
   use petscvec
   use petscsnesdef
   use petscvec
@@ -139,7 +139,7 @@ end module
 
 program main
   use petsc
-  use ex1f_mod
+  use ex1fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,6 +1,7 @@
 #include "petsc/finclude/petscksp.h"
 program main
   use petscksp
+  implicit none
 
   PetscInt N
   PetscBool draw, flg

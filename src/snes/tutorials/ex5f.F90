@@ -32,7 +32,7 @@
 !  --------------------------------------------------------------------------
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdmda.h>
-module ex5f_mod
+module ex5fmodule
   use petscsnes
   use petscdmda
   implicit none
@@ -344,10 +344,10 @@ contains
 
   end
 
-end module ex5f_mod
+end module ex5fmodule
 
 program main
-  use ex5f_mod
+  use ex5fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

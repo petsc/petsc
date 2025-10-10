@@ -1,7 +1,4 @@
 !     Contributed by leonardo.mutti01@universitadipavia.it
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
 program main
   USE petscksp

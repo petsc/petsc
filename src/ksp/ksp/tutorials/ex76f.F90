@@ -3,9 +3,6 @@
 !
 #include <petsc/finclude/petscksp.h>
 program main
-  use petscis
-  use petscvec
-  use petscmat
   use petscksp
   implicit none
   Vec x, b

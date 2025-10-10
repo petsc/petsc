@@ -3,7 +3,7 @@
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
-module ex8f_mod
+module ex8fmodule
   use petscksp
   implicit none
 
@@ -14,11 +14,11 @@ contains
     integer ierr
   end
 
-end module ex8f_mod
+end module ex8fmodule
 
 program main
   use petscksp
-  use ex8f_mod
+  use ex8fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

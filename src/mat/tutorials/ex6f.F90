@@ -3,62 +3,57 @@
 !
 !     Contributed by:  Samuel Lanthaler
 !
-#include "petsc/finclude/petsc.h"
+#include "petsc/finclude/petscmat.h"
 MODULE solver_context_ex6f
-  USE petscsys
-  USE petscmat
+  use petscsys
   IMPLICIT NONE
   TYPE :: MatCtx
     PetscReal :: lambda, kappa
     PetscReal :: h
   END TYPE MatCtx
-END MODULE solver_context_ex6f
-
-MODULE solver_context_interfaces_ex6f
-  USE solver_context_ex6f
-  IMPLICIT NONE
 
 ! ----------------------------------------------------
-  INTERFACE MatCreateShell
+  INTERFACE
     SUBROUTINE MatCreateShell(comm, mloc, nloc, m, n, ctx, mat, ierr)
-      USE solver_context_ex6f
+      use petscmat
+      import MatCtx
+      implicit none
       MPI_Comm :: comm
       PetscInt :: mloc, nloc, m, n
       TYPE(MatCtx) :: ctx
       Mat :: mat
       PetscErrorCode :: ierr
     END SUBROUTINE MatCreateShell
-  END INTERFACE MatCreateShell
 ! ----------------------------------------------------
-
-! ----------------------------------------------------
-  INTERFACE MatShellSetContext
     SUBROUTINE MatShellSetContext(mat, ctx, ierr)
-      USE solver_context_ex6f
+      use petscmat
+      import MatCtx
+      implicit none
+      MPI_Comm :: comm
       Mat :: mat
       TYPE(MatCtx) :: ctx
       PetscErrorCode :: ierr
     END SUBROUTINE MatShellSetContext
-  END INTERFACE MatShellSetContext
 ! ----------------------------------------------------
-
-! ----------------------------------------------------
-  INTERFACE MatShellGetContext
     SUBROUTINE MatShellGetContext(mat, ctx, ierr)
-      USE solver_context_ex6f
+      use petscmat
+      import MatCtx
+      implicit none
+      MPI_Comm :: comm
       Mat :: mat
       TYPE(MatCtx), POINTER :: ctx
       PetscErrorCode :: ierr
     END SUBROUTINE MatShellGetContext
-  END INTERFACE MatShellGetContext
+  END INTERFACE
 
-END MODULE solver_context_interfaces_ex6f
+END MODULE solver_context_ex6f
 
 ! ----------------------------------------------------
 !                    main program
 ! ----------------------------------------------------
 PROGRAM main
-  USE solver_context_interfaces_ex6f
+  use petscmat
+  USE solver_context_ex6f
   IMPLICIT NONE
   Mat :: F
   TYPE(MatCtx) :: ctxF

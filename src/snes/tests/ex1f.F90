@@ -29,7 +29,7 @@
 !  --------------------------------------------------------------------------
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdraw.h>
-module ex1f_mod
+module ex1fmodule
   use petscsnes
   implicit none
 contains
@@ -416,11 +416,11 @@ contains
 
   end
 
-end module ex1f_mod
+end module ex1fmodule
 program main
   use petscdraw
   use petscsnes
-  use ex1f_mod
+  use ex1fmodule
   implicit none
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

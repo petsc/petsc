@@ -5,7 +5,7 @@
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
 
-module ex2f_mod
+module ex2fmodule
   use petscksp
   implicit none
 
@@ -76,11 +76,11 @@ contains
     ierr = 0
 
   end
-end module ex2f_mod
+end module ex2fmodule
 
 program main
   use petscksp
-  use ex2f_mod
+  use ex2fmodule
   implicit none
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

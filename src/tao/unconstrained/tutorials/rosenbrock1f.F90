@@ -13,7 +13,7 @@
 ! ----------------------------------------------------------------------
 !
 #include "petsc/finclude/petsctao.h"
-module rosenbrock1f_mod
+module rosenbrock1fmodule
   use petsctao
   implicit none
 contains
@@ -147,11 +147,11 @@ contains
     PetscCall(PetscLogFlops(9.0d0*nn, ierr))
 
   end
-end module rosenbrock1f_mod
+end module rosenbrock1fmodule
 
 program rosenbrock1f
   use petsctao
-  use rosenbrock1f_mod
+  use rosenbrock1fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

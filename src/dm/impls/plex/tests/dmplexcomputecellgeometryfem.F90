@@ -1,6 +1,5 @@
 !     Contributed by Noem T
 #include <petsc/finclude/petscdmplex.h>
-#include <petsc/finclude/petscdm.h>
 program test
   use PETScDM
   use PETScDMplex

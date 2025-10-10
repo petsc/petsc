@@ -9,7 +9,7 @@
 !   your own FormJacobianLocal().
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdmda.h>
-module ex40f90_mod
+module ex40f90module
   use petscdmda
   implicit none
 contains
@@ -29,12 +29,12 @@ contains
     end do
 
   end
-end module ex40f90_mod
+end module ex40f90module
 
 program ex40f90
   use petscdmda
   use petscsnes
-  use ex40f90_mod
+  use ex40f90module
   implicit none
 
   SNES snes

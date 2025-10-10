@@ -1,5 +1,5 @@
 #include <petsc/finclude/petsc.h>
-module shashi_mod
+module shashimodule
   use petscsnes
   implicit none
 
@@ -914,11 +914,11 @@ contains
     end do
     PetscCall(VecRestoreArray(W, xx, ierr))
   end
-end module shashi_mod
+end module shashimodule
 
 program main
   use petsc
-  use shashi_mod
+  use shashimodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

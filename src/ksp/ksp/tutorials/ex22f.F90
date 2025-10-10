@@ -10,7 +10,7 @@
 !   This uses multigrid to solve the linear system
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
-module ex22f_mod
+module ex22fmodule
   use petscksp
   implicit none
 
@@ -105,12 +105,12 @@ contains
     PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
     PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
   end
-end module ex22f_mod
+end module ex22fmodule
 
 program main
   use petscdmda
   use petscksp
-  use ex22f_mod
+  use ex22fmodule
   implicit none
 
   PetscErrorCode ierr

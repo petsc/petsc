@@ -1,6 +1,6 @@
 !
 #include <petsc/finclude/petscksp.h>
-module ex5f_mod
+module ex5fmodule
   use petscksp
   implicit none
 
@@ -16,11 +16,11 @@ contains
     PetscCallA(VecCopy(x, y, ierr))
 
   end
-end module ex5f_mod
+end module ex5fmodule
 
 program main
   use petscksp
-  use ex5f_mod
+  use ex5fmodule
   implicit none
 !
 !      Solves a linear system matrix-free

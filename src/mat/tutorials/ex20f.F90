@@ -2,7 +2,7 @@
 !     Demonstrates use of MatDuplicate() for a shell matrix with a context
 !
 #include "petsc/finclude/petscmat.h"
-MODULE ex20f_mod
+MODULE ex20fmodule
   USE petscmat
   IMPLICIT NONE
   TYPE :: MatCtx
@@ -67,13 +67,13 @@ contains
     deallocate (ctxF_pt)
   END SUBROUTINE MatDestroy_F
 
-END MODULE ex20f_mod
+END MODULE ex20fmodule
 
 ! ----------------------------------------------------
 !                    main program
 ! ----------------------------------------------------
 PROGRAM main
-  use ex20f_mod
+  use ex20fmodule
   implicit none
   Mat                  :: F, Fcopy
   TYPE(MatCtx)         :: ctxF

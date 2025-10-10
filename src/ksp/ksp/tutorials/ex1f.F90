@@ -6,7 +6,7 @@
 !  Demonstrate a custom KSP convergence test that calls the default convergence test
 !
 #include <petsc/finclude/petscksp.h>
-module ex1f_mod
+module ex1fmodule
   use petscksp
   implicit none
 
@@ -23,11 +23,11 @@ contains
     ! Must call default convergence test on the 0th iteration
     PetscCall(KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr))
   end subroutine MyKSPConverged
-end module ex1f_mod
+end module ex1fmodule
 
 program main
   use petscksp
-  use ex1f_mod
+  use ex1fmodule
   implicit none
 
 !

@@ -2,7 +2,7 @@
 !   This program tests MatCreateVecs() for Shell Matrix
 !
 #include <petsc/finclude/petscmat.h>
-module ex120f_mod
+module ex120fmodule
   use petscmat
   implicit none
 
@@ -18,11 +18,11 @@ contains
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, x, ierr))
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, y, ierr))
   end
-end module ex120f_mod
+end module ex120fmodule
 
 program main
   use petscmat
-  use ex120f_mod
+  use ex120fmodule
   implicit none
 
   PetscErrorCode ierr

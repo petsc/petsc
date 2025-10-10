@@ -1,7 +1,6 @@
 ! setting up 3-D DMPlex using DMPlexCreateFromDAG(), DMPlexInterpolate() and
 ! DMPlexComputeCellGeometryFVM()
 ! Contributed by Adrian Croucher <a.croucher@auckland.ac.nz>
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdmplex.h>
 program main
   use petscdmplex

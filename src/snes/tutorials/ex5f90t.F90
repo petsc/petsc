@@ -31,8 +31,6 @@
 !
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscmat.h>
 module ex5f90tmodule
   use petscsnes
   use petscdmda

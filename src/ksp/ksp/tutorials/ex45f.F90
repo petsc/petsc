@@ -1,6 +1,6 @@
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
-module ex45f_mod
+module ex45fmodule
   use petscmat
   use petscksp
   use petscdmda
@@ -96,13 +96,12 @@ contains
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
     end if
   end subroutine
-end module ex45f_mod
+end module ex45fmodule
 
 program main
-  use petscdm
   use petscdmda
   use petscksp
-  use ex45f_mod
+  use ex45fmodule
   implicit none
 
   PetscInt is, js, iw, jw

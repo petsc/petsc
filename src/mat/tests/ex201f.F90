@@ -3,7 +3,7 @@
 !   This program demonstrates use of MatShellSetOperation()
 !
 #include <petsc/finclude/petscmat.h>
-module ex201f_mod
+module ex201fmodule
   use petscmat
   implicit none
 
@@ -143,11 +143,11 @@ contains
     print *, 'Called MatCreateVecs'
   end
 
-end module ex201f_mod
+end module ex201fmodule
 
 program main
   use petscmat
-  use ex201f_mod
+  use ex201fmodule
   implicit none
 
   Mat m, mt

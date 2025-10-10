@@ -9,7 +9,7 @@
 !        ./configure --with-threadsafety --with-openmp
 !
 #include <petsc/finclude/petsc.h>
-module ex61f_mod
+module ex61fmodule
   implicit none
 contains
   subroutine split_indices(total, num_pieces, ibeg, iend)
@@ -39,11 +39,11 @@ contains
     end do
 
   end subroutine split_indices
-end module ex61f_mod
+end module ex61fmodule
 
 program tpetsc
 
-  use ex61f_mod
+  use ex61fmodule
   use petsc
 !$ use OMP_LIB
   implicit none

@@ -4,7 +4,7 @@
 !
 !
 #include <petsc/finclude/petscsnes.h>
-module ex12f_mod
+module ex12fmodule
   use petscsnes
   implicit none
   type User
@@ -189,7 +189,7 @@ contains
 end module
 
 program main
-  use ex12f_mod
+  use ex12fmodule
   implicit none
   type(User) ctx
   PetscMPIInt rank, size

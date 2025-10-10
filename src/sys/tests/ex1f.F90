@@ -2,7 +2,7 @@
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
 #include <petsc/finclude/petscsys.h>
-module ex1f_mod
+module ex1fmodule
   use petscsys
   implicit none
 contains
@@ -23,11 +23,11 @@ contains
     write (6, *) 'My error handler ', mess
     call flush (6)
   end
-end module ex1f_mod
+end module ex1fmodule
 
 program main
   use petscsys
-  use ex1f_mod
+  use ex1fmodule
   implicit none
   PetscErrorCode ierr
 

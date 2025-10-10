@@ -7,7 +7,7 @@
 !
 !  -------------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
-module ex62f_mod
+module ex62fmodule
   use petscksp
   implicit none
   PC jacobi, sor
@@ -55,7 +55,6 @@ contains
     PetscCallA(PCSetUp(sor, ierr))
 
     PetscCallA(VecDuplicate(x, work, ierr))
-
   end
 
 ! -------------------------------------------------------------------
@@ -89,13 +88,12 @@ contains
     PetscCallA(PCApply(jacobi, x, y, ierr))
     PetscCallA(PCApply(sor, x, work, ierr))
     PetscCallA(VecAXPY(y, one, work, ierr))
-
   end
 
 end module
 
 program main
-  use ex62f_mod
+  use ex62fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

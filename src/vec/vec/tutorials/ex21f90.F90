@@ -4,22 +4,43 @@
 !
 !
 ! -----------------------------------------------------------------------
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 module ex21f90module
   use petscsys
+  implicit none
   type MyStruct
     sequence
     PetscScalar :: a, b, c
   end type MyStruct
+!
+!
+!   These two routines are defined in ex21.c they create the Fortran pointer to the derived type
+!
+  Interface
+    Subroutine VecGetArrayMyStruct(v, array, ierr)
+      use petscvec
+      import MyStruct
+      type(MyStruct), pointer :: array(:)
+      PetscErrorCode ierr
+      Vec v
+    End Subroutine
+
+    Subroutine VecRestoreArrayMyStruct(v, array, ierr)
+      use petscvec
+      import MyStruct
+      type(MyStruct), pointer :: array(:)
+      PetscErrorCode ierr
+      Vec v
+    End Subroutine
+  End Interface
 end module
 
-!
 !  These routines are used internally by the C functions VecGetArrayMyStruct() and VecRestoreArrayMyStruct()
 !  Because Fortran requires "knowing" exactly what derived types the pointers to point too, these have to be
 !  customized for exactly the derived type in question
 !
 subroutine F90Array1dCreateMyStruct(array, start, len, ptr)
+  use petscsys
   use ex21f90module
   implicit none
   PetscInt start, len
@@ -30,6 +51,7 @@ subroutine F90Array1dCreateMyStruct(array, start, len, ptr)
 end subroutine
 
 subroutine F90Array1dAccessMyStruct(ptr, address)
+  use petscsys
   use ex21f90module
   implicit none
   type(MyStruct), pointer :: ptr(:)
@@ -52,30 +74,6 @@ program main
   use petscvec
   use ex21f90module
   implicit none
-
-!
-!
-!   These two routines are defined in ex21.c they create the Fortran pointer to the derived type
-!
-  Interface
-    Subroutine VecGetArrayMyStruct(v, array, ierr)
-      use petscvec
-      use ex21f90module
-      type(MyStruct), pointer :: array(:)
-      PetscErrorCode ierr
-      Vec v
-    End Subroutine
-  End Interface
-
-  Interface
-    Subroutine VecRestoreArrayMyStruct(v, array, ierr)
-      use petscvec
-      use ex21f90module
-      type(MyStruct), pointer :: array(:)
-      PetscErrorCode ierr
-      Vec v
-    End Subroutine
-  End Interface
 
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

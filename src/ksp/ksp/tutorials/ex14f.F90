@@ -42,9 +42,7 @@
 !  -------------------------------------------------------------------------
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
-module ex14f_mod
-  use petscis
-  use petscvec
+module ex14fmodule
   use petscdm
   use petscdmda
   use petscksp
@@ -321,10 +319,10 @@ contains
     PetscCall(VecRestoreArrayRead(localX, xx, ierr))
     PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
   end
-end module ex14f_mod
+end module ex14fmodule
 
 program main
-  use ex14f_mod
+  use ex14fmodule
   implicit none
 
   MPI_Comm comm
