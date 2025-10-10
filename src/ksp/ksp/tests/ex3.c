@@ -244,4 +244,19 @@ int main(int argc, char **args)
       requires: hypre
       args: -pc_type hypre
 
+    test:
+      suffix: pflare
+      requires: !complex !single pflare
+      args: -pc_type air -ksp_max_it 5 -m 10
+      filter: grep -v .
+      output_file: output/empty.out
+
+    test:
+      suffix: 2_pflare
+      nsize: 2
+      requires: !complex !single pflare
+      args: -pc_type air -ksp_max_it 5 -m 10
+      filter: grep -v .
+      output_file: output/empty.out
+
 TEST*/

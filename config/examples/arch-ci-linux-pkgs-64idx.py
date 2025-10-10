@@ -23,6 +23,7 @@ configure_options = [
   '--download-suitesparse=1',
   '--download-p4est=1',
   '--download-revolve=1',
+  '--download-pflare=1',
   '--with-zlib=1',
   '--download-libceed',
   '--with-blaslapack-dir='+os.environ['MKLROOT'],
