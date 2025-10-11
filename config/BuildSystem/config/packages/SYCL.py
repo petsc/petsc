@@ -72,7 +72,6 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    self.addDefine('HAVE_SYCL','1')
     with self.setCompilers.Language('SYCL'):
       flags = '-fsycl'
       ldflags = ''
