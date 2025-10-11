@@ -48,7 +48,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
     PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, NULL, -1, &fe));
+    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, NULL, PETSC_DETERMINE, &fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, "scalar"));
     PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
     PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
@@ -279,6 +279,10 @@ int main(int argc, char **argv)
     suffix: 2d_sfc_periodic
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail -view_mat
+
+  test:
+    suffix: 2d_sfc_periodic_mat
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 1,1 -dm_distribute 0 -petscspace_degree 2 -dm_plex_box_bd periodic,periodic -dm_view ::ascii_info_detail -view_mat
 
   testset:
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 3,2 -petscspace_degree 1 -dm_view ::ascii_info_detail -closure_tensor

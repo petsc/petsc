@@ -148,13 +148,11 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     }
     lambda_update = lambda - PetscRealPart(fty / s);
 
+    /* if step is too small, go the opposite direction */
+    if (lambda_update < minlambda) lambda_update = lambda + PetscRealPart(fty / s);
     /* if secant method would step out of bounds, exit with the respective bound */
-    if (lambda_update < minlambda) {
-      lambda_update = minlambda;
-      break;
-    }
     if (lambda_update > maxlambda) {
-      lambda_update = maxlambda;
+      lambda = maxlambda;
       break;
     }
 

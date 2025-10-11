@@ -2707,7 +2707,11 @@ PetscErrorCode PetscSectionArrayView(PetscSection s, void *array, PetscDataType 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscAssertPointer(array, 2);
+  if (!array) {
+    PetscInt size;
+    PetscCall(PetscSectionGetStorageSize(s, &size));
+    PetscCheck(size == 0, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_SIZ, "NULL array passed, but section's storage size is non-zero");
+  } else PetscAssertPointer(array, 2);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
