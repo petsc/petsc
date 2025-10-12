@@ -55,16 +55,6 @@ class Configure(config.package.Package):
         g.write('{0}_LIB := $(subst -Wl,-Xlinker=,$({0}_LIB))\n'.format(lib_name_upper))
 
   def Install(self):
-#    return self.installDir
-#
-#  TODO: In order to use postProcess, we need to fix package.py and add these lines
-#  in configureLibrary if builtafterpetsc is true. However, these caused duplicated entries
-#  in the petscconf.h macros. Not sure if PETSC_HAVE_XXX will conflict when building XXX after petsc
-#+        if not hasattr(self.framework, 'packages'):
-#+          self.framework.packages = []
-#+        self.framework.packages.append(self)
-
-#  def postProcess(self):
     import os
     import re
 
@@ -210,7 +200,6 @@ run-config:
 \t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
 '''.format(mfile=os.path.join(self.packageDir,'makefile'), mfemdir=self.packageDir))
 
-    self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
     self.addPost(buildDir, ['${OMAKE} -f ' + os.path.join(configDir,'petsc.mk') + ' run-config',
                             '${OMAKE} clean',
