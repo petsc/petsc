@@ -429,7 +429,6 @@ class Configure(config.package.Package):
         raise RuntimeError('CUDA compile failed with arch flags "'+self.setCompilers.CUDAFLAGS+'"'
                            ' generated from "--with-cuda-arch='+self.cudaArch+'"')
 
-    self.addDefine('HAVE_CUDA','1')
     self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
     if not self.version_tuple:
       self.checkVersion(); # set version_tuple

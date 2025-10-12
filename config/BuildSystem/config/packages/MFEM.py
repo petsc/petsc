@@ -15,6 +15,7 @@ class Configure(config.package.Package):
     self.buildLanguages         = ['Cxx']
     self.minCxxVersion          = 'c++17'
     self.skippackagewithoptions = 1
+    self.useddirectly           = 0
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
     self.precisions             = ['single', 'double']

@@ -151,7 +151,6 @@ class Configure(config.package.Package):
         self.platform = 'amd'
 
     self.libraries.pushLanguage('HIP')
-    self.addDefine('HAVE_HIP','1')
     self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
     if self.platform in ['nvcc','nvidia']:
       self.pushLanguage('CUDA')

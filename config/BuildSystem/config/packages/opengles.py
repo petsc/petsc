@@ -14,4 +14,3 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     self.addDefine('HAVE_OPENGL', 1)
-    self.addDefine('HAVE_OPENGLES', 1)

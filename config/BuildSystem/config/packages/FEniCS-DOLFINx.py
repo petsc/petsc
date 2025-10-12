@@ -101,7 +101,6 @@ class Configure(config.package.CMakePackage):
       self.include_a = '-I'+os.path.join(self.petscdir.dir,self.arch,'include')
       self.lib_a = [os.path.join(self.petscdir.dir,self.arch,'lib',self.liblist[0][0])]
     self.found_a     = 1
-    self.addDefine('HAVE_DOLFINX', 1)
     self.addMakeMacro('DOLFINX_LIB',' '.join(map(self.libraries.getLibArgument, self.lib_a)))
     self.addMakeMacro('DOLFINX_INCLUDE',self.include_a)
 
