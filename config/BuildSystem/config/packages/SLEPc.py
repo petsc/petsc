@@ -72,7 +72,6 @@ class Configure(config.package.Package):
       self.lib = [os.path.join(prefix,'lib','libslepc')]
     else:
       self.lib = [os.path.join(prefix,'lib','libslepclme'),'-lslepcmfn -lslepcnep -lslepcpep -lslepcsvd -lslepceps -lslepcsys']
-    self.addMakeMacro('SLEPC','yes')
     self.addPost(self.packageDir,[carg + ' ' + self.python.pyexe + ' ./configure --prefix=' + prefix + ' ' + configargs,
                                   barg + ' ${OMAKE} ' + barg,
                                   barg + ' ${OMAKE} ' + barg + ' install'])

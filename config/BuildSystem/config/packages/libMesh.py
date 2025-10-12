@@ -37,7 +37,6 @@ class Configure(config.package.Package):
        newdir = ' '
        prefix = os.path.join(self.petscdir.dir,self.arch)
 
-    self.addMakeMacro('LIBMESH','yes')
     self.addPost(self.packageDir, [newdir + ' ./configure --prefix=' + prefix,
                                    newdir + ' ' + self.make.make_jnp,
                                    newdir + ' make install'])

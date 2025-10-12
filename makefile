@@ -197,7 +197,7 @@ check_build:
            ${RUN_TEST} testex55; \
            ${RUN_TEST} clean-legacy; \
          fi;
-	+@if [ "${PETSC4PY}" = "yes" ]; then \
+	+@if [ "`grep -E '^#define PETSC_HAVE_PETSC4PY 1' ${PETSCCONF_H}`" = "#define PETSC_HAVE_PETSC4PY 1" ]; then \
            cd src/ksp/ksp/tutorials >/dev/null; \
            ${RUN_TEST} clean-legacy; \
            ${RUN_TEST} testex100; \

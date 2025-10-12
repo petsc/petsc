@@ -108,11 +108,9 @@ class Configure(config.package.CMakePackage):
        prefix = os.path.join(self.petscdir.dir,self.arch)
        carg = ''
 
-    # provide access to mpi4py, petsc4py and FEnicS/ffcx.py to Python
+    # provide access to mpi4py, petsc4py and FEniCS/ffcx.py to Python
     ppath = 'PYTHONPATH=' + os.path.join(self.installDir,'lib')
     dpath = 'DOLFINX_DIR=' + self.installDir + ' HDF5_ROOT="'+self.installDir+'" HDF5_ENABLE_PARALLEL=on CMAKE_PREFIX_PATH="' + self.pugixml.installDir + ':' + self.spdlog.installDir + '"'
-
-    self.addMakeMacro('DOLFINX','yes')
 
     ccarg = 'CC=' + self.compilers.CC
     if 'Cxx' in self.buildLanguages:

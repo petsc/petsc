@@ -200,7 +200,6 @@ run-config:
 \t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
 '''.format(mfile=os.path.join(self.packageDir,'makefile'), mfemdir=self.packageDir))
 
-    self.addMakeMacro('MFEM','yes')
     self.addPost(buildDir, ['${OMAKE} -f ' + os.path.join(configDir,'petsc.mk') + ' run-config',
                             '${OMAKE} clean',
                             self.make.make_jnp,
