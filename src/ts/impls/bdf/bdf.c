@@ -269,6 +269,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
 
     bdf->time[0] = ts->ptime + ts->time_step;
     if (bdf->extrapolate) PetscCall(TSBDF_Extrapolate(ts, bdf->k - (accept ? 0 : 1), bdf->time[0], bdf->work[0]));
+    else if (!accept) PetscCall(VecCopy(ts->vec_sol, bdf->work[0]));
     PetscCall(TSPreStage(ts, bdf->time[0]));
     PetscCall(TSBDF_SNESSolve(ts, NULL, bdf->work[0]));
     PetscCall(TSPostStage(ts, bdf->time[0], 0, &bdf->work[0]));

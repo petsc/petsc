@@ -344,12 +344,12 @@ static PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 
   PetscFunctionBegin;
   PetscCall(SNESSetUp_VI(snes));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->dpsi));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->phi));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->Da));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->Db));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->z));
-  PetscCall(VecDuplicate(snes->vec_sol, &vi->t));
+  PetscCall(VecDuplicate(snes->work[0], &vi->dpsi));
+  PetscCall(VecDuplicate(snes->work[0], &vi->phi));
+  PetscCall(VecDuplicate(snes->work[0], &vi->Da));
+  PetscCall(VecDuplicate(snes->work[0], &vi->Db));
+  PetscCall(VecDuplicate(snes->work[0], &vi->z));
+  PetscCall(VecDuplicate(snes->work[0], &vi->t));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

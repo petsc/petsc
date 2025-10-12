@@ -19,10 +19,12 @@ typedef struct {
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
+  PetscBool          isbt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  bt->alpha = alpha;
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHBT, &isbt));
+  if (isbt) bt->alpha = alpha;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -42,9 +44,12 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
+  PetscBool          isbt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHBT, &isbt));
+  PetscCheck(isbt, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Not for type %s", ((PetscObject)linesearch)->type_name);
   *alpha = bt->alpha;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

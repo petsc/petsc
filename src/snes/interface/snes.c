@@ -147,7 +147,6 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscCheck(!snes->errorifnotconverged, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "User code indicates input vector is not in the function domain");
   snes->domainerror = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4916,7 +4915,10 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     /* Call converged reason views. This may involve user-provided viewers as well */
     PetscCall(SNESConvergedReasonViewFromOptions(snes));
 
-    if (snes->errorifnotconverged) PetscCheck(snes->reason >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged");
+    if (snes->errorifnotconverged) {
+      if (snes->reason < 0) PetscCall(SNESMonitorCancel(snes));
+      PetscCheck(snes->reason >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged");
+    }
     if (snes->reason < 0) break;
     if (grid < snes->gridsequence) {
       DM  fine;

@@ -428,18 +428,18 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   }
   if (!snes->usersetbounds) {
     if (snes->ops->computevariablebounds) {
-      if (!snes->xl) PetscCall(VecDuplicate(snes->vec_sol, &snes->xl));
-      if (!snes->xu) PetscCall(VecDuplicate(snes->vec_sol, &snes->xu));
+      if (!snes->xl) PetscCall(VecDuplicate(snes->work[0], &snes->xl));
+      if (!snes->xu) PetscCall(VecDuplicate(snes->work[0], &snes->xu));
       PetscUseTypeMethod(snes, computevariablebounds, snes->xl, snes->xu);
     } else if (!snes->xl && !snes->xu) {
       /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
-      PetscCall(VecDuplicate(snes->vec_sol, &snes->xl));
+      PetscCall(VecDuplicate(snes->work[0], &snes->xl));
       PetscCall(VecSet(snes->xl, PETSC_NINFINITY));
-      PetscCall(VecDuplicate(snes->vec_sol, &snes->xu));
+      PetscCall(VecDuplicate(snes->work[0], &snes->xu));
       PetscCall(VecSet(snes->xu, PETSC_INFINITY));
     } else {
       /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
-      PetscCall(VecGetOwnershipRange(snes->vec_sol, i_start, i_end));
+      PetscCall(VecGetOwnershipRange(snes->work[0], i_start, i_end));
       PetscCall(VecGetOwnershipRange(snes->xl, i_start + 1, i_end + 1));
       PetscCall(VecGetOwnershipRange(snes->xu, i_start + 2, i_end + 2));
       if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
