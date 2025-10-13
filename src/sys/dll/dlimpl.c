@@ -2,13 +2,7 @@
    Low-level routines for managing dynamic link libraries (DLLs).
 */
 
-#include <petscconf.h>
-#if defined(PETSC__GNU_SOURCE)
-  #if !defined(_GNU_SOURCE)
-    #define _GNU_SOURCE 1
-  #endif
-#endif
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for dlopen() */
 #include <petsc/private/petscimpl.h>
 
 #if defined(PETSC_HAVE_WINDOWS_H)
@@ -334,11 +328,7 @@ PetscErrorCode PetscDLAddr(PetscVoidFn *func, char *name[])
     Dl_info info;
 
     PetscCheck(dladdr(*(void **)&func, &info), PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
-  #ifdef PETSC_HAVE_CXX
     PetscCall(PetscDemangleSymbol(info.dli_sname, name));
-  #else
-    PetscCall(PetscStrallocpy(info.dli_sname, name));
-  #endif
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
