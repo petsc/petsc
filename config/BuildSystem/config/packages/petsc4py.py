@@ -70,9 +70,7 @@ class Configure(config.package.Package):
     if numpy_include is not None:
       newdir += 'NUMPY_INCLUDE="'+numpy_include+'" '
 
-    self.addDefine('HAVE_PETSC4PY',1)
     self.addDefine('PETSC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
-    self.addMakeMacro('PETSC4PY','yes')
     cflags = ''
     # by default, multiple flags are added by setup.py (-DNDEBUG -O3 -g), no matter the type of PETSc build
     # this is problematic with Intel compilers, which take extremely long to compile bindings when using -g

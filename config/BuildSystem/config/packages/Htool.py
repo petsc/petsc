@@ -35,9 +35,6 @@ class Configure(config.package.Package):
     import os
     incDir = os.path.join(self.installDir,self.includedir)
     self.include = [incDir]
-    if not hasattr(self.framework,'packages'):
-      self.framework.packages = []
-    self.framework.packages.append(self)
     srcdir = os.path.join(self.packageDir,'include','htool')
     destdir = os.path.join(incDir,'htool')
     try:

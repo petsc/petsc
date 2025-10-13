@@ -130,7 +130,6 @@ class Configure(config.package.CMakePackage):
        prefix = os.path.join(self.petscdir.dir,self.arch)
        carg = ''
 
-    self.addMakeMacro('AMREX','yes')
     self.addPost(os.path.join(self.packageDir,'petsc-build'), [carg + ' ' + self.cmake.cmake + ' .. ' + args, self.make.make_jnp + '  ' + self.makerulename,
                                                               '${OMAKE} install'])
     return self.installDir

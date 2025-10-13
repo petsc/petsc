@@ -51,7 +51,6 @@ class Configure(config.package.Package):
       prefix     = os.path.join(self.petscdir.dir,self.arch)
     incDir = os.path.join(prefix,'include')
     libDir = os.path.join(prefix,self.libDirs[0])
-    self.addMakeMacro('HPDDM','yes')
     self.include = [incDir]
     if not hasattr(self.framework,'packages'):
       self.framework.packages = []

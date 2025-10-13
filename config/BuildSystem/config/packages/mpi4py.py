@@ -103,4 +103,3 @@ class Configure(config.package.Package):
 
     self.addMakeMacro('MPI4PY',"yes")
     self.found = 1
-

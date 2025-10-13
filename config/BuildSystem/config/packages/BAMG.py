@@ -54,7 +54,6 @@ class Configure(config.package.Package):
         self.framework.packages = []
       self.framework.packages.append(self)
       oldFlags = self.compilers.CPPFLAGS
-      self.addMakeMacro('BAMG','yes')
       self.addPost(self.packageDir,[carg + self.python.pyexe + ' ./configure --prefix=' + prefix + ' --with-clean',
                                     'mkdir -p ' + os.path.join(iarch,'tests'),
                                     'touch ' + os.path.join(iarch,'tests','testfiles'),
