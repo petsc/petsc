@@ -7,7 +7,6 @@ class Configure(config.package.Package):
     self.download               = ['git://https://gitlab.com/knepley/bamg.git','https://gitlab.com/knepley/bamg/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
-    self.useddirectly           = 0
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
     return
@@ -50,9 +49,6 @@ class Configure(config.package.Package):
          barg = ' BAMG_DIR='+self.packageDir+' SLEPC_DIR='+self.slepc.installDir+' '
          prefix = os.path.join(self.petscdir.dir,self.arch)
          iarch  = self.arch
-      if not hasattr(self.framework, 'packages'):
-        self.framework.packages = []
-      self.framework.packages.append(self)
       oldFlags = self.compilers.CPPFLAGS
       self.addPost(self.packageDir,[carg + self.python.pyexe + ' ./configure --prefix=' + prefix + ' --with-clean',
                                     'mkdir -p ' + os.path.join(iarch,'tests'),
