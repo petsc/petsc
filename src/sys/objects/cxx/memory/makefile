@@ -1,7 +1,7 @@
--include ../../../../../petscdir.mk
-#requirespackage 'PETSC_HAVE_CUPM'
+-include ../../../../petscdir.mk
+#requiresdefine 'PETSC_DEVICELANGUAGE_CXX'
 
-MANSEC   = KSP
+MANSEC  = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk

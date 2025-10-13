@@ -371,7 +371,7 @@ PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   if (default_device_type.type != type) {
-    // no need to waster a PetscRegisterFinalize() slot if we don't change it
+    // no need to waste a PetscRegisterFinalize() slot if we don't change it
     default_device_type.type = type;
     PetscCall(default_device_type.register_finalize());
   }

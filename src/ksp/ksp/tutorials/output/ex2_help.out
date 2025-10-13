@@ -52,16 +52,6 @@ Options for all PETSc programs:
  -options_monitor: monitor options to standard output, including that set previously e.g. in option files
  -options_monitor_cancel: cancels all hardwired option monitors
  -petsc_sleep n: sleeps n seconds before running program
-PetscDevice Options:
-  -device_enable: <now lazy : formerly lazy> How (or whether) to initialize PetscDevices (choose one of) none lazy eager (PetscDeviceInitialize())
-  -default_device_type: <now host : formerly host> Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT() (choose one of) host cuda hip sycl (PetscDeviceSetDefaultDeviceType())
-  -device_select: <now -1 : formerly -1>: Which device to use. Pass (-1) to have PETSc decide or (given they exist) [0-128) for a specific device (PetscDeviceCreate())
-  -device_view: <now FALSE : formerly FALSE> Display device information and assignments (forces eager initialization) (PetscDeviceView())
-PetscDevice host Options:
-  -device_view_host: <now FALSE : formerly FALSE> Display device information and assignments (forces eager initialization) (PetscDeviceView())
-Root PetscDeviceContext Options:
-  -root_device_context_device_type: <now host : formerly host> Underlying PetscDevice (choose one of) host cuda hip sycl (PetscDeviceContextSetDevice)
-  -root_device_context_stream_type: <now default : formerly default> PetscDeviceContext PetscStreamType (choose one of) default nonblocking default_with_barrier nonblocking_with_barrier (PetscDeviceContextSetStreamType)
 Matrix (Mat) options:
   -mat_block_size: <now -1 : formerly -1>: Set the blocksize used to store the matrix (MatSetBlockSize)
   -mat_type <now aij : formerly aij>: Matrix type (one of) mpiaijcrl mpiadj seqaij mpibaij composite preallocator mpiaijperm seqsbaij seqmaij seqkaij mffd seqaijsell nest constantdiagonal mpimaij mpiaij mpikaij lrc seqdense dummy is mpisbaij mpiaijsell shell seqsell seqaijperm blockmat maij diagonal kaij mpisell mpidense seqaijcrl scatter seqbaij (MatSetType)

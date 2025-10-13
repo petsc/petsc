@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: cxx
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
     args: -root_device_context_stream_type \
       {{default default_with_barrier nonblocking}separate output}
     filter: grep -ve "ex6 on a" -ve "\[0\] "
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   testset:
-    requires: !cxx
+    requires: !defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     suffix: no_cxx
 
