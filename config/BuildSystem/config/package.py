@@ -1047,30 +1047,30 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''
     steps = ['@echo "=========================================="',\
              '@echo "Building/installing ' + self.name + '. This may take several minutes"',\
-             '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log']
+             '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log']
     if not isinstance(rules, list): rules = [rules]
     for rule in rules:
-      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log 2>&1 ||\
-                    (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log" && exit 1)')
-    self.addMakeRule(self.name.lower() + 'build', '', steps)
+      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log 2>&1 ||\
+                    (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log" && exit 1)')
+    self.addMakeRule(self.package + 'build', '', steps)
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.framework.postinstalls.append(self.name.lower() + 'build')
+      self.framework.postinstalls.append(self.package + 'build')
     else:
-      self.framework.postbuilds.append(self.name.lower() + 'build')
+      self.framework.postbuilds.append(self.package + 'build')
     self.addDefine('HAVE_' + self.PACKAGE.replace('-','_'), 1)
 
   def addMakeCheck(self, dir, rule):
     '''Adds a small make check for the project'''
-    self.addMakeRule(self.name.lower() + 'check','', \
+    self.addMakeRule(self.package + 'check','', \
                          ['@echo "*** Checking ' + self.name + ' ***"',\
                           '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
-    self.framework.postchecks.append(self.name.lower() + 'check')
+    self.framework.postchecks.append(self.package + 'check')
 
   def addTest(self, dir, rule):
     '''Adds a large make test for the project'''
-    self.addMakeRule(self.name.lower() + 'test','', \
+    self.addMakeRule(self.package + 'test','', \
                          ['@echo "*** Testing ' + self.name + ' ***"',\
-                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.errorflg',\
+                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.errorflg',\
                           '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
 
   def configureLibrary(self):
