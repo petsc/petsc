@@ -15,6 +15,8 @@ configure_options = [
   '--with-scalar-type=real',
   '--with-64-bit-indices=yes',
   '--with-precision=__float128',
+  '--download-mumps',
+  '--download-scalapack',
   '--download-mpich',
   '--download-f2cblaslapack',
   '--with-strict-petscerrorcode',

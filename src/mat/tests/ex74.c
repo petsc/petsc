@@ -343,6 +343,11 @@ int main(int argc, char **args)
   }
 
 #if defined(PETSC_HAVE_MUMPS)
+
+  #if defined(PETSC_USE_REAL___FLOAT128)
+  tol = 1e-10; // since MUMPS is run in double
+  #endif
+
   PetscCall(MatGetFactor(sA, MATSOLVERMUMPS, MAT_FACTOR_CHOLESKY, &sFactor));
   PetscCall(MatCholeskyFactorSymbolic(sFactor, sA, NULL, NULL));
   PetscCall(MatCholeskyFactorNumeric(sFactor, sA, NULL));

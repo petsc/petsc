@@ -6,12 +6,13 @@ static char help[] = "Solves a tridiagonal linear system with KSP. \n\
 
 int main(int argc, char **args)
 {
-  Vec         x, x2, b, u;                              /* approx solution, RHS, exact solution */
-  Mat         A;                                        /* linear system matrix */
-  KSP         ksp;                                      /* linear solver context */
-  PC          pc;                                       /* preconditioner context */
-  PetscReal   norm, tol = 100. * PETSC_MACHINE_EPSILON; /* norm of solution error */
-  PetscInt    i, n      = 10, col[3], its;
+  Vec         x, x2, b, u; /* approx solution, RHS, exact solution */
+  Mat         A;           /* linear system matrix */
+  KSP         ksp;         /* linear solver context */
+  PC          pc;          /* preconditioner context */
+  PetscReal   norm;        /* norm of solution error */
+  PetscReal   tol = PetscDefined(USE_REAL___FLOAT128) ? 1e-14 : 100. * PETSC_MACHINE_EPSILON;
+  PetscInt    i, n = 10, col[3], its;
   PetscMPIInt rank, size;
   PetscScalar one = 1.0, value[3];
 

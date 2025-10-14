@@ -621,11 +621,18 @@ skipoptions:
       args: -mat_solver_type mumps
       output_file: output/ex125_mumps_seq.out
 
-   test:
-      suffix: mumps_3_nest
+   testset:
       requires: mumps
       args: -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_seq.out
+
+      test:
+        requires: !__float128
+        suffix: mumps_3_nest
+      test:
+        suffix: mumps_3_nest_fp128
+        requires: __float128
+        args: -tol 1e-8
 
    test:
       suffix: mumps_4
@@ -634,12 +641,19 @@ skipoptions:
       args: -mat_solver_type mumps
       output_file: output/ex125_mumps_par.out
 
-   test:
-      suffix: mumps_4_nest
+   testset:
       nsize: 3
       requires: mumps
       args: -mat_solver_type mumps -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_par.out
+
+      test:
+        requires: !__float128
+        suffix: mumps_4_nest
+      test:
+        suffix: mumps_4_nest_fp128
+        requires: __float128
+        args: -tol 1e-8
 
    test:
       suffix: mumps_5
@@ -648,19 +662,33 @@ skipoptions:
       args: -mat_solver_type mumps -cholesky
       output_file: output/ex125_mumps_par_cholesky.out
 
-   test:
-      suffix: mumps_5_nest
+   testset:
       nsize: 3
       requires: mumps
       args: -mat_solver_type mumps -cholesky -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_par_cholesky.out
 
+      test:
+        requires: !__float128
+        suffix: mumps_5_nest
+      test:
+        suffix: mumps_5_nest_fp128
+        requires: __float128
+        args: -tol 1e-8
+
    test:
-      suffix: mumps_6
       nsize: 2
       requires: mumps
       args: -mat_solver_type mumps -test_nest -test_nest_bordered -m 13 -n 13
       output_file: output/ex125_mumps_par.out
+
+      test:
+        requires: !__float128
+        suffix: mumps_6
+      test:
+        suffix: mumps_6_fp128
+        requires: __float128
+        args: -tol 1e-8
 
    test:
       suffix: superlu

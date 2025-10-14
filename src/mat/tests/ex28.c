@@ -19,6 +19,7 @@ int main(int argc, char **args)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-tol", &tol, NULL));
 
   /* Create and assemble matrices, all have same data structure */
   for (k = 0; k < num_numfac; k++) {
@@ -134,11 +135,19 @@ int main(int argc, char **args)
       args: -mat_solver_type superlu
       requires: superlu
 
-   test:
-      suffix: 3
+   testset:
       nsize: 2
       requires: mumps
       args: -mat_solver_type mumps
+      output_file: output/ex28_3.out
+
+      test:
+        suffix: 3
+        requires: !__float128
+      test:
+        suffix: 3_fp128
+        requires: __float128
+        args: -tol 1e-14
 
    test:
       suffix: 4
