@@ -8,8 +8,8 @@
 #include <petsc/finclude/petsc.h>
 program main
 
-  use PETScDM
-  use PETScDMplex
+  use petscdm
+  use petscdmplex
 
   implicit none
 

@@ -1,7 +1,7 @@
 #include <petsc/finclude/petscdmlabel.h>
 program ex1f90
   use petscdm
-  implicit NONE
+  implicit none
 
   type(tDM)                         :: dm, dmDist
   character(len=PETSC_MAX_PATH_LEN) :: filename

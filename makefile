@@ -312,7 +312,7 @@ check_usermakefile:
 
 # pip install fprettify
 fprettify:
-	@git ls-files "*.[hF]90" | xargs fprettify --indent 2 --line-length 1000 --whitespace 2 --whitespace-type F --enable-replacements --c-relations
+	@git ls-files "*.[hF]90" | xargs fprettify --indent 2 --line-length 1000 --whitespace 2 --whitespace-type F --case 1 0 1 0 --enable-replacements --c-relations
 
 # git clone https://github.com/louoberto/fortify.git && cd fortify && export PATH=$PATH:$(pwd)/source
 fortify:

@@ -241,10 +241,10 @@ program main
   PetscMPIInt size
   PetscReal enorm
   PetscScalar cnorm
-  PetscScalar, ALLOCATABLE :: userx(:, :)
-  PetscScalar, ALLOCATABLE :: userb(:, :)
-  PetscScalar, ALLOCATABLE :: solution(:, :)
-  PetscScalar, ALLOCATABLE :: rho(:, :)
+  PetscScalar, allocatable :: userx(:, :)
+  PetscScalar, allocatable :: userb(:, :)
+  PetscScalar, allocatable :: solution(:, :)
+  PetscScalar, allocatable :: rho(:, :)
 
   PetscReal hx2, hy2
   common/param/hx2, hy2
@@ -278,11 +278,11 @@ program main
 !  the context of a larger application these would be provided by
 !  other (non-PETSc) parts of the application code.
 
-  ALLOCATE (userx(m, n), userb(m, n), solution(m, n))
+  allocate (userx(m, n), userb(m, n), solution(m, n))
 
 !  Allocate an array to hold the coefficients in the elliptic operator
 
-  ALLOCATE (rho(m, n))
+  allocate (rho(m, n))
 
 !  Fill up the array rho[] with the function rho(x,y) = x; fill the
 !  right-hand side b and the solution with a known problem for testing.

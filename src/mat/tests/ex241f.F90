@@ -2,7 +2,7 @@
 #include <petsc/finclude/petscmat.h>
 program test_assembly
 
-  use PetscMat
+  use petscmat
   use ISO_Fortran_Env, only: real64
 
   implicit none

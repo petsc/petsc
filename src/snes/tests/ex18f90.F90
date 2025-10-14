@@ -12,7 +12,7 @@ module ex18f90base_module
     PetscInt :: A  ! junk
     PetscReal :: I ! junk
   contains
-    procedure, public :: Print => BasePrint
+    procedure, public :: print => BasePrint
   end type base_type
 contains
   subroutine BasePrint(this)
@@ -32,7 +32,7 @@ module ex18f90extended_module
     PetscInt :: B  ! junk
     PetscReal :: J ! junk
   contains
-    procedure, public :: Print => ExtendedPrint
+    procedure, public :: print => ExtendedPrint
   end type extended_type
 contains
   subroutine ExtendedPrint(this)
@@ -55,7 +55,7 @@ contains
     Vec :: r
     class(base_type) :: ctx ! yes, this should be base_type in order to handle all
     PetscErrorCode :: ierr  ! polymorphic extensions
-    call ctx%Print()
+    call ctx%print()
   end subroutine TestFunction
 end module ex18f90function_module
 

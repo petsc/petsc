@@ -88,7 +88,7 @@ program main
   user(user_s + 2) = 1.0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s1', user(user_s + 2), flg, ierr))
 
-  OptionSaveToDisk = .FALSE.
+  OptionSaveToDisk = .false.
   PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-sdisk', OptionSaveToDisk, flg, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context

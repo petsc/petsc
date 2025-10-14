@@ -36,7 +36,7 @@
         PetscDraw draw
         PetscErrorCode ierr
         integer4 x, y, width, height
-        External zoomfunction
+        external zoomfunction
         x = 0
         y = 0
         width = 256

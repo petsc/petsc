@@ -96,7 +96,7 @@ contains
 
     implicit none
     PetscScalar :: func
-    PetscScalar, INTENT(IN) :: a
+    PetscScalar, intent(IN) :: a
 
     func = 2.0*a/(1.0 + a*a)
 

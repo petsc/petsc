@@ -4,7 +4,7 @@ program ex10f90
   implicit none
 
   PetscErrorCode                            :: ierr
-  Character(len=256)                        :: filename
+  character(len=256)                        :: filename
   PetscBool                                 :: flg
   PetscInt                                  :: n
 

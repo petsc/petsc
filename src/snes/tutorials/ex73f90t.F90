@@ -65,7 +65,7 @@ module ex73f90tmodule
       type(ex73f90tmodule_type) ctx
       PetscErrorCode ierr
     end subroutine
-    Subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
+    subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
       use petscsnes
       import ex73f90tmodule_type
       SNES :: snesIn

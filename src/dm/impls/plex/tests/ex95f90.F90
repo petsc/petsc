@@ -63,7 +63,7 @@ program ex95f90
   PetscCall(PetscViewerFlush(viewer, ierr))
 
   PetscCallA(DMPlexDistribute(dm, 0_kPI, PETSC_NULL_SF, pdm, ierr))
-  if (pdm /= PETSC_NULL_DM) Then
+  if (pdm /= PETSC_NULL_DM) then
     pdm = dm
   end if
 
@@ -71,13 +71,13 @@ program ex95f90
   PetscCallA(PetscViewerExodusIISetZonalVariable(viewer, nZonalVar, ierr))
   nZonalVar = -1
   PetscCallA(PetscViewerExodusIIGetZonalVariable(viewer, nZonalVar, ierr))
-  Write (IOBuffer, '("Number of zonal variables:", I2,"\n")') nZonalVar
+  write (IOBuffer, '("Number of zonal variables:", I2,"\n")') nZonalVar
   PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
 
   PetscCallA(PetscViewerExodusIISetNodalVariable(viewer, nNodalVar, ierr))
   nNodalVar = -1
   PetscCallA(PetscViewerExodusIIGetNodalVariable(viewer, nNodalVar, ierr))
-  Write (IOBuffer, '("Number of nodal variables:", I2,"\n")') nNodalVar
+  write (IOBuffer, '("Number of nodal variables:", I2,"\n")') nNodalVar
   PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
   PetscCallA(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
@@ -94,12 +94,12 @@ program ex95f90
 
   do i = 1, nZonalVar
     PetscCallA(PetscViewerExodusIIGetZonalVariableName(viewer, i - 1, varName, ierr))
-    Write (IOBuffer, '("   zonal variable:", I2,": ",A,"\n")') i, varName
+    write (IOBuffer, '("   zonal variable:", I2,": ",A,"\n")') i, varName
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
   end do
   do i = 1, nNodalVar
     PetscCallA(PetscViewerExodusIIGetNodalVariableName(viewer, i - 1, varName, ierr))
-    Write (IOBuffer, '("   nodal variable:", I2,": ",A,"\n")') i, varName
+    write (IOBuffer, '("   nodal variable:", I2,": ",A,"\n")') i, varName
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
   end do
   PetscCallA(PetscViewerDestroy(viewer, ierr))
@@ -116,12 +116,12 @@ program ex95f90
 
   do i = 1, nZonalVar
     PetscCallA(PetscViewerExodusIIGetZonalVariableName(viewer, i - 1, varName, ierr))
-    Write (IOBuffer, '("   zonal variable:", I2,": ",A,"\n")') i, varName
+    write (IOBuffer, '("   zonal variable:", I2,": ",A,"\n")') i, varName
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
   end do
   do i = 1, nNodalVar
     PetscCallA(PetscViewerExodusIIGetNodalVariableName(viewer, i - 1, varName, ierr))
-    Write (IOBuffer, '("   nodal variable:", I2,": ",A,"\n")') i, varName
+    write (IOBuffer, '("   nodal variable:", I2,": ",A,"\n")') i, varName
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD, IOBuffer, ierr))
   end do
 

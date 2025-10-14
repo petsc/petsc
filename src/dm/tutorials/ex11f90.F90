@@ -4,8 +4,8 @@ program main
   use petscdmda
   implicit none
 
-  Type(tVec) g
-  Type(tDM) ada
+  type(tVec) g
+  type(tDM) ada
 
   PetscScalar, pointer :: x1(:), x2(:, :)
   PetscScalar, pointer :: x3(:, :, :), x4(:, :, :, :)
@@ -161,7 +161,7 @@ program main
   PetscCallA(DMDestroy(ada, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-END PROGRAM
+end program
 
 !
 !/*TEST

@@ -3,29 +3,29 @@
 !  they cannot currently be generated automatically
 !
 
-      Interface
-        Subroutine PetscLayoutRestoreRanges(a, b, z)
+      interface
+        subroutine PetscLayoutRestoreRanges(a, b, z)
           use, intrinsic :: ISO_C_binding
           import tPetscLayout
           PetscLayout a
           PetscInt, pointer :: b(:)
           PetscErrorCode z
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface
-        Subroutine PetscSectionRestoreConstraintIndices(s, p, a, ierr)
+      interface
+        subroutine PetscSectionRestoreConstraintIndices(s, p, a, ierr)
           use, intrinsic :: ISO_C_binding
           import tPetscSection
           PetscInt p
           PetscInt, pointer :: a(:)
           PetscErrorCode ierr
           PetscSection s
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface
-        Subroutine PetscSectionRestoreFieldConstraintIndices(s, p, f, a, ierr)
+      interface
+        subroutine PetscSectionRestoreFieldConstraintIndices(s, p, f, a, ierr)
           use, intrinsic :: ISO_C_binding
           import tPetscSection
           PetscSection      :: s
@@ -33,5 +33,5 @@
           PetscInt          :: f
           PetscInt, pointer :: a(:)
           PetscErrorCode    :: ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface

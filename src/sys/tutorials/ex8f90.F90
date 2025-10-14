@@ -5,7 +5,7 @@
       implicit none
 
       PetscErrorCode                            :: ierr
-      Character(len=99) list1(6)
+      character(len=99) list1(6)
       PetscEnum                                 :: opt = -1
       PetscBool                                 :: set = PETSC_FALSE
 

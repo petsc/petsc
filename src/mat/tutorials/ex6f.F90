@@ -4,60 +4,60 @@
 !     Contributed by:  Samuel Lanthaler
 !
 #include "petsc/finclude/petscmat.h"
-MODULE solver_context_ex6f
+module solver_context_ex6f
   use petscsys
-  IMPLICIT NONE
-  TYPE :: MatCtx
+  implicit none
+  type :: MatCtx
     PetscReal :: lambda, kappa
     PetscReal :: h
-  END TYPE MatCtx
+  end type MatCtx
 
 ! ----------------------------------------------------
-  INTERFACE
-    SUBROUTINE MatCreateShell(comm, mloc, nloc, m, n, ctx, mat, ierr)
+  interface
+    subroutine MatCreateShell(comm, mloc, nloc, m, n, ctx, mat, ierr)
       use petscmat
       import MatCtx
       implicit none
       MPI_Comm :: comm
       PetscInt :: mloc, nloc, m, n
-      TYPE(MatCtx) :: ctx
+      type(MatCtx) :: ctx
       Mat :: mat
       PetscErrorCode :: ierr
-    END SUBROUTINE MatCreateShell
+    end subroutine MatCreateShell
 ! ----------------------------------------------------
-    SUBROUTINE MatShellSetContext(mat, ctx, ierr)
+    subroutine MatShellSetContext(mat, ctx, ierr)
       use petscmat
       import MatCtx
       implicit none
       MPI_Comm :: comm
       Mat :: mat
-      TYPE(MatCtx) :: ctx
+      type(MatCtx) :: ctx
       PetscErrorCode :: ierr
-    END SUBROUTINE MatShellSetContext
+    end subroutine MatShellSetContext
 ! ----------------------------------------------------
-    SUBROUTINE MatShellGetContext(mat, ctx, ierr)
+    subroutine MatShellGetContext(mat, ctx, ierr)
       use petscmat
       import MatCtx
       implicit none
       MPI_Comm :: comm
       Mat :: mat
-      TYPE(MatCtx), POINTER :: ctx
+      type(MatCtx), pointer :: ctx
       PetscErrorCode :: ierr
-    END SUBROUTINE MatShellGetContext
-  END INTERFACE
+    end subroutine MatShellGetContext
+  end interface
 
-END MODULE solver_context_ex6f
+end module solver_context_ex6f
 
 ! ----------------------------------------------------
 !                    main program
 ! ----------------------------------------------------
-PROGRAM main
+program main
   use petscmat
-  USE solver_context_ex6f
-  IMPLICIT NONE
+  use solver_context_ex6f
+  implicit none
   Mat :: F
-  TYPE(MatCtx) :: ctxF
-  TYPE(MatCtx), POINTER :: ctxF_pt
+  type(MatCtx) :: ctxF
+  type(MatCtx), pointer :: ctxF_pt
   PetscErrorCode :: ierr
   PetscInt :: n = 128
 
@@ -65,14 +65,14 @@ PROGRAM main
   ctxF%lambda = 3.14d0
   PetscCallA(MatCreateShell(PETSC_COMM_WORLD, n, n, n, n, ctxF, F, ierr))
   PetscCallA(MatShellSetContext(F, ctxF, ierr))
-  PRINT *, 'ctxF%lambda = ', ctxF%lambda
+  print *, 'ctxF%lambda = ', ctxF%lambda
 
   PetscCallA(MatShellGetContext(F, ctxF_pt, ierr))
-  PRINT *, 'ctxF_pt%lambda = ', ctxF_pt%lambda
+  print *, 'ctxF_pt%lambda = ', ctxF_pt%lambda
 
   PetscCallA(MatDestroy(F, ierr))
   PetscCallA(PetscFinalize(ierr))
-END PROGRAM main
+end program main
 
 !/*TEST
 !

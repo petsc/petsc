@@ -42,7 +42,7 @@ module petscsysdef
   use petscmpi, only: MPIU_REAL, MPIU_SUM, MPIU_SCALAR, MPIU_INTEGER, PETSC_COMM_WORLD, PETSC_COMM_SELF
 #endif
   PetscReal, parameter :: PetscReal_Private = 1.0
-  Integer, parameter   :: PETSC_REAL_KIND = kind(PetscReal_Private)
+  integer, parameter   :: PETSC_REAL_KIND = kind(PetscReal_Private)
 
   PetscBool, parameter :: PETSC_TRUE = .true._C_BOOL
   PetscBool, parameter :: PETSC_FALSE = .false._C_BOOL

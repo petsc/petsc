@@ -50,7 +50,7 @@ program ex5f90
   character(len=1), pointer     :: dummychar(:)
   PetscViewer viewer
   PetscSizeT sizeofbag
-  Character(len=99) list(6)
+  character(len=99) list(6)
   PetscInt three, int56
   PetscReal value
   PetscScalar svalue

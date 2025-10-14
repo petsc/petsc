@@ -16,23 +16,23 @@ module ex21f90module
 !
 !   These two routines are defined in ex21.c they create the Fortran pointer to the derived type
 !
-  Interface
-    Subroutine VecGetArrayMyStruct(v, array, ierr)
+  interface
+    subroutine VecGetArrayMyStruct(v, array, ierr)
       use petscvec
       import MyStruct
       type(MyStruct), pointer :: array(:)
       PetscErrorCode ierr
       Vec v
-    End Subroutine
+    end subroutine
 
-    Subroutine VecRestoreArrayMyStruct(v, array, ierr)
+    subroutine VecRestoreArrayMyStruct(v, array, ierr)
       use petscvec
       import MyStruct
       type(MyStruct), pointer :: array(:)
       PetscErrorCode ierr
       Vec v
-    End Subroutine
-  End Interface
+    end subroutine
+  end interface
 end module
 
 !  These routines are used internally by the C functions VecGetArrayMyStruct() and VecRestoreArrayMyStruct()

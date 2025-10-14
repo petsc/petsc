@@ -5,10 +5,10 @@ program ex9f
   use petscsys
   implicit none
 
-  PetscReal, Parameter                       :: PReal = 1.0
-  Integer, Parameter                         :: Pr = Selected_Real_Kind(Precision(PReal))
-  PetscInt, Parameter                        :: PInt = 1
-  Integer, Parameter                         :: Pi = kind(PInt)
+  PetscReal, parameter                       :: PReal = 1.0
+  integer, parameter                         :: Pr = Selected_Real_Kind(precision(PReal))
+  PetscInt, parameter                        :: PInt = 1
+  integer, parameter                         :: Pi = kind(PInt)
 
   PetscErrorCode                            :: ierr
   PetscBool                                 :: flg
@@ -35,10 +35,10 @@ program ex9f
   list(6) = ''
   stdefault = 'oulala oulala'
 
-  Allocate (iarray(nopt), source=-1_Pi)
-  Allocate (rarray(nopt), source=-99.0_pr)
-  Allocate (barray(nopt), source=PETSC_FALSE)
-  Allocate (sarray(nopt))
+  allocate (iarray(nopt), source=-1_Pi)
+  allocate (rarray(nopt), source=-99.0_pr)
+  allocate (barray(nopt), source=PETSC_FALSE)
+  allocate (sarray(nopt))
   sarray = 123.456_Pr
 
   PetscCallA(PetscOptionsBegin(PETSC_COMM_WORLD, 'prefix_', 'Setting options for my application', 'Section 1', ierr))
