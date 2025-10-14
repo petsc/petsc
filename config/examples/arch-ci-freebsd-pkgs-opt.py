@@ -31,6 +31,7 @@ configure_options = [
   '--download-spai=1',
   '--download-concurrencykit=1',
   '--download-revolve=1',
+  '--download-pflare=1',
   '--with-strict-petscerrorcode',
   ]
 

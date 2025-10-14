@@ -138,6 +138,13 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc BAMG dynamic library. You cannot move the dynamic libraries!");
   }
 #endif
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) && defined(PETSC_HAVE_PFLARE)
+  {
+    PetscBool found;
+    PetscCall(PetscLoadDynamicLibrary("pflare", &found));
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PFLARE dynamic library. You cannot move the dynamic libraries!");
+  }
+#endif
 
   nmax = 32;
   PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-dll_append", libname, &nmax, NULL));

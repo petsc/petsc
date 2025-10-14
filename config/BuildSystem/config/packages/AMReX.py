@@ -16,6 +16,7 @@ class Configure(config.package.CMakePackage):
     self.precisions        = ['double']
     self.buildLanguages    = ['Cxx']
     self.minCxxVersion     = 'c++14'
+    self.useddirectly      = 0
     self.builtafterpetsc   = 1
     self.minCmakeVersion   = (3,14,0)
     return
@@ -104,10 +105,6 @@ class Configure(config.package.CMakePackage):
       import shutil
       shutil.rmtree(folder)
     os.mkdir(folder)
-
-    if not hasattr(self.framework, 'packages'):
-      self.framework.packages = []
-    self.framework.packages.append(self)
 
     # these checks are usually done in configureLibrary
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
