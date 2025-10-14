@@ -146,7 +146,7 @@ static PetscErrorCode DMLoad_DA(DM da, PetscViewer viewer)
   PetscCall(DMDASetStencilType(da, stencil));
   PetscCall(DMDASetStencilWidth(da, swidth));
   PetscCall(DMSetUp(da));
-  PetscCall(PetscViewerBinaryRead(viewer, &coors, 1, NULL, PETSC_ENUM));
+  PetscCall(PetscViewerBinaryRead(viewer, &coors, 1, NULL, PETSC_BOOL));
   if (coors) {
     PetscCall(DMGetCoordinateDM(da, &dac));
     PetscCall(DMCreateGlobalVector(dac, &c));
