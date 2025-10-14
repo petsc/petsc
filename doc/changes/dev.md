@@ -12,6 +12,8 @@
 ```{rubric} Configure/Build:
 ```
 
+- Make `SYCL` a `devicePackage`, i.e., builds `--with-sycl` now have `PETSC_HAVE_DEVICE` defined
+
 ```{rubric} Sys:
 ```
 
