@@ -1092,7 +1092,7 @@ if __name__ == '__main__':
     parser.add_option('-s', '--single_executable', dest='single_executable', action="store_false", help='Whether there should be single executable per src subdir.  Default is false')
     parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory [$PETSC_ARCH/tests]')
     parser.add_option('-c', '--check-output', dest='check_output', action="store_true",
-                      help='Check whether output files are in output director')
+                      help='Check whether output files are in output directory')
     parser.add_option('--pkg-dir', help='Set the directory of the package (different from PETSc) you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-name', help='Set the name of the package you want to generate the makefile rules for', default=None)
     parser.add_option('--pkg-arch', help='Set the package arch name you want to generate the makefile rules for', default=None)
