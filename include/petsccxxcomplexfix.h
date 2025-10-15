@@ -92,12 +92,41 @@
   } \
 /* PETSC_CXX_COMPLEX_FIX */
 
-/*
-    Due to the C++ automatic promotion rules for floating point and integer values only the two cases below
-    need to be handled.
-*/
-#if defined(PETSC_USE_REAL_SINGLE)
+// In PETSc, a quad precision PetscComplex is a C type even with clanguage=cxx, therefore no C++ operator overloading needed for it.
+#if !defined(PETSC_USE_REAL___FLOAT128)
+
+// Provide operator overloading for 'PetscComplex .op. (an integer type or a real type but not PetscReal)'.
+//
+// We enumerate all C/C++ POD (Plain Old Data) types to provide exact overload resolution, to keep the precision change
+// in the Type to PetscReal conversion intact, as intended by users performing these mixed precision operations.
+  #if !defined(PETSC_USE_REAL___FP16) && defined(PETSC_HAVE_REAL___FP16)
+PETSC_CXX_COMPLEX_FIX(__fp16)
+  #endif
+
+  #if !defined(PETSC_USE_REAL_SINGLE)
+PETSC_CXX_COMPLEX_FIX(float)
+  #endif
+
+  #if !defined(PETSC_USE_REAL_DOUBLE)
 PETSC_CXX_COMPLEX_FIX(double)
-#elif defined(PETSC_USE_REAL_DOUBLE)
-PETSC_CXX_COMPLEX_FIX(PetscInt)
-#endif /* PETSC_USE_REAL_* */
+  #endif
+
+PETSC_CXX_COMPLEX_FIX(long double)
+
+  #if defined(PETSC_HAVE_REAL___FLOAT128)
+PETSC_CXX_COMPLEX_FIX(__float128)
+  #endif
+
+PETSC_CXX_COMPLEX_FIX(signed char)
+PETSC_CXX_COMPLEX_FIX(short)
+PETSC_CXX_COMPLEX_FIX(int)
+PETSC_CXX_COMPLEX_FIX(long)
+PETSC_CXX_COMPLEX_FIX(long long)
+
+PETSC_CXX_COMPLEX_FIX(unsigned char)
+PETSC_CXX_COMPLEX_FIX(unsigned short)
+PETSC_CXX_COMPLEX_FIX(unsigned int)
+PETSC_CXX_COMPLEX_FIX(unsigned long)
+PETSC_CXX_COMPLEX_FIX(unsigned long long)
+
+#endif
