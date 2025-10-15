@@ -46,7 +46,7 @@ PC Object: 5 MPI processes
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_coarse_) 5 MPI processes
       type: redundant
         First (color=0) of 5 PCs follows
@@ -55,7 +55,7 @@ PC Object: 5 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
-          using NONE norm type for convergence test
+          not checking for convergence
         PC Object: (mg_coarse_redundant_) 1 MPI process
           type: cholesky
             out-of-place factorization
@@ -104,40 +104,40 @@ PC Object: 5 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_1_) 5 MPI processes
       type: bjacobi
         number of blocks = 5
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI process
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI process
-        type: icc
-          out-of-place factorization
-          0 levels of fill
-          tolerance for zero pivot 2.22045e-14
-          using Manteuffel shift [POSITIVE_DEFINITE]
-          matrix ordering: natural
-          factor fill ratio given 1., needed 1.
-            Factored matrix follows:
-              Mat Object: (mg_levels_1_sub_) 1 MPI process
-                type: seqsbaij
-                rows=28, cols=28
-                package used to perform factorization: petsc
-                total: nonzeros=226, allocated nonzeros=226
-                    block size is 1
-        linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI process
-          type: seqaij
-          rows=28, cols=28
-          total: nonzeros=424, allocated nonzeros=424
-          total number of mallocs used during MatSetValues calls=0
-            using I-node routines: found 10 nodes, limit used is 5
+        KSP Object: (mg_levels_1_sub_) 1 MPI process
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          not checking for convergence
+        PC Object: (mg_levels_1_sub_) 1 MPI process
+          type: icc
+            out-of-place factorization
+            0 levels of fill
+            tolerance for zero pivot 2.22045e-14
+            using Manteuffel shift [POSITIVE_DEFINITE]
+            matrix ordering: natural
+            factor fill ratio given 1., needed 1.
+              Factored matrix follows:
+                Mat Object: (mg_levels_1_sub_) 1 MPI process
+                  type: seqsbaij
+                  rows=28, cols=28
+                  package used to perform factorization: petsc
+                  total: nonzeros=226, allocated nonzeros=226
+                      block size is 1
+          linear system matrix = precond matrix:
+          Mat Object: (mg_levels_1_sub_) 1 MPI process
+            type: seqaij
+            rows=28, cols=28
+            total: nonzeros=424, allocated nonzeros=424
+            total number of mallocs used during MatSetValues calls=0
+              using I-node routines: found 10 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 5 MPI processes
         type: mpiaij

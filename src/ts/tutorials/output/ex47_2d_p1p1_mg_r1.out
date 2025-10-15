@@ -45,7 +45,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -86,7 +86,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -152,7 +152,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -193,7 +193,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -259,7 +259,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -300,7 +300,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -366,7 +366,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -407,7 +407,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -473,7 +473,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -514,7 +514,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -580,7 +580,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -621,7 +621,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -687,7 +687,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -728,7 +728,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -794,7 +794,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -835,7 +835,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -901,7 +901,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -942,7 +942,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -1008,7 +1008,7 @@ SNES Object: 1 MPI process
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
@@ -1049,7 +1049,7 @@ SNES Object: 1 MPI process
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.

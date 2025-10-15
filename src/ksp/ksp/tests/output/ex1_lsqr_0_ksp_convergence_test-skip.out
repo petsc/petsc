@@ -1,6 +1,5 @@
   type: gmres
   left preconditioning
-  using PRECONDITIONED norm type for convergence test
   type: jacobi
 convergence test: skip
   type: lsqr
@@ -10,6 +9,5 @@ convergence test: skip
 convergence test: lsqr
   type: gmres
   left preconditioning
-  using DEFAULT norm type for convergence test
   type: jacobi
 convergence test: skip

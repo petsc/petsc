@@ -35,7 +35,7 @@ KSP Object: (mpi_linear_solver_server_) 1 MPI process
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
-  using NONE norm type for convergence test
+  not checking for convergence
 PC Object: (mpi_linear_solver_server_) 1 MPI process
   type: mpi
   Running MPI linear solver server directly on rank 0 due to its small size
@@ -85,7 +85,7 @@ KSP Object: (mpi_linear_solver_server_) 1 MPI process
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
-  using NONE norm type for convergence test
+  not checking for convergence
 PC Object: (mpi_linear_solver_server_) 1 MPI process
   type: mpi
   Running MPI linear solver server directly on rank 0 due to its small size

@@ -92,7 +92,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_coarse_pc_bddc_dirichlet_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -119,7 +119,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_coarse_pc_bddc_neumann_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -146,7 +146,7 @@ SNES Object: 7 MPI processes
             maximum iterations=1, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_coarse_pc_bddc_coarse_) 7 MPI processes
             type: redundant
               First (color=0) of 7 PCs follows
@@ -155,7 +155,7 @@ SNES Object: 7 MPI processes
                 maximum iterations=10000, initial guess is zero
                 tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
-                using NONE norm type for convergence test
+                not checking for convergence
               PC Object: (fas_coarse_pc_bddc_coarse_redundant_) 1 MPI process
                 type: lu
                   out-of-place factorization
@@ -267,7 +267,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_1_pc_bddc_dirichlet_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -294,7 +294,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_1_pc_bddc_neumann_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -321,7 +321,7 @@ SNES Object: 7 MPI processes
             maximum iterations=1, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_1_pc_bddc_coarse_) 7 MPI processes
             type: redundant
               First (color=0) of 7 PCs follows
@@ -330,7 +330,7 @@ SNES Object: 7 MPI processes
                 maximum iterations=10000, initial guess is zero
                 tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
-                using NONE norm type for convergence test
+                not checking for convergence
               PC Object: (fas_levels_1_pc_bddc_coarse_redundant_) 1 MPI process
                 type: lu
                   out-of-place factorization
@@ -443,7 +443,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_2_pc_bddc_dirichlet_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -470,7 +470,7 @@ SNES Object: 7 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_2_pc_bddc_neumann_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -497,7 +497,7 @@ SNES Object: 7 MPI processes
             maximum iterations=1, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (fas_levels_2_pc_bddc_coarse_) 7 MPI processes
             type: redundant
               First (color=0) of 7 PCs follows
@@ -506,7 +506,7 @@ SNES Object: 7 MPI processes
                 maximum iterations=10000, initial guess is zero
                 tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
-                using NONE norm type for convergence test
+                not checking for convergence
               PC Object: (fas_levels_2_pc_bddc_coarse_redundant_) 1 MPI process
                 type: lu
                   out-of-place factorization

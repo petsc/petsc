@@ -94,7 +94,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -124,7 +124,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_2_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -144,7 +144,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_fine_) 8 MPI processes
       type: jacobi
         type ROWL1 (l1-norm off-diagonal scaling 2.500000e-01)
@@ -259,7 +259,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -289,7 +289,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_2_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -309,7 +309,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_fine_) 8 MPI processes
       type: jacobi
         type ROWL1 (l1-norm off-diagonal scaling 2.500000e-01)
@@ -424,7 +424,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -454,7 +454,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_2_) 8 MPI processes
       type: jacobi
         type DIAGONAL
@@ -474,7 +474,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_fine_) 8 MPI processes
       type: jacobi
         type ROWL1 (l1-norm off-diagonal scaling 2.500000e-01)

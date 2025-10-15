@@ -14,7 +14,7 @@ PC Object: 2 MPI processes
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (redundant_) 1 MPI process
       type: redundant
         First (color=0) of 1 PCs follows
@@ -23,7 +23,7 @@ PC Object: 2 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
-          using NONE norm type for convergence test
+          not checking for convergence
         PC Object: (redundant_redundant_) 1 MPI process
           type: redundant
             First (color=0) of 1 PCs follows
@@ -32,7 +32,7 @@ PC Object: 2 MPI processes
               maximum iterations=10000, initial guess is zero
               tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
-              using NONE norm type for convergence test
+              not checking for convergence
             PC Object: (redundant_redundant_redundant_) 1 MPI process
               type: redundant
                 First (color=0) of 1 PCs follows
@@ -41,7 +41,7 @@ PC Object: 2 MPI processes
                   maximum iterations=10000, initial guess is zero
                   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
-                  using NONE norm type for convergence test
+                  not checking for convergence
                 PC Object: (redundant_redundant_redundant_redundant_) 1 MPI process
                   type: redundant
                     First (color=0) of 1 PCs follows
@@ -50,7 +50,7 @@ PC Object: 2 MPI processes
                       maximum iterations=10000, initial guess is zero
                       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
-                      using NONE norm type for convergence test
+                      not checking for convergence
                     PC Object: (redundant_redundant_redundant_redundant_redundant_) 1 MPI process
                       type: lu
                         out-of-place factorization

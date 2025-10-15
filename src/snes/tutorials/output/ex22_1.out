@@ -61,7 +61,7 @@ SNES Object: 2 MPI processes
         maximum iterations=3, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:
@@ -81,7 +81,7 @@ SNES Object: 2 MPI processes
         maximum iterations=3, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_2_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:

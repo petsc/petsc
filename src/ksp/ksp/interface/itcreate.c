@@ -149,7 +149,8 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (ksp->dscale) PetscCall(PetscViewerASCIIPrintf(viewer, "  diagonally scaled system\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  using %s norm type for convergence test\n", KSPNormTypes[ksp->normtype]));
+    if (ksp->converged == KSPConvergedSkip || ksp->normtype == KSP_NORM_NONE) PetscCall(PetscViewerASCIIPrintf(viewer, "  not checking for convergence\n"));
+    else PetscCall(PetscViewerASCIIPrintf(viewer, "  using %s norm type for convergence test\n", KSPNormTypes[ksp->normtype]));
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
     MPI_Comm    comm;
