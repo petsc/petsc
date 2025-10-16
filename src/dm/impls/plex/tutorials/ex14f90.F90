@@ -87,9 +87,6 @@ program ex14f90
   PetscCallA(PetscFinalize(ierr))
 end program ex14f90
 !/*TEST
-!  build:
-!    requires: defined(PETSC_USING_F90FREEFORM)
-!
 !  # Test on a 1D mesh with overlap
 !  test:
 !    nsize: 3

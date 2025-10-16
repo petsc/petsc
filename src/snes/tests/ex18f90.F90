@@ -128,8 +128,6 @@ end program ex18f90
 
 !/*TEST
 !
-!   build:
-!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
 !   test:
 !     requires: !pgf90_compiler
 !

@@ -84,7 +84,7 @@ end program DMPlexTestLandauInterface
 
 !/*TEST
 !  build:
-!    requires: defined(PETSC_USING_F90FREEFORM) defined(PETSC_USE_DMLANDAU_2D)
+!    requires: defined(PETSC_USE_DMLANDAU_2D)
 !
 !  test:
 !    suffix: 0

@@ -104,7 +104,7 @@ end program DMSwarmTestProjection
 
 !/*TEST
 !  build:
-!    requires: defined(PETSC_USING_F90FREEFORM) double !complex
+!    requires: double !complex
 !
 !  test:
 !    suffix: 0

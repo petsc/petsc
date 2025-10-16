@@ -120,9 +120,6 @@ end program ex5f90
 !
 !/*TEST
 !
-!   build:
-!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
-!
 !   test:
 !      args: -pbag_rarray 4,5,88
 !

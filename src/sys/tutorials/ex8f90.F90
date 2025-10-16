@@ -29,9 +29,6 @@
 !
 !/*TEST
 !
-!   build:
-!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
-!
 !   test:
 !      args: -joe_jeff b456
 !
