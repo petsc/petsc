@@ -25,6 +25,28 @@ static_assert(std::is_same<HYPRE_BigInt, int>::value, "");
   #endif
 #endif
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void PetscCallHYPRE(HYPRE_Int);
+#else
+  #if PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0)
+    #define PetscCallHYPRE(...) \
+      do { \
+        HYPRE_Int ierr_hypre_ = __VA_ARGS__; \
+        if (PetscUnlikely(ierr_hypre_ != 0)) { \
+          char err_str[PETSC_MAX_PATH_LEN]; \
+          HYPRE_DescribeError(ierr_hypre_, err_str); \
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error code %" PetscInt_FMT ": %s", (PetscInt)ierr_hypre_, err_str); \
+        } \
+      } while (0)
+  #else
+    #define PetscCallHYPRE(...) \
+      do { \
+        HYPRE_Int ierr_hypre_ = __VA_ARGS__; \
+        PetscCheck(ierr_hypre_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error code %" PetscInt_FMT, (PetscInt)ierr_hypre_); \
+      } while (0)
+  #endif /* PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0) */
+#endif   /* PETSC_CLANG_STATIC_ANALYZER */
+
 /*
   With scalar type == real, HYPRE_Complex == PetscScalar;
   With scalar type == complex,  HYPRE_Complex is double __complex__ while PetscScalar may be std::complex<double>
@@ -47,7 +69,7 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 31, 0) && defined(HYPRE_USING_GPU_AWARE_MPI)
   #define PetscHYPRESetGpuAwareMPI() \
     do { \
-      PetscCallExternal(HYPRE_SetGpuAwareMPI, use_gpu_aware_mpi ? 1 : 0); \
+      PetscCallHYPRE(HYPRE_SetGpuAwareMPI(use_gpu_aware_mpi ? 1 : 0)); \
     } while (0)
 #else
   #define PetscHYPRESetGpuAwareMPI() (void)0
@@ -56,13 +78,13 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
 #if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
 static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 {
-  if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallExternal(HYPRE_Finalize, );
+  if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallHYPRE(HYPRE_Finalize());
   return PETSC_SUCCESS;
 }
   #define PetscHYPREInitialize() \
     do { \
       if (!HYPRE_Initialized()) { \
-        PetscCallExternal(HYPRE_Initialize, ); \
+        PetscCallHYPRE(HYPRE_Initialize()); \
         PetscHYPRESetGpuAwareMPI(); \
         PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
       } \

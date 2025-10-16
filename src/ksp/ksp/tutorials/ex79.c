@@ -55,7 +55,7 @@ int main(int argc, char **args)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
   if (flg) {
     HYPRE_MemoryLocation hmem;
-    PetscCallExternal(HYPRE_GetMemoryLocation, &hmem);
+    PetscCallHYPRE(HYPRE_GetMemoryLocation(&hmem));
     if (hmem == HYPRE_MEMORY_DEVICE) hypre_mat_on_device = PETSC_TRUE;
   }
 #endif
