@@ -236,7 +236,7 @@ PetscErrorCode DMSwarmDataFieldZeroBlock(DMSwarmDataField df, const PetscInt sta
  */
 PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db, const PetscInt L, const PetscInt buffer)
 {
-  PetscInt  current_allocated, new_used, new_unused, new_buffer, new_allocated, f;
+  PetscInt  current_allocated, current_used, new_used, new_unused, new_buffer, new_allocated, f, end;
   PetscBool any_active_fields;
 
   PetscFunctionBegin;
@@ -245,6 +245,7 @@ PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db, const PetscInt L,
   PetscCheck(!any_active_fields, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot safely re-size as at least one DMSwarmDataField is currently being accessed");
 
   current_allocated = db->allocated;
+  current_used      = PetscMax(db->L, 0);
   new_used          = L;
   new_unused        = current_allocated - new_used;
   new_buffer        = db->buffer;
@@ -254,8 +255,11 @@ PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db, const PetscInt L,
   new_allocated = new_used + new_buffer;
   /* action */
   if (new_allocated > current_allocated) {
-    /* increase size to new_used + new_buffer */
-    for (f = 0; f < db->nfields; f++) PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated));
+    /* increase size to new_used + new_buffer and zero new space */
+    for (f = 0; f < db->nfields; f++) {
+      PetscCall(DMSwarmDataFieldSetSize(db->field[f], new_allocated));
+      PetscCall(DMSwarmDataFieldZeroBlock(db->field[f], current_allocated, new_allocated));
+    }
     db->L         = new_used;
     db->buffer    = new_buffer;
     db->allocated = new_used + new_buffer;
@@ -271,10 +275,13 @@ PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db, const PetscInt L,
       db->buffer = new_buffer;
     }
   }
-  /* zero all entries from db->L to db->allocated */
-  for (f = 0; f < db->nfields; ++f) {
-    DMSwarmDataField field = db->field[f];
-    PetscCall(DMSwarmDataFieldZeroBlock(field, db->L, db->allocated));
+  /* if we shrunk, zero old entries from new_used to current_used or end of array */
+  end = PetscMin(current_used, new_allocated);
+  if (end > new_used) {
+    for (f = 0; f < db->nfields; ++f) {
+      DMSwarmDataField field = db->field[f];
+      PetscCall(DMSwarmDataFieldZeroBlock(field, new_used, end));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
