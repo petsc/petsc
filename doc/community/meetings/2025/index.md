@@ -38,19 +38,19 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 | Time     | Title                                                                                                                        | Speaker                 |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 |  9:00 am | Meeting Introduction                                                                                                                             | [Matt Knepley]          |
-|  9:05 am | A projection method for particle resampling                                                                                  | [Mark Adams]            |
-|  9:30 am | Dense Broyden-Fletcher-Goldfarb-Shanno (BFGS)                                                                                | [Hansol Suh]            |
-| 10:00 am | IBAMR: Immersed-Boundary Adaptive Mesh Refinement                                                                           | [David Wells]           |
-| 10:30 am | TaoTerm                                                                                                                     | [Toby Isaac]            |
+|  9:05 am | A projection method for particle resampling                                                                                  | [Mark Adams](https://www.youtube.com/watch?v=vl5WOooGg_M&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=14&pp=iAQB)            |
+|  9:30 am | Dense Broyden-Fletcher-Goldfarb-Shanno (BFGS)                                                                                | [Hansol Suh](https://www.youtube.com/watch?v=efOjxXJeEXU&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=10&pp=iAQB)            |
+| 10:00 am | IBAMR: Immersed-Boundary Adaptive Mesh Refinement                                                                           | [David Wells](https://www.youtube.com/watch?v=-TYu8x8hkcU&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=9&pp=iAQB)           |
+| 10:30 am | TaoTerm                                                                                                                     | [Toby Isaac](https://www.youtube.com/watch?v=XwEZ6-VqEt8&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=18&pp=iAQB)            |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
-| 11:00 am | Multiple RHS multigrid for the lattice Dirac equation                                                                        | [Peter Boyle]           |
-| 11:30 am | DMSwarmRT: Ray tracing with PETSc's particle management library DMSwarm                                                      | [Joseph Pusztay]        |
-| 12:00 pm | Empire AI                                                                                                                   | [Matt Jones]            |
+| 11:00 am | Multiple RHS multigrid for the lattice Dirac equation                                                                        | [Peter Boyle](https://www.youtube.com/watch?v=eKks1IXHQ2E&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=17&pp=iAQB)           |
+| 11:30 am | DMSwarmRT: Ray tracing with PETSc's particle management library DMSwarm                                                      | [Joseph Pusztay](https://www.youtube.com/watch?v=IrQ0ptBbzSU&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=11&pp=iAQB)        |
+| 12:00 pm | Empire AI                                                                                                                   | [Matt Jones](https://www.youtube.com/watch?v=dHF2D2NIdgA&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=15&pp=iAQB)            |
 | 12:15 pm | **Lunch**                                                                                           |                         |
-|  1:30 pm | Exploring Quantum Phases of Interacting Lattice Models via Exact Diagonalization                                            | [Cheng-Chien Chen]      |
-|  2:00 pm | Cardiac Fluid Dynamics                                                                                                      | [Boyce Griffith]        |
-|  2:30 pm | Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation                                    | [Chris Kees]            |
-|  3:00 pm | PetscRegressor                                                                                                               | [Richard Mills]         |
+|  1:30 pm | Exploring Quantum Phases of Interacting Lattice Models via Exact Diagonalization                                            | [Cheng-Chien Chen](https://www.youtube.com/watch?v=MDYmajrhLsw&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=3&pp=iAQB)      |
+|  2:00 pm | Cardiac Fluid Dynamics                                                                                                      | [Boyce Griffith](https://www.youtube.com/watch?v=4T4sU4pmfEc&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=1&t=26s&pp=iAQB)        |
+|  2:30 pm | Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation                                    | [Chris Kees](https://www.youtube.com/watch?v=l-z2Hj9pGtY&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=4&pp=iAQB)            |
+|  3:00 pm | PetscRegressor                                                                                                               | [Richard Mills](https://www.youtube.com/watch?v=qto8TNTwkjw&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=5&pp=iAQB0gcJCfwJAYcqIYzv)         |
 |  3:15 pm | **Poster Session and Coffee Break**                                                                                         |                         |
 |  4:30 pm | **End of Posters**                                                                                                          |                         |
 |  4:45 pm | Leave on bus for dinner at Niagara Falls                                                                                    |                         |
@@ -60,17 +60,17 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 
 | Time     | Title                                                                                                                        | Speaker                 |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-|  9:00 am | Mesh Transformations                                                                                                        | [Matt Knepley]          |
-|  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz]         |
-| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                          | [David Salac]           |
-| 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
+|  9:00 am | Mesh Transformations                                                                                                        | [Matt Knepley](https://www.youtube.com/watch?v=s-83i-asJVQ&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=16&pp=iAQB)          |
+|  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz](https://www.youtube.com/watch?v=FAiuTPkowM0&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=19&pp=iAQB)         |
+| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                          | [David Salac](https://www.youtube.com/watch?v=67gf2qQSWZQ&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=8&pp=iAQB)           |
+| 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec](https://www.youtube.com/watch?v=ncq4VbNSn80&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=13&t=6s&pp=iAQB)     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
-| 11:00 am | Proteus Toolkit                                                                                                              | [Darsh Nathawani]       |
-| 11:30 pm | GitWorkflows                                                                                                                 | [Satish Balay]          |
+| 11:00 am | Proteus Toolkit                                                                                                              | [Darsh Nathawani](https://www.youtube.com/watch?v=16lIjuEhAOY&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=7&pp=iAQB)       |
+| 11:30 pm | GitWorkflows                                                                                                                 | [Satish Balay](https://www.youtube.com/watch?v=MkNyrNuXImU&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=2&pp=iAQB)          |
 | 12:00 pm | **Lunch**                                                                                           |                         |
-|  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
+|  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward](https://www.youtube.com/watch?v=KdYDjjIL3xc&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=6&pp=iAQB)            |
 |  2:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
-|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                    | [Junchao Zhang, Hong Zhang] |
+|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                    | [Junchao Zhang, Hong Zhang](https://www.youtube.com/watch?v=4nj5XS95_GE&list=PLgFMPm27S9JrnzQmEZq54TGe5Iv8P6V_V&index=12&pp=iAQB) |
 |  2:30 pm | **PETSc Roundtable**                                                                                |                         |
 |  3:30 pm | **Coffee Break**                                                                                                          |                         |
 |  3:45 pm | **PETSc Roundtable**                                                                                                       |                         |
