@@ -1450,7 +1450,7 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A, PetscInt nrhs, const Petsc
         }
         PetscCall(PetscMalloc1(mumps->nloc_rhs, &mumps->irhs_loc));
         for (j = k = 0; j < ompsize; j++) {
-          for (i = ranges[petsc_ranks[j]]; i < ranges[petsc_ranks[j] + 1]; i++, k++) mumps->irhs_loc[k] = i + 1; /* uses 1-based indices */
+          for (i = ranges[petsc_ranks[j]]; i < ranges[petsc_ranks[j] + 1]; i++, k++) PetscCall(PetscMUMPSIntCast(i + 1, &mumps->irhs_loc[k])); /* uses 1-based indices */
         }
 
         PetscCall(PetscFree2(omp_ranks, petsc_ranks));

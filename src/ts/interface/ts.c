@@ -3530,6 +3530,7 @@ PetscErrorCode TSStep(TS ts)
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
     PetscCall(TSMonitorCancel(ts));
+    if (ts->usessnes && ts->snes) PetscCall(SNESMonitorCancel(ts->snes));
     PetscCheck(ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or use unlimited to attempt recovery", TSConvergedReasons[ts->reason]);
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s", TSConvergedReasons[ts->reason]);
   }
@@ -5238,6 +5239,12 @@ PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  PetscValidLogicalCollectiveEnum(ts, wnormtype, 4);
+  PetscAssertPointer(norm, 5);
+  PetscAssertPointer(norma, 6);
+  PetscAssertPointer(normr, 7);
   PetscCall(VecErrorWeightedNorms(U, Y, NULL, wnormtype, ts->atol, ts->vatol, ts->rtol, ts->vrtol, ts->adapt->ignore_max, norm, &norm_loc, norma, &norma_loc, normr, &normr_loc));
   if (wnormtype == NORM_2) {
     if (norm_loc) *norm = PetscSqrtReal(PetscSqr(*norm) / norm_loc);
@@ -5610,6 +5617,8 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 /*@C
   TSSetFunctionDomainError - Set a function that tests if the current state vector is valid
 
+  Logically collective
+
   Input Parameters:
 + ts   - the `TS` context
 - func - function called within `TSFunctionDomainError()`
@@ -5623,6 +5632,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
   Level: intermediate
 
   Notes:
+  `accept` must be collectively specified.
   If an implicit ODE solver is being used then, in addition to providing this routine, the
   user's code should call `SNESSetFunctionDomainError()` when domain errors occur during
   function evaluations where the functions are provided by `TSSetIFunction()` or `TSSetRHSFunction()`.
@@ -5645,6 +5655,8 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS ts, Pet
 /*@
   TSFunctionDomainError - Checks if the current state is valid
 
+  Collective
+
   Input Parameters:
 + ts        - the `TS` context
 . stagetime - time of the simulation
@@ -5665,6 +5677,9 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(ts, stagetime, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  PetscAssertPointer(accept, 4);
   *accept = PETSC_TRUE;
   if (ts->functiondomainerror) PetscCall((*ts->functiondomainerror)(ts, stagetime, Y, accept));
   PetscFunctionReturn(PETSC_SUCCESS);
