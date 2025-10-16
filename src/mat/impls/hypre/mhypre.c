@@ -42,7 +42,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
     PetscCall(MatGetRowIJ(A_d, 0, PETSC_FALSE, PETSC_FALSE, &n_d, &ia_d, NULL, &done_d));
     if (done_d) {
       PetscCall(PetscMalloc1(n_d, &nnz_d));
-      for (i = 0; i < n_d; i++) nnz_d[i] = ia_d[i + 1] - ia_d[i];
+      for (i = 0; i < n_d; i++) nnz_d[i] = (HYPRE_Int)(ia_d[i + 1] - ia_d[i]);
     }
     PetscCall(MatRestoreRowIJ(A_d, 0, PETSC_FALSE, PETSC_FALSE, NULL, &ia_d, NULL, &done_d));
   }
@@ -50,7 +50,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
     PetscCall(MatGetRowIJ(A_o, 0, PETSC_FALSE, PETSC_FALSE, &n_o, &ia_o, NULL, &done_o));
     if (done_o) {
       PetscCall(PetscMalloc1(n_o, &nnz_o));
-      for (i = 0; i < n_o; i++) nnz_o[i] = ia_o[i + 1] - ia_o[i];
+      for (i = 0; i < n_o; i++) nnz_o[i] = (HYPRE_Int)(ia_o[i + 1] - ia_o[i]);
     }
     PetscCall(MatRestoreRowIJ(A_o, 0, PETSC_FALSE, PETSC_FALSE, &n_o, &ia_o, NULL, &done_o));
   }
@@ -82,15 +82,15 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
 {
-  PetscInt rstart, rend, cstart, cend;
+  HYPRE_Int rstart, rend, cstart, cend;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
-  rstart = A->rmap->rstart;
-  rend   = A->rmap->rend;
-  cstart = A->cmap->rstart;
-  cend   = A->cmap->rend;
+  rstart = (HYPRE_Int)A->rmap->rstart;
+  rend   = (HYPRE_Int)A->rmap->rend;
+  cstart = (HYPRE_Int)A->cmap->rstart;
+  cend   = (HYPRE_Int)A->cmap->rend;
   PetscHYPREInitialize();
   if (hA->ij) {
     if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
@@ -216,7 +216,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   hjj = hdiag->j;
   pjj = pdiag->j;
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 16, 0)
-  for (i = 0; i < pdiag->nz; i++) hjj[i] = pjj[i];
+  for (i = 0; i < pdiag->nz; i++) hjj[i] = (HYPRE_Int)pjj[i];
 #else
   for (i = 0; i < pdiag->nz; i++) hjj[i] = cstart + pjj[i];
 #endif
@@ -897,7 +897,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     row_starts = A->rmap->range;
     col_starts = A->cmap->range;
   }
-  tA = hypre_ParCSRMatrixCreate(comm, A->rmap->N, A->cmap->N, (HYPRE_BigInt *)row_starts, (HYPRE_BigInt *)col_starts, noffd, dnnz, onnz);
+  tA = hypre_ParCSRMatrixCreate(comm, A->rmap->N, A->cmap->N, (HYPRE_BigInt *)row_starts, (HYPRE_BigInt *)col_starts, (HYPRE_Int)noffd, (HYPRE_Int)dnnz, (HYPRE_Int)onnz);
 #if defined(hypre_ParCSRMatrixOwnsRowStarts)
   hypre_ParCSRMatrixSetRowStartsOwner(tA, 0);
   hypre_ParCSRMatrixSetColStartsOwner(tA, 0);
@@ -913,7 +913,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hypre_CSRMatrixI(hdiag)           = hdi;
   hypre_CSRMatrixJ(hdiag)           = hdj;
   hypre_CSRMatrixData(hdiag)        = (HYPRE_Complex *)diag->a;
-  hypre_CSRMatrixNumNonzeros(hdiag) = diag->nz;
+  hypre_CSRMatrixNumNonzeros(hdiag) = (HYPRE_Int)diag->nz;
   hypre_CSRMatrixSetDataOwner(hdiag, 0);
 
   /* set off-diagonal part */
@@ -927,7 +927,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     hypre_CSRMatrixI(hoffd)           = hoi;
     hypre_CSRMatrixJ(hoffd)           = hoj;
     hypre_CSRMatrixData(hoffd)        = (HYPRE_Complex *)offd->a;
-    hypre_CSRMatrixNumNonzeros(hoffd) = offd->nz;
+    hypre_CSRMatrixNumNonzeros(hoffd) = (HYPRE_Int)offd->nz;
     hypre_CSRMatrixSetDataOwner(hoffd, 0);
   }
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
@@ -1641,7 +1641,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 
   if (!dnnz) {
     PetscCall(PetscMalloc1(A->rmap->n, &hdnnz));
-    for (i = 0; i < A->rmap->n; i++) hdnnz[i] = dnz;
+    for (i = 0; i < A->rmap->n; i++) hdnnz[i] = (HYPRE_Int)dnz;
   } else {
     hdnnz = (HYPRE_Int *)dnnz;
   }
@@ -1650,7 +1650,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     hypre_AuxParCSRMatrix *aux_matrix;
     if (!onnz) {
       PetscCall(PetscMalloc1(A->rmap->n, &honnz));
-      for (i = 0; i < A->rmap->n; i++) honnz[i] = onz;
+      for (i = 0; i < A->rmap->n; i++) honnz[i] = (HYPRE_Int)onz;
     } else honnz = (HYPRE_Int *)onnz;
     /* SetDiagOffdSizes sets hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0, since it seems
        they assume the user will input the entire row values, properly sorted
@@ -1989,9 +1989,9 @@ static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const Pe
   PetscCall(MatGetOwnershipRange(A, &rst, &ren));
   for (i = 0; i < numRows; i++) {
     PetscCheck(rows[i] >= rst && rows[i] < ren, PETSC_COMM_SELF, PETSC_ERR_SUP, "Non-local rows not yet supported");
-    lrows[i] = rows[i] - rst;
+    lrows[i] = (HYPRE_Int)(rows[i] - rst);
   }
-  PetscCallHYPRE(hypre_ParCSRMatrixEliminateRowsCols(parcsr, numRows, lrows));
+  PetscCallHYPRE(hypre_ParCSRMatrixEliminateRowsCols(parcsr, (HYPRE_Int)numRows, lrows));
   PetscCall(PetscFree(lrows));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2058,7 +2058,7 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
     for (ii = 0; ii < N; ii++) {
       HYPRE_Int jj, ibeg, iend, irow;
 
-      irow = rows[ii];
+      irow = (HYPRE_Int)rows[ii];
       ibeg = i[irow];
       iend = i[irow + 1];
       for (jj = ibeg; jj < iend; jj++)

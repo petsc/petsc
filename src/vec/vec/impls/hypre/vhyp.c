@@ -13,7 +13,7 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map, VecHYPRE_IJVector *ij)
   PetscFunctionBegin;
   PetscCall(PetscNew(&nij));
   PetscCall(PetscLayoutSetUp(map));
-  PetscCallHYPRE(HYPRE_IJVectorCreate(map->comm, map->rstart, map->rend - 1, &nij->ij));
+  PetscCallHYPRE(HYPRE_IJVectorCreate(map->comm, (HYPRE_Int)map->rstart, (HYPRE_Int)map->rend - 1, &nij->ij));
   PetscCallHYPRE(HYPRE_IJVectorSetObjectType(nij->ij, HYPRE_PARCSR));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   {
@@ -56,7 +56,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
   PetscCallHYPRE(HYPRE_IJVectorInitialize(ij->ij));
 #endif
   PetscCall(VecGetArrayRead(v, &array));
-  PetscCallHYPRE(HYPRE_IJVectorSetValues(ij->ij, v->map->n, NULL, (HYPRE_Complex *)array));
+  PetscCallHYPRE(HYPRE_IJVectorSetValues(ij->ij, (HYPRE_Int)v->map->n, NULL, (HYPRE_Complex *)array));
   PetscCall(VecRestoreArrayRead(v, &array));
   PetscCallHYPRE(HYPRE_IJVectorAssemble(ij->ij));
   PetscFunctionReturn(PETSC_SUCCESS);
