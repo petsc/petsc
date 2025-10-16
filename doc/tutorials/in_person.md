@@ -4,11 +4,12 @@
 
 Upcoming tutorials
 
-- {any}`2025_meeting`
 - Please contact us at <mailto:petsc-maint@mcs.anl.gov> if you are interested in hosting a tutorial.
 
 Previous tutorials
 
+- SIAM Geosciences 2025 [Slides](https://cse.buffalo.edu/~knepley/presentations/TutorialSIAMGS2025.pdf)
+- {any}`2025_meeting`
 - "PETSc with GPUs" at the [2022 CIG Developer's Workshop](https://geodynamics.hubzero.org/events/details/259) ([slides and source](https://gitlab.com/psanan/petsc-gpu-cig-2022-02-28)).
 - PETSc Tutorial at NASA Langley Research Center, March 2019 (Oana, Barry)
 - PETSc Tutorial at the ECP Annual Meeting, Jan 2019 (Alp, Hong, Matt, Rich, Todd)
