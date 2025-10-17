@@ -327,6 +327,13 @@ int main(int argc, char **args)
       args: -ksp_type preonly -m 9 -n 12 -mat_type sell -pc_type lu -pc_factor_mat_solver_type mumps -pc_factor_mat_ordering_type natural
 
    test:
+      requires: mumps __float128 defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+      suffix: mumps_fp128
+      nsize: 4
+      # Use a small rtol that would fail the convergence test if PETSc is run in double
+      args: -m 9 -n 12 -ksp_type fgmres -ksp_rtol 1e-20 -pc_type lu -pc_precision double
+
+   test:
       suffix: telescope
       nsize: 4
       args: -m 100 -n 100 -ksp_converged_reason -pc_type telescope -pc_telescope_reduction_factor 4 -telescope_pc_type bjacobi
@@ -377,7 +384,7 @@ int main(int argc, char **args)
       nsize: 4
       requires: hpddm __float128
       filter: sed -e "s/ iterations 9/ iterations 8/g"
-      args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{double quadruple}shared output} -ksp_pc_side {{left right}shared output}
+      args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{double __float128}shared output} -ksp_pc_side {{left right}shared output}
 
    test:
       suffix: symmetric_pc

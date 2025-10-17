@@ -845,7 +845,8 @@ int main(int argc, char **argv)
 
    build:
      depends: pipeInterface.c pipeImpls.c
-     requires: mumps
+     #TODO: bugs in DMNetwrok causing segfault with __float128
+     requires: mumps !__float128
 
    test:
       args: -ts_monitor -case 1 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -options_left no -viewX

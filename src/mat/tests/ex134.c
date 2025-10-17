@@ -46,6 +46,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   for (j = 0; j < 2; j++) {
   #if defined(PETSC_HAVE_MUMPS)
     if (j == 0) stype = MATSOLVERMUMPS;
+    if (PetscDefined(USE_REAL___FLOAT128)) tol = 1e-10;
   #else
     if (j == 0) continue;
   #endif

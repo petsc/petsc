@@ -90,7 +90,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat);
 #endif
 
@@ -238,7 +238,7 @@ PetscErrorCode MatRegisterAll(void)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(MatRegister(MATELEMENTAL, MatCreate_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(MatRegister(MATSCALAPACK, MatCreate_ScaLAPACK));
 #endif
 

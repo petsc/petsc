@@ -9,6 +9,7 @@ int main(int argc, char **args)
   KSP         ksp;     /* linear solver context */
   PC          pc;      /* preconditioner context */
   PetscReal   norm;    /* norm of solution error */
+  PetscReal   tol = PetscDefined(USE_REAL___FLOAT128) ? 1e-14 : 100. * PETSC_MACHINE_EPSILON;
   PetscInt    i, col[3], its, rstart, rend, N = 10, num_numfac;
   PetscScalar value[3];
 
@@ -77,7 +78,7 @@ int main(int argc, char **args)
     PetscCall(VecAXPY(x, -1.0, u));
     PetscCall(VecNorm(x, NORM_2, &norm));
     PetscCall(KSPGetIterationNumber(ksp, &its));
-    if (norm > 100 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
+    if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
   }
 
   /* Free work space. */

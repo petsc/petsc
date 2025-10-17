@@ -461,25 +461,6 @@ typedef enum {
 } KSPHPDDMType;
 PETSC_EXTERN const char *const KSPHPDDMTypes[];
 
-/*E
-    KSPHPDDMPrecision - Precision of Krylov bases used by `KSPHPDDM`
-
-    Values:
-+   `KSP_HPDDM_PRECISION_HALF`      - default when PETSc is configured `--with-precision=__fp16`
-.   `KSP_HPDDM_PRECISION_SINGLE`    - default when PETSc is configured `--with-precision=single`
-.   `KSP_HPDDM_PRECISION_DOUBLE`    - default when PETSc is configured `--with-precision=double`
--   `KSP_HPDDM_PRECISION_QUADRUPLE` - default when PETSc is configured `--with-precision=__float128`
-
-    Level: intermediate
-
-.seealso: [](ch_ksp), `KSP`, `KSPHPDDM`
-E*/
-typedef enum {
-  KSP_HPDDM_PRECISION_HALF      = 0,
-  KSP_HPDDM_PRECISION_SINGLE    = 1,
-  KSP_HPDDM_PRECISION_DOUBLE    = 2,
-  KSP_HPDDM_PRECISION_QUADRUPLE = 3
-} KSPHPDDMPrecision;
 PETSC_EXTERN PetscErrorCode KSPHPDDMSetType(KSP, KSPHPDDMType);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP, KSPHPDDMType *);
 
