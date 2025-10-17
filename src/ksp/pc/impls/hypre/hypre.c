@@ -554,7 +554,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   PetscCallHYPRE(HYPRE_IJVectorGetObject(hjac->b->ij, (void **)&bv));
   PetscCallHYPRE(HYPRE_IJVectorGetObject(hjac->x->ij, (void **)&xv));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallExternal(jac->setup, jac->hsolver, hmat, bv, xv);
+  PetscCallHYPRE((*jac->setup)(jac->hsolver, hmat, bv, xv));
   PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -677,7 +677,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PCReset_HYPRE(pc));
-  if (jac->destroy) PetscCallExternal(jac->destroy, jac->hsolver);
+  if (jac->destroy) PetscCallHYPRE((*jac->destroy)(jac->hsolver));
   PetscCall(PetscFree(jac->hypre_type));
   if (jac->comm_hypre != MPI_COMM_NULL) PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc), &jac->comm_hypre));
   PetscCall(PetscFree(pc->data));
