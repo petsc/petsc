@@ -26,11 +26,8 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A, PetscViewer viewer)
 
 PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-
   PetscFunctionBegin;
   PetscCall(MatSeqAIJCheckInode(A));
-  a->inode.ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -57,16 +54,15 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   PetscBool   no_inode, no_unroll;
 
   PetscFunctionBegin;
-  no_inode             = PETSC_FALSE;
-  no_unroll            = PETSC_FALSE;
-  b->inode.checked     = PETSC_FALSE;
-  b->inode.node_count  = 0;
-  b->inode.size_csr    = NULL;
-  b->inode.limit       = 5;
-  b->inode.max_limit   = 5;
-  b->inode.ibdiagvalid = PETSC_FALSE;
-  b->inode.ibdiag      = NULL;
-  b->inode.bdiag       = NULL;
+  no_inode            = PETSC_FALSE;
+  no_unroll           = PETSC_FALSE;
+  b->inode.checked    = PETSC_FALSE;
+  b->inode.node_count = 0;
+  b->inode.size_csr   = NULL;
+  b->inode.limit      = 5;
+  b->inode.max_limit  = 5;
+  b->inode.ibdiag     = NULL;
+  b->inode.bdiag      = NULL;
 
   PetscOptionsBegin(PetscObjectComm((PetscObject)B), ((PetscObject)B)->prefix, "Options for SEQAIJ matrix", "Mat");
   PetscCall(PetscOptionsBool("-mat_no_unroll", "Do not optimize for inodes (slower)", NULL, no_unroll, &no_unroll, NULL));

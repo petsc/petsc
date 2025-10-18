@@ -3318,7 +3318,6 @@ static PetscErrorCode MatAXPY_SeqAIJHIPSPARSE(Mat Y, PetscScalar a, Mat X, MatSt
     PetscCallHIPSPARSE(hipsparseSetPointerMode(cy->handle, HIPSPARSE_POINTER_MODE_DEVICE));
     PetscCall(MatSeqAIJHIPSPARSERestoreArrayRead(X, &ax));
     PetscCall(MatSeqAIJHIPSPARSERestoreArray(Y, &ay));
-    PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   } else if (str == SAME_NONZERO_PATTERN) {
     hipblasHandle_t hipblasv2handle;
     PetscBLASInt    one = 1, bnz = 1;
@@ -3333,7 +3332,6 @@ static PetscErrorCode MatAXPY_SeqAIJHIPSPARSE(Mat Y, PetscScalar a, Mat X, MatSt
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(MatSeqAIJHIPSPARSERestoreArrayRead(X, &ax));
     PetscCall(MatSeqAIJHIPSPARSERestoreArray(Y, &ay));
-    PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   } else {
     PetscCall(MatSeqAIJHIPSPARSEInvalidateTranspose(Y, PETSC_FALSE));
     PetscCall(MatAXPY_SeqAIJ(Y, a, X, str));
@@ -3357,7 +3355,6 @@ static PetscErrorCode MatScale_SeqAIJHIPSPARSE(Mat Y, PetscScalar a)
   PetscCall(PetscLogGpuFlops(bnz));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatSeqAIJHIPSPARSERestoreArray(Y, &ay));
-  PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3383,7 +3380,6 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
   }
   //PetscCall(MatZeroEntries_SeqAIJ(A));
   PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
   else A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4010,7 +4006,6 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar *a[])
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4072,7 +4067,6 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat A, PetscScalar *a[])
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJHIPSPARSE);
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

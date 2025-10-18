@@ -2836,85 +2836,102 @@ static PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, P
 
 #include <petsc/private/kernels/blockinvert.h>
 
+/*
+   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
+*/
+static PetscErrorCode MatInvertDiagonalForSOR_SeqAIJ_Inode(Mat A, PetscScalar omega, PetscScalar fshift)
+{
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
+  MatScalar       *ibdiag, *bdiag, work[25];
+  const MatScalar *v         = a->a;
+  PetscReal        zeropivot = 100. * PETSC_MACHINE_EPSILON, shift = 0.0;
+  PetscInt         m = a->inode.node_count, cnt = 0, i, j, row, nodesz;
+  PetscInt         k, ipvt[5];
+  PetscBool        allowzeropivot = PetscNot(A->erroriffailure), zeropivotdetected;
+  const PetscInt  *sizes = a->inode.size_csr, *diag = a->diag;
+
+  PetscFunctionBegin;
+  if (a->idiagState == ((PetscObject)A)->state) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatMarkDiagonal_SeqAIJ(A));
+  diag = a->diag;
+  if (!a->inode.ibdiag) {
+    /* calculate space needed for diagonal blocks */
+    for (i = 0; i < m; i++) {
+      nodesz = sizes[i + 1] - sizes[i];
+      cnt += nodesz * nodesz;
+    }
+    a->inode.bdiagsize = cnt;
+    PetscCall(PetscMalloc3(cnt, &a->inode.ibdiag, cnt, &a->inode.bdiag, A->rmap->n, &a->inode.ssor_work));
+  }
+
+  /* copy over the diagonal blocks and invert them */
+  ibdiag = a->inode.ibdiag;
+  bdiag  = a->inode.bdiag;
+  cnt    = 0;
+  for (i = 0, row = 0; i < m; i++) {
+    nodesz = sizes[i + 1] - sizes[i];
+    for (j = 0; j < nodesz; j++) {
+      for (k = 0; k < nodesz; k++) bdiag[cnt + k * nodesz + j] = v[diag[row + j] - j + k];
+    }
+    PetscCall(PetscArraycpy(ibdiag + cnt, bdiag + cnt, nodesz * nodesz));
+
+    switch (nodesz) {
+    case 1:
+      /* Create matrix data structure */
+      if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot on row %" PetscInt_FMT, row);
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
+        A->factorerror_zeropivot_row   = row;
+        PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", row));
+      }
+      ibdiag[cnt] = 1.0 / ibdiag[cnt];
+      break;
+    case 2:
+      PetscCall(PetscKernel_A_gets_inverse_A_2(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 3:
+      PetscCall(PetscKernel_A_gets_inverse_A_3(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 4:
+      PetscCall(PetscKernel_A_gets_inverse_A_4(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 5:
+      PetscCall(PetscKernel_A_gets_inverse_A_5(ibdiag + cnt, ipvt, work, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nodesz);
+    }
+    cnt += nodesz * nodesz;
+    row += nodesz;
+  }
+  a->inode.ibdiagState = ((PetscObject)A)->state;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ *)A->data;
   PetscScalar        sum1 = 0.0, sum2 = 0.0, sum3 = 0.0, sum4 = 0.0, sum5 = 0.0, tmp0, tmp1, tmp2, tmp3;
-  MatScalar         *ibdiag, *bdiag, work[25], *t;
+  MatScalar         *ibdiag, *bdiag, *t;
   PetscScalar       *x, tmp4, tmp5, x1, x2, x3, x4, x5;
-  const MatScalar   *v = a->a, *v1 = NULL, *v2 = NULL, *v3 = NULL, *v4 = NULL, *v5 = NULL;
+  const MatScalar   *v1 = NULL, *v2 = NULL, *v3 = NULL, *v4 = NULL, *v5 = NULL;
   const PetscScalar *xb, *b;
-  PetscReal          zeropivot = 100. * PETSC_MACHINE_EPSILON, shift = 0.0;
-  PetscInt           n, m = a->inode.node_count, cnt = 0, i, j, row, i1, i2, nodesz;
-  PetscInt           sz, k, ipvt[5];
-  PetscBool          allowzeropivot, zeropivotdetected;
-  const PetscInt    *sizes = a->inode.size_csr, *idx, *diag = a->diag, *ii = a->i;
+  PetscInt           n, m = a->inode.node_count, cnt = 0, i, row, i1, i2, nodesz;
+  PetscInt           sz;
+  const PetscInt    *sizes = a->inode.size_csr, *idx, *diag, *ii = a->i;
 
   PetscFunctionBegin;
-  allowzeropivot = PetscNot(A->erroriffailure);
   PetscCheck(a->inode.size_csr, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing Inode Structure");
   PetscCheck(omega == 1.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for omega != 1.0; use -mat_no_inode");
   PetscCheck(fshift == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for fshift != 0.0; use -mat_no_inode");
+  PetscCall(MatInvertDiagonalForSOR_SeqAIJ_Inode(A, omega, fshift));
+  diag = a->diag;
 
-  if (!a->inode.ibdiagvalid) {
-    if (!a->inode.ibdiag) {
-      /* calculate space needed for diagonal blocks */
-      for (i = 0; i < m; i++) {
-        nodesz = sizes[i + 1] - sizes[i];
-        cnt += nodesz * nodesz;
-      }
-      a->inode.bdiagsize = cnt;
-
-      PetscCall(PetscMalloc3(cnt, &a->inode.ibdiag, cnt, &a->inode.bdiag, A->rmap->n, &a->inode.ssor_work));
-    }
-
-    /* copy over the diagonal blocks and invert them */
-    ibdiag = a->inode.ibdiag;
-    bdiag  = a->inode.bdiag;
-    cnt    = 0;
-    for (i = 0, row = 0; i < m; i++) {
-      nodesz = sizes[i + 1] - sizes[i];
-      for (j = 0; j < nodesz; j++) {
-        for (k = 0; k < nodesz; k++) bdiag[cnt + k * nodesz + j] = v[diag[row + j] - j + k];
-      }
-      PetscCall(PetscArraycpy(ibdiag + cnt, bdiag + cnt, nodesz * nodesz));
-
-      switch (nodesz) {
-      case 1:
-        /* Create matrix data structure */
-        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
-          PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot on row %" PetscInt_FMT, row);
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
-          A->factorerror_zeropivot_row   = row;
-          PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", row));
-        }
-        ibdiag[cnt] = 1.0 / ibdiag[cnt];
-        break;
-      case 2:
-        PetscCall(PetscKernel_A_gets_inverse_A_2(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 3:
-        PetscCall(PetscKernel_A_gets_inverse_A_3(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 4:
-        PetscCall(PetscKernel_A_gets_inverse_A_4(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 5:
-        PetscCall(PetscKernel_A_gets_inverse_A_5(ibdiag + cnt, ipvt, work, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nodesz);
-      }
-      cnt += nodesz * nodesz;
-      row += nodesz;
-    }
-    a->inode.ibdiagvalid = PETSC_TRUE;
-  }
   ibdiag = a->inode.ibdiag;
   bdiag  = a->inode.bdiag;
   t      = a->inode.ssor_work;
@@ -4399,7 +4416,6 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A, MatDuplicateOption cpvalues, Mat
   c->inode.checked          = PETSC_FALSE;
   c->inode.size_csr         = NULL;
   c->inode.node_count       = 0;
-  c->inode.ibdiagvalid      = PETSC_FALSE;
   c->inode.ibdiag           = NULL;
   c->inode.bdiag            = NULL;
   c->inode.mat_nonzerostate = -1;
@@ -4514,15 +4530,6 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
     PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes of %" PetscInt_FMT ". Limit used: %" PetscInt_FMT ". Using Inode routines\n", node_count, m, a->inode.limit));
   }
   a->inode.checked = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
-{
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-
-  PetscFunctionBegin;
-  a->inode.ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -794,31 +794,39 @@ PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A, PetscBool *missing, PetscInt *d
 
 PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A)
 {
-  Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
-  PetscInt     i, j, m = A->rmap->n, shift;
+  Mat_SeqSELL   *a = (Mat_SeqSELL *)A->data;
+  const PetscInt m = A->rmap->n;
+  PetscInt       shift;
 
   PetscFunctionBegin;
+  if (a->diag && a->diagNonzeroState == A->nonzerostate) PetscFunctionReturn(PETSC_SUCCESS);
   if (!a->diag) {
     PetscCall(PetscMalloc1(m, &a->diag));
     a->free_diag = PETSC_TRUE;
   }
-  for (i = 0; i < m; i++) {                                          /* loop over rows */
+  a->diagDense = PETSC_TRUE;
+  for (PetscInt i = 0; i < m; i++) { /* loop over rows */
+    PetscBool found = PETSC_FALSE;
+
     shift      = a->sliidx[i / a->sliceheight] + i % a->sliceheight; /* starting index of the row i */
     a->diag[i] = -1;
-    for (j = 0; j < a->rlen[i]; j++) {
+    for (PetscInt j = 0; j < a->rlen[i]; j++) {
       if (a->colidx[shift + a->sliceheight * j] == i) {
         a->diag[i] = shift + a->sliceheight * j;
+        found      = PETSC_TRUE;
         break;
       }
     }
+    if (!found) a->diagDense = PETSC_FALSE;
   }
+  a->diagNonzeroState = A->nonzerostate;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
 */
-PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar fshift)
+static PetscErrorCode MatInvertDiagonalForSOR_SeqSELL(Mat A, PetscScalar omega, PetscScalar fshift)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
   PetscInt     i, *diag, m = A->rmap->n;
@@ -826,8 +834,9 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar f
   PetscScalar *idiag, *mdiag;
 
   PetscFunctionBegin;
-  if (a->idiagvalid) PetscFunctionReturn(PETSC_SUCCESS);
+  if (a->idiagState == ((PetscObject)A)->state && a->omega == omega && a->fshift == fshift) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatMarkDiagonal_SeqSELL(A));
+  PetscCheck(a->diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix must have all diagonal location to invert them");
   diag = a->diag;
   if (!a->idiag) {
     PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work));
@@ -856,7 +865,9 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar f
     }
     PetscCall(PetscLogFlops(2.0 * m));
   }
-  a->idiagvalid = PETSC_TRUE;
+  a->idiagState = ((PetscObject)A)->state;
+  a->omega      = omega;
+  a->fshift     = fshift;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -866,7 +877,6 @@ PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(a->val, a->sliidx[a->totalslices]));
-  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1018,7 +1028,6 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr)
     PetscCall(VecRestoreArrayRead(rr, &r));
     PetscCall(PetscLogFlops(a->nz));
   }
-  PetscCall(MatSeqSELLInvalidateDiagonal(A));
 #if defined(PETSC_HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
@@ -1472,7 +1481,6 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   A->info.mallocs += a->reallocs;
   a->reallocs = 0;
 
-  PetscCall(MatSeqSELLInvalidateDiagonal(A));
 #if defined(PETSC_HAVE_CUPM)
   if (!a->chunksize && a->totalslices) {
     a->chunksize = 64;
@@ -1655,7 +1663,6 @@ PetscErrorCode MatScale_SeqSELL(Mat inA, PetscScalar alpha)
   PetscCall(PetscBLASIntCast(a->sliidx[a->totalslices], &size));
   PetscCallBLAS("BLASscal", BLASscal_(&size, &oalpha, aval, &one));
   PetscCall(PetscLogFlops(a->nz));
-  PetscCall(MatSeqSELLInvalidateDiagonal(inA));
 #if defined(PETSC_HAVE_CUPM)
   if (inA->offloadmask != PETSC_OFFLOAD_UNALLOCATED) inA->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
@@ -1684,10 +1691,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, P
   PetscFunctionBegin;
   its = its * lits;
 
-  if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */
-  if (!a->idiagvalid) PetscCall(MatInvertDiagonal_SeqSELL(A, omega, fshift));
-  a->fshift = fshift;
-  a->omega  = omega;
+  PetscCall(MatInvertDiagonalForSOR_SeqSELL(A, omega, fshift));
 
   diag  = a->diag;
   t     = a->ssor_work;
@@ -2163,7 +2167,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   b->ssor_work          = NULL;
   b->omega              = 1.0;
   b->fshift             = 0.0;
-  b->idiagvalid         = PETSC_FALSE;
   b->keepnonzeropattern = PETSC_FALSE;
   b->sliceheight        = 0;
 
@@ -2408,15 +2411,6 @@ PetscErrorCode MatEqual_SeqSELL(Mat A, Mat B, PetscBool *flg)
   if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
   /* if a->val are the same */
   PetscCall(PetscArraycmp(a->val, b->val, a->sliidx[totalslices], flg));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat A)
-{
-  Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
-
-  PetscFunctionBegin;
-  a->idiagvalid = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

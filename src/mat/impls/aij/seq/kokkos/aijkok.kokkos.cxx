@@ -130,7 +130,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
   aijkok->a_dual.modify_device();
   aijkok->transpose_updated = PETSC_FALSE;
   aijkok->hermitian_updated = PETSC_FALSE;
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1035,7 +1034,7 @@ static PetscErrorCode MatShift_SeqAIJKokkos(Mat A, PetscScalar a)
   Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(A->data);
 
   PetscFunctionBegin;
-  if (A->assembled && aijseq->diagonaldense) { // no missing diagonals
+  if (A->assembled && aijseq->diagDense) { // no missing diagonals
     PetscInt n = PetscMin(A->rmap->n, A->cmap->n);
 
     PetscCall(PetscLogGpuTimeBegin());
@@ -1058,7 +1057,7 @@ static PetscErrorCode MatDiagonalSet_SeqAIJKokkos(Mat Y, Vec D, InsertMode is)
   Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(Y->data);
 
   PetscFunctionBegin;
-  if (Y->assembled && aijseq->diagonaldense) { // no missing diagonals
+  if (Y->assembled && aijseq->diagDense) { // no missing diagonals
     ConstPetscScalarKokkosView dv;
     PetscInt                   n, nv;
 
