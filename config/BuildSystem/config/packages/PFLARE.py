@@ -57,7 +57,7 @@ class Configure(config.package.Package):
         self.lib     = [os.path.join(self.installDir,'lib','libpflare.a')]
         libdir = os.path.join(self.installDir, 'lib')
         # Call make, make python (if petsc4py is enabled), then
-        # make install. After that create a symlink called libpetscpflare.so
+        # make install. After that create a symlink called libpetscpflare
         # to ensure the PFLARE registration routine is called when PETSc loads
         # the dynamic PFLARE library
         post_cmds = [barg + ' ${OMAKE} ' + barg,]
@@ -66,7 +66,7 @@ class Configure(config.package.Package):
                 raise RuntimeError('PFLARE with petsc4py requires cython! Suggest --download-cython!')
             post_cmds.append(barg + ' ${OMAKE} ' + barg + ' python')
         post_cmds.append(barg + ' ${OMAKE} ' + barg + ' install')
-        post_cmds.append('cd "{0}" && ln -sf libpflare.{1} libpetscpflare.so'.format(libdir, self.setCompilers.sharedLibraryExt))
+        post_cmds.append('cd "{0}" && ln -sf libpflare.{1} libpetscpflare.{1}'.format(libdir, self.setCompilers.sharedLibraryExt))
         self.addPost(self.packageDir, post_cmds)
         self.addMakeCheck(self.packageDir, '${OMAKE} ' + checkarg + ' check')
 

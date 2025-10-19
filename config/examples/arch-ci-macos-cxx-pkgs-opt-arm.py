@@ -65,6 +65,7 @@ configure_options = [
   '--download-netcdf',
   '--download-pnetcdf',
   '--download-zlib',
+  '--download-pflare=1',
   '--with-strict-petscerrorcode',
   ]
 
