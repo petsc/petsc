@@ -221,7 +221,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
-  PetscBool          perm_identity, missing;
+  PetscBool          perm_identity;
   PetscReal          fill = info->fill;
   const PetscInt    *rip, *ai = a->i, *aj = a->j;
   PetscInt           i, mbs = a->mbs, bs = A->rmap->bs, reallocs = 0, prow;
@@ -229,11 +229,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   PetscInt           nlnk, *lnk, ncols, *cols, *uj, **ui_ptr, *uj_ptr, *udiag;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscBT            lnkbt;
+  PetscBool          diagDense;
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-  PetscCall(MatMissingDiagonal(A, &missing, &i));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+  PetscCall(MatGetDiagonalMarkers_SeqSBAIJ(A, NULL, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
   if (bs > 1) {
     PetscCall(MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(fact, A, perm, info));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -342,15 +343,14 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   b          = (Mat_SeqSBAIJ *)fact->data;
   b->free_ij = PETSC_TRUE;
   PetscCall(PetscShmgetAllocateArray(ui[mbs], sizeof(PetscScalar), (void **)&b->a));
-  b->free_a    = PETSC_TRUE;
-  b->j         = uj;
-  b->i         = ui;
-  b->diag      = udiag;
-  b->free_diag = PETSC_TRUE;
-  b->ilen      = NULL;
-  b->imax      = NULL;
-  b->row       = perm;
-  b->icol      = perm;
+  b->free_a = PETSC_TRUE;
+  b->j      = uj;
+  b->i      = ui;
+  b->diag   = udiag;
+  b->ilen   = NULL;
+  b->imax   = NULL;
+  b->row    = perm;
+  b->icol   = perm;
 
   PetscCall(PetscObjectReference((PetscObject)perm));
   PetscCall(PetscObjectReference((PetscObject)perm));
@@ -386,18 +386,19 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
-  PetscBool          perm_identity, missing;
+  PetscBool          perm_identity;
   PetscReal          fill = info->fill;
   const PetscInt    *rip, *ai, *aj;
-  PetscInt           i, mbs = a->mbs, bs = A->rmap->bs, reallocs = 0, prow, d;
+  PetscInt           i, mbs = a->mbs, bs = A->rmap->bs, reallocs = 0, prow;
   PetscInt          *jl, jmin, jmax, nzk, *ui, k, j, *il, nextprow;
   PetscInt           nlnk, *lnk, ncols, *cols, *uj, **ui_ptr, *uj_ptr;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscBT            lnkbt;
+  PetscBool          diagDense;
 
   PetscFunctionBegin;
-  PetscCall(MatMissingDiagonal(A, &missing, &d));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, d);
+  PetscCall(MatGetDiagonalMarkers_SeqSBAIJ(A, NULL, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
 
   /*
    This code originally uses Modified Sparse Row (MSR) storage
@@ -1344,17 +1345,19 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C, Mat A, const M
 */
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ *)A->data;
-  Mat_SeqSBAIJ  *b = (Mat_SeqSBAIJ *)B->data;
-  PetscInt       i, j, mbs = A->rmap->n, *bi = b->i, *bj = b->j, *bdiag = b->diag, *bjtmp;
-  PetscInt      *ai = a->i, *aj = a->j, *ajtmp;
-  PetscInt       k, jmin, jmax, *c2r, *il, col, nexti, ili, nz;
-  MatScalar     *rtmp, *ba = b->a, *bval, *aa = a->a, dk, uikdi;
-  FactorShiftCtx sctx;
-  PetscReal      rs;
-  MatScalar      d, *v;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
+  Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ *)B->data;
+  PetscInt        i, j, mbs = A->rmap->n, *bi = b->i, *bj = b->j, *bdiag = b->diag, *bjtmp;
+  PetscInt       *ai = a->i, *aj = a->j, *ajtmp;
+  PetscInt        k, jmin, jmax, *c2r, *il, col, nexti, ili, nz;
+  MatScalar      *rtmp, *ba = b->a, *bval, *aa = a->a, dk, uikdi;
+  FactorShiftCtx  sctx;
+  PetscReal       rs;
+  MatScalar       d, *v;
+  const PetscInt *adiag;
 
   PetscFunctionBegin;
+  PetscCall(MatGetDiagonalMarkers_SeqSBAIJ(A, &adiag, NULL));
   PetscCall(PetscMalloc3(mbs, &rtmp, mbs, &il, mbs, &c2r));
 
   /* MatPivotSetUp(): initialize shift context sctx */
@@ -1367,7 +1370,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B, Mat A,
 
     for (i = 0; i < mbs; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      d = (aa)[a->diag[i]];
+      d = aa[adiag[i]];
       rtmp[i] += -PetscRealPart(d); /* diagonal entry */
       ajtmp = aj + ai[i] + 1;       /* exclude diagonal */
       v     = aa + ai[i] + 1;

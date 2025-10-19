@@ -2380,21 +2380,6 @@ static PetscErrorCode MatShift_MPIBAIJ(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_MPIBAIJ(Mat A, PetscBool *missing, PetscInt *d)
-{
-  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
-
-  PetscFunctionBegin;
-  PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only works for square matrices");
-  PetscCall(MatMissingDiagonal(a->A, missing, d));
-  if (d) {
-    PetscInt rstart;
-    PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
-    *d += rstart / A->rmap->bs;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A, Mat *a)
 {
   PetscFunctionBegin;
@@ -2516,20 +2501,20 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*104*/ MatMissingDiagonal_MPIBAIJ,
-                                       MatGetSeqNonzeroStructure_MPIBAIJ,
+                                       /*104*/ MatGetSeqNonzeroStructure_MPIBAIJ,
                                        NULL,
                                        MatGetGhosts_MPIBAIJ,
+                                       NULL,
                                        NULL,
                                        /*109*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
-                                       /*114*/ MatGetMultiProcBlock_MPIBAIJ,
-                                       NULL,
+                                       MatGetMultiProcBlock_MPIBAIJ,
+                                       /*114*/ NULL,
                                        MatGetColumnReductions_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
+                                       NULL,
                                        NULL,
                                        /*119*/ NULL,
                                        NULL,
@@ -2538,21 +2523,20 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        /*124*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatSetBlockSizes_Default,
                                        NULL,
-                                       /*129*/ MatFDColoringSetUp_MPIXAIJ,
-                                       NULL,
+                                       MatFDColoringSetUp_MPIXAIJ,
+                                       /*129*/ NULL,
                                        MatCreateMPIMatConcatenateSeqMat_MPIBAIJ,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        /*134*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatEliminateZeros_MPIBAIJ,
                                        MatGetRowSumAbs_MPIBAIJ,
-                                       /*139*/ NULL,
                                        NULL,
+                                       /*139*/ NULL,
                                        NULL,
                                        MatCopyHashToXAIJ_MPI_Hash,
                                        NULL,

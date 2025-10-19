@@ -553,7 +553,6 @@ cdef extern from * nogil:
         PetscErrorCode (*getdiagonal)(PetscMat, PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*setdiagonal"diagonalset")(PetscMat, PetscVec, PetscInsertMode) except PETSC_ERR_PYTHON
         PetscErrorCode (*diagonalscale)(PetscMat, PetscVec, PetscVec) except PETSC_ERR_PYTHON
-        PetscErrorCode (*missingdiagonal)(PetscMat, PetscBool*, PetscInt*) except PETSC_ERR_PYTHON
         PetscErrorCode (*norm)(PetscMat, PetscNormType, PetscReal*) except PETSC_ERR_PYTHON
         PetscErrorCode (*realpart)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except PETSC_ERR_PYTHON
@@ -638,10 +637,9 @@ cdef dict dMatOps = {
                       93 : 'conjugate',
                       96 : 'realPart',
                       97 : 'imagPart',
-                      104 : 'missingDiagonal',
-                      110 : 'multDiagonalBlock',
-                      112 : 'multHermitian',
-                      113 : 'multHermitianAdd',
+                      109 : 'multDiagonalBlock',
+                      111 : 'multHermitian',
+                      112 : 'multHermitianAdd',
                     }
 
 cdef PetscErrorCode MatCreate_Python(
@@ -679,7 +677,6 @@ cdef PetscErrorCode MatCreate_Python(
     ops.getdiagonal       = MatGetDiagonal_Python
     ops.setdiagonal       = MatSetDiagonal_Python
     ops.diagonalscale     = MatDiagonalScale_Python
-    ops.missingdiagonal   = MatMissingDiagonal_Python
     ops.norm              = MatNorm_Python
     ops.realpart          = MatRealPart_Python
     ops.imagpart          = MatImagPart_Python
@@ -1206,20 +1203,6 @@ cdef PetscErrorCode MatDiagonalScale_Python(
     cdef diagonalScale = PyMat(mat).diagonalScale
     if diagonalScale is None: return UNSUPPORTED(b"diagonalScale")
     diagonalScale(Mat_(mat), Vec_(l), Vec_(r))
-    return FunctionEnd()
-
-cdef PetscErrorCode MatMissingDiagonal_Python(
-    PetscMat mat,
-    PetscBool *missing,
-    PetscInt *loc
-    ) except PETSC_ERR_PYTHON with gil:
-    FunctionBegin(b"MatMissingDiagonal_Python")
-    cdef missingDiagonal = PyMat(mat).missingDiagonal
-    if missingDiagonal is None: return UNSUPPORTED(b"missingDiagonal")
-    pymissing, pyloc = missingDiagonal(Mat_(mat))
-    missing[0] = <PetscBool>pymissing
-    if loc:
-        loc[0] = asInt(pyloc)
     return FunctionEnd()
 
 cdef PetscErrorCode MatNorm_Python(

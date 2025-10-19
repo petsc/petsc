@@ -251,11 +251,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *i
 
 static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b;
-  PetscInt     n = a->mbs, *ai = a->i, *aj, *adiag = a->diag, bs2 = a->bs2;
-  PetscInt     i, j, nz, *bi, *bj, *bdiag, bi_temp;
+  Mat_SeqBAIJ   *a = (Mat_SeqBAIJ *)A->data, *b;
+  const PetscInt n = a->mbs, *ai = a->i, *aj, *adiag, bs2 = a->bs2;
+  PetscInt       i, j, nz, *bi, *bj, *bdiag, bi_temp;
 
   PetscFunctionBegin;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &adiag, NULL));
   PetscCall(MatDuplicateNoCreate_SeqBAIJ(fact, A, MAT_DO_NOT_COPY_VALUES, PETSC_FALSE));
   b = (Mat_SeqBAIJ *)fact->data;
 
@@ -312,7 +313,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data, *b;
   IS                 isicol;
   const PetscInt    *r, *ic;
-  PetscInt           n = a->mbs, *ai = a->i, *aj = a->j, d;
+  PetscInt           n = a->mbs, *ai = a->i, *aj = a->j;
   PetscInt          *bi, *cols, nnz, *cols_lvl;
   PetscInt          *bdiag, prow, fm, nzbd, reallocs = 0, dcount = 0;
   PetscInt           i, levels, diagonal_fill;
@@ -323,17 +324,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscInt           nzi, *bj, **bj_ptr, **bjlvl_ptr;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
-  PetscBool          missing;
   PetscInt           bs = A->rmap->bs, bs2 = a->bs2;
+  PetscBool          diagDense;
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
   if (bs > 1) { /* check shifttype */
     PetscCheck(info->shifttype != (PetscReal)MAT_SHIFT_NONZERO && info->shifttype != (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
   }
-
-  PetscCall(MatMissingDiagonal(A, &missing, &d));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, d);
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, NULL, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
 
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -484,14 +484,13 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscCall(PetscShmgetAllocateArray(bs2 * (bdiag[0] + 1), sizeof(PetscScalar), (void **)&b->a));
   b->free_a = PETSC_TRUE;
 
-  b->j         = bj;
-  b->i         = bi;
-  b->diag      = bdiag;
-  b->free_diag = PETSC_TRUE;
-  b->ilen      = NULL;
-  b->imax      = NULL;
-  b->row       = isrow;
-  b->col       = iscol;
+  b->j    = bj;
+  b->i    = bi;
+  b->diag = bdiag;
+  b->ilen = NULL;
+  b->imax = NULL;
+  b->row  = isrow;
+  b->col  = iscol;
   PetscCall(PetscObjectReference((PetscObject)isrow));
   PetscCall(PetscObjectReference((PetscObject)iscol));
   b->icol = isicol;

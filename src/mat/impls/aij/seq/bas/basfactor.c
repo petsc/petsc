@@ -6,11 +6,10 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqSBAIJ   *b;
-  PetscBool       perm_identity, missing;
+  PetscBool       perm_identity, diagDense;
   PetscInt        reallocs = 0, i, *ai = a->i, *aj = a->j, am = A->rmap->n, *ui;
-  const PetscInt *rip, *riip;
+  const PetscInt *rip, *riip, *adiag;
   PetscInt        j;
-  PetscInt        d;
   PetscInt        ncols, *cols, *uj;
   PetscReal       fill = info->fill, levels = info->levels;
   IS              iperm;
@@ -18,8 +17,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-  PetscCall(MatMissingDiagonal(A, &missing, &d));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, d);
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entries");
   PetscCall(ISIdentity(perm, &perm_identity));
   PetscCall(ISInvertPermutation(perm, PETSC_DECIDE, &iperm));
 
@@ -28,11 +27,11 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
     PetscCall(PetscMalloc1(am + 1, &ui));
     ui[0] = 0;
 
-    for (i = 0; i < am; i++) ui[i + 1] = ui[i] + ai[i + 1] - a->diag[i];
+    for (i = 0; i < am; i++) ui[i + 1] = ui[i] + ai[i + 1] - adiag[i];
     PetscCall(PetscMalloc1(ui[am] + 1, &uj));
     cols = uj;
     for (i = 0; i < am; i++) {
-      aj    = a->j + a->diag[i];
+      aj    = a->j + adiag[i];
       ncols = ui[i + 1] - ui[i];
       for (j = 0; j < ncols; j++) *cols++ = *aj++;
     }

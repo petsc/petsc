@@ -171,6 +171,7 @@ StatementMacros:
   - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END
   - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
   - _Pragma
+  - MatGetDiagonalMarkers
 TypeNames:
   - PetscScalar
   - PetscComplex

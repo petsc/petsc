@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat, IS, const MatFactorI
 PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqSBAIJ(Mat, MatDuplicateOption, Mat *);
-PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatGetDiagonalMarkers_SeqSBAIJ(Mat, const PetscInt **, PetscBool *);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat, PetscInt, IS[], PetscInt);
 PETSC_INTERN PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat, IS, IS, MatReuse, Mat *);

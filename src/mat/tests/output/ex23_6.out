@@ -251,16 +251,12 @@ Number of indices in (stride) set 1
 0 0
 Test MatZeroRows (diag nonzero)
 Test MatZeroRowsColumns (diag nonzero)
-Test MatMissingDiagonal
-[0] [0,12) Missing 0, row -1 (diag nonzero)
 IS Object: 1 MPI process
   type: stride
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRowsLocal (diag nonzero)
 Test MatZeroRowsColumnsLocal (diag nonzero)
-Test MatMissingDiagonal
-[0] [0,12) Missing 0, row -1 (diag nonzero)
 Test MatIncreaseOverlap
 IS Object: 1 MPI process
   type: general
@@ -324,16 +320,12 @@ Number of indices in (stride) set 1
 0 0
 Test MatZeroRows (diag zero)
 Test MatZeroRowsColumns (diag zero)
-Test MatMissingDiagonal
-[0] [0,12) Missing 1, row 0 (diag zero)
 IS Object: 1 MPI process
   type: stride
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRowsLocal (diag zero)
 Test MatZeroRowsColumnsLocal (diag zero)
-Test MatMissingDiagonal
-[0] [0,12) Missing 1, row 0 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
 Test MatInvertBlockDiagonal blockdiag 12 0 0 1

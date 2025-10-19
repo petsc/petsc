@@ -385,13 +385,14 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildILUUpperTriMatrix(Mat A)
   PetscInt                            n                   = A->rmap->n;
   Mat_SeqAIJHIPSPARSETriFactors      *hipsparseTriFactors = (Mat_SeqAIJHIPSPARSETriFactors *)A->spptr;
   Mat_SeqAIJHIPSPARSETriFactorStruct *upTriFactor         = (Mat_SeqAIJHIPSPARSETriFactorStruct *)hipsparseTriFactors->upTriFactorPtr;
-  const PetscInt                     *aj = a->j, *adiag = a->diag, *vi;
-  const MatScalar                    *aa = a->a, *v;
+  const PetscInt                     *aj                  = a->j, *adiag, *vi;
+  const MatScalar                    *aa                  = a->a, *v;
   PetscInt                           *AiUp, *AjUp;
   PetscInt                            i, nz, nzUpper, offset;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     try {
       /* next, figure out the number of nonzeros in the upper triangular matrix. */
@@ -1398,13 +1399,13 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJHIPSPARSE_ILU0(Mat fact, Mat A,
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
     PetscInt  i;
-    PetscBool flg, missing;
+    PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJHIPSPARSE, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_GPU, "Expected MATSEQAIJHIPSPARSE, but input is %s", ((PetscObject)A)->type_name);
     PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-    PetscCall(MatMissingDiagonal(A, &missing, &i));
-    PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
+    PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entries");
   }
 
   /* Free the old stale stuff */
@@ -1520,13 +1521,13 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJHIPSPARSE_ILU0(Mat fact, Mat A,
 
   /* Estimate FLOPs of the numeric factorization */
   {
-    Mat_SeqAIJ    *Aseq = (Mat_SeqAIJ *)A->data;
-    PetscInt      *Ai, *Adiag, nzRow, nzLeft;
-    PetscLogDouble flops = 0.0;
+    Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ *)A->data;
+    PetscInt       *Ai, nzRow, nzLeft;
+    PetscLogDouble  flops = 0.0;
+    const PetscInt *Adiag;
 
-    PetscCall(MatMarkDiagonal_SeqAIJ(A));
-    Ai    = Aseq->i;
-    Adiag = Aseq->diag;
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &Adiag, NULL));
+    Ai = Aseq->i;
     for (PetscInt i = 0; i < m; i++) {
       if (Ai[i] < Adiag[i] && Adiag[i] < Ai[i + 1]) { /* There are nonzeros left to the diagonal of row i */
         nzRow  = Ai[i + 1] - Ai[i];
@@ -1644,13 +1645,13 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A,
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
     PetscInt  i;
-    PetscBool flg, missing;
+    PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJHIPSPARSE, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_GPU, "Expected MATSEQAIJHIPSPARSE, but input is %s", ((PetscObject)A)->type_name);
     PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-    PetscCall(MatMissingDiagonal(A, &missing, &i));
-    PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
+    PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entries");
   }
 
   /* Free the old stale stuff */
@@ -2845,7 +2846,6 @@ finalizesym:
     c->nonzerorowcnt += (PetscInt)!!nn;
     c->rmax = PetscMax(c->rmax, nn);
   }
-  PetscCall(MatMarkDiagonal_SeqAIJ(C));
   PetscCall(PetscMalloc1(c->nz, &c->a));
   Ccsr->num_entries = c->nz;
 
@@ -4292,7 +4292,6 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       c->nonzerorowcnt += (PetscInt)!!nn;
       c->rmax = PetscMax(c->rmax, nn);
     }
-    PetscCall(MatMarkDiagonal_SeqAIJ(*C));
     PetscCall(PetscMalloc1(c->nz, &c->a));
     (*C)->nonzerostate++;
     PetscCall(PetscLayoutSetUp((*C)->rmap));

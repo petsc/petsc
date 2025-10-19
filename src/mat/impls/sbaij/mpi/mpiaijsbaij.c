@@ -55,6 +55,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
   const PetscScalar *vwork;
   const PetscInt    *cwork;
   PetscInt           bs = A->rmap->bs;
+  const PetscInt    *adiag;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -62,9 +63,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
     PetscCall(MatGetLocalSize(A, &lm, &ln));
     PetscCall(PetscMalloc2(lm / bs, &d_nnz, lm / bs, &o_nnz));
 
-    PetscCall(MatMarkDiagonal_SeqBAIJ(mpimat->A));
+    PetscCall(MatGetDiagonalMarkers_SeqBAIJ(mpimat->A, &adiag, NULL));
     for (i = 0; i < lm / bs; i++) {
-      d_nnz[i] = Aa->i[i + 1] - Aa->diag[i];
+      d_nnz[i] = Aa->i[i + 1] - adiag[i];
       o_nnz[i] = Ba->i[i + 1] - Ba->i[i];
     }
 

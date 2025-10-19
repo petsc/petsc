@@ -1414,8 +1414,9 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A, Vec v)
 
   if (A->factortype == MAT_FACTOR_CHOLESKY || A->factortype == MAT_FACTOR_ICC) {
     PetscInt *diag = a->diag;
-    aa             = a->a;
-    ambs           = a->mbs;
+
+    aa   = a->a;
+    ambs = a->mbs;
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < ambs; i++) x[i] = 1.0 / aa[diag[i]];
     PetscCall(VecRestoreArray(v, &x));

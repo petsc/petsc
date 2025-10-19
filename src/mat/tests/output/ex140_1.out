@@ -24,7 +24,6 @@ Testing with -enable mult
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -53,7 +52,6 @@ Testing with -enable mult
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -83,7 +81,6 @@ Testing with -enable multAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -112,7 +109,6 @@ Testing with -enable multAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -142,7 +138,6 @@ Testing with -enable multTranspose
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -171,7 +166,6 @@ Testing with -enable multTranspose
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -201,7 +195,6 @@ Testing with -enable multTransposeAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -230,7 +223,6 @@ Testing with -enable multTransposeAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -260,7 +252,6 @@ Testing with -enable solve
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -289,7 +280,6 @@ Testing with -enable solve
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -319,7 +309,6 @@ Testing with -enable solveAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -348,7 +337,6 @@ Testing with -enable solveAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -378,7 +366,6 @@ Testing with -enable solveTranspose
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -407,7 +394,6 @@ Testing with -enable solveTranspose
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -437,7 +423,6 @@ Testing with -enable solveTransposeAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -466,7 +451,6 @@ Testing with -enable solveTransposeAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -496,7 +480,6 @@ Testing with -enable SOR
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -525,7 +508,6 @@ Testing with -enable SOR
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -555,7 +537,6 @@ Testing with -enable getDiagonal
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -584,7 +565,6 @@ Testing with -enable getDiagonal
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -614,7 +594,6 @@ Testing with -enable diagonalScale
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -643,7 +622,6 @@ Testing with -enable diagonalScale
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -673,7 +651,6 @@ Testing with -enable norm
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -702,7 +679,6 @@ Testing with -enable norm
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -732,7 +708,6 @@ Testing with -enable zeroEntries
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -761,7 +736,6 @@ Testing with -enable zeroEntries
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -791,7 +765,6 @@ Testing with -enable getDiagonalBlock
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -820,7 +793,6 @@ Testing with -enable getDiagonalBlock
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -850,7 +822,6 @@ Testing with -enable duplicate
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -879,7 +850,6 @@ Testing with -enable duplicate
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -909,7 +879,6 @@ Testing with -enable copy
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -938,7 +907,6 @@ Testing with -enable copy
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -968,7 +936,6 @@ Testing with -enable scale
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -997,7 +964,6 @@ Testing with -enable scale
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1027,7 +993,6 @@ Testing with -enable shift
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1056,7 +1021,6 @@ Testing with -enable shift
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1086,7 +1050,6 @@ Testing with -enable setDiagonal
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1115,7 +1078,6 @@ Testing with -enable setDiagonal
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1145,7 +1107,6 @@ Testing with -enable zeroRowsColumns
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1174,7 +1135,6 @@ Testing with -enable zeroRowsColumns
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1204,7 +1164,6 @@ Testing with -enable createSubMatrix
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1233,7 +1192,6 @@ Testing with -enable createSubMatrix
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1263,7 +1221,6 @@ Testing with -enable getVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1292,7 +1249,6 @@ Testing with -enable getVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1322,7 +1278,6 @@ Testing with -enable conjugate
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1351,7 +1306,6 @@ Testing with -enable conjugate
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1381,7 +1335,6 @@ Testing with -enable realPart
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1410,7 +1363,6 @@ Testing with -enable realPart
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1440,7 +1392,6 @@ Testing with -enable imagPart
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1469,66 +1420,6 @@ Testing with -enable imagPart
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
-  Pass: multDiagonalBlock
-  Pass: multHermitian
-  Pass: multHermitianAdd
-Testing with -enable missingDiagonal
-  Pass: mult
-  Pass: multAdd
-  Pass: multTranspose
-  Pass: multTransposeAdd
-  Pass: solve
-  Pass: solveAdd
-  Pass: solveTranspose
-  Pass: solveTransposeAdd
-  Pass: SOR
-  Pass: getDiagonal
-  Pass: diagonalScale
-  Pass: norm
-  Pass: zeroEntries
-  Pass: getDiagonalBlock
-  Pass: duplicate
-  Pass: copy
-  Pass: scale
-  Pass: shift
-  Pass: setDiagonal
-  Pass: zeroRowsColumns
-  Pass: createSubMatrix
-  Pass: getVecs
-  Pass: conjugate
-  Pass: realPart
-  Pass: imagPart
-  Pass: missingDiagonal
-  Pass: multDiagonalBlock
-  Pass: multHermitian
-  Pass: multHermitianAdd
-  Pass: mult
-  Pass: multAdd
-  Pass: multTranspose
-  Pass: multTransposeAdd
-  Pass: solve
-  Pass: solveAdd
-  Pass: solveTranspose
-  Pass: solveTransposeAdd
-  Pass: SOR
-  Pass: getDiagonal
-  Pass: diagonalScale
-  Pass: norm
-  Pass: zeroEntries
-  Pass: getDiagonalBlock
-  Pass: duplicate
-  Pass: copy
-  Pass: scale
-  Pass: shift
-  Pass: setDiagonal
-  Pass: zeroRowsColumns
-  Pass: createSubMatrix
-  Pass: getVecs
-  Pass: conjugate
-  Pass: realPart
-  Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1558,7 +1449,6 @@ Testing with -enable multDiagonalBlock
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1587,7 +1477,6 @@ Testing with -enable multDiagonalBlock
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1617,7 +1506,6 @@ Testing with -enable multHermitian
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1646,7 +1534,6 @@ Testing with -enable multHermitian
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1676,7 +1563,6 @@ Testing with -enable multHermitianAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd
@@ -1705,7 +1591,6 @@ Testing with -enable multHermitianAdd
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
-  Pass: missingDiagonal
   Pass: multDiagonalBlock
   Pass: multHermitian
   Pass: multHermitianAdd

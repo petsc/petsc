@@ -958,21 +958,6 @@ static PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-
-  PetscFunctionBegin;
-  PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only works for square matrices");
-  PetscCall(MatMissingDiagonal(a->A, missing, d));
-  if (d) {
-    PetscInt rstart;
-    PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
-    *d += rstart;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
 {
   PetscFunctionBegin;
@@ -1191,18 +1176,17 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                              NULL,
                                              NULL,
                                              NULL,
-                                             /*104*/ MatMissingDiagonal_MPISELL,
-                                             NULL,
+                                             /*104*/ NULL,
                                              NULL,
                                              MatGetGhosts_MPISELL,
                                              NULL,
-                                             /*109*/ NULL,
-                                             MatMultDiagonalBlock_MPISELL,
+                                             NULL,
+                                             /*109*/ MatMultDiagonalBlock_MPISELL,
+                                             NULL,
                                              NULL,
                                              NULL,
                                              NULL,
                                              /*114*/ NULL,
-                                             NULL,
                                              NULL,
                                              MatInvertBlockDiagonal_MPISELL,
                                              NULL,

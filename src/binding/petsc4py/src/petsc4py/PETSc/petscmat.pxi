@@ -432,8 +432,6 @@ cdef extern from * nogil:
     PetscErrorCode MatLMVMUpdate(PetscMat, PetscVec, PetscVec)
     PetscErrorCode MatLMVMReset(PetscMat, PetscBool)
 
-    PetscErrorCode MatMissingDiagonal(Mat, PetscBool*, PetscInt*)
-
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO

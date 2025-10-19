@@ -68,15 +68,14 @@ typedef struct {
   PetscObjectState  diagNonzeroState; /* nonzero state of the matrix when diag was obtained */ \
   PetscBool         diagDense;        /* all entries along the diagonal have been set; i.e. no missing diagonal terms */ \
   PetscInt          nonzerorowcnt;    /* how many rows have nonzero entries */ \
-  PetscBool         free_diag; \
-  datatype         *a;              /* nonzero elements */ \
-  PetscScalar      *solve_work;     /* work space used in MatSolve */ \
-  IS                row, col, icol; /* index sets, used for reorderings */ \
-  PetscBool         pivotinblocks;  /* pivot inside factorization of each diagonal block */ \
-  Mat               parent;         /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
+  datatype         *a;                /* nonzero elements */ \
+  PetscScalar      *solve_work;       /* work space used in MatSolve */ \
+  IS                row, col, icol;   /* index sets, used for reorderings */ \
+  PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
+  Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
-  Mat_SubSppt      *submatis1;      /* used by MatCreateSubMatrices_MPIXAIJ_Local */ \
-  Mat_SeqAIJOps     ops[1]          /* operations for SeqAIJ and its subclasses */
+  Mat_SubSppt      *submatis1;        /* used by MatCreateSubMatrices_MPIXAIJ_Local */ \
+  Mat_SeqAIJOps     ops[1]            /* operations for SeqAIJ and its subclasses */
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -320,8 +319,7 @@ PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat, Mat, co
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqAIJ(Mat, MatDuplicateOption, Mat *);
 PETSC_INTERN PetscErrorCode MatCopy_SeqAIJ(Mat, Mat, MatStructure);
-PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat, PetscBool *, PetscInt *);
-PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatGetDiagonalMarkers_SeqAIJ(Mat, const PetscInt **, PetscBool *);
 PETSC_INTERN PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat, PetscInt *, PetscInt **);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqAIJ(Mat, Vec, Vec);

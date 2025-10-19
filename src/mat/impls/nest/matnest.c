@@ -456,28 +456,6 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_Nest(Mat mat, PetscBool *missing, PetscInt *dd)
-{
-  Mat_Nest *vs = (Mat_Nest *)mat->data;
-  PetscInt  i;
-
-  PetscFunctionBegin;
-  if (dd) *dd = 0;
-  if (!vs->nr) {
-    *missing = PETSC_TRUE;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  *missing = PETSC_FALSE;
-  for (i = 0; i < vs->nr && !*missing; i++) {
-    *missing = PETSC_TRUE;
-    if (vs->m[i][i]) {
-      PetscCall(MatMissingDiagonal(vs->m[i][i], missing, NULL));
-      PetscCheck(!*missing || !dd, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "First missing entry not yet implemented");
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatAssemblyBegin_Nest(Mat A, MatAssemblyType type)
 {
   Mat_Nest *vs = (Mat_Nest *)A->data;
@@ -1459,10 +1437,9 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
     for (i = 0; cong && i < nr; i++) PetscCall(ISEqualUnsorted(s->isglobal.row[i], s->isglobal.col[i], &cong));
   }
   if (!cong) {
-    A->ops->missingdiagonal = NULL;
-    A->ops->getdiagonal     = NULL;
-    A->ops->shift           = NULL;
-    A->ops->diagonalset     = NULL;
+    A->ops->getdiagonal = NULL;
+    A->ops->shift       = NULL;
+    A->ops->diagonalset = NULL;
   }
 
   PetscCall(PetscCalloc2(nr, &s->left, nc, &s->right));
@@ -2327,7 +2304,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->diagonalset               = MatDiagonalSet_Nest;
   A->ops->setrandom                 = MatSetRandom_Nest;
   A->ops->hasoperation              = MatHasOperation_Nest;
-  A->ops->missingdiagonal           = MatMissingDiagonal_Nest;
 
   A->spptr     = NULL;
   A->assembled = PETSC_FALSE;

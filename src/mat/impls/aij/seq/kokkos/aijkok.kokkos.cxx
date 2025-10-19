@@ -93,9 +93,12 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
       */
     }
     delete aijkok;
-    aijkok   = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aijseq, A->nonzerostate, PETSC_FALSE /*don't copy mat values to device*/);
+    aijkok   = new Mat_SeqAIJKokkos(A, A->rmap->n, A->cmap->n, aijseq, A->nonzerostate, PETSC_FALSE /* don't copy mat values to device */);
     A->spptr = aijkok;
   } else if (A->rmap->n && aijkok->diag_dual.extent(0) == 0) { // MatProduct might directly produce AIJ on device, but not the diag.
+    const PetscInt *adiag;
+    /* the a->diag is created at assmebly here because the rest of the Kokkos AIJ code assumes it always exists. This needs to be fixed since it is now only created when needed! */
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
     MatRowMapKokkosViewHost diag_h(aijseq->diag, A->rmap->n);
     auto                    diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
     aijkok->diag_dual              = MatRowMapKokkosDualView(diag_d, diag_h);
@@ -584,7 +587,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
     aseq = static_cast<Mat_SeqAIJ *>(A->data);
     if (A->assembled) { /* Copy i, j (but not values) to device for an assembled matrix if not yet */
       PetscCheck(!A->spptr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expect NULL (Mat_SeqAIJKokkos*)A->spptr");
-      A->spptr = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aseq, A->nonzerostate, PETSC_FALSE);
+      A->spptr = new Mat_SeqAIJKokkos(A, A->rmap->n, A->cmap->n, aseq, A->nonzerostate, PETSC_FALSE);
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -605,7 +608,7 @@ static PetscErrorCode MatDuplicate_SeqAIJKokkos(Mat A, MatDuplicateOption dupOpt
   mat = *B;
   if (A->assembled) {
     bseq = static_cast<Mat_SeqAIJ *>(mat->data);
-    bkok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, bseq, mat->nonzerostate, PETSC_FALSE);
+    bkok = new Mat_SeqAIJKokkos(mat, mat->rmap->n, mat->cmap->n, bseq, mat->nonzerostate, PETSC_FALSE);
     bkok->a_dual.clear_sync_state(); /* Clear B's sync state as it will be decided below */
     /* Now copy values to B if needed */
     if (dupOption == MAT_COPY_VALUES) {
@@ -1372,7 +1375,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
   aseq = static_cast<Mat_SeqAIJ *>(mat->data);
   akok = static_cast<Mat_SeqAIJKokkos *>(mat->spptr);
   delete akok;
-  mat->spptr = akok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, aseq, mat->nonzerostate + 1, PETSC_FALSE);
+  mat->spptr = akok = new Mat_SeqAIJKokkos(mat, mat->rmap->n, mat->cmap->n, aseq, mat->nonzerostate + 1, PETSC_FALSE);
   PetscCall(MatZeroEntries_SeqAIJKokkos(mat));
 
   // Copy the COO struct to device

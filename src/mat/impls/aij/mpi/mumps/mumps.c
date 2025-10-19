@@ -953,7 +953,7 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift,
   PetscScalar       *val;
   PetscMUMPSInt     *row, *col;
   Mat_SeqAIJ        *aa = (Mat_SeqAIJ *)A->data;
-  PetscBool          missing;
+  PetscBool          diagDense;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool hermitian, isset;
 #endif
@@ -964,14 +964,13 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift,
   PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
   PetscCall(MatSeqAIJGetArrayRead(A, &av));
-  ai    = aa->i;
-  aj    = aa->j;
-  adiag = aa->diag;
-  PetscCall(MatMissingDiagonal_SeqAIJ(A, &missing, NULL));
+  ai = aa->i;
+  aj = aa->j;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, &diagDense));
   if (reuse == MAT_INITIAL_MATRIX) {
     /* count nz in the upper triangular part of A */
     nz = 0;
-    if (missing) {
+    if (!diagDense) {
       for (i = 0; i < M; i++) {
         if (PetscUnlikely(adiag[i] >= ai[i + 1])) {
           for (j = ai[i]; j < ai[i + 1]; j++) {
@@ -993,7 +992,7 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift,
     mumps->val = mumps->val_alloc = val;
 
     nz = 0;
-    if (missing) {
+    if (!diagDense) {
       for (i = 0; i < M; i++) {
         if (PetscUnlikely(adiag[i] >= ai[i + 1])) {
           for (j = ai[i]; j < ai[i + 1]; j++) {
@@ -1029,7 +1028,7 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift,
   } else {
     nz  = 0;
     val = mumps->val;
-    if (missing) {
+    if (!diagDense) {
       for (i = 0; i < M; i++) {
         if (PetscUnlikely(adiag[i] >= ai[i + 1])) {
           for (j = ai[i]; j < ai[i + 1]; j++) {
@@ -1326,14 +1325,13 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A, PetscInt shift,
   PetscCall(MatSeqAIJGetArrayRead(Ad, &av));
   PetscCall(MatSeqAIJGetArrayRead(Ao, &bv));
 
-  aa    = (Mat_SeqAIJ *)Ad->data;
-  bb    = (Mat_SeqAIJ *)Ao->data;
-  ai    = aa->i;
-  aj    = aa->j;
-  adiag = aa->diag;
-  bi    = bb->i;
-  bj    = bb->j;
-
+  aa = (Mat_SeqAIJ *)Ad->data;
+  bb = (Mat_SeqAIJ *)Ao->data;
+  ai = aa->i;
+  aj = aa->j;
+  bi = bb->i;
+  bj = bb->j;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(Ad, &adiag, NULL));
   rstart = A->rmap->rstart;
 
   if (reuse == MAT_INITIAL_MATRIX) {

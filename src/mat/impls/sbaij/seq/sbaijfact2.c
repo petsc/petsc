@@ -2470,8 +2470,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, c
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data, *b;
-  PetscBool          perm_identity, free_ij = PETSC_TRUE, missing;
-  PetscInt           bs = A->rmap->bs, am = a->mbs, d, *ai = a->i, *aj = a->j;
+  PetscBool          perm_identity, free_ij = PETSC_TRUE, diagDense;
+  PetscInt           bs = A->rmap->bs, am = a->mbs, *ai = a->i, *aj = a->j;
   const PetscInt    *rip;
   PetscInt           reallocs = 0, i, *ui, *udiag, *cols;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
@@ -2483,8 +2483,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-  PetscCall(MatMissingDiagonal(A, &missing, &d));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, d);
+  PetscCall(MatGetDiagonalMarkers_SeqSBAIJ(A, NULL, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
   if (bs > 1) {
     PetscCall(MatICCFactorSymbolic_SeqSBAIJ_inplace(fact, A, perm, info));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -2628,16 +2628,15 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
   b = (Mat_SeqSBAIJ *)fact->data;
   PetscCall(PetscFree2(b->imax, b->ilen));
   PetscCall(PetscShmgetAllocateArray(ui[am], sizeof(PetscScalar), (void **)&b->a));
-  b->free_a    = PETSC_TRUE;
-  b->free_ij   = free_ij;
-  b->j         = uj;
-  b->i         = ui;
-  b->diag      = udiag;
-  b->free_diag = PETSC_TRUE;
-  b->ilen      = NULL;
-  b->imax      = NULL;
-  b->row       = perm;
-  b->col       = perm;
+  b->free_a  = PETSC_TRUE;
+  b->free_ij = free_ij;
+  b->j       = uj;
+  b->i       = ui;
+  b->diag    = udiag;
+  b->ilen    = NULL;
+  b->imax    = NULL;
+  b->row     = perm;
+  b->col     = perm;
 
   PetscCall(PetscObjectReference((PetscObject)perm));
   PetscCall(PetscObjectReference((PetscObject)perm));

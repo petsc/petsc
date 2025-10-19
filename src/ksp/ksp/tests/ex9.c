@@ -32,13 +32,12 @@ static PetscErrorCode replace_submats(Mat A)
 
 int main(int argc, char *argv[])
 {
-  KSP       ksp;
-  PC        pc;
-  Mat       M, A, P, sA[2][2], sP[2][2];
-  Vec       x, b;
-  IS        f[2];
-  PetscInt  i, j, rstart, rend;
-  PetscBool missA, missM;
+  KSP      ksp;
+  PC       pc;
+  Mat      M, A, P, sA[2][2], sP[2][2];
+  Vec      x, b;
+  IS       f[2];
+  PetscInt i, j, rstart, rend;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -57,11 +56,6 @@ int main(int argc, char *argv[])
   }
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)M), 2, f, 2, f, &sA[0][0], &A));
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)M), 2, f, 2, f, &sP[0][0], &P));
-
-  /* Tests MatMissingDiagonal_Nest */
-  PetscCall(MatMissingDiagonal(M, &missM, NULL));
-  PetscCall(MatMissingDiagonal(A, &missA, NULL));
-  if (missM != missA) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s != %s\n", missM ? "true" : "false", missA ? "true" : "false"));
 
   PetscCall(MatDestroy(&M));
 

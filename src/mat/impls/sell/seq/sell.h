@@ -36,7 +36,6 @@ as more values are set than were prealloced */ \
   PetscObjectState diagNonzeroState; /* nonzero state of the matrix when diag was obtained */ \
   PetscBool        diagDense;        /* matrix contains all the diagonal entries */ \
   PetscInt         nonzerorowcnt;    /* how many rows have nonzero entries */ \
-  PetscBool        free_diag;        /* free diag ? */ \
   datatype        *val;              /* elements including nonzeros and padding zeros */ \
   PetscScalar     *solve_work;       /* work space used in MatSolve */ \
   IS               row, col, icol;   /* index sets, used for reorderings */ \
@@ -202,8 +201,6 @@ PETSC_INTERN PetscErrorCode MatMult_SeqSELL(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSELL(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqSELL(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqSELL(Mat, PetscBool *, PetscInt *);
-PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatZeroEntries_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatSetOption_SeqSELL(Mat, MatOption, PetscBool);

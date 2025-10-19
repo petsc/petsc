@@ -160,54 +160,52 @@ struct _MatOps {
   PetscErrorCode (*getrowmin)(Mat, Vec, PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat, Vec, PetscInt);
   /*104*/
-  PetscErrorCode (*missingdiagonal)(Mat, PetscBool *, PetscInt *);
   PetscErrorCode (*getseqnonzerostructure)(Mat, Mat *);
   PetscErrorCode (*create)(Mat);
   PetscErrorCode (*getghosts)(Mat, PetscInt *, const PetscInt *[]);
   PetscErrorCode (*getlocalsubmatrix)(Mat, IS, IS, Mat *);
-  /*109*/
   PetscErrorCode (*restorelocalsubmatrix)(Mat, IS, IS, Mat *);
+  /*109*/
   PetscErrorCode (*multdiagonalblock)(Mat, Vec, Vec);
   PetscErrorCode (*hermitiantranspose)(Mat, MatReuse, Mat *);
   PetscErrorCode (*multhermitiantranspose)(Mat, Vec, Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat, Vec, Vec, Vec);
-  /*114*/
   PetscErrorCode (*getmultiprocblock)(Mat, MPI_Comm, MatReuse, Mat *);
+  /*114*/
   PetscErrorCode (*findnonzerorows)(Mat, IS *);
   PetscErrorCode (*getcolumnreductions)(Mat, PetscInt, PetscReal *);
   PetscErrorCode (*invertblockdiagonal)(Mat, const PetscScalar **);
   PetscErrorCode (*invertvariableblockdiagonal)(Mat, PetscInt, const PetscInt *, PetscScalar *);
-  /*119*/
   PetscErrorCode (*createsubmatricesmpi)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat **);
+  /*119*/
   PetscErrorCode (*setvaluesbatch)(Mat, PetscInt, PetscInt, PetscInt *, const PetscScalar *);
   PetscErrorCode (*transposematmultsymbolic)(Mat, Mat, PetscReal, Mat);
   PetscErrorCode (*transposematmultnumeric)(Mat, Mat, Mat);
   PetscErrorCode (*transposecoloringcreate)(Mat, ISColoring, MatTransposeColoring);
-  /*124*/
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring, Mat, Mat);
+  /*124*/
   PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring, Mat, Mat);
   PetscErrorCode (*rartnumeric)(Mat, Mat, Mat); /* double dispatch wrapper routine */
   PetscErrorCode (*setblocksizes)(Mat, PetscInt, PetscInt);
   PetscErrorCode (*residual)(Mat, Vec, Vec, Vec);
-  /*129*/
   PetscErrorCode (*fdcoloringsetup)(Mat, ISColoring, MatFDColoring);
+  /*129*/
   PetscErrorCode (*findoffblockdiagonalentries)(Mat, IS *);
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
   PetscErrorCode (*destroysubmatrices)(PetscInt, Mat *[]);
   PetscErrorCode (*mattransposesolve)(Mat, Mat, Mat);
-  /*134*/
   PetscErrorCode (*getvalueslocal)(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscScalar[]);
+  /*134*/
   PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
   PetscErrorCode (*eliminatezeros)(Mat, PetscBool);
   PetscErrorCode (*getrowsumabs)(Mat, Vec);
-  /*139*/
   PetscErrorCode (*getfactor)(Mat, MatSolverType, MatFactorType, Mat *);
+  /*139*/
   PetscErrorCode (*getblockdiagonal)(Mat, Mat *);  // NOTE: the caller of get{block, vblock}diagonal owns the returned matrix;
   PetscErrorCode (*getvblockdiagonal)(Mat, Mat *); // they must destroy it after use
   PetscErrorCode (*copyhashtoxaij)(Mat, Mat);
   PetscErrorCode (*getcurrentmemtype)(Mat, PetscMemType *);
-  /*144*/
   PetscErrorCode (*zerorowscolumnslocal)(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
 };
 /*
@@ -1783,3 +1781,74 @@ PETSC_EXTERN PetscLogEvent MAT_H2Opus_Orthog;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_LR;
 PETSC_EXTERN PetscLogEvent MAT_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_HIPCopyToGPU;
+
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+  #define MatGetDiagonalMarkers(SeqXXX, bs)
+#else
+  /*
+   Adds diagonal pointers to sparse matrix nonzero structure and determines if all diagonal entries are present
+
+   Rechecks the matrix data structure automatically if the nonzero structure of the matrix changed since the last call
+
+   Potential optimization: since the a->j[j] are sorted this could use bisection to find the diagonal
+
+   Developer Note:
+   Uses the C preprocessor as a template mechanism to produce MatGetDiagonal_Seq[SB]AIJ() to avoid duplicate code
+*/
+  #define MatGetDiagonalMarkers(SeqXXX, bs) \
+    PetscErrorCode MatGetDiagonalMarkers_##SeqXXX(Mat A, const PetscInt **diag, PetscBool *diagDense) \
+    { \
+      Mat_##SeqXXX *a = (Mat_##SeqXXX *)A->data; \
+\
+      PetscFunctionBegin; \
+      if (A->factortype != MAT_FACTOR_NONE) { \
+        if (diagDense) *diagDense = PETSC_TRUE; \
+        if (diag) *diag = a->diag; \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+      PetscCheck(diag || diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "At least one of diag or diagDense must be requested"); \
+      if (a->diagNonzeroState != A->nonzerostate || (diag && !a->diag)) { \
+        const PetscInt m = A->rmap->n / bs; \
+\
+        if (!diag && !a->diag) { \
+          a->diagDense = PETSC_TRUE; \
+          for (PetscInt i = 0; i < m; i++) { \
+            PetscBool found = PETSC_FALSE; \
+\
+            for (PetscInt j = a->i[i]; j < a->i[i + 1]; j++) { \
+              if (a->j[j] == i) { \
+                found = PETSC_TRUE; \
+                break; \
+              } \
+            } \
+            if (!found) { \
+              a->diagDense        = PETSC_FALSE; \
+              *diagDense          = a->diagDense; \
+              a->diagNonzeroState = A->nonzerostate; \
+              PetscFunctionReturn(PETSC_SUCCESS); \
+            } \
+          } \
+        } else { \
+          if (!a->diag) PetscCall(PetscMalloc1(m, &a->diag)); \
+          a->diagDense = PETSC_TRUE; \
+          for (PetscInt i = 0; i < m; i++) { \
+            PetscBool found = PETSC_FALSE; \
+\
+            a->diag[i] = a->i[i + 1]; \
+            for (PetscInt j = a->i[i]; j < a->i[i + 1]; j++) { \
+              if (a->j[j] == i) { \
+                a->diag[i] = j; \
+                found      = PETSC_TRUE; \
+                break; \
+              } \
+            } \
+            if (!found) a->diagDense = PETSC_FALSE; \
+          } \
+        } \
+        a->diagNonzeroState = A->nonzerostate; \
+      } \
+      if (diag) *diag = a->diag; \
+      if (diagDense) *diagDense = a->diagDense; \
+      PetscFunctionReturn(PETSC_SUCCESS); \
+    }
+#endif
