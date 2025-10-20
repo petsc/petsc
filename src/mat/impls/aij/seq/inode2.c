@@ -48,7 +48,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
 
 /* MatCreate_SeqAIJ_Inode is not DLLEXPORTed because it is not a constructor for a complete type.    */
 /* It is also not registered as a type for use within MatSetType.                             */
-/* It is intended as a helper for the MATSEQAIJ class, so classes which desire Inodes should  */
+/* It is intended as a helper for the MATSEQAIJ class, so classes which desire inodes should  */
 /*    inherit off of MATSEQAIJ instead by calling MatSetType(MATSEQAIJ) in their constructor. */
 /* Maybe this is a bad idea. (?) */
 PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
