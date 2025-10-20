@@ -130,7 +130,7 @@ int establish(u_short portnum)
   hp = gethostbyname(myname);
   if (!hp) PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
 
-  sa.sin_family = hp->h_addrtype;
+  sa.sin_family = (sa_family_t)hp->h_addrtype;
   sa.sin_port   = htons(portnum);
 
   if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");

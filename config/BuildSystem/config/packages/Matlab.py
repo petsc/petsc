@@ -12,7 +12,7 @@ class Configure(config.package.Package):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('MATLAB', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
+    help.addArgument('MATLAB', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate MATLAB and MATLAB Engine interface'))
     help.addArgument('MATLAB', '-with-matlab-socket=<bool>',  nargs.ArgBool(None, 1, 'Build socket code for Matlab'))
     help.addArgument('MATLAB', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MATLAB installation'))
     help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use MATLAB Architecture (default use first-found)'))

@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
   PetscMPIInt rank;
   PetscInt    n = 5;
-  char       *output;
+  const char *output;
   Vec         x;
 
   PetscFunctionBeginUser;
