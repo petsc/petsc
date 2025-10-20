@@ -3924,8 +3924,8 @@ static PetscErrorCode MatScale_SeqAIJCUSPARSE(Mat Y, PetscScalar a)
 
 static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
 {
-  PetscBool   both = PETSC_FALSE;
-  Mat_SeqAIJ *a    = (Mat_SeqAIJ *)A->data;
+  PetscBool   gpu = PETSC_FALSE;
+  Mat_SeqAIJ *a   = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
   if (A->factortype == MAT_FACTOR_NONE) {
@@ -3933,7 +3933,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
     if (spptr->mat) {
       CsrMatrix *matrix = (CsrMatrix *)spptr->mat->mat;
       if (matrix->values) {
-        both = PETSC_TRUE;
+        gpu = PETSC_TRUE;
         thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.);
       }
     }
@@ -3942,10 +3942,12 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
       if (matrix->values) thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.);
     }
   }
-  PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
+  if (gpu) A->offloadmask = PETSC_OFFLOAD_GPU;
+  else {
+    PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
+    A->offloadmask = PETSC_OFFLOAD_CPU;
+  }
   PetscCall(MatSeqAIJInvalidateDiagonal(A));
-  if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
-  else A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
