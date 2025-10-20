@@ -700,6 +700,8 @@ Unable to run hostname to check the network')
       self.log.write('Checking for mpi.mod\n')
       if self.libraries.check(self.lib,'', call = '       use mpi\n       integer(kind=selected_int_kind(5)) ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.addDefine('HAVE_MPI_F90MODULE', 1)
+      elif 'HAVE_MSMPI' not in self.defines:
+        self.logPrintWarning('Unable to find or use the MPI Fortran module file mpi.mod! PETSc will be configured to use "mpif.h" and not the MPI Fortran module')
     self.compilers.FPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return 0
@@ -961,7 +963,7 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
-    self.executeTest(self.FortranMPICheck)
+    self.executeTest(self.FortranMPICheck) #depends on checkMPIDistro
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIIncludeAndLib)
     self.executeTest(self.PetscArchMPICheck)
