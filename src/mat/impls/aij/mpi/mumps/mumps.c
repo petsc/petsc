@@ -282,7 +282,7 @@ static PetscErrorCode MatMumpsMakeMumpsScalarArray(PetscBool convert, PetscCount
         for (PetscCount i = 0; i < n; i++) {
           b[i].r = PetscRealPart(pa[i]);
           b[i].i = PetscImaginaryPart(pa[i]);
-        };
+        }
       }
     } else {
       if (*m < n) {
