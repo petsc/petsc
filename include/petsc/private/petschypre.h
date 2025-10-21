@@ -28,9 +28,14 @@ static_assert(std::is_same<HYPRE_BigInt, int>::value, "");
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCallHYPRE(HYPRE_Int);
 #else
-  #if PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0)
+  #if PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0) /* HYPRE_DescribeError() added in 2.0.0 */
     #define PetscCallHYPRE(...) \
       do { \
+        if (PetscUnlikelyDebug(HYPRE_GetError() != 0)) { \
+          char err_str[PETSC_MAX_PATH_LEN]; \
+          HYPRE_DescribeError(HYPRE_GetError(), err_str); \
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error from previous HYPRE call, error code %" PetscInt_FMT ": %s", (PetscInt)HYPRE_GetError(), err_str); \
+        } \
         HYPRE_Int ierr_hypre_ = __VA_ARGS__; \
         if (PetscUnlikely(ierr_hypre_ != 0)) { \
           char err_str[PETSC_MAX_PATH_LEN]; \
@@ -38,13 +43,20 @@ void PetscCallHYPRE(HYPRE_Int);
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error code %" PetscInt_FMT ": %s", (PetscInt)ierr_hypre_, err_str); \
         } \
       } while (0)
-  #else
+  #elif PETSC_PKG_HYPRE_VERSION_GE(1, 11, 0) /* HYPRE_GetError() added in 1.11.0b */
+    #define PetscCallHYPRE(...) \
+      do { \
+        PetscAssert(HYPRE_GetError() == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error from previous HYPRE call, error code %" PetscInt_FMT, (PetscInt)HYPRE_GetError()); \
+        HYPRE_Int ierr_hypre_ = __VA_ARGS__; \
+        PetscCheck(ierr_hypre_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error code %" PetscInt_FMT, (PetscInt)ierr_hypre_); \
+      } while (0)
+  #else /* PETSC_PKG_HYPRE_VERSION_LT(1, 11, 0) */
     #define PetscCallHYPRE(...) \
       do { \
         HYPRE_Int ierr_hypre_ = __VA_ARGS__; \
         PetscCheck(ierr_hypre_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "HYPRE error code %" PetscInt_FMT, (PetscInt)ierr_hypre_); \
       } while (0)
-  #endif /* PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0) */
+  #endif /* PETSC_PKG_HYPRE_VERSION */
 #endif   /* PETSC_CLANG_STATIC_ANALYZER */
 
 /*
