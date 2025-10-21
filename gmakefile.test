@@ -25,7 +25,7 @@ petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 generatedtest  := $(TESTDIR)/testfiles
 
-.SECONDEXPANSION:	# to expand $$(@D)/.DIR
+.SECONDEXPANSION: # to expand $$(@D)/.DIR
 
 TESTFLAGS :=             # Initialize as simple variable
 
@@ -417,8 +417,6 @@ print-test:
 
 show-fail:
 	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(TESTDIR)/counts -f
-
-
 
 # Don't start running tests until starttime has completed
 $(alltesttargets:%=$(TESTDIR)/counts/%.counts) : starttime

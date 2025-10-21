@@ -1,4 +1,3 @@
-
         Interface DMCompositeGetEntries
           Subroutine DMCompositeGetEntries1(dm1, d1, ierr)
             use, intrinsic :: ISO_C_binding

@@ -19,4 +19,3 @@ contains
 #include <../ftn/ksp/petscall.hf90>
 
 end module petscksp
-

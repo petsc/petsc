@@ -1,4 +1,3 @@
-
       Interface DMDAVecGetArray
         Subroutine DMDAVecGetArrayF901(da1, v, d1, ierr)
           use, intrinsic :: ISO_C_binding

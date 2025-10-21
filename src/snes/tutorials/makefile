@@ -136,4 +136,3 @@ runex3k_kokkos: ex3k.PETSc
           touch ../../../check_error;\
         fi; \
 	${RM} -f ex3k_1.tmp
-

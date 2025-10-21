@@ -14,4 +14,3 @@ ifneq ($(KOKKOS_LIB),)
   ex18objs += ex18kok.o
 endif
 ex18 : ${ex18objs}
-

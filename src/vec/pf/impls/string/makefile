@@ -17,4 +17,3 @@ petscdlib.o: petscdlib.c
 libpetscdlib:  petscdlib.o
 	-@${RM} libpetscdlib.${SL_LINKER_SUFFIX}
 	${CLINKER} $(call SL_LINKER_FUNCTION,petscdlib,1,0) petscdlib.o -o libpetscdlib.${SL_LINKER_SUFFIX} $(PETSC_EXTERNAL_LIB_BASIC)
-

@@ -32,4 +32,3 @@ sclose:
 	-@${MATLAB_MEX} -g GCC='${CC}' CC='${PCC}' CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS} ${PCC_FLAGS}' sclose.c
 	-@${RM} -f sclose.o
 	-@${MV} sclose.mex* ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab
-

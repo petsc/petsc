@@ -61,7 +61,6 @@ cython-lint:
 	conf/cythonize.sh -Wextra -Werror
 	cython-lint ${CYTHONLINT_OPTS} ${CYTHONLINT_SRC}
 
-
 ruff-lint:
 	ruff ${RUFF_OPTS} ${RUFF_SRC}
 

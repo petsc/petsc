@@ -1,4 +1,3 @@
-
      Interface
        Subroutine PetscQuadratureRestoreData(q, dim, nc, np, p, w, ierr)
          use, intrinsic :: ISO_C_binding

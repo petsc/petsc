@@ -98,12 +98,12 @@ sub scenario()
         print STDERR "ERROR: command is not selected (-install or -remove)\n";
         exit(1);
     }
-    
+
     if($Install)
     { # remove old version first
         $Remove = 1;
     }
-    
+
     if($PREFIX ne "/") {
         $PREFIX=~s/[\/]+\Z//g;
     }
@@ -153,15 +153,15 @@ sub scenario()
             exit(1);
         }
     }
-    
+
     print "INSTALL PREFIX: $PREFIX\n";
-    
+
     # paths
     my $EXE_PATH = catFile($PREFIX, "bin");
     my $MODULES_PATH = catFile($PREFIX, "share", $TOOL_SNAME);
     my $REL_PATH = catFile("..", "share", $TOOL_SNAME);
     my $TOOL_PATH = catFile($EXE_PATH, $TOOL_SNAME);
-    
+
     if(not -w $PREFIX)
     {
         print STDERR "ERROR: you should be root\n";
@@ -177,7 +177,7 @@ sub scenario()
         elsif(not $Install) {
             print "The tool is not installed\n";
         }
-        
+
         if(-d $MODULES_PATH)
         { # remove modules
             print "-- Removing $MODULES_PATH\n";
@@ -197,17 +197,17 @@ sub scenario()
         else { # absolute path
             $Content=~s/MODULES_INSTALL_PATH/$MODULES_PATH/;
         }
-        
+
         # copy executable
         print "-- Installing $TOOL_PATH\n";
         mkpath($EXE_PATH);
         writeFile($EXE_PATH."/".$TOOL_SNAME, $Content);
         chmod(0755, $EXE_PATH."/".$TOOL_SNAME);
-        
+
         if($Config{"osname"}=~/win/i) {
             writeFile($EXE_PATH."/".$TOOL_SNAME.".cmd", "\@perl \"$TOOL_PATH\" \%*");
         }
-        
+
         # copy modules
         if(-d $ARCHIVE_DIR."/modules")
         {
@@ -215,19 +215,19 @@ sub scenario()
             mkpath($MODULES_PATH);
             copyDir($ARCHIVE_DIR."/modules", $MODULES_PATH);
         }
-        
+
         # check PATH
         my $Warn = "WARNING: your PATH variable doesn't include \'$EXE_PATH\'\n";
-        
+
         if($Config{"osname"}=~/win/i)
         {
-            if($ENV{"PATH"}!~/(\A|[:;])\Q$EXE_PATH\E[\/\\]?(\Z|[:;])/i) { 
+            if($ENV{"PATH"}!~/(\A|[:;])\Q$EXE_PATH\E[\/\\]?(\Z|[:;])/i) {
                 print $Warn;
             }
         }
         else
         {
-            if($ENV{"PATH"}!~/(\A|[:;])\Q$EXE_PATH\E[\/\\]?(\Z|[:;])/) { 
+            if($ENV{"PATH"}!~/(\A|[:;])\Q$EXE_PATH\E[\/\\]?(\Z|[:;])/) {
                 print $Warn;
             }
         }
@@ -274,19 +274,19 @@ sub copyDir($$)
 sub readFile($)
 {
     my $Path = $_[0];
-    
+
     open(FILE, $Path) || die ("can't open file \'$Path\': $!\n");
     local $/ = undef;
     my $Content = <FILE>;
     close(FILE);
-    
+
     return $Content;
 }
 
 sub writeFile($$)
 {
     my ($Path, $Content) = @_;
-    
+
     open(FILE, ">".$Path) || die ("can't open file \'$Path\': $!\n");
     print FILE $Content;
     close(FILE);

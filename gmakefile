@@ -59,7 +59,7 @@ libs : $(libpetscall)
 
 .PHONY: libs
 
-.SECONDEXPANSION:		# to expand $$(@D)/.DIR
+.SECONDEXPANSION: # to expand $$(@D)/.DIR
 
 # Test framework includes rules and variables relevant to both build and test
 include ./gmakefile.test        # This must be below the all target because it includes rules
@@ -274,7 +274,6 @@ clean:
 print:
 	$(info $($(VAR)))
 	@true
-
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include

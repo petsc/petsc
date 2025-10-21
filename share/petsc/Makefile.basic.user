@@ -69,4 +69,3 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 #  Access compile targets here. However if you manage them yourself (rarely needed) comment out the next line
 #
 include ${PETSC_DIR}/lib/petsc/conf/rules
-

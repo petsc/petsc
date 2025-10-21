@@ -1,4 +1,3 @@
-
       Interface
         Subroutine MatFDColoringRestorePerturbedColumns(i, len, array, ierr)
           use, intrinsic :: ISO_C_binding
