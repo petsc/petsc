@@ -30,16 +30,17 @@ static char help[] = "Double-Precision STREAM Benchmark implementation in CUDA\n
 #define NTIMES 10
 
 #ifndef MIN
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
+  #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
 #ifndef MAX
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
+  #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 
 const float  flt_eps = 1.192092896e-07f;
 const double dbl_eps = 2.2204460492503131e-16;
 
-__global__ void set_array(float *a, float value, size_t len) {
+__global__ void set_array(float *a, float value, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     a[idx] = value;
@@ -47,7 +48,8 @@ __global__ void set_array(float *a, float value, size_t len) {
   }
 }
 
-__global__ void set_array_double(double *a, double value, size_t len) {
+__global__ void set_array_double(double *a, double value, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     a[idx] = value;
@@ -55,7 +57,8 @@ __global__ void set_array_double(double *a, double value, size_t len) {
   }
 }
 
-__global__ void STREAM_Copy(float *a, float *b, size_t len) {
+__global__ void STREAM_Copy(float *a, float *b, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = a[idx];
@@ -63,7 +66,8 @@ __global__ void STREAM_Copy(float *a, float *b, size_t len) {
   }
 }
 
-__global__ void STREAM_Copy_double(double *a, double *b, size_t len) {
+__global__ void STREAM_Copy_double(double *a, double *b, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = a[idx];
@@ -71,7 +75,8 @@ __global__ void STREAM_Copy_double(double *a, double *b, size_t len) {
   }
 }
 
-__global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len) {
+__global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -81,7 +86,8 @@ __global__ void STREAM_Copy_Optimized(float *a, float *b, size_t len) {
   if (idx < len) b[idx] = a[idx];
 }
 
-__global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len) {
+__global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -91,7 +97,8 @@ __global__ void STREAM_Copy_Optimized_double(double *a, double *b, size_t len) {
   if (idx < len) b[idx] = a[idx];
 }
 
-__global__ void STREAM_Scale(float *a, float *b, float scale, size_t len) {
+__global__ void STREAM_Scale(float *a, float *b, float scale, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = scale * a[idx];
@@ -99,7 +106,8 @@ __global__ void STREAM_Scale(float *a, float *b, float scale, size_t len) {
   }
 }
 
-__global__ void STREAM_Scale_double(double *a, double *b, double scale, size_t len) {
+__global__ void STREAM_Scale_double(double *a, double *b, double scale, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     b[idx] = scale * a[idx];
@@ -107,7 +115,8 @@ __global__ void STREAM_Scale_double(double *a, double *b, double scale, size_t l
   }
 }
 
-__global__ void STREAM_Scale_Optimized(float *a, float *b, float scale, size_t len) {
+__global__ void STREAM_Scale_Optimized(float *a, float *b, float scale, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -117,7 +126,8 @@ __global__ void STREAM_Scale_Optimized(float *a, float *b, float scale, size_t l
   if (idx < len) b[idx] = scale * a[idx];
 }
 
-__global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale, size_t len) {
+__global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -127,7 +137,8 @@ __global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale
   if (idx < len) b[idx] = scale * a[idx];
 }
 
-__global__ void STREAM_Add(float *a, float *b, float *c, size_t len) {
+__global__ void STREAM_Add(float *a, float *b, float *c, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     c[idx] = a[idx] + b[idx];
@@ -135,7 +146,8 @@ __global__ void STREAM_Add(float *a, float *b, float *c, size_t len) {
   }
 }
 
-__global__ void STREAM_Add_double(double *a, double *b, double *c, size_t len) {
+__global__ void STREAM_Add_double(double *a, double *b, double *c, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     c[idx] = a[idx] + b[idx];
@@ -143,7 +155,8 @@ __global__ void STREAM_Add_double(double *a, double *b, double *c, size_t len) {
   }
 }
 
-__global__ void STREAM_Add_Optimized(float *a, float *b, float *c, size_t len) {
+__global__ void STREAM_Add_Optimized(float *a, float *b, float *c, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -153,7 +166,8 @@ __global__ void STREAM_Add_Optimized(float *a, float *b, float *c, size_t len) {
   if (idx < len) c[idx] = a[idx] + b[idx];
 }
 
-__global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c, size_t len) {
+__global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -163,7 +177,8 @@ __global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c, siz
   if (idx < len) c[idx] = a[idx] + b[idx];
 }
 
-__global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t len) {
+__global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     c[idx] = a[idx] + scalar * b[idx];
@@ -171,7 +186,8 @@ __global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t 
   }
 }
 
-__global__ void STREAM_Triad_double(double *a, double *b, double *c, double scalar, size_t len) {
+__global__ void STREAM_Triad_double(double *a, double *b, double *c, double scalar, size_t len)
+{
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
     c[idx] = a[idx] + scalar * b[idx];
@@ -179,7 +195,8 @@ __global__ void STREAM_Triad_double(double *a, double *b, double *c, double scal
   }
 }
 
-__global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scalar, size_t len) {
+__global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scalar, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -189,7 +206,8 @@ __global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scala
   if (idx < len) c[idx] = a[idx] + scalar * b[idx];
 }
 
-__global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, double scalar, size_t len) {
+__global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, double scalar, size_t len)
+{
   /*
    * Ensure size of thread index space is as large as or greater than
    * vector index space else return.
@@ -200,7 +218,8 @@ __global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, d
 }
 
 /* Host side verification routines */
-bool STREAM_Copy_verify(float *a, float *b, size_t len) {
+bool STREAM_Copy_verify(float *a, float *b, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -209,13 +228,14 @@ bool STREAM_Copy_verify(float *a, float *b, size_t len) {
     float diffResultExpected = (b[idx] - expectedResult);
     float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent               = (relErrorULPS > 2.f);
+    bDifferent = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Copy_verify_double(double *a, double *b, size_t len) {
+bool STREAM_Copy_verify_double(double *a, double *b, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -224,13 +244,14 @@ bool STREAM_Copy_verify_double(double *a, double *b, size_t len) {
     double diffResultExpected = (b[idx] - expectedResult);
     double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / dbl_eps;
     /* element-wise relative error determination */
-    bDifferent                = (relErrorULPS > 2.);
+    bDifferent = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len) {
+bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -239,13 +260,14 @@ bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len) {
     float diffResultExpected = (b[idx] - expectedResult);
     float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent               = (relErrorULPS > 2.f);
+    bDifferent = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len) {
+bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -254,13 +276,14 @@ bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len) 
     double diffResultExpected = (b[idx] - expectedResult);
     double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent                = (relErrorULPS > 2.);
+    bDifferent = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Add_verify(float *a, float *b, float *c, size_t len) {
+bool STREAM_Add_verify(float *a, float *b, float *c, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -269,13 +292,14 @@ bool STREAM_Add_verify(float *a, float *b, float *c, size_t len) {
     float diffResultExpected = (c[idx] - expectedResult);
     float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent               = (relErrorULPS > 2.f);
+    bDifferent = (relErrorULPS > 2.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len) {
+bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -284,13 +308,14 @@ bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len) {
     double diffResultExpected = (c[idx] - expectedResult);
     double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent                = (relErrorULPS > 2.);
+    bDifferent = (relErrorULPS > 2.);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len) {
+bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -299,13 +324,14 @@ bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len)
     float diffResultExpected = (c[idx] - expectedResult);
     float relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent               = (relErrorULPS > 3.f);
+    bDifferent = (relErrorULPS > 3.f);
   }
 
   return bDifferent;
 }
 
-bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len) {
+bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len)
+{
   size_t idx;
   bool   bDifferent = false;
 
@@ -314,7 +340,7 @@ bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, 
     double diffResultExpected = (c[idx] - expectedResult);
     double relErrorULPS       = (fabsf(diffResultExpected) / fabsf(expectedResult)) / flt_eps;
     /* element-wise relative error determination */
-    bDifferent                = (relErrorULPS > 3.);
+    bDifferent = (relErrorULPS > 3.);
   }
 
   return bDifferent;
@@ -326,7 +352,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
 PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming);
 PetscErrorCode printResultsReadable(float times[][NTIMES], size_t);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscInt        device    = 0;
   PetscBool       runDouble = PETSC_TRUE;
   const PetscBool cpuTiming = PETSC_TRUE; // must be true
@@ -350,7 +377,8 @@ int main(int argc, char *argv[]) {
 ///////////////////////////////////////////////////////////////////////////////
 //Run the appropriate tests
 ///////////////////////////////////////////////////////////////////////////////
-PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cpuTiming) {
+PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cpuTiming)
+{
   PetscInt iNumThreadsPerBlock = 128;
 
   PetscFunctionBegin;
@@ -393,7 +421,8 @@ PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cp
 ///////////////////////////////////////////////////////////////////////////
 // runStream
 ///////////////////////////////////////////////////////////////////////////
-PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming) {
+PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming)
+{
   float *d_a, *d_b, *d_c;
   int    k;
   float  times[8][NTIMES];
@@ -607,7 +636,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming) {
+PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming)
+{
   double *d_a, *d_b, *d_c;
   int     k;
   float   times[8][NTIMES];
@@ -822,29 +852,30 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
 ///////////////////////////////////////////////////////////////////////////
 //Print Results to Screen and File
 ///////////////////////////////////////////////////////////////////////////
-PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
+PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
+{
   PetscErrorCode ierr;
   PetscInt       j, k;
-  float          avgtime[8]          = {0., 0., 0., 0., 0., 0., 0., 0.};
-  float          maxtime[8]          = {0., 0., 0., 0., 0., 0., 0., 0.};
-  float          mintime[8]          = {1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30};
+  float          avgtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
+  float          maxtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
+  float          mintime[8] = {1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30, 1e30};
   // char           *label[8]           = {"Copy:      ", "Copy Opt.: ", "Scale:     ", "Scale Opt: ", "Add:       ", "Add Opt:   ", "Triad:     ", "Triad Opt: "};
-  const float    bytes_per_kernel[8] = {2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N};
-  double         rate, irate;
-  int            rank, size;
+  const float bytes_per_kernel[8] = {2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N};
+  double      rate, irate;
+  int         rank, size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
   /* --- SUMMARY --- */
   for (k = 0; k < NTIMES; ++k) {
-    for (j = 0; j < 8; ++j) {
+    for (j = 0; j < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(avgtime); ++j) {
       avgtime[j] = avgtime[j] + (1.e-03f * times[j][k]); // millisec --> sec
       mintime[j] = MIN(mintime[j], (1.e-03f * times[j][k]));
       maxtime[j] = MAX(maxtime[j], (1.e-03f * times[j][k]));
     }
   }
-  for (j = 0; j < 8; ++j) avgtime[j] = avgtime[j] / (float)(NTIMES - 1);
+  for (j = 0; j < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(avgtime); ++j) avgtime[j] = avgtime[j] / (float)(NTIMES - 1);
   j     = 7;
   irate = 1.0E-06 * bytes_per_kernel[j] / mintime[j];
   ierr  = MPI_Reduce(&irate, &rate, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
