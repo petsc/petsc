@@ -338,8 +338,20 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   /* Orthonormalize system */
   for (i = 0; i < mmin; ++i) {
     PetscScalar dots[6];
+    PetscReal   norm;
 
-    PetscCall(VecNormalize(mode[i], NULL));
+    PetscCall(VecNormalize(mode[i], &norm));
+    if (PetscAbsReal(norm) <= PETSC_SQRT_MACHINE_EPSILON) {
+      PetscCall(VecDestroy(&mode[i]));
+      if (i < mmin - 1) {
+        for (j = i; j < mmin - 1; j++) mode[j] = mode[j + 1];
+        mode[mmin - 1] = NULL;
+      }
+      m--;
+      mmin--;
+      i--;
+      continue;
+    }
     PetscCall(VecMDot(mode[i], mmin - i - 1, mode + i + 1, dots + i + 1));
     for (j = i + 1; j < mmin; ++j) {
       dots[j] *= -1.0;
