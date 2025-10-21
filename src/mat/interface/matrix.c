@@ -4210,9 +4210,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
 .     `SOR_LOCAL_BACKWARD_SWEEP` - local forward SOR
 .     `SOR_LOCAL_SYMMETRIC_SWEEP` - local SSOR
 .     `SOR_EISENSTAT` - SOR with Eisenstat trick
-.     `SOR_APPLY_UPPER`, `SOR_APPLY_LOWER` - applies
-  upper/lower triangular part of matrix to
-  vector (with omega)
+.     `SOR_APPLY_UPPER`, `SOR_APPLY_LOWER` - applies upper/lower triangular part of matrix to vector (with `omega`)
 -     `SOR_ZERO_INITIAL_GUESS` - zero initial guess
 
   Level: developer
@@ -4223,13 +4221,10 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
   on each processor.
 
   Application programmers will not generally use `MatSOR()` directly,
-  but instead will employ the `KSP`/`PC` interface.
+  but instead will employ `PCSOR` or `PCEISENSTAT`
 
-  For `MATBAIJ`, `MATSBAIJ`, and `MATAIJ` matrices with Inodes this does a block SOR smoothing, otherwise it does a pointwise smoothing
-
-  Most users should employ the `KSP` interface for linear solvers
-  instead of working directly with matrix algebra routines such as this.
-  See, e.g., `KSPCreate()`.
+  For `MATBAIJ`, `MATSBAIJ`, and `MATAIJ` matrices with inodes, this does a block SOR smoothing, otherwise it does a pointwise smoothing.
+  For `MATAIJ` matrices with inodes, the block sizes are determined by the inode sizes, not the block size set with `MatSetBlockSize()`
 
   Vectors `x` and `b` CANNOT be the same
 
@@ -4238,7 +4233,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
   to specify a zero initial guess for SSOR.
 
   Developer Note:
-  We should add block SOR support for `MATAIJ` matrices with block size set to great than one and no inodes
+  We should add block SOR support for `MATAIJ` matrices with block size set to greater than one and no inodes
 
 .seealso: [](ch_matrices), `Mat`, `MatMult()`, `KSP`, `PC`, `MatGetFactor()`
 @*/

@@ -8,8 +8,6 @@
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
 
-PetscErrorCode PetscBinaryRead(int, void *p, int, int *, PetscDataType);
-
 #define PETSC_MEX_ERROR(a) \
   { \
     fprintf(stdout, "sread: %s \n", a); \

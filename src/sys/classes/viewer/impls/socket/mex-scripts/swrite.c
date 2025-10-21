@@ -8,8 +8,6 @@
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
 
-PetscErrorCode PetscBinaryWrite(int, const void *p, int, PetscDataType);
-
 #define PETSC_MEX_ERROR(a) \
   { \
     fprintf(stdout, "sread: %s \n", a); \
@@ -24,7 +22,7 @@ PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray
   /* check output parameters */
   if (nrhs != 3) PETSC_MEX_ERROR("Receive requires three input arguments.");
   fd  = (int)mxGetScalar(prhs[0]);
-  cnt = mxGetNumberOfElements(prhs[1]);
+  cnt = (int)mxGetNumberOfElements(prhs[1]);
   dt  = (PetscDataType)mxGetScalar(prhs[2]);
 
   if (dt == PETSC_DOUBLE) {

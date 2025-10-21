@@ -12,6 +12,7 @@ function:MatFDColoringApply_BAIJ
 # Monitor callbacks using typed contexts
 function:DMAdaptMonitor
 function:DMAdaptorMonitorError
+function:dmadapt.c
 function:KSPMonitor
 function:SNESMonitor
 function:TSMonitor
@@ -73,10 +74,12 @@ function:PCTFS_giop_hc
 function:PCTFS_grop_hc
 function:do_matvec
 
-# files for MPICH and Open MPI
+# files for MPICH, Open MPI, and PT-SCOTCH
 function:src/mpi/*
 null:src/mpid/ch3/*
 pointer-overflow:src/mpid/ch3/*
 pointer-overflow:src/binding/c/*
 pointer-overflow:bitmap.c
 nonnull-attribute:pml_ob1_hdr.h
+function:libscotch/*
+pointer-overflow:libscotch/*

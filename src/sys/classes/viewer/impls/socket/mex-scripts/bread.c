@@ -14,27 +14,26 @@
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-static void SYByteSwapInt(int *buff, int n)
+static void SYByteSwapInt(int *buff, PetscCount n)
 {
-  int   i, j, tmp;
+  int   tmp;
   char *ptr1, *ptr2 = (char *)&tmp;
-  for (j = 0; j < n; j++) {
+  for (PetscCount j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (int)sizeof(int); i++) ptr2[i] = ptr1[sizeof(int) - 1 - i];
+    for (PetscCount i = 0; i < sizeof(int); i++) ptr2[i] = ptr1[sizeof(int) - 1 - i];
     buff[j] = tmp;
   }
 }
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-static void SYByteSwapShort(short *buff, int n)
+static void SYByteSwapShort(short *buff, PetscCount n)
 {
-  int   i, j;
   short tmp;
   char *ptr1, *ptr2 = (char *)&tmp;
-  for (j = 0; j < n; j++) {
+  for (PetscCount j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (int)sizeof(short); i++) ptr2[i] = ptr1[sizeof(int) - 1 - i];
+    for (PetscCount i = 0; i < sizeof(short); i++) ptr2[i] = ptr1[sizeof(int) - 1 - i];
     buff[j] = tmp;
   }
 }
@@ -42,17 +41,16 @@ static void SYByteSwapShort(short *buff, int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-static void SYByteSwapScalar(PetscScalar *buff, int n)
+static void SYByteSwapScalar(PetscScalar *buff, PetscCount n)
 {
-  int    i, j;
   double tmp, *buff1 = (double *)buff;
   char  *ptr1, *ptr2 = (char *)&tmp;
 #if defined(PETSC_USE_COMPLEX)
   n *= 2;
 #endif
-  for (j = 0; j < n; j++) {
+  for (PetscCount j = 0; j < n; j++) {
     ptr1 = (char *)(buff1 + j);
-    for (i = 0; i < (int)sizeof(double); i++) ptr2[i] = ptr1[sizeof(double) - 1 - i];
+    for (PetscCount i = 0; i < sizeof(double); i++) ptr2[i] = ptr1[sizeof(double) - 1 - i];
     buff1[j] = tmp;
   }
 }
@@ -78,12 +76,12 @@ static void SYByteSwapScalar(PetscScalar *buff, int n)
   Notes:
   does byte swapping to work on all machines.
 */
-PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType type)
+PetscErrorCode PetscBinaryRead(int fd, void *p, PetscCount n, PetscInt *dummy, PetscDataType type)
 {
-  int   maxblock, wsize, err;
-  char *pp   = (char *)p;
-  int   ntmp = n;
-  void *ptmp = p;
+  int        maxblock, err;
+  char      *pp   = (char *)p;
+  PetscCount ntmp = n, wsize;
+  void      *ptmp = p;
 
   maxblock = 65536;
   if (type == PETSC_INT) n *= sizeof(int);
@@ -94,7 +92,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
-    err   = read(fd, pp, wsize);
+    err   = (int)read(fd, pp, (int)wsize);
     if (err < 0 && errno == EINTR) continue;
     if (!err && wsize > 0) return 1;
     if (err < 0) PETSC_MEX_ERROR("Error reading from socket\n");
@@ -122,12 +120,13 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
   Notes:
     does byte swapping to work on all machines.
 */
-PetscErrorCode PetscBinaryWrite(int fd, const void *p, int n, PetscDataType type)
+PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataType type)
 {
-  int   maxblock, wsize, err = 0, retv = 0;
-  char *pp   = (char *)p;
-  int   ntmp = n;
-  void *ptmp = (void *)p;
+  int        maxblock, err = 0, retv = 0;
+  char      *pp   = (char *)p;
+  PetscCount ntmp = n;
+  void      *ptmp = (void *)p;
+  PetscCount wsize;
 
   maxblock = 65536;
   if (type == PETSC_INT) n *= sizeof(int);
@@ -145,7 +144,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, int n, PetscDataType type
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
-    err   = write(fd, pp, wsize);
+    err   = (int)write(fd, pp, (int)wsize);
     if (err < 0 && errno == EINTR) continue;
     if (!err && wsize > 0) {
       retv = 1;
