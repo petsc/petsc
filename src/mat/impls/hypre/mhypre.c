@@ -2044,11 +2044,11 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_DEVICE == hypre_CSRMatrixMemoryLocation(hA)) {
   #if defined(HYPRE_USING_CUDA)
-    MatZeroRows_CUDA(N, rows, i, j, a, diag);
+    PetscCall(MatZeroRows_CUDA(N, rows, i, j, a, diag));
   #elif defined(HYPRE_USING_HIP)
-    MatZeroRows_HIP(N, rows, i, j, a, diag);
+    PetscCall(MatZeroRows_HIP(N, rows, i, j, a, diag));
   #elif defined(PETSC_HAVE_KOKKOS)
-    MatZeroRows_Kokkos(N, rows, i, j, a, diag);
+    PetscCall(MatZeroRows_Kokkos(N, rows, i, j, a, diag));
   #else
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MatZeroRows on a hypre matrix in this memory location");
   #endif
