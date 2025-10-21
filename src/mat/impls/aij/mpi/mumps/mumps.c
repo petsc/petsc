@@ -145,7 +145,8 @@ typedef struct {
   PetscCount rhs_len, redrhs_len, rhs_sparse_len, sol_loc_len, rhs_loc_len; // length of buffers (in MumpsScalar) IF allocated in a different precision than PetscScalar
 
   MUMPS_INT *irhs_sparse, *irhs_ptr, *isol_loc, *irhs_loc;
-  MUMPS_INT  nrhs, lrhs, lredrhs, nz_rhs, lsol_loc, nloc_rhs, lrhs_loc, nsol_loc;
+  MUMPS_INT  nrhs, lrhs, lredrhs, nz_rhs, lsol_loc, nloc_rhs, lrhs_loc;
+  // MUMPS_INT  nsol_loc; // introduced in MUMPS-5.7, but PETSc doesn't use it; would cause compile errors with the widely used 5.6. If you add it, must also update PreMumpsCall() and guard this with #if PETSC_PKG_MUMPS_VERSION_GE(5, 7, 0)
   MUMPS_INT  schur_lld;
   MUMPS_INT *info, *infog;   // fixed size array
   void      *rinfo, *rinfog; // MumpsReal, fixed size array
@@ -281,7 +282,7 @@ static PetscErrorCode MatMumpsMakeMumpsScalarArray(PetscBool convert, PetscCount
         for (PetscCount i = 0; i < n; i++) {
           b[i].r = PetscRealPart(pa[i]);
           b[i].i = PetscImaginaryPart(pa[i]);
-        };
+        }
       }
     } else {
       if (*m < n) {
@@ -442,7 +443,6 @@ static inline MPI_Datatype MPIU_MUMPSREAL(const XMUMPS_STRUC_C *id)
     inner->lsol_loc      = outer->lsol_loc; \
     inner->nloc_rhs      = outer->nloc_rhs; \
     inner->lrhs_loc      = outer->lrhs_loc; \
-    inner->nsol_loc      = outer->nsol_loc; \
     inner->schur_lld     = outer->schur_lld; \
     inner->size_schur    = outer->size_schur; \
     inner->listvar_schur = outer->listvar_schur; \
