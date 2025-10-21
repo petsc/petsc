@@ -17,4 +17,3 @@ testex31: ex31.PETSc
            touch ../../../../check_error;\
            cat ex31_1.tmp;\
          fi
-

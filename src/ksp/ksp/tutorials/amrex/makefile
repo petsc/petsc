@@ -23,4 +23,3 @@ testamrex: amrex
            echo "See https://petsc.org/release/faq/";\
            cat amrex_1.tmp; fi;  \
          ${RM} -f amrex_1.tmp
-

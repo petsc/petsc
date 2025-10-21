@@ -44,4 +44,3 @@ docspdf:
 # Catch-all target: route all unknown targets to Sphinx using the new "make mode" option.
 %: makefile images
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)"  -j auto $(SPHINXOPTS)
-

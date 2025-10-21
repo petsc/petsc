@@ -7,51 +7,51 @@ MANSEC    = Sys
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-PetscTime: PetscTime.o 
+PetscTime: PetscTime.o
 	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}
 	${RM} -f PetscTime.o
 
-PetscGetTime: PetscGetTime.o 
+PetscGetTime: PetscGetTime.o
 	-${CLINKER} -o PetscGetTime PetscGetTime.o ${PETSC_LIB}
 	${RM} -f PetscGetTime.o
 
-PetscGetCPUTime: PetscGetCPUTime.o 
+PetscGetCPUTime: PetscGetCPUTime.o
 	-${CLINKER} -o PetscGetCPUTime PetscGetCPUTime.o ${PETSC_LIB}
 	${RM} -f PetscGetCPUTime.o
 
-MPI_Wtime: MPI_Wtime.o 
+MPI_Wtime: MPI_Wtime.o
 	-${CLINKER} -o MPI_Wtime MPI_Wtime.o ${PETSC_LIB}
 	${RM} -f MPI_Wtime.o
 
-PLogEvent: PLogEvent.o 
+PLogEvent: PLogEvent.o
 	-${CLINKER} -o PLogEvent PLogEvent.o ${PETSC_LIB}
 	${RM} -f PLogEvent.o
 
-PetscMalloc: PetscMalloc.o 
+PetscMalloc: PetscMalloc.o
 	-${CLINKER} -o PetscMalloc PetscMalloc.o ${PETSC_LIB}
 	${RM} -f PetscMalloc.o
 
-PetscMemcpy: PetscMemcpy.o 
+PetscMemcpy: PetscMemcpy.o
 	-${CLINKER} -o PetscMemcpy PetscMemcpy.o ${PETSC_LIB}
 	${RM} -f PetscMemcpy.o
 
-PetscMemzero: PetscMemzero.o 
+PetscMemzero: PetscMemzero.o
 	-${CLINKER} -o PetscMemzero PetscMemzero.o ${PETSC_LIB}
 	${RM} -f PetscMemzero.o
 
-PetscMemcmp: PetscMemcmp.o 
+PetscMemcmp: PetscMemcmp.o
 	-${CLINKER} -o PetscMemcmp PetscMemcmp.o ${PETSC_LIB}
 	${RM} -f PetscMemcmp.o
 
-Index: Index.o 
+Index: Index.o
 	-${CLINKER} -o Index Index.o ${PETSC_LIB}
 	${RM} -f Index.o
 
-PetscVecNorm: PetscVecNorm.o 
+PetscVecNorm: PetscVecNorm.o
 	-${CLINKER} -o PetscVecNorm PetscVecNorm.o ${PETSC_LIB}
 	${RM} -f PetscVecNorm.o
 
-sizeof: sizeof.o 
+sizeof: sizeof.o
 	-${CLINKER} -o sizeof sizeof.o ${PETSC_LIB}
 	${RM} -f sizeof.o
 

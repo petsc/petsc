@@ -1,4 +1,3 @@
-
      Interface
        subroutine KSPRestoreConvergenceHistory(ksp, r, na, ierr)
          use, intrinsic :: ISO_C_binding
@@ -82,4 +81,3 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PCFieldSplitSchurRestoreSubKSP
 #endif
-

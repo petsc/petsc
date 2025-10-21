@@ -17,4 +17,3 @@ testex100: ex100.PETSc
            touch ../../../../check_error;\
          fi; \
          ${RM} -f ex100_1.tmp
-

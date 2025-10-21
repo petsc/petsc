@@ -85,8 +85,5 @@ hwloc:
 mpistreams: mpistream hwloc
 	-@${PYTHON} process.py MPI
 
-
 openmpstreams: openmpstream hwloc
 	-@${PYTHON} process.py OpenMP
-
-

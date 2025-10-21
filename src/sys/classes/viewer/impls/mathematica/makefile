@@ -13,6 +13,5 @@ runtime: runtime.o
 	${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
 	${RM} -f $@.o
 
-
 run: runtime
 	./runtime
