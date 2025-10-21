@@ -1,0 +1,44 @@
+Created DMPlex in 1D with faces (16, 1, 1), global vector size 16
+DM Object: box 1 MPI process
+  type: plex
+box in 1 dimension:
+  Number of 0-cells per rank: 16
+  Number of 1-cells per rank: 16
+Periodic mesh (PERIODIC) coordinates localized
+Labels:
+  marker: 0 strata with value/size ()
+  Face Sets: 0 strata with value/size ()
+  depth: 2 strata with value/size (0 (16), 1 (16))
+  celltype: 2 strata with value/size (0 (16), 1 (16))
+Field Field_0:
+  adjacency FEM
+Observation Operator H:
+Mat Object: H_observation_operator 1 MPI process
+  type: seqaijkokkos
+row 0: (0, 1.) 
+row 1: (2, 1.) 
+row 2: (4, 1.) 
+row 3: (6, 1.) 
+row 4: (8, 1.) 
+row 5: (10, 1.) 
+row 6: (12, 1.) 
+row 7: (14, 1.) 
+Localization Matrix Q:
+Mat Object: Q_localization 1 MPI process
+  type: seqaijkokkos
+row 0: (0, 1.)  (1, 0.278438)  (7, 0.278859) 
+row 1: (0, 0.867824)  (1, 0.867854)  (7, 0.278438) 
+row 2: (0, 0.278438)  (1, 1.)  (2, 0.278728) 
+row 3: (1, 0.868045)  (2, 0.867856)  (3, 0.278438) 
+row 4: (1, 0.278438)  (2, 1.)  (3, 0.278458) 
+row 5: (1, 0.278438)  (2, 0.867988)  (3, 0.867807) 
+row 6: (2, 0.278569)  (3, 1.)  (4, 0.278438) 
+row 7: (2, 0.278438)  (3, 0.867941)  (4, 0.867804) 
+row 8: (3, 0.278438)  (4, 1.)  (5, 0.27861) 
+row 9: (4, 0.867984)  (5, 0.867909)  (6, 0.278438) 
+row 10: (4, 0.278488)  (5, 1.)  (6, 0.278438) 
+row 11: (4, 0.278438)  (5, 0.867918)  (6, 0.867902) 
+row 12: (5, 0.278443)  (6, 1.)  (7, 0.278438) 
+row 13: (0, 0.278438)  (6, 0.86792)  (7, 0.867885) 
+row 14: (0, 0.278563)  (6, 0.278438)  (7, 1.) 
+row 15: (0, 0.867916)  (6, 0.278438)  (7, 0.867967) 

@@ -1,0 +1,10 @@
+Forecast error norm: 1.59405
+Analysis error norm: 1.05979
+PetscDA Object: 1 MPI process
+  type: etkf
+  State size: 10
+  Observation size: 10
+  Ensemble size: 20
+  Assembled: true
+  Inflation: 1.
+  Square root type: cholesky

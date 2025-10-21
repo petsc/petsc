@@ -169,6 +169,7 @@ def __register_all_classids() -> None:
     "_p_PetscLimiter *"           : "PETSCLIMITER_CLASSID",
     "_p_PetscLinterDummyObj *"    : "PETSC_LINTER_DUMMY_OBJECT",
     "_p_PetscLogHandler *"        : "PETSCLOGHANDLER_CLASSID",
+    "_p_PetscDA *"                : "PETSCDA_CLASSID",
     "_p_PetscObject *"            : "PETSC_OBJECT_CLASSID",
     "_p_PetscPartitioner *"       : "PETSCPARTITIONER_CLASSID",
     "_p_PetscQuadrature *"        : "PETSCQUADRATURE_CLASSID",

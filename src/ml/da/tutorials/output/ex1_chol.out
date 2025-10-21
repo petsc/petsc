@@ -1,0 +1,41 @@
+Spinning up truth for 0 steps...
+PetscDA Object: 1 MPI process
+  type: etkf
+  State size: 40
+  Observation size: 40
+  Ensemble size: 30
+  Assembled: true
+  Inflation: 1.
+  Square root type: cholesky
+Lorenz-96 ETKF Example
+======================
+  State dimension       : 40
+  Ensemble size         : 30
+  Forcing parameter (F) : 8.0000
+  Time step (dt)        : 0.0500
+  Total steps           : 112
+  Burn-in steps         : 10
+  Observation frequency : 1
+  Observation noise std : 1.000
+  Ensemble init std     : 1.000
+  Random seed           : 12345
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [burn-in]
+Step   11, time  0.550  RMSE_forecast 0.17520  RMSE_analysis 0.19620
+Step   22, time  1.100  RMSE_forecast 0.44718  RMSE_analysis 0.36278
+Step   33, time  1.650  RMSE_forecast 0.22826  RMSE_analysis 0.23397
+Step   44, time  2.200  RMSE_forecast 0.24786  RMSE_analysis 0.20599
+Step   55, time  2.750  RMSE_forecast 0.32181  RMSE_analysis 0.31136
+Step   66, time  3.300  RMSE_forecast 0.22426  RMSE_analysis 0.19863
+Step   77, time  3.850  RMSE_forecast 0.15816  RMSE_analysis 0.16117
+Step   88, time  4.400  RMSE_forecast 0.25467  RMSE_analysis 0.21166
+Step   99, time  4.950  RMSE_forecast 0.22160  RMSE_analysis 0.18437
+Step  110, time  5.500  RMSE_forecast 0.14968  RMSE_analysis 0.15159
+Step  112, time  5.600  RMSE_forecast 0.17722  RMSE_analysis 0.16044
+
+Statistics (103 post-burn-in steps):
+==================================================
+  Mean RMSE (forecast) : 0.25350
+  Mean RMSE (analysis) : 0.23093
+  Observations used    : 112
+

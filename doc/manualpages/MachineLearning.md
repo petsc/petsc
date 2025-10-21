@@ -4,4 +4,5 @@
 :maxdepth: 1
 
 PetscRegressor/index
+PetscDA/index
 ```

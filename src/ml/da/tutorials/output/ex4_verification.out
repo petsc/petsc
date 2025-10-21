@@ -1,0 +1,25 @@
+Running in pure verification mode (no data assimilation)
+2D Shallow Water Verification Example
+==============================
+  Mode                  : Verification (traveling wave test)
+  Flux scheme           : Rusanov (1st order)
+  Grid dimensions       : 40 x 40
+  Domain size           : 80.00 x 80.00
+  Grid spacing          : dx=2.0000, dy=2.0000
+  Mean height (h0)      : 1.5000
+  Wave amplitudes       : Ax=0.2000, Ay=0.2000
+  Gravitational const   : 9.8100
+  Wave speed (c)        : 3.8360
+  Time step (dt)        : 0.0200
+  CFL number            : 0.0767
+  Total steps           : 50
+  Verification freq     : 10
+
+Step    0, time  0.000  L1=0.00000e+00  L2=0.00000e+00  Linf=0.00000e+00 [initial]
+Step   10, time  0.200  L1=8.47765e+01  L2=1.31009e+00  Linf=3.46958e-02
+Step   20, time  0.400  L1=1.68868e+02  L2=2.60936e+00  Linf=6.89659e-02
+Step   30, time  0.600  L1=2.51981e+02  L2=3.89311e+00  Linf=1.02626e-01
+Step   40, time  0.800  L1=3.33828e+02  L2=5.15680e+00  Linf=1.35502e-01
+Step   50, time  1.000  L1=4.14130e+02  L2=6.39609e+00  Linf=1.67431e-01
+
+Verification test complete.

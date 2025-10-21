@@ -1,0 +1,38 @@
+Localization matrix Q created using PetscDALETKFGetLocalizationMatrix
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Square root type: eigen
+  Local analysis: CPU
+  Local observations per vertex: 7
+  GPU batch size: auto
+  Localization matrix: set
+Shallow Water [L]ETKF Example
+============================
+  Test case             : Traveling wave
+  Flux scheme           : Rusanov (1st order)
+  State dimension       : 160 (80 grid points x 2 DOF)
+  Observation dimension : 40
+  Ensemble size         : 5
+  Domain length (L)     : 80.0000
+  Gravitational const   : 9.8100
+  Time step (dt)        : 0.0200
+  Total steps           : 10
+  Observation frequency : 2
+  Observation noise std : 0.030
+  Random seed           : 12345
+  Localization          : None/Global (7 obs per vertex)
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step   10, time  0.200  RMSE_forecast 0.00997  RMSE_analysis 0.01006
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00996
+  Mean RMSE (analysis) : 0.01089
+  Observations used    : 5
+
