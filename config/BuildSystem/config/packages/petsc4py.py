@@ -34,6 +34,8 @@ class Configure(config.package.Package):
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
     self.mpi             = framework.require('config.packages.MPI',self)
+    self.cython          = framework.require('config.packages.cython',self)
+    self.odeps           = [self.cython]
     return
 
   def getDir(self):
@@ -79,7 +81,7 @@ class Configure(config.package.Package):
     if config.setCompilers.Configure.isIntel(self.getCompiler(), self.log):
       cflags = 'CFLAGS=\'\' '
     self.addPost(self.packageDir, ['${RM} -rf build',
-                                   newdir + archflags + cflags + self.python.pyexe + ' setup.py build',
+                                   newdir + archflags + cflags + ' PYTHONPATH=${PETSCPYTHONPATH} ' + self.python.pyexe + ' setup.py build',
                                    'MPICC=${PCC} ' + newdir + archflags + self.python.pyexe +' setup.py install --install-lib=' + installLibPath + ' $(if $(DESTDIR),--root=\'$(DESTDIR)\')'])
     self.pythonpath = installLibPath
     np = self.make.make_test_np
