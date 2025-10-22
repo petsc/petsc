@@ -55,6 +55,8 @@ configure_options = [
   '--download-kokkos',
   '--download-kokkos-cxx-std-threads',
   '--download-kokkos-kernels',
+  '--download-cython',
+  '--download-pflare',
   '--with-dmlandau-3d',
   '--with-strict-petscerrorcode',
   '--download-mpi4py',
