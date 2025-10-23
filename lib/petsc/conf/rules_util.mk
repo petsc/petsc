@@ -70,13 +70,10 @@ GITSRCEXCL = \
 GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
 GITCFSRCEXCL = \
 ':!*petscversion.h' \
-':!*mpif.h' \
 ':!*mpiunifdef.h' \
 ':!*finclude/*' \
 ':!systems/*' \
-':!*benchmarks/*' \
-':!*binding/*' \
-':!*ftn-mod/*'
+':!*binding/*'
 
 # Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:
