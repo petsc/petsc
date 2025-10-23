@@ -47,12 +47,8 @@ class Configure(config.package.CMakePackage):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.setCompilers    = framework.require('config.setCompilers', self)
-    self.blasLapack      = framework.require('config.packages.BlasLapack',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
-    self.flibs           = framework.require('config.packages.flibs',self)
     self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
-    self.mathlib         = framework.require('config.packages.mathlib',self)
-    self.deps            = [self.blasLapack,self.flibs,self.cxxlibs,self.mathlib]
+    self.deps            = [self.cxxlibs]
     self.openmp          = framework.require('config.packages.OpenMP',self)
     self.cuda            = framework.require('config.packages.CUDA',self)
     self.hip             = framework.require('config.packages.HIP',self)
