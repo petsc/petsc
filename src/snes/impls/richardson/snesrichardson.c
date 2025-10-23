@@ -23,16 +23,6 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
-{
-  PetscBool isascii;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) { }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
   Vec                  X, Y, F;
@@ -185,7 +175,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->ops->destroy        = SNESDestroy_NRichardson;
   snes->ops->setup          = SNESSetUp_NRichardson;
   snes->ops->setfromoptions = SNESSetFromOptions_NRichardson;
-  snes->ops->view           = SNESView_NRichardson;
   snes->ops->solve          = SNESSolve_NRichardson;
 
   snes->usesksp = PETSC_FALSE;

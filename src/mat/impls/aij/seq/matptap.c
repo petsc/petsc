@@ -145,12 +145,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal 
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscMalloc1(ci[pn] + 1, &cj));
+  PetscCall(PetscMalloc1(ci[pn], &cj));
   PetscCall(PetscFreeSpaceContiguous(&free_space, cj));
   PetscCall(PetscFree(ptadenserow));
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
-  PetscCall(PetscCalloc1(ci[pn] + 1, &ca));
+  PetscCall(PetscCalloc1(ci[pn], &ca));
 
   /* put together the new matrix */
   PetscCall(MatSetSeqAIJWithArrays_private(PetscObjectComm((PetscObject)A), pn, pn, ci, cj, ca, ((PetscObject)A)->type_name, C));

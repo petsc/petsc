@@ -148,7 +148,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
     AProw_nonscalable(i, ad, ao, p_loc, p_oth, apa);
 
     /* set values in C */
-    apJ  = apj + api[i];
+    apJ  = PetscSafePointerPlusOffset(apj, api[i]);
     cdnz = cd->i[i + 1] - cd->i[i];
     conz = co->i[i + 1] - co->i[i];
 
@@ -225,7 +225,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
-  PetscCall(PetscMalloc1(am + 2, &api));
+  PetscCall(PetscMalloc1(am + 1, &api));
   ptap->api = api;
   api[0]    = 0;
 
@@ -281,7 +281,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
 
   /* Allocate space for apj, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscMalloc1(api[am] + 1, &ptap->apj));
+  PetscCall(PetscMalloc1(api[am], &ptap->apj));
   apj = ptap->apj;
   PetscCall(PetscFreeSpaceContiguous(&free_space, ptap->apj));
   PetscCall(PetscLLDestroy(lnk, lnkbt));
@@ -811,7 +811,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
-  PetscCall(PetscMalloc1(am + 2, &api));
+  PetscCall(PetscMalloc1(am + 1, &api));
   ptap->api = api;
   api[0]    = 0;
 
@@ -884,7 +884,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
 
   /* Allocate space for apj, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscMalloc1(api[am] + 1, &ptap->apj));
+  PetscCall(PetscMalloc1(api[am], &ptap->apj));
   apj = ptap->apj;
   PetscCall(PetscFreeSpaceContiguous(&free_space, ptap->apj));
   PetscCall(PetscLLCondensedDestroy_Scalable(lnk));
@@ -1048,8 +1048,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   pi_loc = p_loc->i;
 
   /* Allocate memory for the i arrays of the matrices A*P, A_diag*P_off and A_offd * P */
-  PetscCall(PetscMalloc1(am + 2, &api));
-  PetscCall(PetscMalloc1(am + 2, &adpoi));
+  PetscCall(PetscMalloc1(am + 1, &api));
+  PetscCall(PetscMalloc1(am + 1, &adpoi));
 
   adpoi[0]  = 0;
   ptap->api = api;
@@ -1082,7 +1082,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   poff_j   = p_off->j;
 
   /* j_temp stores indices of a result row before they are added to the linked list */
-  PetscCall(PetscMalloc1(pN + 2, &j_temp));
+  PetscCall(PetscMalloc1(pN, &j_temp));
 
   /* Symbolic calc of the A_diag * p_loc_off */
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
@@ -1130,8 +1130,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   /* Allocate space for apj, adpj, aopj, ... */
   /* destroy lists of free space and other temporary array(s) */
 
-  PetscCall(PetscMalloc1(aopothi[am] + adpoi[am] + adpdi[am] + 2, &ptap->apj));
-  PetscCall(PetscMalloc1(adpoi[am] + 2, &adpoj));
+  PetscCall(PetscMalloc1(aopothi[am] + adpoi[am] + adpdi[am], &ptap->apj));
+  PetscCall(PetscMalloc1(adpoi[am], &adpoj));
 
   /* Copy from linked list to j-array */
   PetscCall(PetscFreeSpaceContiguous(&free_space_diag, adpoj));
@@ -1164,7 +1164,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   }
 
   /* malloc apa to store dense row A[i,:]*P */
-  PetscCall(PetscCalloc1(pN + 2, &ptap->apa));
+  PetscCall(PetscCalloc1(pN, &ptap->apa));
 
   /* create and assemble symbolic parallel matrix C */
   PetscCall(MatSetSizes(C, am, pn, PETSC_DETERMINE, PETSC_DETERMINE));
@@ -1293,7 +1293,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   owners = rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  PetscCall(PetscMalloc4(size, &len_s, size, &len_si, size, &sstatus, size + 2, &owners_co));
+  PetscCall(PetscMalloc4(size, &len_s, size, &len_si, size, &sstatus, size + 1, &owners_co));
   PetscCall(PetscArrayzero(len_s, size));
   PetscCall(PetscArrayzero(len_si, size));
 
@@ -1327,7 +1327,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   /* post the Irecv and Isend of coj */
   PetscCall(PetscCommGetNewTag(comm, &tagj));
   PetscCall(PetscPostIrecvInt(comm, tagj, nrecv, id_r, len_r, &buf_rj, &rwaits));
-  PetscCall(PetscMalloc1(nsend + 1, &swaits));
+  PetscCall(PetscMalloc1(nsend, &swaits));
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
@@ -1364,7 +1364,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   /* (4) send and recv coi */
   PetscCall(PetscCommGetNewTag(comm, &tagi));
   PetscCall(PetscPostIrecvInt(comm, tagi, nrecv, id_r, len_ri, &buf_ri, &rwaits));
-  PetscCall(PetscMalloc1(len + 1, &buf_s));
+  PetscCall(PetscMalloc1(len, &buf_s));
   buf_si = buf_s; /* points to the beginning of k-th msg to be sent */
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
@@ -1593,11 +1593,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   /* get data from symbolic products */
   coi = merge->coi;
   coj = merge->coj;
-  PetscCall(PetscCalloc1(coi[pon] + 1, &coa));
+  PetscCall(PetscCalloc1(coi[pon], &coa));
   bi     = merge->bi;
   bj     = merge->bj;
   owners = merge->rowmap->range;
-  PetscCall(PetscCalloc1(bi[cm] + 1, &ba));
+  PetscCall(PetscCalloc1(bi[cm], &ba));
 
   /* get A_loc by taking all local rows of A */
   A_loc = ap->A_loc;
@@ -1665,7 +1665,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   PetscCall(PetscCommGetNewTag(comm, &taga));
   PetscCall(PetscPostIrecvScalar(comm, taga, merge->nrecv, merge->id_r, merge->len_r, &abuf_r, &r_waits));
 
-  PetscCall(PetscMalloc2(merge->nsend + 1, &s_waits, size, &status));
+  PetscCall(PetscMalloc2(merge->nsend, &s_waits, size, &status));
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = merge->owners_co[proc];
@@ -1817,7 +1817,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
     coi[i + 1] = coi[i] + nnz;
   }
 
-  PetscCall(PetscMalloc1(coi[pon] + 1, &coj));
+  PetscCall(PetscMalloc1(coi[pon], &coj));
   PetscCall(PetscFreeSpaceContiguous(&free_space, coj));
   PetscCall(PetscLLCondensedDestroy_Scalable(lnk)); /* must destroy to get a new one for C */
 
@@ -1842,7 +1842,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   len_s        = merge->len_s;
   merge->nsend = 0;
 
-  PetscCall(PetscMalloc1(size + 2, &owners_co));
+  PetscCall(PetscMalloc1(size + 1, &owners_co));
 
   proc = 0;
   for (i = 0; i < pon; i++) {
@@ -1855,7 +1855,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   owners_co[0] = 0;
   for (proc = 0; proc < size; proc++) {
     owners_co[proc + 1] = owners_co[proc] + len_si[proc];
-    if (len_si[proc]) {
+    if (len_s[proc]) {
       merge->nsend++;
       len_si[proc] = 2 * (len_si[proc] + 1);
       len += len_si[proc];
@@ -1869,7 +1869,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* post the Irecv and Isend of coj */
   PetscCall(PetscCommGetNewTag(comm, &tagj));
   PetscCall(PetscPostIrecvInt(comm, tagj, merge->nrecv, merge->id_r, merge->len_r, &buf_rj, &rwaits));
-  PetscCall(PetscMalloc1(merge->nsend + 1, &swaits));
+  PetscCall(PetscMalloc1(merge->nsend, &swaits));
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
@@ -1897,7 +1897,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* send and recv coi */
   PetscCall(PetscCommGetNewTag(comm, &tagi));
   PetscCall(PetscPostIrecvInt(comm, tagi, merge->nrecv, merge->id_r, len_ri, &buf_ri, &rwaits));
-  PetscCall(PetscMalloc1(len + 1, &buf_s));
+  PetscCall(PetscMalloc1(len, &buf_s));
   buf_si = buf_s; /* points to the beginning of k-th msg to be sent */
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
@@ -2004,7 +2004,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   }
   PetscCall(PetscFree3(buf_ri_k, nextrow, nextci));
 
-  PetscCall(PetscMalloc1(bi[pn] + 1, &bj));
+  PetscCall(PetscMalloc1(bi[pn], &bj));
   PetscCall(PetscFreeSpaceContiguous(&free_space, bj));
   afill_tmp = (PetscReal)bi[pn] / (pdti[pn] + poti[pon] + ai[am] + 1);
   if (afill_tmp > afill) afill = afill_tmp;

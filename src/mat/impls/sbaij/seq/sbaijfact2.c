@@ -2507,7 +2507,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
       ui[i + 1] = ui[i] + ncols;
       udiag[i]  = ui[i + 1] - 1; /* points to the last entry of U(i,:) */
     }
-    PetscCall(PetscMalloc1(ui[am] + 1, &uj));
+    PetscCall(PetscMalloc1(ui[am], &uj));
     cols = uj;
     for (i = 0; i < am; i++) {
       aj    = a->j + ai[i] + 1; /* 1st entry of U(i,:) without diagonal */
@@ -2615,7 +2615,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
     PetscCall(PetscFree4(uj_ptr, uj_lvl_ptr, il, jl));
 
     /* destroy list of free space and other temporary array(s) */
-    PetscCall(PetscMalloc1(ui[am] + 1, &uj));
+    PetscCall(PetscMalloc1(ui[am], &uj));
     PetscCall(PetscFreeSpaceContiguous_Cholesky(&free_space, uj, am, ui, udiag)); /* store matrix factor  */
     PetscCall(PetscIncompleteLLDestroy(lnk, lnkbt));
     PetscCall(PetscFreeSpaceDestroy(free_space_lvl));
@@ -2627,7 +2627,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
 
   b = (Mat_SeqSBAIJ *)fact->data;
   PetscCall(PetscFree2(b->imax, b->ilen));
-  PetscCall(PetscShmgetAllocateArray(ui[am] + 1, sizeof(PetscScalar), (void **)&b->a));
+  PetscCall(PetscShmgetAllocateArray(ui[am], sizeof(PetscScalar), (void **)&b->a));
   b->free_a    = PETSC_TRUE;
   b->free_ij   = free_ij;
   b->j         = uj;
@@ -2826,7 +2826,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS perm, c
 
   b = (Mat_SeqSBAIJ *)fact->data;
   PetscCall(PetscFree2(b->imax, b->ilen));
-  PetscCall(PetscShmgetAllocateArray(ui[am] + 1, sizeof(PetscScalar), (void **)&b->a));
+  PetscCall(PetscShmgetAllocateArray(ui[am], sizeof(PetscScalar), (void **)&b->a));
   b->free_a        = PETSC_TRUE;
   b->free_ij       = free_ij;
   b->j             = uj;

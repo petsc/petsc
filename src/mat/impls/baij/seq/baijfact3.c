@@ -243,7 +243,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   PetscCall(ISRestoreIndices(isicol, &ic));
 
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
-  PetscCall(PetscMalloc1(bi[n] + 1, &bj));
+  PetscCall(PetscMalloc1(bi[n], &bj));
   PetscCall(PetscFreeSpaceContiguous_LU(&free_space, bj, n, bi, bdiag));
   PetscCall(PetscLLDestroy(lnk, lnkbt));
   PetscCall(PetscFree2(bi_ptr, im));
