@@ -1217,7 +1217,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems P
 
   /* the Relax Order */
   PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg));
-  if (flg && tmp_truth) jac->relaxorder = 0;
+  if (flg) jac->relaxorder = !tmp_truth;
   PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_measure_type", "Measure type", "None", HYPREBoomerAMGMeasureType, PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGMeasureType), HYPREBoomerAMGMeasureType[0], &indx, &flg));
   if (flg) {
     jac->measuretype = indx;
