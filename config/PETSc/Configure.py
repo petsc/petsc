@@ -433,6 +433,9 @@ prepend-path PATH "%s"
       if not i.required:
         if i.devicePackage:
           self.addDefine('HAVE_DEVICE',1)
+          if self.languages.devicelanguage == 'C':
+            raise RuntimeError('Cannot use --with-devicelanguage=C with the device package ' + i.name)
+          self.languages.devicelanguage = 'Cxx'
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
@@ -443,6 +446,12 @@ prepend-path PATH "%s"
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
+    if self.languages.devicelanguage == '': self.languages.devicelanguage = self.languages.clanguage
+    elif self.languages.devicelanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
+      raise RuntimeError('Cannot use --with-devicelanguage=C++ without a valid C++ compiler')
+    if self.getMakeMacro('DEVICELANGUAGE') is None:
+      self.addDefine('DEVICELANGUAGE_'+self.languages.devicelanguage.upper(),'1')
+      self.addMakeMacro('DEVICELANGUAGE',self.languages.devicelanguage.upper())
 
     self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
