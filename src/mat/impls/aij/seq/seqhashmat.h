@@ -117,7 +117,7 @@ static PetscErrorCode MatSetUp_Seq_Hash(Mat A)
 #endif
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(A, "Using hash-based MatSetValues() for MATSEQAIJ because no preallocation provided\n"));
+  PetscCall(PetscInfo(A, "Using hash-based MatSetValues() for MATSEQ" PetscStringize(TYPE) " because no preallocation provided\n"));
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   if (A->rmap->bs < 1) A->rmap->bs = 1;
