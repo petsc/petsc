@@ -1526,7 +1526,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
   Fortran Notes:
   Only one monitor function may be set
 
-.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoSetDestroyRoutine()`, `TaoView()`, `PetscCtxDestroyFn`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoView()`, `PetscCtxDestroyFn`
 @*/
 PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscCtxDestroyFn *dest)
 {

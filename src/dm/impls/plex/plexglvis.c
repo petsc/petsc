@@ -11,15 +11,15 @@ typedef struct {
   VecScatter *scctx;
 } GLVisViewerCtx;
 
-static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx)
+static PetscErrorCode DestroyGLVisViewerCtx_Private(void **vctx)
 {
-  GLVisViewerCtx *ctx = (GLVisViewerCtx *)vctx;
+  GLVisViewerCtx *ctx = *(GLVisViewerCtx **)vctx;
   PetscInt        i;
 
   PetscFunctionBegin;
   for (i = 0; i < ctx->nf; i++) PetscCall(VecScatterDestroy(&ctx->scctx[i]));
   PetscCall(PetscFree(ctx->scctx));
-  PetscCall(PetscFree(vctx));
+  PetscCall(PetscFree(ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
