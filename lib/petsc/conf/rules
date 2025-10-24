@@ -186,22 +186,21 @@ ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files. The command is adapted from PETSC_COMPILE.kokkos.cxx
   # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o instead of foo.kokkos.o
   KOKKOS_COMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
-
-  LINK.kokkos.cxx = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
+  KOKKOS_LINK = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   KOKKOS_COMPILE_SINGLE = ${PETSC_HIPCOMPILE_SINGLE}
-  LINK.kokkos.cxx = $(HIPC)  $(HIPC_FLAGS)  $(HIPPP_FLAGS)  $(HIPOPTFLAGS)  $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
+  KOKKOS_LINK = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
   KOKKOS_COMPILE_SINGLE = ${PETSC_SYCLCOMPILE_SINGLE}
-  LINK.kokkos.cxx = $(SYCLC) $(SYCLC_FLAGS) $(SYCLC_LINKER_FLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(SYCLPP_FLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
+  KOKKOS_LINK = $(SYCLC) $(SYCLC_FLAGS) $(SYCLC_LINKER_FLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(SYCLPP_FLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else
   KOKKOS_COMPILE_SINGLE = ${PETSC_CXXCOMPILE_SINGLE}
-  LINK.kokkos.cxx = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
+  KOKKOS_LINK = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 endif
 
 # Why do we filter out -fvisibility=hidden? See comments in gmakefile.test on PETSC_COMPILE.kokkos.cxx
 PETSC_KOKKOSCOMPILE_SINGLE = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_COMPILE_SINGLE))))
-LINK.kokkos.cxx := $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(LINK.kokkos.cxx))))
+LINK.kokkos.cxx = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_LINK))))
 
 LINK.hip.cpp = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 
