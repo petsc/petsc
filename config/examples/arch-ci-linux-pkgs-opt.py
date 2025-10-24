@@ -55,6 +55,7 @@ configure_options = [
   '--download-opencascade=1',
   '--with-strict-petscerrorcode',
   '--with-coverage',
+  '--with-devicelanguage=cxx',
   ]
 
 if __name__ == '__main__':

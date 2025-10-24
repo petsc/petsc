@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: defined(PETSC_USE_INFO) defined(PETSC_USE_DEBUG) cxx
+    requires: defined(PETSC_USE_INFO) defined(PETSC_USE_DEBUG) defined(PETSC_DEVICELANGUAGE_CXX)
     args: -info :device
     suffix: with_info
     test:
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 
   testset:
     output_file: output/ExitSuccess.out
-    requires: !defined(PETSC_USE_DEBUG)
+    requires: !defined(PETSC_USE_DEBUG) defined(PETSC_DEVICELANGUAGE_CXX)
     filter: grep -v "\[DEBUG OUTPUT\]"
     suffix: no_info
     test:
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   test:
-    requires: !cxx
+    requires: !defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     filter: grep -v "\[DEBUG OUTPUT\]"
     suffix: no_cxx

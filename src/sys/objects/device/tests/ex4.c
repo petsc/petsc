@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: cxx
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     nsize: {{1 3}}
     args: -device_enable {{lazy eager}}

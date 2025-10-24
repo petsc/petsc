@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   // check that it has, the attached device should not be equal to ours
   PetscCall(PetscDeviceContextGetDevice(dctx, &other_device));
   // None C++ builds have dummy devices (NULL)
-  if (PetscDefined(HAVE_CXX)) PetscCheck(device != other_device, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext still has old PetscDevice attached after being recycled!");
+  if (PetscDefined(DEVICELANGUAGE_CXX)) PetscCheck(device != other_device, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext still has old PetscDevice attached after being recycled!");
 
   PetscCall(PetscDeviceContextDestroy(&dctx));
   PetscCall(PetscDeviceDestroy(&device));
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: cxx
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
     args: -device_enable {{lazy eager}}
     test:
       requires: !device
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   testset:
-    requires: !cxx
+    requires: !defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     suffix: no_cxx
 

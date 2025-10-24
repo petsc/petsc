@@ -57,10 +57,10 @@ PETSC_INTERN PetscErrorCode VecAXPBYCyclic(PetscInt oldest, PetscInt next, Petsc
   PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   PetscCall(VecGetArrayAndMemType(y, &y_, &y_memtype));
   if (PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(AXPBYCyclic_CUPM_Private(m, oldest, next, alpha, x_, beta, y_, 1));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   PetscCall(VecRestoreArrayReadAndMemType(x, &x_));
@@ -130,10 +130,10 @@ PETSC_INTERN PetscErrorCode VecDMVCyclic(PetscBool hermitian_transpose, PetscInt
   PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   PetscCall(VecGetArrayAndMemType(y, &y_, &y_memtype));
   if (PetscMemTypeDevice(A_memtype) && PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(DMVCyclic_CUPM_Private(hermitian_transpose, m, oldest, next, alpha, A_, x_, beta, y_));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   PetscCall(VecRestoreArrayAndMemType(y, &y_));
@@ -219,10 +219,10 @@ PETSC_INTERN PetscErrorCode VecDSVCyclic(PetscBool hermitian_transpose, PetscInt
     PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   }
   if (PetscMemTypeDevice(A_memtype) && PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(DSVCyclic_CUPM_Private(hermitian_transpose, m, oldest, next, A_, x_, y_));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   if (x != y) PetscCall(VecRestoreArrayReadAndMemType(x, &x_));
@@ -314,10 +314,10 @@ PETSC_INTERN PetscErrorCode MatSeqDenseTRSVCyclic(PetscBool hermitian_transpose,
     PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   }
   if (PetscMemTypeDevice(A_memtype) && PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(TRSVCyclic_CUPM_Private(hermitian_transpose, m, oldest, next, A_, lda, x_, y_));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   if (x != y) PetscCall(VecRestoreArrayReadAndMemType(x, &x_));
@@ -395,10 +395,10 @@ PETSC_INTERN PetscErrorCode MatSeqDenseHEMVCyclic(PetscInt oldest, PetscInt next
   PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   PetscCall(VecGetArrayAndMemType(y, &y_, &y_memtype));
   if (PetscMemTypeDevice(A_memtype) && PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(HEMVCyclic_CUPM_Private(m, oldest, next, alpha, A_, lda, x_, beta, y_));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   PetscCall(VecRestoreArrayAndMemType(y, &y_));
@@ -480,10 +480,10 @@ PETSC_INTERN PetscErrorCode MatSeqDenseGEMVCyclic(PetscBool hermitian_transpose,
   PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   PetscCall(VecGetArrayAndMemType(y, &y_, &y_memtype));
   if (PetscMemTypeDevice(A_memtype) && PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(GEMVCyclic_CUPM_Private(hermitian_transpose, m, oldest, next, alpha, A_, lda, x_, beta, y_));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   PetscCall(VecRestoreArrayAndMemType(y, &y_));
@@ -525,10 +525,10 @@ PETSC_INTERN PetscErrorCode MatSeqDenseRowAXPBYCyclic(PetscInt oldest, PetscInt 
   PetscCall(VecGetArrayReadAndMemType(x, &x_, &x_memtype));
   PetscCall(MatDenseGetArrayAndMemType(Y, &y_, &y_memtype));
   if (PetscMemTypeDevice(x_memtype) && PetscMemTypeDevice(y_memtype)) {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(HAVE_CUPM)
     if (m_local == m) PetscCall(AXPBYCyclic_CUPM_Private(m, oldest, next, alpha, x_, beta, &y_[row % m], ldy));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "Memtype device needs C++ support");
+    SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_PLIB, "PetscMemTypeDevice needs either CUDA or HIP support");
 #endif
   } else if (m_local == m) on_host = PETSC_TRUE;
   PetscCall(MatDenseRestoreArrayAndMemType(Y, &y_));

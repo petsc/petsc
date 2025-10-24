@@ -5,7 +5,7 @@ static const char help[] = "Tests PetscDeviceContextSetStreamType().\n\n";
 int main(int argc, char *argv[])
 {
   const PetscStreamType stypes[] = {
-#if PetscDefined(HAVE_CXX)
+#if PetscDefined(DEVICELANGUAGE_CXX)
     PETSC_STREAM_DEFAULT, PETSC_STREAM_NONBLOCKING, PETSC_STREAM_DEFAULT_WITH_BARRIER, PETSC_STREAM_NONBLOCKING_WITH_BARRIER
 #else
     PETSC_STREAM_DEFAULT
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: cxx
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     args: -device_enable {{lazy eager}}
     test:
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   test:
-    requires: !cxx
+    requires: !defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     suffix: no_cxx
 

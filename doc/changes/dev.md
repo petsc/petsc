@@ -12,6 +12,9 @@
 ```{rubric} Configure/Build:
 ```
 
+- Make `SYCL` a `devicePackage`, i.e., builds `--with-sycl` now have `PETSC_HAVE_DEVICE` defined
+- Add the option `--with-devicelanguage` to compile `PetscDevice` code using either a C or C++ compiler
+
 ```{rubric} Sys:
 ```
 

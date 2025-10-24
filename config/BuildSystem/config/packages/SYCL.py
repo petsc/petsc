@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.precisions       = ['single','double']
     self.buildLanguages   = ['SYCL']
     self.minCxxVersion    = 'c++17'
+    self.devicePackage    = 1
     self.skipMPIDependency= 1
     return
 

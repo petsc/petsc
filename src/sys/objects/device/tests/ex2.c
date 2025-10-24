@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: cxx
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     nsize: {{1 2 4}}
     args: -device_enable {{lazy eager}}
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   testset:
-    requires: !cxx
+    requires: !defined(PETSC_DEVICELANGUAGE_CXX)
     output_file: output/ExitSuccess.out
     suffix: no_cxx
 

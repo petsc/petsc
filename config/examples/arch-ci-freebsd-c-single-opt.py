@@ -14,6 +14,7 @@ configure_options = [
   '--download-parmetis',
   '--download-hypre',
   '--with-strict-petscerrorcode',
+  '--with-devicelanguage=cxx',
 ]
 
 if __name__ == '__main__':
