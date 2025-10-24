@@ -307,25 +307,6 @@ static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESView_NEWTONLS - Prints info from the SNESNEWTONLS data structure.
-
-   Input Parameters:
-.  SNES - the SNES context
-.  viewer - visualization context
-
-   Application Interface Routine: SNESView()
-*/
-static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
-{
-  PetscBool isascii;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) { }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
    SNESNEWTONLS - Newton based nonlinear solver that uses a line search
 
@@ -356,7 +337,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->ops->setup   = SNESSetUp_NEWTONLS;
   snes->ops->solve   = SNESSolve_NEWTONLS;
   snes->ops->destroy = SNESDestroy_NEWTONLS;
-  snes->ops->view    = SNESView_NEWTONLS;
 
   snes->npcside = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;

@@ -62,7 +62,6 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       /* This should only get the ordering if needed, but since MatGetFactor() is not called we can't know if it is needed */
       PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
       PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
-      if (dir->row) { }
       PetscCall(MatLUFactor(pc->pmat, dir->row, dir->col, &((PC_Factor *)dir)->info));
       PetscCall(MatFactorGetError(pc->pmat, &err));
       if (err) { /* Factor() fails */

@@ -1606,7 +1606,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
       for (j = 0; j < nzi; j++) {
         row  = aj[j];
         pnz  = pi[row + 1] - pi[row];
-        Jptr = p_oth->j + pi[row];
+        Jptr = PetscSafePointerPlusOffset(p_oth->j, pi[row]);
         PetscCall(PetscLLCondensedAddSorted(pnz, Jptr, lnk, lnkbt));
       }
     }

@@ -167,7 +167,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
 #endif
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(A, "Using hash-based MatSetValues() for MATMPISBAIJ because no preallocation provided\n"));
+  PetscCall(PetscInfo(A, "Using hash-based MatSetValues() for MATMPI" PetscStringize(TYPE) " because no preallocation provided\n"));
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   if (A->rmap->bs < 1) A->rmap->bs = 1;

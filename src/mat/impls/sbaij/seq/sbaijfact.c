@@ -332,7 +332,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   PetscCall(PetscFree4(ui_ptr, il, jl, cols));
 
   /* destroy list of free space and other temporary array(s) */
-  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscInt), (void **)&uj));
+  PetscCall(PetscShmgetAllocateArray(ui[mbs], sizeof(PetscInt), (void **)&uj));
   PetscCall(PetscFreeSpaceContiguous_Cholesky(&free_space, uj, mbs, ui, udiag)); /* store matrix factor */
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
@@ -341,7 +341,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
 
   b          = (Mat_SeqSBAIJ *)fact->data;
   b->free_ij = PETSC_TRUE;
-  PetscCall(PetscShmgetAllocateArray(ui[mbs] + 1, sizeof(PetscScalar), (void **)&b->a));
+  PetscCall(PetscShmgetAllocateArray(ui[mbs], sizeof(PetscScalar), (void **)&b->a));
   b->free_a    = PETSC_TRUE;
   b->j         = uj;
   b->i         = ui;

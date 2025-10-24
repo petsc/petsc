@@ -249,8 +249,8 @@ PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat, PetscMemType *);
       _row = _aj[_j]; \
       _pi  = p_loc->i; \
       _pnz = _pi[_row + 1] - _pi[_row]; \
-      _pj  = p_loc->j + _pi[_row]; \
-      _pa  = p_loc->a + _pi[_row]; \
+      _pj  = PetscSafePointerPlusOffset(p_loc->j, _pi[_row]); \
+      _pa  = PetscSafePointerPlusOffset(p_loc->a, _pi[_row]); \
       /* perform dense axpy */ \
       _valtmp = _aa[_j]; \
       for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \
@@ -266,8 +266,8 @@ PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat, PetscMemType *);
         _row = _aj[_j]; \
         _pi  = p_oth->i; \
         _pnz = _pi[_row + 1] - _pi[_row]; \
-        _pj  = p_oth->j + _pi[_row]; \
-        _pa  = p_oth->a + _pi[_row]; \
+        _pj  = PetscSafePointerPlusOffset(p_oth->j, _pi[_row]); \
+        _pa  = PetscSafePointerPlusOffset(p_oth->a, _pi[_row]); \
         /* perform dense axpy */ \
         _valtmp = _aa[_j]; \
         for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \

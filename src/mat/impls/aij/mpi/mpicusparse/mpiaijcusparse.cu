@@ -506,8 +506,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
 }
 
 /*@
-  MatCreateAIJCUSPARSE - Creates a sparse matrix in `MATAIJCUSPARSE` (compressed row) format
-  (the default parallel PETSc format).  This matrix will ultimately pushed down
+  MatCreateAIJCUSPARSE - Creates a sparse matrix in `MATAIJCUSPARSE` (compressed row) format. This matrix will ultimately be pushed down
   to NVIDIA GPUs and use the CuSPARSE library for calculations.
 
   Collective
@@ -515,28 +514,28 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   Input Parameters:
 + comm  - MPI communicator, set to `PETSC_COMM_SELF`
 . m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          $y$ vector for the matrix-vector product $y = Ax$.
 . n     - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
-       calculated if `N` is given) For square matrices `n` is almost always `m`.
+          $x$ vector for the matrix-vector product $y = Ax$. (or `PETSC_DECIDE` to have
+          calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
-           (same value is used for all local rows)
+          (same value is used for all local rows)
 . d_nnz - array containing the number of nonzeros in the various rows of the
-           DIAGONAL portion of the local submatrix (possibly different for each row)
-           or `NULL`, if `d_nz` is used to specify the nonzero structure.
-           The size of this array is equal to the number of local rows, i.e `m`.
-           For matrices you plan to factor you must leave room for the diagonal entry and
-           put in the entry even if it is zero.
+          DIAGONAL portion of the local submatrix (possibly different for each row)
+          or `NULL`, if `d_nz` is used to specify the nonzero structure.
+          The size of this array is equal to the number of local rows, i.e `m`.
+          For matrices you plan to factor you must leave room for the diagonal entry and
+          put in the entry even if it is zero.
 . o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
-           submatrix (same value is used for all local rows).
+          submatrix (same value is used for all local rows).
 - o_nnz - array containing the number of nonzeros in the various rows of the
-           OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or `NULL`, if `o_nz` is used to specify the nonzero
-           structure. The size of this array is equal to the number
-           of local rows, i.e `m`.
+          OFF-DIAGONAL portion of the local submatrix (possibly different for
+          each row) or `NULL`, if `o_nz` is used to specify the nonzero
+          structure. The size of this array is equal to the number
+          of local rows, i.e `m`.
 
   Output Parameter:
 . A - the matrix
@@ -552,6 +551,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   compressed row storage), is fully compatible with standard Fortran
   storage.  That is, the stored row and column indices can begin at
   either one (as in Fortran) or zero.
+
+  When working with matrices for GPUs, it is often better to use the `MatSetPreallocationCOO()` and `MatSetValuesCOO()` paradigm rather than using this routine and `MatSetValues()`
 
 .seealso: [](ch_matrices), `Mat`, `MATAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MATMPIAIJCUSPARSE`
 @*/
@@ -574,31 +575,29 @@ PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
 }
 
 /*MC
-   MATAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATMPIAIJCUSPARSE`.
-
-   A matrix type whose data resides on NVIDIA GPUs. These matrices can be in either
-   CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
-   All matrix calculations are performed on NVIDIA GPUs using the CuSPARSE library.
-
-   This matrix type is identical to `MATSEQAIJCUSPARSE` when constructed with a single process communicator,
-   and `MATMPIAIJCUSPARSE` otherwise.  As a result, for single process communicators,
-   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
-   for communicators controlling multiple processes.  It is recommended that you call both of
-   the above preallocation routines for simplicity.
+   MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices on NVIDIA GPUs.
 
    Options Database Keys:
-+  -mat_type mpiaijcusparse - sets the matrix type to `MATMPIAIJCUSPARSE`
-.  -mat_cusparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
++  -mat_type mpiaijcusparse                      - sets the matrix type to `MATMPIAIJCUSPARSE`
+.  -mat_cusparse_storage_format csr              - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
+.  -mat_cusparse_mult_diag_storage_format csr    - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
 -  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
+
+  Notes:
+  These matrices can be in either CSR, ELL, or HYB format. The ELL and HYB formats require CUDA 4.2 or later.
+
+  All matrix calculations are performed on NVIDIA GPUs using the cuSPARSE library.
+
+  Uses 32-bit integers internally. If PETSc is configured `--with-64-bit-indices`, the integer row and column indices are stored on the GPU with `int`. It is unclear what happens
+  if some integer values passed in do not fit in `int`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateAIJCUSPARSE()`, `MATSEQAIJCUSPARSE`, `MATMPIAIJCUSPARSE`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
 /*MC
-   MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATAIJCUSPARSE`.
+   MATAIJCUSPARSE - A matrix type to be used for sparse matrices on NVIDIA GPUs; it is as same as `MATSEQAIJCUSPARSE` on one MPI process and `MATMPIAIJCUSPARSE` on multiple processes.
 
   Level: beginner
 

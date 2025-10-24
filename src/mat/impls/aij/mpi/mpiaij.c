@@ -3006,7 +3006,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
     if (oldmat->garray) {
       PetscInt len;
       len = oldmat->B->cmap->n;
-      PetscCall(PetscMalloc1(len + 1, &a->garray));
+      PetscCall(PetscMalloc1(len, &a->garray));
       if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
     } else a->garray = NULL;
 
@@ -4974,7 +4974,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
 
   PetscCall(PetscFree3(buf_ri_k, nextrow, nextai));
 
-  PetscCall(PetscMalloc1(bi[m] + 1, &bj));
+  PetscCall(PetscMalloc1(bi[m], &bj));
   PetscCall(PetscFreeSpaceContiguous(&free_space, bj));
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
@@ -5860,11 +5860,11 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
     PetscCall(PetscFree(svalues));
 
     /* allocate buffers for sending j and a arrays */
-    PetscCall(PetscMalloc1(len + 1, &bufj));
-    PetscCall(PetscMalloc1(len + 1, &bufa));
+    PetscCall(PetscMalloc1(len, &bufj));
+    PetscCall(PetscMalloc1(len, &bufa));
 
     /* create i-array of B_oth */
-    PetscCall(PetscMalloc1(aBn + 2, &b_othi));
+    PetscCall(PetscMalloc1(aBn + 1, &b_othi));
 
     b_othi[0] = 0;
     len       = 0; /* total length of j or a array to be received */
@@ -5882,21 +5882,21 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
     PetscCall(PetscFree(rvalues));
 
     /* allocate space for j and a arrays of B_oth */
-    PetscCall(PetscMalloc1(b_othi[aBn] + 1, &b_othj));
-    PetscCall(PetscMalloc1(b_othi[aBn] + 1, &b_otha));
+    PetscCall(PetscMalloc1(b_othi[aBn], &b_othj));
+    PetscCall(PetscMalloc1(b_othi[aBn], &b_otha));
 
     /* j-array */
     /*  post receives of j-array */
     for (i = 0; i < nrecvs; i++) {
       nrows = rstartsj[i + 1] - rstartsj[i]; /* length of the msg received */
-      PetscCallMPI(MPIU_Irecv(b_othj + rstartsj[i], nrows, MPIU_INT, rprocs[i], tag, comm, rwaits + i));
+      PetscCallMPI(MPIU_Irecv(PetscSafePointerPlusOffset(b_othj, rstartsj[i]), nrows, MPIU_INT, rprocs[i], tag, comm, rwaits + i));
     }
 
     /* pack the outgoing message j-array */
     if (nsends) k = sstarts[0];
     for (i = 0; i < nsends; i++) {
       nrows = sstarts[i + 1] - sstarts[i]; /* num of block rows */
-      bufJ  = bufj + sstartsj[i];
+      bufJ  = PetscSafePointerPlusOffset(bufj, sstartsj[i]);
       for (j = 0; j < nrows; j++) {
         row = srow[k++] + B->rmap->range[rank]; /* global row idx */
         for (ll = 0; ll < sbs; ll++) {
@@ -5905,7 +5905,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
           PetscCall(MatRestoreRow_MPIAIJ(B, row + ll, &ncols, &cols, NULL));
         }
       }
-      PetscCallMPI(MPIU_Isend(bufj + sstartsj[i], sstartsj[i + 1] - sstartsj[i], MPIU_INT, sprocs[i], tag, comm, swaits + i));
+      PetscCallMPI(MPIU_Isend(PetscSafePointerPlusOffset(bufj, sstartsj[i]), sstartsj[i + 1] - sstartsj[i], MPIU_INT, sprocs[i], tag, comm, swaits + i));
     }
 
     /* recvs and sends of j-array are completed */
@@ -5921,14 +5921,14 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   /*  post receives of a-array */
   for (i = 0; i < nrecvs; i++) {
     nrows = rstartsj[i + 1] - rstartsj[i]; /* length of the msg received */
-    PetscCallMPI(MPIU_Irecv(b_otha + rstartsj[i], nrows, MPIU_SCALAR, rprocs[i], tag, comm, rwaits + i));
+    PetscCallMPI(MPIU_Irecv(PetscSafePointerPlusOffset(b_otha, rstartsj[i]), nrows, MPIU_SCALAR, rprocs[i], tag, comm, rwaits + i));
   }
 
   /* pack the outgoing message a-array */
   if (nsends) k = sstarts[0];
   for (i = 0; i < nsends; i++) {
     nrows = sstarts[i + 1] - sstarts[i]; /* num of block rows */
-    bufA  = bufa + sstartsj[i];
+    bufA  = PetscSafePointerPlusOffset(bufa, sstartsj[i]);
     for (j = 0; j < nrows; j++) {
       row = srow[k++] + B->rmap->range[rank]; /* global row idx */
       for (ll = 0; ll < sbs; ll++) {
@@ -5937,7 +5937,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
         PetscCall(MatRestoreRow_MPIAIJ(B, row + ll, &ncols, NULL, &vals));
       }
     }
-    PetscCallMPI(MPIU_Isend(bufa + sstartsj[i], sstartsj[i + 1] - sstartsj[i], MPIU_SCALAR, sprocs[i], tag, comm, swaits + i));
+    PetscCallMPI(MPIU_Isend(PetscSafePointerPlusOffset(bufa, sstartsj[i]), sstartsj[i + 1] - sstartsj[i], MPIU_SCALAR, sprocs[i], tag, comm, swaits + i));
   }
   /* recvs and sends of a-array are completed */
   if (nreqs) PetscCallMPI(MPI_Waitall(nreqs, reqs, MPI_STATUSES_IGNORE));
