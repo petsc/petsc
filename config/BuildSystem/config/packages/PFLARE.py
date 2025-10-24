@@ -4,7 +4,7 @@ class Configure(config.package.Package):
     def __init__(self, framework):
         config.package.Package.__init__(self, framework)
         self.version                = '1.24.11'
-        self.gitcommit              = '35c63fc2475a54e00453311c5a87017fe5d0ae63'
+        self.gitcommit              = 'fc6566705d239ba150cab7d1fb55886345a491bd'
         self.download               = ['git://https://github.com/PFLAREProject/PFLARE','https://github.com/PFLAREProject/PFLARE/archive/'+self.gitcommit+'.tar.gz']
         self.functions              = ['PCRegister_PFLARE']
         self.includes               = ['pflare.h']
@@ -24,8 +24,10 @@ class Configure(config.package.Package):
         self.kokkos          = framework.require('config.packages.kokkos',self)
         self.kokkoskernels   = framework.require('config.packages.kokkos-kernels',self)
         self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
+        self.petsc4py        = framework.require('config.packages.petsc4py',self)
+        self.cython          = framework.require('config.packages.cython',self)
         self.deps            = [self.mpi,self.blasLapack,self.parmetis]
-        self.odeps           = [self.kokkos,self.kokkoskernels]
+        self.odeps           = [self.kokkos,self.kokkoskernels,self.petsc4py,self.cython]
         return
 
     def Install(self):
@@ -55,14 +57,16 @@ class Configure(config.package.Package):
         self.lib     = [os.path.join(self.installDir,'lib','libpflare.a')]
         libdir = os.path.join(self.installDir, 'lib')
         # Call make, make python (if petsc4py is enabled), then
-        # make install. After that create a symlink called libpetscpflare.so
+        # make install. After that create a symlink called libpetscpflare
         # to ensure the PFLARE registration routine is called when PETSc loads
         # the dynamic PFLARE library
         post_cmds = [barg + ' ${OMAKE} ' + barg,]
-        if self.argDB['with-petsc4py']:
+        if self.petsc4py.found:
+            if not self.cython.found:
+                raise RuntimeError('PFLARE with petsc4py requires cython! Suggest --download-cython!')
             post_cmds.append(barg + ' ${OMAKE} ' + barg + ' python')
         post_cmds.append(barg + ' ${OMAKE} ' + barg + ' install')
-        post_cmds.append('cd "{0}" && ln -sf libpflare.{1} libpetscpflare.so'.format(libdir, self.setCompilers.sharedLibraryExt))
+        post_cmds.append('cd "{0}" && ln -sf libpflare.{1} libpetscpflare.{1}'.format(libdir, self.setCompilers.sharedLibraryExt))
         self.addPost(self.packageDir, post_cmds)
         self.addMakeCheck(self.packageDir, '${OMAKE} ' + checkarg + ' check')
 
