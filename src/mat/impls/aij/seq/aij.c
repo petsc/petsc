@@ -205,12 +205,14 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A, PetscInt oshift, PetscBool symmetric, P
   } else if (oshift == 1) {
     PetscInt *tia;
     PetscInt  nz = a->i[A->rmap->n];
+
     /* malloc space and  add 1 to i and j indices */
     PetscCall(PetscMalloc1(A->rmap->n + 1, &tia));
     for (i = 0; i < A->rmap->n + 1; i++) tia[i] = a->i[i] + 1;
     *ia = tia;
     if (ja) {
       PetscInt *tja;
+
       PetscCall(PetscMalloc1(nz + 1, &tja));
       for (i = 0; i < nz; i++) tja[i] = a->j[i] + 1;
       *ja = tja;
@@ -1683,7 +1685,11 @@ static PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v)
 
   PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &diag, &diagDense));
   if (diagDense) {
-    PetscCall(MatShift_Basic(A, v));
+    PetscScalar *Aa;
+
+    PetscCall(MatSeqAIJGetArray(A, &Aa));
+    for (PetscInt i = 0; i < A->rmap->n; i++) Aa[diag[i]] += v;
+    PetscCall(MatSeqAIJRestoreArray(A, &Aa));
   } else {
     PetscScalar       *olda = a->a; /* preserve pointers to current matrix nonzeros structure and values */
     PetscInt          *oldj = a->j, *oldi = a->i;
@@ -2073,10 +2079,7 @@ static PetscErrorCode MatZeroRows_SeqAIJ(Mat A, PetscInt N, const PetscInt rows[
         d = rows[i];
         if (d >= A->cmap->n) continue;
         PetscCheck(diag[d] < a->i[d + 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry in the zeroed row %" PetscInt_FMT, d);
-      }
-      for (i = 0; i < N; i++) {
-        if (rows[i] >= A->cmap->n) continue;
-        aa[diag[rows[i]]] = diagv;
+        aa[diag[d]] = diagv;
       }
     }
   } else {
@@ -2161,7 +2164,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A, PetscInt N, const PetscIn
     }
   }
   PetscCall(MatSeqAIJRestoreArray(A, &aa));
-  PetscUseTypeMethod(A, assemblyend, MAT_FINAL_ASSEMBLY);
+  if (!diagDense) PetscUseTypeMethod(A, assemblyend, MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

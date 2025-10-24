@@ -764,7 +764,7 @@ PetscErrorCode MatMultTranspose_SeqSELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonalMarkers_SeqSELL(Mat A, const PetscInt **diag, PetscBool *diagDense)
+static PetscErrorCode MatGetDiagonalMarkers_SeqSELL(Mat A, const PetscInt **diag, PetscBool *diagDense)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
 
