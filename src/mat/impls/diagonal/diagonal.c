@@ -53,9 +53,11 @@ static PetscErrorCode MatAXPY_Diagonal(Mat Y, PetscScalar a, Mat X, MatStructure
 
 static PetscErrorCode MatGetRow_Diagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **vals)
 {
-  Mat_Diagonal *mat = (Mat_Diagonal *)A->data;
+  Mat_Diagonal *mat    = (Mat_Diagonal *)A->data;
+  PetscInt      rstart = A->rmap->rstart, rend = A->rmap->rend;
 
   PetscFunctionBegin;
+  PetscCheck(row >= rstart && row < rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only local rows");
   if (ncols) *ncols = 1;
   if (cols) {
     if (!mat->col) PetscCall(PetscMalloc1(1, &mat->col));
@@ -67,7 +69,7 @@ static PetscErrorCode MatGetRow_Diagonal(Mat A, PetscInt row, PetscInt *ncols, P
 
     if (!mat->val) PetscCall(PetscMalloc1(1, &mat->val));
     PetscCall(VecGetArrayRead(mat->diag, &v));
-    *mat->val = v[row];
+    *mat->val = v[row - rstart];
     *vals     = mat->val;
     PetscCall(VecRestoreArrayRead(mat->diag, &v));
   }
