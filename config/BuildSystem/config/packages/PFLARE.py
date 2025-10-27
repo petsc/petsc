@@ -25,7 +25,7 @@ class Configure(config.package.Package):
         self.kokkoskernels   = framework.require('config.packages.kokkos-kernels',self)
         self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
         self.petsc4py        = framework.require('config.packages.petsc4py',self)
-        self.cython          = framework.require('config.packages.cython',self)
+        self.cython          = framework.require('config.packages.Cython',self)
         self.deps            = [self.mpi,self.blasLapack,self.parmetis]
         self.odeps           = [self.kokkos,self.kokkoskernels,self.petsc4py,self.cython]
         return
