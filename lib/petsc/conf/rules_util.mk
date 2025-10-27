@@ -154,7 +154,7 @@ checkbadSource:
 	-@echo "----- No blank line before PetscFunctionBegin and derivatives ------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
 	-@echo "----- Unneeded parentheses [!&~*](foo[->|.]bar) --------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\-\-|\+\+|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Use PetscSafePointerPlusOffset(ptr, n) instead of ptr ? ptr + n : NULL" >> checkbadSource.out
 	-@git --no-pager grep -n -Po ' ([^()\ ]+) \? (?1) \+ (.)* : NULL' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Wrong PETSc capitalization -----------------------------------" >> checkbadSource.out

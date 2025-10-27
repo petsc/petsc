@@ -61,7 +61,7 @@ PetscErrorCode PetscLogStateDestroy(PetscLogState *state)
   PetscFunctionBegin;
   s      = *state;
   *state = NULL;
-  if (s == NULL || --(s->refct) > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (s == NULL || --s->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogRegistryDestroy(s->registry));
   PetscCall(PetscIntStackDestroy(s->stage_stack));
   PetscCall(PetscBTDestroy(&s->active));

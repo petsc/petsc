@@ -250,7 +250,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceGetDefaultForType_Internal
 static inline PetscErrorCode PetscDeviceReference_Internal(PetscDevice device)
 {
   PetscFunctionBegin;
-  if (PetscDefined(DEVICELANGUAGE_CXX)) ++(device->refcnt);
+  if (PetscDefined(DEVICELANGUAGE_CXX)) ++device->refcnt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -258,7 +258,7 @@ static inline PetscErrorCode PetscDeviceReference_Internal(PetscDevice device)
 static inline PetscErrorCode PetscDeviceDereference_Internal(PetscDevice device)
 {
   PetscFunctionBegin;
-  --(device->refcnt);
+  --device->refcnt;
   PetscAssert(device->refcnt >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "PetscDevice has negative reference count %" PetscInt_FMT, device->refcnt);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
