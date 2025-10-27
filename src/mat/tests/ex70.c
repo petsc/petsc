@@ -48,9 +48,9 @@ typedef struct {
   Mat R;
 } proj_data;
 
-PetscErrorCode proj_destroy(void *ctx)
+PetscErrorCode proj_destroy(void **ctx)
 {
-  proj_data *userdata = (proj_data *)ctx;
+  proj_data *userdata = *(proj_data **)ctx;
 
   PetscFunctionBegin;
   PetscCheck(userdata, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing userdata");

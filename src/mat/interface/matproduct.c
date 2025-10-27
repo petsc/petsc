@@ -273,7 +273,7 @@ PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
   }
   /* Any of the replaced mats is of a different type, reset */
   if (!flgA || !flgB || !flgC) {
-    if (D->product->destroy) PetscCall((*D->product->destroy)(D->product->data));
+    if (D->product->destroy) PetscCall((*D->product->destroy)(&D->product->data));
     D->product->destroy = NULL;
     D->product->data    = NULL;
     if (D->ops->productnumeric || D->ops->productsymbolic) {
@@ -945,7 +945,7 @@ PetscErrorCode MatProductGetAlgorithm(Mat mat, MatProductAlgorithm *alg)
   Input Parameters:
 + mat        - the matrix whose values are computed via a matrix-matrix product operation
 - productype - matrix product type, e.g., `MATPRODUCT_AB`,`MATPRODUCT_AtB`,`MATPRODUCT_ABt`,`MATPRODUCT_PtAP`,`MATPRODUCT_RARt`,`MATPRODUCT_ABC`,
-                  see `MatProductType`
+               see `MatProductType`
 
   Level: intermediate
 
@@ -962,7 +962,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
   MatCheckProduct(mat, 1);
   PetscValidLogicalCollectiveEnum(mat, productype, 2);
   if (productype != mat->product->type) {
-    if (mat->product->destroy) PetscCall((*mat->product->destroy)(mat->product->data));
+    if (mat->product->destroy) PetscCall((*mat->product->destroy)(&mat->product->data));
     mat->product->destroy     = NULL;
     mat->product->data        = NULL;
     mat->ops->productsymbolic = NULL;
@@ -1004,7 +1004,7 @@ PetscErrorCode MatProductClear(Mat mat)
     PetscCall(MatDestroy(&product->C));
     PetscCall(PetscFree(product->alg));
     PetscCall(MatDestroy(&product->Dwork));
-    if (product->destroy) PetscCall((*product->destroy)(product->data));
+    if (product->destroy) PetscCall((*product->destroy)(&product->data));
   }
   PetscCall(PetscFree(mat->product));
   mat->ops->productsymbolic = NULL;
@@ -1170,28 +1170,28 @@ PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 typedef struct {
   Mat BC;
   Mat ABC;
-} MatMatMatPrivate;
+} MatProductCtx_MatMatMatPrivate;
 
-static PetscErrorCode MatDestroy_MatMatMatPrivate(void *data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMatPrivate(void **data)
 {
-  MatMatMatPrivate *mmdata = (MatMatMatPrivate *)data;
+  MatProductCtx_MatMatMatPrivate *mmdata = *(MatProductCtx_MatMatMatPrivate **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&mmdata->BC));
   PetscCall(MatDestroy(&mmdata->ABC));
-  PetscCall(PetscFree(data));
+  PetscCall(PetscFree(*data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
 {
-  Mat_Product      *product = mat->product;
-  MatMatMatPrivate *mmabc;
+  Mat_Product                    *product = mat->product;
+  MatProductCtx_MatMatMatPrivate *mmabc;
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
   PetscCheck(mat->product->data, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Product data empty");
-  mmabc = (MatMatMatPrivate *)mat->product->data;
+  mmabc = (MatProductCtx_MatMatMatPrivate *)mat->product->data;
   PetscCheck(mmabc->BC->ops->productnumeric, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing numeric stage");
   /* use function pointer directly to prevent logging */
   PetscCall((*mmabc->BC->ops->productnumeric)(mmabc->BC));
@@ -1207,11 +1207,11 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
 
 PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
 {
-  Mat_Product      *product = mat->product;
-  Mat               A, B, C;
-  MatProductType    p1, p2;
-  MatMatMatPrivate *mmabc;
-  const char       *prefix;
+  Mat_Product                    *product = mat->product;
+  Mat                             A, B, C;
+  MatProductType                  p1, p2;
+  MatProductCtx_MatMatMatPrivate *mmabc;
+  const char                     *prefix;
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
@@ -1219,7 +1219,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   PetscCall(MatGetOptionsPrefix(mat, &prefix));
   PetscCall(PetscNew(&mmabc));
   product->data    = mmabc;
-  product->destroy = MatDestroy_MatMatMatPrivate;
+  product->destroy = MatProductCtxDestroy_MatMatMatPrivate;
   switch (product->type) {
   case MATPRODUCT_PtAP:
     p1 = MATPRODUCT_AB;

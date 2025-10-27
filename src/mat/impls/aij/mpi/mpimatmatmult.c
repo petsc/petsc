@@ -73,9 +73,9 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
   SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Mat Product Algorithm is not supported");
 }
 
-PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void *data)
+PetscErrorCode MatProductCtxDestroy_MPIAIJ_MatMatMult(void **data)
 {
-  Mat_APMPI *ptap = (Mat_APMPI *)data;
+  MatProductCtx_APMPI *ptap = *(MatProductCtx_APMPI **)data;
 
   PetscFunctionBegin;
   PetscCall(PetscFree2(ptap->startsj_s, ptap->startsj_r));
@@ -92,24 +92,24 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void *data)
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
 {
-  Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
-  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
-  PetscScalar       *cda = cd->a, *coa = co->a;
-  Mat_SeqAIJ        *p_loc, *p_oth;
-  PetscScalar       *apa, *ca;
-  PetscInt           cm = C->rmap->n;
-  Mat_APMPI         *ptap;
-  PetscInt          *api, *apj, *apJ, i, k;
-  PetscInt           cstart = C->cmap->rstart;
-  PetscInt           cdnz, conz, k0, k1;
-  const PetscScalar *dummy;
-  MPI_Comm           comm;
-  PetscMPIInt        size;
+  Mat_MPIAIJ          *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
+  Mat_SeqAIJ          *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
+  Mat_SeqAIJ          *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
+  PetscScalar         *cda = cd->a, *coa = co->a;
+  Mat_SeqAIJ          *p_loc, *p_oth;
+  PetscScalar         *apa, *ca;
+  PetscInt             cm = C->rmap->n;
+  MatProductCtx_APMPI *ptap;
+  PetscInt            *api, *apj, *apJ, i, k;
+  PetscInt             cstart = C->cmap->rstart;
+  PetscInt             cdnz, conz, k0, k1;
+  const PetscScalar   *dummy;
+  MPI_Comm             comm;
+  PetscMPIInt          size;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  ptap = (Mat_APMPI *)C->product->data;
+  ptap = (MatProductCtx_APMPI *)C->product->data;
   PetscCheck(ptap, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtAP cannot be computed. Missing data");
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -182,19 +182,19 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
 
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscReal fill, Mat C)
 {
-  MPI_Comm           comm;
-  PetscMPIInt        size;
-  Mat_APMPI         *ptap;
-  PetscFreeSpaceList free_space = NULL, current_space = NULL;
-  Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
-  PetscInt          *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
-  PetscInt          *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
-  PetscInt          *lnk, i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi;
-  PetscInt           am = A->rmap->n, pN = P->cmap->N, pn = P->cmap->n, pm = P->rmap->n;
-  PetscBT            lnkbt;
-  PetscReal          afill;
-  MatType            mtype;
+  MPI_Comm             comm;
+  PetscMPIInt          size;
+  MatProductCtx_APMPI *ptap;
+  PetscFreeSpaceList   free_space = NULL, current_space = NULL;
+  Mat_MPIAIJ          *a  = (Mat_MPIAIJ *)A->data;
+  Mat_SeqAIJ          *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
+  PetscInt            *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
+  PetscInt            *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
+  PetscInt            *lnk, i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi;
+  PetscInt             am = A->rmap->n, pN = P->cmap->N, pn = P->cmap->n, pm = P->rmap->n;
+  PetscBT              lnkbt;
+  PetscReal            afill;
+  MatType              mtype;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -202,7 +202,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  /* create struct Mat_APMPI and attached it to C later */
+  /* create struct MatProductCtx_APMPI and attached it to C later */
   PetscCall(PetscNew(&ptap));
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
@@ -308,7 +308,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
-  C->product->destroy = MatDestroy_MPIAIJ_MatMatMult;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_MatMatMult;
 
   /* set MatInfo */
   afill = (PetscReal)api[am] / (adi[am] + aoi[am] + pi_loc[pm] + 1) + 1.e-5;
@@ -385,9 +385,9 @@ typedef struct {
   PetscInt      blda;
 } MPIAIJ_MPIDense;
 
-static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
+static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void **ctx)
 {
-  MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense *)ctx;
+  MPIAIJ_MPIDense *contents = *(MPIAIJ_MPIDense **)ctx;
   PetscInt         i;
 
   PetscFunctionBegin;
@@ -624,27 +624,27 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 {
-  Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
-  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
-  PetscInt          *adi = ad->i, *adj, *aoi = ao->i, *aoj;
-  PetscScalar       *ada, *aoa, *cda = cd->a, *coa = co->a;
-  Mat_SeqAIJ        *p_loc, *p_oth;
-  PetscInt          *pi_loc, *pj_loc, *pi_oth, *pj_oth, *pj;
-  PetscScalar       *pa_loc, *pa_oth, *pa, valtmp, *ca;
-  PetscInt           cm = C->rmap->n, anz, pnz;
-  Mat_APMPI         *ptap;
-  PetscScalar       *apa_sparse;
-  const PetscScalar *dummy;
-  PetscInt          *api, *apj, *apJ, i, j, k, row;
-  PetscInt           cstart = C->cmap->rstart;
-  PetscInt           cdnz, conz, k0, k1, nextp;
-  MPI_Comm           comm;
-  PetscMPIInt        size;
+  Mat_MPIAIJ          *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
+  Mat_SeqAIJ          *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
+  Mat_SeqAIJ          *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
+  PetscInt            *adi = ad->i, *adj, *aoi = ao->i, *aoj;
+  PetscScalar         *ada, *aoa, *cda = cd->a, *coa = co->a;
+  Mat_SeqAIJ          *p_loc, *p_oth;
+  PetscInt            *pi_loc, *pj_loc, *pi_oth, *pj_oth, *pj;
+  PetscScalar         *pa_loc, *pa_oth, *pa, valtmp, *ca;
+  PetscInt             cm = C->rmap->n, anz, pnz;
+  MatProductCtx_APMPI *ptap;
+  PetscScalar         *apa_sparse;
+  const PetscScalar   *dummy;
+  PetscInt            *api, *apj, *apJ, i, j, k, row;
+  PetscInt             cstart = C->cmap->rstart;
+  PetscInt             cdnz, conz, k0, k1, nextp;
+  MPI_Comm             comm;
+  PetscMPIInt          size;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  ptap = (Mat_APMPI *)C->product->data;
+  ptap = (MatProductCtx_APMPI *)C->product->data;
   PetscCheck(ptap, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtAP cannot be computed. Missing data");
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -769,18 +769,18 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 /* same as MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(), except using LLCondensed to avoid O(BN) memory requirement */
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C)
 {
-  MPI_Comm           comm;
-  PetscMPIInt        size;
-  Mat_APMPI         *ptap;
-  PetscFreeSpaceList free_space = NULL, current_space = NULL;
-  Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
-  PetscInt          *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
-  PetscInt          *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
-  PetscInt           i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi, *lnk, apnz_max = 1;
-  PetscInt           am = A->rmap->n, pn = P->cmap->n, pm = P->rmap->n, lsize = pn + 20;
-  PetscReal          afill;
-  MatType            mtype;
+  MPI_Comm             comm;
+  PetscMPIInt          size;
+  MatProductCtx_APMPI *ptap;
+  PetscFreeSpaceList   free_space = NULL, current_space = NULL;
+  Mat_MPIAIJ          *a  = (Mat_MPIAIJ *)A->data;
+  Mat_SeqAIJ          *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
+  PetscInt            *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
+  PetscInt            *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
+  PetscInt             i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi, *lnk, apnz_max = 1;
+  PetscInt             am = A->rmap->n, pn = P->cmap->n, pm = P->rmap->n, lsize = pn + 20;
+  PetscReal            afill;
+  MatType              mtype;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -788,7 +788,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  /* create struct Mat_APMPI and attached it to C later */
+  /* create struct MatProductCtx_APMPI and attached it to C later */
   PetscCall(PetscNew(&ptap));
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
@@ -910,7 +910,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
-  C->product->destroy = MatDestroy_MPIAIJ_MatMatMult;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_MatMatMult;
 
   /* set MatInfo */
   afill = (PetscReal)api[am] / (adi[am] + aoi[am] + pi_loc[pm] + 1) + 1.e-5;
@@ -1007,25 +1007,25 @@ static void Merge3SortedArrays(PetscInt size1, PetscInt *in1, PetscInt size2, Pe
 /* matrix-matrix multiplications.  */
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal fill, Mat C)
 {
-  MPI_Comm           comm;
-  PetscMPIInt        size;
-  Mat_APMPI         *ptap;
-  PetscFreeSpaceList free_space_diag = NULL, current_space = NULL;
-  Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc;
-  Mat_MPIAIJ        *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ        *adpd_seq, *p_off, *aopoth_seq;
-  PetscInt           adponz, adpdnz;
-  PetscInt          *pi_loc, *dnz, *onz;
-  PetscInt          *adi = ad->i, *adj = ad->j, *aoi = ao->i, rstart = A->rmap->rstart;
-  PetscInt          *lnk, i, i1 = 0, pnz, row, *adpoi, *adpoj, *api, *adpoJ, *aopJ, *apJ, *Jptr, aopnz, nspacedouble = 0, j, nzi, *apj, apnz, *adpdi, *adpdj, *adpdJ, *poff_i, *poff_j, *j_temp, *aopothi, *aopothj;
-  PetscInt           am = A->rmap->n, pN = P->cmap->N, pn = P->cmap->n, pm = P->rmap->n, p_colstart, p_colend;
-  PetscBT            lnkbt;
-  PetscReal          afill;
-  PetscMPIInt        rank;
-  Mat                adpd, aopoth;
-  MatType            mtype;
-  const char        *prefix;
+  MPI_Comm             comm;
+  PetscMPIInt          size;
+  MatProductCtx_APMPI *ptap;
+  PetscFreeSpaceList   free_space_diag = NULL, current_space = NULL;
+  Mat_MPIAIJ          *a  = (Mat_MPIAIJ *)A->data;
+  Mat_SeqAIJ          *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc;
+  Mat_MPIAIJ          *p = (Mat_MPIAIJ *)P->data;
+  Mat_SeqAIJ          *adpd_seq, *p_off, *aopoth_seq;
+  PetscInt             adponz, adpdnz;
+  PetscInt            *pi_loc, *dnz, *onz;
+  PetscInt            *adi = ad->i, *adj = ad->j, *aoi = ao->i, rstart = A->rmap->rstart;
+  PetscInt            *lnk, i, i1 = 0, pnz, row, *adpoi, *adpoj, *api, *adpoJ, *aopJ, *apJ, *Jptr, aopnz, nspacedouble = 0, j, nzi, *apj, apnz, *adpdi, *adpdj, *adpdJ, *poff_i, *poff_j, *j_temp, *aopothi, *aopothj;
+  PetscInt             am = A->rmap->n, pN = P->cmap->N, pn = P->cmap->n, pm = P->rmap->n, p_colstart, p_colend;
+  PetscBT              lnkbt;
+  PetscReal            afill;
+  PetscMPIInt          rank;
+  Mat                  adpd, aopoth;
+  MatType              mtype;
+  const char          *prefix;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -1035,7 +1035,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(MatGetOwnershipRangeColumn(P, &p_colstart, &p_colend));
 
-  /* create struct Mat_APMPI and attached it to C later */
+  /* create struct MatProductCtx_APMPI and attached it to C later */
   PetscCall(PetscNew(&ptap));
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
@@ -1184,7 +1184,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
-  C->product->destroy = MatDestroy_MPIAIJ_MatMatMult;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_MatMatMult;
 
   /* set MatInfo */
   afill = (PetscReal)api[am] / (adi[am] + aoi[am] + pi_loc[pm] + 1) + 1.e-5;
@@ -1213,12 +1213,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 /* This routine only works when scall=MAT_REUSE_MATRIX! */
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P, Mat A, Mat C)
 {
-  Mat_APMPI *ptap;
-  Mat        Pt;
+  MatProductCtx_APMPI *ptap;
+  Mat                  Pt;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  ptap = (Mat_APMPI *)C->product->data;
+  ptap = (MatProductCtx_APMPI *)C->product->data;
   PetscCheck(ptap, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtAP cannot be computed. Missing data");
   PetscCheck(ptap->Pt, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtA cannot be reused. Do not call MatProductClear()");
 
@@ -1232,7 +1232,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P, Mat A,
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A, PetscReal fill, Mat C)
 {
-  Mat_APMPI               *ptap;
+  MatProductCtx_APMPI     *ptap;
   Mat_MPIAIJ              *p = (Mat_MPIAIJ *)P->data;
   MPI_Comm                 comm;
   PetscMPIInt              size, rank;
@@ -1267,7 +1267,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
 
   C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
 
-  /* create struct Mat_APMPI and attached it to C later */
+  /* create struct MatProductCtx_APMPI and attached it to C later */
   PetscCall(PetscNew(&ptap));
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
@@ -1483,23 +1483,23 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
-  C->product->destroy = MatDestroy_MPIAIJ_PtAP;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_PtAP;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A, Mat C)
 {
-  Mat_MPIAIJ        *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ        *c_seq;
-  Mat_APMPI         *ptap;
-  Mat                A_loc, C_loc, C_oth;
-  PetscInt           i, rstart, rend, cm, ncols, row;
-  const PetscInt    *cols;
-  const PetscScalar *vals;
+  Mat_MPIAIJ          *p = (Mat_MPIAIJ *)P->data;
+  Mat_SeqAIJ          *c_seq;
+  MatProductCtx_APMPI *ptap;
+  Mat                  A_loc, C_loc, C_oth;
+  PetscInt             i, rstart, rend, cm, ncols, row;
+  const PetscInt      *cols;
+  const PetscScalar   *vals;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  ptap = (Mat_APMPI *)C->product->data;
+  ptap = (MatProductCtx_APMPI *)C->product->data;
   PetscCheck(ptap, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtAP cannot be computed. Missing data");
   PetscCheck(ptap->A_loc, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtA cannot be reused. Do not call MatProductClear()");
   PetscCall(MatZeroEntries(C));
@@ -1557,10 +1557,10 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A
 
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
 {
-  Mat_Merge_SeqsToMPI *merge;
+  MatMergeSeqsToMPI   *merge;
   Mat_MPIAIJ          *p  = (Mat_MPIAIJ *)P->data;
   Mat_SeqAIJ          *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
-  Mat_APMPI           *ap;
+  MatProductCtx_APMPI *ap;
   PetscInt            *adj;
   PetscInt             i, j, k, anz, pnz, row, *cj, nexta;
   MatScalar           *ada, *ca, valtmp;
@@ -1580,7 +1580,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  ap = (Mat_APMPI *)C->product->data;
+  ap = (MatProductCtx_APMPI *)C->product->data;
   PetscCheck(ap, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtA cannot be computed. Missing data");
   PetscCheck(ap->A_loc, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "PtA cannot be reused. Do not call MatProductClear()");
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
@@ -1726,7 +1726,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal fill, Mat C)
 {
   Mat                  A_loc;
-  Mat_APMPI           *ap;
+  MatProductCtx_APMPI *ap;
   PetscFreeSpaceList   free_space = NULL, current_space = NULL;
   Mat_MPIAIJ          *p = (Mat_MPIAIJ *)P->data, *a = (Mat_MPIAIJ *)A->data;
   PetscInt            *pdti, *pdtj, *poti, *potj, *ptJ;
@@ -1741,7 +1741,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscInt             nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextci;
   MPI_Request         *swaits, *rwaits;
   MPI_Status          *sstatus, rstatus;
-  Mat_Merge_SeqsToMPI *merge;
+  MatMergeSeqsToMPI   *merge;
   PetscInt            *ai, *aj, *Jptr, anz, *prmap = p->garray, pon, nspacedouble = 0, j;
   PetscReal            afill  = 1.0, afill_tmp;
   PetscInt             rstart = P->cmap->rstart, rmax, Armax;
@@ -1758,7 +1758,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  /* create struct Mat_APMPI and attached it to C later */
+  /* create struct MatProductCtx_APMPI and attached it to C later */
   PetscCall(PetscNew(&ap));
 
   /* get A_loc by taking all local rows of A */
@@ -2041,7 +2041,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ap;
-  C->product->destroy = MatDestroy_MPIAIJ_PtAP;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_PtAP;
   ap->merge           = merge;
 
   C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
@@ -2082,15 +2082,15 @@ static PetscErrorCode MatProductSymbolic_AtB_MPIAIJ_MPIAIJ(Mat C)
   /* matmatmult */
   PetscCall(PetscStrcmp(product->alg, "at*b", &flg));
   if (flg) {
-    Mat        At;
-    Mat_APMPI *ptap;
+    Mat                  At;
+    MatProductCtx_APMPI *ptap;
 
     PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
     PetscCall(MatMatMultSymbolic_MPIAIJ_MPIAIJ(At, B, fill, C));
-    ptap = (Mat_APMPI *)C->product->data;
+    ptap = (MatProductCtx_APMPI *)C->product->data;
     if (ptap) {
       ptap->Pt            = At;
-      C->product->destroy = MatDestroy_MPIAIJ_PtAP;
+      C->product->destroy = MatProductCtxDestroy_MPIAIJ_PtAP;
     }
     C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult;
     goto next;

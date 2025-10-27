@@ -4635,9 +4635,9 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm, Mat inmat,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(void **data)
+static PetscErrorCode MatMergeSeqsToMPIDestroy(void **data)
 {
-  Mat_Merge_SeqsToMPI *merge = (Mat_Merge_SeqsToMPI *)*data;
+  MatMergeSeqsToMPI *merge = (MatMergeSeqsToMPI *)*data;
 
   PetscFunctionBegin;
   if (!merge) PetscFunctionReturn(PETSC_SUCCESS);
@@ -4663,20 +4663,20 @@ static PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(void **data)
 
 PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
 {
-  MPI_Comm             comm;
-  Mat_SeqAIJ          *a = (Mat_SeqAIJ *)seqmat->data;
-  PetscMPIInt          size, rank, taga, *len_s;
-  PetscInt             N = mpimat->cmap->N, i, j, *owners, *ai = a->i, *aj, m;
-  PetscMPIInt          proc, k;
-  PetscInt           **buf_ri, **buf_rj;
-  PetscInt             anzi, *bj_i, *bi, *bj, arow, bnzi, nextaj;
-  PetscInt             nrows, **buf_ri_k, **nextrow, **nextai;
-  MPI_Request         *s_waits, *r_waits;
-  MPI_Status          *status;
-  const MatScalar     *aa, *a_a;
-  MatScalar          **abuf_r, *ba_i;
-  Mat_Merge_SeqsToMPI *merge;
-  PetscContainer       container;
+  MPI_Comm           comm;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ *)seqmat->data;
+  PetscMPIInt        size, rank, taga, *len_s;
+  PetscInt           N = mpimat->cmap->N, i, j, *owners, *ai = a->i, *aj, m;
+  PetscMPIInt        proc, k;
+  PetscInt         **buf_ri, **buf_rj;
+  PetscInt           anzi, *bj_i, *bi, *bj, arow, bnzi, nextaj;
+  PetscInt           nrows, **buf_ri_k, **nextrow, **nextai;
+  MPI_Request       *s_waits, *r_waits;
+  MPI_Status        *status;
+  const MatScalar   *aa, *a_a;
+  MatScalar        **abuf_r, *ba_i;
+  MatMergeSeqsToMPI *merge;
+  PetscContainer     container;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)mpimat, &comm));
@@ -4782,20 +4782,20 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
 
 PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, PetscInt m, PetscInt n, Mat *mpimat)
 {
-  Mat                  B_mpi;
-  Mat_SeqAIJ          *a = (Mat_SeqAIJ *)seqmat->data;
-  PetscMPIInt          size, rank, tagi, tagj, *len_s, *len_si, *len_ri;
-  PetscInt           **buf_rj, **buf_ri, **buf_ri_k;
-  PetscInt             M = seqmat->rmap->n, N = seqmat->cmap->n, i, *owners, *ai = a->i, *aj = a->j;
-  PetscInt             len, *dnz, *onz, bs, cbs;
-  PetscInt             k, anzi, *bi, *bj, *lnk, nlnk, arow, bnzi;
-  PetscInt             nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextai;
-  MPI_Request         *si_waits, *sj_waits, *ri_waits, *rj_waits;
-  MPI_Status          *status;
-  PetscFreeSpaceList   free_space = NULL, current_space = NULL;
-  PetscBT              lnkbt;
-  Mat_Merge_SeqsToMPI *merge;
-  PetscContainer       container;
+  Mat                B_mpi;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ *)seqmat->data;
+  PetscMPIInt        size, rank, tagi, tagj, *len_s, *len_si, *len_ri;
+  PetscInt         **buf_rj, **buf_ri, **buf_ri_k;
+  PetscInt           M = seqmat->rmap->n, N = seqmat->cmap->n, i, *owners, *ai = a->i, *aj = a->j;
+  PetscInt           len, *dnz, *onz, bs, cbs;
+  PetscInt           k, anzi, *bi, *bj, *lnk, nlnk, arow, bnzi;
+  PetscInt           nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextai;
+  MPI_Request       *si_waits, *sj_waits, *ri_waits, *rj_waits;
+  MPI_Status        *status;
+  PetscFreeSpaceList free_space = NULL, current_space = NULL;
+  PetscBT            lnkbt;
+  MatMergeSeqsToMPI *merge;
+  PetscContainer     container;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(MAT_Seqstompisym, seqmat, 0, 0, 0));
@@ -5007,7 +5007,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   /* attach the supporting struct to B_mpi for reuse */
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, merge));
-  PetscCall(PetscContainerSetCtxDestroy(container, MatDestroy_MPIAIJ_SeqsToMPI));
+  PetscCall(PetscContainerSetCtxDestroy(container, MatMergeSeqsToMPIDestroy));
   PetscCall(PetscObjectCompose((PetscObject)B_mpi, "MatMergeSeqsToMPI", (PetscObject)container));
   PetscCall(PetscContainerDestroy(&container));
   *mpimat = B_mpi;
@@ -6990,9 +6990,9 @@ typedef struct {
   PetscBool P_oth_bind;
 } MatMatMPIAIJBACKEND;
 
-static PetscErrorCode MatDestroy_MatMatMPIAIJBACKEND(void *data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMPIAIJBACKEND(void **data)
 {
-  MatMatMPIAIJBACKEND *mmdata = (MatMatMPIAIJBACKEND *)data;
+  MatMatMPIAIJBACKEND *mmdata = *(MatMatMPIAIJBACKEND **)data;
   PetscInt             i;
 
   PetscFunctionBegin;
@@ -7396,7 +7396,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   }
   mmdata->cp             = cp;
   C->product->data       = mmdata;
-  C->product->destroy    = MatDestroy_MatMatMPIAIJBACKEND;
+  C->product->destroy    = MatProductCtxDestroy_MatMatMPIAIJBACKEND;
   C->ops->productnumeric = MatProductNumeric_MPIAIJBACKEND;
 
   /* memory type */

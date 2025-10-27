@@ -157,13 +157,13 @@ struct MatMatStruct_AtB : public MatMatStruct {
   MatColIdxKokkosView Fojperm;
 };
 
-struct MatProductData_MPIAIJKokkos {
+struct MatProductCtx_MPIAIJKokkos {
   MatMatStruct_AB  *mmAB     = nullptr;
   MatMatStruct_AtB *mmAtB    = nullptr;
   PetscBool         reusesym = PETSC_FALSE;
   Mat               Z        = nullptr; // store Z=AB in computing BtAB
 
-  ~MatProductData_MPIAIJKokkos()
+  ~MatProductCtx_MPIAIJKokkos()
   {
     delete mmAB;
     delete mmAtB;
@@ -171,10 +171,10 @@ struct MatProductData_MPIAIJKokkos {
   }
 };
 
-static PetscErrorCode MatProductDataDestroy_MPIAIJKokkos(void *data)
+static PetscErrorCode MatProductCtxDestroy_MPIAIJKokkos(void **data)
 {
   PetscFunctionBegin;
-  PetscCallCXX(delete static_cast<MatProductData_MPIAIJKokkos *>(data));
+  PetscCallCXX(delete *reinterpret_cast<MatProductCtx_MPIAIJKokkos **>(data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1270,16 +1270,16 @@ static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AB(Mat_Product *product, Ma
 
 static PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
 {
-  Mat_MPIAIJ                  *cmpi = static_cast<Mat_MPIAIJ *>(C->data);
-  Mat_Product                 *product;
-  MatProductData_MPIAIJKokkos *pdata;
-  MatProductType               ptype;
-  Mat                          A, B;
+  Mat_MPIAIJ                 *cmpi = static_cast<Mat_MPIAIJ *>(C->data);
+  Mat_Product                *product;
+  MatProductCtx_MPIAIJKokkos *pdata;
+  MatProductType              ptype;
+  Mat                         A, B;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1); // make sure C is a product
   product = C->product;
-  pdata   = static_cast<MatProductData_MPIAIJKokkos *>(product->data);
+  pdata   = static_cast<MatProductCtx_MPIAIJKokkos *>(product->data);
   ptype   = product->type;
   A       = product->A;
   B       = product->B;
@@ -1307,15 +1307,15 @@ static PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
 
 static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 {
-  Mat                          A, B;
-  Mat_Product                 *product;
-  MatProductType               ptype;
-  MatProductData_MPIAIJKokkos *pdata;
-  MatMatStruct                *mm = NULL;
-  PetscInt                     m, n, M, N;
-  Mat                          Cd, Co;
-  MPI_Comm                     comm;
-  Mat_MPIAIJ                  *mpiaij;
+  Mat                         A, B;
+  Mat_Product                *product;
+  MatProductType              ptype;
+  MatProductCtx_MPIAIJKokkos *pdata;
+  MatMatStruct               *mm = NULL;
+  PetscInt                    m, n, M, N;
+  Mat                         Cd, Co;
+  MPI_Comm                    comm;
+  Mat_MPIAIJ                 *mpiaij;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
@@ -1354,7 +1354,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   PetscCall(PetscLayoutSetUp(C->cmap));
   PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
 
-  pdata           = new MatProductData_MPIAIJKokkos();
+  pdata           = new MatProductCtx_MPIAIJKokkos();
   pdata->reusesym = product->api_user;
 
   if (ptype == MATPRODUCT_AB) {
@@ -1428,7 +1428,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[ptype]);
   }
   C->product->data       = pdata;
-  C->product->destroy    = MatProductDataDestroy_MPIAIJKokkos;
+  C->product->destroy    = MatProductCtxDestroy_MPIAIJKokkos;
   C->ops->productnumeric = MatProductNumeric_MPIAIJKokkos;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

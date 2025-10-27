@@ -789,27 +789,27 @@ PetscErrorCode MatSeqAIJKokkosMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductDataDestroy_SeqAIJKokkos(void *pdata)
+static PetscErrorCode MatProductCtxDestroy_SeqAIJKokkos(void **pdata)
 {
   PetscFunctionBegin;
-  delete static_cast<MatProductData_SeqAIJKokkos *>(pdata);
+  delete *reinterpret_cast<MatProductCtx_SeqAIJKokkos **>(pdata);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C)
 {
-  Mat_Product                 *product = C->product;
-  Mat                          A, B;
-  bool                         transA, transB; /* use bool, since KK needs this type */
-  Mat_SeqAIJKokkos            *akok, *bkok, *ckok;
-  Mat_SeqAIJ                  *c;
-  MatProductData_SeqAIJKokkos *pdata;
-  KokkosCsrMatrix              csrmatA, csrmatB;
+  Mat_Product                *product = C->product;
+  Mat                         A, B;
+  bool                        transA, transB; /* use bool, since KK needs this type */
+  Mat_SeqAIJKokkos           *akok, *bkok, *ckok;
+  Mat_SeqAIJ                 *c;
+  MatProductCtx_SeqAIJKokkos *pdata;
+  KokkosCsrMatrix             csrmatA, csrmatB;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  pdata = static_cast<MatProductData_SeqAIJKokkos *>(C->product->data);
+  pdata = static_cast<MatProductCtx_SeqAIJKokkos *>(C->product->data);
 
   // See if numeric has already been done in symbolic (e.g., user calls MatMatMult(A,B,MAT_INITIAL_MATRIX,..,C)).
   // If yes, skip the numeric, but reset the flag so that next time when user calls MatMatMult(E,F,MAT_REUSE_MATRIX,..,C),
@@ -883,14 +883,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C)
 
 static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
 {
-  Mat_Product                 *product = C->product;
-  MatProductType               ptype;
-  Mat                          A, B;
-  bool                         transA, transB;
-  Mat_SeqAIJKokkos            *akok, *bkok, *ckok;
-  MatProductData_SeqAIJKokkos *pdata;
-  MPI_Comm                     comm;
-  KokkosCsrMatrix              csrmatA, csrmatB, csrmatC;
+  Mat_Product                *product = C->product;
+  MatProductType              ptype;
+  Mat                         A, B;
+  bool                        transA, transB;
+  Mat_SeqAIJKokkos           *akok, *bkok, *ckok;
+  MatProductCtx_SeqAIJKokkos *pdata;
+  MPI_Comm                    comm;
+  KokkosCsrMatrix             csrmatA, csrmatB, csrmatC;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -937,7 +937,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
   default:
     SETERRQ(comm, PETSC_ERR_PLIB, "Unsupported product type %s", MatProductTypes[product->type]);
   }
-  PetscCallCXX(product->data = pdata = new MatProductData_SeqAIJKokkos());
+  PetscCallCXX(product->data = pdata = new MatProductCtx_SeqAIJKokkos());
   pdata->reusesym = product->api_user;
 
   /* TODO: add command line options to select spgemm algorithms */
@@ -979,7 +979,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
 
   PetscCallCXX(ckok = new Mat_SeqAIJKokkos(csrmatC));
   PetscCall(MatSetSeqAIJKokkosWithCSRMatrix(C, ckok));
-  C->product->destroy = MatProductDataDestroy_SeqAIJKokkos;
+  C->product->destroy = MatProductCtxDestroy_SeqAIJKokkos;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

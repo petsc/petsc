@@ -2588,7 +2588,7 @@ struct VecCUDAEqualsReverse {
   }
 };
 
-struct MatMatCusparse {
+struct MatProductCtx_MatMatCusparse {
   PetscBool      cisdense;
   PetscScalar   *Bt;
   Mat            X;
@@ -2613,9 +2613,9 @@ struct MatMatCusparse {
 #endif
 };
 
-static PetscErrorCode MatDestroy_MatMatCusparse(void *data)
+static PetscErrorCode MatProductCtxDestroy_MatMatCusparse(void **data)
 {
-  MatMatCusparse *mmdata = (MatMatCusparse *)data;
+  MatProductCtx_MatMatCusparse *mmdata = *(MatProductCtx_MatMatCusparse **)data;
 
   PetscFunctionBegin;
   PetscCallCUDA(cudaFree(mmdata->Bt));
@@ -2633,7 +2633,7 @@ static PetscErrorCode MatDestroy_MatMatCusparse(void *data)
   if (mmdata->mmBuffer2) PetscCallCUDA(cudaFree(mmdata->mmBuffer2));
 #endif
   PetscCall(MatDestroy(&mmdata->X));
-  PetscCall(PetscFree(data));
+  PetscCall(PetscFree(*data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2650,14 +2650,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   cusparseOperation_t           opA;
   const PetscScalar            *barray;
   PetscScalar                  *carray;
-  MatMatCusparse               *mmdata;
+  MatProductCtx_MatMatCusparse *mmdata;
   Mat_SeqAIJCUSPARSEMultStruct *mat;
   CsrMatrix                    *csrmat;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Product data empty");
-  mmdata = (MatMatCusparse *)product->data;
+  mmdata = (MatProductCtx_MatMatCusparse *)product->data;
   A      = product->A;
   B      = product->B;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJCUSPARSE, &flg));
@@ -2817,12 +2817,12 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 
 static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 {
-  Mat_Product        *product = C->product;
-  Mat                 A, B;
-  PetscInt            m, n;
-  PetscBool           cisdense, flg;
-  MatMatCusparse     *mmdata;
-  Mat_SeqAIJCUSPARSE *cusp;
+  Mat_Product                  *product = C->product;
+  Mat                           A, B;
+  PetscInt                      m, n;
+  PetscBool                     cisdense, flg;
+  MatProductCtx_MatMatCusparse *mmdata;
+  Mat_SeqAIJCUSPARSE           *cusp;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -2889,7 +2889,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
     }
   }
   C->product->data    = mmdata;
-  C->product->destroy = MatDestroy_MatMatCusparse;
+  C->product->destroy = MatProductCtxDestroy_MatMatCusparse;
 
   C->ops->productnumeric = MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2906,7 +2906,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   PetscBool                     flg;
   cusparseStatus_t              stat;
   MatProductType                ptype;
-  MatMatCusparse               *mmdata;
+  MatProductCtx_MatMatCusparse *mmdata;
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
   cusparseSpMatDescr_t BmatSpDescr;
 #endif
@@ -2917,7 +2917,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Product data empty");
   PetscCall(PetscObjectTypeCompare((PetscObject)C, MATSEQAIJCUSPARSE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Not for C of type %s", ((PetscObject)C)->type_name);
-  mmdata = (MatMatCusparse *)C->product->data;
+  mmdata = (MatProductCtx_MatMatCusparse *)C->product->data;
   A      = product->A;
   B      = product->B;
   if (mmdata->reusesym) { /* this happens when api_user is true, meaning that the matrix values have been already computed in the MatProductSymbolic phase */
@@ -3028,7 +3028,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   PetscBool                     flg;
   cusparseStatus_t              stat;
   MatProductType                ptype;
-  MatMatCusparse               *mmdata;
+  MatProductCtx_MatMatCusparse *mmdata;
   PetscLogDouble                flops;
   PetscBool                     biscompressed, ciscompressed;
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
@@ -3053,7 +3053,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   /* product data */
   PetscCall(PetscNew(&mmdata));
   C->product->data    = mmdata;
-  C->product->destroy = MatDestroy_MatMatCusparse;
+  C->product->destroy = MatProductCtxDestroy_MatMatCusparse;
 
   PetscCall(MatSeqAIJCUSPARSECopyToGPU(A));
   PetscCall(MatSeqAIJCUSPARSECopyToGPU(B));

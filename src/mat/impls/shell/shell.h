@@ -16,10 +16,10 @@ struct _MatShellOps {
 struct _n_MatShellMatFunctionList {
   PetscErrorCode (*symbolic)(Mat, Mat, Mat, void **);
   PetscErrorCode (*numeric)(Mat, Mat, Mat, void *);
-  PetscErrorCode (*destroy)(void *);
-  MatProductType ptype;
-  char          *composedname; /* string to identify routine with double dispatch */
-  char          *resultname;   /* result matrix type */
+  PetscCtxDestroyFn *destroy;
+  MatProductType     ptype;
+  char              *composedname; /* string to identify routine with double dispatch */
+  char              *resultname;   /* result matrix type */
 
   struct _n_MatShellMatFunctionList *next;
 };

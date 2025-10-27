@@ -7,9 +7,9 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-static PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
+static PetscErrorCode MatProductCtxDestroy_SeqDense_MatTransMatMult(void **data)
 {
-  Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
+  MatProductCtx_MatTransMatMult *atb = *(MatProductCtx_MatTransMatMult **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&atb->mA));
@@ -23,9 +23,9 @@ static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat, Mat, Mat);
 
 PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  Mat_MatTransMatMult *atb;
-  PetscBool            cisdense;
-  PetscInt             dofm;
+  MatProductCtx_MatTransMatMult *atb;
+  PetscBool                      cisdense;
+  PetscInt                       dofm;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -49,7 +49,7 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
   PetscCall(MatCreateMAIJ(A, dofm, &atb->mA));
   PetscCall(MatCreateVecs(atb->mA, &atb->ct, &atb->bt));
   C->product->data    = atb;
-  C->product->destroy = MatDestroy_SeqDense_MatTransMatMult;
+  C->product->destroy = MatProductCtxDestroy_SeqDense_MatTransMatMult;
 
   if (C->product->type == MATPRODUCT_AtB) {
     C->ops->transposematmultnumeric = MatTMatTMultNumeric_SeqAIJ_SeqDense;
@@ -61,17 +61,17 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
 
 static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
 {
-  PetscInt             i, j, m = A->rmap->n, n = A->cmap->n, blda, clda;
-  PetscInt             mdof = C->cmap->N;
-  const PetscScalar   *Barray;
-  PetscScalar         *Carray;
-  Mat_MatTransMatMult *atb;
-  Vec                  bt, ct;
+  PetscInt                       i, j, m = A->rmap->n, n = A->cmap->n, blda, clda;
+  PetscInt                       mdof = C->cmap->N;
+  const PetscScalar             *Barray;
+  PetscScalar                   *Carray;
+  MatProductCtx_MatTransMatMult *atb;
+  Vec                            bt, ct;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->type == MATPRODUCT_ABt || C->product->type == MATPRODUCT_AtB, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[C->product->type]);
-  atb = (Mat_MatTransMatMult *)C->product->data;
+  atb = (MatProductCtx_MatTransMatMult *)C->product->data;
   PetscCheck(atb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing product struct");
   bt = atb->bt;
   ct = atb->ct;

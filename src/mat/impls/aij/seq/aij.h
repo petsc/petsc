@@ -81,21 +81,21 @@ typedef struct {
   Mat                  Bt_den;  /* dense matrix of B^T */
   Mat                  ABt_den; /* dense matrix of A*B^T */
   PetscBool            usecoloring;
-} Mat_MatMatTransMult;
+} MatProductCtx_MatMatTransMult;
 
 typedef struct { /* used by MatTransposeMatMult() */
   Mat At;        /* transpose of the first matrix */
   Mat mA;        /* maij matrix of A */
   Vec bt, ct;    /* vectors to hold locally transposed arrays of B and C */
   /* used by PtAP */
-  void *data;
-  PetscErrorCode (*destroy)(void *);
-} Mat_MatTransMatMult;
+  void              *data;
+  PetscCtxDestroyFn *destroy;
+} MatProductCtx_MatTransMatMult;
 
 typedef struct {
   PetscInt    *api, *apj; /* symbolic structure of A*P */
   PetscScalar *apa;       /* temporary array for storing one row of A*P */
-} Mat_AP;
+} MatProductCtx_AP;
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -104,13 +104,13 @@ typedef struct {
   Mat                  ARt;  /* A*R^T used for the case -matrart_color_art */
   MatScalar           *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   /* free intermediate products needed for PtAP */
-  void *data;
-  PetscErrorCode (*destroy)(void *);
-} Mat_RARt;
+  void              *data;
+  PetscCtxDestroyFn *destroy;
+} MatProductCtx_RARt;
 
 typedef struct {
   Mat BC; /* temp matrix for storing B*C */
-} Mat_MatMatMatMult;
+} MatProductCtx_MatMatMatMult;
 
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
@@ -403,7 +403,7 @@ PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat, Mat, Mat
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat, Mat, Mat);
-PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(void *);
+PETSC_INTERN PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatTransMatMult(void **);
 
 PETSC_INTERN PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat, Mat, Mat);
