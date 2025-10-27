@@ -215,4 +215,3 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on MUMPS')
       self.postInstall(output2+err2+output3+err3,'Makefile.inc')
     return self.installDir
-

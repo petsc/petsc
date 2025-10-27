@@ -42,5 +42,3 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on ascem-io: '+str(e))
       self.postInstall(output+err,'compiledata')
     return self.installDir
-
-

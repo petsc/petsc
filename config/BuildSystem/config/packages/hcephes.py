@@ -1,6 +1,5 @@
 import config.package
 
-
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)

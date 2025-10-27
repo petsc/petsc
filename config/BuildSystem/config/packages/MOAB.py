@@ -22,7 +22,6 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MOAB', '-download-moab-fc', nargs.ArgBool(None, 1, 'Build MOAB Fortran interface'))
     return
 
-
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags  = framework.require('config.compilerFlags', self)
@@ -84,4 +83,3 @@ class Configure(config.package.GNUPackage):
       args.append('--with-zoltan="'+self.zoltan.directory+'"')
 
     return args
-

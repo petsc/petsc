@@ -118,4 +118,3 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''This is ugly but currently .gitlab-ci.yml is hardwired to use petsc4pytest'''
     self.addMakeRule('petsc4pytest','')
-

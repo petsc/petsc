@@ -1,6 +1,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN">
 <book id="BuildSystemManual" lang="en">
- 
+
 <bookinfo>
 <title>ASE BuildSystem Manual</title>
 <authorgroup>
@@ -13,17 +13,17 @@
 <date>July, 2005</date>
 <releaseinfo>Release tag ???</releaseinfo>
 </bookinfo>
- 
+
 <chapter id="Introduction">
 <title>Introduction</title>
- 
+
 <para>The BuildSystem from ASE is intended to be a Python replacement for the GNU autotools. It actually encompasses
 somewhat more, as it supports integrated version control and automatic code generation. However, the most useful
 comparisons will come from <command>autoconf</command>, <command>make</command>, and <command>libtool</command>. The
 system is not designed to be monolithic. Thus each component may be used independently, meaning logging, configuration,
 and build are all separate modules which do not require each other. This allows a user to incremenetally adopt the most
 useful portions of the package.</para>
- 
+
 </chapter>
 
 <chapter id="Configure">
@@ -139,20 +139,20 @@ Compilers:
   --with-fc=&lt;prog&gt;                 : Specify the Fortran compiler
   --with-64-bit-pointers=&lt;bool&gt;    : Use 64 bit compilers and libraries                                    current: 0
   --CPP=&lt;prog&gt;                     : Specify the C preprocessor
-  --CPPFLAGS=&lt;string&gt;              : Specify the C preprocessor options                                    current: 
+  --CPPFLAGS=&lt;string&gt;              : Specify the C preprocessor options                                    current:
   --CXXPP=&lt;prog&gt;                   : Specify the C++ preprocessor
   --CC=&lt;prog&gt;                      : Specify the C compiler
-  --CFLAGS=&lt;string&gt;                : Specify the C compiler options                                        current: 
+  --CFLAGS=&lt;string&gt;                : Specify the C compiler options                                        current:
   --CXX=&lt;prog&gt;                     : Specify the C++ compiler
-  --CXXFLAGS=&lt;string&gt;              : Specify the C++ compiler options                                      current: 
-  --CXX_CXXFLAGS=&lt;string&gt;          : Specify the C++ compiler-only options                                 current: 
+  --CXXFLAGS=&lt;string&gt;              : Specify the C++ compiler options                                      current:
+  --CXX_CXXFLAGS=&lt;string&gt;          : Specify the C++ compiler-only options                                 current:
   --FC=&lt;prog&gt;                      : Specify the Fortran compiler
-  --FFLAGS=&lt;string&gt;                : Specify the Fortran compiler options                                  current: 
+  --FFLAGS=&lt;string&gt;                : Specify the Fortran compiler options                                  current:
   --LD=&lt;prog&gt;                      : Specify the default linker
   --CC_LD=&lt;prog&gt;                   : Specify the linker for C only
   --CXX_LD=&lt;prog&gt;                  : Specify the linker for C++ only
   --FC_LD=&lt;prog&gt;                   : Specify the linker for Fortran only
-  --LDFLAGS=&lt;string&gt;               : Specify the linker options                                            current: 
+  --LDFLAGS=&lt;string&gt;               : Specify the linker options                                            current:
   --with-ar                        : Specify the archiver
   -AR                              : Specify the archiver flags
   -AR_FLAGS                        : Specify the archiver flags
@@ -254,14 +254,14 @@ TESTING: checkDot from examples.blasTest(/PETSc3/sidl/BuildSystem/docs/examples/
       Checking for functions ['ddot'] in library ['libblas.a'] ['-lfrtbegin', '-lg2c', '-lm',
        '-L/usr/lib/gcc-lib/i486-linux/3.3.5', '-L/usr/lib/gcc-lib/i486-linux/3.3.5/../../..',
        '-lm', '-lgcc_s']
-sh: gcc -c -o conftest.o  -fPIC  conftest.c 
-Executing: gcc -c -o conftest.o  -fPIC  conftest.c 
-sh: 
+sh: gcc -c -o conftest.o  -fPIC  conftest.c
+Executing: gcc -c -o conftest.o  -fPIC  conftest.c
+sh:
 sh: gcc  -o conftest   -fPIC  conftest.o  -lblas -lfrtbegin -lg2c -lm
   -L/usr/lib/gcc-lib/i486-linux/3.3.5 -L/usr/lib/gcc-lib/i486-linux/3.3.5/../../.. -lm -lgcc_s
 Executing: gcc  -o conftest   -fPIC  conftest.o  -lblas -lfrtbegin -lg2c -lm
   -L/usr/lib/gcc-lib/i486-linux/3.3.5 -L/usr/lib/gcc-lib/i486-linux/3.3.5/../../.. -lm -lgcc_s
-sh: 
+sh:
 Defined HAVE_LIBBLAS to 1 in config.libraries
 </computeroutput>
 </screen>
@@ -303,8 +303,8 @@ TEST checkCurses from examples.cursesTest(/PETSc3/sidl/BuildSystem/docs/examples
 TESTING: checkCurses from examples.cursesTest(/PETSc3/sidl/BuildSystem/docs/examples/cursesTest.py:9)
   Verify that we have the curses header
 Checking for header: curses.h
-sh: gcc -E   conftest.c 
-Executing: gcc -E   conftest.c 
+sh: gcc -E   conftest.c
+Executing: gcc -E   conftest.c
 sh: # 1 "conftest.c"
 # 1 "&lt;built-in&gt;"
 # 1 "&lt;command line&gt;"
@@ -565,9 +565,9 @@ produces the following log output.
 <screen>
 <computeroutput>
 =================================================================================
-    Since your compute nodes require use of a batch system or mpirun you must:   
+    Since your compute nodes require use of a batch system or mpirun you must:
  1) Submit ./conftest to your batch system (this will generate the file reconfigure)
- 2) Run "python reconfigure" (to complete the configure process).                
+ 2) Run "python reconfigure" (to complete the configure process).
 =================================================================================
 </computeroutput>
 </screen>
@@ -665,7 +665,7 @@ SIDLMake:
 <title>Makers</title>
 
 <para>The build operation now encompasses configure, compile, and link operations, which are coordinated by objects of
-class <classname>maker.Maker</classname>. This object manages: 
+class <classname>maker.Maker</classname>. This object manages:
 <itemizedlist>
   <listitem><para>configuration,</para></listitem>
   <listitem><para>build,</para></listitem>

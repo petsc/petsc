@@ -48,7 +48,6 @@ class Installer(script.Script):
     help.addArgument('Installer', '-no-examples', nargs.Arg(None, '', 'Skip installing examples'))
     return
 
-
   def setupModules(self):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
     self.arch          = self.framework.require('PETSc.options.arch',          None)
@@ -269,7 +268,6 @@ class Installer(script.Script):
     if errors:
       raise shutil.Error(errors)
     return copies
-
 
   def fixConfFile(self, src):
     lines   = []
@@ -556,7 +554,6 @@ for file in files:
     self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
     self.copies.extend(self.copytree(os.path.join(self.archLibDir,'pkgconfig'), os.path.join(self.destLibDir,'pkgconfig'), copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
     return
-
 
   def outputInstallDone(self):
     from config.packages.make import getMakeUserPath

@@ -22,7 +22,7 @@ configure_options = [
   '--download-bison',
   '--download-pybind11',
   '--download-rtree',
-  '--download-libsupermesh',  
+  '--download-libsupermesh',
   '--download-firedrake',
   ]
 

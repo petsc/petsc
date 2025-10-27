@@ -66,4 +66,3 @@ class Configure(config.package.GNUPackage):
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
 
     return args
-

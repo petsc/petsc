@@ -81,4 +81,3 @@ class Configure(config.package.CMakePackage):
     if self.argDB['with-exodusii-fortran-bindings'] and hasattr(self.setCompilers, 'FC'):
       self.liblist = [['libexoIIv2for32.a',] + libs for libs in self.liblist] + self.liblist
     return config.package.Package.generateLibList(self, framework)
-

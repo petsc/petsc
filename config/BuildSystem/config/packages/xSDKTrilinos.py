@@ -115,9 +115,3 @@ class Configure(config.package.CMakePackage):
       self.linewidth = linewidth
       self.logPrintDivider( debugSection = 'screen')
       self.logPrint('', debugSection = 'screen')
-
-
-
-
-
-

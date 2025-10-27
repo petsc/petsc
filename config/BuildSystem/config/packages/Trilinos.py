@@ -294,4 +294,3 @@ class Configure(config.package.CMakePackage):
     llp = ll
     llp.append('libpthread.a')
     return [ll,llp]
-

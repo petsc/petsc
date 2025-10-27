@@ -365,7 +365,6 @@ class Logger(args.ArgumentProcessor):
     global backupRemoveDirectory
     RemoveDirectory = backupRemoveDirectory
 
-
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0, rmDir = 1):
     '''Write the message to the log streams'''
     '''Generally goes to the file but not the screen'''
@@ -404,7 +403,6 @@ class Logger(args.ArgumentProcessor):
         if forceNewLine or writeAll:
           f.write('\n')
     return
-
 
   def getRoot(self):
     '''Return the directory containing this module

@@ -72,5 +72,3 @@ class Configure(config.package.GNUPackage):
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error configuring/compiling or installing Pflotran: '+str(e))
-
-

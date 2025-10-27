@@ -26,7 +26,6 @@ def _picTestIncludes(export=''):
                     '}',
                     'void bar(void){foo();}\n'])
 
-
 isUname_value          = False
 isLinux_value          = False
 isCygwin_value         = False
@@ -1230,7 +1229,6 @@ class Configure(config.base.Configure):
             raise ConfigureSetupError(mess)
       return dialectIdx
 
-
     maxDialect = checkPackageRange(self.cxxDialectPackageRanges[1],'upper',maxDialect)
     minDialect = checkPackageRange(self.cxxDialectPackageRanges[0],'lower',minDialect)
 
@@ -1371,7 +1369,6 @@ class Configure(config.base.Configure):
           raise OSError(msg) # why OSError?? it isn't caught anywhere in here?
     return
 
-
   def crayCrossCompiler(self,compiler):
     import script
     '''For Cray Intel KNL systems returns the underlying compiler line used by the wrapper compiler if is for KNL systems'''
@@ -1420,7 +1417,6 @@ class Configure(config.base.Configure):
     if cross:
       return ' '.join(newoutput)
     return ''
-
 
   def generateCCompilerGuesses(self):
     '''Determine the C compiler '''
@@ -1557,7 +1553,6 @@ class Configure(config.base.Configure):
     raise RuntimeError('Cannot find a C preprocessor')
     return
 
-
   def generateCUDACompilerGuesses(self):
     '''Determine the CUDA compiler using CUDAC, then --with-cudac
        - Any given category can be excluded'''
@@ -1621,7 +1616,6 @@ class Configure(config.base.Configure):
           self.logPrint(str(e))
     return
 
-
   def generateHIPCompilerGuesses(self):
     '''Determine the HIP compiler using HIPC, then --with-hipc
        - Any given category can be excluded'''
@@ -1683,7 +1677,6 @@ class Configure(config.base.Configure):
           self.logPrint(str(e))
     return
 
-
   def generateSYCLCompilerGuesses(self):
     '''Determine the SYCL compiler using SYCLC, then --with-syclc
        - Any given category can be excluded'''
@@ -1740,7 +1733,6 @@ class Configure(config.base.Configure):
         except RuntimeError as e:
           self.logPrint(str(e))
     return
-
 
   def generateCxxCompilerGuesses(self):
     '''Determine the Cxx compiler'''
@@ -1880,7 +1872,6 @@ class Configure(config.base.Configure):
           del self.CXXPP
     return
 
-
   def generateFortranCompilerGuesses(self):
     '''Determine the Fortran compiler'''
 
@@ -2017,7 +2008,6 @@ class Configure(config.base.Configure):
     self.logPrint('Fortran comments can use ! in column 1')
     self.popLanguage()
     return
-
 
   def containsInvalidFlag(self, output):
     '''If the output contains evidence that an invalid flag was used, return True'''

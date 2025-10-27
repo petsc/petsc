@@ -77,4 +77,3 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3, conffile)
     return self.installDir
-

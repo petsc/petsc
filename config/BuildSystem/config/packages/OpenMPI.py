@@ -98,4 +98,3 @@ class Configure(config.package.GNUPackage):
     installDir = config.package.GNUPackage.Install(self)
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir
-

@@ -15,4 +15,3 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     ''' Deprecated, now handled by Matlab.py since only standard library names that will always be available are needed'''
     pass
-

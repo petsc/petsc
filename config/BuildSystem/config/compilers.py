@@ -13,7 +13,6 @@ def remove_xcode_verbose(buf):
 class MissingProcessor(AttributeError):
   pass
 
-
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)

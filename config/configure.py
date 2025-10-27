@@ -447,7 +447,6 @@ def petsc_configure(configure_options):
       sys.argv[l] = '--with-fc='+os.path.join(os.path.abspath('.'),'lib','petsc','bin','petscnagfor')
       break
 
-
   # Check Cray without modules
   check_cray_modules()
 

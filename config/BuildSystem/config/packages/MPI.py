@@ -521,7 +521,6 @@ Unable to run hostname to check the network')
     self.logWrite(self.framework.restoreLog())
     return
 
-
   def configureMPI4(self):
     '''Check for functions added to the interface in MPI-4'''
     oldFlags = self.compilers.CPPFLAGS
@@ -933,7 +932,6 @@ Unable to run hostname to check the network')
         raise RuntimeError('There is a copy of mpi.h in '+build_mpi_h_dir+' that is not compatible with your MPI, do:\nrm -rf '+self.arch+' and run ./configure again\n')
       self.compilers.CPPFLAGS = oldFlags
     return
-
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''

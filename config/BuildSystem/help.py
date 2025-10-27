@@ -163,7 +163,6 @@ class Help(Info):
     output_items('PACKAGE OPTIONS', sorted(packages, key=lambda a: a[0]))
     return
 
-
   def outputDownload(self):
     ''' Looks for downloaded packages in --with-packages-download-dir
         For any it finds it updates the --download-xxx= argument to point to this local copy
@@ -205,4 +204,3 @@ class Help(Info):
       print(mesg)
       print('Then run the script again\n')
       sys.exit(10)
-

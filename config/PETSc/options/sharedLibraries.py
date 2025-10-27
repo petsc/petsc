@@ -44,7 +44,6 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic']: self.framework.argDB['with-pic'] = 1
     return
 
-
   def configureSharedLibraries(self):
     '''Checks whether shared libraries should be used, for which you must
       - Specify --with-shared-libraries

@@ -12,4 +12,3 @@ class Configure(config.package.GNUPackage):
     self.liblist           = [['libsz.a'],['szlib.lib']]
     self.downloaddirnames  = ['szip']
     return
-

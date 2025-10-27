@@ -3,7 +3,7 @@
 # Example configure script for the IBM POWER9 and NVIDIA Volta GV100 "Summit" system at OLCF/ORNL.
 # This may also be useful for the related Sierra system at LLNL, or other, similar systems that may appear.
 # A compiler module and the 'cmake' and 'cuda' modules (in addition to a Python module!) should be loaded on Summit.
-# See inline comments below on other modules that might need to be loaded. 
+# See inline comments below on other modules that might need to be loaded.
 
 if __name__ == '__main__':
   import os
@@ -89,5 +89,5 @@ if __name__ == '__main__':
     '--download-hypre=1',
     '--download-ml=1',
 
-  ] 
+  ]
   configure.petsc_configure(configure_options)

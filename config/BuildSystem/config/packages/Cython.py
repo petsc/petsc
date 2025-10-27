@@ -5,4 +5,3 @@ class Configure(config.package.PythonPackage):
     config.package.PythonPackage.__init__(self, framework)
     self.pkgname         = 'cython'
     self.useddirectly    = 0
-

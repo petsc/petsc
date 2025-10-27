@@ -742,7 +742,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           print(pair[0]+'  --->  '+str(self.argDB[pair[1]]))
     return
 
-
   def storeSubstitutions(self, argDB):
     '''Store all the substitutions in the argument database'''
     argDB.update(self.subst)

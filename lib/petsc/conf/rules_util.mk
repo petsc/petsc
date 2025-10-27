@@ -92,7 +92,7 @@ checkbadSource:
 	-@touch checkbadSource.out
 	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/check_header_guard.py --action=check --kind=pragma_once -- ./src ./include >> checkbadSource.out
 	-@echo "----- Double blank lines in file -----------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} ${GITMAKE} > doublelinecheck.out
+	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} ${GITMAKE} 'config/*' > doublelinecheck.out
 	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
 	-@${RM} -f doublelinecheck.out
 	-@echo "----- Tabs in file -------------------------------------------------" >> checkbadSource.out
@@ -100,13 +100,13 @@ checkbadSource:
 	-@echo "----- Tabs in makefiles --------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '^[^#][ ]*[#A-Za-z0-9][ :=_A-Za-z0-9]*\t' -- ${GITMAKE} >> checkbadSource.out;true
 	-@echo "----- White space at end of line -----------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} ${GITMAKE} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} ${GITMAKE} 'config/*' >> checkbadSource.out;true
 	-@echo "----- Two ;; -------------------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "----- PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_File' >> checkbadSource.out;true
 	-@echo "----- DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '\r' -- ${GITSRC} ${GITMAKE} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\r' -- ${GITSRC} ${GITMAKE} 'config/*' >> checkbadSource.out;true
 	-@echo "----- { before SETERRQ ---------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
@@ -144,9 +144,9 @@ checkbadSource:
 	-@echo "----- Extra \"\" after format specifier ending a string --------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '_FMT \"\",' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} '*.[hF]90' ${GITMAKE} | grep ':1:' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} '*.[hF]90' ${GITMAKE} 'config/*' | grep ':1:' >> checkbadSource.out;true
 	-@echo "----- Last blank line ----------------------------------------------" >> checkbadSource.out
-	-@git ls-files '*.[hF]90' ${GITMAKE} ':!*petscdm.h90' ':!*petscts.h90' | xargs -I{} sh -c 'tail -n1 "{}" | grep -q . || echo "{}"' >> checkbadSource.out;true
+	-@git ls-files '*.[hF]90' ${GITMAKE} 'config/*' ':!*petscdm.h90' ':!*petscts.h90' ':!*/__init__.py' | xargs -I{} sh -c 'tail -n1 "{}" | grep -q . || echo "{}"' >> checkbadSource.out;true
 	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -A 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
 	-@echo "----- Blank line before PetscFunctionReturn ------------------------" >> checkbadSource.out

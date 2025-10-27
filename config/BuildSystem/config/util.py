@@ -43,7 +43,6 @@ def classify(items, functional, args=(), kwargs=dict()):
         bad += b
     return good, bad
 
-
 class NamedInStderr:
     '''Hepler class to log the (string) items that are written to stderr on failure.
 
@@ -57,7 +56,6 @@ class NamedInStderr:
     def examineStderr(self, ret, out, err):
         if ret:
             self.named += [i for i in self.items if i in err]
-
 
 class memoize(dict):
     '''Memoizing decorator.  No support for keyword arguments.'''
