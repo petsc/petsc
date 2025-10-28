@@ -53,7 +53,6 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
-
     plibs = self.hdf5.lib
     if self.framework.argDB['prefix']:
        idir = os.path.join(self.getDefaultInstallDir(),'lib')
@@ -88,5 +87,3 @@ class Configure(config.package.CMakePackage):
           raise RuntimeError('Error running make test on Alquimia: '+output)
       except RuntimeError as e:
         raise RuntimeError('Error running make test on Alquimia: '+str(e))
-
-

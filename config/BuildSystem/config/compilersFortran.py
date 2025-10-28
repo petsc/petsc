@@ -47,7 +47,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__setattr__(self, name, value)
     return
 
-
   def checkFortranTypeSizes(self):
     '''Check whether real*8 is supported and suggest flags which will allow support'''
     self.pushLanguage('FC')
@@ -63,7 +62,6 @@ class Configure(config.base.Configure):
         self.logPrint('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc', 4, 'compilers')
     self.popLanguage()
     return
-
 
   def checkFortranPreprocessor(self):
     '''Determine if Fortran handles preprocessing properly'''
@@ -512,4 +510,3 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortran90LineLength)
       self.executeTest(self.checkFortranPointerInit)
     return
-

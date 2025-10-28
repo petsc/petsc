@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.minversion       = '6.3.0'
-    self.version          = '9.1.0'
+    self.version          = '9.2.0'
     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
     self.gitcommit        = 'e621c471cf23329e568df71c6b724329bc04b0f8' # v9.1.0+, i.e.: master Sep 9, 2025
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']

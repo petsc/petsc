@@ -424,7 +424,6 @@ class Package(config.base.Configure):
       return [f for f in flags if not f.startswith(stdFlags)]
     return flags
 
-
   def updatePackageCFlags(self,flags):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeVisibilityFlag(flags.split())
@@ -641,7 +640,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
         else: os.environ['PKG_CONFIG_PATH'] = ''
       yield('pkg-config located libraries and includes '+self.PACKAGE, None, l.split(), i)
       raise RuntimeError('pkg-config could not locate correct includes and libraries for '+self.package)
-
 
     if 'with-'+self.package+'-dir' in self.argDB:
       d = self.argDB['with-'+self.package+'-dir']
@@ -1507,7 +1505,6 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
         raise RuntimeError('Error running make check on PETSc: '+str(e))
     self.installedpetsc = 1
 
-
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
 for GNU-style packages that are installed using the "configure; make; make install" idiom.
@@ -1547,7 +1544,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   for the next phase of configuration.  Below we describe the stages, some of the more typically-used hooks and instance variables in some
   detail.
 
-
   init:
   ----
   The init stage constructs the configure object; it is implemented by its __init__ method.
@@ -1568,7 +1564,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   Ideally, a package subclass would extend only the __init__ method and parameterize the remainder of
   the configure process by the appropriate variables.  This is not always possible, since some
   of the package-specific choices depend on
-
 
   setup:
   -----
@@ -1722,8 +1717,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
    (2) the headers in self.includes have been located.
   If no symbols are supplied in self.functions, no link OR header testing is done.
 
-
-
   Extending package class:
   -----------------------
   Generally, extending the parent package configure class is done by overriding some
@@ -1749,7 +1742,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   that use the "configure; make; make install" idiom for the installation -- "GNU packages".
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
-
 
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
@@ -1888,7 +1880,6 @@ class GNUPackage(Package):
           raise RuntimeError('Error in autoreconf: ' + output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
-
 
   def Install(self):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir

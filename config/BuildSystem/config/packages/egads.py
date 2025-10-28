@@ -161,7 +161,7 @@ LIBSRC.c   = $(SRCDIR)/egadsAttrs.c $(SRCDIR)/egadsBase.c $(SRCDIR)/egadsCopy.c 
              $(UVLDIR)/uvmap_test.c $(UVLDIR)/uvmap_version.c $(UVLDIR)/uvmap_write.c \
              $(UTLDIR)/egadsHOtess.c $(UTLDIR)/egadsUVmap.c \
              $(UTLDIR)/extractTess.c $(UTLDIR)/limitTessBody.c $(UTLDIR)/retessFaces.c \
-             $(UTLDIR)/ThreadTest.c $(UTLDIR)/triServer.c $(UTLDIR)/vHOtess.c 
+             $(UTLDIR)/ThreadTest.c $(UTLDIR)/triServer.c $(UTLDIR)/vHOtess.c
 LIBSRC.cpp = $(UTLDIR)/evaluate.cpp $(UTLDIR)/rational.cpp $(SRCDIR)/BRepLib_FuseEdges.cpp \
              $(UTLDIR)/SurrealD1_btest.cpp $(UTLDIR)/SurrealD4_btest.cpp $(UTLDIR)/SurrealS1_btest.cpp \
              $(UTLDIR)/SurrealS4_btest.cpp $(SRCDIR)/egadsCopy.cpp $(SRCDIR)/egadsGeom.cpp \

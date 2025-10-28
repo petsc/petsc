@@ -128,4 +128,3 @@ lapack_qhlib:\n\
       raise RuntimeError('Error moving '+self.packageDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
-

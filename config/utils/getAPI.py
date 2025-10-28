@@ -547,7 +547,6 @@ def getFunctions(mansec, functiontoinclude, filename):
         line = line.replace(fnctnptrs[i], 'external ' + fnctnptrnames[i])
       #if len(fnctnptrs): print(line)
 
-
       fl = regarg.search(line)
       if fl:
         fun = Function(name)
@@ -839,4 +838,3 @@ def getAPI():
 #
 if __name__ ==  '__main__':
   getAPI()
-

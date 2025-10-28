@@ -58,4 +58,3 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     if not self.libraries.check(self.lib, 'ddot_chaco',otherLibs=self.mathlib.lib):
       raise RuntimeError('You cannot use Chaco package from Sandia as it contains an incorrect ddot() routine that conflicts with BLAS\nUse --download-chaco')
-

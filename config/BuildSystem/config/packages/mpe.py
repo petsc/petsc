@@ -34,4 +34,3 @@ class Configure(config.package.GNUPackage):
     args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
     args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
     return args
-

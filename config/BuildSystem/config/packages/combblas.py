@@ -11,13 +11,9 @@ class Configure(config.package.CMakePackage):
     self.buildLanguages    = ['Cxx']
     self.downloaddirnames  = ['CombBLAS']
 
-
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.mpi           = framework.require('config.packages.MPI',self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
     self.deps          = [self.mpi, self.mathlib]
-
-
-

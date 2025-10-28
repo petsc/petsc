@@ -75,4 +75,3 @@ class Configure(config.package.CMakePackage):
     # mstk does not use the standard -DCMAKE_INSTALL_PREFIX
     args.append('-DINSTALL_DIR='+self.installDir)
     return args
-

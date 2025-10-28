@@ -84,7 +84,6 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
     except:
       self.logPrint('Unable to delete configure hash file: '+hashfile)
 
-
   def checkDependency(self):
     '''Checks if files in config have changed, the command line options have changed or the PATH has changed'''
     '''  By default - checks if configure needs to be run'''

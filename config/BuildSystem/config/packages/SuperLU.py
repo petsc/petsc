@@ -55,4 +55,3 @@ class Configure(config.package.CMakePackage):
         args[place]=item[:-1]+' '+mangledef+'"'
 
     return args
-

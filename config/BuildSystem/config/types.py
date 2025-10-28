@@ -188,7 +188,6 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     else:
       self.addDefine('MAX_PATH_LEN',MaxPathLength)
 
-
   def configure(self):
     self.executeTest(self.check_struct_sigaction)
     self.executeTest(self.check__int64)

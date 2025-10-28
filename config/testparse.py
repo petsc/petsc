@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Parse the PETSc tutorial or test file (example) and return a dictionary containing information about the tests to be run for the example 
+Parse the PETSc tutorial or test file (example) and return a dictionary containing information about the tests to be run for the example
 
 Quick usage::
 
@@ -343,7 +343,6 @@ def splitTests(testname,sdict):
 
   return testnames, sdicts
 
-
 def testSplit(striptest):
   """
   Split up a test into lines, but use a shell parser to detect when newlines are within quotation marks
@@ -386,7 +385,6 @@ def testSplit(striptest):
       print(striptest)
       raise ValueError
   yield last_line
-
 
 def parseTest(testStr,srcfile,verbosity):
   """
@@ -500,7 +498,6 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
              newreqs=re.sub('datafilespath','',testDict['build']['requires'])
              testDict['build']['requires']=newreqs.strip()
 
-
   # Now go through each test.  First elem in split is blank
   for test in re.split("\ntest(?:set)?:",newTestStr)[1:]:
     testnames,subdicts=parseTest(test,srcfile,verbosity)
@@ -552,7 +549,6 @@ def parseTestFile(srcfile,verbosity):
   if 'build' in testDict[basename]:
     testDict[basename].update(testDict[basename]['build'])
     del testDict[basename]['build']
-
 
   os.chdir(curdir)
   return testDict

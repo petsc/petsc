@@ -98,5 +98,3 @@ class Configure(config.package.Package):
       raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
-
-

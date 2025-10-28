@@ -200,7 +200,7 @@ found:
 */
 static int MPI_Attr_dereference_keyval(int keyval)
 {
-  if (--(attr_keyval[keyval].active) <= 0) {
+  if (--attr_keyval[keyval].active <= 0) {
     attr_keyval[keyval].extra_state = 0;
     attr_keyval[keyval].del         = 0;
   }
@@ -209,7 +209,7 @@ static int MPI_Attr_dereference_keyval(int keyval)
 
 static int MPI_Attr_reference_keyval(int keyval)
 {
-  ++(attr_keyval[keyval].active);
+  ++attr_keyval[keyval].active;
   return MPI_SUCCESS;
 }
 

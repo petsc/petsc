@@ -48,7 +48,6 @@ class Configure(config.package.Package):
     if result:
       self.addDefine('MKL_SPBLAS_DEPRECATED', 1)
 
-
   def configureLibrary(self):
     if not self.blasLapack.mkl or (not self.blasLapack.has64bitindices and self.defaultIndexSize == 64):
       return
@@ -57,4 +56,3 @@ class Configure(config.package.Package):
     if self.found:
       self.executeTest(self.checkHaveUsableSp2m)
       self.executeTest(self.checkMklSpblasDeprecated)
-

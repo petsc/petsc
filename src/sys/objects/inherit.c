@@ -123,7 +123,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 
   /* destroy allocated quantities */
   if (PetscPrintFunctionList) PetscCall(PetscFunctionListPrintNonEmpty(obj->qlist));
-  PetscCheck(--(obj->refct) <= 0, obj->comm, PETSC_ERR_PLIB, "Destroying a PetscObject (%s) with reference count %" PetscInt_FMT " >= 1", obj->name ? obj->name : "unnamed", obj->refct);
+  PetscCheck(--obj->refct <= 0, obj->comm, PETSC_ERR_PLIB, "Destroying a PetscObject (%s) with reference count %" PetscInt_FMT " >= 1", obj->name ? obj->name : "unnamed", obj->refct);
   PetscCall(PetscFree(obj->name));
   PetscCall(PetscFree(obj->prefix));
   PetscCall(PetscFree(obj->type_name));
@@ -673,7 +673,7 @@ PetscErrorCode PetscObjectDereference(PetscObject obj)
   if (!obj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeader(obj, 1);
   if (obj->bops->destroy) PetscCall((*obj->bops->destroy)(&obj));
-  else PetscCheck(--(obj->refct), PETSC_COMM_SELF, PETSC_ERR_SUP, "This PETSc object does not have a generic destroy routine");
+  else PetscCheck(--obj->refct, PETSC_COMM_SELF, PETSC_ERR_SUP, "This PETSc object does not have a generic destroy routine");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

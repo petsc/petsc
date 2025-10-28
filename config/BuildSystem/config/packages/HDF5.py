@@ -104,4 +104,3 @@ class Configure(config.package.CMakePackage):
       if output.find('foundbeast') > -1:
         if i.endswith('_H'): i = i[0:-2]
         self.addDefine('HDF5_HAVE_'+i, 1)
-

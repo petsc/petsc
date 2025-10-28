@@ -308,7 +308,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   PetscCall(PetscFree(globals));
   for (i = 0; i < 26; i++) {
     PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
-    --(gl[i]);
+    --gl[i];
   }
   PetscCall(PetscHMapIDestroy(&ht));
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
@@ -597,7 +597,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   PetscCall(PetscFree(globals));
   for (i = 0; i < 6; i++) {
     PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
-    --(gl[i]);
+    --gl[i];
   }
   PetscCall(PetscHMapIDestroy(&ht));
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */

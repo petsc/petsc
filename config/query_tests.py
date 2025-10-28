@@ -15,13 +15,11 @@ sys.path.insert(0, os.path.join(petscdir, 'config'))
 import testparse
 from gmakegentest import nameSpace
 
-
 """
    This is used by gmakefile.test for the following searches
 
   - make test search=X (or s=X)
   - make test query=X (or q=X) queryval=Y (or qv=Y)
-
 
   Which tests to query?  Two options:
       1. Query only the tests that are run for a given configuration.

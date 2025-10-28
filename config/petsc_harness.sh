@@ -1,5 +1,3 @@
-
-
 scriptname=`basename $0`
 rundir=${scriptname%.sh}
 TIMEOUT=60
@@ -122,7 +120,6 @@ fi
 if test -n "$filter_output"; then
   diff_flags=$diff_flags" -f \$'$filter_output'"
 fi
-
 
 # Init
 success=0; failed=0; failures=""; rmfiles=""

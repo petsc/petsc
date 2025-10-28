@@ -402,7 +402,6 @@ class BaseSet(object):
                     data[transform()] = value
                     value += 1
 
-
 class ImmutableSet(BaseSet):
     """Immutable set class."""
 
@@ -609,7 +608,6 @@ class Set(BaseSet):
     def __as_temporarily_immutable__(self):
         # Return self wrapped in a temporarily immutable set
         return _TemporarilyImmutableSet(self)
-
 
 class _TemporarilyImmutableSet(BaseSet):
     # Wrap a mutable set as if it was temporarily immutable.

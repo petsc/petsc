@@ -9,5 +9,3 @@ class Configure(config.package.GNUPackage):
     self.includes  = ['yaml.h']
     self.liblist   = [['libyaml.a']]
     return
-
-

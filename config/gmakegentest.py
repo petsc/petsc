@@ -17,12 +17,10 @@ sys.path.insert(0,thisscriptdir)
 import testparse
 import example_template
 
-
 """
 
 There are 2 modes of running tests: Normal builds and run from prefix of
 install.  They affect where to find things:
-
 
 Case 1.  Normal builds:
 
@@ -41,7 +39,6 @@ Case 1.  Normal builds:
      +---------------------+----------------------------------+
      | PETSC_GMAKEGENTEST  | PETSC_DIR/config/gmakegentest.py |
      +---------------------+----------------------------------+
-
 
 Case 2.  From install dir:
 
@@ -212,7 +209,6 @@ class generateExamples(Petsc):
       if os.path.isfile(fullaf): altlist.append(srcaf)
 
     return altlist
-
 
   def _getLoopVars(self,inDict,testname, isSubtest=False):
     """
@@ -702,7 +698,6 @@ class generateExamples(Petsc):
         return self._isRun(srcDict)
 
     return srcDict['SKIP'] == []
-
 
   def _isRun(self,testDict, debug=False):
     """

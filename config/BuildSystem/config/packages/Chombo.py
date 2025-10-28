@@ -5,7 +5,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.gitcommit        = '2469eee'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-chombo-3.2.git','https://bitbucket.org/petsc/pkg-chombo-3.2/get/'+self.gitcommit+'.tar.gz']
-    self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
+    self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()']
     self.includes         = ['CH_config.H']
     self.hastestsdatafiles= 1
     self.downloaddirnames  = ['petsc-pkg-chombo-3.2']

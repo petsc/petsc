@@ -17,5 +17,3 @@ class Configure(config.package.GNUPackage):
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.deps           = [self.mathlib]
     return
-
-

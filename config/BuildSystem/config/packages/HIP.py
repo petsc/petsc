@@ -79,7 +79,6 @@ class Configure(config.package.Package):
     if not self.hasROCTX:
       self.hasROCTX = False
 
-
   def __str__(self):
     output  = config.package.Package.__str__(self)
     if hasattr(self,'hipArch'):
