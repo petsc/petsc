@@ -130,9 +130,9 @@ struct _p_TSTrajectory {
   char       *dirname, *filetemplate; /* directory name and file name template for disk checkpoints */
   char       *dirfiletemplate;        /* complete directory and file name template for disk checkpoints */
   PetscErrorCode (*transform)(void *, Vec, Vec *);
-  PetscErrorCode (*transformdestroy)(void *);
-  void *transformctx;
-  void *data;
+  PetscCtxDestroyFn *transformdestroy;
+  void              *transformctx;
+  void              *data;
 };
 
 typedef struct _TS_RHSSplitLink *TS_RHSSplitLink;
