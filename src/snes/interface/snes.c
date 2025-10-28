@@ -3572,7 +3572,7 @@ PetscErrorCode SNESDestroy(SNES *snes)
   PetscCall(SNESLineSearchDestroy(&(*snes)->linesearch));
 
   PetscCall(PetscFree((*snes)->kspconvctx));
-  if ((*snes)->ops->convergeddestroy) PetscCall((*(*snes)->ops->convergeddestroy)((*snes)->cnvP));
+  if ((*snes)->ops->convergeddestroy) PetscCall((*(*snes)->ops->convergeddestroy)(&(*snes)->cnvP));
   if ((*snes)->conv_hist_alloc) PetscCall(PetscFree2((*snes)->conv_hist, (*snes)->conv_hist_its));
   PetscCall(SNESMonitorCancel(*snes));
   PetscCall(SNESConvergedReasonViewCancel(*snes));
@@ -4355,12 +4355,12 @@ M*/
 
 .seealso: [](ch_snes), `SNES`, `SNESConvergedDefault()`, `SNESConvergedSkip()`, `SNESConvergenceTestFunction`
 @*/
-PetscErrorCode SNESSetConvergenceTest(SNES snes, PetscErrorCode (*SNESConvergenceTestFunction)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), void *cctx, PetscErrorCode (*destroy)(void *))
+PetscErrorCode SNESSetConvergenceTest(SNES snes, PetscErrorCode (*SNESConvergenceTestFunction)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), void *cctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESConvergedSkip;
-  if (snes->ops->convergeddestroy) PetscCall((*snes->ops->convergeddestroy)(snes->cnvP));
+  if (snes->ops->convergeddestroy) PetscCall((*snes->ops->convergeddestroy)(&snes->cnvP));
   snes->ops->converged        = SNESConvergenceTestFunction;
   snes->ops->convergeddestroy = destroy;
   snes->cnvP                  = cctx;

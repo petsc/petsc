@@ -836,7 +836,7 @@ Users can set their own customized convergence tests in `SNES` by
 using the command
 
 ```
-SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,PetscInt it,PetscReal xnorm, PetscReal gnorm,PetscReal f,SNESConvergedReason reason, void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
+SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,PetscInt it,PetscReal xnorm, PetscReal gnorm,PetscReal f,SNESConvergedReason reason, void *cctx),void *cctx,PetscCtxDestroyFn*);
 ```
 
 The final argument of the convergence test routine, `cctx`, denotes an
