@@ -1444,7 +1444,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin cannot be found or do not work. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
-      # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
+      # if it gets here this means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
       # that is we are turning off the self.useMPICompilers()
         self.logPrintWarning(os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist! Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option. Suggest using --with-cc=/path/to/mpicc option instead')
 
