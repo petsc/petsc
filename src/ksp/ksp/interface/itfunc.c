@@ -760,7 +760,9 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
     PetscCall(VecDuplicate(ksp->vec_rhs, &t));
     PetscCall(KSP_MatMult(ksp, A, ksp->vec_sol, t));
     PetscCall(VecAYPX(t, -1.0, ksp->vec_rhs));
+    PetscCall(PetscOptionsPushCreateViewerOff(PETSC_FALSE));
     PetscCall(VecViewFromOptions(t, (PetscObject)ksp, "-ksp_view_final_residual_vec"));
+    PetscCall(PetscOptionsPopCreateViewerOff());
     PetscCall(VecNorm(t, NORM_2, &norm));
     PetscCall(VecDestroy(&t));
     PetscCall(PetscViewerASCIIPrintf(viewer, "KSP final norm of residual %g\n", (double)norm));
@@ -1026,6 +1028,8 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 . -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
 . -ksp_view_final_residual                   - print 2-norm of true linear system residual at the end of the solution process
+. -ksp_view_final_residual_vec               - print true linear system residual vector at the end of the solution process;
+                                               `-ksp_view_final_residual` must to be called first to enable this option
 . -ksp_error_if_not_converged                - stop the program as soon as an error is detected in a `KSPSolve()`
 . -ksp_view_pre                              - print the ksp data structure before the system solution
 - -ksp_view                                  - print the ksp data structure at the end of the system solution
