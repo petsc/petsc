@@ -990,6 +990,9 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 
   After having called this function, matrix-matrix product operations can no longer be used on `mat`
 
+  Developer Note:
+  This frees the `Mat_Product` context that was attached to the matrix during `MatProductCreate()` or `MatProductCreateWithMat()`
+
 .seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductClear(Mat mat)
@@ -1055,11 +1058,11 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
   Level: intermediate
 
   Notes:
-  Use `MatProductCreate()` if the matrix you wish computed (the `D` matrix) does not already exist
+  Use `MatProductCreate()` if the matrix you wish computed `D` does not exist
 
   See `MatProductCreate()` for details on the usage of the matrix-matrix product operations
 
-  Any product data currently attached to `D` will be cleared
+  Any product data currently attached to `D` will be freed
 
 .seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductType`, `MatProductSetType()`, `MatProductAlgorithm`,
           `MatProductSetAlgorithm`, `MatProductCreate()`, `MatProductClear()`
@@ -1100,7 +1103,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 }
 
 /*@
-  MatProductCreate - create a matrix to hold the result of a matrix-matrix product operation
+  MatProductCreate - create a matrix to hold the result of a matrix-matrix (or matrix-matrix-matrix) product operation
 
   Collective
 
@@ -1128,15 +1131,24 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 .ve
 
   Notes:
-  Use `MatProductCreateWithMat()` if the matrix you wish computed, the `D` matrix, already exists.
+  Use `MatProductCreateWithMat()` if `D` the matrix you wish computed already exists.
 
-  The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure
+  The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure of the input matrices.
 
   Developer Notes:
   It is undocumented what happens if the nonzero structure of the input matrices changes. Is the symbolic stage automatically redone? Does it crash?
   Is there error checking for it?
 
-.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
+  On this call, auxiliary data needed to compute the product is stored in `D` in a `Mat_Product` context. A call to `MatProductClear()` frees this
+  information.
+
+  Each `MatProductAlgorithm` associated with a particular `MatType` stores additional data needed for the product computation
+  (generally this data is computed in `MatProductSymbolic()`) inside the `Mat_Product` context in a `MatProductCtx_XXX` data structure
+  and provides a `MatProductCtxDestroy_XXX()` routine to free that data. The `MatProductAlgorithm` and `MatType` specific destroy routine is called by
+  `MatProductClear()`.
+
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`,
+          `MatProductSymbolic()`, `MatProductNumeric()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 {
