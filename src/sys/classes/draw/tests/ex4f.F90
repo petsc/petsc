@@ -5,9 +5,9 @@
 !          This function is called repeatedly by PetscDrawZoom() to
 !      redraw the figure
 !
-      subroutine zoomfunction(draw, dummy, ierr)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
+      subroutine zoomfunction(draw, dummy, ierr)
         use petscsys
         use petscdraw
         implicit none
@@ -22,33 +22,33 @@
         zero = 0
         one = 1
         max = 256.0
-        do 10, i = 0, 255
+        do i = 0, 255
           value = i/max
           PetscCall(PetscDrawLine(draw, zero, value, one, value, i, ierr))
-10        continue
-        end
+        end do
+      end
 
-        program main
-          use petscsys
-          use petscdraw
-          implicit none
+      program main
+        use petscsys
+        use petscdraw
+        implicit none
 
-          PetscDraw draw
-          PetscErrorCode ierr
-          integer4 x, y, width, height
-          External zoomfunction
-          x = 0
-          y = 0
-          width = 256
-          height = 256
+        PetscDraw draw
+        PetscErrorCode ierr
+        integer4 x, y, width, height
+        external zoomfunction
+        x = 0
+        y = 0
+        width = 256
+        height = 256
 
-          PetscCallA(PetscInitialize(ierr))
-          PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 'Title', x, y, width, height, draw, ierr))
-          PetscCallA(PetscDrawSetFromOptions(draw, ierr))
-          PetscCallA(PetscDrawZoom(draw, zoomfunction, PETSC_NULL_INTEGER, ierr))
-          PetscCallA(PetscDrawDestroy(draw, ierr))
-          PetscCallA(PetscFinalize(ierr))
-        end
+        PetscCallA(PetscInitialize(ierr))
+        PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 'Title', x, y, width, height, draw, ierr))
+        PetscCallA(PetscDrawSetFromOptions(draw, ierr))
+        PetscCallA(PetscDrawZoom(draw, zoomfunction, PETSC_NULL_INTEGER, ierr))
+        PetscCallA(PetscDrawDestroy(draw, ierr))
+        PetscCallA(PetscFinalize(ierr))
+      end
 
 !/*TEST
 !

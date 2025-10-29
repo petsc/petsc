@@ -1,6 +1,5 @@
-program ex1f90
-
 #include <petsc/finclude/petscsys.h>
+program ex1f90
   use petscsys
   use, intrinsic :: iso_c_binding
   implicit none
@@ -15,9 +14,6 @@ program ex1f90
 end
 
 !/*TEST
-!
-!   build:
-!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      output_file: output/empty.out

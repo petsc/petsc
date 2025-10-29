@@ -2,8 +2,8 @@
 !
 !     Test for PetscFOpen() from Fortran
 !
-program main
 #include <petsc/finclude/petscsys.h>
+program main
   use petscsys
   implicit none
 

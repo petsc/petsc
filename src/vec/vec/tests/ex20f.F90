@@ -1,6 +1,6 @@
 !
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 
@@ -22,40 +22,40 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-  do 10, i = 1, 5
+  do i = 1, 5
     array(i) = i
-10  continue
+  end do
 
 !      Open binary file for writing
-    PetscCallA(PetscBinaryOpen('testfile', FILE_MODE_WRITE, fd, ierr))
+  PetscCallA(PetscBinaryOpen('testfile', FILE_MODE_WRITE, fd, ierr))
 !      Write the Vec header
-    PetscCallA(PetscBinaryWrite(fd, vecclassid, ione, PETSC_INT, ierr))
+  PetscCallA(PetscBinaryWrite(fd, vecclassid, ione, PETSC_INT, ierr))
 !      Write the array length
-    PetscCallA(PetscBinaryWrite(fd, n, ione, PETSC_INT, ierr))
+  PetscCallA(PetscBinaryWrite(fd, n, ione, PETSC_INT, ierr))
 !      Write the array
-    PetscCallA(PetscBinaryWrite(fd, array, n, PETSC_SCALAR, ierr))
+  PetscCallA(PetscBinaryWrite(fd, array, n, PETSC_SCALAR, ierr))
 !      Close the file
-    PetscCallA(PetscBinaryClose(fd, ierr))
+  PetscCallA(PetscBinaryClose(fd, ierr))
 
 !
 !      Open the file for reading by PETSc
 !
-    PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, 'testfile', FILE_MODE_READ, v, ierr))
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, 'testfile', FILE_MODE_READ, v, ierr))
 !
 !      Load the vector
 !
-    PetscCallA(VecCreate(PETSC_COMM_WORLD, x, ierr))
-    PetscCallA(VecLoad(x, v, ierr))
-    PetscCallA(PetscViewerDestroy(v, ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, x, ierr))
+  PetscCallA(VecLoad(x, v, ierr))
+  PetscCallA(PetscViewerDestroy(v, ierr))
 !
 !      Print the vector
 !
-    PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_SELF, ierr))
+  PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_SELF, ierr))
 !
 
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

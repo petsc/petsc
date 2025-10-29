@@ -1,7 +1,8 @@
-program DMPlexTestField
 #include <petsc/finclude/petscdmplex.h>
 #include <petsc/finclude/petscdmlabel.h>
+program DMPlexTestField
   use petscdm
+  use petscdmplex
   implicit none
 
   DM :: dm
@@ -95,9 +96,6 @@ program DMPlexTestField
 end program DMPlexTestField
 
 !/*TEST
-!  build:
-!    requires: defined(PETSC_USING_F90FREEFORM)
-!
 !  test:
 !    suffix: 0
 !    requires: triangle

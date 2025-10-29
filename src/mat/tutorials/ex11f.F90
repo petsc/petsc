@@ -1,7 +1,7 @@
 ! Test MatCreateMPIAdj() with NULL argument 'values'
 
-program main
 #include <petsc/finclude/petscmat.h>
+program main
   use petscmat
   implicit none
 

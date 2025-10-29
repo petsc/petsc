@@ -1,3 +1,4 @@
+#include <petsc/finclude/petscsys.h>
 program ex69F90
 
 !   Demonstrates two issues
@@ -31,7 +32,6 @@ program ex69F90
 !       Wall clock time reported by system_clock()   0.273980000000000
 !       Wall clock time reported by omp_get_wtime()  0.273979902267456
 !
-#include <petsc/finclude/petscsys.h>
   use petsc
   implicit none
 

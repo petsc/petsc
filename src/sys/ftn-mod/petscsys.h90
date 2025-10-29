@@ -1,10 +1,10 @@
-      Interface
-        Subroutine PetscPrintf(m, c, ierr)
+      interface
+        subroutine PetscPrintf(m, c, ierr)
           use, intrinsic :: ISO_C_binding
           MPI_Comm :: m
           character(len=*) :: c
           PetscErrorCode :: ierr
-        End Subroutine
+        end subroutine
 
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
         subroutine PetscErrorf(ierr, line, file)
@@ -12,24 +12,24 @@
           PetscErrorCode, intent(in) :: ierr
           integer, intent(in) ::  line
           character(*) file
-        end Subroutine PetscErrorf
+        end subroutine PetscErrorf
 
         subroutine PetscErrorMPI(ierr, line, file)
           use, intrinsic :: ISO_C_binding
           PetscErrorCode, intent(inout) :: ierr
           integer, intent(in) ::  line
           character(*) file
-        end Subroutine PetscErrorMPI
+        end subroutine PetscErrorMPI
 #else
         subroutine PetscErrorf(ierr)
           use, intrinsic :: ISO_C_binding
           PetscErrorCode, intent(in) :: ierr
-        end Subroutine PetscErrorf
+        end subroutine PetscErrorf
 
         subroutine PetscErrorMPI(ierr)
           use, intrinsic :: ISO_C_binding
           PetscErrorCode, intent(inout) :: ierr
-        end Subroutine PetscErrorMPI
+        end subroutine PetscErrorMPI
 #endif
 
         subroutine MPIU_abort(comm, ierr)
@@ -55,9 +55,9 @@
           PetscLogEvent, intent(in) :: event
           PetscErrorCode, intent(out) :: ierr
         end subroutine PetscLogEventEnd
-      end Interface
+      end interface
 
-      Interface
+      interface
         function PetscASend(c, d) bind(c, name='PetscASend') result(i)
           use, intrinsic :: iso_c_binding
           implicit none
@@ -79,46 +79,46 @@
           implicit none
           integer(c_int) :: i
         end function PetscAReduce
-      end Interface
+      end interface
 
-      Interface
-        Subroutine PetscIntArray1dDestroy(a, ierr)
+      interface
+        subroutine PetscIntArray1dDestroy(a, ierr)
           use, intrinsic :: ISO_C_binding
-          PetscInt, Pointer :: a(:)
+          PetscInt, pointer :: a(:)
           PetscErrorCode    :: ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface PetscShmgetAllocateArrayScalar
-        Subroutine PetscShmgetAllocateArrayScalar(start, len, d1, ierr)
+      interface PetscShmgetAllocateArrayScalar
+        subroutine PetscShmgetAllocateArrayScalar(start, len, d1, ierr)
           use, intrinsic :: ISO_C_binding
           PetscInt :: start, len
           PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface PetscShmgetDeallocateArrayScalar
-        Subroutine PetscShmgetDeallocateArrayScalar(d1, ierr)
+      interface PetscShmgetDeallocateArrayScalar
+        subroutine PetscShmgetDeallocateArrayScalar(d1, ierr)
           use, intrinsic :: ISO_C_binding
           PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface PetscShmgetAllocateArrayInt
-        Subroutine PetscShmgetAllocateArrayInt(start, len, d1, ierr)
+      interface PetscShmgetAllocateArrayInt
+        subroutine PetscShmgetAllocateArrayInt(start, len, d1, ierr)
           use, intrinsic :: ISO_C_binding
           PetscInt :: start, len
           PetscInt, pointer :: d1(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface PetscShmgetDeallocateArrayInt
-        Subroutine PetscShmgetDeallocateArrayInt(d1, ierr)
+      interface PetscShmgetDeallocateArrayInt
+        subroutine PetscShmgetDeallocateArrayInt(d1, ierr)
           use, intrinsic :: ISO_C_binding
           PetscInt, pointer :: d1(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface

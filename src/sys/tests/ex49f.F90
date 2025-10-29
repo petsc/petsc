@@ -1,9 +1,9 @@
 !
 !  Test Fortran binding of sort routines
 !
+#include "petsc/finclude/petsc.h"
 module ex49fmodule
   use petsc
-#include "petsc/finclude/petsc.h"
   implicit none
   type uctx
     PetscInt myint

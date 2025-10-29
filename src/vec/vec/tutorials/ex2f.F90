@@ -5,9 +5,8 @@
 !               one to all elements except the last rank.
 !
 ! -----------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 
@@ -50,31 +49,31 @@ program main
 !     contributions will be added together.
 
   ione = 1
-  do 100 i = 0, N - rank - 1
+  do i = 0, N - rank - 1
     PetscCallA(VecSetValues(x, ione, [i], [one], ADD_VALUES, ierr))
-100 continue
+  end do
 
 !  Assemble vector, using the 2-step process:
 !    VecAssemblyBegin(), VecAssemblyEnd()
 !  Computations can be done while messages are in transition
 !  by placing code between these two statements.
 
-    PetscCallA(VecAssemblyBegin(x, ierr))
-    PetscCallA(VecAssemblyEnd(x, ierr))
+  PetscCallA(VecAssemblyBegin(x, ierr))
+  PetscCallA(VecAssemblyEnd(x, ierr))
 
 !     Test VecGetValues() with scalar entries
-    if (rank == 0) then
-      ione = 0
-      PetscCallA(VecGetValues(x, ione, [i], value, ierr))
-    end if
+  if (rank == 0) then
+    ione = 0
+    PetscCallA(VecGetValues(x, ione, [i], value, ierr))
+  end if
 
 !  View the vector; then destroy it.
 
-    PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr))
-    PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(VecDestroy(x, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

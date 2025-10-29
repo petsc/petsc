@@ -1,5 +1,5 @@
-program ex62f90
 #include "petsc/finclude/petscdmplex.h"
+program ex62f90
   use petscdmplex
   implicit none
 #include "exodusII.inc"
@@ -25,7 +25,7 @@ program ex62f90
   PetscInt, dimension(:), pointer      :: csID
   PetscInt, dimension(:), pointer      :: pStartDepth, pEndDepth
   PetscInt                           :: order = 1
-  Integer                            :: i
+  integer                            :: i
   PetscInt                           :: sdim, d, pStart, pEnd, p, numCS, set, j
   PetscMPIInt                        :: rank, numProc
   PetscBool                          :: flg
@@ -33,9 +33,9 @@ program ex62f90
   MPI_Comm                           :: comm
   type(tPetscViewer)                 :: viewer
 
-  Character(len=MXSTLN)              :: sJunk
+  character(len=MXSTLN)              :: sJunk
   PetscInt                           :: numstep = 3, step
-  Integer                            :: numNodalVar, numZonalVar
+  integer                            :: numNodalVar, numZonalVar
   character(len=MXNAME), dimension(4) :: nodalVarName2D = ["U_x  ", &
                                                            "U_y  ", &
                                                            "Alpha", &
@@ -188,7 +188,7 @@ program ex62f90
 
   !   Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files */
   do step = 1, numstep
-    PetscCallA(exptim(exoid, step, Real(step, kind=kPR), ierr))
+    PetscCallA(exptim(exoid, step, real(step, kind=kPR), ierr))
   end do
 
   PetscCallA(PetscObjectGetComm(dm, comm, ierr))

@@ -1,10 +1,7 @@
 !     Contributed by leonardo.mutti01@universitadipavia.it
-program main
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
-  USE petscksp
+program main
+  use petscksp
   implicit none
 
   Mat :: A
@@ -23,12 +20,12 @@ program main
   M2 = M*M
   i1 = 1
   PetscCallA(MatCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, PETSC_DECIDE, PETSC_DECIDE, M2, M2, A, ierr))
-  DO I = 1, M2
-    DO J = 1, M2
+  do I = 1, M2
+    do J = 1, M2
       v = I*J
       PetscCallA(MatSetValue(A, I - 1, J - 1, v, INSERT_VALUES, ierr))
-    END DO
-  END DO
+    end do
+  end do
 
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))

@@ -2,8 +2,8 @@
 !    Description:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.
 !
-program main
 #include <petsc/finclude/petscis.h>
+program main
   use petscis
   implicit none
 

@@ -2,9 +2,8 @@
 ! This program is modified from a user's contribution.
 ! It illustrates how to PetscCallA(MUMPS's LU solver
 !
-
-program main
 #include <petsc/finclude/petscmat.h>
+program main
   use petscmat
   implicit none
 
@@ -40,7 +39,7 @@ program main
 
   PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
 
-  do 10, II = Istart, Iend - 1
+  do II = Istart, Iend - 1
     v = -1.0
     i = II/m
     j = II - i*m
@@ -62,43 +61,43 @@ program main
     end if
     v = 4.0
     PetscCallA(MatSetValues(A, ione, [II], ione, [II], [v], INSERT_VALUES, ierr))
-10  continue
+  end do
 
-    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
-    PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
-    PetscCallA(VecSetSizes(u, PETSC_DECIDE, m*m, ierr))
-    PetscCallA(VecSetFromOptions(u, ierr))
-    PetscCallA(VecDuplicate(u, b, ierr))
-    PetscCallA(VecDuplicate(b, x, ierr))
-    PetscCallA(VecSet(u, one, ierr))
-    PetscCallA(MatMult(A, u, b, ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
+  PetscCallA(VecSetSizes(u, PETSC_DECIDE, m*m, ierr))
+  PetscCallA(VecSetFromOptions(u, ierr))
+  PetscCallA(VecDuplicate(u, b, ierr))
+  PetscCallA(VecDuplicate(b, x, ierr))
+  PetscCallA(VecSet(u, one, ierr))
+  PetscCallA(MatMult(A, u, b, ierr))
 
-    PetscCallA(MatFactorInfoInitialize(info, ierr))
-    PetscCallA(MatGetOrdering(A, MATORDERINGNATURAL, perm, iperm, ierr))
-    if (wmumps) then
-      write (*, *) 'use MUMPS LU...'
-      PetscCallA(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, fact, ierr))
-    else
-      write (*, *) 'use PETSc LU...'
-      PetscCallA(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, fact, ierr))
-    end if
-    PetscCallA(MatLUFactorSymbolic(fact, A, perm, iperm, info, ierr))
-    PetscCallA(ISDestroy(perm, ierr))
-    PetscCallA(ISDestroy(iperm, ierr))
+  PetscCallA(MatFactorInfoInitialize(info, ierr))
+  PetscCallA(MatGetOrdering(A, MATORDERINGNATURAL, perm, iperm, ierr))
+  if (wmumps) then
+    write (*, *) 'use MUMPS LU...'
+    PetscCallA(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, fact, ierr))
+  else
+    write (*, *) 'use PETSc LU...'
+    PetscCallA(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, fact, ierr))
+  end if
+  PetscCallA(MatLUFactorSymbolic(fact, A, perm, iperm, info, ierr))
+  PetscCallA(ISDestroy(perm, ierr))
+  PetscCallA(ISDestroy(iperm, ierr))
 
-    PetscCallA(MatLUFactorNumeric(fact, A, info, ierr))
-    PetscCallA(MatSolve(fact, b, x, ierr))
-    PetscCallA(MatDestroy(fact, ierr))
+  PetscCallA(MatLUFactorNumeric(fact, A, info, ierr))
+  PetscCallA(MatSolve(fact, b, x, ierr))
+  PetscCallA(MatDestroy(fact, ierr))
 
-    PetscCallA(MatDestroy(A, ierr))
-    PetscCallA(VecDestroy(u, ierr))
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(VecDestroy(b, ierr))
+  PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(VecDestroy(u, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(b, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

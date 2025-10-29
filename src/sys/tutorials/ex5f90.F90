@@ -50,7 +50,7 @@ program ex5f90
   character(len=1), pointer     :: dummychar(:)
   PetscViewer viewer
   PetscSizeT sizeofbag
-  Character(len=99) list(6)
+  character(len=99) list(6)
   PetscInt three, int56
   PetscReal value
   PetscScalar svalue
@@ -119,9 +119,6 @@ end program ex5f90
 
 !
 !/*TEST
-!
-!   build:
-!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      args: -pbag_rarray 4,5,88

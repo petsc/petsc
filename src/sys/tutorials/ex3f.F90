@@ -4,10 +4,9 @@
 !                nserting their own event logging.
 !
 ! -----------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petsclog.h>
+program main
   use petscsys
   implicit none
 

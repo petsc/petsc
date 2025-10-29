@@ -59,121 +59,121 @@ contains
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayF901d
 #endif
-  Subroutine MatDenseGetArrayF901d(v, array, ierr)
+  subroutine MatDenseGetArrayF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArray(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayF901d
 #endif
-  Subroutine MatDenseRestoreArrayF901d(v, array, ierr)
+  subroutine MatDenseRestoreArrayF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArray(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayReadF901d
 #endif
-  Subroutine MatDenseGetArrayReadF901d(v, array, ierr)
+  subroutine MatDenseGetArrayReadF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArrayRead(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayReadF901d
 #endif
-  Subroutine MatDenseRestoreArrayReadF901d(v, array, ierr)
+  subroutine MatDenseRestoreArrayReadF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArrayRead(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayWriteF901d
 #endif
-  Subroutine MatDenseGetArrayWriteF901d(v, array, ierr)
+  subroutine MatDenseGetArrayWriteF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArrayWrite(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayWriteF901d
 #endif
-  Subroutine MatDenseRestoreArrayWriteF901d(v, array, ierr)
+  subroutine MatDenseRestoreArrayWriteF901d(v, array, ierr)
     PetscScalar, pointer :: array(:)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArrayWrite(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayF902d
 #endif
-  Subroutine MatDenseGetArrayF902d(v, array, ierr)
+  subroutine MatDenseGetArrayF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArray(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayF902d
 #endif
-  Subroutine MatDenseRestoreArrayF902d(v, array, ierr)
+  subroutine MatDenseRestoreArrayF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArray(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayReadF902d
 #endif
-  Subroutine MatDenseGetArrayReadF902d(v, array, ierr)
+  subroutine MatDenseGetArrayReadF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArrayRead(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayReadF90
 #endif
-  Subroutine MatDenseRestoreArrayReadF902d(v, array, ierr)
+  subroutine MatDenseRestoreArrayReadF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArrayRead(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayWriteF90
 #endif
-  Subroutine MatDenseGetArrayWriteF902d(v, array, ierr)
+  subroutine MatDenseGetArrayWriteF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseGetArrayWrite(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayWriteF90
 #endif
-  Subroutine MatDenseRestoreArrayWriteF902d(v, array, ierr)
+  subroutine MatDenseRestoreArrayWriteF902d(v, array, ierr)
     PetscScalar, pointer :: array(:, :)
     PetscErrorCode ierr
     Mat v
     call MatDenseRestoreArrayWrite(v, array, ierr)
-  End Subroutine
+  end subroutine
 
 end module

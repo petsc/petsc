@@ -671,8 +671,6 @@ class generateExamples(Petsc):
     if (lang=="F" or lang=="F90"):
       if not self.have_fortran:
         srcDict["SKIP"].append("Fortran required for this test")
-      elif lang=="F90" and 'PETSC_USING_F90FREEFORM' not in self.conf:
-        srcDict["SKIP"].append("Fortran f90freeform required for this test")
     if lang=="cu" and 'PETSC_HAVE_CUDA' not in self.conf:
       srcDict["SKIP"].append("CUDA required for this test")
     if lang=="hip" and 'PETSC_HAVE_HIP' not in self.conf:

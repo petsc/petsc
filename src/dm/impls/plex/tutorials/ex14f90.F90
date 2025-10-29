@@ -1,6 +1,5 @@
-program ex14f90
-
 #include <petsc/finclude/petsc.h>
+program ex14f90
   use petsc
   use mpi     ! needed when PETSC_HAVE_MPI_F90MODULE is not true to define MPI_REPLACE
   implicit none
@@ -88,9 +87,6 @@ program ex14f90
   PetscCallA(PetscFinalize(ierr))
 end program ex14f90
 !/*TEST
-!  build:
-!    requires: defined(PETSC_USING_F90FREEFORM)
-!
 !  # Test on a 1D mesh with overlap
 !  test:
 !    nsize: 3

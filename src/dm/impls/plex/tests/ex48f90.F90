@@ -1,19 +1,17 @@
-program ex47f90
 #include "petsc/finclude/petsc.h"
-#include "petsc/finclude/petscvec.h"
+program ex47f90
   use petsc
-  use petscvec
   implicit none
 
-  Type(tDM)                         :: dm
-  Type(tPetscSection)               :: section
-  Character(len=PETSC_MAX_PATH_LEN) :: IOBuffer
+  type(tDM)                         :: dm
+  type(tPetscSection)               :: section
+  character(len=PETSC_MAX_PATH_LEN) :: IOBuffer
   PetscInt                          :: dof, p, pStart, pEnd, d
-  Type(tVec)                        :: v
+  type(tVec)                        :: v
   PetscInt                          :: zero = 0
   PetscInt                          :: one = 1
   PetscInt                          :: two = 2
-  PetscScalar, Dimension(:), Pointer  :: val
+  PetscScalar, dimension(:), pointer  :: val
   PetscScalar, pointer              :: x(:)
   PetscErrorCode                    :: ierr
 
@@ -28,13 +26,13 @@ program ex47f90
   PetscCallA(DMPlexGetChart(dm, pStart, pEnd, ierr))
   PetscCallA(PetscSectionSetChart(section, pStart, pEnd, ierr))
   PetscCallA(DMPlexGetHeightStratum(dm, zero, pStart, pEnd, ierr))
-  Do p = pStart, pEnd - 1
+  do p = pStart, pEnd - 1
     PetscCallA(PetscSectionSetDof(section, p, one, ierr))
-  End Do
+  end do
   PetscCallA(DMPlexGetDepthStratum(dm, zero, pStart, pEnd, ierr))
-  Do p = pStart, pEnd - 1
+  do p = pStart, pEnd - 1
     PetscCallA(PetscSectionSetDof(section, p, two, ierr))
-  End Do
+  end do
   PetscCallA(PetscSectionSetUp(section, ierr))
   PetscCallA(DMSetLocalSection(dm, section, ierr))
   PetscCallA(PetscSectionViewFromOptions(section, PETSC_NULL_OBJECT, '-s_view', ierr))
@@ -42,24 +40,24 @@ program ex47f90
   PetscCallA(DMCreateGlobalVector(dm, v, ierr))
 
   PetscCallA(DMPlexGetChart(dm, pStart, pEnd, ierr))
-  Do p = pStart, pEnd - 1
+  do p = pStart, pEnd - 1
     PetscCallA(PetscSectionGetDof(section, p, dof, ierr))
-    Allocate (val(dof))
-    Do d = 1, dof
+    allocate (val(dof))
+    do d = 1, dof
       val(d) = 100*p + d - 1
-    End Do
+    end do
     PetscCallA(VecSetValuesSection(v, section, p, val, INSERT_VALUES, ierr))
-    DeAllocate (val)
-  End Do
+    deallocate (val)
+  end do
   PetscCallA(VecView(v, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
-  Do p = pStart, pEnd - 1
+  do p = pStart, pEnd - 1
     PetscCallA(PetscSectionGetDof(section, p, dof, ierr))
     PetscCallA(VecGetValuesSection(v, section, p, x, ierr))
     write (IOBuffer, *) 'Point ', p, ' dof ', dof, '\n'
     PetscCallA(PetscPrintf(PETSC_COMM_SELF, IOBuffer, ierr))
     PetscCallA(VecRestoreValuesSection(v, section, p, x, ierr))
-  End Do
+  end do
 
   PetscCallA(PetscSectionDestroy(section, ierr))
   PetscCallA(VecDestroy(v, ierr))

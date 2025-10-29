@@ -1,8 +1,8 @@
 !
 !  Formatted Test for IS stride routines
 !
-program main
 #include <petsc/finclude/petscis.h>
+program main
   use petscis
   implicit none
 
@@ -41,14 +41,14 @@ program main
   PetscCallA(ISCreateStride(PETSC_COMM_SELF, ssize, stride, first, is, ierr))
   PetscCallA(ISGetLocalSize(is, n, ierr))
   PetscCallA(ISGetIndices(is, ii, ierr))
-  do 10, i = 1, n
+  do i = 1, n
     PetscCheckA(ii(i) == -11 + 3*i, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong result from ISGetIndices')
-10  continue
-    PetscCallA(ISRestoreIndices(is, ii, ierr))
-    PetscCallA(ISDestroy(is, ierr))
+  end do
+  PetscCallA(ISRestoreIndices(is, ii, ierr))
+  PetscCallA(ISDestroy(is, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

@@ -16,11 +16,171 @@
 !
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
-program main
 #include <petsc/finclude/petscts.h>
+module ex1fmodule
   use petscts
   implicit none
+contains
+!
+!  --------------------  Evaluate Function F(x) ---------------------
+!
+  subroutine FormFunction(ts, t, X, F, user, ierr)
 
+    TS ts
+    PetscReal t
+    Vec X, F
+    PetscReal user(3)
+    PetscErrorCode ierr
+    PetscInt i, j, row, mx, my
+    PetscReal two, lambda
+    PetscReal hx, hy, hxdhy, hydhx
+    PetscScalar ut, ub, ul, ur, u
+    PetscScalar uxx, uyy, sc
+    PetscScalar, pointer :: xx(:), ff(:)
+    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
+
+    two = 2.0
+
+    mx = int(user(lmx))
+    my = int(user(lmy))
+    lambda = user(param)
+
+    hx = 1.0/real(mx - 1)
+    hy = 1.0/real(my - 1)
+    sc = hx*hy
+    hxdhy = hx/hy
+    hydhx = hy/hx
+
+    PetscCall(VecGetArrayRead(X, xx, ierr))
+    PetscCall(VecGetArray(F, ff, ierr))
+    do j = 1, my
+      do i = 1, mx
+        row = i + (j - 1)*mx
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+          ff(row) = xx(row)
+        else
+          u = xx(row)
+          ub = xx(row - mx)
+          ul = xx(row - 1)
+          ut = xx(row + mx)
+          ur = xx(row + 1)
+          uxx = (-ur + two*u - ul)*hydhx
+          uyy = (-ut + two*u - ub)*hxdhy
+          ff(row) = -uxx - uyy + sc*lambda*exp(u)
+        end if
+      end do
+    end do
+
+    PetscCall(VecRestoreArrayRead(X, xx, ierr))
+    PetscCall(VecRestoreArray(F, ff, ierr))
+  end
+!
+!  --------------------  Evaluate Jacobian of F(x) --------------------
+!
+  subroutine FormJacobian(ts, ctime, X, JJ, B, user, ierr)
+
+    TS ts
+    Vec X
+    Mat JJ, B
+    PetscReal user(3), ctime
+    PetscErrorCode ierr
+    Mat jac
+    PetscInt i, j, row(1), mx, my
+    PetscInt col(5), i1, i5
+    PetscScalar two, one, lambda
+    PetscScalar v(5), sc
+    PetscScalar, pointer :: xx(:)
+    PetscReal hx, hy, hxdhy, hydhx
+
+    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
+
+    i1 = 1
+    i5 = 5
+    jac = B
+    two = 2.0
+    one = 1.0
+
+    mx = int(user(lmx))
+    my = int(user(lmy))
+    lambda = user(param)
+
+    hx = 1.0/real(mx - 1)
+    hy = 1.0/real(my - 1)
+    sc = hx*hy
+    hxdhy = hx/hy
+    hydhx = hy/hx
+
+    PetscCall(VecGetArrayRead(X, xx, ierr))
+    do j = 1, my
+      do i = 1, mx
+!
+!      When inserting into PETSc matrices, indices start at 0
+!
+        row(1) = i - 1 + (j - 1)*mx
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+          PetscCall(MatSetValues(jac, i1, [row], i1, [row], [one], INSERT_VALUES, ierr))
+        else
+          v(1) = hxdhy
+          col(1) = row(1) - mx
+          v(2) = hydhx
+          col(2) = row(1) - 1
+          v(3) = -two*(hydhx + hxdhy) + sc*lambda*exp(xx(row(1)))
+          col(3) = row(1)
+          v(4) = hydhx
+          col(4) = row(1) + 1
+          v(5) = hxdhy
+          col(5) = row(1) + mx
+          PetscCall(MatSetValues(jac, i1, [row], i5, col, v, INSERT_VALUES, ierr))
+        end if
+      end do
+    end do
+    PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(VecRestoreArray(X, xx, ierr))
+  end
+!
+!  --------------------  Form initial approximation -----------------
+!
+  subroutine FormInitialGuess(X, user, ierr)
+
+    Vec X
+    PetscReal user(3)
+    PetscInt i, j, row, mx, my
+    PetscErrorCode ierr
+    PetscReal one, lambda
+    PetscReal temp1, temp, hx, hy
+    PetscScalar, pointer :: xx(:)
+    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
+
+    one = 1.0
+
+    mx = int(user(lmx))
+    my = int(user(lmy))
+    lambda = user(param)
+
+    hy = one/(my - 1)
+    hx = one/(mx - 1)
+
+    PetscCall(VecGetArray(X, xx, ierr))
+    temp1 = lambda/(lambda + one)
+    do j = 1, my
+      temp = min(j - 1, my - j)*hy
+      do i = 1, mx
+        row = i + (j - 1)*mx
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+          xx(row) = 0.0
+        else
+          xx(row) = temp1*sqrt(min(min(i - 1, mx - i)*hx, temp))
+        end if
+      end do
+    end do
+    PetscCall(VecRestoreArray(X, xx, ierr))
+  end
+end module ex1fmodule
+program main
+  use petscts
+  use ex1fmodule
+  implicit none
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -28,12 +188,8 @@ program main
 !  entries indexed by param, lmx, lmy.
 !
   PetscReal user(3)
-  PetscInt param, lmx, lmy, i5
-  parameter(param=1, lmx=2, lmy=3)
-!
-!   User-defined routines
-!
-  external FormJacobian, FormFunction
+  PetscInt i5
+  PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
 !
 !   Data for problem
 !
@@ -181,172 +337,6 @@ program main
   PetscCallA(TSDestroy(ts, ierr))
   PetscCallA(PetscFinalize(ierr))
 end
-
-!
-!  --------------------  Form initial approximation -----------------
-!
-subroutine FormInitialGuess(X, user, ierr)
-  use petscts
-  implicit none
-
-  Vec X
-  PetscReal user(3)
-  PetscInt i, j, row, mx, my
-  PetscErrorCode ierr
-  PetscReal one, lambda
-  PetscReal temp1, temp, hx, hy
-  PetscScalar, pointer :: xx(:)
-  PetscInt param, lmx, lmy
-  parameter(param=1, lmx=2, lmy=3)
-
-  one = 1.0
-
-  mx = int(user(lmx))
-  my = int(user(lmy))
-  lambda = user(param)
-
-  hy = one/(my - 1)
-  hx = one/(mx - 1)
-
-  PetscCall(VecGetArray(X, xx, ierr))
-  temp1 = lambda/(lambda + one)
-  do 10, j = 1, my
-    temp = min(j - 1, my - j)*hy
-    do 20 i = 1, mx
-      row = i + (j - 1)*mx
-      if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-        xx(row) = 0.0
-      else
-        xx(row) = temp1*sqrt(min(min(i - 1, mx - i)*hx, temp))
-      end if
-20    continue
-10    continue
-      PetscCall(VecRestoreArray(X, xx, ierr))
-    end
-!
-!  --------------------  Evaluate Function F(x) ---------------------
-!
-    subroutine FormFunction(ts, t, X, F, user, ierr)
-      use petscts
-      implicit none
-
-      TS ts
-      PetscReal t
-      Vec X, F
-      PetscReal user(3)
-      PetscErrorCode ierr
-      PetscInt i, j, row, mx, my
-      PetscReal two, lambda
-      PetscReal hx, hy, hxdhy, hydhx
-      PetscScalar ut, ub, ul, ur, u
-      PetscScalar uxx, uyy, sc
-      PetscScalar, pointer :: xx(:), ff(:)
-      PetscInt param, lmx, lmy
-      parameter(param=1, lmx=2, lmy=3)
-
-      two = 2.0
-
-      mx = int(user(lmx))
-      my = int(user(lmy))
-      lambda = user(param)
-
-      hx = 1.0/real(mx - 1)
-      hy = 1.0/real(my - 1)
-      sc = hx*hy
-      hxdhy = hx/hy
-      hydhx = hy/hx
-
-      PetscCall(VecGetArrayRead(X, xx, ierr))
-      PetscCall(VecGetArray(F, ff, ierr))
-      do 10 j = 1, my
-        do 20 i = 1, mx
-          row = i + (j - 1)*mx
-          if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-            ff(row) = xx(row)
-          else
-            u = xx(row)
-            ub = xx(row - mx)
-            ul = xx(row - 1)
-            ut = xx(row + mx)
-            ur = xx(row + 1)
-            uxx = (-ur + two*u - ul)*hydhx
-            uyy = (-ut + two*u - ub)*hxdhy
-            ff(row) = -uxx - uyy + sc*lambda*exp(u)
-          end if
-20        continue
-10        continue
-
-          PetscCall(VecRestoreArrayRead(X, xx, ierr))
-          PetscCall(VecRestoreArray(F, ff, ierr))
-        end
-!
-!  --------------------  Evaluate Jacobian of F(x) --------------------
-!
-        subroutine FormJacobian(ts, ctime, X, JJ, B, user, ierr)
-          use petscts
-          implicit none
-
-          TS ts
-          Vec X
-          Mat JJ, B
-          PetscReal user(3), ctime
-          PetscErrorCode ierr
-          Mat jac
-          PetscInt i, j, row(1), mx, my
-          PetscInt col(5), i1, i5
-          PetscScalar two, one, lambda
-          PetscScalar v(5), sc
-          PetscScalar, pointer :: xx(:)
-          PetscReal hx, hy, hxdhy, hydhx
-
-          PetscInt param, lmx, lmy
-          parameter(param=1, lmx=2, lmy=3)
-
-          i1 = 1
-          i5 = 5
-          jac = B
-          two = 2.0
-          one = 1.0
-
-          mx = int(user(lmx))
-          my = int(user(lmy))
-          lambda = user(param)
-
-          hx = 1.0/real(mx - 1)
-          hy = 1.0/real(my - 1)
-          sc = hx*hy
-          hxdhy = hx/hy
-          hydhx = hy/hx
-
-          PetscCall(VecGetArrayRead(X, xx, ierr))
-          do 10 j = 1, my
-            do 20 i = 1, mx
-!
-!      When inserting into PETSc matrices, indices start at 0
-!
-              row(1) = i - 1 + (j - 1)*mx
-              if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-                PetscCall(MatSetValues(jac, i1, [row], i1, [row], [one], INSERT_VALUES, ierr))
-              else
-                v(1) = hxdhy
-                col(1) = row(1) - mx
-                v(2) = hydhx
-                col(2) = row(1) - 1
-                v(3) = -two*(hydhx + hxdhy) + sc*lambda*exp(xx(row(1)))
-                col(3) = row(1)
-                v(4) = hydhx
-                col(4) = row(1) + 1
-                v(5) = hxdhy
-                col(5) = row(1) + mx
-                PetscCall(MatSetValues(jac, i1, [row], i5, col, v, INSERT_VALUES, ierr))
-              end if
-20            continue
-10            continue
-              PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
-              PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
-              PetscCall(VecRestoreArray(X, xx, ierr))
-            end
-
 !/*TEST
 !
 !    test:

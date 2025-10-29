@@ -16,9 +16,8 @@
 !
 !
 ! -----------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 
@@ -105,7 +104,7 @@ program main
   h2 = 1.0/real((n + 1)*(n + 1))
 
   one = 1
-  do 10, II = Istart, Iend - 1
+  do II = Istart, Iend - 1
     v = -1.0
     i = II/n
     j = II - i*n
@@ -128,16 +127,16 @@ program main
     if (use_random) PetscCallA(PetscRandomGetValue(rctx, sigma2, ierr))
     v = 4.0 - sigma1*h2 + sigma2*h2
     PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
-10  continue
-    if (use_random) PetscCallA(PetscRandomDestroy(rctx, ierr))
+  end do
+  if (use_random) PetscCallA(PetscRandomDestroy(rctx, ierr))
 
 !  Assemble matrix, using the 2-step process:
 !       MatAssemblyBegin(), MatAssemblyEnd()
 !  Computations can be done while messages are in transition
 !  by placing code between these two statements.
 
-    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  Create parallel vectors.
 !   - Here, the parallel partitioning of the vector is determined by
@@ -145,23 +144,23 @@ program main
 !     if desired.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-    PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
-    PetscCallA(VecSetSizes(u, PETSC_DECIDE, dim, ierr))
-    PetscCallA(VecSetFromOptions(u, ierr))
-    PetscCallA(VecDuplicate(u, b, ierr))
-    PetscCallA(VecDuplicate(b, x, ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
+  PetscCallA(VecSetSizes(u, PETSC_DECIDE, dim, ierr))
+  PetscCallA(VecSetFromOptions(u, ierr))
+  PetscCallA(VecDuplicate(u, b, ierr))
+  PetscCallA(VecDuplicate(b, x, ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 
-    if (use_random) then
-      PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD, rctx, ierr))
-      PetscCallA(PetscRandomSetFromOptions(rctx, ierr))
-      PetscCallA(VecSetRandom(u, rctx, ierr))
-    else
-      pfive = 0.5
-      PetscCallA(VecSet(u, pfive, ierr))
-    end if
-    PetscCallA(MatMult(A, u, b, ierr))
+  if (use_random) then
+    PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD, rctx, ierr))
+    PetscCallA(PetscRandomSetFromOptions(rctx, ierr))
+    PetscCallA(VecSetRandom(u, rctx, ierr))
+  else
+    pfive = 0.5
+    PetscCallA(VecSet(u, pfive, ierr))
+  end if
+  PetscCallA(MatMult(A, u, b, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
@@ -169,23 +168,23 @@ program main
 
 !  Create linear solver context
 
-    PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
+  PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix used to construct the preconditioner.
 
-    PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+  PetscCallA(KSPSetOperators(ksp, A, A, ierr))
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 
-    PetscCallA(KSPSetFromOptions(ksp, ierr))
+  PetscCallA(KSPSetFromOptions(ksp, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    PetscCallA(KSPSolve(ksp, b, x, ierr))
+  PetscCallA(KSPSolve(ksp, b, x, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
@@ -193,31 +192,31 @@ program main
 
 !  Check the error
 
-    PetscCallA(VecAXPY(x, none, u, ierr))
-    PetscCallA(VecNorm(x, NORM_2, norm, ierr))
-    PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
-    if (rank == 0) then
-      if (norm > 1.e-12) then
-        write (6, 100) norm, its
-      else
-        write (6, 110) its
-      end if
+  PetscCallA(VecAXPY(x, none, u, ierr))
+  PetscCallA(VecNorm(x, NORM_2, norm, ierr))
+  PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
+  if (rank == 0) then
+    if (norm > 1.e-12) then
+      write (6, 100) norm, its
+    else
+      write (6, 110) its
     end if
+  end if
 100 format('Norm of error ', e11.4, ',iterations ', i5)
 110 format('Norm of error < 1.e-12,iterations ', i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-    if (use_random) PetscCallA(PetscRandomDestroy(rctx, ierr))
-    PetscCallA(KSPDestroy(ksp, ierr))
-    PetscCallA(VecDestroy(u, ierr))
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(VecDestroy(b, ierr))
-    PetscCallA(MatDestroy(A, ierr))
+  if (use_random) PetscCallA(PetscRandomDestroy(rctx, ierr))
+  PetscCallA(KSPDestroy(ksp, ierr))
+  PetscCallA(VecDestroy(u, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(b, ierr))
+  PetscCallA(MatDestroy(A, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !
 !/*TEST

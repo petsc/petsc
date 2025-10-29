@@ -3,8 +3,8 @@
 !
 !     The matrix is provided in triples in a way that supports new nonzero values with the same nonzero structure
 !
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 
@@ -12,11 +12,11 @@ program main
   PetscCount nz
   PetscBool flg
   PetscErrorCode ierr
-  PetscScalar, ALLOCATABLE :: a(:)
+  PetscScalar, allocatable :: a(:)
   PetscScalar, pointer :: b(:)
 
-  PetscInt, ALLOCATABLE :: rows(:)
-  PetscInt, ALLOCATABLE :: cols(:)
+  PetscInt, allocatable :: rows(:)
+  PetscInt, allocatable :: cols(:)
 
   Mat J
   Vec rhs, solution
@@ -30,7 +30,7 @@ program main
 
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, rhs, ierr))
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, solution, ierr))
-  ALLOCATE (rows(nz), cols(nz), a(nz))
+  allocate (rows(nz), cols(nz), a(nz))
 
   PetscCallA(VecGetArray(rhs, b, ierr))
   do i = 1, n
@@ -77,7 +77,7 @@ program main
   PetscCallA(VecDestroy(solution, ierr))
   PetscCallA(MatDestroy(J, ierr))
 
-  DEALLOCATE (rows, cols, a)
+  deallocate (rows, cols, a)
 
   PetscCallA(PetscFinalize(ierr))
 end

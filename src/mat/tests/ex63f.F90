@@ -5,8 +5,8 @@
 !   and then reads it back in as a SeqDense and MPIDense
 !   matrix, and prints out the contents.
 !
-program main
 #include <petsc/finclude/petscmat.h>
+program main
   use petscmat
   implicit none
 

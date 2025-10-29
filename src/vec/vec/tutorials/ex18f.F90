@@ -3,9 +3,8 @@
 
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 ! Fortran translation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 
@@ -93,12 +92,11 @@ program main
 contains
 
   function func(a)
-#include <petsc/finclude/petscvec.h>
     use petscvec
 
     implicit none
     PetscScalar :: func
-    PetscScalar, INTENT(IN) :: a
+    PetscScalar, intent(IN) :: a
 
     func = 2.0*a/(1.0 + a*a)
 

@@ -1,9 +1,8 @@
 !
 ! Description: Demonstrates using a local ordering to set values into a parallel vector
 !
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
 
   implicit none

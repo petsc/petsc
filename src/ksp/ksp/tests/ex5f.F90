@@ -1,7 +1,26 @@
 !
-program main
 #include <petsc/finclude/petscksp.h>
+module ex5fmodule
   use petscksp
+  implicit none
+
+contains
+!  This is a bogus multiply that copies the vector. This corresponds to
+!  an identity matrix A
+  subroutine mymatmult(A, x, y, ierr)
+
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
+
+    PetscCallA(VecCopy(x, y, ierr))
+
+  end
+end module ex5fmodule
+
+program main
+  use petscksp
+  use ex5fmodule
   implicit none
 !
 !      Solves a linear system matrix-free
@@ -12,7 +31,6 @@ program main
   PetscInt m
   PetscErrorCode ierr
   KSP ksp
-  external mymatmult
   PetscScalar one
 
   m = 10
@@ -39,21 +57,6 @@ program main
   PetscCallA(VecDestroy(y, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-!  This is a bogus multiply that copies the vector. This corresponds to
-!  an identity matrix A
-
-subroutine mymatmult(A, x, y, ierr)
-  use petscksp
-  implicit none
-
-  Mat A
-  Vec x, y
-  PetscErrorCode ierr
-
-  PetscCallA(VecCopy(x, y, ierr))
-
 end
 
 !/*TEST

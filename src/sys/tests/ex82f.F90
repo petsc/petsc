@@ -1,5 +1,5 @@
-program main
 #include <petsc/finclude/petscsys.h>
+program main
   use petscsys
   implicit none
   character(len=256) :: filename

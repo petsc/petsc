@@ -2,14 +2,14 @@
 !   The mesh consists of two tetrehadra, sharing a (triangular) face, hence
 !   the number of shared DOF equals 3 nodes x 3 dof/node = 9
 !
-program main
 #include <petsc/finclude/petscdmplex.h>
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petsc.h>
+program main
 
-  use PETScDM
-  use PETScDMplex
+  use petscdm
+  use petscdmplex
 
   implicit none
 

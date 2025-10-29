@@ -30,16 +30,320 @@
 !  system of equations.
 !
 !  --------------------------------------------------------------------------
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscdmda.h>
 module ex5fmodule
   use petscsnes
   use petscdmda
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscdmda.h>
+  implicit none
   PetscInt xs, xe, xm, gxs, gxe, gxm
   PetscInt ys, ye, ym, gys, gye, gym
   PetscInt mx, my
   PetscMPIInt rank, size
   PetscReal lambda
+contains
+! ---------------------------------------------------------------------
+!
+!  FormInitialGuess - Forms initial approximation.
+!
+!  Input Parameters:
+!  X - vector
+!
+!  Output Parameter:
+!  X - vector
+!
+!  Notes:
+!  This routine serves as a wrapper for the lower-level routine
+!  "ApplicationInitialGuess", where the actual computations are
+!  done using the standard Fortran style of treating the local
+!  vector data as a multidimensional array over the local mesh.
+!  This routine merely handles ghost point scatters and accesses
+!  the local vector data via VecGetArray() and VecRestoreArray().
+!
+  subroutine FormInitialGuess(X, ierr)
+
+!  Input/output variables:
+    Vec X
+    PetscErrorCode ierr
+!  Declarations for use with local arrays:
+    PetscScalar, pointer :: lx_v(:)
+
+    ierr = 0
+
+!  Get a pointer to vector data.
+!    - For default PETSc vectors, VecGetArray() returns a pointer to
+!      the data array.  Otherwise, the routine is implementation dependent.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
+!    - Note that the Fortran interface to VecGetArray() differs from the
+!      C version.  See the users manual for details.
+
+    call VecGetArray(X, lx_v, ierr)
+    CHKERRQ(ierr)
+
+!  Compute initial guess over the locally owned part of the grid
+
+    call InitialGuessLocal(lx_v, ierr)
+    CHKERRQ(ierr)
+
+!  Restore vector
+
+    call VecRestoreArray(X, lx_v, ierr)
+    CHKERRQ(ierr)
+
+  end
+
+! ---------------------------------------------------------------------
+!
+!  InitialGuessLocal - Computes initial approximation, called by
+!  the higher level routine FormInitialGuess().
+!
+!  Input Parameter:
+!  x - local vector data
+!
+!  Output Parameters:
+!  x - local vector data
+!  ierr - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+  subroutine InitialGuessLocal(x, ierr)
+
+!  Input/output variables:
+    PetscScalar x(xs:xe, ys:ye)
+    PetscErrorCode ierr
+
+!  Local variables:
+    PetscInt i, j
+    PetscReal temp1, temp, one, hx, hy
+
+!  Set parameters
+
+    ierr = 0
+    one = 1.0
+    hx = one/((real(mx) - 1))
+    hy = one/((real(my) - 1))
+    temp1 = lambda/(lambda + one)
+
+    do j = ys, ye
+      temp = (real(min(j - 1, my - j)))*hy
+      do i = xs, xe
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+          x(i, j) = 0.0
+        else
+          x(i, j) = temp1*sqrt(min(real(min(i - 1, mx - i))*hx, (temp)))
+        end if
+      end do
+    end do
+
+  end
+
+! ---------------------------------------------------------------------
+!
+!  FormFunctionLocal - Computes nonlinear function, called by
+!  the higher level routine FormFunction().
+!
+!  Input Parameter:
+!  x - local vector data
+!
+!  Output Parameters:
+!  f - local vector data, f(x)
+!  ierr - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+!
+  subroutine FormFunctionLocal(info, x, f, da, ierr)
+
+    DM da
+
+!  Input/output variables:
+    DMDALocalInfo info
+    PetscScalar x(gxs:gxe, gys:gye)
+    PetscScalar f(xs:xe, ys:ye)
+    PetscErrorCode ierr
+
+!  Local variables:
+    PetscScalar two, one, hx, hy
+    PetscScalar hxdhy, hydhx, sc
+    PetscScalar u, uxx, uyy
+    PetscInt i, j
+
+    xs = info%XS + 1
+    xe = xs + info%XM - 1
+    ys = info%YS + 1
+    ye = ys + info%YM - 1
+    mx = info%MX
+    my = info%MY
+
+    one = 1.0
+    two = 2.0
+    hx = one/(real(mx) - 1)
+    hy = one/(real(my) - 1)
+    sc = hx*hy*lambda
+    hxdhy = hx/hy
+    hydhx = hy/hx
+
+!  Compute function over the locally owned part of the grid
+
+    do j = ys, ye
+      do i = xs, xe
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+          f(i, j) = x(i, j)
+        else
+          u = x(i, j)
+          uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
+          uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
+          f(i, j) = uxx + uyy - sc*exp(u)
+        end if
+      end do
+    end do
+
+    call PetscLogFlops(11.0d0*ym*xm, ierr)
+    CHKERRQ(ierr)
+
+  end
+
+! ---------------------------------------------------------------------
+!
+!  FormJacobianLocal - Computes Jacobian matrix, called by
+!  the higher level routine FormJacobian().
+!
+!  Input Parameters:
+!  x        - local vector data
+!
+!  Output Parameters:
+!  jac      - Jacobian matrix
+!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
+!  ierr     - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+!  Notes:
+!  Due to grid point reordering with DMDAs, we must always work
+!  with the local grid points, and then transform them to the new
+!  global numbering with the "ltog" mapping
+!  We cannot work directly with the global numbers for the original
+!  uniprocessor grid!
+!
+!  Two methods are available for imposing this transformation
+!  when setting matrix entries:
+!    (A) MatSetValuesLocal(), using the local ordering (including
+!        ghost points!)
+!          by calling MatSetValuesLocal()
+!    (B) MatSetValues(), using the global ordering
+!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
+!        - Then apply this map explicitly yourself
+!        - Set matrix entries using the global ordering by calling
+!          MatSetValues()
+!  Option (A) seems cleaner/easier in many cases, and is the procedure
+!  used in this example.
+!
+  subroutine FormJacobianLocal(info, x, A, jac, da, ierr)
+
+    DM da
+
+!  Input/output variables:
+    PetscScalar x(gxs:gxe, gys:gye)
+    Mat A, jac
+    PetscErrorCode ierr
+    DMDALocalInfo info
+
+!  Local variables:
+    PetscInt row, col(5), i, j, i1, i5
+    PetscScalar two, one, hx, hy, v(5)
+    PetscScalar hxdhy, hydhx, sc
+
+!  Set parameters
+
+    i1 = 1
+    i5 = 5
+    one = 1.0
+    two = 2.0
+    hx = one/(real(mx) - 1)
+    hy = one/(real(my) - 1)
+    sc = hx*hy
+    hxdhy = hx/hy
+    hydhx = hy/hx
+! -Wmaybe-uninitialized
+    v = 0.0
+    col = 0
+
+!  Compute entries for the locally owned part of the Jacobian.
+!   - Currently, all PETSc parallel matrix formats are partitioned by
+!     contiguous chunks of rows across the processors.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly).
+!   - Here, we set all entries for a particular row at once.
+!   - We can set matrix entries either using either
+!     MatSetValuesLocal() or MatSetValues(), as discussed above.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C.
+
+    do j = ys, ye
+      row = (j - gys)*gxm + xs - gxs - 1
+      do i = xs, xe
+        row = row + 1
+!           boundary points
+        if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+!       Some f90 compilers need 4th arg to be of same type in both calls
+          col(1) = row
+          v(1) = one
+          call MatSetValuesLocal(jac, i1, [row], i1, [col], [v], INSERT_VALUES, ierr)
+          CHKERRQ(ierr)
+!           interior grid points
+        else
+          v(1) = -hxdhy
+          v(2) = -hydhx
+          v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
+          v(4) = -hydhx
+          v(5) = -hxdhy
+          col(1) = row - gxm
+          col(2) = row - 1
+          col(3) = row
+          col(4) = row + 1
+          col(5) = row + gxm
+          call MatSetValuesLocal(jac, i1, [row], i5, [col], [v], INSERT_VALUES, ierr)
+          CHKERRQ(ierr)
+        end if
+      end do
+    end do
+    call MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr)
+    CHKERRQ(ierr)
+    call MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr)
+    CHKERRQ(ierr)
+    if (A /= jac) then
+      call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
+      CHKERRQ(ierr)
+      call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
+      CHKERRQ(ierr)
+    end if
+  end
+
+!
+!     Simple convergence test based on the infinity norm of the residual being small
+!
+  subroutine MySNESConverged(snes, it, xnorm, snorm, fnorm, reason, dummy, ierr)
+
+    SNES snes
+    PetscInt it, dummy
+    PetscReal xnorm, snorm, fnorm, nrm
+    SNESConvergedReason reason
+    Vec f
+    PetscErrorCode ierr
+
+    call SNESGetFunction(snes, f, PETSC_NULL_FUNCTION, dummy, ierr)
+    CHKERRQ(ierr)
+    call VecNorm(f, NORM_INFINITY, nrm, ierr)
+    CHKERRQ(ierr)
+    if (nrm <= 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
+
+  end
+
 end module ex5fmodule
 
 program main
@@ -64,13 +368,6 @@ program main
   PetscReal lambda_max, lambda_min
   PetscBool flg
   DM da
-
-!  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
-!  MUST be declared as external.
-
-  external FormInitialGuess
-  external FormFunctionLocal, FormJacobianLocal
-  external MySNESConverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
@@ -215,319 +512,6 @@ program main
   call PetscFinalize(ierr)
   CHKERRA(ierr)
 end
-
-! ---------------------------------------------------------------------
-!
-!  FormInitialGuess - Forms initial approximation.
-!
-!  Input Parameters:
-!  X - vector
-!
-!  Output Parameter:
-!  X - vector
-!
-!  Notes:
-!  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationInitialGuess", where the actual computations are
-!  done using the standard Fortran style of treating the local
-!  vector data as a multidimensional array over the local mesh.
-!  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArray() and VecRestoreArray().
-!
-subroutine FormInitialGuess(X, ierr)
-  use ex5fmodule
-  implicit none
-
-!  Input/output variables:
-  Vec X
-  PetscErrorCode ierr
-!  Declarations for use with local arrays:
-  PetscScalar, pointer :: lx_v(:)
-
-  ierr = 0
-
-!  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArray() returns a pointer to
-!      the data array.  Otherwise, the routine is implementation dependent.
-!    - You MUST call VecRestoreArray() when you no longer need access to
-!      the array.
-!    - Note that the Fortran interface to VecGetArray() differs from the
-!      C version.  See the users manual for details.
-
-  call VecGetArray(X, lx_v, ierr)
-  CHKERRQ(ierr)
-
-!  Compute initial guess over the locally owned part of the grid
-
-  call InitialGuessLocal(lx_v, ierr)
-  CHKERRQ(ierr)
-
-!  Restore vector
-
-  call VecRestoreArray(X, lx_v, ierr)
-  CHKERRQ(ierr)
-
-end
-
-! ---------------------------------------------------------------------
-!
-!  InitialGuessLocal - Computes initial approximation, called by
-!  the higher level routine FormInitialGuess().
-!
-!  Input Parameter:
-!  x - local vector data
-!
-!  Output Parameters:
-!  x - local vector data
-!  ierr - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-subroutine InitialGuessLocal(x, ierr)
-  use ex5fmodule
-  implicit none
-
-!  Input/output variables:
-  PetscScalar x(xs:xe, ys:ye)
-  PetscErrorCode ierr
-
-!  Local variables:
-  PetscInt i, j
-  PetscReal temp1, temp, one, hx, hy
-
-!  Set parameters
-
-  ierr = 0
-  one = 1.0
-  hx = one/((real(mx) - 1))
-  hy = one/((real(my) - 1))
-  temp1 = lambda/(lambda + one)
-
-  do 20 j = ys, ye
-    temp = (real(min(j - 1, my - j)))*hy
-    do 10 i = xs, xe
-      if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-        x(i, j) = 0.0
-      else
-        x(i, j) = temp1*sqrt(min(real(min(i - 1, mx - i))*hx, (temp)))
-      end if
-10    continue
-20    continue
-
-    end
-
-! ---------------------------------------------------------------------
-!
-!  FormFunctionLocal - Computes nonlinear function, called by
-!  the higher level routine FormFunction().
-!
-!  Input Parameter:
-!  x - local vector data
-!
-!  Output Parameters:
-!  f - local vector data, f(x)
-!  ierr - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-!
-    subroutine FormFunctionLocal(info, x, f, da, ierr)
-      use ex5fmodule
-      implicit none
-
-      DM da
-
-!  Input/output variables:
-      DMDALocalInfo info
-      PetscScalar x(gxs:gxe, gys:gye)
-      PetscScalar f(xs:xe, ys:ye)
-      PetscErrorCode ierr
-
-!  Local variables:
-      PetscScalar two, one, hx, hy
-      PetscScalar hxdhy, hydhx, sc
-      PetscScalar u, uxx, uyy
-      PetscInt i, j
-
-      xs = info%XS + 1
-      xe = xs + info%XM - 1
-      ys = info%YS + 1
-      ye = ys + info%YM - 1
-      mx = info%MX
-      my = info%MY
-
-      one = 1.0
-      two = 2.0
-      hx = one/(real(mx) - 1)
-      hy = one/(real(my) - 1)
-      sc = hx*hy*lambda
-      hxdhy = hx/hy
-      hydhx = hy/hx
-
-!  Compute function over the locally owned part of the grid
-
-      do 20 j = ys, ye
-        do 10 i = xs, xe
-          if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-            f(i, j) = x(i, j)
-          else
-            u = x(i, j)
-            uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
-            uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
-            f(i, j) = uxx + uyy - sc*exp(u)
-          end if
-10        continue
-20        continue
-
-          call PetscLogFlops(11.0d0*ym*xm, ierr)
-          CHKERRQ(ierr)
-
-        end
-
-! ---------------------------------------------------------------------
-!
-!  FormJacobianLocal - Computes Jacobian matrix, called by
-!  the higher level routine FormJacobian().
-!
-!  Input Parameters:
-!  x        - local vector data
-!
-!  Output Parameters:
-!  jac      - Jacobian matrix
-!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
-!  ierr     - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-!  Notes:
-!  Due to grid point reordering with DMDAs, we must always work
-!  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping
-!  We cannot work directly with the global numbers for the original
-!  uniprocessor grid!
-!
-!  Two methods are available for imposing this transformation
-!  when setting matrix entries:
-!    (A) MatSetValuesLocal(), using the local ordering (including
-!        ghost points!)
-!          by calling MatSetValuesLocal()
-!    (B) MatSetValues(), using the global ordering
-!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
-!        - Then apply this map explicitly yourself
-!        - Set matrix entries using the global ordering by calling
-!          MatSetValues()
-!  Option (A) seems cleaner/easier in many cases, and is the procedure
-!  used in this example.
-!
-        subroutine FormJacobianLocal(info, x, A, jac, da, ierr)
-          use ex5fmodule
-          implicit none
-
-          DM da
-
-!  Input/output variables:
-          PetscScalar x(gxs:gxe, gys:gye)
-          Mat A, jac
-          PetscErrorCode ierr
-          DMDALocalInfo info
-
-!  Local variables:
-          PetscInt row, col(5), i, j, i1, i5
-          PetscScalar two, one, hx, hy, v(5)
-          PetscScalar hxdhy, hydhx, sc
-
-!  Set parameters
-
-          i1 = 1
-          i5 = 5
-          one = 1.0
-          two = 2.0
-          hx = one/(real(mx) - 1)
-          hy = one/(real(my) - 1)
-          sc = hx*hy
-          hxdhy = hx/hy
-          hydhx = hy/hx
-! -Wmaybe-uninitialized
-          v = 0.0
-          col = 0
-
-!  Compute entries for the locally owned part of the Jacobian.
-!   - Currently, all PETSc parallel matrix formats are partitioned by
-!     contiguous chunks of rows across the processors.
-!   - Each processor needs to insert only elements that it owns
-!     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly).
-!   - Here, we set all entries for a particular row at once.
-!   - We can set matrix entries either using either
-!     MatSetValuesLocal() or MatSetValues(), as discussed above.
-!   - Note that MatSetValues() uses 0-based row and column numbers
-!     in Fortran as well as in C.
-
-          do 20 j = ys, ye
-            row = (j - gys)*gxm + xs - gxs - 1
-            do 10 i = xs, xe
-              row = row + 1
-!           boundary points
-              if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-!       Some f90 compilers need 4th arg to be of same type in both calls
-                col(1) = row
-                v(1) = one
-                call MatSetValuesLocal(jac, i1, [row], i1, [col], [v], INSERT_VALUES, ierr)
-                CHKERRQ(ierr)
-!           interior grid points
-              else
-                v(1) = -hxdhy
-                v(2) = -hydhx
-                v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
-                v(4) = -hydhx
-                v(5) = -hxdhy
-                col(1) = row - gxm
-                col(2) = row - 1
-                col(3) = row
-                col(4) = row + 1
-                col(5) = row + gxm
-                call MatSetValuesLocal(jac, i1, [row], i5, [col], [v], INSERT_VALUES, ierr)
-                CHKERRQ(ierr)
-              end if
-10            continue
-20            continue
-              call MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr)
-              CHKERRQ(ierr)
-              call MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr)
-              CHKERRQ(ierr)
-              if (A /= jac) then
-                call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
-                CHKERRQ(ierr)
-                call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
-                CHKERRQ(ierr)
-              end if
-            end
-
-!
-!     Simple convergence test based on the infinity norm of the residual being small
-!
-            subroutine MySNESConverged(snes, it, xnorm, snorm, fnorm, reason, dummy, ierr)
-              use ex5fmodule
-              implicit none
-
-              SNES snes
-              PetscInt it, dummy
-              PetscReal xnorm, snorm, fnorm, nrm
-              SNESConvergedReason reason
-              Vec f
-              PetscErrorCode ierr
-
-              call SNESGetFunction(snes, f, PETSC_NULL_FUNCTION, dummy, ierr)
-              CHKERRQ(ierr)
-              call VecNorm(f, NORM_INFINITY, nrm, ierr)
-              CHKERRQ(ierr)
-              if (nrm <= 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
-
-            end
-
 !/*TEST
 !
 !   build:

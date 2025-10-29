@@ -1,5 +1,5 @@
-program ex97f90
 #include "petsc/finclude/petsc.h"
+program ex97f90
   use petsc
   implicit none
 
@@ -31,11 +31,11 @@ program ex97f90
   PetscCallA(DMGetLabel(dm, 'celltype', label, ierr))
   PetscCallA(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD, ierr))
   PetscCallA(DMPlexGetHeightStratum(dm, 0_kPI, pStart, pEnd, ierr))
-  Do p = pStart, pEnd - 1
+  do p = pStart, pEnd - 1
     PetscCallA(DMPlexGetCellType(dm, p, cellType, ierr))
     write (IOBuffer, '("cell: ",i3," type: ",i3,"\n")') p, cellType
     PetscCallA(PetscPrintf(PETSC_COMM_SELF, IOBuffer, ierr))
-  End Do
+  end do
   PetscCallA(DMDestroy(dm, ierr))
 
   PetscCallA(PetscFinalize(ierr))

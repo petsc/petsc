@@ -6,8 +6,8 @@
 !     Entry triples:  rows(), cols(), and a()
 !     Entry triples in a way that supports new nonzero values with the same nonzero structure
 !
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 
@@ -15,14 +15,14 @@ program main
   PetscCount nz
   PetscBool flg, equal
   PetscErrorCode ierr
-  PetscInt, ALLOCATABLE :: ia(:)
-  PetscInt, ALLOCATABLE :: ja(:)
-  PetscScalar, ALLOCATABLE :: a(:)
-  PetscScalar, ALLOCATABLE :: x(:)
-  PetscScalar, ALLOCATABLE :: b(:)
+  PetscInt, allocatable :: ia(:)
+  PetscInt, allocatable :: ja(:)
+  PetscScalar, allocatable :: a(:)
+  PetscScalar, allocatable :: x(:)
+  PetscScalar, allocatable :: b(:)
 
-  PetscInt, ALLOCATABLE :: rows(:)
-  PetscInt, ALLOCATABLE :: cols(:)
+  PetscInt, allocatable :: rows(:)
+  PetscInt, allocatable :: cols(:)
 
   Mat J, Jt, Jr
   Vec rhs, solution
@@ -35,11 +35,11 @@ program main
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   nz = 3*n - 4
 
-  ALLOCATE (b(n), x(n))
+  allocate (b(n), x(n))
 
 !     Fill the sparse matrix representation
-  ALLOCATE (ia(n + 1), ja(nz), a(nz))
-  ALLOCATE (rows(nz), cols(nz))
+  allocate (ia(n + 1), ja(nz), a(nz))
+  allocate (rows(nz), cols(nz))
 
   do i = 1, n
     b(i) = 1.0
@@ -114,9 +114,9 @@ program main
   PetscCallA(VecDestroy(solution, ierr))
   PetscCallA(MatDestroy(J, ierr))
 
-  DEALLOCATE (b, x)
-  DEALLOCATE (ia, ja, a)
-  DEALLOCATE (rows, cols)
+  deallocate (b, x)
+  deallocate (ia, ja, a)
+  deallocate (rows, cols)
 
   PetscCallA(PetscFinalize(ierr))
 end

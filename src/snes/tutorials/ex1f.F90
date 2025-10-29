@@ -1,10 +1,145 @@
 !
 !  Description: Uses the Newton method to solve a two-variable system.
 !
+#include <petsc/finclude/petsc.h>
+module ex1fmodule
+  use petscvec
+  use petscsnesdef
+  use petscvec
+  use petscmat
+  implicit none
+
+contains
+!
+! ------------------------------------------------------------------------
+!
+!  FormFunction - Evaluates nonlinear function, F(x).
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  x - input vector
+!  dummy - optional user-defined context (not used here)
+!
+!  Output Parameter:
+!  f - function vector
+!
+  subroutine FormFunction(snes, x, f, dummy, ierr)
+    SNES snes
+    Vec x, f
+    PetscErrorCode ierr
+    integer dummy(*)
+
+!  Declarations for use with local arrays
+    PetscScalar, pointer :: lx_v(:), lf_v(:)
+
+!  Get pointers to vector data.
+!    - VecGetArray() returns a pointer to the data array.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
+
+    PetscCall(VecGetArrayRead(x, lx_v, ierr))
+    PetscCall(VecGetArray(f, lf_v, ierr))
+
+!  Compute function
+
+    lf_v(1) = lx_v(1)*lx_v(1) + lx_v(1)*lx_v(2) - 3.0
+    lf_v(2) = lx_v(1)*lx_v(2) + lx_v(2)*lx_v(2) - 6.0
+
+!  Restore vectors
+
+    PetscCall(VecRestoreArrayRead(x, lx_v, ierr))
+    PetscCall(VecRestoreArray(f, lf_v, ierr))
+
+  end
+
+! ---------------------------------------------------------------------
+!
+!  FormJacobian - Evaluates Jacobian matrix.
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  x - input vector
+!  dummy - optional user-defined context (not used here)
+!
+!  Output Parameters:
+!  A - Jacobian matrix
+!  B - optionally different matrix used to construct the preconditioner
+!
+  subroutine FormJacobian(snes, X, jac, B, dummy, ierr)
+
+    SNES snes
+    Vec X
+    Mat jac, B
+    PetscScalar A(4)
+    PetscErrorCode ierr
+    PetscInt idx(2), i2
+    integer dummy(*)
+
+!  Declarations for use with local arrays
+
+    PetscScalar, pointer :: lx_v(:)
+
+!  Get pointer to vector data
+
+    i2 = 2
+    PetscCall(VecGetArrayRead(x, lx_v, ierr))
+
+!  Compute Jacobian entries and insert into matrix.
+!   - Since this is such a small problem, we set all entries for
+!     the matrix at once.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C (as set here in the array idx).
+
+    idx(1) = 0
+    idx(2) = 1
+    A(1) = 2.0*lx_v(1) + lx_v(2)
+    A(2) = lx_v(1)
+    A(3) = lx_v(2)
+    A(4) = lx_v(1) + 2.0*lx_v(2)
+    PetscCall(MatSetValues(B, i2, idx, i2, idx, A, INSERT_VALUES, ierr))
+
+!  Restore vector
+
+    PetscCall(VecRestoreArrayRead(x, lx_v, ierr))
+
+!  Assemble matrix
+
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
+    if (B /= jac) then
+      PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
+      PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
+    end if
+
+  end
+
+  subroutine MyLineSearch(linesearch, lctx, ierr)
+
+    SNESLineSearch linesearch
+    SNES snes
+    integer lctx
+    Vec x, f, g, y, w
+    PetscReal ynorm, gnorm, xnorm
+    PetscErrorCode ierr
+
+    PetscScalar mone
+
+    mone = -1.0
+    PetscCall(SNESLineSearchGetSNES(linesearch, snes, ierr))
+    PetscCall(SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr))
+    PetscCall(VecNorm(y, NORM_2, ynorm, ierr))
+    PetscCall(VecAXPY(x, mone, y, ierr))
+    PetscCall(SNESComputeFunction(snes, x, f, ierr))
+    PetscCall(VecNorm(f, NORM_2, gnorm, ierr))
+    PetscCall(VecNorm(x, NORM_2, xnorm, ierr))
+    PetscCall(VecNorm(y, NORM_2, ynorm, ierr))
+    PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm, ierr))
+  end
+end module
 
 program main
-#include <petsc/finclude/petsc.h>
   use petsc
+  use ex1fmodule
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,11 +174,6 @@ program main
   PetscViewer viewer
 #endif
   double precision threshold, oldthreshold
-
-!  Note: Any user-defined Fortran routines (such as FormJacobian)
-!  MUST be declared as external.
-
-  external FormFunction, FormJacobian, MyLineSearch
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -163,143 +293,6 @@ program main
 #endif
   PetscCallA(PetscFinalize(ierr))
 end
-!
-! ------------------------------------------------------------------------
-!
-!  FormFunction - Evaluates nonlinear function, F(x).
-!
-!  Input Parameters:
-!  snes - the SNES context
-!  x - input vector
-!  dummy - optional user-defined context (not used here)
-!
-!  Output Parameter:
-!  f - function vector
-!
-subroutine FormFunction(snes, x, f, dummy, ierr)
-  use petscvec
-  use petscsnesdef
-  implicit none
-
-  SNES snes
-  Vec x, f
-  PetscErrorCode ierr
-  integer dummy(*)
-
-!  Declarations for use with local arrays
-  PetscScalar, pointer :: lx_v(:), lf_v(:)
-
-!  Get pointers to vector data.
-!    - VecGetArray() returns a pointer to the data array.
-!    - You MUST call VecRestoreArray() when you no longer need access to
-!      the array.
-
-  PetscCall(VecGetArrayRead(x, lx_v, ierr))
-  PetscCall(VecGetArray(f, lf_v, ierr))
-
-!  Compute function
-
-  lf_v(1) = lx_v(1)*lx_v(1) + lx_v(1)*lx_v(2) - 3.0
-  lf_v(2) = lx_v(1)*lx_v(2) + lx_v(2)*lx_v(2) - 6.0
-
-!  Restore vectors
-
-  PetscCall(VecRestoreArrayRead(x, lx_v, ierr))
-  PetscCall(VecRestoreArray(f, lf_v, ierr))
-
-end
-
-! ---------------------------------------------------------------------
-!
-!  FormJacobian - Evaluates Jacobian matrix.
-!
-!  Input Parameters:
-!  snes - the SNES context
-!  x - input vector
-!  dummy - optional user-defined context (not used here)
-!
-!  Output Parameters:
-!  A - Jacobian matrix
-!  B - optionally different matrix used to construct the preconditioner
-!
-subroutine FormJacobian(snes, X, jac, B, dummy, ierr)
-  use petscvec
-  use petscmat
-  use petscsnesdef
-  implicit none
-
-  SNES snes
-  Vec X
-  Mat jac, B
-  PetscScalar A(4)
-  PetscErrorCode ierr
-  PetscInt idx(2), i2
-  integer dummy(*)
-
-!  Declarations for use with local arrays
-
-  PetscScalar, pointer :: lx_v(:)
-
-!  Get pointer to vector data
-
-  i2 = 2
-  PetscCall(VecGetArrayRead(x, lx_v, ierr))
-
-!  Compute Jacobian entries and insert into matrix.
-!   - Since this is such a small problem, we set all entries for
-!     the matrix at once.
-!   - Note that MatSetValues() uses 0-based row and column numbers
-!     in Fortran as well as in C (as set here in the array idx).
-
-  idx(1) = 0
-  idx(2) = 1
-  A(1) = 2.0*lx_v(1) + lx_v(2)
-  A(2) = lx_v(1)
-  A(3) = lx_v(2)
-  A(4) = lx_v(1) + 2.0*lx_v(2)
-  PetscCall(MatSetValues(B, i2, idx, i2, idx, A, INSERT_VALUES, ierr))
-
-!  Restore vector
-
-  PetscCall(VecRestoreArrayRead(x, lx_v, ierr))
-
-!  Assemble matrix
-
-  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
-  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
-  if (B /= jac) then
-    PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
-  end if
-
-end
-
-subroutine MyLineSearch(linesearch, lctx, ierr)
-  use petscsnes
-  use petscvec
-  implicit none
-
-  SNESLineSearch linesearch
-  SNES snes
-  integer lctx
-  Vec x, f, g, y, w
-  PetscReal ynorm, gnorm, xnorm
-  PetscErrorCode ierr
-
-  PetscScalar mone
-
-  mone = -1.0
-  PetscCall(SNESLineSearchGetSNES(linesearch, snes, ierr))
-  PetscCall(SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr))
-  PetscCall(VecNorm(y, NORM_2, ynorm, ierr))
-  PetscCall(VecAXPY(x, mone, y, ierr))
-  PetscCall(SNESComputeFunction(snes, x, f, ierr))
-  PetscCall(VecNorm(f, NORM_2, gnorm, ierr))
-  PetscCall(VecNorm(x, NORM_2, xnorm, ierr))
-  PetscCall(VecNorm(y, NORM_2, ynorm, ierr))
-  PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm, ierr))
-end
-
 !/*TEST
 !
 !   test:

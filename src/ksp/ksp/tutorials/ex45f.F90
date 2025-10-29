@@ -1,9 +1,107 @@
-program main
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
-  use petscdm
+module ex45fmodule
+  use petscmat
+  use petscksp
+  use petscdmda
+  use petscvec
+  implicit none
+
+contains
+
+  subroutine ComputeInitialGuess(ksp, b, ctx, ierr)
+    PetscErrorCode ierr
+    KSP ksp
+    PetscInt ctx(*)
+    Vec b
+    PetscScalar h
+
+    h = 0.0
+    PetscCall(VecSet(b, h, ierr))
+  end subroutine
+
+  subroutine ComputeRHS(ksp, b, dummy, ierr)
+
+    PetscErrorCode ierr
+    KSP ksp
+    Vec b
+    integer dummy(*)
+    PetscScalar h, Hx, Hy
+    PetscInt mx, my
+    DM dm
+
+    PetscCall(KSPGetDM(ksp, dm, ierr))
+    PetscCall(DMDAGetInfo(dm, PETSC_NULL_INTEGER, mx, my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
+
+    Hx = 1.0/real(mx - 1)
+    Hy = 1.0/real(my - 1)
+    h = Hx*Hy
+    PetscCall(VecSet(b, h, ierr))
+  end subroutine
+
+  subroutine ComputeMatrix(ksp, A, B, dummy, ierr)
+    PetscErrorCode ierr
+    KSP ksp
+    Mat A, B
+    integer dummy(*)
+    DM dm
+
+    PetscInt i, j, mx, my, xm
+    PetscInt ym, xs, ys, i1, i5
+    PetscScalar v(5), Hx, Hy
+    PetscScalar HxdHy, HydHx
+    MatStencil row(1), col(5)
+
+    i1 = 1
+    i5 = 5
+    PetscCall(KSPGetDM(ksp, dm, ierr))
+    PetscCall(DMDAGetInfo(dm, PETSC_NULL_INTEGER, mx, my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
+
+    Hx = 1.0/real(mx - 1)
+    Hy = 1.0/real(my - 1)
+    HxdHy = Hx/Hy
+    HydHx = Hy/Hx
+    PetscCall(DMDAGetCorners(dm, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
+    do j = ys, ys + ym - 1
+      do i = xs, xs + xm - 1
+        row(1)%i = i
+        row(1)%j = j
+        if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
+          v(1) = 2.0*(HxdHy + HydHx)
+          PetscCall(MatSetValuesStencil(B, i1, row, i1, row, v, INSERT_VALUES, ierr))
+        else
+          v(1) = -HxdHy
+          col(1)%i = i
+          col(1)%j = j - 1
+          v(2) = -HydHx
+          col(2)%i = i - 1
+          col(2)%j = j
+          v(3) = 2.0*(HxdHy + HydHx)
+          col(3)%i = i
+          col(3)%j = j
+          v(4) = -HydHx
+          col(4)%i = i + 1
+          col(4)%j = j
+          v(5) = -HxdHy
+          col(5)%i = i
+          col(5)%j = j + 1
+          PetscCall(MatSetValuesStencil(B, i1, row, i5, col, v, INSERT_VALUES, ierr))
+        end if
+      end do
+    end do
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
+    if (A /= B) then
+      PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+      PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+    end if
+  end subroutine
+end module ex45fmodule
+
+program main
   use petscdmda
   use petscksp
+  use ex45fmodule
   implicit none
 
   PetscInt is, js, iw, jw
@@ -11,7 +109,6 @@ program main
   PetscErrorCode ierr
   KSP ksp
   DM dm
-  external ComputeRHS, ComputeMatrix, ComputeInitialGuess
 
   one = 1
   three = 3
@@ -33,105 +130,6 @@ program main
   PetscCallA(DMDestroy(dm, ierr))
   PetscCallA(PetscFinalize(ierr))
 end
-
-subroutine ComputeInitialGuess(ksp, b, ctx, ierr)
-  use petsckspdef
-  use petscvec
-  implicit none
-  PetscErrorCode ierr
-  KSP ksp
-  PetscInt ctx(*)
-  Vec b
-  PetscScalar h
-
-  h = 0.0
-  PetscCall(VecSet(b, h, ierr))
-end subroutine
-
-subroutine ComputeRHS(ksp, b, dummy, ierr)
-  use petscksp
-  use petscdmda
-  use petscvec
-  implicit none
-
-  PetscErrorCode ierr
-  KSP ksp
-  Vec b
-  integer dummy(*)
-  PetscScalar h, Hx, Hy
-  PetscInt mx, my
-  DM dm
-
-  PetscCall(KSPGetDM(ksp, dm, ierr))
-  PetscCall(DMDAGetInfo(dm, PETSC_NULL_INTEGER, mx, my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
-
-  Hx = 1.0/real(mx - 1)
-  Hy = 1.0/real(my - 1)
-  h = Hx*Hy
-  PetscCall(VecSet(b, h, ierr))
-end subroutine
-
-subroutine ComputeMatrix(ksp, A, B, dummy, ierr)
-  use petscmat
-  use petscksp
-  use petscdmda
-  implicit none
-  PetscErrorCode ierr
-  KSP ksp
-  Mat A, B
-  integer dummy(*)
-  DM dm
-
-  PetscInt i, j, mx, my, xm
-  PetscInt ym, xs, ys, i1, i5
-  PetscScalar v(5), Hx, Hy
-  PetscScalar HxdHy, HydHx
-  MatStencil row(1), col(5)
-
-  i1 = 1
-  i5 = 5
-  PetscCall(KSPGetDM(ksp, dm, ierr))
-  PetscCall(DMDAGetInfo(dm, PETSC_NULL_INTEGER, mx, my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
-
-  Hx = 1.0/real(mx - 1)
-  Hy = 1.0/real(my - 1)
-  HxdHy = Hx/Hy
-  HydHx = Hy/Hx
-  PetscCall(DMDAGetCorners(dm, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
-  do 10, j = ys, ys + ym - 1
-    do 20, i = xs, xs + xm - 1
-      row(1)%i = i
-      row(1)%j = j
-      if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
-        v(1) = 2.0*(HxdHy + HydHx)
-        PetscCall(MatSetValuesStencil(B, i1, row, i1, row, v, INSERT_VALUES, ierr))
-      else
-        v(1) = -HxdHy
-        col(1)%i = i
-        col(1)%j = j - 1
-        v(2) = -HydHx
-        col(2)%i = i - 1
-        col(2)%j = j
-        v(3) = 2.0*(HxdHy + HydHx)
-        col(3)%i = i
-        col(3)%j = j
-        v(4) = -HydHx
-        col(4)%i = i + 1
-        col(4)%j = j
-        v(5) = -HxdHy
-        col(5)%i = i
-        col(5)%j = j + 1
-        PetscCall(MatSetValuesStencil(B, i1, row, i5, col, v, INSERT_VALUES, ierr))
-      end if
-20    continue
-10    continue
-      PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
-      PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
-      if (A /= B) then
-        PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-        PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
-      end if
-      end subroutine
 
 !/*TEST
 !

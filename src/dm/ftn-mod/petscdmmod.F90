@@ -108,7 +108,7 @@ contains
 #include <../ftn/dm/petscspace.hf90>
 #include <../ftn/dm/petscdualspace.hf90>
 
-  Subroutine PetscDSGetTabulation(ds, tab, ierr)
+  subroutine PetscDSGetTabulation(ds, tab, ierr)
     PetscErrorCode ierr
     PetscTabulation, pointer :: tab(:)
     PetscDS ds
@@ -125,9 +125,9 @@ contains
       call PetscDSGetTabulationSetPointers(ds, i, tab(i)%ptr%T, ierr)
       CHKMEMQ
     end do
-  End Subroutine PetscDSGetTabulation
+  end subroutine PetscDSGetTabulation
 
-  Subroutine PetscDSRestoreTabulation(ds, tab, ierr)
+  subroutine PetscDSRestoreTabulation(ds, tab, ierr)
     PetscErrorCode ierr
     PetscTabulation, pointer :: tab(:)
     PetscDS ds
@@ -139,9 +139,9 @@ contains
       deallocate (tab(i)%ptr)
     end do
     deallocate (tab)
-  End Subroutine PetscDSRestoreTabulation
+  end subroutine PetscDSRestoreTabulation
 
-  Subroutine DMCreateFieldDecomposition(dm, n, names, iss, dms, ierr)
+  subroutine DMCreateFieldDecomposition(dm, n, names, iss, dms, ierr)
     PetscErrorCode ierr
     character(80), pointer :: names(:)
     IS, pointer            :: iss(:)
@@ -156,9 +156,9 @@ contains
       call DMCreateFieldDecompositionGetName(dm, i, names(i), ierr)
     end do
     call DMCreateFieldDecompositionGetISDM(dm, iss, dms, ierr)
-  End Subroutine DMCreateFieldDecomposition
+  end subroutine DMCreateFieldDecomposition
 
-  Subroutine DMDestroyFieldDecomposition(dm, n, names, iss, dms, ierr)
+  subroutine DMDestroyFieldDecomposition(dm, n, names, iss, dms, ierr)
     PetscErrorCode ierr
     character(80), pointer :: names(:)
     IS, pointer            :: iss(:)
@@ -170,7 +170,7 @@ contains
     deallocate (names)
     if (.false.) n = 0
     call DMCreateFieldDecompositionRestoreISDM(dm, iss, dms, ierr)
-  End Subroutine DMDestroyFieldDecomposition
+  end subroutine DMDestroyFieldDecomposition
 
 end module petscdm
 

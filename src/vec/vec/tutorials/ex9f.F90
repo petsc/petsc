@@ -9,9 +9,8 @@
 !      array to contain the needed ghost values from other processors,
 !      vector computations are otherwise unaffected.
 !
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 
@@ -86,27 +85,27 @@ program main
   PetscCallA(VecGetOwnershipRange(gx, rstart, rend, ierr))
 
   ione = 1
-  do 10, i = rstart, rend - 1
+  do i = rstart, rend - 1
     value = real(i)
     PetscCallA(VecSetValues(gx, ione, [i], [value], INSERT_VALUES, ierr))
-10  continue
+  end do
 
-    PetscCallA(VecAssemblyBegin(gx, ierr))
-    PetscCallA(VecAssemblyEnd(gx, ierr))
+  PetscCallA(VecAssemblyBegin(gx, ierr))
+  PetscCallA(VecAssemblyEnd(gx, ierr))
 
-    PetscCallA(VecGhostUpdateBegin(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
-    PetscCallA(VecGhostUpdateEnd(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
+  PetscCallA(VecGhostUpdateBegin(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
+  PetscCallA(VecGhostUpdateEnd(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
 
 !     Print out each vector, including the ghost padding region.
 
-    PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
-    PetscCallA(VecView(lx, subviewer, ierr))
-    PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
+  PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
+  PetscCallA(VecView(lx, subviewer, ierr))
+  PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
 
-    PetscCallA(VecGhostRestoreLocalForm(gx, lx, ierr))
-    PetscCallA(VecDestroy(gx, ierr))
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(VecGhostRestoreLocalForm(gx, lx, ierr))
+  PetscCallA(VecDestroy(gx, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

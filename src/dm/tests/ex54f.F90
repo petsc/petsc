@@ -1,10 +1,7 @@
 ! test verifies DMShellSetCreateFieldDecomposition interface in Fortran
-program main
 #include "petsc/finclude/petsc.h"
-#include "petsc/finclude/petscdmshell.h"
-
+program main
   use petsc
-  use petscdmshell
   implicit none
   type(tDM)          :: dm
   PetscErrorCode     :: ierr

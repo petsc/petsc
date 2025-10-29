@@ -13,9 +13,9 @@
 !     Upstream boundary conditions:
 !     u(0,t) = 1-sin(12*t)^4
 !
+#include <petsc/finclude/petscts.h>
 
 module ex22f_mfmodule
-#include <petsc/finclude/petscts.h>
   use petscts
   PetscScalar::PETSC_SHIFT
   TS::tscontext
@@ -88,7 +88,7 @@ program main
   user(user_s + 2) = 1.0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s1', user(user_s + 2), flg, ierr))
 
-  OptionSaveToDisk = .FALSE.
+  OptionSaveToDisk = .false.
   PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-sdisk', OptionSaveToDisk, flg, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context

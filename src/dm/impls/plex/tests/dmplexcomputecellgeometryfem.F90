@@ -1,9 +1,8 @@
 !     Contributed by Noem T
-program test
 #include <petsc/finclude/petscdmplex.h>
-#include <petsc/finclude/petscdm.h>
-  use PETScDM
-  use PETScDMplex
+program test
+  use petscdm
+  use petscdmplex
   implicit none
   DM       :: dm
   PetscInt :: numCells = 1

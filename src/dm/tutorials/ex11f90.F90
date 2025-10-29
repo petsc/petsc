@@ -1,14 +1,11 @@
 !     Tests DMDAGetVecGetArray()
-
-program main
-#include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
+program main
   use petscdmda
-  use petsc
   implicit none
 
-  Type(tVec) g
-  Type(tDM) ada
+  type(tVec) g
+  type(tDM) ada
 
   PetscScalar, pointer :: x1(:), x2(:, :)
   PetscScalar, pointer :: x3(:, :, :), x4(:, :, :, :)
@@ -164,7 +161,7 @@ program main
   PetscCallA(DMDestroy(ada, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-END PROGRAM
+end program
 
 !
 !/*TEST

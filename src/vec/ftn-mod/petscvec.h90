@@ -1,5 +1,5 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-      Interface
+      interface
         subroutine PetscSFBcastBegin(sf, unit, rarray, larray, op, ierr)
           use, intrinsic :: ISO_C_binding
           import tPetscSF
@@ -8,7 +8,7 @@
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFBcastBegin
+        end subroutine PetscSFBcastBegin
 
         subroutine PetscSFBcastEnd(sf, unit, rarray, larray, op, ierr)
           use, intrinsic :: ISO_C_binding
@@ -18,7 +18,7 @@
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFBcastEnd
+        end subroutine PetscSFBcastEnd
 
         subroutine PetscSFReduceBegin(sf, unit, larray, rarray, op, ierr)
           use, intrinsic :: ISO_C_binding
@@ -28,7 +28,7 @@
           type(*) :: larray(:)
           type(*) :: rarray(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFReduceBegin
+        end subroutine PetscSFReduceBegin
 
         subroutine PetscSFReduceEnd(sf, unit, larray, rarray, op, ierr)
           use, intrinsic :: ISO_C_binding
@@ -38,8 +38,8 @@
           type(*) :: larray(:)
           type(*) :: rarray(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFReduceEnd
-      end Interface
+        end subroutine PetscSFReduceEnd
+      end interface
 #endif
 
       interface
@@ -59,9 +59,9 @@
           PetscInt, pointer :: ilocal(:)
           type(sPetscSFNode), pointer :: iremote(:)
           PetscErrorCode :: ierr
-        end Subroutine PetscSFRestoreGraph
+        end subroutine PetscSFRestoreGraph
 
-        Subroutine VecRestoreValuesSection(v, s, p, va, ierr)
+        subroutine VecRestoreValuesSection(v, s, p, va, ierr)
           use, intrinsic :: ISO_C_binding
           import tVec, tPetscSection
           PetscScalar, pointer :: va(:)
@@ -69,5 +69,5 @@
           Vec v
           PetscSection s
           PetscInt p
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface

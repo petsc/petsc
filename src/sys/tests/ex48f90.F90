@@ -1,11 +1,10 @@
-program ex10f90
-
 #include "petsc/finclude/petsc.h"
+program ex10f90
   use petsc
   implicit none
 
   PetscErrorCode                            :: ierr
-  Character(len=256)                        :: filename
+  character(len=256)                        :: filename
   PetscBool                                 :: flg
   PetscInt                                  :: n
 

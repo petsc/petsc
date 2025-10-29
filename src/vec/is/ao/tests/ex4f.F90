@@ -1,8 +1,8 @@
 !
 !    Test AO with on IS with 0 entries - Fortran version of ex4.c
 !
-program main
 #include <petsc/finclude/petscao.h>
+program main
   use petscao
   implicit none
 

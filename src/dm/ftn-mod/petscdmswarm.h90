@@ -1,5 +1,5 @@
-      Interface
-        Subroutine DMSwarmGetField(dm, fieldname, blocksize, dtype, data, ierr)
+      interface
+        subroutine DMSwarmGetField(dm, fieldname, blocksize, dtype, data, ierr)
           use, intrinsic :: ISO_C_binding
           use petscsys, only: ePetscDataType
           import tDM
@@ -9,11 +9,11 @@
           PetscDataType dtype
           PetscScalar, pointer :: data(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface
 
-      Interface
-        Subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
+      interface
+        subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
           use, intrinsic :: ISO_C_binding
           use petscsys, only: ePetscDataType
           import tDM
@@ -23,5 +23,5 @@
           PetscDataType dtype
           PetscScalar, pointer :: data(:)
           PetscErrorCode ierr
-        End Subroutine
-      End Interface
+        end subroutine
+      end interface

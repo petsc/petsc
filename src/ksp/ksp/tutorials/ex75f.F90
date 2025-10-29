@@ -2,8 +2,8 @@
 !   Description: Solves a series of linear systems using KSPHPDDM.
 !
 
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
   Vec x, b
@@ -29,7 +29,7 @@ program main
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
   PetscCallA(KSPSetOperators(ksp, A, A, ierr))
-  do 50 i = 0, nmat - 1
+  do i = 0, nmat - 1
     j = i + 400
     fmt = '(I3)'
     write (cmat, fmt) j
@@ -60,13 +60,13 @@ program main
       end if
     end if
 #endif
-50  continue
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(VecDestroy(b, ierr))
-    PetscCallA(MatDestroy(A, ierr))
-    PetscCallA(KSPDestroy(ksp, ierr))
-    PetscCallA(PetscFinalize(ierr))
-  end
+  end do
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(b, ierr))
+  PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(KSPDestroy(ksp, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

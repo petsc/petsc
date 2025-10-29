@@ -8,6 +8,7 @@
 !
 !        ./configure --with-threadsafety --with-openmp
 !
+#include <petsc/finclude/petsc.h>
 module ex61fmodule
   implicit none
 contains
@@ -42,9 +43,9 @@ end module ex61fmodule
 
 program tpetsc
 
-#include <petsc/finclude/petsc.h>
   use ex61fmodule
   use petsc
+!$ use OMP_LIB
   implicit none
 !     ----------------------------
 !     test concurrent PETSc solver
@@ -56,7 +57,7 @@ program tpetsc
 
   integer, dimension(MAXTHREADS) :: ibeg, iend
 
-!$ integer, external :: omp_get_num_threads
+!$ integer :: omp_get_num_threads
 
   Mat, target :: Mcol_f_mat(MAXTHREADS)
   Vec, target :: Mcol_f_vecb(MAXTHREADS)

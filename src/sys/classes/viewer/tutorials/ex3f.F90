@@ -1,6 +1,5 @@
-program ex1f90
-
 #include <petsc/finclude/petscsys.h>
+program ex1f90
   use petscsys
   implicit none
   integer4 unit

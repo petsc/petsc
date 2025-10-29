@@ -116,7 +116,7 @@ class PETScMaker(script.Script):
    #os.mkdir(newdirname)
 
 
-   # Get list of source files in the directory 
+   # Get list of source files in the directory
    cnames = []
    onames = []
    fnames = []
@@ -167,7 +167,7 @@ class PETScMaker(script.Script):
 # for some reason agrmes is in the repository but not used!
    if base == 'agmres':  return False
    if base == 'test-dir':  return False
-   if base.startswith('arch-'):  return False     
+   if base.startswith('arch-'):  return False
 
    import re
    reg   = re.compile(' [ ]*')
@@ -184,7 +184,7 @@ class PETScMaker(script.Script):
        rtype = text.split(' ')[0]
        rvalue = text.split(' ')[1]
 
-       if rvalue == "'"+'PETSC_USE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'" or rvalue == "'"+'PETSC_USING_F2003'+"'":
+       if rvalue == "'"+'PETSC_USE_FORTRAN'+"'":
          if not hasattr(self.compilers, 'FC'):
            if self.verbose: print('Rejecting',dirname,'because fortran is not being used')
            return 0
@@ -248,7 +248,7 @@ class PETScMaker(script.Script):
          if not found:
            if self.verbose: print('Rejecting',dirname,'because function '+rvalue+' does not exist')
            return 0
-         
+
      text = fd.readline()
    fd.close()
    return True
@@ -265,7 +265,7 @@ class PETScMaker(script.Script):
      if os.path.isdir(basedir):
        if self.verbose: print('Removing '+basedir)
        shutil.rmtree(basedir)
-   os.mkdir(basedir)       
+   os.mkdir(basedir)
    for root, dirs, files in os.walk(rootDir):
      self.buildDir(root)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
@@ -309,8 +309,8 @@ class PETScMaker(script.Script):
 
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
-  return 
+  return
   noCheckCommand = staticmethod(noCheckCommand)
-  
+
 if __name__ == '__main__':
   PETScMaker().buildAll()

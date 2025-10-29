@@ -312,7 +312,7 @@ check_usermakefile:
 
 # pip install fprettify
 fprettify:
-	@git ls-files "*.[hF]90" | xargs fprettify --indent 2 --line-length 1000 --whitespace 2 --whitespace-type F --enable-replacements --c-relations
+	@git ls-files "*.[hF]90" | xargs fprettify --indent 2 --line-length 1000 --whitespace 2 --whitespace-type F --case 1 0 1 0 --enable-replacements --c-relations
 
 # git clone https://github.com/louoberto/fortify.git && cd fortify && export PATH=$PATH:$(pwd)/source
 fortify:
@@ -347,7 +347,7 @@ checkclangformat: checkclangformatversion checkgitclean clangformat
 # Check that all the Fortran source code in the repository satisfies the fprettify format
 checkfprettifyformat: checkgitclean fprettify
 	@if ! git diff --quiet; then \
-          printf "The current commit has Fortra source code formatting problems\n" ;\
+          printf "The current commit has Fortran source code formatting problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}"  ]; then \
             printf "Please run 'git diff' to check\n"; \
             git diff --stat; \

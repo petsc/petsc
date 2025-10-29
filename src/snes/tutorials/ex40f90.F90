@@ -7,12 +7,34 @@
 !   before calling MatSetValuesLocal(). Often you will find that using PETSc's default
 !   code for computing the Jacobian works fine and you will not need to implement
 !   your own FormJacobianLocal().
-
-program ex40f90
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdmda.h>
+module ex40f90module
+  use petscdmda
+  implicit none
+contains
+  subroutine FormFunctionLocal(in, x, f, dummy, ierr)
+    PetscInt i, j, k, dummy
+    DMDALocalInfo in
+    PetscScalar x(in%DOF, in%GXS + 1:in%GXS + in%GXM, in%GYS + 1:in%GYS + in%GYM)
+    PetscScalar f(in%DOF, in%XS + 1:in%XS + in%XM, in%YS + 1:in%YS + in%YM)
+    PetscErrorCode ierr
+
+    do i = in%XS + 1, in%XS + in%XM
+      do j = in%YS + 1, in%YS + in%YM
+        do k = 1, in%DOF
+          f(k, i, j) = x(k, i, j)*x(k, i, j) - 2.0
+        end do
+      end do
+    end do
+
+  end
+end module ex40f90module
+
+program ex40f90
   use petscdmda
   use petscsnes
+  use ex40f90module
   implicit none
 
   SNES snes
@@ -21,7 +43,6 @@ program ex40f90
   PetscInt ten, two, one
   PetscScalar sone
   Vec x
-  external FormFunctionLocal
 
   PetscCallA(PetscInitialize(ierr))
   ten = 10
@@ -51,25 +72,6 @@ program ex40f90
   PetscCallA(SNESDestroy(snes, ierr))
   PetscCallA(DMDestroy(da, ierr))
   PetscCallA(PetscFinalize(ierr))
-end
-
-subroutine FormFunctionLocal(in, x, f, dummy, ierr)
-  use petscdmda
-  implicit none
-  PetscInt i, j, k, dummy
-  DMDALocalInfo in
-  PetscScalar x(in%DOF, in%GXS + 1:in%GXS + in%GXM, in%GYS + 1:in%GYS + in%GYM)
-  PetscScalar f(in%DOF, in%XS + 1:in%XS + in%XM, in%YS + 1:in%YS + in%YM)
-  PetscErrorCode ierr
-
-  do i = in%XS + 1, in%XS + in%XM
-    do j = in%YS + 1, in%YS + in%YM
-      do k = 1, in%DOF
-        f(k, i, j) = x(k, i, j)*x(k, i, j) - 2.0
-      end do
-    end do
-  end do
-
 end
 
 !/*TEST

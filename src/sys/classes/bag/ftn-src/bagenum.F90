@@ -3,7 +3,7 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscBagRegisterEnum
 #endif
-      Subroutine PetscBagRegisterEnum(bag, addr, FArray, def, n, h, ierr)
+      subroutine PetscBagRegisterEnum(bag, addr, FArray, def, n, h, ierr)
         use, intrinsic :: iso_c_binding
         use petscbag
         implicit none
@@ -15,10 +15,10 @@
         PetscErrorCode, intent(out)  :: ierr
         PetscReal addr(*)
 
-        Type(C_Ptr), Dimension(:), Pointer :: CArray
+        type(C_Ptr), dimension(:), pointer :: CArray
         character(kind=c_char), pointer   :: nullc => null()
         PetscInt   :: i, Len
-        Character(kind=C_char, len=256), Dimension(:), Pointer::list1
+        character(kind=C_char, len=256), dimension(:), pointer::list1
 
         do i = 1, 256
           if (len_trim(Farray(i)) == 0) then
@@ -35,9 +35,9 @@
 
 100     continue
 
-        Allocate (list1(Len), stat=ierr)
+        allocate (list1(Len), stat=ierr)
         if (ierr /= 0) return
-        Allocate (CArray(Len + 1), stat=ierr)
+        allocate (CArray(Len + 1), stat=ierr)
         if (ierr /= 0) return
 
         do i = 1, Len
@@ -47,6 +47,6 @@
 
         CArray(Len + 1) = c_loc(nullc)
         call PetscBagRegisterEnumPrivate(bag, addr, CArray, def, n, h, ierr)
-        DeAllocate (CArray)
-        DeAllocate (list1)
-      End Subroutine
+        deallocate (CArray)
+        deallocate (list1)
+      end subroutine

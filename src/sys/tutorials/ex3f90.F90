@@ -3,10 +3,9 @@
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                inserting their own event logging.
 !
-
-program SchoolDay
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petsclog.h>
+program SchoolDay
   use petscmpi  ! or mpi or mpi_f08
   use petscsys
   implicit none

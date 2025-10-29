@@ -1,10 +1,8 @@
 !     Test code contributed by Thibaut Appel <t.appel17@imperial.ac.uk>
-
+#include <petsc/finclude/petscmat.h>
 program test_assembly
 
-#include <petsc/finclude/petscmat.h>
-
-  use PetscMat
+  use petscmat
   use ISO_Fortran_Env, only: real64
 
   implicit none

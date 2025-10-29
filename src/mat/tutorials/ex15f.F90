@@ -1,9 +1,5 @@
-program main
-
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-
-  use petscvec
+program main
   use petscmat
 
   implicit none

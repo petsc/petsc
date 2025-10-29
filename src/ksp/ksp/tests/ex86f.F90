@@ -2,9 +2,8 @@
 !  Description: Demonstrates error handling with incorrect Fortran objects
 !
 ! -----------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
   PetscErrorCode ierr

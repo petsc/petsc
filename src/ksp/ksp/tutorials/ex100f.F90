@@ -1,6 +1,7 @@
-program main
 #include "petsc/finclude/petscksp.h"
+program main
   use petscksp
+  implicit none
 
   PetscInt N
   PetscBool draw, flg
@@ -14,7 +15,7 @@ program main
   character*80 mattype
 
   N = 100
-  draw = .FALSE.
+  draw = .false.
   one = 1.0
   mone = -1.0
   rtwo = 2.0
