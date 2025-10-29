@@ -38,7 +38,9 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems PetscOpt
   data->cntl[0] = i;
   PetscCall(PetscOptionsEnum("-ksp_hpddm_precision", "Precision in which Krylov bases are stored", "KSPHPDDM", PetscPrecisionTypes, (PetscEnum)data->precision, (PetscEnum *)&data->precision, nullptr));
   PetscCheck(data->precision != PETSC_PRECISION___FLOAT128 || PetscDefined(HAVE_REAL___FLOAT128), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP_SYS, "Unsupported %s precision", PetscPrecisionTypes[data->precision]);
-  PetscCheck(std::abs(data->precision - PETSC_SCALAR_PRECISION) <= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Unhandled mixed %s and %s precisions", PetscPrecisionTypes[data->precision], PetscPrecisionTypes[PETSC_SCALAR_PRECISION]);
+  PetscCheck(std::abs(data->precision - PETSC_SCALAR_PRECISION) <= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Unsupported mixed %s and %s precisions", PetscPrecisionTypes[data->precision], PetscPrecisionTypes[PETSC_SCALAR_PRECISION]);
+  PetscCheck(data->precision != PETSC_PRECISION_INVALID && data->precision != PETSC_PRECISION_BFLOAT16, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Unsupported PetscPrecision %s", PetscPrecisionTypes[data->precision]);
+  static_assert(PETSC_PRECISION___FP16 == PETSC_PRECISION_SINGLE - 1 && PETSC_PRECISION_SINGLE == PETSC_PRECISION_DOUBLE - 1 && PETSC_PRECISION_DOUBLE == PETSC_PRECISION___FLOAT128 - 1, "");
   if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {
     if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
       i = (data->cntl[1] == static_cast<char>(PETSC_DECIDE) ? HPDDM_VARIANT_LEFT : data->cntl[1]);
@@ -519,10 +521,10 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscCall(KSPGetOperators(ksp, &A, nullptr));
   PetscCall(MatGetLocalSize(B, &n, nullptr));
   PetscCall(MatDenseGetLDA(B, &lda));
-  PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unhandled leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
+  PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unsupported leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
   PetscCall(MatGetLocalSize(A, &n, nullptr));
   PetscCall(MatDenseGetLDA(X, &lda));
-  PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unhandled leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
+  PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unsupported leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
   PetscCall(MatGetSize(X, nullptr, &n));
   PetscCall(MatDenseGetArrayWriteAndMemType(X, &x, type));
   PetscCall(MatDenseGetArrayReadAndMemType(B, &b, type + 1));
