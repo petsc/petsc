@@ -60,7 +60,8 @@ checkclangformatversion:
 clangformat: checkclangformatversion
 	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 ${PETSCCLANGFORMAT} -i
 
-GITSRC = '*.[ch]' '*.[hF]90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
+GITFSRC = '*.[hF]90' '*/finclude/*.h'
+GITSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITFSRC} ${GITSRCEXCL}
 GITMAKE = '*[Mm]akefile*' 'lib/petsc/conf/*' 'lib/slepc/conf/*'
 GITSRCEXCL = \
 ':!*khash/*' \
@@ -144,9 +145,9 @@ checkbadSource:
 	-@echo "----- Extra \"\" after format specifier ending a string --------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '_FMT \"\",' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} '*.[hF]90' ${GITMAKE} 'config/*' | grep ':1:' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} ${GITMAKE} 'config/*' | grep ':1:' >> checkbadSource.out;true
 	-@echo "----- Last blank line ----------------------------------------------" >> checkbadSource.out
-	-@git ls-files '*.[hF]90' ${GITMAKE} 'config/*' ':!*petscdm.h90' ':!*petscts.h90' ':!*/__init__.py' | xargs -I{} sh -c 'tail -n1 "{}" | grep -q . || echo "{}"' >> checkbadSource.out;true
+	-@git ls-files ${GITFSRC} ${GITMAKE} 'config/*' ':!*petscdm.h90' ':!*petscts.h90' ':!*/__init__.py' | xargs -I{} sh -c 'tail -n1 "{}" | grep -q . || echo "{}"' >> checkbadSource.out;true
 	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -A 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
 	-@echo "----- Blank line before PetscFunctionReturn ------------------------" >> checkbadSource.out
@@ -160,7 +161,7 @@ checkbadSource:
 	-@echo "----- Wrong PETSc capitalization -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '[^a-zA-Z_*>{.]petsc [^+=]' -- ${GITSRC} | grep -v 'mat_solver_type petsc' | grep -v ' PETSc ' >> checkbadSource.out;true
 	-@echo "----- Semi-colon at end of Fortran line ----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E ";$$" -- '*.[hF]90' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -E ";$$" -- ${GITFSRC} >> checkbadSource.out;true
 	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
 	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
 	-@echo "----- Unnecessary braces around one-liners -------------------------" >> checkbadSource.out
