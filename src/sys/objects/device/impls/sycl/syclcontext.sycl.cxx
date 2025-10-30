@@ -1,6 +1,6 @@
 #include "sycldevice.hpp"
 #include <sycl/sycl.hpp>
-#include <Kokkos_Core.hpp>
+#include <chrono>
 
 namespace Petsc
 {
@@ -18,14 +18,14 @@ class DeviceContext {
 public:
   struct PetscDeviceContext_SYCL {
     ::sycl::event event;
-    ::sycl::event begin;   // timer-only
-    ::sycl::event end;     // timer-only
-    Kokkos::Timer timer{}; // use cpu time since sycl events are return value of queue submission and we have no infrastructure to store them
-    double        timeBegin{};
+    ::sycl::event begin; // timer-only
+    ::sycl::event end;   // timer-only
 #if PetscDefined(USE_DEBUG)
     PetscBool timerInUse{};
 #endif
     ::sycl::queue queue;
+
+    std::chrono::time_point<std::chrono::steady_clock> timeBegin{};
   };
 
 private:
@@ -67,14 +67,18 @@ public:
 
   static PetscErrorCode setUp(PetscDeviceContext dctx) noexcept
   {
+    PetscDevice dev;
+    PetscInt    id;
+
     PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
     static_cast<PetscDeviceContext_SYCL *>(dctx->data)->timerInUse = PETSC_FALSE;
 #endif
-    // petsc/sycl currently only uses Kokkos's default execution space (and its queue),
-    // so in some sense, we have only one PETSc device context.
-    PetscCall(PetscKokkosInitializeCheck());
-    static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = Kokkos::DefaultExecutionSpace().sycl_queue();
+    PetscCall(PetscDeviceContextGetDevice(dctx, &dev));
+    PetscCall(PetscDeviceGetDeviceId(dev, &id));
+    const ::sycl::device &syclDevice = (id == PETSC_SYCL_DEVICE_HOST) ? ::sycl::device(::sycl::cpu_selector_v) : ::sycl::device::get_devices(::sycl::info::device_type::gpu)[id];
+
+    static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = ::sycl::queue(syclDevice, ::sycl::property::queue::in_order());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -114,13 +118,29 @@ public:
     PetscCheck(!dci->timerInUse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Forgot to call PetscLogGpuTimeEnd()?");
     dci->timerInUse = PETSC_TRUE;
 #endif
-    PetscCallCXX(dci->timeBegin = dci->timer.seconds());
+    // It is not a good approach to time SYCL kernels because the timer starts at the kernel launch time at host,
+    // not at the start of execution time on device. SYCL provides this style of kernel timing:
+    /*
+      sycl::queue q(sycl::default_selector_v, sycl::property::queue::enable_profiling{});
+      sycl::event e = q.submit([&](sycl::handler &h) {
+        ...
+      });
+      e.wait();
+      auto start_time = e.get_profiling_info<sycl::info::event_profiling::command_start>();
+      auto end_time = e.get_profiling_info<sycl::info::event_profiling::command_end>();
+      long long kernel_duration_ns = end_time - start_time;
+    */
+    // It requires 1) enable profiling at the queue's creation time, and 2) store the event returned by kernel launch.
+    // But neither we have control of the input queue, nor does PetscDeviceContext support 2), so we just use a
+    // host side timer.
+    PetscCallCXX(dci->timeBegin = std::chrono::steady_clock::now());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   static PetscErrorCode endTimer(PetscDeviceContext dctx, PetscLogDouble *elapsed) noexcept
   {
-    const auto dci = static_cast<PetscDeviceContext_SYCL *>(dctx->data);
+    const auto                    dci = static_cast<PetscDeviceContext_SYCL *>(dctx->data);
+    std::chrono::duration<double> duration;
 
     PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
@@ -128,7 +148,8 @@ public:
     dci->timerInUse = PETSC_FALSE;
 #endif
     PetscCallCXX(dci->queue.wait());
-    PetscCallCXX(*elapsed = dci->timer.seconds() - dci->timeBegin);
+    PetscCallCXX(duration = std::chrono::steady_clock::now() - dci->timeBegin);
+    PetscCallCXX(*elapsed = duration.count());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

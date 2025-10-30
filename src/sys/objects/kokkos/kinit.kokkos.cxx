@@ -74,7 +74,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   }
 
   if (!PetscKokkosExecutionSpacePtr) { // No matter Kokkos is init'ed by PETSc or by user, we need to init PetscKokkosExecutionSpacePtr
-#if (defined(KOKKOS_ENABLE_CUDA) && defined(PETSC_HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && defined(PETSC_HAVE_HIP))
+#if (defined(KOKKOS_ENABLE_CUDA) && defined(PETSC_HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && defined(PETSC_HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && defined(PETSC_HAVE_SYCL))
     PetscDeviceContext dctx;
     PetscDeviceType    dtype;
 
@@ -85,6 +85,12 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     if (dtype == PETSC_DEVICE_CUDA) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
   #elif defined(PETSC_HAVE_HIP)
     if (dtype == PETSC_DEVICE_HIP) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultHipStream));
+  #elif defined(PETSC_HAVE_SYCL)
+    if (dtype == PETSC_DEVICE_SYCL) {
+      void *handle;
+      PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle)); // Kind of PetscDefaultSyclStream
+      PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(*(sycl::queue *)handle));
+    }
   #endif
 #else
     // In all other cases, we use Kokkos default
