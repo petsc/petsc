@@ -243,7 +243,7 @@ checksource:
   tags:
     - gce-u22-stage1
   script:
-    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-regex=0
+    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-coverage-exec=0 --with-syclc=0 --with-hipc=0 --with-cudac=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-mkl_sparse_optimize=0 --with-mkl_sparse=0 --with-debugging=0
     - vermin --version
     - make vermin
     - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2025-08-26-llvm/opt/spack/linux-x86_64/llvm-21.1.0-yu5atp22wbrkzn6ia3vqu5lsaw57ejnn/bin:$PATH make checkclangformat checkfprettifyformat SHELL=bash
