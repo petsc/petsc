@@ -29,7 +29,6 @@ def main(stage,petsc_dir,build_dir,outdir):
                  '--with-bison=0',
                  '--with-cmake=0',
                  '--with-pthread=0',
-                 '--with-regex=0',
                  '--with-mkl_sparse_optimize=0',
                  '--with-mkl_sparse=0',
                  '--with-debugging=0',
