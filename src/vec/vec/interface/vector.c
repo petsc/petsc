@@ -1127,7 +1127,7 @@ PetscErrorCode VecResetArray(Vec vec)
   filename. If you copy the binary file, make sure you copy the associated .info file with it.
 
   If using HDF5, you must assign the `Vec` the same name as was used in the Vec
-  that was stored in the file using `PetscObjectSetName(). Otherwise you will
+  that was stored in the file using `PetscObjectSetName()`. Otherwise you will
   get the error message: "Cannot H5DOpen2() with `Vec` name NAMEOFOBJECT".
 
   If the HDF5 file contains a two dimensional array the first dimension is treated as the block size
@@ -1155,19 +1155,12 @@ PetscErrorCode VecResetArray(Vec vec)
 @*/
 PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
 {
-  PetscBool         isbinary, ishdf5, isadios, isexodusii, iscgns;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(vec, 1, viewer, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWEREXODUSII, &isexodusii));
-  PetscCheck(isbinary || ishdf5 || isadios || isexodusii || iscgns, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   PetscCall(VecSetErrorIfLocked(vec, 1));
   if (!((PetscObject)vec)->type_name && !vec->ops->create) PetscCall(VecSetType(vec, VECSTANDARD));
