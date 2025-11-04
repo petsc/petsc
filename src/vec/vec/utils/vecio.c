@@ -210,27 +210,25 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
 #endif
 
+  if (isbinary) {
+    PetscCall(VecLoad_Binary(newvec, viewer));
 #if defined(PETSC_HAVE_HDF5)
-  if (ishdf5) {
+  } else if (ishdf5) {
     if (!((PetscObject)newvec)->name) {
       PetscCall(PetscLogEventEnd(VEC_Load, viewer, 0, 0, 0));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
     PetscCall(VecLoad_HDF5(newvec, viewer));
-  } else
 #endif
 #if defined(PETSC_HAVE_ADIOS)
-    if (isadios) {
+  } else if (isadios) {
     if (!((PetscObject)newvec)->name) {
       PetscCall(PetscLogEventEnd(VEC_Load, viewer, 0, 0, 0));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Since ADIOS format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
     PetscCall(VecLoad_ADIOS(newvec, viewer));
-  } else
 #endif
-  {
-    PetscCall(VecLoad_Binary(newvec, viewer));
-  }
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
