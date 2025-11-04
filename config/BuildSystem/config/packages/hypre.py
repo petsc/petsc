@@ -98,6 +98,7 @@ class Configure(config.package.GNUPackage):
       stdflag  = '-std=c++14'
       hipbuild = True
       args.append('ROCM_PATH="{0}"'.format(self.hip.hipDir))
+      args.append('--enable-gpu-aware-mpi') # By default, GPU-aware MPI is off in Hypre configure, see https://hypre.readthedocs.io/en/latest/ch-misc.html#gpu-build-options
       args.append('--with-hip')
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
@@ -118,6 +119,7 @@ class Configure(config.package.GNUPackage):
       if not hasattr(self.cuda, 'cudaDir'):
         raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
+      args.append('--enable-gpu-aware-mpi')
       args.append('--with-cuda')
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
@@ -135,6 +137,8 @@ class Configure(config.package.GNUPackage):
     elif self.sycl.found:
       syclbuild = True
       args.append('--with-sycl')
+      # TODO: check if Hypre supports GPU-aware MPI with SYCL
+      # args.append('--enable-gpu-aware-mpi')
       if hasattr(self.sycl, 'targets'):
         args.append('--with-sycl-target='+self.sycl.targets)
       if hasattr(self.sycl, 'syclArch'):
