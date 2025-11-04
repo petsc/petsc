@@ -81,6 +81,8 @@
 ```{rubric} DMPlex:
 ```
 
+- Add `DMPlexVecGetClosureAtDepth()`
+
 ```{rubric} FE/FV:
 ```
 
