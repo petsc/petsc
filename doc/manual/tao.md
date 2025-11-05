@@ -503,7 +503,7 @@ and
 TaoSetJacobianEqualityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
 ```
 
-Inequality constraints are assumed to be formulated as $c_i(x) \leq 0$
+Inequality constraints are assumed to be formulated as $c_i(x) \geq 0$
 and follow the same workflow as equality constraints using the
 `TaoSetInequalityConstraintsRoutine()` and `TaoSetJacobianInequalityRoutine()`
 interfaces.

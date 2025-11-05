@@ -5230,6 +5230,63 @@ cdef class Mat(Object):
         cdef PetscKSP ctype = ksp.ksp
         CHKERR(MatLMVMSetJ0KSP(self.mat, ctype))
 
+    def allocateLMVM(self, Vec x, Vec f) -> None:
+        """Allocate all necessary common memory LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        x:
+            Solution vector.
+        f:
+            Function vector.
+
+        See Also
+        --------
+        petsc.MatLMVMAllocate
+        """
+        cdef PetscVec xvec = x.vec
+        cdef PetscVec fvec = f.vec
+        CHKERR(MatLMVMAllocate(self.mat, xvec, fvec))
+
+    def updateLMVM(self, Vec x, Vec f) -> None:
+        """Adds (X-Xprev) and (F-Fprev) updates to LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        x:
+            Solution vector.
+        f:
+            Function vector.
+
+        See Also
+        --------
+        petsc.MatLMVMUpdate
+        """
+        cdef PetscVec xvec = x.vec
+        cdef PetscVec fvec = f.vec
+        CHKERR(MatLMVMUpdate(self.mat, xvec, fvec))
+
+    def resetLMVM(self, destructive: bool = False) -> None:
+        """Flushes all of the accumulated updates out of the LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        destructive:
+            Flag for enabling destruction of data structures.
+
+        See Also
+        --------
+        petsc.MatLMVMReset
+        """
+        cdef PetscBool cdestructive = asBool(destructive)
+        CHKERR(MatLMVMReset(self.mat, cdestructive))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
