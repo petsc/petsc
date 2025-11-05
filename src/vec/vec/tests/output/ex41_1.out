@@ -2,7 +2,7 @@
 a = [c d] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=4 
     Vec Object: 1 MPI process
       type: mpi
@@ -22,7 +22,7 @@ Vec Object: 1 MPI process
 a = [d c] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=4 
     Vec Object: 1 MPI process
       type: mpi
@@ -42,7 +42,7 @@ Vec Object: 1 MPI process
 b = [e f] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=4 
     Vec Object: 1 MPI process
       type: mpi
@@ -62,7 +62,7 @@ Vec Object: 1 MPI process
 b = [f e] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=4 
     Vec Object: 1 MPI process
       type: mpi
@@ -82,11 +82,11 @@ Vec Object: 1 MPI process
 X = [a b] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi
@@ -106,7 +106,7 @@ Vec Object: 1 MPI process
   (1) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi
@@ -127,11 +127,11 @@ X.X = 120.
 X = [b a] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi
@@ -151,7 +151,7 @@ Vec Object: 1 MPI process
   (1) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi
@@ -172,7 +172,7 @@ X.X = 120.
 X = [g h] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=8 
     Vec Object: 1 MPI process
       type: mpi
@@ -199,7 +199,7 @@ X.X = 438.
 Y = X 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=mpi, rows=8 
     Vec Object: 1 MPI process
       type: mpi
@@ -226,11 +226,11 @@ Y.Y = 438.
 Y = [a b] 
 Vec Object: 1 MPI process
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi
@@ -250,7 +250,7 @@ Vec Object: 1 MPI process
   (1) : type=nest, rows=8 
     Vec Object: 1 MPI process
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
       (0) : type=mpi, rows=4 
         Vec Object: 1 MPI process
           type: mpi

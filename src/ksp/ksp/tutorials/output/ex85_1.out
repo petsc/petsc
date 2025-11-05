@@ -1,8 +1,6 @@
 Mat Object: 1 MPI process
   type: nest
-  Matrix object:
-    type=nest, rows=2, cols=2
-    MatNest structure:
+    MatNest, rows=2, cols=2, structure:
     (0,0) : type=seqaij, rows=3, cols=3
       Mat Object: 1 MPI process
         type: seqaij

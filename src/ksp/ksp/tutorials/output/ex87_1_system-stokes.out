@@ -73,7 +73,6 @@ PC Object: (fieldsplit_1_) 4 MPI processes
                       linear system matrix = precond matrix:
                       Mat Object: 1 MPI process
                         type: nest
-                          Matrix object:
                   linear system matrix = precond matrix:
                   Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
                     type: schurcomplement
