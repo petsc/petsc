@@ -307,8 +307,6 @@ PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec, PetscViewer);
 #endif
 
-PETSC_INTERN PetscErrorCode DMPlexVecGetClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt *, PetscScalar *[]);
-PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM, PetscInt, const PetscInt[], IS *);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM, PetscOptionItems);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(DM, PetscOptionItems, PetscInt *);

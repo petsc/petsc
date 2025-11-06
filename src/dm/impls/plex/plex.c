@@ -6677,6 +6677,9 @@ PetscErrorCode DMPlexVecGetOrientedClosure(DM dm, PetscSection section, PetscBoo
   Level: intermediate
 
   Notes:
+  This is used for getting the all values in a `Vec` in the closure of a mesh point.
+  To get only the values in the closure of a mesh point at a specific depth (for example, at mesh vertices), use `DMPlexVecGetClosureAtDepth()`.
+
   `DMPlexVecGetClosure()`/`DMPlexVecRestoreClosure()` only allocates the values array if it set to `NULL` in the
   calling function. This is because `DMPlexVecGetClosure()` is typically called in the inner loop of a `Vec` or `Mat`
   assembly function, and a user may already have allocated storage for this operation.
@@ -6713,7 +6716,7 @@ PetscErrorCode DMPlexVecGetOrientedClosure(DM dm, PetscSection section, PetscBoo
 .ve
   and it will be allocated internally by PETSc to hold the values returned
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosureAtDepth()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
@@ -6722,7 +6725,68 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt depth, PetscInt *csize, PetscScalar *values[])
+/*@C
+  DMPlexVecGetClosureAtDepth - Get an array of the values on the closure of 'point' that are at a specific depth
+
+  Not collective
+
+  Input Parameters:
++ dm      - The `DM`
+. section - The section describing the layout in `v`, or `NULL` to use the default section
+. v       - The local vector
+. depth   - The depth of mesh points that should be returned
+- point   - The point in the `DM`
+
+  Input/Output Parameters:
++ csize  - The size of the input values array, or `NULL`; on output the number of values in the closure
+- values - An array to use for the values, or *values = `NULL` to have it allocated automatically;
+           if the user provided `NULL`, it is a borrowed array and should not be freed, use  `DMPlexVecRestoreClosure()` to return it
+
+  Level: intermediate
+
+  Notes:
+  This is used for getting the values in a `Vec` associated with specific mesh points.
+  For example, to get only the values at mesh vertices, pass `depth=0`. To get all the values in the closure of a mesh point, use `DMPlexVecGetClosure()`.
+
+  `DMPlexVecGetClosureAtDepth()`/`DMPlexVecRestoreClosure()` only allocates the values array if it set to `NULL` in the
+  calling function. This is because `DMPlexVecGetClosureAtDepth()` is typically called in the inner loop of a `Vec` or `Mat`
+  assembly function, and a user may already have allocated storage for this operation.
+
+  A typical use could be
+.vb
+   values = NULL;
+   PetscCall(DMPlexVecGetClosureAtDepth(dm, NULL, v, p, depth, &clSize, &values));
+   for (cl = 0; cl < clSize; ++cl) {
+     <Compute on closure>
+   }
+   PetscCall(DMPlexVecRestoreClosure(dm, NULL, v, p, &clSize, &values));
+.ve
+  or
+.vb
+   PetscMalloc1(clMaxSize, &values);
+   for (p = pStart; p < pEnd; ++p) {
+     clSize = clMaxSize;
+     PetscCall(DMPlexVecGetClosureAtDepth(dm, NULL, v, p, depth, &clSize, &values));
+     for (cl = 0; cl < clSize; ++cl) {
+       <Compute on closure>
+     }
+   }
+   PetscFree(values);
+.ve
+
+  Fortran Notes:
+  The `csize` argument is present in the Fortran binding. Since the Fortran `values` array contains its length information this argument may not be needed.
+  In that case one may pass `PETSC_NULL_INTEGER` for `csize`.
+
+  `values` must be declared with
+.vb
+  PetscScalar,dimension(:),pointer   :: values
+.ve
+  and it will be allocated internally by PETSc to hold the values returned
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
+@*/
+PetscErrorCode DMPlexVecGetClosureAtDepth(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt depth, PetscInt *csize, PetscScalar *values[])
 {
   DMLabel            depthLabel;
   PetscSection       clSection;

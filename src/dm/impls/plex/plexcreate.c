@@ -1073,7 +1073,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
 
     // Cannot use DMPlexComputeCellGeometryFVM() for high-order geometry, so must calculate normal vectors manually
     // Use the vertices (depth 0) of coordinate DM to calculate normal vector
-    PetscCall(DMPlexVecGetClosureAtDepth_Internal(cdm, csection, coordinates, face, 0, &coords_size, &coords));
+    PetscCall(DMPlexVecGetClosureAtDepth(cdm, csection, coordinates, face, 0, &coords_size, &coords));
     switch (dim) {
     case 2: {
       PetscScalar vec[2];
@@ -1163,7 +1163,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
       PetscCall(PetscCalloc2(num_donor * centroid_comps, &donor_centroids, num_periodic * centroid_comps, &periodic_centroids));
       for (PetscInt f = 0; f < num_donor; f++) {
         PetscInt face = donor_faces[f], num_coords;
-        PetscCall(DMPlexVecGetClosureAtDepth_Internal(cdm, csection, coordinates, face, 0, &coords_size, &coords));
+        PetscCall(DMPlexVecGetClosureAtDepth(cdm, csection, coordinates, face, 0, &coords_size, &coords));
         num_coords = coords_size / dim;
         for (PetscInt c = 0; c < num_coords; c++) {
           PetscInt comp_index = 0;
@@ -1179,7 +1179,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
 
       for (PetscInt f = 0; f < num_periodic; f++) {
         PetscInt face = periodic_faces[f], num_coords;
-        PetscCall(DMPlexVecGetClosureAtDepth_Internal(cdm, csection, coordinates, face, 0, &coords_size, &coords));
+        PetscCall(DMPlexVecGetClosureAtDepth(cdm, csection, coordinates, face, 0, &coords_size, &coords));
         num_coords = coords_size / dim;
         for (PetscInt c = 0; c < num_coords; c++) {
           PetscInt comp_index = 0;
