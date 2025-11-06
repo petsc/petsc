@@ -540,6 +540,10 @@ PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDev
   PetscFunctionBegin;
   PetscCall(PetscOptionsHasName(nullptr, nullptr, "-log_view_gpu_time", &flg));
   if (flg) PetscCall(PetscLogGpuTime());
+  PetscCall(PetscOptionsHasName(nullptr, nullptr, "-log_view_gpu_energy_meter", &flg));
+  if (flg) PetscCall(PetscLogGpuEnergyMeter());
+  PetscCall(PetscOptionsHasName(nullptr, nullptr, "-log_view_gpu_energy", &flg));
+  if (flg) PetscCall(PetscLogGpuEnergy());
 
   PetscOptionsBegin(comm, nullptr, "PetscDevice Options", "Sys");
   PetscCall(PetscOptionsEList("-device_enable", "How (or whether) to initialize PetscDevices", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[initIdx], &initIdx, nullptr));

@@ -84,6 +84,8 @@ PetscLogDouble petsc_ctog_sz_scalar = 0.0; /* The total size of CPU to GPU copie
 PetscLogDouble petsc_gtoc_sz_scalar = 0.0; /* The total size of GPU to CPU copies */
 PetscLogDouble petsc_gflops         = 0.0; /* The flops done on a GPU */
 PetscLogDouble petsc_gtime          = 0.0; /* The time spent on a GPU */
+PetscLogDouble petsc_genergy        = 0.0; /* The energy (estimated with power*gtime) consumed on a GPU */
+PetscLogDouble petsc_genergy_meter  = 0.0; /* Readings from the energy meter on a GPU */
 
 PETSC_TLS PetscLogDouble petsc_ctog_ct_th        = 0.0;
 PETSC_TLS PetscLogDouble petsc_gtoc_ct_th        = 0.0;
@@ -99,7 +101,9 @@ PETSC_TLS PetscLogDouble petsc_gtime_th          = 0.0;
 PetscBool PetscLogMemory = PETSC_FALSE;
 PetscBool PetscLogSyncOn = PETSC_FALSE;
 
-PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
+PetscBool PetscLogGpuTimeFlag        = PETSC_FALSE;
+PetscBool PetscLogGpuEnergyFlag      = PETSC_FALSE;
+PetscBool PetscLogGpuEnergyMeterFlag = PETSC_FALSE;
 
 PetscInt PetscLogNumViewersCreated   = 0;
 PetscInt PetscLogNumViewersDestroyed = 0;
@@ -1981,6 +1985,8 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 . -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
 . -log_view_memory                         - Also display memory usage in each event
 . -log_view_gpu_time                       - Also display time in each event for GPU kernels (Note this may slow the computation)
+. -log_view_gpu_energy                     - Also display energy (estimated with power*gtime) in Joules for GPU kernels
+. -log_view_gpu_energy_meter               - [Experimental] Also display energy (readings from energy meters) in Joules for GPU kernels. This option is ignored if -log_view_gpu_energy is provided.
 . -log_all                                 - Saves a file Log.rank for each MPI rank with details of each step of the computation
 - -log_trace [filename]                    - Displays a trace of what each process is doing
 
@@ -2393,16 +2399,14 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
   PetscFunctionBegin;
   PetscCall(PetscLogEventBeginIsActive(&isActive));
   if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-    #if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
-  {
+  if (!PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)) {
     PetscDeviceContext dctx;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextBeginTimer_Internal(dctx));
+  } else {
+    PetscCall(PetscTimeSubtract(&petsc_gtime));
   }
-    #else
-  PetscCall(PetscTimeSubtract(&petsc_gtime));
-    #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2420,21 +2424,133 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
   PetscFunctionBegin;
   PetscCall(PetscLogEventEndIsActive(&isActive));
   if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-    #if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
-  {
+  if (!PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)) {
     PetscDeviceContext dctx;
     PetscLogDouble     elapsed;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextEndTimer_Internal(dctx, &elapsed));
     petsc_gtime += (elapsed / 1000.0);
-  }
-    #else
-  PetscCall(PetscTimeAdd(&petsc_gtime));
+    #if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+    if (PetscLogGpuEnergyFlag) {
+      PetscLogDouble power;
+      PetscCall(PetscDeviceContextGetPower_Internal(dctx, &power));
+      petsc_genergy += (power * elapsed / 1000000.0); // convert to Joules
+    }
     #endif
+  } else {
+    PetscCall(PetscTimeAdd(&petsc_gtime));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscLogGpuEnergy - turn on the logging of GPU energy (estimated with power*gtime) for GPU kernels
+
+  Options Database Key:
+. -log_view_gpu_energy - provide the GPU energy consumption (estimated with power*gtime) for all events in the `-log_view` output
+
+  Level: advanced
+
+  Note:
+  This option is mutually exclusive to `-log_view_gpu_energy_meter`.
+
+  Developer Note:
+  This option turns on energy monitoring of GPU kernels and requires CUDA version >= 12.2. The energy consumption is estimated as
+  instant_power * gpu_kernel_time. Due to the delay in NVML power sampling, we read the instantaneous power draw at the end of each
+  event using `nvmlDeviceGetFieldValues()` with the field ID `NVML_FI_DEV_POWER_INSTANT`.
+
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuEnergyMeter()`
+@*/
+PetscErrorCode PetscLogGpuEnergy(void)
+{
+  PetscFunctionBegin;
+  PetscCheck(PetscDefined(HAVE_CUDA_VERSION_12_2PLUS), PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "-log_view_gpu_energy requires CUDA version >= 12.2");
+  PetscCheck(petsc_genergy == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "GPU energy logging has already been turned on");
+  PetscLogGpuEnergyFlag      = PETSC_TRUE;
+  PetscLogGpuEnergyMeterFlag = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogGpuEnergyMeter - turn on the logging of GPU energy (readings from energy meters) for GPU kernels
+
+  Options Database Key:
+. -log_view_gpu_energy_meter - provide the GPU energy (readings from energy meters) consumption for all events in the `-log_view` output
+
+  Level: advanced
+
+  Note:
+  This option is mutually exclusive to `-log_view_gpu_energy`.
+
+  Developer Note:
+  This option turns on energy monitoring of GPU kernels. The energy consumption is measured directly using the NVML API
+  `nvmlDeviceGetTotalEnergyConsumption()`, which returns the total energy used by the GPU since the driver was last initialized.
+  For newer GPUs, energy readings are updated every 20-100ms, so this approach may be inaccurate for short-duration GPU events.
+
+@*/
+PetscErrorCode PetscLogGpuEnergyMeter(void)
+{
+  PetscFunctionBegin;
+  PetscCheck(petsc_genergy == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "GPU energy logging has already been turned on");
+  PetscLogGpuEnergyMeterFlag = PETSC_TRUE;
+  PetscLogGpuEnergyFlag      = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogGpuEnergyMeterBegin - Start energy meter for device
+
+  Level: intermediate
+
+  Notes:
+  The GPU event energy meter captures the energy used by the GPU between `PetscLogGpuEnergyMeterBegin()` and `PetscLogGpuEnergyMeterEnd()`.
+
+  `PetscLogGpuEnergyMeterBegin()` and `PetscLogGpuEnergyMeterEnd()` collect the energy readings using `nvmlDeviceGetTotalEnergyConsumption()`.
+  The function `cupmStreamSynchronize()` is called before the energy query to ensure completion.
+
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuEnergyMeterEnd()`, `PetscLogGpuEnergyMeter()`
+@*/
+PetscErrorCode PetscLogGpuEnergyMeterBegin(void)
+{
+  PetscBool isActive;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogEventBeginIsActive(&isActive));
+  if (!isActive || !PetscLogGpuEnergyMeterFlag) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)) {
+    PetscDeviceContext dctx;
+
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextBeginEnergyMeter_Internal(dctx));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscLogGpuEnergyMeterEnd - Stop energy meter for device
+
+  Level: intermediate
+
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuEnergyMeterBegin()`
+@*/
+PetscErrorCode PetscLogGpuEnergyMeterEnd(void)
+{
+  PetscBool isActive;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogEventEndIsActive(&isActive));
+  if (!isActive || !PetscLogGpuEnergyMeterFlag) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)) {
+    PetscDeviceContext dctx;
+    PetscLogDouble     energy;
+
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextEndEnergyMeter_Internal(dctx, &energy));
+    petsc_genergy_meter += (energy / 1000.0); // convert to Joules
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
   #endif /* end of PETSC_HAVE_DEVICE */
 
 #endif /* PETSC_USE_LOG*/
@@ -2553,18 +2669,20 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
     petsc_gather_ct_th       = 0.0;
     petsc_scatter_ct_th      = 0.0;
 
-    petsc_ctog_ct    = 0.0;
-    petsc_gtoc_ct    = 0.0;
-    petsc_ctog_sz    = 0.0;
-    petsc_gtoc_sz    = 0.0;
-    petsc_gflops     = 0.0;
-    petsc_gtime      = 0.0;
-    petsc_ctog_ct_th = 0.0;
-    petsc_gtoc_ct_th = 0.0;
-    petsc_ctog_sz_th = 0.0;
-    petsc_gtoc_sz_th = 0.0;
-    petsc_gflops_th  = 0.0;
-    petsc_gtime_th   = 0.0;
+    petsc_ctog_ct       = 0.0;
+    petsc_gtoc_ct       = 0.0;
+    petsc_ctog_sz       = 0.0;
+    petsc_gtoc_sz       = 0.0;
+    petsc_gflops        = 0.0;
+    petsc_gtime         = 0.0;
+    petsc_genergy       = 0.0;
+    petsc_genergy_meter = 0.0;
+    petsc_ctog_ct_th    = 0.0;
+    petsc_gtoc_ct_th    = 0.0;
+    petsc_ctog_sz_th    = 0.0;
+    petsc_gtoc_sz_th    = 0.0;
+    petsc_gflops_th     = 0.0;
+    petsc_gtime_th      = 0.0;
   }
   PETSC_LARGEST_CLASSID    = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID     = 0;

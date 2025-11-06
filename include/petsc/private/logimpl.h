@@ -207,6 +207,8 @@ PETSC_INTERN PetscInt PetscLogGetTid(void);
 #endif
 
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
+PETSC_EXTERN PetscBool PetscLogGpuEnergyFlag;
+PETSC_EXTERN PetscBool PetscLogGpuEnergyMeterFlag;
 PETSC_INTERN PetscInt  PetscLogNumViewersCreated;
 PETSC_INTERN PetscInt  PetscLogNumViewersDestroyed;
 

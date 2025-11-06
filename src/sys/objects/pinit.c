@@ -1282,6 +1282,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_view [:filename:format][,[:filename:format]...] - Prints summary of flop and timing information to screen or file, see `PetscLogView()` (up to 4 viewers)
 . -log_view_memory                                     - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
 . -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
+. -log_view_gpu_energy                                 - Includes in the summary from -log_view the energy (estimated with power*gtime) consumed in each GPU kernel, see `PetscLogView()`.
+. -log_view_gpu_energy_meter                           - Includes in the summary from -log_view the energy (readings from meters) consumed in each GPU kernel, see `PetscLogView()`.
 . -log_exclude: <vec,mat,pc,ksp,snes>                  - excludes subset of object classes from logging
 . -log [filename]                                      - Logs profiling information in a dump file, see `PetscLogDump()`.
 . -log_all [filename]                                  - Same as `-log`.

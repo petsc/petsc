@@ -21,6 +21,9 @@
 ```{rubric} Event Logging:
 ```
 
+- Add two approaches for GPU energy monitoring:  `-log_view_gpu_energy` and `-log_view_gpu_energy_meter`
+- Add API `PetscLogGpuEnergy()`, `PetscLogGpuEnergyMeter()`, `PetscLogGpuEnergyMeterBegin()` and `PetscLogGpuEnergyMeterEnd()` for GPU energy monitoring
+
 ```{rubric} PetscViewer:
 ```
 
