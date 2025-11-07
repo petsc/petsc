@@ -786,7 +786,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 - type - a known method
 
   Options Database Key:
-. -ksp_type  <method> - Sets the method; see `KSPGType` or use `-help` for a list  of available methods (for instance, cg or gmres)
+. -ksp_type  <method> - Sets the method; see `KSPType` or use `-help` for a list  of available methods (for instance, cg or gmres)
 
   Level: intermediate
 
