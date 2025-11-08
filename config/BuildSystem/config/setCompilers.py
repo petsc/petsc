@@ -527,9 +527,9 @@ class Configure(config.base.Configure):
   def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 80', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
       output = output + error
-      if 'Intel(R)' in output:
+      if 'Intel' in output:
         if log: log.write('Detected Intel compiler\n')
         return 1
     except RuntimeError:
