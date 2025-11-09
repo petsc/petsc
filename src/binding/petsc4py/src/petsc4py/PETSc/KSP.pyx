@@ -825,6 +825,9 @@ cdef class KSP(Object):
 
         Notes
         -----
+        This is equivalent to ``pc = ksp.getPC(); pc.setOperators(A, P)``
+        but is the preferred approach.
+
         If you know the operator ``A`` has a null space you can use
         `Mat.setNullSpace` and `Mat.setTransposeNullSpace` to supply the
         null space to ``A`` and the `KSP` solvers will automatically use

@@ -468,6 +468,21 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
   Level: beginner
 
   Notes:
+.vb
+  KSPSetOperators(ksp, Amat, Pmat);
+.ve
+  is the same as
+.vb
+  KSPGetPC(ksp, &pc);
+  PCSetOperators(pc, Amat, Pmat);
+.ve
+  and is equivalent to
+.vb
+  PCCreate(PetscObjectComm((PetscObject)ksp), &pc);
+  PCSetOperators(pc, Amat, Pmat);
+  KSPSetPC(ksp, pc);
+.ve
+
   If you know the operator `Amat` has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
   space to `Amat` and the `KSP` solvers will automatically use that null space as needed during the solution process.
 
@@ -787,7 +802,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 - type - a known method
 
   Options Database Key:
-. -ksp_type  <method> - Sets the method; see `KSPGType` or use `-help` for a list  of available methods (for instance, cg or gmres)
+. -ksp_type  <method> - Sets the method; see `KSPType` or use `-help` for a list  of available methods (for instance, cg or gmres)
 
   Level: intermediate
 

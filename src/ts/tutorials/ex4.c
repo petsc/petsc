@@ -21,7 +21,7 @@ Input parameters include:\n\
        u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
    We then demonstrate time evolution using the various TS methods by
    running the program via
-       mpiexec -n <procs> ex3 -ts_type <timestepping solver>
+       mpiexec -n <procs> ./ex4 -ts_type <timestepping solver>
 
    We compare the approximate solution with the exact solution, given by
        u_exact(x,t) = exp(-36*pi*pi*t) * sin(6*pi*x) +

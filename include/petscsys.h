@@ -304,7 +304,7 @@ M*/
    Fortran Note:
    Use `PETSC_DECIDE_INTEGER` or `PETSC_DECIDE_REAL`.
 
-.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_UNLIMITED'
+.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_UNLIMITED`
 M*/
 
 /*MC
@@ -328,7 +328,7 @@ M*/
    I would like to use const `PetscInt` `PETSC_DETERMINE` = `PETSC_DECIDE`; but for
    some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
 
-.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`, `PETSC_UNLIMITED'
+.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`, `PETSC_UNLIMITED`
 M*/
 
 /*MC
@@ -342,7 +342,7 @@ M*/
    Fortran Note:
    Use `PETSC_CURRENT_INTEGER` or `PETSC_CURRENT_REAL`.
 
-.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DEFAULT`, `PETSC_UNLIMITED'
+.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DEFAULT`, `PETSC_UNLIMITED`
 M*/
 
 /*MC
@@ -357,7 +357,7 @@ M*/
    Unfortunately this was used for two different purposes in the past, to actually trigger the use of a default value or to continue the
    use of currently set value (in, for example, `KSPSetTolerances()`.
 
-.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_CURRENT`, `PETSC_UNLIMITED'
+.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_CURRENT`, `PETSC_UNLIMITED`
 M*/
 
 /* These MUST be preprocessor defines! see https://gitlab.com/petsc/petsc/-/issues/1370 */

@@ -575,7 +575,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
 }
 
 /*@
-  KSPConvergedReasonViewFromOptions - Processes command line options to determine if/how a `KSPReason` is to be viewed.
+  KSPConvergedReasonViewFromOptions - Processes command line options to determine if/how a `KSPConvergedReason` is to be viewed.
 
   Collective
 

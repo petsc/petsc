@@ -1238,7 +1238,7 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
 
 /*@
   PCSetOperators - Sets the matrix associated with the linear system and
-  a (possibly) different one associated with the preconditioner.
+  a (possibly) different one from which the preconditioner will be constructed.
 
   Logically Collective
 
@@ -1247,9 +1247,11 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
 . Amat - the matrix that defines the linear system
 - Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
-  Level: intermediate
+  Level: advanced
 
   Notes:
+  Using this routine directly is rarely needed, the preferred, and equivalent, usage is `KSPSetOperators()`.
+
   Passing a `NULL` for `Amat` or `Pmat` removes the matrix that is currently used.
 
   If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then

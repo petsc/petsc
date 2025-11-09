@@ -797,9 +797,9 @@ class Configure(config.package.Package):
   def checklsame(self):
     ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correct binding.'''
     routine = 'lsame';
-    ret = self.checkForRoutine(routine)
-    if ret:
-      self.addDefine('MISSING_LAPACK_'+routine, 1)
+    found = self.checkForRoutine(routine)
+    if not found:
+      self.addDefine('MISSING_LAPACK_'+self.mangleBlasNoPrefix(routine), 1)
 
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
