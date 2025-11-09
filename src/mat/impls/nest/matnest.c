@@ -940,11 +940,8 @@ static PetscErrorCode MatView_Nest(Mat A, PetscViewer viewer)
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_view_nest_sub", &viewSub, NULL));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix object:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "type=nest, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT "\n", bA->nr, bA->nc));
-
-    PetscCall(PetscViewerASCIIPrintf(viewer, "MatNest structure:\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "MatNest, rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT ", structure:\n", bA->nr, bA->nc));
     for (i = 0; i < bA->nr; i++) {
       for (j = 0; j < bA->nc; j++) {
         MatType   type;

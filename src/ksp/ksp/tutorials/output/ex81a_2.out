@@ -99,9 +99,7 @@ PC Object: 3 MPI processes
   Mat Object: 3 MPI processes
     type: nest
     rows=93, cols=93
-      Matrix object:
-        type=nest, rows=5, cols=5
-        MatNest structure:
+        MatNest, rows=5, cols=5, structure:
         (0,0) : prefix="fieldsplit_0_", type=mpiaij, rows=3, cols=3
         (0,1) : NULL
         (0,2) : type=mpiaij, rows=3, cols=12

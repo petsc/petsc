@@ -1,8 +1,6 @@
 Mat Object: 1 MPI process
   type: nest
-  Matrix object:
-    type=nest, rows=2, cols=3
-    MatNest structure:
+    MatNest, rows=2, cols=3, structure:
     (0,0) : type=seqaij, rows=2, cols=1
     (0,1) : type=seqaij, rows=2, cols=3
     (0,2) : type=seqaij, rows=2, cols=1
@@ -16,9 +14,7 @@ Number of indices in (stride) set 2
 1 1
 Mat Object: 1 MPI process
   type: nest
-  Matrix object:
-    type=nest, rows=1, cols=3
-    MatNest structure:
+    MatNest, rows=1, cols=3, structure:
     (0,0) : type=seqaij, rows=2, cols=1
     (0,1) : type=seqaij, rows=2, cols=3
     (0,2) : type=seqaij, rows=2, cols=1
@@ -43,9 +39,7 @@ Number of indices in (stride) set 2
 1 3
 Mat Object: 1 MPI process
   type: nest
-  Matrix object:
-    type=nest, rows=1, cols=3
-    MatNest structure:
+    MatNest, rows=1, cols=3, structure:
     (0,0) : NULL
     (0,1) : type=seqaij, rows=2, cols=3
     (0,2) : type=seqaij, rows=2, cols=1

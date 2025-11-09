@@ -100,9 +100,7 @@ PC Object: 1 MPI process
   Mat Object: 1 MPI process
     type: nest
     rows=12, cols=12
-      Matrix object:
-        type=nest, rows=3, cols=3
-        MatNest structure:
+        MatNest, rows=3, cols=3, structure:
         (0,0) : prefix="fieldsplit_a_", type=seqaij, rows=5, cols=5
         (0,1) : type=seqaij, rows=5, cols=3
         (0,2) : type=seqaij, rows=5, cols=4

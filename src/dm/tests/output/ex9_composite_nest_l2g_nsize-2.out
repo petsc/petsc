@@ -64,9 +64,7 @@ ISLocalToGlobalMapping Object: 2 MPI processes
 [1] 46:48 -2:0
 Mat Object: 2 MPI processes
   type: nest
-  Matrix object:
-    type=nest, rows=2, cols=2
-    MatNest structure:
+    MatNest, rows=2, cols=2, structure:
     (0,0) : type=mpiaij, rows=5, cols=5
     (0,1) : NULL
     (1,0) : NULL

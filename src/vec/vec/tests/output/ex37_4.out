@@ -7,11 +7,11 @@
 (min-X) = 1.000000 : index = 0 
 Vec Object: 2 MPI processes
   type: nest
-  VecNest, rows=2,  structure: 
+  VecNest, rows=2, structure: 
   (0) : type=nest, rows=6 
     Vec Object: 2 MPI processes
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
         Vec Object: 2 MPI processes
         Process [0]
         1.
@@ -27,7 +27,7 @@ Vec Object: 2 MPI processes
   (1) : type=nest, rows=6 
     Vec Object: 2 MPI processes
       type: nest
-      VecNest, rows=2,  structure: 
+      VecNest, rows=2, structure: 
         Vec Object: 2 MPI processes
         Process [0]
         3.

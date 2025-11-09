@@ -25,9 +25,7 @@ PC Object: 3 MPI processes
     Mat Object: (fieldsplit_0_) 3 MPI processes
       type: nest
       rows=9, cols=9
-        Matrix object:
-          type=nest, rows=2, cols=2
-          MatNest structure:
+          MatNest, rows=2, cols=2, structure:
           (0,0) : type=mpiaij, rows=3, cols=3
           (0,1) : NULL
           (1,0) : NULL
@@ -46,9 +44,7 @@ PC Object: 3 MPI processes
     Mat Object: (fieldsplit_1_) 3 MPI processes
       type: nest
       rows=36, cols=36
-        Matrix object:
-          type=nest, rows=2, cols=2
-          MatNest structure:
+          MatNest, rows=2, cols=2, structure:
           (0,0) : type=mpibaij, rows=12, cols=12
           (0,1) : NULL
           (1,0) : type=mpiaij, rows=24, cols=12
@@ -74,9 +70,7 @@ PC Object: 3 MPI processes
   Mat Object: 3 MPI processes
     type: nest
     rows=93, cols=93
-      Matrix object:
-        type=nest, rows=5, cols=5
-        MatNest structure:
+        MatNest, rows=5, cols=5, structure:
         (0,0) : type=mpiaij, rows=3, cols=3
         (0,1) : NULL
         (0,2) : type=mpiaij, rows=3, cols=12

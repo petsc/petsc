@@ -1,9 +1,7 @@
 Linear solve converged due to CONVERGED_RTOL iterations 4
 Mat Object: 3 MPI processes
   type: nest
-  Matrix object:
-    type=nest, rows=5, cols=5
-    MatNest structure:
+    MatNest, rows=5, cols=5, structure:
     (0,0) : prefix="fieldsplit_0_", type=mpiaij, rows=3, cols=3
     (0,1) : NULL
     (0,2) : type=mpiaij, rows=3, cols=12

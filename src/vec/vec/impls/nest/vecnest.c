@@ -419,7 +419,7 @@ static PetscErrorCode VecView_Nest(Vec x, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "VecNest, rows=%" PetscInt_FMT ",  structure: \n", bx->nb));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "VecNest, rows=%" PetscInt_FMT ", structure:\n", bx->nb));
     for (i = 0; i < bx->nb; i++) {
       VecType  type;
       char     name[256] = "", prefix[256] = "";
@@ -430,7 +430,7 @@ static PetscErrorCode VecView_Nest(Vec x, PetscViewer viewer)
       if (((PetscObject)bx->v[i])->name) PetscCall(PetscSNPrintf(name, sizeof(name), "name=\"%s\", ", ((PetscObject)bx->v[i])->name));
       if (((PetscObject)bx->v[i])->prefix) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "prefix=\"%s\", ", ((PetscObject)bx->v[i])->prefix));
 
-      PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT " \n", i, name, prefix, type, NR));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT "\n", i, name, prefix, type, NR));
 
       PetscCall(PetscViewerASCIIPushTab(viewer)); /* push1 */
       PetscCall(VecView(bx->v[i], viewer));
