@@ -7,14 +7,14 @@
 
 typedef struct {  /* used by MatMatMultxxx_MPIDense_MPIDense() */
   Mat Ae, Be, Ce; /* matrix in Elemental format */
-} Mat_MatMultDense;
+} MatProductCtx_MatMultDense;
 
 typedef struct { /* used by MatTransposeMatMultXXX_MPIDense_MPIDense() */
   PetscScalar *sendbuf;
   Mat          atb;
   PetscMPIInt *recvcounts;
   PetscMPIInt  tag;
-} Mat_TransMatMultDense;
+} MatProductCtx_TransMatMultDense;
 
 typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
   PetscScalar *buf[2];
@@ -22,7 +22,7 @@ typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
   PetscMPIInt *recvcounts;
   PetscMPIInt *recvdispls;
   PetscInt     alg; /* algorithm used */
-} Mat_MatTransMultDense;
+} MatProductCtx_MatTransMultDense;
 
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIDense(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *[]);

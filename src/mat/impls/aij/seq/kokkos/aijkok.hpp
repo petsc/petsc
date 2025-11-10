@@ -203,10 +203,10 @@ struct Mat_SeqAIJKokkos {
   }
 };
 
-struct MatProductData_SeqAIJKokkos {
+struct MatProductCtx_SeqAIJKokkos {
   KernelHandle kh;
   PetscBool    reusesym;
-  MatProductData_SeqAIJKokkos() : reusesym(PETSC_FALSE) { }
+  MatProductCtx_SeqAIJKokkos() : reusesym(PETSC_FALSE) { }
 };
 
 PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat, Mat_SeqAIJKokkos *);

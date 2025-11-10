@@ -128,19 +128,19 @@ static PetscErrorCode MatDestroy_CF(Mat A)
 }
 
 typedef struct {
-  void *userdata;
-  PetscErrorCode (*ctxdestroy)(void *);
+  void              *ctx;
+  PetscCtxDestroyFn *destroy;
   PetscErrorCode (*numeric)(Mat);
   MatProductType ptype;
   Mat            Dwork;
-} MatMatCF;
+} MatProductCtx_MatMatCF;
 
-static PetscErrorCode MatProductDestroy_CF(void *data)
+static PetscErrorCode MatProductDestroy_CF(void **data)
 {
-  MatMatCF *mmcfdata = (MatMatCF *)data;
+  MatProductCtx_MatMatCF *mmcfdata = *(MatProductCtx_MatMatCF **)data;
 
   PetscFunctionBegin;
-  if (mmcfdata->ctxdestroy) PetscCall((*mmcfdata->ctxdestroy)(mmcfdata->userdata));
+  if (mmcfdata->destroy) PetscCall((*mmcfdata->destroy)(&mmcfdata->ctx));
   PetscCall(MatDestroy(&mmcfdata->Dwork));
   PetscCall(PetscFree(mmcfdata));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -148,7 +148,7 @@ static PetscErrorCode MatProductDestroy_CF(void *data)
 
 static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
 {
-  MatMatCF *mmcfdata = (MatMatCF *)data;
+  MatProductCtx_MatMatCF *mmcfdata = (MatProductCtx_MatMatCF *)data;
 
   PetscFunctionBegin;
   PetscCheck(mmcfdata, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Missing data");
@@ -156,7 +156,7 @@ static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
   /* the MATSHELL interface allows us to play with the product data */
   PetscCall(PetscNew(&C->product));
   C->product->type  = mmcfdata->ptype;
-  C->product->data  = mmcfdata->userdata;
+  C->product->data  = mmcfdata->ctx;
   C->product->Dwork = mmcfdata->Dwork;
   PetscCall(MatShellGetContext(A, &C->product->A));
   C->product->B = B;
@@ -167,7 +167,7 @@ static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
 
 static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **data)
 {
-  MatMatCF *mmcfdata;
+  MatProductCtx_MatMatCF *mmcfdata;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &C->product->A));
@@ -176,11 +176,11 @@ static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **dat
   /* the MATSHELL interface does not allow non-empty product data */
   PetscCall(PetscNew(&mmcfdata));
 
-  mmcfdata->numeric    = C->ops->productnumeric;
-  mmcfdata->ptype      = C->product->type;
-  mmcfdata->userdata   = C->product->data;
-  mmcfdata->ctxdestroy = C->product->destroy;
-  mmcfdata->Dwork      = C->product->Dwork;
+  mmcfdata->numeric = C->ops->productnumeric;
+  mmcfdata->ptype   = C->product->type;
+  mmcfdata->ctx     = C->product->data;
+  mmcfdata->destroy = C->product->destroy;
+  mmcfdata->Dwork   = C->product->Dwork;
 
   C->product->Dwork   = NULL;
   C->product->data    = NULL;

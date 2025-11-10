@@ -4,7 +4,7 @@
 #pragma once
 #include <petsc/private/matimpl.h>
 /* TODO REMOVE */
-#include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
+#include <../src/mat/impls/aij/seq/aij.h> /* MatProductCtx_MatTransMatMult is defined here */
 
 /*
   MATSEQDENSE format - conventional dense Fortran storage (by columns)

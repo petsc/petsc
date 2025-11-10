@@ -2059,7 +2059,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetVecType(Mat, VecType);
 PETSC_EXTERN PetscErrorCode MatShellTestMult(Mat, PetscErrorCode (*)(void *, Vec, Vec), Vec, void *, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellTestMultTranspose(Mat, PetscErrorCode (*)(void *, Vec, Vec), Vec, void *, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
-PETSC_EXTERN PetscErrorCode MatShellSetMatProductOperation(Mat, MatProductType, PetscErrorCode (*)(Mat, Mat, Mat, void **), PetscErrorCode (*)(Mat, Mat, Mat, void *), PetscErrorCode (*)(void *), MatType, MatType);
+PETSC_EXTERN PetscErrorCode MatShellSetMatProductOperation(Mat, MatProductType, PetscErrorCode (*)(Mat, Mat, Mat, void **), PetscErrorCode (*)(Mat, Mat, Mat, void *), PetscCtxDestroyFn *, MatType, MatType);
 PETSC_EXTERN PetscErrorCode MatIsShell(Mat, PetscBool *);
 
 /*

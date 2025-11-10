@@ -365,7 +365,7 @@ PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const 
 
 .seealso: [](ch_ts), `TSTrajectorySetVariableNames()`, `TSTrajectory`, `TSMonitorLGSetTransform()`
 @*/
-PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx)
+PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscCtxDestroyFn *destroy, void *tctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -575,7 +575,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
   PetscCall(VecDestroy(&(*tj)->U));
   PetscCall(VecDestroy(&(*tj)->Udot));
 
-  if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)((*tj)->transformctx));
+  if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)(&(*tj)->transformctx));
   PetscTryTypeMethod(*tj, destroy);
   if (!((*tj)->keepfiles)) {
     PetscMPIInt rank;

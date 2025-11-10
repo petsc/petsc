@@ -22,16 +22,16 @@ static char help[] = "Solves 1D constant coefficient Laplacian using DMSHELL and
 #include <petscdmshell.h>
 #include <petscksp.h>
 
-static PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
-static PetscErrorCode ComputeRHS(KSP, Vec, void *);
-static PetscErrorCode CreateMatrix(DM, Mat *);
-static PetscErrorCode CreateGlobalVector(DM, Vec *);
-static PetscErrorCode CreateLocalVector(DM, Vec *);
-static PetscErrorCode Refine(DM, MPI_Comm, DM *);
-static PetscErrorCode Coarsen(DM, MPI_Comm, DM *);
-static PetscErrorCode CreateInterpolation(DM, DM, Mat *, Vec *);
-static PetscErrorCode CreateRestriction(DM, DM, Mat *);
-static PetscErrorCode Destroy(void *);
+static PetscErrorCode    ComputeMatrix(KSP, Mat, Mat, void *);
+static PetscErrorCode    ComputeRHS(KSP, Vec, void *);
+static PetscErrorCode    CreateMatrix(DM, Mat *);
+static PetscErrorCode    CreateGlobalVector(DM, Vec *);
+static PetscErrorCode    CreateLocalVector(DM, Vec *);
+static PetscErrorCode    Refine(DM, MPI_Comm, DM *);
+static PetscErrorCode    Coarsen(DM, MPI_Comm, DM *);
+static PetscErrorCode    CreateInterpolation(DM, DM, Mat *, Vec *);
+static PetscErrorCode    CreateRestriction(DM, DM, Mat *);
+static PetscCtxDestroyFn DestroyCtx;
 
 static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell)
 {
@@ -45,7 +45,7 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell)
   PetscCall(DMShellSetCoarsen(*shell, Coarsen));
   PetscCall(DMShellSetCreateInterpolation(*shell, CreateInterpolation));
   PetscCall(DMShellSetCreateRestriction(*shell, CreateRestriction));
-  PetscCall(DMShellSetDestroyContext(*shell, Destroy));
+  PetscCall(DMShellSetDestroyContext(*shell, DestroyCtx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -78,10 +78,10 @@ int main(int argc, char **argv)
   return 0;
 }
 
-static PetscErrorCode Destroy(void *ctx)
+static PetscErrorCode DestroyCtx(void **ctx)
 {
   PetscFunctionBeginUser;
-  PetscCall(DMDestroy((DM *)&ctx));
+  PetscCall(DMDestroy((DM *)ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

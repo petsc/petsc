@@ -52,7 +52,7 @@ cdef extern from * nogil:
         SNES_DIVERGED_JACOBIAN_DOMAIN
         SNES_DIVERGED_TR_DELTA
 
-    ctypedef PetscErrorCode (*PetscSNESCtxDel)(void*)
+    ctypedef PetscErrorCode (*PetscSNESCtxDel)(void**)
 
     ctypedef PetscErrorCode (*PetscSNESInitialGuessFunction)(PetscSNES,
                                                              PetscVec,

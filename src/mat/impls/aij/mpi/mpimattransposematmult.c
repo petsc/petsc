@@ -7,9 +7,9 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-static PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
+static PetscErrorCode MatProductCtxDestroy_MPIDense_MatTransMatMult(void **data)
 {
-  Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
+  MatProductCtx_MatTransMatMult *atb = *(MatProductCtx_MatTransMatMult **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&atb->mA));
@@ -23,8 +23,8 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat, Mat, Mat);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  Mat_MatTransMatMult *atb;
-  PetscBool            cisdense;
+  MatProductCtx_MatTransMatMult *atb;
+  PetscBool                      cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -47,7 +47,7 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
     PetscCall(MatCreateVecs(atb->mA, &atb->ct, &atb->bt));
   }
   C->product->data    = atb;
-  C->product->destroy = MatDestroy_MPIDense_MatTransMatMult;
+  C->product->destroy = MatProductCtxDestroy_MPIDense_MatTransMatMult;
 
   C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -55,15 +55,15 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
 
 static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 {
-  const PetscScalar   *Barray, *ctarray;
-  PetscScalar         *Carray, *btarray;
-  PetscInt             i, j, m = A->rmap->n, n = A->cmap->n, ldb, BN = B->cmap->N, ldc;
-  Mat_MatTransMatMult *atb;
-  Vec                  bt, ct;
+  const PetscScalar             *Barray, *ctarray;
+  PetscScalar                   *Carray, *btarray;
+  PetscInt                       i, j, m = A->rmap->n, n = A->cmap->n, ldb, BN = B->cmap->N, ldc;
+  MatProductCtx_MatTransMatMult *atb;
+  Vec                            bt, ct;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
-  atb = (Mat_MatTransMatMult *)C->product->data;
+  atb = (MatProductCtx_MatTransMatMult *)C->product->data;
   PetscCheck(atb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing product struct");
   if (!BN) {
     PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));

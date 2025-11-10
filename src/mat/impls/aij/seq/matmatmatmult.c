@@ -4,9 +4,9 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 
-static PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(void *data)
+static PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatMatMatMult(void **data)
 {
-  Mat_MatMatMatMult *matmatmatmult = (Mat_MatMatMatMult *)data;
+  MatProductCtx_MatMatMatMult *matmatmatmult = *(MatProductCtx_MatMatMatMult **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&matmatmatmult->BC));
@@ -16,9 +16,9 @@ static PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(void *data)
 
 PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C, PetscReal fill, Mat D)
 {
-  Mat                BC;
-  Mat_MatMatMatMult *matmatmatmult;
-  char              *alg;
+  Mat                          BC;
+  MatProductCtx_MatMatMatMult *matmatmatmult;
+  char                        *alg;
 
   PetscFunctionBegin;
   MatCheckProduct(D, 5);
@@ -32,12 +32,12 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C, P
   PetscCall(MatProductSetAlgorithm(D, alg)); /* resume original algorithm */
   PetscCall(PetscFree(alg));
 
-  /* create struct Mat_MatMatMatMult and attached it to D */
+  /* create struct MatProductCtx_MatMatMatMult and attached it to D */
   PetscCheck(!D->product->data, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not yet coded");
   PetscCall(PetscNew(&matmatmatmult));
   matmatmatmult->BC   = BC;
   D->product->data    = matmatmatmult;
-  D->product->destroy = MatDestroy_SeqAIJ_MatMatMatMult;
+  D->product->destroy = MatProductCtxDestroy_SeqAIJ_MatMatMatMult;
 
   D->ops->matmatmultnumeric = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -45,13 +45,13 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C, P
 
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C, Mat D)
 {
-  Mat_MatMatMatMult *matmatmatmult;
-  Mat                BC;
+  MatProductCtx_MatMatMatMult *matmatmatmult;
+  Mat                          BC;
 
   PetscFunctionBegin;
   MatCheckProduct(D, 4);
   PetscCheck(D->product->data, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product data empty");
-  matmatmatmult = (Mat_MatMatMatMult *)D->product->data;
+  matmatmatmult = (MatProductCtx_MatMatMatMult *)D->product->data;
   BC            = matmatmatmult->BC;
   PetscCheck(BC, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Missing BC mat");
   PetscCall((*BC->ops->matmultnumeric)(B, C, BC));

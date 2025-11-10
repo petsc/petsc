@@ -2170,7 +2170,7 @@ struct VecHIPEqualsReverse {
   }
 };
 
-struct MatMatHipsparse {
+struct MatProductCtx_MatMatHipsparse {
   PetscBool             cisdense;
   PetscScalar          *Bt;
   Mat                   X;
@@ -2190,9 +2190,9 @@ struct MatMatHipsparse {
   hipsparseSpGEMMDescr_t spgemmDesc;
 };
 
-static PetscErrorCode MatDestroy_MatMatHipsparse(void *data)
+static PetscErrorCode MatProductCtxDestroy_MatMatHipsparse(void **data)
 {
-  MatMatHipsparse *mmdata = (MatMatHipsparse *)data;
+  MatProductCtx_MatMatHipsparse *mmdata = *(MatProductCtx_MatMatHipsparse **)data;
 
   PetscFunctionBegin;
   PetscCallHIP(hipFree(mmdata->Bt));
@@ -2208,7 +2208,7 @@ static PetscErrorCode MatDestroy_MatMatHipsparse(void *data)
   if (mmdata->mmBuffer) PetscCallHIP(hipFree(mmdata->mmBuffer));
   if (mmdata->mmBuffer2) PetscCallHIP(hipFree(mmdata->mmBuffer2));
   PetscCall(MatDestroy(&mmdata->X));
-  PetscCall(PetscFree(data));
+  PetscCall(PetscFree(*data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2222,14 +2222,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
   hipsparseOperation_t           opA;
   const PetscScalar             *barray;
   PetscScalar                   *carray;
-  MatMatHipsparse               *mmdata;
+  MatProductCtx_MatMatHipsparse *mmdata;
   Mat_SeqAIJHIPSPARSEMultStruct *mat;
   CsrMatrix                     *csrmat;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Product data empty");
-  mmdata = (MatMatHipsparse *)product->data;
+  mmdata = (MatProductCtx_MatMatHipsparse *)product->data;
   A      = product->A;
   B      = product->B;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJHIPSPARSE, &flg));
@@ -2343,12 +2343,12 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
 
 static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
 {
-  Mat_Product         *product = C->product;
-  Mat                  A, B;
-  PetscInt             m, n;
-  PetscBool            cisdense, flg;
-  MatMatHipsparse     *mmdata;
-  Mat_SeqAIJHIPSPARSE *cusp;
+  Mat_Product                   *product = C->product;
+  Mat                            A, B;
+  PetscInt                       m, n;
+  PetscBool                      cisdense, flg;
+  MatProductCtx_MatMatHipsparse *mmdata;
+  Mat_SeqAIJHIPSPARSE           *cusp;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -2400,7 +2400,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
     else PetscCall(MatSetSizes(mmdata->X, A->rmap->n, B->cmap->n, A->rmap->n, B->cmap->n));
   }
   C->product->data       = mmdata;
-  C->product->destroy    = MatDestroy_MatMatHipsparse;
+  C->product->destroy    = MatProductCtxDestroy_MatMatHipsparse;
   C->ops->productnumeric = MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2415,7 +2415,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   CsrMatrix                     *Acsr, *Bcsr, *Ccsr;
   PetscBool                      flg;
   MatProductType                 ptype;
-  MatMatHipsparse               *mmdata;
+  MatProductCtx_MatMatHipsparse *mmdata;
   hipsparseSpMatDescr_t          BmatSpDescr;
   hipsparseOperation_t           opA = HIPSPARSE_OPERATION_NON_TRANSPOSE, opB = HIPSPARSE_OPERATION_NON_TRANSPOSE; /* hipSPARSE spgemm doesn't support transpose yet */
 
@@ -2424,7 +2424,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Product data empty");
   PetscCall(PetscObjectTypeCompare((PetscObject)C, MATSEQAIJHIPSPARSE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Not for C of type %s", ((PetscObject)C)->type_name);
-  mmdata = (MatMatHipsparse *)C->product->data;
+  mmdata = (MatProductCtx_MatMatHipsparse *)C->product->data;
   A      = product->A;
   B      = product->B;
   if (mmdata->reusesym) { /* this happens when api_user is true, meaning that the matrix values have been already computed in the MatProductSymbolic phase */
@@ -2531,7 +2531,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   PetscInt                       i, j, m, n, k;
   PetscBool                      flg;
   MatProductType                 ptype;
-  MatMatHipsparse               *mmdata;
+  MatProductCtx_MatMatHipsparse *mmdata;
   PetscLogDouble                 flops;
   PetscBool                      biscompressed, ciscompressed;
 #if PETSC_PKG_HIP_VERSION_GE(5, 0, 0)
@@ -2556,7 +2556,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   /* product data */
   PetscCall(PetscNew(&mmdata));
   C->product->data    = mmdata;
-  C->product->destroy = MatDestroy_MatMatHipsparse;
+  C->product->destroy = MatProductCtxDestroy_MatMatHipsparse;
 
   PetscCall(MatSeqAIJHIPSPARSECopyToGPU(A));
   PetscCall(MatSeqAIJHIPSPARSECopyToGPU(B));

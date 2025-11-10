@@ -3,14 +3,14 @@
 #include <petsc/private/dmimpl.h>
 
 typedef struct {
-  Vec        Xglobal;
-  Vec        Xlocal;
-  Mat        A;
-  VecScatter gtol;
-  VecScatter ltog;
-  VecScatter ltol;
-  void      *ctx;
-  PetscErrorCode (*destroyctx)(void *);
+  Vec                Xglobal;
+  Vec                Xlocal;
+  Mat                A;
+  VecScatter         gtol;
+  VecScatter         ltog;
+  VecScatter         ltol;
+  void              *ctx;
+  PetscCtxDestroyFn *destroyctx;
 } DM_Shell;
 
 /*@
@@ -246,7 +246,7 @@ static PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetDestroyContext(DM dm, PetscErrorCode (*destroyctx)(void *))
+PetscErrorCode DMShellSetDestroyContext(DM dm, PetscCtxDestroyFn *destroyctx)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
@@ -1080,7 +1080,7 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
-  if (shell->destroyctx) PetscCallBack("Destroy Context", (*shell->destroyctx)(shell->ctx));
+  if (shell->destroyctx) PetscCallBack("Destroy Context", (*shell->destroyctx)(&shell->ctx));
   PetscCall(MatDestroy(&shell->A));
   PetscCall(VecDestroy(&shell->Xglobal));
   PetscCall(VecDestroy(&shell->Xlocal));

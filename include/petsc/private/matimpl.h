@@ -447,9 +447,9 @@ typedef struct { /* used by MatProduct() */
   PetscErrorCode (*view)(Mat, PetscViewer);
 
   /* many products have intermediate data structures, each specific to Mat types and product type */
-  PetscBool clear;                   /* whether or not to clear the data structures after MatProductNumeric has been called */
-  void     *data;                    /* where to stash those structures */
-  PetscErrorCode (*destroy)(void *); /* destroy routine */
+  PetscBool          clear;   /* whether or not to clear the data structures after MatProductNumeric has been called */
+  void              *data;    /* where to stash those structures */
+  PetscCtxDestroyFn *destroy; /* freeing data */
 } Mat_Product;
 
 struct _p_Mat {

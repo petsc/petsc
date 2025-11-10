@@ -152,9 +152,9 @@ static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNest_DenseDestroy(void *ctx)
+static PetscErrorCode MatNest_DenseDestroy(void **ctx)
 {
-  Nest_Dense *contents = (Nest_Dense *)ctx;
+  Nest_Dense *contents = *(Nest_Dense **)ctx;
   PetscInt    i;
 
   PetscFunctionBegin;

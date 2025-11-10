@@ -298,7 +298,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
   for (i = 0; i < smax; i++) sum += molefracs[i];
   for (i = 0; i < smax; i++) molefracs[i] = molefracs[i] / sum;
   for (i = 0; i < smax; i++) {
-    int ispec = TC_getSpos(names[i], strlen(names[i]));
+    int ispec = TC_getSpos(names[i], (int)strlen(names[i]));
     PetscCheck(ispec >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Could not find species %s", names[i]);
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Species %" PetscInt_FMT ": %s %g\n", i, names[i], (double)molefracs[i]));
     x[1 + ispec] = molefracs[i];

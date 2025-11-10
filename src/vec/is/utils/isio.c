@@ -33,7 +33,7 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
 
 #if defined(PETSC_HAVE_HDF5)
 /*
-     This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
+     This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. That is properly casting with
    checks back and forth between the two types of variables.
 */
 static PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)

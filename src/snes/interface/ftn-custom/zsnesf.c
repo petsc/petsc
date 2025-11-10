@@ -168,7 +168,7 @@ static PetscErrorCode oursnestest(SNES snes, PetscInt it, PetscReal a, PetscReal
   PetscObjectUseFortranCallback(snes, _cb.test, (SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *), (&snes, &it, &a, &d, &c, reason, _ctx, &ierr));
 }
 
-static PetscErrorCode ourdestroy(void *ctx)
+static PetscErrorCode ourdestroy(void **ctx)
 {
   PetscObjectUseFortranCallback(ctx, _cb.destroy, (void *, PetscErrorCode *), (_ctx, &ierr));
 }
@@ -340,7 +340,7 @@ PETSC_EXTERN void snesgetngs_(SNES *snes, void *func, void **ctx, PetscErrorCode
 PETSC_EXTERN void snesconvergeddefault_(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *);
 PETSC_EXTERN void snesconvergedskip_(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *);
 
-PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *), void *cctx, void (*destroy)(void *), PetscErrorCode *ierr)
+PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *), void *cctx, PetscCtxDestroyFn *destroy, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(destroy);
 
@@ -351,9 +351,11 @@ PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, Petsc
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.test, (PetscFortranCallbackFn *)func, cctx);
     if (*ierr) return;
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.destroy, (PetscFortranCallbackFn *)destroy, cctx);
-    if (*ierr) return;
-    *ierr = SNESSetConvergenceTest(*snes, oursnestest, *snes, ourdestroy);
+    if (destroy) {
+      *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.destroy, (PetscFortranCallbackFn *)destroy, cctx);
+      if (*ierr) return;
+      *ierr = SNESSetConvergenceTest(*snes, oursnestest, *snes, ourdestroy);
+    } else *ierr = SNESSetConvergenceTest(*snes, oursnestest, *snes, NULL);
   }
 }
 

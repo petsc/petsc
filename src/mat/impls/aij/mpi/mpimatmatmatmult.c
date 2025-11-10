@@ -90,26 +90,26 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A, Mat B, Mat C, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
+static PetscErrorCode MatProductCtxDestroy_MPIAIJ_RARt(void **data)
 {
-  Mat_RARt *rart = (Mat_RARt *)data;
+  MatProductCtx_RARt *rart = *(MatProductCtx_RARt **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&rart->Rt));
-  if (rart->destroy) PetscCall((*rart->destroy)(rart->data));
+  if (rart->destroy) PetscCall((*rart->destroy)(&rart->data));
   PetscCall(PetscFree(rart));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
-  Mat_RARt *rart;
-  Mat       A, R, Rt;
+  MatProductCtx_RARt *rart;
+  Mat                 A, R, Rt;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  rart = (Mat_RARt *)C->product->data;
+  rart = (MatProductCtx_RARt *)C->product->data;
   A    = C->product->A;
   R    = C->product->B;
   Rt   = rart->Rt;
@@ -122,8 +122,8 @@ PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
 
 PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
-  Mat       A, R, Rt;
-  Mat_RARt *rart;
+  Mat                 A, R, Rt;
+  MatProductCtx_RARt *rart;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -141,6 +141,6 @@ PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
   rart->data          = C->product->data;
   rart->destroy       = C->product->destroy;
   C->product->data    = rart;
-  C->product->destroy = MatDestroy_MPIAIJ_RARt;
+  C->product->destroy = MatProductCtxDestroy_MPIAIJ_RARt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

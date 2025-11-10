@@ -273,7 +273,7 @@ PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
   }
   /* Any of the replaced mats is of a different type, reset */
   if (!flgA || !flgB || !flgC) {
-    if (D->product->destroy) PetscCall((*D->product->destroy)(D->product->data));
+    if (D->product->destroy) PetscCall((*D->product->destroy)(&D->product->data));
     D->product->destroy = NULL;
     D->product->data    = NULL;
     if (D->ops->productnumeric || D->ops->productsymbolic) {
@@ -945,7 +945,7 @@ PetscErrorCode MatProductGetAlgorithm(Mat mat, MatProductAlgorithm *alg)
   Input Parameters:
 + mat        - the matrix whose values are computed via a matrix-matrix product operation
 - productype - matrix product type, e.g., `MATPRODUCT_AB`,`MATPRODUCT_AtB`,`MATPRODUCT_ABt`,`MATPRODUCT_PtAP`,`MATPRODUCT_RARt`,`MATPRODUCT_ABC`,
-                  see `MatProductType`
+               see `MatProductType`
 
   Level: intermediate
 
@@ -962,7 +962,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
   MatCheckProduct(mat, 1);
   PetscValidLogicalCollectiveEnum(mat, productype, 2);
   if (productype != mat->product->type) {
-    if (mat->product->destroy) PetscCall((*mat->product->destroy)(mat->product->data));
+    if (mat->product->destroy) PetscCall((*mat->product->destroy)(&mat->product->data));
     mat->product->destroy     = NULL;
     mat->product->data        = NULL;
     mat->ops->productsymbolic = NULL;
@@ -990,6 +990,9 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 
   After having called this function, matrix-matrix product operations can no longer be used on `mat`
 
+  Developer Note:
+  This frees the `Mat_Product` context that was attached to the matrix during `MatProductCreate()` or `MatProductCreateWithMat()`
+
 .seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductClear(Mat mat)
@@ -1004,7 +1007,7 @@ PetscErrorCode MatProductClear(Mat mat)
     PetscCall(MatDestroy(&product->C));
     PetscCall(PetscFree(product->alg));
     PetscCall(MatDestroy(&product->Dwork));
-    if (product->destroy) PetscCall((*product->destroy)(product->data));
+    if (product->destroy) PetscCall((*product->destroy)(&product->data));
   }
   PetscCall(PetscFree(mat->product));
   mat->ops->productsymbolic = NULL;
@@ -1055,11 +1058,11 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
   Level: intermediate
 
   Notes:
-  Use `MatProductCreate()` if the matrix you wish computed (the `D` matrix) does not already exist
+  Use `MatProductCreate()` if the matrix you wish computed `D` does not exist
 
   See `MatProductCreate()` for details on the usage of the matrix-matrix product operations
 
-  Any product data currently attached to `D` will be cleared
+  Any product data currently attached to `D` will be freed
 
 .seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductType`, `MatProductSetType()`, `MatProductAlgorithm`,
           `MatProductSetAlgorithm`, `MatProductCreate()`, `MatProductClear()`
@@ -1100,7 +1103,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 }
 
 /*@
-  MatProductCreate - create a matrix to hold the result of a matrix-matrix product operation
+  MatProductCreate - create a matrix to hold the result of a matrix-matrix (or matrix-matrix-matrix) product operation
 
   Collective
 
@@ -1128,15 +1131,24 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 .ve
 
   Notes:
-  Use `MatProductCreateWithMat()` if the matrix you wish computed, the `D` matrix, already exists.
+  Use `MatProductCreateWithMat()` if `D` the matrix you wish computed already exists.
 
-  The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure
+  The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure of the input matrices.
 
   Developer Notes:
   It is undocumented what happens if the nonzero structure of the input matrices changes. Is the symbolic stage automatically redone? Does it crash?
   Is there error checking for it?
 
-.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
+  On this call, auxiliary data needed to compute the product is stored in `D` in a `Mat_Product` context. A call to `MatProductClear()` frees this
+  information.
+
+  Each `MatProductAlgorithm` associated with a particular `MatType` stores additional data needed for the product computation
+  (generally this data is computed in `MatProductSymbolic()`) inside the `Mat_Product` context in a `MatProductCtx_XXX` data structure
+  and provides a `MatProductCtxDestroy_XXX()` routine to free that data. The `MatProductAlgorithm` and `MatType` specific destroy routine is called by
+  `MatProductClear()`.
+
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`,
+          `MatProductSymbolic()`, `MatProductNumeric()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 {
@@ -1170,28 +1182,28 @@ PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 typedef struct {
   Mat BC;
   Mat ABC;
-} MatMatMatPrivate;
+} MatProductCtx_MatMatMatPrivate;
 
-static PetscErrorCode MatDestroy_MatMatMatPrivate(void *data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMatPrivate(void **data)
 {
-  MatMatMatPrivate *mmdata = (MatMatMatPrivate *)data;
+  MatProductCtx_MatMatMatPrivate *mmdata = *(MatProductCtx_MatMatMatPrivate **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&mmdata->BC));
   PetscCall(MatDestroy(&mmdata->ABC));
-  PetscCall(PetscFree(data));
+  PetscCall(PetscFree(*data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
 {
-  Mat_Product      *product = mat->product;
-  MatMatMatPrivate *mmabc;
+  Mat_Product                    *product = mat->product;
+  MatProductCtx_MatMatMatPrivate *mmabc;
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
   PetscCheck(mat->product->data, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Product data empty");
-  mmabc = (MatMatMatPrivate *)mat->product->data;
+  mmabc = (MatProductCtx_MatMatMatPrivate *)mat->product->data;
   PetscCheck(mmabc->BC->ops->productnumeric, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing numeric stage");
   /* use function pointer directly to prevent logging */
   PetscCall((*mmabc->BC->ops->productnumeric)(mmabc->BC));
@@ -1207,11 +1219,11 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
 
 PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
 {
-  Mat_Product      *product = mat->product;
-  Mat               A, B, C;
-  MatProductType    p1, p2;
-  MatMatMatPrivate *mmabc;
-  const char       *prefix;
+  Mat_Product                    *product = mat->product;
+  Mat                             A, B, C;
+  MatProductType                  p1, p2;
+  MatProductCtx_MatMatMatPrivate *mmabc;
+  const char                     *prefix;
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
@@ -1219,7 +1231,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   PetscCall(MatGetOptionsPrefix(mat, &prefix));
   PetscCall(PetscNew(&mmabc));
   product->data    = mmabc;
-  product->destroy = MatDestroy_MatMatMatPrivate;
+  product->destroy = MatProductCtxDestroy_MatMatMatPrivate;
   switch (product->type) {
   case MATPRODUCT_PtAP:
     p1 = MATPRODUCT_AB;

@@ -420,7 +420,7 @@ M*/
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES, PetscErrorCode (*)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), void *, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES, PetscErrorCode (*)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode SNESConvergedDefault(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 PETSC_EXTERN PetscErrorCode SNESConvergedCorrectPressure(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);

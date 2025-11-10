@@ -10080,9 +10080,10 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   Level: intermediate
 
   Notes:
-  C will be created and must be destroyed by the user with `MatDestroy()`.
+  `C` will be created and must be destroyed by the user with `MatDestroy()`.
 
-  An alternative approach to this function is to use `MatProductCreate()` and set the desired options before the computation is done
+  This is a convenience routine that wraps the use of the `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_PtAP`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
@@ -10137,7 +10138,8 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
   Notes:
   `C` will be created and must be destroyed by the user with `MatDestroy()`.
 
-  An alternative approach to this function is to use `MatProductCreate()` and set the desired options before the computation is done
+  This is a convenience routine that wraps the use of the `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_RARt`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   This routine is currently only implemented for pairs of `MATAIJ` matrices and classes
   which inherit from `MATAIJ`. Due to PETSc sparse matrix block row distribution among processes,
@@ -10215,7 +10217,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 }
 
 /*@
-  MatMatMult - Performs matrix-matrix multiplication C=A*B.
+  MatMatMult - Performs matrix-matrix multiplication $ C=A*B $.
 
   Neighbor-wise Collective
 
@@ -10241,6 +10243,9 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
   rather than first having `MatMatMult()` create it for you. You can NEVER do this if the matrix `C` is sparse.
 
   The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
+
+  This is a convenience routine that wraps the use of the `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_AB`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   Example of Usage:
 .vb
@@ -10297,7 +10302,8 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
   This routine is currently only implemented for pairs of `MATSEQAIJ` matrices, for the `MATSEQDENSE` class,
   and for pairs of `MATMPIDENSE` matrices.
 
-  This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_ABt`
+  This is a convenience routine that wraps the use of the `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_ABt`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
@@ -10330,9 +10336,10 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
   Notes:
   `C` will be created if `MAT_INITIAL_MATRIX` and must be destroyed by the user with `MatDestroy()`.
 
-  `MAT_REUSE_MATRIX` can only be used if the matrices A and B have the same nonzero pattern as in the previous call.
+  `MAT_REUSE_MATRIX` can only be used if `A` and `B` have the same nonzero pattern as in the previous call.
 
-  This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_AtB`
+  This is a convenience routine that wraps the use of `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_AtB`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
   actually needed.
@@ -10374,7 +10381,8 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 
   `MAT_REUSE_MATRIX` can only be used if the matrices `A`, `B`, and `C` have the same nonzero pattern as in the previous call
 
-  This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_ABC`
+  This is a convenience routine that wraps the use of the `MatProductCreate()` with a `MatProductType` of `MATPRODUCT_ABC`
+  functionality into a single function call. For more involved matrix-matrix operations see `MatProductCreate()`.
 
   To determine the correct fill value, run with `-info` and search for the string "Fill ratio" to see the value
   actually needed.
