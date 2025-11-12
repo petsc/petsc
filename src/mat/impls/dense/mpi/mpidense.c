@@ -1712,7 +1712,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A, Mat *v)
   a->matinuse = 0;
   c           = (Mat_MPIDense *)a->cmat->data;
   PetscCall(MatDenseRestoreSubMatrix(a->A, &c->A));
-  if (v) *v = NULL;
+  *v = NULL;
 #if defined(PETSC_HAVE_DEVICE)
   A->offloadmask = a->A->offloadmask;
 #endif
