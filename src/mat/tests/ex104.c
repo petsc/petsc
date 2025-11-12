@@ -81,7 +81,10 @@ int main(int argc, char **argv)
 
   /* Test B = C*A for matrix type transpose and seqdense */
   if (size == 1 && !Aiselemental) {
+    PetscCall(MatScale(C, -1.0));
     PetscCall(MatMatMult(C, A, MAT_INITIAL_MATRIX, fill, &B));
+    PetscCall(MatScale(C, -1.0));
+    PetscCall(MatScale(B, -1.0));
     PetscCall(MatMatMultEqual(C, A, B, 10, &equal));
     PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "B != C*A for matrix type transpose and seqdense");
     PetscCall(MatDestroy(&B));
