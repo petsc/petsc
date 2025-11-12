@@ -473,7 +473,8 @@ linux-gcc-quad-64idx-dbg:
     - .stage-2
     - .linux_test
   tags:
-    - gce-u24-stage2, linux-gcov
+    - gce-u24-stage2
+    - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -482,7 +483,8 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - gce-u24-stage2, linux-gcov
+    - gce-u24-stage2
+    - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
   except:
@@ -494,7 +496,8 @@ linux-gcc-complex-opt-32bit:
     - .stage-2
     - .linux_test
   tags:
-    - gce-u24-stage2, linux-gcov
+    - gce-u24-stage2
+    - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
 
@@ -549,7 +552,8 @@ linux-hip-double:
     - .linux_test_noflags
     - .coverage-disable
   tags:
-    - gpu:amd, os:linux
+    - gpu:amd
+    - os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
 
@@ -559,7 +563,8 @@ linux-hip-cmplx:
     - .linux_test_noflags
     - .coverage-disable
   tags:
-    - gpu:amd, os:linux
+    - gpu:amd
+    - os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-cmplx
 
@@ -569,7 +574,8 @@ linux-sycl-double:
     - .linux_test_nofflags
     - .coverage-disable
   tags:
-    - gce-u22-stage3, linux-fast
+    - gce-u22-stage3
+    - linux-fast
   variables:
     MODULEPATH: /nfs/gce/projects/petsc/soft/oneapi/2025.2.0/modulefiles
     TEST_ARCH: arch-ci-linux-sycl-double
@@ -709,7 +715,8 @@ linux-flang-arm:
     # gcovr does not work on arm/linux
     - .coverage-disable
   tags:
-    - arch:arm, os:linux
+    - arch:arm
+    - os:linux
   variables:
     TEST_ARCH: arch-ci-linux-flang-arm
 
@@ -720,7 +727,8 @@ linux-cmplx-single-arm:
     # gcovr does not work on arm/linux
     - .coverage-disable
   tags:
-    - arch:arm, os:linux
+    - arch:arm
+    - os:linux
   variables:
     FLEXIBLAS: netlib
     TEST_ARCH: arch-ci-linux-cmplx-single-arm
@@ -819,7 +827,8 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-fast
+    - gce-u22-stage3
+    - linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-opt
     LOAD_MODULES: gcc/12.1.0
@@ -834,7 +843,8 @@ linux-pkgs-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-gcov
+    - gce-u22-stage3
+    - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg
     EXTRA_OPTIONS_INITIAL: -fp_trap
@@ -844,7 +854,8 @@ linux-matlab-ilp64:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-gcov
+    - gce-u22-stage3
+    - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64
     LOAD_MODULES: gcc/9.4.0 matlab/R2022a
@@ -948,7 +959,8 @@ linux-opt-arm:
     # gcovr does not work on arm/linux
     - .coverage-disable
   tags:
-    - arch:arm, os:linux
+    - arch:arm
+    - os:linux
   variables:
     TEST_ARCH: arch-ci-linux-opt-arm
 
@@ -957,7 +969,8 @@ linux-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-mcpu
+    - gce-u22-stage3
+    - linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
     LOAD_MODULES: intel-oneapi-mkl/2022.0.2
@@ -967,7 +980,8 @@ linux-64idx-i8:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-mcpu
+    - gce-u22-stage3
+    - linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8
 
@@ -1008,7 +1022,8 @@ linux-64idx-i8-uni:
     - .stage-3
     - .linux_test
   tags:
-    - gce-u22-stage3, linux-mcpu
+    - gce-u22-stage3
+    - linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8-uni
 
