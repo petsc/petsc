@@ -1707,6 +1707,7 @@ static PetscErrorCode KSPPostSolve_SchurCorrection(KSP, Vec b, Vec x, void *cont
 static PetscErrorCode MatMult_Harmonic(Mat, Vec, Vec);
 static PetscErrorCode MatMultTranspose_Harmonic(Mat, Vec, Vec);
 static PetscErrorCode MatProduct_AB_Harmonic(Mat, Mat, Mat, void *);
+static PetscErrorCode MatProduct_AtB_Harmonic(Mat, Mat, Mat, void *);
 static PetscErrorCode MatDestroy_Harmonic(Mat);
 
 static PetscErrorCode PCSetUp_HPDDM(PC pc)
@@ -2436,6 +2437,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Harmonic));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_Harmonic));
               PetscCall(MatShellSetMatProductOperation(data->aux, MATPRODUCT_AB, nullptr, MatProduct_AB_Harmonic, nullptr, MATDENSE, MATDENSE));
+              PetscCall(MatShellSetMatProductOperation(data->aux, MATPRODUCT_AtB, nullptr, MatProduct_AtB_Harmonic, nullptr, MATDENSE, MATDENSE));
               PetscCall(MatShellSetOperation(data->aux, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_Harmonic));
               PetscCall(MatDestroySubMatrices(1, &a));
             }
@@ -3349,6 +3351,39 @@ static PetscErrorCode MatProduct_AB_Harmonic(Mat S, Mat X, Mat Y, void *)
     PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &b));
     PetscCall(MatDenseRestoreColumnVecRead(A, i, &a));
   }
+  PetscCall(MatDestroy(&A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProduct_AtB_Harmonic(Mat S, Mat Y, Mat X, void *)
+{
+  Harmonic h;
+  Mat      A, B;
+  Vec      a, b;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(S, &h));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, h->ksp->pc->mat->rmap->n, Y->cmap->n, nullptr, &A));
+  for (PetscInt i = 0; i < A->cmap->n; ++i) {
+    PetscCall(MatDenseGetColumnVecRead(Y, i, &b));
+    PetscCall(MatDenseGetColumnVecWrite(A, i, &a));
+    PetscCall(VecISCopy(a, h->is[1], SCATTER_FORWARD, b));
+    PetscCall(MatDenseRestoreColumnVecWrite(A, i, &a));
+    PetscCall(MatDenseRestoreColumnVecRead(Y, i, &b));
+  }
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, h->ksp->pc->mat->rmap->n, A->cmap->n, nullptr, &B));
+  PetscCall(KSPMatSolveTranspose(h->ksp, A, B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, h->A[0]->rmap->n, B->cmap->n, nullptr, &A));
+  for (PetscInt i = 0; i < A->cmap->n; ++i) {
+    PetscCall(MatDenseGetColumnVecRead(B, i, &b));
+    PetscCall(MatDenseGetColumnVecWrite(A, i, &a));
+    PetscCall(VecISCopy(b, h->is[0], SCATTER_REVERSE, a));
+    PetscCall(MatDenseRestoreColumnVecWrite(A, i, &a));
+    PetscCall(MatDenseRestoreColumnVecRead(B, i, &b));
+  }
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatTransposeMatMult(h->A[0], A, MAT_REUSE_MATRIX, PETSC_CURRENT, &X));
   PetscCall(MatDestroy(&A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
