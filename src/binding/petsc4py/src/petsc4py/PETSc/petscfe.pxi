@@ -9,6 +9,7 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscFECreate(MPI_Comm, PetscFE*)
     PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE*)
+    PetscErrorCode PetscFECreateByCell(MPI_Comm, PetscInt, PetscInt, PetscDMPolytopeType, const char [], PetscInt, PetscFE*)
     PetscErrorCode PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, PetscBool, PetscInt, PetscInt, PetscFE*)
     PetscErrorCode PetscFESetType(PetscFE, PetscFEType)
     PetscErrorCode PetscFEGetQuadrature(PetscFE, PetscQuadrature*)

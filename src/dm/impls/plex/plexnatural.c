@@ -30,7 +30,7 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 /*@
   DMPlexGetMigrationSF - Gets the `PetscSF` for migrating from a parent `DM` into this `DM`
 
-  Note Collective
+  Not Collective
 
   Input Parameter:
 . dm - The `DM`
