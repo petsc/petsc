@@ -43,10 +43,10 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat, Mat, PetscRe
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat, Mat, Mat);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqBAIJ_SeqDense(Mat, Mat, PetscReal, Mat);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqSBAIJ_SeqDense(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat, Mat, Mat);
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Nest_Dense(Mat, Mat, PetscReal, Mat *);
-PETSC_INTERN PetscErrorCode MatMatMultNumeric_Nest_Dense(Mat, Mat, Mat);
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense(Mat);

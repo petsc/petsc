@@ -1721,6 +1721,15 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense(Mat C)
   MatCheckProduct(C, 1);
   PetscCheck(product->A, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing A");
   if (product->type == MATPRODUCT_AB || (product->type == MATPRODUCT_AtB && product->A->symmetric == PETSC_BOOL3_TRUE)) PetscCall(MatProductSetFromOptions_SeqXBAIJ_SeqDense_AB(C));
+  else if (product->type == MATPRODUCT_AtB) {
+    PetscBool flg;
+
+    PetscCall(PetscObjectTypeCompare((PetscObject)product->A, MATSEQBAIJ, &flg));
+    if (flg) {
+      C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_SeqBAIJ_SeqDense;
+      C->ops->productsymbolic          = MatProductSymbolic_AtB;
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

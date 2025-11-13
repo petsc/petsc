@@ -3373,7 +3373,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt n
       PetscCall(PetscIntMultError(nz, bs2, &nzbs2));
       PetscCall(PetscShmgetAllocateArray(nzbs2, sizeof(PetscScalar), (void **)&b->a));
       b->free_a = PETSC_TRUE;
-      PetscCall(PetscArrayzero(b->a, nz * bs2));
+      PetscCall(PetscArrayzero(b->a, nzbs2));
     }
     b->free_ij = PETSC_TRUE;
     PetscCall(PetscArrayzero(b->j, nz));
