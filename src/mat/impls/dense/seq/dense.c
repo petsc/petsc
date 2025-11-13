@@ -3541,7 +3541,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v)
   PetscCheck(*v == a->cmat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
   PetscCall(MatDenseResetArray(a->cmat));
-  if (v) *v = NULL;
+  *v = NULL;
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
@@ -3733,6 +3733,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
+  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVec_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3795,6 +3796,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
+  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecRead_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3855,6 +3857,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
+  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecWrite_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3915,7 +3918,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
 
   Input Parameters:
 + A - the `Mat` object
-- v - the `Mat` object (may be `NULL`)
+- v - the `Mat` object (cannot be `NULL`)
 
   Level: intermediate
 
@@ -3927,6 +3930,7 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscAssertPointer(v, 2);
+  PetscValidHeaderSpecific(*v, MAT_CLASSID, 2);
   PetscUseMethod(A, "MatDenseRestoreSubMatrix_C", (Mat, Mat *), (A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
