@@ -4,7 +4,8 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 int main(int argc, char **args)
 {
-  Mat         A, As;
+  Mat         A, As, B;
+  Vec         l, r;
   PetscBool   flg;
   PetscMPIInt size;
   PetscInt    i, j;
@@ -59,7 +60,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-check_symmetric", &flg));
   if (flg) {
     PetscCall(MatIsSymmetric(A, 0.0, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_USER, "A is not symmetric");
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "A is not symmetric");
   }
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
@@ -86,11 +87,16 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatViewFromOptions(A, NULL, "-disp_mat"));
 
+  if (flg) {
+    PetscCall(MatIsSymmetric(A, 0.0, &flg));
+    PetscCheck(!flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "A is symmetric");
+  }
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_FALSE));
   /* Check whether A is Hermitian, then set A->hermitian flag */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-check_Hermitian", &flg));
   if (flg && size == 1) {
     PetscCall(MatIsHermitian(A, 0.0, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_USER, "A is not Hermitian");
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "A is not Hermitian");
   }
   PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_TRUE));
 
@@ -126,9 +132,27 @@ int main(int argc, char **args)
   PetscCall(MatMultAddEqual(A, As, 10, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "MatMultAdd not equal");
 
+  PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+  PetscCall(MatRealPart(B));
+  PetscCall(MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE));
+
+  PetscCall(MatCreateVecs(A, &r, &l));
+  PetscCall(VecSetRandom(r, NULL));
+  PetscCall(VecCopy(r, l));
+  PetscCall(MatDiagonalScale(A, r, l));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-check_Hermitian", &flg));
+  if (flg && size == 1) {
+    PetscCall(MatIsHermitian(A, 0.0, &flg));
+    PetscCheck(!flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "A is Hermitian");
+  }
+  PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_FALSE));
+
   /* Free spaces */
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&As));
+  PetscCall(MatDestroy(&B));
+  PetscCall(VecDestroy(&r));
+  PetscCall(VecDestroy(&l));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -139,7 +163,7 @@ int main(int argc, char **args)
       requires: complex
 
    test:
-      args: -n 1000
+      args: -n 1000 -check_symmetric -check_Hermitian
       output_file: output/empty.out
 
    test:

@@ -1580,13 +1580,8 @@ static PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat, Vec ll, Vec rr)
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
   Mat           a = baij->A, b = baij->B;
   PetscInt      nv, m, n;
-  PetscBool     flg;
 
   PetscFunctionBegin;
-  if (ll != rr) {
-    PetscCall(VecEqual(ll, rr, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format, left and right scaling vectors must be same");
-  }
   if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(MatGetLocalSize(mat, &m, &n));

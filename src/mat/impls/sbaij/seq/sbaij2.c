@@ -1450,13 +1450,8 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A, Vec ll, Vec rr)
   MatScalar         *aa, *v;
   PetscInt           i, j, k, lm, M, m, mbs, tmp, bs, bs2;
   const PetscInt    *ai, *aj;
-  PetscBool          flg;
 
   PetscFunctionBegin;
-  if (ll != rr) {
-    PetscCall(VecEqual(ll, rr, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format, left and right scaling vectors must be same");
-  }
   if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
   ai  = a->i;
   aj  = a->j;
