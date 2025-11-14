@@ -152,7 +152,7 @@ Their use for each is described below.
 This is done using the same local/global system described in {any}`sec_localglobal`.
 To do this, we introduce three new concepts; a `localSection`, `globalSection`, `pointSF`, and `sectionSF`.
 
-Assume the mesh points of the "global" mesh are partitioned amongst processes and that some mesh points are shared between multiple processes (i.e there is an overlap in the partitions).
+Assume the mesh points of the "global" mesh are partitioned among processes and that some mesh points are shared between multiple processes (i.e there is an overlap in the partitions).
 The shared mesh points define the ghost/halo points needed in many PDE problems.
 For each shared mesh point, appoint one process to be the owner of that mesh point.
 To describe this parallel mesh point layout, we use a `PetscSF` and call it the `pointSF`.

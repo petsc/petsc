@@ -17,10 +17,10 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
    Values:
 +  `PETSCSF_PATTERN_GENERAL`   - A general graph. One sets the graph with `PetscSFSetGraph()` and usually does not use this enum directly.
-.  `PETSCSF_PATTERN_ALLGATHER` - A graph that every rank gathers all roots from all ranks (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-.  `PETSCSF_PATTERN_GATHER`    - A graph that rank 0 gathers all roots from all ranks (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
--  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every rank gathers different roots from all ranks (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-                                 In an ALLTOALL graph, we assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
+.  `PETSCSF_PATTERN_ALLGATHER` - A graph that every MPI process gathers all roots from all MPI processes (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+.  `PETSCSF_PATTERN_GATHER`    - A graph that MPI rank 0 gathers all roots from all MPI processes (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
+-  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every MPI process gathers different roots from all MPI processes (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+                                 We assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
                                  the size of the communicator. This does not mean one can not communicate multiple data items between a pair of processes. One just needs to
                                  create a new MPI datatype for the multiple data items, e.g., by `MPI_Type_contiguous`.
    Level: beginner
@@ -44,7 +44,7 @@ typedef enum {
 
    Level: advanced
 
-.seealso: `PetscSF`, `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
+.seealso: `PetscSF`, `PetscSFWindowFlavorType`, `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_SYNC_FENCE,
@@ -64,7 +64,7 @@ PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
    Level: advanced
 
-.seealso: `PetscSF`, `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
+.seealso: `PetscSF`, `PetscSFWindowSyncType`, `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_FLAVOR_CREATE,
