@@ -222,7 +222,7 @@ static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, Mat
     PetscCall(MatProductSetType(B, MATPRODUCT_AtB));
     PetscCall(MatProductSetFromOptions(B));
     PetscCall(MatProductSymbolic(B));
-    PetscCall(MatSetOption(B, !PetscDefined(USE_COMPLEX) ? MAT_SYMMETRIC : MAT_HERMITIAN, PETSC_TRUE));
+    PetscCall(MatSetOption(B, MAT_HERMITIAN, PETSC_TRUE));
   }
   if (PetscDefined(USE_COMPLEX)) {
     PetscCall(MatDuplicate(Aa->A, MAT_COPY_VALUES, &conjugate));
@@ -330,7 +330,7 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
-  PetscCall(MatSetOption(*N, !PetscDefined(USE_COMPLEX) ? MAT_SYMMETRIC : MAT_HERMITIAN, PETSC_TRUE));
+  PetscCall(MatSetOption(*N, MAT_HERMITIAN, PETSC_TRUE));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
 #if defined(PETSC_HAVE_DEVICE)

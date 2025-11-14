@@ -2218,7 +2218,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       case 1:
         /* MatCreateSubMatrices() does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
         PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C));
-        PetscCall(MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE));
         break;
       default:
         PetscCall(MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C));
@@ -2382,7 +2381,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(MatCreateSubMatrix(a[0], is, cols, MAT_INITIAL_MATRIX, &A0)); /* [ A_00  A_01 ; A_10  A_11 ] submatrix from above */
                 PetscCall(ISDestroy(&cols));
                 PetscCall(ISDestroy(&is));
-                if (uaux) PetscCall(MatConvert(A0, MATSEQSBAIJ, MAT_INPLACE_MATRIX, &A0)); /* initial Pmat was MATSBAIJ, convert back to the same format since this submatrix is square */
+                if (uaux) { /* initial Pmat was MATSBAIJ, convert back to the same format since this submatrix is square */
+                  PetscCall(MatSetOption(A0, MAT_SYMMETRIC, PETSC_TRUE));
+                  PetscCall(MatConvert(A0, MATSEQSBAIJ, MAT_INPLACE_MATRIX, &A0));
+                }
                 PetscCall(ISEmbed(loc, data->is, PETSC_TRUE, h->is + 2));
                 PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, v[1].size(), v[1].data(), PETSC_USE_POINTER, &cols));
                 PetscCall(MatCreateSubMatrix(a[0], rows, cols, MAT_INITIAL_MATRIX, h->A)); /* A_12 submatrix from above */

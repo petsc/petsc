@@ -361,7 +361,7 @@ static PetscErrorCode MatSeqAIJKokkosGenerateHermitian_Private(Mat A, KokkosCsrM
   if (A->hermitian == PETSC_BOOL3_TRUE) {
     *csrmatH = akok->csrmat;
   } else {
-    // See if we already have a cached hermitian and its value is up to date
+    // See if we already have a cached Hermitian and its value is up to date
     if (T.numRows() == n && T.numCols() == m) {  // this indicates csrmatT had been generated before, otherwise T has 0 rows/cols after construction
       if (!akok->hermitian_updated) {            // if the value is out of date, update the cached version
         const auto &perm = akok->transpose_perm; // get the permutation array

@@ -761,7 +761,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C, Mat A, const MatFactorI
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert A to a SBAIJ matrix and apply Cholesky factorization from it */
-    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    if (!a->sbaijMat) {
+      A->symmetric = PETSC_BOOL3_TRUE;
+      if (!PetscDefined(USE_COMPLEX)) A->hermitian = PETSC_BOOL3_TRUE;
+      PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    }
     PetscCall(a->sbaijMat->ops->choleskyfactornumeric(C, a->sbaijMat, info));
     PetscCall(MatDestroy(&a->sbaijMat));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -1033,7 +1037,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
 
   if (bs > 1) {
-    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    if (!a->sbaijMat) {
+      A->symmetric = PETSC_BOOL3_TRUE;
+      if (!PetscDefined(USE_COMPLEX)) A->hermitian = PETSC_BOOL3_TRUE;
+      PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    }
     fact->ops->iccfactorsymbolic = MatICCFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatICCFactorSymbolic(fact, a->sbaijMat, perm, info));
@@ -1253,7 +1261,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
-    if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    if (!a->sbaijMat) {
+      A->symmetric = PETSC_BOOL3_TRUE;
+      if (!PetscDefined(USE_COMPLEX)) A->hermitian = PETSC_BOOL3_TRUE;
+      PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
+    }
     fact->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatCholeskyFactorSymbolic(fact, a->sbaijMat, perm, info));
