@@ -1419,7 +1419,7 @@ static PetscScalar ScalarImaginaryPart_Function(PetscScalar x)
 }
 
 /*@
-  VecImaginaryPart - Replaces a complex vector with its imginary part
+  VecImaginaryPart - Replaces a complex vector with its imaginary part
 
   Collective
 

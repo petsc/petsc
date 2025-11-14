@@ -123,14 +123,14 @@ int main(int argc, char **args)
     PetscBool ismpisbaij, isseqsbaij;
 
     PetscCall(PetscStrcmp(type[i], MATMPISBAIJ, &ismpisbaij));
-    PetscCall(PetscStrcmp(type[i], MATMPISBAIJ, &isseqsbaij));
+    PetscCall(PetscStrcmp(type[i], MATSEQSBAIJ, &isseqsbaij));
     if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
     PetscCall(MatConvert(C, type[i], MAT_INITIAL_MATRIX, &A));
     PetscCall(MatMultEqual(A, C, 10, &equal));
     PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Error in conversion from BAIJ to %s", type[i]);
     for (j = i + 1; j < ntypes; j++) {
       PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &ismpisbaij));
-      PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &isseqsbaij));
+      PetscCall(PetscStrcmp(type[j], MATSEQSBAIJ, &isseqsbaij));
       if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
       if (verbose > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " \n[%d] test conversion between %s and %s\n", rank, type[i], type[j]));
 
@@ -163,7 +163,7 @@ int main(int argc, char **args)
     if (size == 1) { /* size > 1 is not working yet! */
       j = (i + 1) % ntypes;
       PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &ismpisbaij));
-      PetscCall(PetscStrcmp(type[j], MATMPISBAIJ, &isseqsbaij));
+      PetscCall(PetscStrcmp(type[j], MATSEQSBAIJ, &isseqsbaij));
       if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
       /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
       PetscCall(MatConvert(A, type[j], MAT_INPLACE_MATRIX, &A));
