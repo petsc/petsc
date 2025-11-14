@@ -3525,12 +3525,12 @@ cdef class Mat(Object):
         ----------
         side
             If `None` returns a 2-tuple of vectors ``(right, left)``.
-            Otherwise it just return a left or right vector.
+            Otherwise it just returns a left or right vector.
 
         Notes
         -----
-        ``right`` vectors are vectors in the column space of the matrix.
-        ``left`` vectors are vectors in the row space of the matrix.
+        ``right`` is a vector that the matrix can be multiplied against.
+        ``left`` is a vector that the matrix-vector product can be stored in.
 
         See Also
         --------
