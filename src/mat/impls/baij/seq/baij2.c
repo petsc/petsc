@@ -3215,30 +3215,6 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A, NormType type, PetscReal *norm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatEqual_SeqBAIJ(Mat A, Mat B, PetscBool *flg)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
-
-  PetscFunctionBegin;
-  /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
-  if ((A->rmap->N != B->rmap->N) || (A->cmap->n != B->cmap->n) || (A->rmap->bs != B->rmap->bs) || (a->nz != b->nz)) {
-    *flg = PETSC_FALSE;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  /* if the a->i are the same */
-  PetscCall(PetscArraycmp(a->i, b->i, a->mbs + 1, flg));
-  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
-
-  /* if a->j are the same */
-  PetscCall(PetscArraycmp(a->j, b->j, a->nz, flg));
-  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
-
-  /* if a->a are the same */
-  PetscCall(PetscArraycmp(a->a, b->a, (a->nz) * (A->rmap->bs) * (B->rmap->bs), flg));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A, Vec v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;

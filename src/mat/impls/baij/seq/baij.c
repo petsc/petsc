@@ -1751,15 +1751,49 @@ static PetscErrorCode MatTranspose_SeqBAIJ(Mat A, MatReuse reuse, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatCompare_SeqBAIJ_Private(Mat A, Mat B, PetscReal tol, PetscBool *flg)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
+
+  PetscFunctionBegin;
+  /* If the matrix/block dimensions are not equal, or no of nonzeros or shift */
+  if (A->rmap->N != B->rmap->N || A->cmap->n != B->cmap->n || A->rmap->bs != B->rmap->bs || a->nz != b->nz) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  /* if the a->i are the same */
+  PetscCall(PetscArraycmp(a->i, b->i, a->mbs + 1, flg));
+  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
+
+  /* if a->j are the same */
+  PetscCall(PetscArraycmp(a->j, b->j, a->nz, flg));
+  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
+
+  if (tol == 0.0) PetscCall(PetscArraycmp(a->a, b->a, a->nz * A->rmap->bs * A->rmap->bs, flg)); /* if a->a are the same */
+  else {
+    *flg = PETSC_TRUE;
+    for (PetscInt i = 0; (i < a->nz * A->rmap->bs * A->rmap->bs) && *flg; ++i)
+      if (PetscAbsScalar(a->a[i] - b->a[i]) > tol) *flg = PETSC_FALSE;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatIsTranspose_SeqBAIJ(Mat A, Mat B, PetscReal tol, PetscBool *f)
 {
   Mat Btrans;
 
   PetscFunctionBegin;
-  *f = PETSC_FALSE;
   PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &Btrans));
-  PetscCall(MatEqual_SeqBAIJ(B, Btrans, f));
+  PetscCall(MatCompare_SeqBAIJ_Private(A, Btrans, tol, f));
   PetscCall(MatDestroy(&Btrans));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatEqual_SeqBAIJ(Mat A, Mat B, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscCall(MatCompare_SeqBAIJ_Private(A, B, 0.0, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
