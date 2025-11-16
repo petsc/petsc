@@ -1660,7 +1660,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp, PeOp PetscReal *rtol, PeOp PetscReal *a
 
   Use `PETSC_DETERMINE` to use the default value for the given `KSP`. The default value is the value when the object's type is set.
 
-  For `dtol` and `maxits` use `PETSC_UMLIMITED` to indicate there is no upper bound on these values
+  For `dtol` and `maxits` use `PETSC_UNLIMITED` to indicate there is no upper bound on these values
 
   See `KSPConvergedDefault()` for details how these parameters are used in the default convergence test.  See also `KSPSetConvergenceTest()`
   for setting user-defined stopping criteria.

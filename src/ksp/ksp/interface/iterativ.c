@@ -1487,7 +1487,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
   Notes:
   `KSPConvergedDefault()` reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
   Divergence is detected if rnorm > dtol * rnorm_0, or when failures are detected throughout the iteration.
-  By default, reaching the maximum number of iterations is considered divergence (i.e. KSP_DIVERGED_ITS).
+  By default, reaching the maximum number of iterations is considered divergence (i.e. `KSP_DIVERGED_ITS`).
   In order to have PETSc declaring convergence in such a case (i.e. `KSP_CONVERGED_ITS`), users can use `KSPConvergedDefaultSetConvergedMaxits()`
 
   where\:
@@ -1495,7 +1495,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 .     `abstol` - absolute tolerance.
 .     `dtol` - divergence tolerance,
 -     `rnorm_0` - the two norm of the right-hand side (or the preconditioned norm, depending on what was set with
-  `KSPSetNormType()`. When initial guess is non-zero you
+  `KSPSetNormType()`). When initial guess is non-zero you
   can call `KSPConvergedDefaultSetUIRNorm()` to use the norm of (b - A*(initial guess))
   as the starting point for relative norm convergence testing, that is as `rnorm_0`.
   Call `KSPConvergedDefaultSetUMIRNorm()` to use the minimum of the norm of (b - A*(initial guess)) and the norm of b as the starting point.
