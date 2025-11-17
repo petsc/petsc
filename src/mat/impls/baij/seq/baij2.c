@@ -3371,6 +3371,14 @@ PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A, Mat B, PetscReal fill,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatTransposeMatMultSymbolic_SeqBAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatTransposeMatMultSymbolic_SeqDense_SeqDense(A, B, 0.0, C));
+  C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqBAIJ_SeqDense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
@@ -3673,7 +3681,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscCheck(B->cmap->n == C->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT, B->cmap->n, C->cmap->n);
   b = bd->v;
   if (a->nonzerorowcnt != A->rmap->n) PetscCall(MatZeroEntries(C));
-  PetscCall(MatDenseGetArray(C, &c));
+  PetscCall(MatDenseGetArrayWrite(C, &c));
   switch (bs) {
   case 1:
     PetscCall(MatMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn));
@@ -3721,7 +3729,297 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
       if (!usecprow) z += bs;
     }
   }
-  PetscCall(MatDenseRestoreArray(C, &c));
+  PetscCall(MatDenseRestoreArrayWrite(C, &c));
+  PetscCall(PetscLogFlops((2.0 * a->nz * bs2 - bs * a->nonzerorowcnt) * cn));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  const MatScalar   *v;
+  PetscInt           mbs, i, *idx, *ii, j, n, k, *ridx = NULL;
+  PetscBool          usecprow = a->compressedrow.use;
+  const PetscScalar *bi;
+
+  PetscFunctionBegin;
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+  }
+
+  for (i = 0; i < mbs; i++) {
+    PetscInt brow = usecprow ? ridx[i] : i;
+
+    n = ii[1] - ii[0];
+    ii++;
+    PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);       /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v + 1 * n, 1 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    for (j = 0, bi = b + 1 * brow; j < n; j++) {
+      PetscScalar *zcol = c + 1 * (*idx++);
+
+      for (k = 0; k < cn; k++) zcol[0 + k * cm] += v[0] * bi[k * bm];
+      ++v;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  const MatScalar   *v;
+  PetscInt           mbs, i, *idx, *ii, j, n, k, *ridx = NULL;
+  PetscBool          usecprow = a->compressedrow.use;
+  const PetscScalar *bi;
+  PetscScalar        x1, x2;
+
+  PetscFunctionBegin;
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+  }
+
+  for (i = 0; i < mbs; i++) {
+    PetscInt brow = usecprow ? ridx[i] : i;
+
+    n = ii[1] - ii[0];
+    ii++;
+    PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);       /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v + 4 * n, 4 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    for (j = 0, bi = b + 2 * brow; j < n; j++) {
+      PetscScalar *zcol = c + 2 * (*idx++);
+
+      for (k = 0; k < cn; k++) {
+        x1 = bi[0 + k * bm];
+        x2 = bi[1 + k * bm];
+        zcol[0 + k * cm] += v[0] * x1 + v[1] * x2;
+        zcol[1 + k * cm] += v[2] * x1 + v[3] * x2;
+      }
+      v += 4;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  const MatScalar   *v;
+  PetscInt           mbs, i, *idx, *ii, j, n, k, *ridx = NULL;
+  PetscBool          usecprow = a->compressedrow.use;
+  const PetscScalar *bi;
+  PetscScalar        x1, x2, x3;
+
+  PetscFunctionBegin;
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+  }
+
+  for (i = 0; i < mbs; i++) {
+    PetscInt brow = usecprow ? ridx[i] : i;
+
+    n = ii[1] - ii[0];
+    ii++;
+    PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);       /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v + 9 * n, 9 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    for (j = 0, bi = b + 3 * brow; j < n; j++) {
+      PetscScalar *zcol = c + 3 * (*idx++);
+
+      for (k = 0; k < cn; k++) {
+        x1 = bi[0 + k * bm];
+        x2 = bi[1 + k * bm];
+        x3 = bi[2 + k * bm];
+        zcol[0 + k * cm] += v[0] * x1 + v[1] * x2 + v[2] * x3;
+        zcol[1 + k * cm] += v[3] * x1 + v[4] * x2 + v[5] * x3;
+        zcol[2 + k * cm] += v[6] * x1 + v[7] * x2 + v[8] * x3;
+      }
+      v += 9;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  const MatScalar   *v;
+  PetscInt           mbs, i, *idx, *ii, j, n, k, *ridx = NULL;
+  PetscBool          usecprow = a->compressedrow.use;
+  const PetscScalar *bi;
+  PetscScalar        x1, x2, x3, x4;
+
+  PetscFunctionBegin;
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+  }
+
+  for (i = 0; i < mbs; i++) {
+    PetscInt brow = usecprow ? ridx[i] : i;
+
+    n = ii[1] - ii[0];
+    ii++;
+    PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);         /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v + 16 * n, 16 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    for (j = 0, bi = b + 4 * brow; j < n; j++) {
+      PetscScalar *zcol = c + 4 * (*idx++);
+
+      for (k = 0; k < cn; k++) {
+        x1 = bi[0 + k * bm];
+        x2 = bi[1 + k * bm];
+        x3 = bi[2 + k * bm];
+        x4 = bi[3 + k * bm];
+        zcol[0 + k * cm] += v[0] * x1 + v[1] * x2 + v[2] * x3 + v[3] * x4;
+        zcol[1 + k * cm] += v[4] * x1 + v[5] * x2 + v[6] * x3 + v[7] * x4;
+        zcol[2 + k * cm] += v[8] * x1 + v[9] * x2 + v[10] * x3 + v[11] * x4;
+        zcol[3 + k * cm] += v[12] * x1 + v[13] * x2 + v[14] * x3 + v[15] * x4;
+      }
+      v += 16;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  const MatScalar   *v;
+  PetscInt           mbs, i, *idx, *ii, j, n, k, *ridx = NULL;
+  PetscBool          usecprow = a->compressedrow.use;
+  const PetscScalar *bi;
+  PetscScalar        x1, x2, x3, x4, x5;
+
+  PetscFunctionBegin;
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+  }
+
+  for (i = 0; i < mbs; i++) {
+    PetscInt brow = usecprow ? ridx[i] : i;
+
+    n = ii[1] - ii[0];
+    ii++;
+    PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);         /* Indices for the next row (assumes same size as this one) */
+    PetscPrefetchBlock(v + 25 * n, 25 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+    for (j = 0, bi = b + 5 * brow; j < n; j++) {
+      PetscScalar *zcol = c + 5 * (*idx++);
+
+      for (k = 0; k < cn; k++) {
+        x1 = bi[0 + k * bm];
+        x2 = bi[1 + k * bm];
+        x3 = bi[2 + k * bm];
+        x4 = bi[3 + k * bm];
+        x5 = bi[4 + k * bm];
+        zcol[0 + k * cm] += v[0] * x1 + v[1] * x2 + v[2] * x3 + v[3] * x4 + v[4] * x5;
+        zcol[1 + k * cm] += v[5] * x1 + v[6] * x2 + v[7] * x3 + v[8] * x4 + v[9] * x5;
+        zcol[2 + k * cm] += v[10] * x1 + v[11] * x2 + v[12] * x3 + v[13] * x4 + v[14] * x5;
+        zcol[3 + k * cm] += v[15] * x1 + v[16] * x2 + v[17] * x3 + v[18] * x4 + v[19] * x5;
+        zcol[4 + k * cm] += v[20] * x1 + v[21] * x2 + v[22] * x3 + v[23] * x4 + v[24] * x5;
+      }
+      v += 25;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
+{
+  Mat_SeqBAIJ     *a  = (Mat_SeqBAIJ *)A->data;
+  Mat_SeqDense    *bd = (Mat_SeqDense *)B->data;
+  Mat_SeqDense    *cd = (Mat_SeqDense *)C->data;
+  PetscInt         cm = cd->lda, cn = B->cmap->n, bm = bd->lda;
+  PetscInt         mbs, i, bs = A->rmap->bs, j, n, bs2 = a->bs2;
+  PetscBLASInt     bbs, bcn, bbm, bcm;
+  PetscScalar     *c, *b;
+  const MatScalar *v;
+  const PetscInt  *idx, *ii, *ridx = NULL;
+  PetscScalar      _DOne    = 1.0;
+  PetscBool        usecprow = a->compressedrow.use;
+
+  PetscFunctionBegin;
+  if (!cm || !cn) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(B->rmap->n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number rows in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT, A->rmap->n, B->rmap->n);
+  PetscCheck(A->cmap->n == C->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number rows in C %" PetscInt_FMT " not equal columns in A %" PetscInt_FMT, C->rmap->n, A->cmap->n);
+  PetscCheck(B->cmap->n == C->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT, B->cmap->n, C->cmap->n);
+  b = bd->v;
+  PetscCall(MatZeroEntries(C));
+  PetscCall(MatDenseGetArrayWrite(C, &c));
+  switch (bs) {
+  case 1:
+    PetscCall(MatTransposeMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn));
+    break;
+  case 2:
+    PetscCall(MatTransposeMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn));
+    break;
+  case 3:
+    PetscCall(MatTransposeMatMult_SeqBAIJ_3_Private(A, b, bm, c, cm, cn));
+    break;
+  case 4:
+    PetscCall(MatTransposeMatMult_SeqBAIJ_4_Private(A, b, bm, c, cm, cn));
+    break;
+  case 5:
+    PetscCall(MatTransposeMatMult_SeqBAIJ_5_Private(A, b, bm, c, cm, cn));
+    break;
+  default: /* block sizes larger than 5 by 5 are handled by BLAS */
+    PetscCall(PetscBLASIntCast(bs, &bbs));
+    PetscCall(PetscBLASIntCast(cn, &bcn));
+    PetscCall(PetscBLASIntCast(bm, &bbm));
+    PetscCall(PetscBLASIntCast(cm, &bcm));
+    idx = a->j;
+    v   = a->a;
+    if (usecprow) {
+      mbs  = a->compressedrow.nrows;
+      ii   = a->compressedrow.i;
+      ridx = a->compressedrow.rindex;
+    } else {
+      mbs = a->mbs;
+      ii  = a->i;
+    }
+    for (i = 0; i < mbs; i++) {
+      const PetscScalar *bi = b + bs * (usecprow ? ridx[i] : i);
+
+      n = ii[1] - ii[0];
+      ii++;
+      for (j = 0; j < n; j++) {
+        PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &bbs, &bcn, &bbs, &_DOne, v, &bbs, bi, &bbm, &_DOne, c + bs * (*idx++), &bcm));
+        v += bs2;
+      }
+    }
+  }
+  PetscCall(MatDenseRestoreArrayWrite(C, &c));
   PetscCall(PetscLogFlops((2.0 * a->nz * bs2 - bs * a->nonzerorowcnt) * cn));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

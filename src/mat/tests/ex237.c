@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   PetscInt    bs[10], N[8];
   char       *type[10];
   PetscMPIInt size;
-  PetscBool   flg, cuda, maij = PETSC_FALSE, check = PETSC_FALSE, trans = PETSC_FALSE, convert = PETSC_FALSE, mkl;
+  PetscBool   flg, cuda, maij = PETSC_FALSE, check = PETSC_FALSE, abt = PETSC_FALSE, atb = PETSC_FALSE, convert = PETSC_FALSE, mkl;
   char        file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
@@ -67,7 +67,8 @@ int main(int argc, char **argv)
     PetscCall(PetscStrallocpy(MATSEQAIJ, &type[0]));
   }
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check", &check, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-trans", &trans, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-ABt", &abt, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-AtB", &atb, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-convert_aij", &convert, NULL));
   for (PetscInt j = 0; j < nbs; ++j) {
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &viewer));
@@ -203,7 +204,8 @@ int main(int argc, char **argv)
       for (k = 0; k < nN; ++k) {
         MatType       Atype, Ctype;
         PetscInt      AM, AN, CM, CN, t;
-        PetscLogStage stage, tstage;
+        PetscBool     set = PETSC_FALSE;
+        PetscLogStage ab_stage, abt_stage, atb_stage;
         char          stage_s[256];
 
         PetscCall(MatCreateDense(PETSC_COMM_WORLD, bs[j] * m, PETSC_DECIDE, bs[j] * M, N[k], NULL, &C));
@@ -225,12 +227,16 @@ int main(int argc, char **argv)
         PetscCall(MatGetSize(C, &CM, &CN));
 
         if (!maij || N[k] > 1) {
-          PetscCall(PetscSNPrintf(stage_s, sizeof(stage_s), "type_%s-bs_%" PetscInt_FMT "-N_%02d", type[i], bs[j], (int)N[k]));
-          PetscCall(PetscLogStageRegister(stage_s, &stage));
+          PetscCall(PetscSNPrintf(stage_s, sizeof(stage_s), "ab_type_%s-bs_%" PetscInt_FMT "-N_%02d", type[i], bs[j], (int)N[k]));
+          PetscCall(PetscLogStageRegister(stage_s, &ab_stage));
         }
-        if (trans && N[k] > 1) {
-          PetscCall(PetscSNPrintf(stage_s, sizeof(stage_s), "trans_type_%s-bs_%" PetscInt_FMT "-N_%02d", type[i], bs[j], (int)N[k]));
-          PetscCall(PetscLogStageRegister(stage_s, &tstage));
+        if (abt && N[k] > 1) {
+          PetscCall(PetscSNPrintf(stage_s, sizeof(stage_s), "abt_type_%s-bs_%" PetscInt_FMT "-N_%02d", type[i], bs[j], (int)N[k]));
+          PetscCall(PetscLogStageRegister(stage_s, &abt_stage));
+        }
+        if (atb) {
+          PetscCall(PetscSNPrintf(stage_s, sizeof(stage_s), "atb_type_%s-bs_%" PetscInt_FMT "-N_%02d", type[i], bs[j], (int)N[k]));
+          PetscCall(PetscLogStageRegister(stage_s, &atb_stage));
         }
         /* A*B */
         if (N[k] > 1) {
@@ -245,7 +251,7 @@ int main(int argc, char **argv)
             if (!maij) {
               PetscCall(MatProductNumeric(D));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MatProductTypes[MATPRODUCT_AB], Atype, AM, AN, Ctype, CM, CN));
-              PetscCall(PetscLogStagePush(stage));
+              PetscCall(PetscLogStagePush(ab_stage));
               for (t = 0; t < trial; ++t) PetscCall(MatProductNumeric(D));
               PetscCall(PetscLogStagePop());
             } else {
@@ -264,7 +270,7 @@ int main(int argc, char **argv)
               PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, AM * N[k], PETSC_DECIDE, d_ptr, &cD));
               PetscCall(MatMult(E, cC, cD));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MATMAIJ, AM, AN, VECMPI, AM * N[k], 1));
-              PetscCall(PetscLogStagePush(stage));
+              PetscCall(PetscLogStagePush(ab_stage));
               for (t = 0; t < trial; ++t) PetscCall(MatMult(E, cC, cD));
               PetscCall(PetscLogStagePop());
               PetscCall(VecDestroy(&cD));
@@ -283,7 +289,7 @@ int main(int argc, char **argv)
             PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
             PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
             PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (COLUMN_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
-            PetscCall(PetscLogStagePush(stage));
+            PetscCall(PetscLogStagePush(ab_stage));
             for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
             PetscCall(PetscLogStagePop());
             PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
@@ -300,7 +306,7 @@ int main(int argc, char **argv)
           PetscCall(MatDenseGetColumnVecWrite(D, 0, &cD));
           PetscCall(MatMult(A, cC, cD));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
-          PetscCall(PetscLogStagePush(stage));
+          PetscCall(PetscLogStagePush(ab_stage));
           for (t = 0; t < trial; ++t) PetscCall(MatMult(A, cC, cD));
           PetscCall(PetscLogStagePop());
           PetscCall(MatDenseRestoreColumnVecRead(C, 0, &cC));
@@ -313,7 +319,7 @@ int main(int argc, char **argv)
           PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mv: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
           PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
-          PetscCall(PetscLogStagePush(stage));
+          PetscCall(PetscLogStagePush(ab_stage));
           for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
           PetscCall(PetscLogStagePop());
           PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
@@ -332,7 +338,7 @@ int main(int argc, char **argv)
 
         /* MKL implementation seems buggy for ABt */
         /* A*Bt */
-        if (!mkl && trans && N[k] > 1) {
+        if (!mkl && abt && N[k] > 1) {
           PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATMPIAIJ, ""));
           if (flg) {
             PetscCall(MatTranspose(C, MAT_INPLACE_MATRIX, &C));
@@ -344,7 +350,7 @@ int main(int argc, char **argv)
               PetscCall(MatProductSymbolic(D));
               PetscCall(MatProductNumeric(D));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and Bt %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MatProductTypes[MATPRODUCT_ABt], Atype, AM, AN, Ctype, CM, CN));
-              PetscCall(PetscLogStagePush(tstage));
+              PetscCall(PetscLogStagePush(abt_stage));
               for (t = 0; t < trial; ++t) PetscCall(MatProductNumeric(D));
               PetscCall(PetscLogStagePop());
             } else {
@@ -357,7 +363,7 @@ int main(int argc, char **argv)
               PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (ROW_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
               PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
-              PetscCall(PetscLogStagePush(stage));
+              PetscCall(PetscLogStagePush(ab_stage));
               for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
               PetscCall(PetscLogStagePop());
               PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
@@ -366,7 +372,7 @@ int main(int argc, char **argv)
           }
         }
 
-        if (!mkl && trans && N[k] > 1 && flg && check) {
+        if (!mkl && abt && N[k] > 1 && flg && check) {
           PetscCall(MatMatTransposeMultEqual(A, C, D, 10, &flg));
           if (!flg) {
             MatType Dtype;
@@ -374,6 +380,46 @@ int main(int argc, char **argv)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with A %s%s, C %s, D %s, Nk %" PetscInt_FMT "\n", Atype, mkl ? "mkl" : "", Ctype, Dtype, N[k]));
           }
         }
+
+        /* At*B */
+        if (!mkl && atb) {
+          PetscCall(MatIsSymmetricKnown(A, &set, &flg));
+          set = (PetscBool)(set && flg);
+          PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_FALSE));
+          if (N[k] > 1) {
+            PetscCall(MatProductCreateWithMat(A, C, NULL, D));
+            PetscCall(MatProductSetType(D, MATPRODUCT_AtB));
+            PetscCall(MatProductSetFromOptions(D));
+            PetscCall(MatProductSymbolic(D));
+            PetscCall(MatProductNumeric(D));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with At %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", MatProductTypes[MATPRODUCT_AtB], Atype, AM, AN, Ctype, CM, CN));
+            PetscCall(PetscLogStagePush(atb_stage));
+            for (t = 0; t < trial; ++t) PetscCall(MatProductNumeric(D));
+            PetscCall(PetscLogStagePop());
+          } else {
+            Vec cC, cD;
+
+            PetscCall(MatDenseGetColumnVecRead(C, 0, &cC));
+            PetscCall(MatDenseGetColumnVecWrite(D, 0, &cD));
+            PetscCall(MatMultTranspose(A, cC, cD));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMultTranspose: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
+            PetscCall(PetscLogStagePush(atb_stage));
+            for (t = 0; t < trial; ++t) PetscCall(MatMultTranspose(A, cC, cD));
+            PetscCall(PetscLogStagePop());
+            PetscCall(MatDenseRestoreColumnVecRead(C, 0, &cC));
+            PetscCall(MatDenseRestoreColumnVecWrite(D, 0, &cD));
+          }
+        }
+
+        if (!mkl && atb && N[k] > 1 && check) {
+          PetscCall(MatTransposeMatMultEqual(A, C, D, 10, &flg));
+          if (!flg) {
+            MatType Dtype;
+            PetscCall(MatGetType(D, &Dtype));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with A %s%s, C %s, D %s, Nk %" PetscInt_FMT "\n", Atype, mkl ? "mkl" : "", Ctype, Dtype, N[k]));
+          }
+        }
+        if (set) PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
         PetscCall(MatDestroy(&C));
         PetscCall(MatDestroy(&D));
       }
@@ -402,24 +448,27 @@ int main(int argc, char **argv)
    testset:
      nsize: 1
      filter: sed "/Benchmarking/d"
-     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -bs 1,2,3 -N 1,2,18 -check -trans -convert_aij {{false true}shared output}
+     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -bs 1,2,3 -N 1,2,18 -check -ABt -convert_aij {{false true}shared output}
+     output_file: output/empty.out
      test:
        suffix: basic
        args: -type aij,sbaij,baij
-       output_file: output/empty.out
      test:
        suffix: maij
        args: -type aij,maij
-       output_file: output/empty.out
      test:
        suffix: cuda
        requires: cuda
        args: -type aij,aijcusparse
-       output_file: output/empty.out
      test:
        suffix: mkl
        requires: mkl_sparse_optimize
        args: -type aij,aijmkl,baijmkl,sbaijmkl
-       output_file: output/empty.out
+
+   test:
+     nsize: 1
+     filter: sed "/Benchmarking/d"
+     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -bs 1,2,3,4,5,6 -N 1,8 -check -AtB -type baij
+     output_file: output/empty.out
 
 TEST*/
