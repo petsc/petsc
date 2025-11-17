@@ -38,7 +38,7 @@ SNES Object: 7 MPI processes
       PC Object: (fas_coarse_) 7 MPI processes
         type: jacobi
           type DIAGONAL
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 7 MPI processes
           type: mpiaij
           rows=213, cols=213
@@ -69,7 +69,7 @@ SNES Object: 7 MPI processes
       PC Object: (fas_levels_1_) 7 MPI processes
         type: jacobi
           type DIAGONAL
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 7 MPI processes
           type: mpiaij
           rows=513, cols=513
@@ -101,7 +101,7 @@ SNES Object: 7 MPI processes
       PC Object: (fas_levels_2_) 7 MPI processes
         type: jacobi
           type DIAGONAL
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 7 MPI processes
           type: mpiaij
           rows=1485, cols=1485

@@ -48,7 +48,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=162, cols=162, bs=6
@@ -69,7 +69,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=3000, cols=3000, bs=3
@@ -78,7 +78,7 @@ PC Object: 8 MPI processes
           has attached near null space
           using I-node (on process 0) routines: found 125 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: mpiaij
     rows=3000, cols=3000, bs=3
@@ -136,7 +136,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=162, cols=162, bs=6
@@ -167,7 +167,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=3000, cols=3000, bs=3
@@ -176,7 +176,7 @@ PC Object: 8 MPI processes
           has attached near null space
           using I-node (on process 0) routines: found 125 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: mpiaij
     rows=3000, cols=3000, bs=3
@@ -234,7 +234,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=162, cols=162, bs=6
@@ -265,7 +265,7 @@ PC Object: 8 MPI processes
     PC Object: (mg_levels_1_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=3000, cols=3000, bs=3
@@ -274,7 +274,7 @@ PC Object: 8 MPI processes
           has attached near null space
           using I-node (on process 0) routines: found 125 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: mpiaij
     rows=3000, cols=3000, bs=3

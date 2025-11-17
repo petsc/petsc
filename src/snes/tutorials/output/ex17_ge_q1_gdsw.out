@@ -62,21 +62,21 @@ PC Object: 5 MPI processes
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_redundant_) 1 MPI process
                   type: seqsbaij
                   rows=50, cols=50
                   package used to perform factorization: petsc
                   total: nonzeros=1275, allocated nonzeros=1275
                       block size is 1
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=50, cols=50
             total: nonzeros=2500, allocated nonzeros=2500
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 10 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 5 MPI processes
         type: mpiaij
         rows=50, cols=50
@@ -124,21 +124,21 @@ PC Object: 5 MPI processes
             using Manteuffel shift [POSITIVE_DEFINITE]
             matrix ordering: natural
             factor fill ratio given 1., needed 1.
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_levels_1_sub_) 1 MPI process
                   type: seqsbaij
                   rows=28, cols=28
                   package used to perform factorization: petsc
                   total: nonzeros=226, allocated nonzeros=226
                       block size is 1
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (mg_levels_1_sub_) 1 MPI process
             type: seqaij
             rows=28, cols=28
             total: nonzeros=424, allocated nonzeros=424
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 10 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 5 MPI processes
         type: mpiaij
         rows=252, cols=252
@@ -147,7 +147,7 @@ PC Object: 5 MPI processes
           has attached near null space
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 5 MPI processes
     type: mpiaij
     rows=252, cols=252

@@ -22,7 +22,7 @@ PC Object: 1 MPI process
       type: svd
         All singular values smaller than 1e-12 treated as zero
         Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=121, cols=121
@@ -53,7 +53,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=441, cols=441
@@ -85,7 +85,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_2_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=1681, cols=1681
@@ -117,7 +117,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_3_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=6561, cols=6561
@@ -126,7 +126,7 @@ PC Object: 1 MPI process
           has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=6561, cols=6561

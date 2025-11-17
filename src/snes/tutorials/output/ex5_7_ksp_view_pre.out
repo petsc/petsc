@@ -23,7 +23,7 @@ PC Object: 1 MPI process
         Complexity:    grid = 0.    operator = 0.
         Per-level complexity: op = operator, int = interpolation
             #equations  | #active PEs | avg nnz/row op | avg nnz/row int
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=16, cols=16
@@ -82,21 +82,21 @@ PC Object: 1 MPI process
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_sub_) 1 MPI process
                   type: seqaij
                   rows=3, cols=3
                   package used to perform factorization: petsc
                   total: nonzeros=9, allocated nonzeros=9
                     using I-node routines: found 1 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=3, cols=3
             total: nonzeros=9, allocated nonzeros=9
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 1 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaij
         rows=3, cols=3
@@ -116,7 +116,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=16, cols=16
@@ -124,7 +124,7 @@ PC Object: 1 MPI process
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=16, cols=16
@@ -183,21 +183,21 @@ PC Object: 1 MPI process
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_sub_) 1 MPI process
                   type: seqaij
                   rows=3, cols=3
                   package used to perform factorization: petsc
                   total: nonzeros=9, allocated nonzeros=9
                     using I-node routines: found 1 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=3, cols=3
             total: nonzeros=9, allocated nonzeros=9
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 1 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaij
         rows=3, cols=3
@@ -227,7 +227,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=16, cols=16
@@ -235,7 +235,7 @@ PC Object: 1 MPI process
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=16, cols=16
@@ -294,21 +294,21 @@ PC Object: 1 MPI process
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_sub_) 1 MPI process
                   type: seqaij
                   rows=3, cols=3
                   package used to perform factorization: petsc
                   total: nonzeros=9, allocated nonzeros=9
                     using I-node routines: found 1 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=3, cols=3
             total: nonzeros=9, allocated nonzeros=9
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 1 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaij
         rows=3, cols=3
@@ -338,7 +338,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=16, cols=16
@@ -346,7 +346,7 @@ PC Object: 1 MPI process
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=16, cols=16

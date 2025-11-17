@@ -36,7 +36,7 @@ PC Object: (rap_) 8 MPI processes
     PC Object: (rap_mg_coarse_) 8 MPI processes
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaijcusparse
         rows=114, cols=114, bs=6
@@ -54,7 +54,7 @@ PC Object: (rap_) 8 MPI processes
     PC Object: (rap_mg_levels_1_) 8 MPI processes
       type: jacobi
         type ROWL1 (l1-norm off-diagonal scaling 5.000000e-01)
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 8 MPI processes
         type: mpiaijcusparse
         rows=1536, cols=1536, bs=3
@@ -63,7 +63,7 @@ PC Object: (rap_) 8 MPI processes
           has attached near null space
           not using I-node (on process 0) routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: mpiaijcusparse
     rows=1536, cols=1536, bs=3

@@ -37,7 +37,7 @@ KSP Object: 2 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: none
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: (mpi_linear_solver_server_) 2 MPI processes
     type: mpiaij
     rows=10, cols=10
@@ -55,7 +55,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Size of MPI communicator used for MPI parallel KSP solve 2
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
@@ -102,7 +102,7 @@ KSP Object: 2 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: none
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: (mpi_linear_solver_server_) 2 MPI processes
     type: mpiaij
     rows=10, cols=10
@@ -120,7 +120,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Size of MPI communicator used for MPI parallel KSP solve 2
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10

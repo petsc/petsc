@@ -41,21 +41,21 @@ Tao Object: 3 MPI processes
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
-            Factored matrix follows:
+            Factored matrix:
               Mat Object: (sub_) 1 MPI process
                 type: seqaij
                 rows=32, cols=32
                 package used to perform factorization: petsc
                 total: nonzeros=220, allocated nonzeros=220
                   not using I-node routines
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (sub_) 1 MPI process
           type: seqaij
           rows=32, cols=32
           total: nonzeros=220, allocated nonzeros=220
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 3 MPI processes
       type: mpiaij
       rows=96, cols=96

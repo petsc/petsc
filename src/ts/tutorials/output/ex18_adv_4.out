@@ -54,7 +54,7 @@ TS Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1, needed 1
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: 1 MPI process
               type: seqaij
               rows=27, cols=27
@@ -62,7 +62,7 @@ TS Object: 1 MPI process
               total: nonzeros=81, allocated nonzeros=81
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 9 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=27, cols=27

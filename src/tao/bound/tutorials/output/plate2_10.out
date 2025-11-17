@@ -80,7 +80,7 @@ Tao Object: 1 MPI process
         Rescale history: 1
         Rescale params: alpha=1., beta=0.5, rho=1.
         Rescale convex factor: theta=0.125
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=40, cols=40

@@ -26,14 +26,14 @@ PC Object: 1 MPI process
       tolerance for zero pivot 2.22045e-14
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
-        Factored matrix follows:
+        Factored matrix:
           Mat Object: (fieldsplit_a_) 1 MPI process
             type: seqaij
             rows=5, cols=5
             package used to perform factorization: petsc
             total: nonzeros=5, allocated nonzeros=5
               not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: (fieldsplit_a_) 1 MPI process
       type: seqaij
       rows=5, cols=5
@@ -54,14 +54,14 @@ PC Object: 1 MPI process
       tolerance for zero pivot 2.22045e-14
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
-        Factored matrix follows:
+        Factored matrix:
           Mat Object: (fieldsplit_b_) 1 MPI process
             type: seqaij
             rows=3, cols=3
             package used to perform factorization: petsc
             total: nonzeros=3, allocated nonzeros=3
               not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: (fieldsplit_b_) 1 MPI process
       type: seqaij
       rows=3, cols=3
@@ -82,21 +82,21 @@ PC Object: 1 MPI process
       tolerance for zero pivot 2.22045e-14
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
-        Factored matrix follows:
+        Factored matrix:
           Mat Object: (fieldsplit_c_) 1 MPI process
             type: seqaij
             rows=4, cols=4
             package used to perform factorization: petsc
             total: nonzeros=4, allocated nonzeros=4
               not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: (fieldsplit_c_) 1 MPI process
       type: seqaij
       rows=4, cols=4
       total: nonzeros=4, allocated nonzeros=4
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: nest
     rows=12, cols=12

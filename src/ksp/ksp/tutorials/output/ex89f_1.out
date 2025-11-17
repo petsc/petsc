@@ -31,21 +31,21 @@ PC Object: 3 MPI processes
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (sub_) 1 MPI process
               type: seqaij
               rows=7, cols=7
               package used to perform factorization: petsc
               total: nonzeros=18, allocated nonzeros=18
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=7, cols=7
         total: nonzeros=18, allocated nonzeros=18
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: (mpi_linear_solver_server_) 3 MPI processes
     type: mpiaij
     rows=20, cols=20
@@ -63,7 +63,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Size of MPI communicator used for MPI parallel KSP solve 3
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
@@ -101,21 +101,21 @@ PC Object: 3 MPI processes
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (sub_) 1 MPI process
               type: seqaij
               rows=7, cols=7
               package used to perform factorization: petsc
               total: nonzeros=18, allocated nonzeros=18
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=7, cols=7
         total: nonzeros=18, allocated nonzeros=18
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: (mpi_linear_solver_server_) 3 MPI processes
     type: mpiaij
     rows=20, cols=20
@@ -133,7 +133,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Size of MPI communicator used for MPI parallel KSP solve 3
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20

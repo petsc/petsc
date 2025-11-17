@@ -85,14 +85,14 @@ SNES Object: 7 MPI processes
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.7887
-            Factored matrix follows:
+            Factored matrix:
               Mat Object: (pc_bddc_dirichlet_) 1 MPI process
                 type: seqaij
                 rows=195, cols=195
                 package used to perform factorization: petsc
                 total: nonzeros=4495, allocated nonzeros=4495
                   not using I-node routines
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_bddc_dirichlet_) 1 MPI process
           type: seqaij
           rows=195, cols=195
@@ -112,14 +112,14 @@ SNES Object: 7 MPI processes
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.77676
-            Factored matrix follows:
+            Factored matrix:
               Mat Object: (pc_bddc_neumann_) 1 MPI process
                 type: seqaij
                 rows=225, cols=225
                 package used to perform factorization: petsc
                 total: nonzeros=5627, allocated nonzeros=5627
                   not using I-node routines
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_bddc_neumann_) 1 MPI process
           type: seqaij
           rows=225, cols=225
@@ -148,28 +148,28 @@ SNES Object: 7 MPI processes
               tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.35955
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (pc_bddc_coarse_redundant_) 1 MPI process
                     type: seqaij
                     rows=21, cols=21
                     package used to perform factorization: petsc
                     total: nonzeros=363, allocated nonzeros=363
                       using I-node routines: found 10 nodes, limit used is 5
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqaij
               rows=21, cols=21
               total: nonzeros=267, allocated nonzeros=267
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 16 nodes, limit used is 5
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_bddc_coarse_) 7 MPI processes
           type: mpiaij
           rows=21, cols=21
           total: nonzeros=267, allocated nonzeros=267
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 1 nodes, limit used is 5
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 7 MPI processes
       type: is
       rows=1485, cols=1485

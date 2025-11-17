@@ -46,7 +46,7 @@ TS Object: 1 MPI process
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI process
       type: svd
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=35, cols=35

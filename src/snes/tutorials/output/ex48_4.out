@@ -96,21 +96,21 @@ SNES Object: 6 MPI processes
               using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
               matrix ordering: nd
               factor fill ratio given 5., needed 1.41667
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (mg_coarse_redundant_) 1 MPI process
                     type: seqaij
                     rows=64, cols=64, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=3264, allocated nonzeros=3264
                       using I-node routines: found 16 nodes, limit used is 5
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqaij
               rows=64, cols=64, bs=2
               total: nonzeros=2304, allocated nonzeros=2304
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 16 nodes, limit used is 5
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpiaij
           rows=64, cols=64, bs=2
@@ -142,21 +142,21 @@ SNES Object: 6 MPI processes
               tolerance for zero pivot 2.22045e-14
               matrix ordering: natural
               factor fill ratio given 5., needed 1.32237
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (mg_levels_1_sub_) 1 MPI process
                     type: seqsbaij
                     rows=48, cols=48, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=804, allocated nonzeros=804
                         block size is 2
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_1_sub_) 1 MPI process
               type: seqsbaij
               rows=48, cols=48, bs=2
               total: nonzeros=608, allocated nonzeros=608
               total number of mallocs used during MatSetValues calls=0
                   block size is 2
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=256, cols=256, bs=2
@@ -191,21 +191,21 @@ SNES Object: 6 MPI processes
               using Manteuffel shift [POSITIVE_DEFINITE]
               matrix ordering: natural
               factor fill ratio given 1., needed 1.00133
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (mg_levels_2_sub_) 1 MPI process
                     type: seqsbaij
                     rows=192, cols=192, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=3012, allocated nonzeros=3012
                         block size is 2
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_2_sub_) 1 MPI process
               type: seqsbaij
               rows=192, cols=192, bs=2
               total: nonzeros=3008, allocated nonzeros=3008
               total number of mallocs used during MatSetValues calls=0
                   block size is 2
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=1024, cols=1024, bs=2
@@ -240,28 +240,28 @@ SNES Object: 6 MPI processes
               using Manteuffel shift [POSITIVE_DEFINITE]
               matrix ordering: natural
               factor fill ratio given 1., needed 1.00054
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (mg_levels_3_sub_) 1 MPI process
                     type: seqsbaij
                     rows=384, cols=384, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=7428, allocated nonzeros=7428
                         block size is 2
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_3_sub_) 1 MPI process
               type: seqsbaij
               rows=384, cols=384, bs=2
               total: nonzeros=7424, allocated nonzeros=7424
               total number of mallocs used during MatSetValues calls=0
                   block size is 2
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij
           rows=2048, cols=2048, bs=2
           total: nonzeros=48128, allocated nonzeros=48128
           total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 6 MPI processes
       type: mpisbaij
       rows=2048, cols=2048, bs=2

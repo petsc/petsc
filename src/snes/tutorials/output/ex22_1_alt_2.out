@@ -45,7 +45,7 @@ SNES Object: 2 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (mg_coarse_) 2 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 2 MPI processes
           type: mffd
           rows=21, cols=21
@@ -64,7 +64,7 @@ SNES Object: 2 MPI processes
         not checking for convergence
       PC Object: (mg_levels_1_) 2 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 2 MPI processes
           type: mffd
           rows=39, cols=39
@@ -84,7 +84,7 @@ SNES Object: 2 MPI processes
         not checking for convergence
       PC Object: (mg_levels_2_) 2 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 2 MPI processes
           type: mffd
           rows=75, cols=75
@@ -93,7 +93,7 @@ SNES Object: 2 MPI processes
               Using wp compute h routine
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 2 MPI processes
       type: mffd
       rows=75, cols=75

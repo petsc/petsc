@@ -30,7 +30,7 @@ PC Object: 1 MPI process
     tolerance for zero pivot 2.22045e-14
     matrix ordering: nd
     factor fill ratio given 0., needed 0.
-      Factored matrix follows:
+      Factored matrix:
         Mat Object: 1 MPI process
           type: superlu_dist
           rows=12, cols=12
@@ -47,7 +47,7 @@ PC Object: 1 MPI process
               Column permutation METIS_AT_PLUS_A
               Parallel symbolic factorization FALSE 
               Repeated factorization SamePattern
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=12, cols=12

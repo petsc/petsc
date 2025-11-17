@@ -105,21 +105,21 @@ SNES Object: 4 MPI processes
               using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
               matrix ordering: nd
               factor fill ratio given 5., needed 1.
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (mg_coarse_redundant_) 1 MPI process
                     type: seqaij
                     rows=16, cols=16, bs=4
                     package used to perform factorization: petsc
                     total: nonzeros=256, allocated nonzeros=256
                       using I-node routines: found 4 nodes, limit used is 5
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqaij
               rows=16, cols=16, bs=4
               total: nonzeros=256, allocated nonzeros=256
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 4 nodes, limit used is 5
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=16, cols=16, bs=4
@@ -137,7 +137,7 @@ SNES Object: 4 MPI processes
       PC Object: (mg_levels_1_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=88, cols=88, bs=4
@@ -156,7 +156,7 @@ SNES Object: 4 MPI processes
       PC Object: (mg_levels_2_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=764, cols=764, bs=4
@@ -175,7 +175,7 @@ SNES Object: 4 MPI processes
       PC Object: (mg_levels_3_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=7156, cols=7156, bs=4
@@ -194,14 +194,14 @@ SNES Object: 4 MPI processes
       PC Object: (mg_levels_4_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=37636, cols=37636, bs=4
           total: nonzeros=746512, allocated nonzeros=746512
           total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: mpiaij
       rows=37636, cols=37636, bs=4

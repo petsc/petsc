@@ -21,7 +21,7 @@ PC Object: (fc_) 2 MPI processes
   PC has not been set up so information may be incomplete
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
-  linear system matrix followed by preconditioner matrix:
+  linear system matrix, followed by the matrix used to construct the preconditioner:
   Mat Object: 2 MPI processes
     type: nest
     rows=3070, cols=3070

@@ -26,14 +26,14 @@ PC Object: 1 MPI process
     tolerance for zero pivot 2.22045e-14
     matrix ordering: natural
     factor fill ratio given 1., needed 1.
-      Factored matrix follows:
+      Factored matrix:
         Mat Object: 1 MPI process
           type: seqaijcusparse
           rows=181, cols=181
           package used to perform factorization: cusparse
           total: nonzeros=2245, allocated nonzeros=2245
             not using I-node routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaijcusparse
     rows=181, cols=181

@@ -195,7 +195,7 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     /* Cannot take advantage of osm->same_subdomain_solvers without a global numbering of subdomains. */
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Subdomain solver info is as follows:\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Subdomain solver info:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  - - - - - - - - - - - - - - - - - -\n"));
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */

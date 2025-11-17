@@ -8,7 +8,7 @@ KSP Object: 2 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: none
-  linear system matrix followed by preconditioner matrix:
+  linear system matrix, followed by the matrix used to construct the preconditioner:
   Mat Object: A 2 MPI processes
     type: mpiaij
     rows=4, cols=4

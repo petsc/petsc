@@ -453,7 +453,7 @@ SNES Object: 1 MPI process
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.15761
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: 1 MPI process
                   type: seqaij
                   rows=30, cols=30
@@ -488,7 +488,7 @@ SNES Object: 1 MPI process
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.2439
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: 1 MPI process
                   type: seqaij
                   rows=9, cols=9
@@ -613,7 +613,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.15761
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: 1 MPI process
                   type: seqaij
                   rows=30, cols=30
@@ -654,7 +654,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.2439
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: 1 MPI process
                   type: seqaij
                   rows=9, cols=9
@@ -697,7 +697,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 1.15761
-                      Factored matrix follows:
+                      Factored matrix:
                         Mat Object: 1 MPI process
                           type: seqaij
                           rows=30, cols=30

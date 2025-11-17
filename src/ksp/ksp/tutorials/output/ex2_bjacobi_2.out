@@ -27,14 +27,14 @@ PC Object: 4 MPI processes
   PC Object: (sub_) 2 MPI processes
     type: jacobi
       type DIAGONAL
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: (sub_) 2 MPI processes
       type: mpiaij
       rows=28, cols=28
       total: nonzeros=118, allocated nonzeros=154
       total number of mallocs used during MatSetValues calls=0
         not using I-node (on process 0) routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 4 MPI processes
     type: mpiaij
     rows=56, cols=56

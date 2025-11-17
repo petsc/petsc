@@ -10033,7 +10033,7 @@ SNES Object: 1 MPI process
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI process
         type: jacobi
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=213, cols=213
@@ -10065,7 +10065,7 @@ SNES Object: 1 MPI process
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI process
         type: jacobi
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=511, cols=511
@@ -10098,7 +10098,7 @@ SNES Object: 1 MPI process
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 1 MPI process
         type: jacobi
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=1471, cols=1471

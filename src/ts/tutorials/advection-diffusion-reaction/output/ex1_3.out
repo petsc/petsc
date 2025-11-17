@@ -44,13 +44,13 @@ TS Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: external
         factor fill ratio given 0., needed 0.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: 1 MPI process
               type: seqdense
               rows=3, cols=3
               package used to perform factorization: petsc
               total: nonzeros=9, allocated nonzeros=9
-      linear system matrix followed by preconditioner matrix:
+      linear system matrix, followed by the matrix used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: mffd
         rows=3, cols=3

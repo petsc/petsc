@@ -14,7 +14,7 @@ PC Object: (fieldsplit_1_) 4 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: 4 MPI processes
       type: none
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 4 MPI processes
         type: shell
         rows=1681, cols=1681
@@ -35,7 +35,7 @@ PC Object: (fieldsplit_1_) 4 MPI processes
             PC Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
               type: shell
                 no name
-              linear system matrix followed by preconditioner matrix:
+              linear system matrix, followed by the matrix used to construct the preconditioner:
               Mat Object: 4 MPI processes
                 type: shell
               Mat Object: (fieldsplit_1_) 4 MPI processes
@@ -69,11 +69,11 @@ PC Object: (fieldsplit_1_) 4 MPI processes
                         tolerance for zero pivot 2.22045e-14
                         matrix ordering: external
                         factor fill ratio given 0., needed 0.
-                          Factored matrix follows:
-                      linear system matrix = precond matrix:
+                          Factored matrix:
+                      linear system matrix, which is also used to construct the preconditioner:
                       Mat Object: 1 MPI process
                         type: nest
-                  linear system matrix = precond matrix:
+                  linear system matrix, which is also used to construct the preconditioner:
                   Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
                     type: schurcomplement
                       Schur complement A11 - A10 inv(A00) A01
@@ -84,7 +84,7 @@ PC Object: (fieldsplit_1_) 4 MPI processes
                       KSP solver for A00 block viewable with the additional option -fieldsplit_0_pc_hpddm_levels_1_sub_ksp_view
                       A01
                         Mat Object: 1 MPI process
-              linear system matrix followed by preconditioner matrix:
+              linear system matrix, followed by the matrix used to construct the preconditioner:
               Mat Object: 4 MPI processes
                 type: shell
               Mat Object: (fieldsplit_1_) 4 MPI processes
@@ -118,13 +118,13 @@ PC Object: (fieldsplit_1_) 4 MPI processes
                       tolerance for zero pivot 2.22045e-14
                       matrix ordering: natural
                       factor fill ratio given 5., needed 1.1
-                        Factored matrix follows:
+                        Factored matrix:
                           Mat Object: (fieldsplit_1_pc_hpddm_coarse_redundant_) 1 MPI process
-                    linear system matrix = precond matrix:
+                    linear system matrix, which is also used to construct the preconditioner:
                     Mat Object: 1 MPI process
-                linear system matrix = precond matrix:
+                linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (fieldsplit_1_) 4 MPI processes
               type: schurcomplement
               rows=1681, cols=1681
@@ -137,7 +137,7 @@ PC Object: (fieldsplit_1_) 4 MPI processes
                 A01
                   Mat Object: 4 MPI processes
     ---------------------------------
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: (fieldsplit_1_) 4 MPI processes
     type: schurcomplement
     rows=1681, cols=1681

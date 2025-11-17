@@ -62,7 +62,7 @@ arguments to specify that our preconditioner should be used:
   PC Object: 1 MPI process
     type: python
       Python: pc.myJacobi
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: python
       rows=256, cols=256

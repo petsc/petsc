@@ -107,21 +107,21 @@ PC Object: 8 MPI processes
                 using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.
-                  Factored matrix follows:
+                  Factored matrix:
                     Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                       type: seqaij
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
                         using I-node routines: found 4 nodes, limit used is 5
-              linear system matrix = precond matrix:
+              linear system matrix, which is also used to construct the preconditioner:
               Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                 type: seqaij
                 rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 4 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=18, cols=18, bs=6
@@ -141,7 +141,7 @@ PC Object: 8 MPI processes
         PC Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: jacobi
             type DIAGONAL
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (pc_bddc_dirichlet_) 1 MPI process
             type: seqaij
             rows=144, cols=144, bs=3
@@ -150,7 +150,7 @@ PC Object: 8 MPI processes
               has attached near null space
               using I-node routines: found 48 nodes, limit used is 5
       Up solver (post-smoother) same as down solver (pre-smoother)
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_dirichlet_) 1 MPI process
         type: seqaij
         rows=144, cols=144, bs=3
@@ -209,21 +209,21 @@ PC Object: 8 MPI processes
                 using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.
-                  Factored matrix follows:
+                  Factored matrix:
                     Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                       type: seqaij
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
                         using I-node routines: found 4 nodes, limit used is 5
-              linear system matrix = precond matrix:
+              linear system matrix, which is also used to construct the preconditioner:
               Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                 type: seqaij
                 rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 4 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=18, cols=18, bs=6
@@ -243,7 +243,7 @@ PC Object: 8 MPI processes
         PC Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: jacobi
             type DIAGONAL
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (pc_bddc_neumann_) 1 MPI process
             type: seqaij
             rows=279, cols=279, bs=3
@@ -252,7 +252,7 @@ PC Object: 8 MPI processes
               has attached near null space
               using I-node routines: found 93 nodes, limit used is 5
       Up solver (post-smoother) same as down solver (pre-smoother)
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_neumann_) 1 MPI process
         type: seqaij
         rows=279, cols=279, bs=3
@@ -280,21 +280,21 @@ PC Object: 8 MPI processes
           type: svd
             All singular values smaller than 1e-12 treated as zero
             Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=87, cols=87
             total: nonzeros=5277, allocated nonzeros=5277
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 25 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_coarse_) 8 MPI processes
         type: mpiaij
         rows=87, cols=87
         total: nonzeros=5277, allocated nonzeros=5277
         total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 3 nodes, limit used is 5
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3

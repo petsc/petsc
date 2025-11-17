@@ -96,14 +96,14 @@ TS Object: 1 MPI process
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.63333
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_) 1 MPI process
                   type: seqaij
                   rows=60, cols=60
                   package used to perform factorization: petsc
                   total: nonzeros=294, allocated nonzeros=294
                     not using I-node routines
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=60, cols=60
@@ -132,7 +132,7 @@ TS Object: 1 MPI process
         PC Object: (mg_levels_1_) 1 MPI process
           type: sor
             type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=120, cols=120
@@ -162,14 +162,14 @@ TS Object: 1 MPI process
         PC Object: (mg_levels_2_) 1 MPI process
           type: sor
             type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=240, cols=240
             total: nonzeros=720, allocated nonzeros=720
               not using I-node routines
       Up solver (post-smoother) same as down solver (pre-smoother)
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=240, cols=240

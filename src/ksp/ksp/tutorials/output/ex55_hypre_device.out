@@ -50,7 +50,7 @@ PC Object: 4 MPI processes
       Coarsen type        PMIS
       Interpolation type  ext+i
       SpGEMM type         hypre
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 4 MPI processes
     type: hypre
     rows=1800, cols=1800, bs=2
