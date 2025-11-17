@@ -105,20 +105,20 @@ TS Object: 2 MPI processes
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: natural
                   factor fill ratio given 1., needed 1.
-                    Factored matrix follows:
+                    Factored matrix:
                       Mat Object: (npc_fas_coarse_sub_) 1 MPI process
                         type: seqaij
                         rows=15, cols=15
                         package used to perform factorization: petsc
                         total: nonzeros=59, allocated nonzeros=59
                           not using I-node routines
-                linear system matrix = precond matrix:
+                linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (npc_fas_coarse_sub_) 1 MPI process
                   type: seqaij
                   rows=15, cols=15
                   total: nonzeros=59, allocated nonzeros=59
                     not using I-node routines
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 2 MPI processes
               type: mpiaij
               rows=25, cols=25
@@ -154,20 +154,20 @@ TS Object: 2 MPI processes
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: natural
                   factor fill ratio given 1., needed 1.
-                    Factored matrix follows:
+                    Factored matrix:
                       Mat Object: (npc_fas_levels_1_sub_) 1 MPI process
                         type: seqaij
                         rows=45, cols=45
                         package used to perform factorization: petsc
                         total: nonzeros=197, allocated nonzeros=197
                           not using I-node routines
-                linear system matrix = precond matrix:
+                linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (npc_fas_levels_1_sub_) 1 MPI process
                   type: seqaij
                   rows=45, cols=45
                   total: nonzeros=197, allocated nonzeros=197
                     not using I-node routines
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 2 MPI processes
               type: mpiaij
               rows=81, cols=81
@@ -204,20 +204,20 @@ TS Object: 2 MPI processes
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: natural
                   factor fill ratio given 1., needed 1.
-                    Factored matrix follows:
+                    Factored matrix:
                       Mat Object: (npc_fas_levels_2_sub_) 1 MPI process
                         type: seqaij
                         rows=153, cols=153
                         package used to perform factorization: petsc
                         total: nonzeros=713, allocated nonzeros=713
                           not using I-node routines
-                linear system matrix = precond matrix:
+                linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (npc_fas_levels_2_sub_) 1 MPI process
                   type: seqaij
                   rows=153, cols=153
                   total: nonzeros=713, allocated nonzeros=713
                     not using I-node routines
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 2 MPI processes
               type: mpiaij
               rows=289, cols=289

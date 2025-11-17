@@ -14,7 +14,7 @@ KSP Object: 1 MPI process
 PC Object: 1 MPI process
   type: jacobi
     type DIAGONAL
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=6, cols=6

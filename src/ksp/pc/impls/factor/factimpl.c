@@ -301,7 +301,7 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
       } else {
         PetscCall(MatGetInfo(factor->fact, MAT_LOCAL, &info));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  factor fill ratio given %g, needed %g\n", info.fill_ratio_given, info.fill_ratio_needed));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "    Factored matrix follows:\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    Factored matrix:\n"));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));

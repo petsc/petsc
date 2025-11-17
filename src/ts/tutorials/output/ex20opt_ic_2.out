@@ -57,7 +57,7 @@ Tao Object: 1 MPI process
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_bnk_) 1 MPI process
     type: none
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: shell
       rows=2, cols=2

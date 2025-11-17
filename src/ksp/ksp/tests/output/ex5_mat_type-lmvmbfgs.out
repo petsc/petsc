@@ -1,7 +1,7 @@
 PC Object: 1 MPI process
   type: mat
   PCApply() == MatSolve()
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: lmvmbfgs
     rows=4, cols=4

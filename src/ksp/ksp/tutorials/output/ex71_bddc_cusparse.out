@@ -68,14 +68,14 @@ PC Object: 8 MPI processes
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.51604
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (pc_bddc_dirichlet_) 1 MPI process
               type: seqaijcusparse
               rows=48, cols=48
               package used to perform factorization: cusparse
               total: nonzeros=567, allocated nonzeros=567
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_dirichlet_) 1 MPI process
         type: seqaijcusparse
         rows=48, cols=48
@@ -95,14 +95,14 @@ PC Object: 8 MPI processes
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 2.1025
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (pc_bddc_neumann_) 1 MPI process
               type: seqaijcusparse
               rows=93, cols=93
               package used to perform factorization: cusparse
               total: nonzeros=1764, allocated nonzeros=1764
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_neumann_) 1 MPI process
         type: seqaijcusparse
         rows=93, cols=93
@@ -129,21 +129,21 @@ PC Object: 8 MPI processes
           type: svd
             All singular values smaller than 1e-12 treated as zero
             Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=25, cols=25
             total: nonzeros=421, allocated nonzeros=421
             total number of mallocs used during MatSetValues calls=0
               not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (pc_bddc_coarse_) 8 MPI processes
         type: mpiaij
         rows=25, cols=25
         total: nonzeros=421, allocated nonzeros=421
         total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: is
     rows=720, cols=720

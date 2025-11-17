@@ -35,7 +35,7 @@ SNES Object: 4 MPI processes
       tolerance for zero pivot 2.22045e-14
       matrix ordering: external
       factor fill ratio given 0., needed 0.
-        Factored matrix follows:
+        Factored matrix:
           Mat Object: 4 MPI processes
             type: superlu_dist
             rows=1600, cols=1600
@@ -52,7 +52,7 @@ SNES Object: 4 MPI processes
                 Column permutation METIS_AT_PLUS_A
                 Parallel symbolic factorization FALSE 
                 Repeated factorization SamePattern
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: mpiaij
       rows=1600, cols=1600, bs=4

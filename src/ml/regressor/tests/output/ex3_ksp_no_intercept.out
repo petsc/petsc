@@ -11,7 +11,7 @@ PetscRegressor Object: 1 MPI process
       using UNPRECONDITIONED norm type for convergence test
     PC Object: (regressor_linear_) 1 MPI process
       type: none
-      linear system matrix followed by preconditioner matrix:
+      linear system matrix, followed by the matrix used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=10, cols=10

@@ -66,14 +66,14 @@ SNES Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (fieldsplit_x_velocity_) 1 MPI process
               type: seqaij
               rows=49, cols=49
               package used to perform factorization: petsc
               total: nonzeros=217, allocated nonzeros=217
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (fieldsplit_x_velocity_) 1 MPI process
         type: seqaij
         rows=49, cols=49
@@ -94,14 +94,14 @@ SNES Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (fieldsplit_y_velocity_) 1 MPI process
               type: seqaij
               rows=49, cols=49
               package used to perform factorization: petsc
               total: nonzeros=217, allocated nonzeros=217
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (fieldsplit_y_velocity_) 1 MPI process
         type: seqaij
         rows=49, cols=49
@@ -122,14 +122,14 @@ SNES Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (fieldsplit_Omega_) 1 MPI process
               type: seqaij
               rows=49, cols=49
               package used to perform factorization: petsc
               total: nonzeros=217, allocated nonzeros=217
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (fieldsplit_Omega_) 1 MPI process
         type: seqaij
         rows=49, cols=49
@@ -150,21 +150,21 @@ SNES Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (fieldsplit_temperature_) 1 MPI process
               type: seqaij
               rows=49, cols=49
               package used to perform factorization: petsc
               total: nonzeros=217, allocated nonzeros=217
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (fieldsplit_temperature_) 1 MPI process
         type: seqaij
         rows=49, cols=49
         total: nonzeros=217, allocated nonzeros=217
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=196, cols=196, bs=4

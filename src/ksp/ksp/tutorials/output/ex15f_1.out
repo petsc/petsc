@@ -9,7 +9,7 @@ KSP Object: 2 MPI processes
 PC Object: 2 MPI processes
   type: shell
     no name
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 2 MPI processes
     type: mpiaij
     rows=56, cols=56

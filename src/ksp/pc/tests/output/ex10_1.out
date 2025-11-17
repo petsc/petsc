@@ -27,7 +27,7 @@ PC Object: 1 MPI process
       Coarsen type        modifiedRuge-Stueben
       Interpolation type  classical
       SpGEMM type         hypre
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: Stiffness 1 MPI process
     type: seqaij
     rows=33, cols=33

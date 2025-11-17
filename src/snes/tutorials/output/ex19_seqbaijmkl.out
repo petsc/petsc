@@ -46,14 +46,14 @@ SNES Object: 1 MPI process
       tolerance for zero pivot 2.22045e-14
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
-        Factored matrix follows:
+        Factored matrix:
           Mat Object: 1 MPI process
             type: seqbaij
             rows=64, cols=64, bs=4
             package used to perform factorization: petsc
             total: nonzeros=1024, allocated nonzeros=1024
                 block size is 4
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqbaij
       rows=64, cols=64, bs=4

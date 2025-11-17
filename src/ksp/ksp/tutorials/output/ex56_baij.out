@@ -8,7 +8,7 @@ KSP Object: 8 MPI processes
 PC Object: 8 MPI processes
   type: jacobi
     type ROWL1 (l1-norm off-diagonal scaling 5.000000e-01)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 8 MPI processes
     type: mpibaij
     rows=12288, cols=12288, bs=3

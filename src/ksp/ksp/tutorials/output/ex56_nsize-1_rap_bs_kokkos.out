@@ -35,7 +35,7 @@ PC Object: (rap_) 1 MPI process
     PC Object: (rap_mg_coarse_) 1 MPI process
       type: pbjacobi
         point-block size 6
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaijkokkos
         rows=102, cols=102, bs=6
@@ -63,7 +63,7 @@ PC Object: (rap_) 1 MPI process
     PC Object: (rap_mg_levels_1_) 1 MPI process
       type: pbjacobi
         point-block size 3
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaijkokkos
         rows=1536, cols=1536, bs=3
@@ -72,7 +72,7 @@ PC Object: (rap_) 1 MPI process
           has attached near null space
           using I-node routines: found 512 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaijkokkos
     rows=1536, cols=1536, bs=3

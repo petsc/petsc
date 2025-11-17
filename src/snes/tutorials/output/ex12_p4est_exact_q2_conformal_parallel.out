@@ -37,7 +37,7 @@ SNES Object: 4 MPI processes
         not checking for convergence
       PC Object: (fas_coarse_) 4 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=9, cols=9
@@ -67,7 +67,7 @@ SNES Object: 4 MPI processes
         not checking for convergence
       PC Object: (fas_levels_1_) 4 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=49, cols=49
@@ -98,7 +98,7 @@ SNES Object: 4 MPI processes
         not checking for convergence
       PC Object: (fas_levels_2_) 4 MPI processes
         type: none
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
           rows=225, cols=225

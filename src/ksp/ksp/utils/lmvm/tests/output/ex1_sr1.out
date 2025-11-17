@@ -15,7 +15,7 @@ Mat Object: (B_) 2 MPI processes
     PC Object: (B_mat_lmvm_J0_) 2 MPI processes
       type: none
       PC has not been set up so information may be incomplete
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (B_mat_lmvm_J0_) 2 MPI processes
         type: mpidense
         rows=15, cols=15

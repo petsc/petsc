@@ -86,14 +86,14 @@ SNES Object: 4 MPI processes
               tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 4.91439
-                Factored matrix follows:
+                Factored matrix:
                   Mat Object: (npc_sub_) 1 MPI process
                     type: seqaij
                     rows=784, cols=784
                     package used to perform factorization: petsc
                     total: nonzeros=18714, allocated nonzeros=18714
                       not using I-node routines
-            linear system matrix = precond matrix:
+            linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqaij
               rows=784, cols=784
@@ -114,7 +114,7 @@ SNES Object: 4 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 4 MPI processes
     type: none
-    linear system matrix followed by preconditioner matrix:
+    linear system matrix, followed by the matrix used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: shell
       rows=2401, cols=2401

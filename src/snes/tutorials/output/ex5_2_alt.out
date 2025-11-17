@@ -60,14 +60,14 @@ SNES Object: 1 MPI process
           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
           matrix ordering: nd
           factor fill ratio given 5., needed 1.42
-            Factored matrix follows:
+            Factored matrix:
               Mat Object: (mg_coarse_) 1 MPI process
                 type: seqaij
                 rows=16, cols=16
                 package used to perform factorization: petsc
                 total: nonzeros=142, allocated nonzeros=142
                   using I-node routines: found 11 nodes, limit used is 5
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=16, cols=16
@@ -97,7 +97,7 @@ SNES Object: 1 MPI process
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=49, cols=49
@@ -128,7 +128,7 @@ SNES Object: 1 MPI process
       PC Object: (mg_levels_2_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=169, cols=169
@@ -159,7 +159,7 @@ SNES Object: 1 MPI process
       PC Object: (mg_levels_3_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=625, cols=625
@@ -167,7 +167,7 @@ SNES Object: 1 MPI process
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=625, cols=625

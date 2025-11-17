@@ -25,7 +25,7 @@ KSP Object: 2 MPI processes
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: none
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 2 MPI processes
     type: mpidense
     rows=4, cols=3

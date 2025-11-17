@@ -159,21 +159,21 @@ PC Object: 2 MPI processes
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.60209
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_redundant_) 1 MPI process
                   type: seqaij
                   rows=128, cols=128
                   package used to perform factorization: petsc
                   total: nonzeros=612, allocated nonzeros=612
                     not using I-node routines
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=128, cols=128
             total: nonzeros=382, allocated nonzeros=382
             total number of mallocs used during MatSetValues calls=0
               not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 2 MPI processes
         type: mpiaij
         rows=128, cols=128
@@ -202,7 +202,7 @@ PC Object: 2 MPI processes
     PC Object: (mg_levels_1_) 2 MPI processes
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 2 MPI processes
         type: mpiaij
         rows=255, cols=255
@@ -232,14 +232,14 @@ PC Object: 2 MPI processes
     PC Object: (mg_levels_2_) 2 MPI processes
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 2 MPI processes
         type: mpiaij
         rows=509, cols=509
         total: nonzeros=1525, allocated nonzeros=3054
         total number of mallocs used during MatSetValues calls=0
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 2 MPI processes
     type: mpiaij
     rows=509, cols=509

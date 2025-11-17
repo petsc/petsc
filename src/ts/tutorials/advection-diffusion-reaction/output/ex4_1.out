@@ -94,14 +94,14 @@ TS Object: 1 MPI process
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.47059
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: 1 MPI process
               type: seqaij
               rows=58, cols=58, bs=2
               package used to perform factorization: petsc
               total: nonzeros=500, allocated nonzeros=500
                 using I-node routines: found 29 nodes, limit used is 5
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=58, cols=58, bs=2

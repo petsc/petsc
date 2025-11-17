@@ -61,13 +61,13 @@ PC Object:
             package used to perform factorization: petsc
             total: nonzeros=72, allocated nonzeros=72
               not using I-node routines
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object:
       type: seqaij
       rows=18, cols=18
       total: nonzeros=72, allocated nonzeros=72
         not using I-node routines
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object:
     type: mpicrl
     rows=36, cols=36

@@ -56,21 +56,21 @@ PC Object: 1 MPI process
             using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5., needed 1.06667
-              Factored matrix follows:
+              Factored matrix:
                 Mat Object: (mg_coarse_sub_) 1 MPI process
                   type: seqaijcusparse
                   rows=6, cols=6
                   package used to perform factorization: cusparse
                   total: nonzeros=32, allocated nonzeros=32
                     using I-node routines: found 3 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (mg_coarse_sub_) 1 MPI process
             type: seqaijcusparse
             rows=6, cols=6
             total: nonzeros=30, allocated nonzeros=30
             total number of mallocs used during MatSetValues calls=0
               not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaijcusparse
         rows=6, cols=6
@@ -90,7 +90,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaijcusparse
         rows=24, cols=24
@@ -98,7 +98,7 @@ PC Object: 1 MPI process
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaijcusparse
     rows=24, cols=24

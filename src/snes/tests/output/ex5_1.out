@@ -42,7 +42,7 @@ SNES Object: 1 MPI process
     type: vpbjacobi
       number of blocks: 3
       block sizes: min=1 max=2
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       rows=5, cols=5, bs=5 variable blocks set
       total: nonzeros=11, allocated nonzeros=15

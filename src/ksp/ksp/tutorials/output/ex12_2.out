@@ -50,12 +50,12 @@ PC Object:
     0 levels of fill
          out-of-place factorization
          matrix ordering: natural
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
 Mat Object:
   type: seqaij
   rows=30, cols=30
   total: nonzeros=111, allocated nonzeros=111
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
 Mat Object:
   type: mpiaij
   rows=110, cols=110

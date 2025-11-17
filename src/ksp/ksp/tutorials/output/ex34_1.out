@@ -30,14 +30,14 @@ PC Object: 1 MPI process
         using diagonal shift to prevent zero pivot [NONZERO]
         matrix ordering: nd
         factor fill ratio given 5., needed 2.21481
-          Factored matrix follows:
+          Factored matrix:
             Mat Object: (mg_coarse_) 1 MPI process
               type: seqaij
               rows=27, cols=27
               package used to perform factorization: petsc
               total: nonzeros=299, allocated nonzeros=299
                 not using I-node routines
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=27, cols=27
@@ -68,7 +68,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_1_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=216, cols=216
@@ -100,7 +100,7 @@ PC Object: 1 MPI process
     PC Object: (mg_levels_2_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix = precond matrix:
+      linear system matrix, which is also used to construct the preconditioner:
       Mat Object: 1 MPI process
         type: seqaij
         rows=1728, cols=1728
@@ -109,7 +109,7 @@ PC Object: 1 MPI process
           has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=1728, cols=1728

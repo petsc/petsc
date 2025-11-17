@@ -44,14 +44,14 @@ SNES Object: 1 MPI process
           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
           matrix ordering: nd
           factor fill ratio given 5., needed 2.38265
-            Factored matrix follows:
+            Factored matrix:
               Mat Object: (mg_coarse_) 1 MPI process
                 type: seqaij
                 rows=200, cols=200, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=7472, allocated nonzeros=7472
                   using I-node routines: found 82 nodes, limit used is 5
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=200, cols=200, bs=2
@@ -81,7 +81,7 @@ SNES Object: 1 MPI process
       PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-        linear system matrix = precond matrix:
+        linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 1 MPI process
           type: seqaij
           rows=722, cols=722, bs=2
@@ -89,7 +89,7 @@ SNES Object: 1 MPI process
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 361 nodes, limit used is 5
     Up solver (post-smoother) same as down solver (pre-smoother)
-    linear system matrix = precond matrix:
+    linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=722, cols=722, bs=2

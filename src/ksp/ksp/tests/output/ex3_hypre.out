@@ -36,7 +36,7 @@ PC Object: 1 MPI process
       Coarsen type        not yet set
       Interpolation type  not yet set
       SpGEMM type         not yet set
-  linear system matrix = precond matrix:
+  linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqaij
     rows=36, cols=36
