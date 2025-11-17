@@ -149,12 +149,12 @@ static PetscErrorCode MatProductSetFromOptions_HT(Mat D)
       if (!container) {
         PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)D), &container));
         PetscCall(PetscNew(&data));
-        data->scale     = scale;
-        data->conjugate = (PetscBool)Atrans;
-        data->container = container;
         PetscCall(PetscContainerSetPointer(container, data));
         PetscCall(PetscObjectCompose((PetscObject)D, "MatProductCtx_HT", (PetscObject)container));
-      }
+      } else PetscCall(PetscContainerGetPointer(container, (void **)&data));
+      data->scale     = scale;
+      data->conjugate = (PetscBool)Atrans;
+      data->container = container;
     }
     ptype = MATPRODUCT_UNSPECIFIED;
     switch (D->product->type) {
