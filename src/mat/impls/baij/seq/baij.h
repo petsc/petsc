@@ -67,7 +67,6 @@ PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatScale_SeqBAIJ(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatNorm_SeqBAIJ(Mat, NormType, PetscReal *);
-PETSC_INTERN PetscErrorCode MatEqual_SeqBAIJ(Mat, Mat, PetscBool *);
 PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat, MatFDColoring, Vec, void *);
 PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat, Vec);
 PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat, Vec, Vec);
