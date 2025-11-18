@@ -3358,7 +3358,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PeOp PetscInt *depth, Pe
       PetscCall(PetscSectionGetOffset(sections_[d], i, &co));
       if (cn > 1) {
         PetscCall(DMPlexGetCone(dm, arr[i], &cone));
-        PetscCall(PetscMemcpy(&newarr[co], cone, cn * sizeof(PetscInt)));
+        PetscCall(PetscArraycpy(&newarr[co], cone, cn));
       } else {
         newarr[co] = arr[i];
       }

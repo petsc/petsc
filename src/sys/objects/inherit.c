@@ -228,7 +228,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 
   PetscCall(PetscFree(dest->fortran_func_pointers));
   PetscCall(PetscMalloc(src->num_fortran_func_pointers * sizeof(PetscFortranCallbackFn *), &dest->fortran_func_pointers));
-  PetscCall(PetscMemcpy(dest->fortran_func_pointers, src->fortran_func_pointers, src->num_fortran_func_pointers * sizeof(PetscFortranCallbackFn *)));
+  PetscCall(PetscArraycpy(dest->fortran_func_pointers, src->fortran_func_pointers, src->num_fortran_func_pointers));
 
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
 
@@ -236,7 +236,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
   for (cbtype = PETSC_FORTRAN_CALLBACK_CLASS; cbtype < PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
     PetscCall(PetscFree(dest->fortrancallback[cbtype]));
     PetscCall(PetscCalloc1(numcb[cbtype], &dest->fortrancallback[cbtype]));
-    PetscCall(PetscMemcpy(dest->fortrancallback[cbtype], src->fortrancallback[cbtype], src->num_fortrancallback[cbtype] * sizeof(PetscFortranCallback)));
+    PetscCall(PetscArraycpy(dest->fortrancallback[cbtype], src->fortrancallback[cbtype], src->num_fortrancallback[cbtype]));
     dest->num_fortrancallback[cbtype] = src->num_fortrancallback[cbtype];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -274,7 +274,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
     PetscFortranCallbackId newnum = PetscMax(*cid - PETSC_SMALLEST_FORTRAN_CALLBACK + 1, 2 * oldnum);
     PetscFortranCallback  *callback;
     PetscCall(PetscMalloc1(newnum, &callback));
-    PetscCall(PetscMemcpy(callback, obj->fortrancallback[cbtype], oldnum * sizeof(*obj->fortrancallback[cbtype])));
+    PetscCall(PetscArraycpy(callback, obj->fortrancallback[cbtype], oldnum));
     PetscCall(PetscFree(obj->fortrancallback[cbtype]));
 
     obj->fortrancallback[cbtype]     = callback;

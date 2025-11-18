@@ -494,10 +494,10 @@ static PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A, Petsc
     rp  = aj + ai[row];
     ap  = PetscSafePointerPlusOffset(aa, ai[row]);
 
-    PetscCall(PetscMemcpy(rp, in, n * sizeof(PetscInt)));
+    PetscCall(PetscArraycpy(rp, in, n));
     if (!A->structure_only) {
       if (v) {
-        PetscCall(PetscMemcpy(ap, v, n * sizeof(PetscScalar)));
+        PetscCall(PetscArraycpy(ap, v, n));
         v += n;
       } else {
         PetscCall(PetscMemzero(ap, n * sizeof(PetscScalar)));
@@ -574,10 +574,10 @@ static PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A, PetscInt m, const Pe
     PetscCheck(n <= a->imax[row], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Preallocation for row %" PetscInt_FMT " does not match number of columns provided", n);
     rp = aj + ai[row];
     ap = aa + ai[row];
-    if (!A->was_assembled) PetscCall(PetscMemcpy(rp, in, n * sizeof(PetscInt)));
+    if (!A->was_assembled) PetscCall(PetscArraycpy(rp, in, n));
     if (!A->structure_only) {
       if (v) {
-        PetscCall(PetscMemcpy(ap, v, n * sizeof(PetscScalar)));
+        PetscCall(PetscArraycpy(ap, v, n));
         v += n;
       } else {
         PetscCall(PetscMemzero(ap, n * sizeof(PetscScalar)));
@@ -4895,9 +4895,9 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C, Mat A, MatDuplicateOption cpva
 
     if (!A->hash_active) {
       PetscCall(PetscMalloc1(m, &c->imax));
-      PetscCall(PetscMemcpy(c->imax, a->imax, m * sizeof(PetscInt)));
+      PetscCall(PetscArraycpy(c->imax, a->imax, m));
       PetscCall(PetscMalloc1(m, &c->ilen));
-      PetscCall(PetscMemcpy(c->ilen, a->ilen, m * sizeof(PetscInt)));
+      PetscCall(PetscArraycpy(c->ilen, a->ilen, m));
 
       /* allocate the matrix space */
       if (mallocmatspace) {
@@ -5060,9 +5060,6 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A, Mat B, PetscBool *flg)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
   const PetscScalar *aa, *ba;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt k;
-#endif
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
@@ -5082,16 +5079,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A, Mat B, PetscBool *flg)
   PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   PetscCall(MatSeqAIJGetArrayRead(B, &ba));
   /* if a->a are the same */
-#if defined(PETSC_USE_COMPLEX)
-  for (k = 0; k < a->nz; k++) {
-    if (PetscRealPart(aa[k]) != PetscRealPart(ba[k]) || PetscImaginaryPart(aa[k]) != PetscImaginaryPart(ba[k])) {
-      *flg = PETSC_FALSE;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-  }
-#else
   PetscCall(PetscArraycmp(aa, ba, a->nz, flg));
-#endif
   PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
   PetscCall(MatSeqAIJRestoreArrayRead(B, &ba));
   PetscFunctionReturn(PETSC_SUCCESS);

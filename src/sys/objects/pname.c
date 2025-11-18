@@ -132,6 +132,6 @@ PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[]
   PetscCall(PetscFree(obj->type_name));
   PetscCall(PetscStrallocpy(type_name, &obj->type_name));
   /* Clear all the old subtype callbacks so they can't accidentally be called (shouldn't happen anyway) */
-  PetscCall(PetscMemzero(obj->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE], obj->num_fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE] * sizeof(PetscFortranCallback)));
+  PetscCall(PetscArrayzero(obj->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE], obj->num_fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

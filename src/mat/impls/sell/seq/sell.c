@@ -288,7 +288,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A, MatType newtype, MatReuse reuse,
     }
     if (PetscDefined(USE_DEBUG) && a->ilen) {
       PetscBool eq;
-      PetscCall(PetscMemcmp(rowlengths, a->ilen, m * sizeof(PetscInt), &eq));
+      PetscCall(PetscArraycmp(rowlengths, a->ilen, m, &eq));
       PetscCheck(eq, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SeqAIJ ilen array incorrect");
       PetscCall(PetscFree(rowlengths));
       rowlengths = a->ilen;
