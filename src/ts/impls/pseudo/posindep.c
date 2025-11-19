@@ -27,6 +27,8 @@ typedef struct {
   PetscReal fatol, frtol;
 
   PetscObjectState Xstate; /* state of input vector to TSComputeIFunction() with 0 Xdot */
+
+  TSStepStatus status;
 } TS_Pseudo;
 
 /*@C
@@ -79,8 +81,8 @@ PetscErrorCode TSPseudoComputeFunction(TS ts, Vec solution, Vec *residual, Petsc
 static PetscErrorCode TSStep_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-  PetscInt   nits, lits, reject;
-  PetscBool  stepok;
+  PetscInt   nits, lits, rejections = 0;
+  PetscBool  accept;
   PetscReal  next_time_step = ts->time_step;
   TSAdapt    adapt;
 
@@ -89,9 +91,10 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     pseudo->dt_initial = ts->time_step;
     PetscCall(VecCopy(ts->vec_sol, pseudo->update)); /* in all future updates pseudo->update already contains the current time solution */
   }
-  for (reject = 0; reject < ts->max_reject; reject++, ts->reject++) {
-    ts->time_step = next_time_step;
-    if (reject) PetscCall(VecCopy(ts->vec_sol0, pseudo->update)); /* need to copy the solution because we got a rejection and pseudo->update contains intermediate computation */
+
+  pseudo->status = TS_STEP_INCOMPLETE;
+  while (!ts->reason && pseudo->status != TS_STEP_COMPLETE) {
+    if (rejections) PetscCall(VecCopy(ts->vec_sol0, pseudo->update)); /* need to copy the solution because we got a rejection and pseudo->update contains intermediate computation */
     PetscCall(TSPreStage(ts, ts->ptime + ts->time_step));
     PetscCall(SNESSolve(ts->snes, NULL, pseudo->update));
     PetscCall(SNESGetIterationNumber(ts->snes, &nits));
@@ -101,24 +104,32 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     pseudo->fnorm = -1; /* The current norm is no longer valid */
     PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &pseudo->update));
     PetscCall(TSGetAdapt(ts, &adapt));
-    PetscCall(TSAdaptCheckStage(adapt, ts, ts->ptime + ts->time_step, pseudo->update, &stepok));
-    if (!stepok) {
-      next_time_step = ts->time_step;
-      continue;
-    }
+    PetscCall(TSAdaptCheckStage(adapt, ts, ts->ptime + ts->time_step, pseudo->update, &accept));
+    if (!accept) goto reject_step;
+
+    pseudo->status = TS_STEP_PENDING;
     PetscCall(VecCopy(pseudo->update, ts->vec_sol));
-    PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &stepok));
-    if (stepok) break;
-  }
-  if (reject >= ts->max_reject) {
-    ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, reject));
-    PetscFunctionReturn(PETSC_SUCCESS);
+    PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
+    pseudo->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
+    if (!accept) {
+      ts->time_step = next_time_step;
+      goto reject_step;
+    }
+    ts->ptime += ts->time_step;
+    ts->time_step = next_time_step;
+    break;
+
+  reject_step:
+    ts->reject++;
+    accept = PETSC_FALSE;
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
+      ts->reason = TS_DIVERGED_STEP_REJECTED;
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
   }
 
-  ts->ptime += ts->time_step;
-  ts->time_step = next_time_step;
-
+  // Check solution convergence
   PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, NULL));
 
   if (pseudo->fnorm < pseudo->fatol) {
