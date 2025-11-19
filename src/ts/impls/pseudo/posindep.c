@@ -29,6 +29,53 @@ typedef struct {
   PetscObjectState Xstate; /* state of input vector to TSComputeIFunction() with 0 Xdot */
 } TS_Pseudo;
 
+/*@C
+  TSPseudoComputeFunction - Compute nonlinear residual for pseudo-timestepping
+
+  This computes the residual for $\dot U = 0$, i.e. $F(U, 0)$ for the IFunction.
+
+  Collective
+
+  Input Parameters:
++ ts       - the timestep context
+- solution - the solution vector
+
+  Output Parameter:
++ residual - the nonlinear residual
+- fnorm    - the norm of the nonlinear residual
+
+  Level: advanced
+
+  Note:
+  `TSPSEUDO` records the nonlinear residual and the `solution` vector used to generate it. If given the same `solution` vector (as determined by the vectors `PetscObjectState`), this function will return those recorded values.
+
+  This would be used in a custom adaptive timestepping implementation that needs access to the residual, but reuses the calculation done by `TSPSEUDO` by default.
+
+.seealso: [](ch_ts), `TSPSEUDO`
+@*/
+PetscErrorCode TSPseudoComputeFunction(TS ts, Vec solution, Vec *residual, PetscReal *fnorm)
+{
+  TS_Pseudo       *pseudo = (TS_Pseudo *)ts->data;
+  PetscObjectState Xstate;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(solution, VEC_CLASSID, 2);
+  if (residual) PetscValidHeaderSpecific(*residual, VEC_CLASSID, 3);
+  if (fnorm) PetscAssertPointer(fnorm, 4);
+
+  PetscCall(PetscObjectStateGet((PetscObject)solution, &Xstate));
+  if (Xstate != pseudo->Xstate || pseudo->fnorm < 0) {
+    PetscCall(VecZeroEntries(pseudo->xdot));
+    PetscCall(TSComputeIFunction(ts, ts->ptime, solution, pseudo->xdot, pseudo->func, PETSC_FALSE));
+    pseudo->Xstate = Xstate;
+    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  }
+  if (residual) *residual = pseudo->func;
+  if (fnorm) *fnorm = pseudo->fnorm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSStep_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
@@ -72,10 +119,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
 
-  PetscCall(VecZeroEntries(pseudo->xdot));
-  PetscCall(TSComputeIFunction(ts, ts->ptime, pseudo->update, pseudo->xdot, pseudo->func, PETSC_FALSE));
-  PetscCall(PetscObjectStateGet((PetscObject)pseudo->update, &pseudo->Xstate));
-  PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, NULL));
 
   if (pseudo->fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
@@ -217,12 +261,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal pti
   PetscViewer viewer = (PetscViewer)dummy;
 
   PetscFunctionBegin;
-  if (pseudo->fnorm < 0) { /* The last computed norm is stale, recompute */
-    PetscCall(VecZeroEntries(pseudo->xdot));
-    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
-    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-  }
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, NULL));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "TS %" PetscInt_FMT " dt %g time %g fnorm %g\n", step, (double)ts->time_step, (double)ptime, (double)pseudo->fnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
@@ -289,25 +328,20 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
 PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-  PetscReal  inc    = pseudo->dt_increment;
+  PetscReal  inc    = pseudo->dt_increment, fnorm;
 
   PetscFunctionBegin;
-  if (pseudo->fnorm < 0.0) {
-    PetscCall(VecZeroEntries(pseudo->xdot));
-    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
-    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-  }
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, &fnorm));
   if (pseudo->fnorm_initial < 0) {
     /* first time through so compute initial function norm */
-    pseudo->fnorm_initial  = pseudo->fnorm;
-    pseudo->fnorm_previous = pseudo->fnorm;
+    pseudo->fnorm_initial  = fnorm;
+    pseudo->fnorm_previous = fnorm;
   }
-  if (pseudo->fnorm == 0.0) *newdt = 1.e12 * inc * ts->time_step;
-  else if (pseudo->increment_dt_from_initial_dt) *newdt = inc * pseudo->dt_initial * pseudo->fnorm_initial / pseudo->fnorm;
-  else *newdt = inc * ts->time_step * pseudo->fnorm_previous / pseudo->fnorm;
+  if (fnorm == 0.0) *newdt = 1.e12 * inc * ts->time_step;
+  else if (pseudo->increment_dt_from_initial_dt) *newdt = inc * pseudo->dt_initial * pseudo->fnorm_initial / fnorm;
+  else *newdt = inc * ts->time_step * pseudo->fnorm_previous / fnorm;
   if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt, pseudo->dt_max);
-  pseudo->fnorm_previous = pseudo->fnorm;
+  pseudo->fnorm_previous = fnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -86,6 +86,7 @@
 ```
 
 -  Change the `destroy()` function argument of `TSTrajectorySetTransform()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+-  Add `TSPseudoComputeFunction()` to get nonlinear residual while avoiding recalculation if possible
 
 ```{rubric} TAO:
 ```

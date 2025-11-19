@@ -816,6 +816,7 @@ PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStepDefault(TS, Vec, void *, Petsc
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS, Vec, PetscReal *, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
+PETSC_EXTERN PetscErrorCode TSPseudoComputeFunction(TS, Vec, Vec *, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode TSPythonSetType(TS, const char[]);
 PETSC_EXTERN PetscErrorCode TSPythonGetType(TS, const char *[]);
