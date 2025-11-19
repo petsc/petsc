@@ -350,7 +350,7 @@ int main(int argc, char **argv)
       requires: !single !complex
 
     test:
-      args: -ts_max_steps 8
+      args: -ts_max_steps 20
       output_file: output/ex42.out
 
 TEST*/
