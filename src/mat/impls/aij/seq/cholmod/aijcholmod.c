@@ -11,8 +11,7 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_spa
   PetscBool          vain = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(MatMarkDiagonal_SeqAIJ(A));
-  adiag = aij->diag;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   for (i = 0, nz = 0; i < m; i++) nz += ai[i + 1] - adiag[i];
   PetscCall(PetscMalloc2(m + 1, &ci, nz, &cj));
   if (values) {

@@ -83,10 +83,6 @@ class MatPythonProtocol:
         """Set the diagonal of the matrix."""
         ...
 
-    def missingDiagonal(self, A: Mat, d: Vec, im: InsertMode) -> tuple[bool, int]:
-        """Return a flag indicating if the matrix is missing a diagonal entry and the location."""
-        ...
-
     def diagonalScale(self, A: Mat, L: Vec, R: Vec) -> None:
         """Perform left and right diagonal scaling if vectors are not None.
 

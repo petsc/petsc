@@ -115,13 +115,6 @@ static PetscErrorCode MatDuplicate_ConstantDiagonal(Mat A, MatDuplicateOption op
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_ConstantDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
-{
-  PetscFunctionBegin;
-  *missing = PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 {
   PetscFunctionBegin;
@@ -398,7 +391,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
   A->ops->norm                      = MatNorm_ConstantDiagonal;
   A->ops->createsubmatrices         = MatCreateSubMatrices_ConstantDiagonal;
   A->ops->duplicate                 = MatDuplicate_ConstantDiagonal;
-  A->ops->missingdiagonal           = MatMissingDiagonal_ConstantDiagonal;
   A->ops->getrow                    = MatGetRow_ConstantDiagonal;
   A->ops->restorerow                = MatRestoreRow_ConstantDiagonal;
   A->ops->sor                       = MatSOR_ConstantDiagonal;

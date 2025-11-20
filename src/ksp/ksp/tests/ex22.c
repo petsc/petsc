@@ -4,13 +4,12 @@ static const char help[] = "Test MatNest solving a linear system\n\n";
 
 PetscErrorCode test_solve(void)
 {
-  Mat       A11, A12, A21, A22, A, tmp[2][2];
-  KSP       ksp;
-  PC        pc;
-  Vec       b, x, f, h, diag, x1, x2;
-  Vec       tmp_x[2], *_tmp_x;
-  PetscInt  n, np, i, j;
-  PetscBool flg;
+  Mat      A11, A12, A21, A22, A, tmp[2][2];
+  KSP      ksp;
+  PC       pc;
+  Vec      b, x, f, h, diag, x1, x2;
+  Vec      tmp_x[2], *_tmp_x;
+  PetscInt n, np, i, j;
 
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME));
@@ -64,10 +63,6 @@ PetscErrorCode test_solve(void)
   PetscCall(MatNestSetVecType(A, VECNEST));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-
-  /* Tests MatMissingDiagonal_Nest */
-  PetscCall(MatMissingDiagonal(A, &flg, NULL));
-  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Unexpected %s\n", flg ? "true" : "false"));
 
   /* Create vectors */
   PetscCall(MatCreateVecs(A12, &h, &f));

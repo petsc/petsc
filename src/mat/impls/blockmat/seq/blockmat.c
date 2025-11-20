@@ -13,6 +13,8 @@ typedef struct {
   Vec left, right, middle, workb; /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;
 
+MatGetDiagonalMarkers(BlockMat, A->rmap->bs)
+
 static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_BlockMat      *a = (Mat_BlockMat *)A->data;
@@ -35,12 +37,15 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
   PetscCheck(!((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)), PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot do backward sweep without forward sweep");
 
   if (!a->diags) {
+    const PetscInt *adiag;
+
+    PetscCall(MatGetDiagonalMarkers_BlockMat(A, &adiag, NULL));
     PetscCall(PetscMalloc1(mbs, &a->diags));
     PetscCall(MatFactorInfoInitialize(&info));
     for (i = 0; i < mbs; i++) {
       PetscCall(MatGetOrdering(a->a[a->diag[i]], MATORDERINGND, &row, &col));
-      PetscCall(MatCholeskyFactorSymbolic(a->diags[i], a->a[a->diag[i]], row, &info));
-      PetscCall(MatCholeskyFactorNumeric(a->diags[i], a->a[a->diag[i]], &info));
+      PetscCall(MatCholeskyFactorSymbolic(a->diags[i], a->a[adiag[i]], row, &info));
+      PetscCall(MatCholeskyFactorNumeric(a->diags[i], a->a[adiag[i]], &info));
       PetscCall(ISDestroy(&row));
       PetscCall(ISDestroy(&col));
     }
@@ -133,12 +138,15 @@ static PetscErrorCode MatSOR_BlockMat(Mat A, Vec bb, PetscReal omega, MatSORType
   PetscCheck(!fshift, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support yet for fshift");
 
   if (!a->diags) {
+    const PetscInt *adiag;
+
+    PetscCall(MatGetDiagonalMarkers_BlockMat(A, &adiag, NULL));
     PetscCall(PetscMalloc1(mbs, &a->diags));
     PetscCall(MatFactorInfoInitialize(&info));
     for (i = 0; i < mbs; i++) {
-      PetscCall(MatGetOrdering(a->a[a->diag[i]], MATORDERINGND, &row, &col));
-      PetscCall(MatLUFactorSymbolic(a->diags[i], a->a[a->diag[i]], row, col, &info));
-      PetscCall(MatLUFactorNumeric(a->diags[i], a->a[a->diag[i]], &info));
+      PetscCall(MatGetOrdering(a->a[adiag[i]], MATORDERINGND, &row, &col));
+      PetscCall(MatLUFactorSymbolic(a->diags[i], a->a[adiag[i]], row, col, &info));
+      PetscCall(MatLUFactorNumeric(a->diags[i], a->a[adiag[i]], &info));
       PetscCall(ISDestroy(&row));
       PetscCall(ISDestroy(&col));
     }
@@ -526,28 +534,6 @@ static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     Adds diagonal pointers to sparse matrix nonzero structure.
-*/
-static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
-{
-  Mat_BlockMat *a = (Mat_BlockMat *)A->data;
-  PetscInt      i, j, mbs = A->rmap->n / A->rmap->bs;
-
-  PetscFunctionBegin;
-  if (!a->diag) PetscCall(PetscMalloc1(mbs, &a->diag));
-  for (i = 0; i < mbs; i++) {
-    a->diag[i] = a->i[i + 1];
-    for (j = a->i[i]; j < a->i[i + 1]; j++) {
-      if (a->j[j] == i) {
-        a->diag[i] = j;
-        break;
-      }
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
   Mat_BlockMat *a = (Mat_BlockMat *)A->data;
@@ -653,7 +639,6 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode)
   a->reallocs         = 0;
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
-  PetscCall(MatMarkDiagonal_BlockMat(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -809,7 +794,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL,
                                        NULL,
                                        /*139*/ NULL,
-                                       NULL,
                                        NULL,
                                        NULL,
                                        NULL,

@@ -505,37 +505,6 @@ PetscErrorCode MatImaginaryPart(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  MatMissingDiagonal - Determine if sparse matrix is missing a diagonal entry (or block entry for `MATBAIJ` and `MATSBAIJ` matrices) in the nonzero structure
-
-  Not Collective
-
-  Input Parameter:
-. mat - the matrix
-
-  Output Parameters:
-+ missing - is any diagonal entry missing
-- dd      - first diagonal entry that is missing (optional) on this process
-
-  Level: advanced
-
-  Note:
-  This does not return diagonal entries that are in the nonzero structure but happen to have a zero numerical value
-
-.seealso: [](ch_matrices), `Mat`
-@*/
-PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidType(mat, 1);
-  PetscAssertPointer(missing, 2);
-  PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix %s", ((PetscObject)mat)->type_name);
-  PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-  PetscUseTypeMethod(mat, missingdiagonal, missing, dd);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   MatGetRow - Gets a row of a matrix.  You MUST call `MatRestoreRow()`

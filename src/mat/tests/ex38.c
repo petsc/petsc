@@ -67,10 +67,6 @@ int main(int argc, char **args)
   /* Test MatView() */
   if (mats_view) PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
 
-  /* Test MatMissingDiagonal() */
-  PetscCall(MatMissingDiagonal(C, &flg, NULL));
-  PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "MatMissingDiagonal() did not return false!");
-
   /* Set unowned matrix entries - add subdiagonals and diagonals from proc[0] */
   if (rank == 0) {
     PetscInt M, N, cols[2];

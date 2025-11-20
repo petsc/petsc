@@ -1211,13 +1211,6 @@ static PetscErrorCode MatSetRandom_MPIDense(Mat x, PetscRandom rctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A, PetscBool *missing, PetscInt *d)
-{
-  PetscFunctionBegin;
-  *missing = PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat, Mat, PetscReal, Mat);
 static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat, Mat, Mat);
 static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat, Mat, PetscReal, Mat);
@@ -1330,18 +1323,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        NULL,
                                        NULL,
                                        MatGetColumnVector_MPIDense,
-                                       /*104*/ MatMissingDiagonal_MPIDense,
+                                       /*104*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        /*109*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatMultHermitianTranspose_MPIDense,
                                        MatMultHermitianTransposeAdd_MPIDense,
-                                       /*114*/ NULL,
                                        NULL,
+                                       /*114*/ NULL,
                                        MatGetColumnReductions_MPIDense,
                                        NULL,
                                        NULL,

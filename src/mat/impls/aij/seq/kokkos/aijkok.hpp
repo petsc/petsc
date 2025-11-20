@@ -116,9 +116,13 @@ struct Mat_SeqAIJKokkos {
   MatRowMapKokkosView transpose_perm;                       // A permutation array making Ta(i) = Aa(perm(i)), where T = A^t
 
   /* Construct a nrows by ncols matrix with given aseq on host. Caller also specifies a nonzero state */
-  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, Mat_SeqAIJ *aseq, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
+  Mat_SeqAIJKokkos(Mat A, PetscInt nrows, PetscInt ncols, Mat_SeqAIJ *aseq, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
   {
     auto exec = PetscGetKokkosExecutionSpace();
+
+    // a->diag must exist before new Mat_SeqAIJKokkos()
+    const PetscInt *adiag;
+    PetscCallVoid(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
 
     MatScalarKokkosViewHost a_h(aseq->a, aseq->nz);
     MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(aseq->i), nrows + 1);

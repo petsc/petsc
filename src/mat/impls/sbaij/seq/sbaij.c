@@ -33,55 +33,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SBAIJ_ScaLAPACK(Mat, MatType, MatReuse, M
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat, MatType, MatReuse, Mat *);
 
-/*
-     Checks for missing diagonals
-*/
-static PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A, PetscBool *missing, PetscInt *dd)
-{
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
-  PetscInt     *diag, *ii = a->i, i;
-
-  PetscFunctionBegin;
-  PetscCall(MatMarkDiagonal_SeqSBAIJ(A));
-  *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !ii) {
-    *missing = PETSC_TRUE;
-    if (dd) *dd = 0;
-    PetscCall(PetscInfo(A, "Matrix has no entries therefore is missing diagonal\n"));
-  } else {
-    diag = a->diag;
-    for (i = 0; i < a->mbs; i++) {
-      if (diag[i] >= ii[i + 1]) {
-        *missing = PETSC_TRUE;
-        if (dd) *dd = i;
-        break;
-      }
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
-{
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
-  PetscInt      i, j;
-
-  PetscFunctionBegin;
-  if (!a->diag) {
-    PetscCall(PetscMalloc1(a->mbs, &a->diag));
-    a->free_diag = PETSC_TRUE;
-  }
-  for (i = 0; i < a->mbs; i++) {
-    a->diag[i] = a->i[i + 1];
-    for (j = a->i[i]; j < a->i[i + 1]; j++) {
-      if (a->j[j] == i) {
-        a->diag[i] = j;
-        break;
-      }
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+MatGetDiagonalMarkers(SeqSBAIJ, A->rmap->bs)
 
 static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool blockcompressed, PetscInt *nn, const PetscInt *inia[], const PetscInt *inja[], PetscBool *done)
 {
@@ -186,7 +138,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   }
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->N, a->nz));
   PetscCall(MatSeqXAIJFreeAIJ(A, &a->a, &a->j, &a->i));
-  if (a->free_diag) PetscCall(PetscFree(a->diag));
+  PetscCall(PetscFree(a->diag));
   PetscCall(ISDestroy(&a->row));
   PetscCall(ISDestroy(&a->col));
   PetscCall(ISDestroy(&a->icol));
@@ -342,7 +294,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A, PetscViewer viewer)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ *)A->data;
   PetscInt          i, j, bs = A->rmap->bs, k, l, bs2 = a->bs2;
   PetscViewerFormat format;
-  PetscInt         *diag;
+  const PetscInt   *diag;
   const char       *matname;
 
   PetscFunctionBegin;
@@ -375,8 +327,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     if (A->factortype) { /* for factored matrix */
       PetscCheck(bs <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "matrix is factored with bs>1. Not implemented yet");
-
-      diag = a->diag;
+      PetscCall(MatGetDiagonalMarkers_SeqSBAIJ(A, &diag, NULL));
       for (i = 0; i < a->mbs; i++) { /* for row block i */
         PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
         /* diagonal entry */
@@ -762,8 +713,6 @@ static PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode)
   for (i = 0; i < mbs; i++) ailen[i] = imax[i] = ai[i + 1] - ai[i];
   a->nz = ai[mbs];
 
-  /* diagonals may have moved, reset it */
-  if (a->diag) PetscCall(PetscArraycpy(a->diag, ai, mbs));
   PetscCheck(!fshift || a->nounused != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unused space detected in matrix: %" PetscInt_FMT " X %" PetscInt_FMT " block size %" PetscInt_FMT ", %" PetscInt_FMT " unneeded", m, A->cmap->n, A->rmap->bs, fshift * bs2);
 
   PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT ", block size %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n", m, A->rmap->N, A->rmap->bs, fshift * bs2, a->nz * bs2));
@@ -894,12 +843,11 @@ static PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA, IS row, const MatFactorInfo
   PetscCheck(row_identity, PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix reordering is not supported");
   PetscCheck(inA->rmap->bs == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix block size %" PetscInt_FMT " is not supported", inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
-  outA            = inA;
-  inA->factortype = MAT_FACTOR_ICC;
+  outA = inA;
   PetscCall(PetscFree(inA->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &inA->solvertype));
 
-  PetscCall(MatMarkDiagonal_SeqSBAIJ(inA));
+  inA->factortype = MAT_FACTOR_ICC;
   PetscCall(MatSeqSBAIJSetNumericFactorization_inplace(inA, row_identity));
 
   PetscCall(PetscObjectReference((PetscObject)row));
@@ -1353,7 +1301,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*104*/ MatMissingDiagonal_SeqSBAIJ,
+                                       /*104*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
@@ -1375,21 +1323,20 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        /*124*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatSetBlockSizes_Default,
                                        NULL,
-                                       /*129*/ NULL,
                                        NULL,
+                                       /*129*/ NULL,
                                        MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        /*134*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatEliminateZeros_SeqSBAIJ,
                                        NULL,
-                                       /*139*/ NULL,
                                        NULL,
+                                       /*139*/ NULL,
                                        NULL,
                                        MatCopyHashToXAIJ_Seq_Hash,
                                        NULL,
@@ -2127,21 +2074,10 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
 
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
-
-  if (a->diag) {
-    if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
-      c->diag      = a->diag;
-      c->free_diag = PETSC_FALSE;
-    } else {
-      PetscCall(PetscMalloc1(mbs, &c->diag));
-      for (i = 0; i < mbs; i++) c->diag[i] = a->diag[i];
-      c->free_diag = PETSC_TRUE;
-    }
-  }
-  c->nz         = a->nz;
-  c->maxnz      = a->nz; /* Since we allocate exactly the right amount */
-  c->solve_work = NULL;
-  c->mult_work  = NULL;
+  c->nz          = a->nz;
+  c->maxnz       = a->nz; /* Since we allocate exactly the right amount */
+  c->solve_work  = NULL;
+  c->mult_work   = NULL;
 
   *B = C;
   PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist, &((PetscObject)C)->qlist));

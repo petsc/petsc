@@ -4,18 +4,23 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
   PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt       *ajtmpold, *ajtmp, nz, row, *ai = a->i, *aj = a->j, k, flg;
-  PetscInt       *diag_offset = b->diag, diag, bs = A->rmap->bs, bs2 = a->bs2, *pj, *v_pivots;
+  const PetscInt *diag_offset;
+  PetscInt        diag, bs = A->rmap->bs, bs2 = a->bs2, *pj, *v_pivots;
   MatScalar      *ba = b->a, *aa = a->a, *pv, *v, *rtmp, *multiplier, *v_work, *pc, *w;
   PetscBool       allowzeropivot, zeropivotdetected;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype = MAT_FACTOR_ILU;
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
   allowzeropivot = PetscNot(A->erroriffailure);

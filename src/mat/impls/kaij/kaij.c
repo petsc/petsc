@@ -791,11 +791,12 @@ static PetscErrorCode MatGetDiagonalBlock_MPIKAIJ(Mat A, Mat *B)
 
 static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat_SeqKAIJ   *a = (Mat_SeqKAIJ *)A->data;
-  Mat            AIJ, OAIJ, B;
-  PetscInt      *d_nnz, *o_nnz = NULL, nz, i, j, m, d;
-  const PetscInt p = a->p, q = a->q;
-  PetscBool      ismpikaij, missing;
+  Mat_SeqKAIJ    *a = (Mat_SeqKAIJ *)A->data;
+  Mat             AIJ, OAIJ, B;
+  PetscInt       *d_nnz, *o_nnz = NULL, nz, i, j, m, d;
+  const PetscInt  p = a->p, q = a->q;
+  PetscBool       ismpikaij, diagDense;
+  const PetscInt *aijdiag;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -812,8 +813,19 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A, MatType newtype, MatReuse reuse
     PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
     PetscCall(MatSetType(B, MATAIJ));
     PetscCall(MatGetSize(AIJ, &m, NULL));
-    PetscCall(MatMissingDiagonal(AIJ, &missing, &d)); /* assumption that all successive rows will have a missing diagonal */
-    if (!missing || !a->S) d = m;
+
+    /*
+      Determine the first row of AIJ with missing diagonal and assume all successive rows also have a missing diagonal
+    */
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(AIJ, &aijdiag, &diagDense));
+    if (diagDense || !a->S) d = m;
+    else {
+      Mat_SeqAIJ *aij = (Mat_SeqAIJ *)AIJ->data;
+
+      for (d = 0; d < m; d++) {
+        if (aijdiag[d] == aij->i[d + 1]) break;
+      }
+    }
     PetscCall(PetscMalloc1(m * p, &d_nnz));
     for (i = 0; i < m; ++i) {
       PetscCall(MatGetRow_SeqAIJ(AIJ, i, &nz, NULL, NULL));
@@ -864,7 +876,7 @@ static PetscErrorCode MatSOR_SeqKAIJ(Mat A, Vec bb, PetscReal omega, MatSORType 
 
   if (!kaij->ibdiagvalid) PetscCall(MatInvertBlockDiagonal_SeqKAIJ(A, NULL));
   idiag = kaij->ibdiag;
-  diag  = a->diag;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(kaij->AIJ, &diag, NULL));
 
   if (!kaij->sor.setup) {
     PetscCall(PetscMalloc5(bs, &kaij->sor.w, bs, &kaij->sor.y, m * bs, &kaij->sor.work, m * bs, &kaij->sor.t, m * bs2, &kaij->sor.arr));

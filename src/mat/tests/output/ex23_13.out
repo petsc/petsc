@@ -422,10 +422,6 @@ IS Object: 3 MPI processes
 [1] Number of indices in (stride) set 0
 [2] Number of indices in (stride) set 0
 Test MatZeroRows (diag zero)
-Test MatMissingDiagonal
-[0] [0,4) Missing 0, row -1 (diag zero)
-[1] [4,8) Missing 1, row 6 (diag zero)
-[2] [8,12) Missing 1, row 8 (diag zero)
 IS Object: 3 MPI processes
 [0] Number of indices in (stride) set 1
 [0] 0 0
@@ -434,10 +430,6 @@ IS Object: 3 MPI processes
 [2] Number of indices in (stride) set 1
 [2] 0 0
 Test MatZeroRowsLocal (diag zero)
-Test MatMissingDiagonal
-[0] [0,4) Missing 0, row -1 (diag zero)
-[1] [4,8) Missing 0, row -1 (diag zero)
-[2] [8,12) Missing 1, row 11 (diag zero)
 Test MatTranspose
 Test MatGetDiagonalBlock
 Test MatISSetAllowRepeated(false) with possibly repeated entries

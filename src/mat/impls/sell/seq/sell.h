@@ -15,56 +15,61 @@
  Struct header for SeqSELL matrix format
 */
 #define SEQSELLHEADER(datatype) \
-  PetscBool    roworiented;        /* if true, row-oriented input, default */ \
-  PetscInt     nonew;              /* 1 don't add new nonzeros, -1 generate error on new */ \
-  PetscInt     nounused;           /* -1 generate error on unused space */ \
-  PetscBool    singlemalloc;       /* if true a, i, and j have been obtained with one big malloc */ \
-  PetscInt     maxallocmat;        /* max allocated space for the matrix */ \
-  PetscInt     maxallocrow;        /* max allocated space for each row */ \
-  PetscInt     nz;                 /* actual nonzeros */ \
-  PetscInt     rlenmax;            /* max actual row length, rmax cannot exceed maxallocrow */ \
-  PetscInt    *rlen;               /* actual length of each row (padding zeros excluded) */ \
-  PetscBool    free_rlen;          /* free rlen array ? */ \
-  PetscInt     reallocs;           /* number of mallocs done during MatSetValues() \
+  PetscBool        roworiented;        /* if true, row-oriented input, default */ \
+  PetscInt         nonew;              /* 1 don't add new nonzeros, -1 generate error on new */ \
+  PetscInt         nounused;           /* -1 generate error on unused space */ \
+  PetscBool        singlemalloc;       /* if true a, i, and j have been obtained with one big malloc */ \
+  PetscInt         maxallocmat;        /* max allocated space for the matrix */ \
+  PetscInt         maxallocrow;        /* max allocated space for each row */ \
+  PetscInt         nz;                 /* actual nonzeros */ \
+  PetscInt         rlenmax;            /* max actual row length, rmax cannot exceed maxallocrow */ \
+  PetscInt        *rlen;               /* actual length of each row (padding zeros excluded) */ \
+  PetscBool        free_rlen;          /* free rlen array ? */ \
+  PetscInt         reallocs;           /* number of mallocs done during MatSetValues() \
 as more values are set than were prealloced */ \
-  PetscBool    keepnonzeropattern; /* keeps matrix nonzero structure the same in calls to MatZeroRows()*/ \
-  PetscBool    ignorezeroentries; \
-  PetscBool    free_colidx;     /* free the column indices colidx when the matrix is destroyed */ \
-  PetscBool    free_val;        /* free the numerical values when matrix is destroy */ \
-  PetscInt    *colidx;          /* column index */ \
-  PetscInt    *diag;            /* pointers to diagonal elements */ \
-  PetscInt     nonzerorowcnt;   /* how many rows have nonzero entries */ \
-  PetscBool    free_diag;       /* free diag ? */ \
-  datatype    *val;             /* elements including nonzeros and padding zeros */ \
-  PetscScalar *solve_work;      /* work space used in MatSolve */ \
-  IS           row, col, icol;  /* index sets, used for reorderings */ \
-  PetscBool    pivotinblocks;   /* pivot inside factorization of each diagonal block */ \
-  Mat          parent;          /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
+  PetscBool        keepnonzeropattern; /* keeps matrix nonzero structure the same in calls to MatZeroRows()*/ \
+  PetscBool        ignorezeroentries; \
+  PetscBool        free_colidx;      /* free the column indices colidx when the matrix is destroyed */ \
+  PetscBool        free_val;         /* free the numerical values when matrix is destroy */ \
+  PetscInt        *colidx;           /* column index */ \
+  PetscInt        *diag;             /* pointers to diagonal elements */ \
+  PetscObjectState diagNonzeroState; /* nonzero state of the matrix when diag was obtained */ \
+  PetscBool        diagDense;        /* matrix contains all the diagonal entries */ \
+  PetscInt         nonzerorowcnt;    /* how many rows have nonzero entries */ \
+  datatype        *val;              /* elements including nonzeros and padding zeros */ \
+  PetscScalar     *solve_work;       /* work space used in MatSolve */ \
+  IS               row, col, icol;   /* index sets, used for reorderings */ \
+  PetscBool        pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
+  Mat              parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
 means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
-  PetscInt    *sliidx;          /* slice index */ \
-  PetscInt     totalslices;     /* total number of slices */ \
-  PetscInt     sliceheight;     /* slice height */ \
-  PetscReal    fillratio;       /* ratio of number of padded zeros over total number of elements  */ \
-  PetscReal    avgslicewidth;   /* average slice width */ \
-  PetscInt     maxslicewidth;   /* maximum slice width */ \
-  PetscReal    varslicesize;    /* variance of slice size */ \
-  PetscInt    *sliperm;         /* slice permutation array, CUDA only */ \
-  PetscInt     totalblocks;     /* total number of blocks, CUDA only */ \
-  PetscInt    *blockidx;        /* block index, CUDA only */ \
-  PetscInt    *block_row_map;   /* starting row of the current block, CUDA only */ \
-  PetscInt     chunksize;       /* chunk size, CUDA only */ \
-  PetscInt     totalchunks;     /* total number of chunks, CUDA only */ \
-  PetscInt    *chunk_slice_map; /* starting slice of the current chunk, CUDA only */ \
-  PetscInt    *getrowcols;      /* workarray for MatGetRow_SeqSELL */ \
-  PetscScalar *getrowvals       /* workarray for MatGetRow_SeqSELL */
+  PetscInt        *sliidx;           /* slice index */ \
+  PetscInt         totalslices;      /* total number of slices */ \
+  PetscInt         sliceheight;      /* slice height */ \
+  PetscReal        fillratio;        /* ratio of number of padded zeros over total number of elements  */ \
+  PetscReal        avgslicewidth;    /* average slice width */ \
+  PetscInt         maxslicewidth;    /* maximum slice width */ \
+  PetscReal        varslicesize;     /* variance of slice size */ \
+  PetscInt        *sliperm;          /* slice permutation array, CUDA only */ \
+  PetscInt         totalblocks;      /* total number of blocks, CUDA only */ \
+  PetscInt        *blockidx;         /* block index, CUDA only */ \
+  PetscInt        *block_row_map;    /* starting row of the current block, CUDA only */ \
+  PetscInt         chunksize;        /* chunk size, CUDA only */ \
+  PetscInt         totalchunks;      /* total number of chunks, CUDA only */ \
+  PetscInt        *chunk_slice_map;  /* starting slice of the current chunk, CUDA only */ \
+  PetscInt        *getrowcols;       /* workarray for MatGetRow_SeqSELL */ \
+  PetscScalar     *getrowvals        /* workarray for MatGetRow_SeqSELL */
 
 typedef struct {
   SEQSELLHEADER(MatScalar);
-  MatScalar   *saved_values;              /* location for stashing nonzero values of matrix */
-  PetscScalar *idiag, *mdiag, *ssor_work; /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
-  PetscBool    idiagvalid;                /* current idiag[] and mdiag[] are valid */
-  PetscScalar  fshift, omega;             /* last used omega and fshift */
-  ISColoring   coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
+  MatScalar *saved_values; /* location for stashing nonzero values of matrix */
+
+  /* data needed for MatSOR_SeqAIJ() */
+  PetscScalar     *mdiag, *idiag; /* diagonal values, inverse of diagonal entries */
+  PetscScalar     *ssor_work;     /* workspace for Eisenstat trick */
+  PetscObjectState idiagState;    /* state of the matrix when mdiag and idiag was obtained */
+  PetscScalar      fshift, omega; /* last used omega and fshift */
+
+  ISColoring coloring; /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqSELL;
 
 /*
@@ -196,9 +201,6 @@ PETSC_INTERN PetscErrorCode MatMult_SeqSELL(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSELL(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqSELL(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqSELL(Mat, PetscBool *, PetscInt *);
-PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqSELL(Mat);
-PETSC_INTERN PetscErrorCode MatInvertDiagonal_SeqSELL(Mat, PetscScalar, PetscScalar);
 PETSC_INTERN PetscErrorCode MatZeroEntries_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatSetOption_SeqSELL(Mat, MatOption, PetscBool);
@@ -217,7 +219,6 @@ PETSC_INTERN PetscErrorCode MatSOR_SeqSELL(Mat, Vec, PetscReal, MatSORType, Pets
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqSELL(Mat, MatDuplicateOption, Mat *);
 PETSC_INTERN PetscErrorCode MatEqual_SeqSELL(Mat, Mat, PetscBool *);
-PETSC_INTERN PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqSELL(Mat, ISColoring, MatFDColoring);

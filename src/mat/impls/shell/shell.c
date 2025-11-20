@@ -1340,13 +1340,6 @@ PETSC_INTERN PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_Shell(Mat A, PetscBool *missing, PetscInt *d)
-{
-  PetscFunctionBegin;
-  *missing = PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
@@ -1470,7 +1463,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*104*/ MatMissingDiagonal_Shell,
+                                       /*104*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
@@ -1478,8 +1471,8 @@ static struct _MatOps MatOps_Values = {NULL,
                                        /*109*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
                                        MatMultHermitianTransposeAdd_Shell,
+                                       NULL,
                                        /*114*/ NULL,
                                        NULL,
                                        NULL,
@@ -1506,7 +1499,6 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        /*139*/ NULL,
-                                       NULL,
                                        NULL,
                                        NULL,
                                        NULL,

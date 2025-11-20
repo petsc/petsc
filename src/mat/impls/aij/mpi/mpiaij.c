@@ -2686,21 +2686,6 @@ static PetscErrorCode MatShift_MPIAIJ(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_MPIAIJ(Mat A, PetscBool *missing, PetscInt *d)
-{
-  Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
-
-  PetscFunctionBegin;
-  PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only works for square matrices");
-  PetscCall(MatMissingDiagonal(a->A, missing, d));
-  if (d) {
-    PetscInt rstart;
-    PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
-    *d += rstart;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatInvertVariableBlockDiagonal_MPIAIJ(Mat A, PetscInt nblocks, const PetscInt *bsizes, PetscScalar *diag)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
@@ -2824,43 +2809,42 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        MatGetRowMin_MPIAIJ,
                                        NULL,
-                                       /*104*/ MatMissingDiagonal_MPIAIJ,
-                                       MatGetSeqNonzeroStructure_MPIAIJ,
+                                       /*104*/ MatGetSeqNonzeroStructure_MPIAIJ,
                                        NULL,
                                        MatGetGhosts_MPIAIJ,
                                        NULL,
-                                       /*109*/ NULL,
-                                       MatMultDiagonalBlock_MPIAIJ,
+                                       NULL,
+                                       /*109*/ MatMultDiagonalBlock_MPIAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*114*/ MatGetMultiProcBlock_MPIAIJ,
-                                       MatFindNonzeroRows_MPIAIJ,
+                                       MatGetMultiProcBlock_MPIAIJ,
+                                       /*114*/ MatFindNonzeroRows_MPIAIJ,
                                        MatGetColumnReductions_MPIAIJ,
                                        MatInvertBlockDiagonal_MPIAIJ,
                                        MatInvertVariableBlockDiagonal_MPIAIJ,
-                                       /*119*/ MatCreateSubMatricesMPI_MPIAIJ,
-                                       NULL,
+                                       MatCreateSubMatricesMPI_MPIAIJ,
+                                       /*119*/ NULL,
                                        NULL,
                                        MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ,
                                        NULL,
-                                       /*124*/ NULL,
                                        NULL,
+                                       /*124*/ NULL,
                                        NULL,
                                        MatSetBlockSizes_MPIAIJ,
                                        NULL,
-                                       /*129*/ MatFDColoringSetUp_MPIXAIJ,
-                                       MatFindOffBlockDiagonalEntries_MPIAIJ,
+                                       MatFDColoringSetUp_MPIXAIJ,
+                                       /*129*/ MatFindOffBlockDiagonalEntries_MPIAIJ,
                                        MatCreateMPIMatConcatenateSeqMat_MPIAIJ,
                                        NULL,
                                        NULL,
-                                       /*134*/ NULL,
-                                       MatCreateGraph_Simple_AIJ,
+                                       NULL,
+                                       /*134*/ MatCreateGraph_Simple_AIJ,
                                        NULL,
                                        MatEliminateZeros_MPIAIJ,
                                        MatGetRowSumAbs_MPIAIJ,
-                                       /*139*/ NULL,
                                        NULL,
+                                       /*139*/ NULL,
                                        NULL,
                                        MatCopyHashToXAIJ_MPI_Hash,
                                        MatGetCurrentMemType_MPIAIJ,

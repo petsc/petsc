@@ -178,15 +178,11 @@ IS Object: 1 MPI process
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRows (diag zero)
-Test MatMissingDiagonal
-[0] [0,5) Missing 1, row 0 (diag zero)
 IS Object: 1 MPI process
   type: stride
 Number of indices in (stride) set 1
 0 0
 Test MatZeroRowsLocal (diag zero)
-Test MatMissingDiagonal
-[0] [0,5) Missing 0, row -1 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
 Test MatInvertBlockDiagonal blockdiag 5 0 0 1

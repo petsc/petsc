@@ -220,7 +220,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFactorInfo *info)
 {
   Mat             C = B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
@@ -228,7 +228,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFacto
   const PetscInt *r, *ic;
   PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt       *ajtmpold, *ajtmp, nz, row;
-  PetscInt       *diag_offset = b->diag, idx, *ai = a->i, *aj = a->j, *pj;
+  PetscInt        idx, *ai = a->i, *aj = a->j, *pj;
+  const PetscInt *diag_offset;
   MatScalar      *pv, *v, *rtmp, m1, m2, m3, m4, *pc, *w, *x, x1, x2, x3, x4;
   MatScalar       p1, p2, p3, p4;
   MatScalar      *ba = b->a, *aa = a->a;
@@ -236,6 +237,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFacto
   PetscBool       allowzeropivot, zeropivotdetected;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype  = MAT_FACTOR_ILU;
   allowzeropivot = PetscNot(A->erroriffailure);
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
@@ -329,19 +334,24 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFacto
 /*
       Version for when blocks are 2 by 2 Using natural ordering
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
-  PetscInt     i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  PetscInt    *ajtmpold, *ajtmp, nz, row;
-  PetscInt    *diag_offset = b->diag, *ai = a->i, *aj = a->j, *pj;
-  MatScalar   *pv, *v, *rtmp, *pc, *w, *x;
-  MatScalar    p1, p2, p3, p4, m1, m2, m3, m4, x1, x2, x3, x4;
-  MatScalar   *ba = b->a, *aa = a->a;
-  PetscReal    shift = info->shiftamount;
-  PetscBool    allowzeropivot, zeropivotdetected;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
+  PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
+  PetscInt       *ajtmpold, *ajtmp, nz, row;
+  PetscInt       *ai = a->i, *aj = a->j, *pj;
+  const PetscInt *diag_offset;
+  MatScalar      *pv, *v, *rtmp, *pc, *w, *x;
+  MatScalar       p1, p2, p3, p4, m1, m2, m3, m4, x1, x2, x3, x4;
+  MatScalar      *ba = b->a, *aa = a->a;
+  PetscReal       shift = info->shiftamount;
+  PetscBool       allowzeropivot, zeropivotdetected;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype  = MAT_FACTOR_ILU;
   allowzeropivot = PetscNot(A->erroriffailure);
   PetscCall(PetscMalloc1(4 * (n + 1), &rtmp));
   for (i = 0; i < n; i++) {
@@ -458,7 +468,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B, Mat A, const MatFactorInfo *i
   PetscCall(PetscMemzero(&sctx, sizeof(FactorShiftCtx)));
 
   if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
-    ddiag          = a->diag;
+    PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &ddiag, NULL));
     sctx.shift_top = info->zeropivot;
     for (i = 0; i < n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
@@ -600,19 +610,24 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B, Mat A, const MatFactorInfo *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_1_inplace(Mat C, Mat A, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
   PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt       *ajtmpold, *ajtmp, nz, row, *ai = a->i, *aj = a->j;
-  PetscInt       *diag_offset = b->diag, diag, *pj;
+  PetscInt        diag, *pj;
+  const PetscInt *diag_offset;
   MatScalar      *pv, *v, *rtmp, multiplier, *pc;
   MatScalar      *ba = b->a, *aa = a->a;
   PetscBool       row_identity, col_identity;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype = MAT_FACTOR_ILU;
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
   PetscCall(PetscMalloc1(n + 1, &rtmp));
@@ -1001,7 +1016,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
   Mat                B;
-  PetscBool          perm_identity, missing;
+  PetscBool          perm_identity;
   PetscInt           reallocs = 0, i, *ai = a->i, *aj = a->j, am = a->mbs, bs = A->rmap->bs, *ui;
   const PetscInt    *rip;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
@@ -1010,10 +1025,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
   PetscBT            lnkbt;
+  PetscBool          diagDense;
+  const PetscInt    *adiag;
 
   PetscFunctionBegin;
-  PetscCall(MatMissingDiagonal(A, &missing, &i));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &adiag, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
 
   if (bs > 1) {
     if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
@@ -1029,14 +1046,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity) {
     PetscCall(PetscMalloc1(am + 1, &ui));
-    for (i = 0; i < am; i++) ui[i] = ai[i + 1] - a->diag[i]; /* ui: rowlengths - changes when !perm_identity */
+    for (i = 0; i < am; i++) ui[i] = ai[i + 1] - adiag[i]; /* ui: rowlengths - changes when !perm_identity */
     B = fact;
     PetscCall(MatSeqSBAIJSetPreallocation(B, 1, 0, ui));
 
     b  = (Mat_SeqSBAIJ *)B->data;
     uj = b->j;
     for (i = 0; i < am; i++) {
-      aj = a->j + a->diag[i];
+      aj = a->j + adiag[i];
       for (j = 0; j < ui[i]; j++) *uj++ = *aj++;
       b->ilen[i] = ui[i];
     }
@@ -1224,7 +1241,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
   Mat                B;
-  PetscBool          perm_identity, missing;
+  PetscBool          perm_identity;
   PetscReal          fill = info->fill;
   const PetscInt    *rip;
   PetscInt           i, mbs = a->mbs, bs = A->rmap->bs, *ai = a->i, *aj = a->j, reallocs = 0, prow;
@@ -1232,6 +1249,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
   PetscInt           nlnk, *lnk, ncols, ncols_upper, *cols, *uj, **ui_ptr, *uj_ptr;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscBT            lnkbt;
+  PetscBool          diagDense;
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
@@ -1241,9 +1259,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
     PetscCall(MatCholeskyFactorSymbolic(fact, a->sbaijMat, perm, info));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-
-  PetscCall(MatMissingDiagonal(A, &missing, &i));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, NULL, &diagDense));
+  PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry");
 
   /* check whether perm is the identity mapping */
   PetscCall(ISIdentity(perm, &perm_identity));
@@ -1500,265 +1517,5 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * (a->bs2) * (a->nz) - A->rmap->bs * A->cmap->n));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-    For each block in an block array saves the largest absolute value in the block into another array
-*/
-static PetscErrorCode MatBlockAbs_private(PetscInt nbs, PetscInt bs2, PetscScalar *blockarray, PetscReal *absarray)
-{
-  PetscInt i, j;
-
-  PetscFunctionBegin;
-  PetscCall(PetscArrayzero(absarray, nbs + 1));
-  for (i = 0; i < nbs; i++) {
-    for (j = 0; j < bs2; j++) {
-      if (absarray[i] < PetscAbsScalar(blockarray[i * nbs + j])) absarray[i] = PetscAbsScalar(blockarray[i * nbs + j]);
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-     This needs to be renamed and called by the regular MatILUFactor_SeqBAIJ when drop tolerance is used
-*/
-PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactorInfo *info, Mat *fact)
-{
-  Mat             B = *fact;
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b;
-  IS              isicol;
-  const PetscInt *r, *ic;
-  PetscInt        i, mbs = a->mbs, bs = A->rmap->bs, bs2 = a->bs2, *ai = a->i, *aj = a->j, *ajtmp, *adiag;
-  PetscInt       *bi, *bj, *bdiag;
-
-  PetscInt   row, nzi, nzi_bl, nzi_bu, *im, dtcount, nzi_al, nzi_au;
-  PetscInt   nlnk, *lnk;
-  PetscBT    lnkbt;
-  PetscBool  row_identity, icol_identity;
-  MatScalar *aatmp, *pv, *batmp, *ba, *rtmp, *pc, *multiplier, *vtmp;
-  PetscInt   j, nz, *pj, *bjtmp, k, ncut, *jtmp;
-
-  PetscReal  dt = info->dt; /* shift=info->shiftamount; */
-  PetscInt   nnz_max;
-  PetscBool  missing;
-  PetscReal *vtmp_abs;
-  MatScalar *v_work;
-  PetscInt  *v_pivots;
-  PetscBool  allowzeropivot, zeropivotdetected = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  /* symbolic factorization, can be reused */
-  PetscCall(MatMissingDiagonal(A, &missing, &i));
-  PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
-  adiag = a->diag;
-
-  PetscCall(ISInvertPermutation(iscol, PETSC_DECIDE, &isicol));
-
-  /* bdiag is location of diagonal in factor */
-  PetscCall(PetscMalloc1(mbs + 1, &bdiag));
-
-  /* allocate row pointers bi */
-  PetscCall(PetscMalloc1(2 * mbs + 2, &bi));
-
-  /* allocate bj and ba; max num of nonzero entries is (ai[n]+2*n*dtcount+2) */
-  dtcount = (PetscInt)info->dtcount;
-  if (dtcount > mbs - 1) dtcount = mbs - 1;
-  nnz_max = ai[mbs] + 2 * mbs * dtcount + 2;
-  /* printf("MatILUDTFactor_SeqBAIJ, bs %d, ai[mbs] %d, nnz_max  %d, dtcount %d\n",bs,ai[mbs],nnz_max,dtcount); */
-  PetscCall(PetscMalloc1(nnz_max, &bj));
-  nnz_max = nnz_max * bs2;
-  PetscCall(PetscMalloc1(nnz_max, &ba));
-
-  /* put together the new matrix */
-  PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-
-  b          = (Mat_SeqBAIJ *)B->data;
-  b->free_a  = PETSC_TRUE;
-  b->free_ij = PETSC_TRUE;
-
-  b->a    = ba;
-  b->j    = bj;
-  b->i    = bi;
-  b->diag = bdiag;
-  b->ilen = NULL;
-  b->imax = NULL;
-  b->row  = isrow;
-  b->col  = iscol;
-
-  PetscCall(PetscObjectReference((PetscObject)isrow));
-  PetscCall(PetscObjectReference((PetscObject)iscol));
-
-  b->icol = isicol;
-  PetscCall(PetscMalloc1(bs * (mbs + 1), &b->solve_work));
-  b->maxnz = nnz_max / bs2;
-
-  B->factortype            = MAT_FACTOR_ILUDT;
-  B->info.factor_mallocs   = 0;
-  B->info.fill_ratio_given = ((PetscReal)nnz_max) / ((PetscReal)(ai[mbs] * bs2));
-  /* end of symbolic factorization */
-  PetscCall(ISGetIndices(isrow, &r));
-  PetscCall(ISGetIndices(isicol, &ic));
-
-  /* linked list for storing column indices of the active row */
-  nlnk = mbs + 1;
-  PetscCall(PetscLLCreate(mbs, mbs, nlnk, lnk, lnkbt));
-
-  /* im: used by PetscLLAddSortedLU(); jtmp: working array for column indices of active row */
-  PetscCall(PetscMalloc2(mbs, &im, mbs, &jtmp));
-  /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
-  PetscCall(PetscMalloc2(mbs * bs2, &rtmp, mbs * bs2, &vtmp));
-  PetscCall(PetscMalloc1(mbs + 1, &vtmp_abs));
-  PetscCall(PetscMalloc3(bs, &v_work, bs2, &multiplier, bs, &v_pivots));
-
-  allowzeropivot  = PetscNot(A->erroriffailure);
-  bi[0]           = 0;
-  bdiag[0]        = (nnz_max / bs2) - 1; /* location of diagonal in factor B */
-  bi[2 * mbs + 1] = bdiag[0] + 1;        /* endof bj and ba array */
-  for (i = 0; i < mbs; i++) {
-    /* copy initial fill into linked list */
-    nzi = ai[r[i] + 1] - ai[r[i]];
-    PetscCheck(nzi, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT, r[i], i);
-    nzi_al = adiag[r[i]] - ai[r[i]];
-    nzi_au = ai[r[i] + 1] - adiag[r[i]] - 1;
-
-    /* load in initial unfactored row */
-    ajtmp = aj + ai[r[i]];
-    PetscCall(PetscLLAddPerm(nzi, ajtmp, ic, mbs, &nlnk, lnk, lnkbt));
-    PetscCall(PetscArrayzero(rtmp, mbs * bs2));
-    aatmp = a->a + bs2 * ai[r[i]];
-    for (j = 0; j < nzi; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], aatmp + bs2 * j, bs2));
-
-    /* add pivot rows into linked list */
-    row = lnk[mbs];
-    while (row < i) {
-      nzi_bl = bi[row + 1] - bi[row] + 1;
-      bjtmp  = bj + bdiag[row + 1] + 1; /* points to 1st column next to the diagonal in U */
-      PetscCall(PetscLLAddSortedLU(bjtmp, row, &nlnk, lnk, lnkbt, i, nzi_bl, im));
-      nzi += nlnk;
-      row = lnk[row];
-    }
-
-    /* copy data from lnk into jtmp, then initialize lnk */
-    PetscCall(PetscLLClean(mbs, mbs, nzi, lnk, jtmp, lnkbt));
-
-    /* numerical factorization */
-    bjtmp = jtmp;
-    row   = *bjtmp++; /* 1st pivot row */
-
-    while (row < i) {
-      pc = rtmp + bs2 * row;
-      pv = ba + bs2 * bdiag[row];                           /* inv(diag) of the pivot row */
-      PetscKernel_A_gets_A_times_B(bs, pc, pv, multiplier); /* pc= multiplier = pc*inv(diag[row]) */
-      PetscCall(MatBlockAbs_private(1, bs2, pc, vtmp_abs));
-      if (vtmp_abs[0] > dt) {         /* apply tolerance dropping rule */
-        pj = bj + bdiag[row + 1] + 1; /* point to 1st entry of U(row,:) */
-        pv = ba + bs2 * (bdiag[row + 1] + 1);
-        nz = bdiag[row] - bdiag[row + 1] - 1; /* num of entries in U(row,:), excluding diagonal */
-        for (j = 0; j < nz; j++) PetscKernel_A_gets_A_minus_B_times_C(bs, rtmp + bs2 * pj[j], pc, pv + bs2 * j);
-        /* PetscCall(PetscLogFlops(bslog*(nz+1.0)-bs)); */
-      }
-      row = *bjtmp++;
-    }
-
-    /* copy sparse rtmp into contiguous vtmp; separate L and U part */
-    nzi_bl = 0;
-    j      = 0;
-    while (jtmp[j] < i) { /* L-part. Note: jtmp is sorted */
-      PetscCall(PetscArraycpy(vtmp + bs2 * j, rtmp + bs2 * jtmp[j], bs2));
-      nzi_bl++;
-      j++;
-    }
-    nzi_bu = nzi - nzi_bl - 1;
-
-    while (j < nzi) { /* U-part */
-      PetscCall(PetscArraycpy(vtmp + bs2 * j, rtmp + bs2 * jtmp[j], bs2));
-      j++;
-    }
-
-    PetscCall(MatBlockAbs_private(nzi, bs2, vtmp, vtmp_abs));
-
-    bjtmp = bj + bi[i];
-    batmp = ba + bs2 * bi[i];
-    /* apply level dropping rule to L part */
-    ncut = nzi_al + dtcount;
-    if (ncut < nzi_bl) {
-      PetscCall(PetscSortSplitReal(ncut, nzi_bl, vtmp_abs, jtmp));
-      PetscCall(PetscSortIntWithScalarArray(ncut, jtmp, vtmp));
-    } else {
-      ncut = nzi_bl;
-    }
-    for (j = 0; j < ncut; j++) {
-      bjtmp[j] = jtmp[j];
-      PetscCall(PetscArraycpy(batmp + bs2 * j, rtmp + bs2 * bjtmp[j], bs2));
-    }
-    bi[i + 1] = bi[i] + ncut;
-    nzi       = ncut + 1;
-
-    /* apply level dropping rule to U part */
-    ncut = nzi_au + dtcount;
-    if (ncut < nzi_bu) {
-      PetscCall(PetscSortSplitReal(ncut, nzi_bu, vtmp_abs + nzi_bl + 1, jtmp + nzi_bl + 1));
-      PetscCall(PetscSortIntWithScalarArray(ncut, jtmp + nzi_bl + 1, vtmp + nzi_bl + 1));
-    } else {
-      ncut = nzi_bu;
-    }
-    nzi += ncut;
-
-    /* mark bdiagonal */
-    bdiag[i + 1]    = bdiag[i] - (ncut + 1);
-    bi[2 * mbs - i] = bi[2 * mbs - i + 1] - (ncut + 1);
-
-    bjtmp = bj + bdiag[i];
-    batmp = ba + bs2 * bdiag[i];
-    PetscCall(PetscArraycpy(batmp, rtmp + bs2 * i, bs2));
-    *bjtmp = i;
-
-    bjtmp = bj + bdiag[i + 1] + 1;
-    batmp = ba + (bdiag[i + 1] + 1) * bs2;
-
-    for (k = 0; k < ncut; k++) {
-      bjtmp[k] = jtmp[nzi_bl + 1 + k];
-      PetscCall(PetscArraycpy(batmp + bs2 * k, rtmp + bs2 * bjtmp[k], bs2));
-    }
-
-    im[i] = nzi; /* used by PetscLLAddSortedLU() */
-
-    /* invert diagonal block for simpler triangular solves - add shift??? */
-    batmp = ba + bs2 * bdiag[i];
-
-    PetscCall(PetscKernel_A_gets_inverse_A(bs, batmp, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
-    if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-  } /* for (i=0; i<mbs; i++) */
-  PetscCall(PetscFree3(v_work, multiplier, v_pivots));
-
-  /* printf("end of L %d, beginning of U %d\n",bi[mbs],bdiag[mbs]); */
-  PetscCheck(bi[mbs] < bdiag[mbs], PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "end of L array %" PetscInt_FMT " cannot >= the beginning of U array %" PetscInt_FMT, bi[mbs], bdiag[mbs]);
-
-  PetscCall(ISRestoreIndices(isrow, &r));
-  PetscCall(ISRestoreIndices(isicol, &ic));
-
-  PetscCall(PetscLLDestroy(lnk, lnkbt));
-
-  PetscCall(PetscFree2(im, jtmp));
-  PetscCall(PetscFree2(rtmp, vtmp));
-
-  PetscCall(PetscLogFlops(bs2 * B->cmap->n));
-  b->maxnz = b->nz = bi[mbs] + bdiag[0] - bdiag[mbs];
-
-  PetscCall(ISIdentity(isrow, &row_identity));
-  PetscCall(ISIdentity(isicol, &icol_identity));
-  if (row_identity && icol_identity) {
-    B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
-  } else {
-    B->ops->solve = MatSolve_SeqBAIJ_N;
-  }
-
-  B->ops->solveadd          = NULL;
-  B->ops->solvetranspose    = NULL;
-  B->ops->solvetransposeadd = NULL;
-  B->ops->matsolve          = NULL;
-  B->assembled              = PETSC_TRUE;
-  B->preallocated           = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

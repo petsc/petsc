@@ -2529,8 +2529,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (!cmp[0] && !cmp[2]) {
                 if (!block) PetscCall(MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN));
                 else {
-                  PetscCall(MatMissingDiagonal(D, cmp, nullptr));
-                  if (cmp[0]) structure = DIFFERENT_NONZERO_PATTERN; /* data->aux has no missing diagonal entry */
+                  structure = DIFFERENT_NONZERO_PATTERN;
                   PetscCall(MatAXPY(D, 1.0, data->aux, structure));
                 }
               } else {

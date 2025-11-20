@@ -4,10 +4,37 @@ static char help[] = "Tests MATPYTHON from C\n\n";
 /* MATPYTHON has support for wrapping these operations
    MatHasOperation_Python inspects the user's Python class and checks
    if the methods are provided */
-MatOperation optenum[] = {MATOP_MULT, MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE, MATOP_MULT_TRANSPOSE_ADD, MATOP_SOLVE, MATOP_SOLVE_ADD, MATOP_SOLVE_TRANSPOSE, MATOP_SOLVE_TRANSPOSE_ADD, MATOP_SOR, MATOP_GET_DIAGONAL, MATOP_DIAGONAL_SCALE, MATOP_NORM, MATOP_ZERO_ENTRIES, MATOP_GET_DIAGONAL_BLOCK, MATOP_DUPLICATE, MATOP_COPY, MATOP_SCALE, MATOP_SHIFT, MATOP_DIAGONAL_SET, MATOP_ZERO_ROWS_COLUMNS, MATOP_CREATE_SUBMATRIX, MATOP_CREATE_VECS, MATOP_CONJUGATE, MATOP_REAL_PART, MATOP_IMAGINARY_PART, MATOP_MISSING_DIAGONAL, MATOP_MULT_DIAGONAL_BLOCK, MATOP_MULT_HERMITIAN_TRANSPOSE, MATOP_MULT_HERMITIAN_TRANS_ADD};
+MatOperation optenum[] = {MATOP_MULT, MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE, MATOP_MULT_TRANSPOSE_ADD, MATOP_SOLVE, MATOP_SOLVE_ADD, MATOP_SOLVE_TRANSPOSE, MATOP_SOLVE_TRANSPOSE_ADD, MATOP_SOR, MATOP_GET_DIAGONAL, MATOP_DIAGONAL_SCALE, MATOP_NORM, MATOP_ZERO_ENTRIES, MATOP_GET_DIAGONAL_BLOCK, MATOP_DUPLICATE, MATOP_COPY, MATOP_SCALE, MATOP_SHIFT, MATOP_DIAGONAL_SET, MATOP_ZERO_ROWS_COLUMNS, MATOP_CREATE_SUBMATRIX, MATOP_CREATE_VECS, MATOP_CONJUGATE, MATOP_REAL_PART, MATOP_IMAGINARY_PART, MATOP_MULT_DIAGONAL_BLOCK, MATOP_MULT_HERMITIAN_TRANSPOSE, MATOP_MULT_HERMITIAN_TRANS_ADD};
 
 /* Name of the methods in the user's Python class */
-const char *const optstr[] = {"mult", "multAdd", "multTranspose", "multTransposeAdd", "solve", "solveAdd", "solveTranspose", "solveTransposeAdd", "SOR", "getDiagonal", "diagonalScale", "norm", "zeroEntries", "getDiagonalBlock", "duplicate", "copy", "scale", "shift", "setDiagonal", "zeroRowsColumns", "createSubMatrix", "getVecs", "conjugate", "realPart", "imagPart", "missingDiagonal", "multDiagonalBlock", "multHermitian", "multHermitianAdd"};
+const char *const optstr[] = {"mult",
+                              "multAdd",
+                              "multTranspose",
+                              "multTransposeAdd",
+                              "solve",
+                              "solveAdd",
+                              "solveTranspose",
+                              "solveTransposeAdd",
+                              "SOR",
+                              "getDiagonal",
+                              "diagonalScale",
+                              "norm",
+                              "zeroEntries",
+                              "getDiagonalBlock",
+                              "duplicate",
+                              "copy",
+                              "scale",
+                              "shift",
+                              "setDiagonal",
+                              "zeroRowsColumns",
+                              "createSubMatrix",
+                              "getVecs",
+                              "conjugate",
+                              "realPart",
+                              "imagPart",
+                              "multDiagonalBlock",
+                              "multHermitian",
+                              "multHermitianAdd"};
 
 PetscErrorCode RunHasOperationTest()
 {

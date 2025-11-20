@@ -133,8 +133,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(Mat A, PetscI
   PetscCall(MatGetSize(A, &m, &n));
 
   if (bs == 1) {
-    const PetscInt *adiag = Aa->diag;
+    const PetscInt *adiag;
 
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
     PetscCall(PetscMalloc1(m, nnz));
     for (PetscInt i = 0; i < m; i++) {
       if (adiag[i] == ai[i + 1]) {
@@ -165,12 +166,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(Mat A, PetscI
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat           B;
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ *)A->data;
-  Mat_SeqSBAIJ *b;
-  PetscInt     *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->N, i, j, *bi, *bj, *rowlengths, bs = A->rmap->bs;
-  MatScalar    *av, *bv;
-  PetscBool     miss = PETSC_FALSE;
+  Mat             B;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
+  Mat_SeqSBAIJ   *b;
+  PetscInt       *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->N, i, j, *bi, *bj, *rowlengths, bs = A->rmap->bs;
+  MatScalar      *av, *bv;
+  PetscBool       miss = PETSC_FALSE;
+  const PetscInt *adiag;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
@@ -179,15 +181,15 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
   PetscCheck(A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Matrix must be either symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
 #endif
   PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix must be square");
-
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   if (bs == 1) {
     PetscCall(PetscMalloc1(m, &rowlengths));
     for (i = 0; i < m; i++) {
-      if (a->diag[i] == ai[i + 1]) {             /* missing diagonal */
+      if (adiag[i] == ai[i + 1]) {               /* missing diagonal */
         rowlengths[i] = (ai[i + 1] - ai[i]) + 1; /* allocate some extra space */
         miss          = PETSC_TRUE;
       } else {
-        rowlengths[i] = (ai[i + 1] - a->diag[i]);
+        rowlengths[i] = (ai[i + 1] - adiag[i]);
       }
     }
   } else PetscCall(MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(A, &rowlengths));
@@ -206,8 +208,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
 
     bi[0] = 0;
     for (i = 0; i < m; i++) {
-      aj = a->j + a->diag[i];
-      av = a->a + a->diag[i];
+      aj = a->j + adiag[i];
+      av = a->a + adiag[i];
       for (j = 0; j < rowlengths[i]; j++) {
         *bj = *aj;
         bj++;
@@ -239,8 +241,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
   Mat           B;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
   Mat_SeqBAIJ  *b;
-  PetscInt     *ai = a->i, *aj = a->j, m = A->rmap->N, n = A->cmap->n, i, k, *bi, *bj, *browlengths, nz, *browstart, itmp;
-  PetscInt      bs = A->rmap->bs, bs2 = bs * bs, mbs = m / bs, col, row;
+  PetscInt     *ai = a->i, *aj = a->j, m = A->rmap->N, n = A->cmap->n, *bi, *bj, *browlengths, nz, *browstart, itmp;
+  PetscInt      bs = A->rmap->bs, bs2 = bs * bs, mbs = m / bs;
   MatScalar    *av, *bv;
 #if defined(PETSC_USE_COMPLEX)
   const int aconj = A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
@@ -251,11 +253,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
   PetscCall(PetscMalloc2(mbs, &browlengths, mbs, &browstart));
-  for (i = 0; i < mbs; i++) browlengths[i] = 0;
-  for (i = 0; i < mbs; i++) {
+  for (PetscInt i = 0; i < mbs; i++) browlengths[i] = 0;
+  for (PetscInt i = 0; i < mbs; i++) {
     nz = ai[i + 1] - ai[i];
-    aj++;                      /* skip diagonal */
-    for (k = 1; k < nz; k++) { /* no. of lower triangular blocks */
+    aj++;                               /* skip diagonal */
+    for (PetscInt k = 1; k < nz; k++) { /* no. of lower triangular blocks */
       browlengths[*aj]++;
       aj++;
     }
@@ -276,7 +278,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
 
   /* set b->i */
   bi[0] = 0;
-  for (i = 0; i < mbs; i++) {
+  for (PetscInt i = 0; i < mbs; i++) {
     b->ilen[i]   = browlengths[i];
     bi[i + 1]    = bi[i] + browlengths[i];
     browstart[i] = bi[i];
@@ -286,13 +288,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
   /* set b->j and b->a */
   aj = a->j;
   av = a->a;
-  for (i = 0; i < mbs; i++) {
+  for (PetscInt i = 0; i < mbs; i++) {
     /* diagonal block */
     *(bj + browstart[i]) = *aj;
     aj++;
 
     itmp = bs2 * browstart[i];
-    for (k = 0; k < bs2; k++) {
+    for (PetscInt k = 0; k < bs2; k++) {
       *(bv + itmp + k) = *av;
       av++;
     }
@@ -304,9 +306,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
       *(bj + browstart[*aj]) = i; /* block col index */
 
       itmp = bs2 * browstart[*aj]; /* row index */
-      for (col = 0; col < bs; col++) {
-        k = col;
-        for (row = 0; row < bs; row++) {
+      for (PetscInt col = 0; col < bs; col++) {
+        PetscInt k = col;
+        for (PetscInt row = 0; row < bs; row++) {
           bv[itmp + col * bs + row] = aconj ? PetscConj(av[k]) : av[k];
           k += bs;
         }
@@ -318,7 +320,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
       aj++;
 
       itmp = bs2 * browstart[i];
-      for (k = 0; k < bs2; k++) bv[itmp + k] = av[k];
+      for (PetscInt k = 0; k < bs2; k++) bv[itmp + k] = av[k];
       av += bs2;
       browstart[i]++;
     }
@@ -334,22 +336,20 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat           B;
-  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *)A->data;
-  Mat_SeqSBAIJ *b;
-  PetscInt     *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->n, i, j, k, *bi, *bj, *browlengths;
-  PetscInt      bs = A->rmap->bs, bs2 = bs * bs, mbs = m / bs, dd;
-  MatScalar    *av, *bv;
-  PetscBool     flg;
+  Mat             B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
+  Mat_SeqSBAIJ   *b;
+  PetscInt       *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->n, k, *bi, *bj, *browlengths;
+  PetscInt        bs = A->rmap->bs, bs2 = bs * bs, mbs = m / bs;
+  MatScalar      *av, *bv;
+  const PetscInt *adiag;
 
   PetscFunctionBegin;
   PetscCheck(A->symmetric, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix must be square");
-  PetscCall(MatMissingDiagonal_SeqBAIJ(A, &flg, &dd)); /* check for missing diagonals, then mark diag */
-  PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal %" PetscInt_FMT, dd);
-
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &adiag, NULL));
   PetscCall(PetscMalloc1(mbs, &browlengths));
-  for (i = 0; i < mbs; i++) browlengths[i] = ai[i + 1] - a->diag[i];
+  for (PetscInt i = 0; i < mbs; i++) browlengths[i] = ai[i + 1] - adiag[i];
 
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
@@ -364,10 +364,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, 
   bv = b->a;
 
   bi[0] = 0;
-  for (i = 0; i < mbs; i++) {
-    aj = a->j + a->diag[i];
-    av = a->a + (a->diag[i]) * bs2;
-    for (j = 0; j < browlengths[i]; j++) {
+  for (PetscInt i = 0; i < mbs; i++) {
+    aj = a->j + adiag[i];
+    av = a->a + (adiag[i]) * bs2;
+    for (PetscInt j = 0; j < browlengths[i]; j++) {
       *bj = *aj;
       bj++;
       aj++;

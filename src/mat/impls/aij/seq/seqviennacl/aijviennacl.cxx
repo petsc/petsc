@@ -148,7 +148,6 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
 
       PetscCall(PetscLogGpuToCpu(row_buffer.raw_size() + col_buffer.raw_size() + (Agpu->nnz() * sizeof(PetscScalar))));
       ViennaCLWaitForGPU();
-      /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
     } catch (std::exception const &ex) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }

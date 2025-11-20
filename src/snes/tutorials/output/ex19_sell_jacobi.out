@@ -1,0 +1,68 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 2.391552133017e-01
+    0 KSP Residual norm 1.043978915076e-01
+    1 KSP Residual norm 9.897206228926e-02
+    2 KSP Residual norm 3.602471125706e-02
+    3 KSP Residual norm 1.854371936520e-02
+    4 KSP Residual norm 9.934100354718e-03
+    5 KSP Residual norm 4.476229639013e-03
+    6 KSP Residual norm 1.570219099049e-03
+    7 KSP Residual norm 3.970010925899e-04
+    8 KSP Residual norm 2.154140071934e-04
+    9 KSP Residual norm 1.217737250916e-04
+   10 KSP Residual norm 4.840819223879e-05
+   11 KSP Residual norm 2.631653557386e-05
+   12 KSP Residual norm 1.468746272134e-05
+   13 KSP Residual norm 3.721174771278e-06
+   14 KSP Residual norm 7.915424447379e-07
+  1 SNES Function norm 6.827475357708e-05
+    0 KSP Residual norm 1.707175169445e-05
+    1 KSP Residual norm 5.958791922536e-06
+    2 KSP Residual norm 3.710938156159e-06
+    3 KSP Residual norm 1.690149504211e-06
+    4 KSP Residual norm 9.484891709813e-07
+    5 KSP Residual norm 3.878222026691e-07
+    6 KSP Residual norm 3.278409376961e-07
+    7 KSP Residual norm 1.887429268064e-07
+    8 KSP Residual norm 6.446784332618e-08
+    9 KSP Residual norm 3.591913490308e-08
+   10 KSP Residual norm 1.165073891609e-08
+   11 KSP Residual norm 7.027811412811e-09
+   12 KSP Residual norm 3.272945333547e-09
+   13 KSP Residual norm 1.051501143617e-09
+   14 KSP Residual norm 1.866732880485e-10
+   15 KSP Residual norm 3.516571959552e-11
+  2 SNES Function norm 1.249882036745e-10
+SNES Object: 1 MPI process
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=29
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
+  SNESLineSearch Object: 1 MPI process
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxlambda=1.000000e+00, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI process
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI process
+    type: jacobi
+      type DIAGONAL
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI process
+      type: seqsell
+      rows=64, cols=64, bs=4
+      total: nonzeros=1152, allocated nonzeros=1152
+      total number of mallocs used during MatSetValues calls=0
+Number of SNES iterations = 2

@@ -7,14 +7,15 @@
 /*
       Version for when blocks are 4 by 4
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
   PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt       *ajtmpold, *ajtmp, nz, row;
-  PetscInt       *diag_offset = b->diag, idx, *ai = a->i, *aj = a->j, *pj;
+  const PetscInt *diag_offset;
+  PetscInt        idx, *ai = a->i, *aj = a->j, *pj;
   MatScalar      *pv, *v, *rtmp, *pc, *w, *x;
   MatScalar       p1, p2, p3, p4, m1, m2, m3, m4, m5, m6, m7, m8, m9, x1, x2, x3, x4;
   MatScalar       p5, p6, p7, p8, p9, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16;
@@ -26,6 +27,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFacto
   PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype = MAT_FACTOR_ILU;
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
   PetscCall(PetscMalloc1(16 * (n + 1), &rtmp));
@@ -332,26 +337,31 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatILUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
 {
   /*
     Default Version for when blocks are 4 by 4 Using natural ordering
 */
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
-  PetscInt     i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  PetscInt    *ajtmpold, *ajtmp, nz, row;
-  PetscInt    *diag_offset = b->diag, *ai = a->i, *aj = a->j, *pj;
-  MatScalar   *pv, *v, *rtmp, *pc, *w, *x;
-  MatScalar    p1, p2, p3, p4, m1, m2, m3, m4, m5, m6, m7, m8, m9, x1, x2, x3, x4;
-  MatScalar    p5, p6, p7, p8, p9, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16;
-  MatScalar    p10, p11, p12, p13, p14, p15, p16, m10, m11, m12;
-  MatScalar    m13, m14, m15, m16;
-  MatScalar   *ba = b->a, *aa = a->a;
-  PetscBool    pivotinblocks = b->pivotinblocks;
-  PetscReal    shift         = info->shiftamount;
-  PetscBool    allowzeropivot, zeropivotdetected = PETSC_FALSE;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
+  PetscInt        i, j, n = a->mbs, *bi = b->i, *bj = b->j;
+  PetscInt       *ajtmpold, *ajtmp, nz, row;
+  const PetscInt *diag_offset;
+  PetscInt       *ai = a->i, *aj = a->j, *pj;
+  MatScalar      *pv, *v, *rtmp, *pc, *w, *x;
+  MatScalar       p1, p2, p3, p4, m1, m2, m3, m4, m5, m6, m7, m8, m9, x1, x2, x3, x4;
+  MatScalar       p5, p6, p7, p8, p9, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16;
+  MatScalar       p10, p11, p12, p13, p14, p15, p16, m10, m11, m12;
+  MatScalar       m13, m14, m15, m16;
+  MatScalar      *ba = b->a, *aa = a->a;
+  PetscBool       pivotinblocks = b->pivotinblocks;
+  PetscReal       shift         = info->shiftamount;
+  PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
 
   PetscFunctionBegin;
+  /* Since A is C and C is labeled as a factored matrix we need to lie to MatGetDiagonalMarkers_SeqBAIJ() to get it to compute the diagonals */
+  A->factortype = MAT_FACTOR_NONE;
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &diag_offset, NULL));
+  A->factortype  = MAT_FACTOR_ILU;
   allowzeropivot = PetscNot(A->erroriffailure);
   PetscCall(PetscMalloc1(16 * (n + 1), &rtmp));
 

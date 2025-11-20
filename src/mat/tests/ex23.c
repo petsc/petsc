@@ -1002,9 +1002,8 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   PetscReal              error;
   char                   diagstr[16];
   const PetscInt        *idxs;
-  PetscInt               rst, ren, i, n, N, d;
-  PetscMPIInt            rank;
-  PetscBool              miss, haszerorows;
+  PetscInt               i, n, N;
+  PetscBool              haszerorows;
   IS                     gis;
 
   PetscFunctionBeginUser;
@@ -1092,17 +1091,6 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
     PetscCall(VecNorm(b2, NORM_INFINITY, &error));
     PetscCheck(error <= PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "ERROR IN ZEROROWS ON B %g (diag %s)", (double)error, diagstr);
   }
-
-  /* test MatMissingDiagonal */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatMissingDiagonal\n"));
-  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCall(MatMissingDiagonal(B, &miss, &d));
-  PetscCall(MatGetOwnershipRange(B, &rst, &ren));
-  PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] [%" PetscInt_FMT ",%" PetscInt_FMT ") Missing %d, row %" PetscInt_FMT " (diag %s)\n", rank, rst, ren, (int)miss, d, diagstr));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(VecDestroy(&b2));

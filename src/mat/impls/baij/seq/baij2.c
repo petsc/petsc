@@ -3217,35 +3217,39 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A, NormType type, PetscReal *norm)
 
 PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A, Vec v)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
-  PetscInt     i, j, k, n, row, bs, *ai, *aj, ambs, bs2;
-  PetscScalar *x, zero = 0.0;
-  MatScalar   *aa, *aa_j;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
+  PetscInt         n;
+  const PetscInt   bs = A->rmap->bs, ambs = a->mbs, bs2 = a->bs2;
+  PetscScalar     *x;
+  const MatScalar *aa = a->a, *aa_j;
+  const PetscInt  *ai = a->i, *adiag;
+  PetscBool        diagDense;
 
   PetscFunctionBegin;
   PetscCheck(!A->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-  bs   = A->rmap->bs;
-  aa   = a->a;
-  ai   = a->i;
-  aj   = a->j;
-  ambs = a->mbs;
-  bs2  = a->bs2;
 
-  PetscCall(VecSet(v, zero));
-  PetscCall(VecGetArray(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
-  for (i = 0; i < ambs; i++) {
-    for (j = ai[i]; j < ai[i + 1]; j++) {
-      if (aj[j] == i) {
-        row  = i * bs;
+  PetscCall(VecGetArrayWrite(v, &x));
+  PetscCall(MatGetDiagonalMarkers_SeqBAIJ(A, &adiag, &diagDense));
+  if (diagDense) {
+    for (PetscInt i = 0, row = 0; i < ambs; i++) {
+      aa_j = aa + adiag[i] * bs2;
+      for (PetscInt k = 0; k < bs2; k += (bs + 1)) x[row++] = aa_j[k];
+    }
+  } else {
+    for (PetscInt i = 0, row = 0; i < ambs; i++) {
+      const PetscInt j = adiag[i];
+
+      if (j != ai[i + 1]) {
         aa_j = aa + j * bs2;
-        for (k = 0; k < bs2; k += (bs + 1), row++) x[row] = aa_j[k];
-        break;
+        for (PetscInt k = 0; k < bs2; k += (bs + 1)) x[row++] = aa_j[k];
+      } else {
+        for (PetscInt k = 0; k < bs; k++) x[row++] = 0.0;
       }
     }
   }
-  PetscCall(VecRestoreArray(v, &x));
+  PetscCall(VecRestoreArrayWrite(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

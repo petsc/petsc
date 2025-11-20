@@ -1889,52 +1889,6 @@ PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscInt *dd)
-{
-  hypre_ParCSRMatrix *parcsr;
-  hypre_CSRMatrix    *ha;
-  PetscInt            rst;
-
-  PetscFunctionBegin;
-  PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented with non-square diagonal blocks");
-  PetscCall(MatGetOwnershipRange(A, &rst, NULL));
-  PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-  if (missing) *missing = PETSC_FALSE;
-  if (dd) *dd = -1;
-  ha = hypre_ParCSRMatrixDiag(parcsr);
-  if (ha) {
-    PetscInt   size, i;
-    HYPRE_Int *ii, *jj;
-
-    size = hypre_CSRMatrixNumRows(ha);
-    ii   = hypre_CSRMatrixI(ha);
-    jj   = hypre_CSRMatrixJ(ha);
-    for (i = 0; i < size; i++) {
-      PetscInt  j;
-      PetscBool found = PETSC_FALSE;
-
-      for (j = ii[i]; j < ii[i + 1] && !found; j++) found = (jj[j] == i) ? PETSC_TRUE : PETSC_FALSE;
-
-      if (!found) {
-        PetscCall(PetscInfo(A, "Matrix is missing local diagonal entry %" PetscInt_FMT "\n", i));
-        if (missing) *missing = PETSC_TRUE;
-        if (dd) *dd = i + rst;
-        PetscFunctionReturn(PETSC_SUCCESS);
-      }
-    }
-    if (!size) {
-      PetscCall(PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n"));
-      if (missing) *missing = PETSC_TRUE;
-      if (dd) *dd = rst;
-    }
-  } else {
-    PetscCall(PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n"));
-    if (missing) *missing = PETSC_TRUE;
-    if (dd) *dd = rst;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
 {
   hypre_ParCSRMatrix *parcsr;
@@ -2459,7 +2413,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->assemblyend           = MatAssemblyEnd_HYPRE;
   B->ops->assemblybegin         = MatAssemblyBegin_HYPRE;
   B->ops->setvalues             = MatSetValues_HYPRE;
-  B->ops->missingdiagonal       = MatMissingDiagonal_HYPRE;
   B->ops->scale                 = MatScale_HYPRE;
   B->ops->zerorowscolumns       = MatZeroRowsColumns_HYPRE;
   B->ops->zeroentries           = MatZeroEntries_HYPRE;

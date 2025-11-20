@@ -1979,428 +1979,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if 0
-// unused
-static PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, const MatFactorInfo *info)
-{
-  Mat              C = B;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)C->data;
-  IS               iscol = b->col, isrow = b->row, isicol = b->icol;
-  const PetscInt  *r, *ic, *c, *ics;
-  PetscInt         n = A->rmap->n, *bi = b->i;
-  PetscInt        *bj = b->j, *nbj = b->j + 1, *ajtmp, *bjtmp, nz, nz_tmp, row, prow;
-  PetscInt         i, j, idx, *bd = b->diag, node_max, nodesz;
-  PetscInt        *ai = a->i, *aj = a->j;
-  PetscInt        *ns, *tmp_vec1, *tmp_vec2, *nsmap, *pj;
-  PetscScalar      mul1, mul2, mul3, tmp;
-  MatScalar       *pc1, *pc2, *pc3, *ba = b->a, *pv, *rtmp11, *rtmp22, *rtmp33;
-  const MatScalar *v1, *v2, *v3, *aa    = a->a, *rtmp1;
-  PetscReal        rs = 0.0;
-  FactorShiftCtx   sctx;
-
-  PetscFunctionBegin;
-  sctx.shift_top      = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_lo       = 0;
-  sctx.shift_hi       = 0;
-  sctx.shift_fraction = 0;
-
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
-    sctx.shift_top = 0;
-    for (i = 0; i < n; i++) {
-      /* calculate rs = sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      rs    = 0.0;
-      ajtmp = aj + ai[i];
-      rtmp1 = aa + ai[i];
-      nz    = ai[i + 1] - ai[i];
-      for (j = 0; j < nz; j++) {
-        if (*ajtmp != i) {
-          rs += PetscAbsScalar(*rtmp1++);
-        } else {
-          rs -= PetscRealPart(*rtmp1++);
-        }
-        ajtmp++;
-      }
-      if (rs > sctx.shift_top) sctx.shift_top = rs;
-    }
-    if (sctx.shift_top == 0.0) sctx.shift_top += 1.e-12;
-    sctx.shift_top *= 1.1;
-    sctx.nshift_max = 5;
-    sctx.shift_lo   = 0.;
-    sctx.shift_hi   = 1.;
-  }
-  sctx.shift_amount = 0;
-  sctx.nshift       = 0;
-
-  PetscCall(ISGetIndices(isrow, &r));
-  PetscCall(ISGetIndices(iscol, &c));
-  PetscCall(ISGetIndices(isicol, &ic));
-  PetscCall(PetscCalloc3(n, &rtmp11, n, &rtmp22, n, &rtmp33));
-  ics = ic;
-
-  node_max = a->inode.node_count;
-  ns       = a->inode.size;
-  PetscCheck(ns, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Matrix without inode information");
-
-  /* If max inode size > 3, split it into two inodes.*/
-  /* also map the inode sizes according to the ordering */
-  PetscCall(PetscMalloc1(n + 1, &tmp_vec1));
-  for (i = 0, j = 0; i < node_max; ++i, ++j) {
-    if (ns[i] > 3) {
-      tmp_vec1[j] = ns[i] / 2; /* Assuming ns[i] < =5  */
-      ++j;
-      tmp_vec1[j] = ns[i] - tmp_vec1[j - 1];
-    } else {
-      tmp_vec1[j] = ns[i];
-    }
-  }
-  /* Use the correct node_max */
-  node_max = j;
-
-  /* Now reorder the inode info based on mat re-ordering info */
-  /* First create a row -> inode_size_array_index map */
-  PetscCall(PetscMalloc2(n + 1, &nsmap, node_max + 1, &tmp_vec2));
-  for (i = 0, row = 0; i < node_max; i++) {
-    nodesz = tmp_vec1[i];
-    for (j = 0; j < nodesz; j++, row++) nsmap[row] = i;
-  }
-  /* Using nsmap, create a reordered ns structure */
-  for (i = 0, j = 0; i < node_max; i++) {
-    nodesz      = tmp_vec1[nsmap[r[j]]]; /* here the reordered row_no is in r[] */
-    tmp_vec2[i] = nodesz;
-    j += nodesz;
-  }
-  PetscCall(PetscFree2(nsmap, tmp_vec1));
-  /* Now use the correct ns */
-  ns = tmp_vec2;
-
-  do {
-    sctx.newshift = PETSC_FALSE;
-    /* Now loop over each block-row, and do the factorization */
-    for (i = 0, row = 0; i < node_max; i++) {
-      nodesz = ns[i];
-      nz     = bi[row + 1] - bi[row];
-      bjtmp  = bj + bi[row];
-
-      switch (nodesz) {
-      case 1:
-        for (j = 0; j < nz; j++) {
-          idx         = bjtmp[j];
-          rtmp11[idx] = 0.0;
-        }
-
-        /* load in initial (unfactored row) */
-        idx    = r[row];
-        nz_tmp = ai[idx + 1] - ai[idx];
-        ajtmp  = aj + ai[idx];
-        v1     = aa + ai[idx];
-
-        for (j = 0; j < nz_tmp; j++) {
-          idx         = ics[ajtmp[j]];
-          rtmp11[idx] = v1[j];
-        }
-        rtmp11[ics[r[row]]] += sctx.shift_amount;
-
-        prow = *bjtmp++;
-        while (prow < row) {
-          pc1 = rtmp11 + prow;
-          if (*pc1 != 0.0) {
-            pv     = ba + bd[prow];
-            pj     = nbj + bd[prow];
-            mul1   = *pc1 * *pv++;
-            *pc1   = mul1;
-            nz_tmp = bi[prow + 1] - bd[prow] - 1;
-            PetscCall(PetscLogFlops(1 + 2.0 * nz_tmp));
-            for (j = 0; j < nz_tmp; j++) {
-              tmp = pv[j];
-              idx = pj[j];
-              rtmp11[idx] -= mul1 * tmp;
-            }
-          }
-          prow = *bjtmp++;
-        }
-        pj  = bj + bi[row];
-        pc1 = ba + bi[row];
-
-        sctx.pv     = rtmp11[row];
-        rtmp11[row] = 1.0 / rtmp11[row]; /* invert diag */
-        rs          = 0.0;
-        for (j = 0; j < nz; j++) {
-          idx    = pj[j];
-          pc1[j] = rtmp11[idx]; /* rtmp11 -> ba */
-          if (idx != row) rs += PetscAbsScalar(pc1[j]);
-        }
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row));
-        if (sctx.newshift) goto endofwhile;
-        break;
-
-      case 2:
-        for (j = 0; j < nz; j++) {
-          idx         = bjtmp[j];
-          rtmp11[idx] = 0.0;
-          rtmp22[idx] = 0.0;
-        }
-
-        /* load in initial (unfactored row) */
-        idx    = r[row];
-        nz_tmp = ai[idx + 1] - ai[idx];
-        ajtmp  = aj + ai[idx];
-        v1     = aa + ai[idx];
-        v2     = aa + ai[idx + 1];
-        for (j = 0; j < nz_tmp; j++) {
-          idx         = ics[ajtmp[j]];
-          rtmp11[idx] = v1[j];
-          rtmp22[idx] = v2[j];
-        }
-        rtmp11[ics[r[row]]] += sctx.shift_amount;
-        rtmp22[ics[r[row + 1]]] += sctx.shift_amount;
-
-        prow = *bjtmp++;
-        while (prow < row) {
-          pc1 = rtmp11 + prow;
-          pc2 = rtmp22 + prow;
-          if (*pc1 != 0.0 || *pc2 != 0.0) {
-            pv   = ba + bd[prow];
-            pj   = nbj + bd[prow];
-            mul1 = *pc1 * *pv;
-            mul2 = *pc2 * *pv;
-            ++pv;
-            *pc1 = mul1;
-            *pc2 = mul2;
-
-            nz_tmp = bi[prow + 1] - bd[prow] - 1;
-            for (j = 0; j < nz_tmp; j++) {
-              tmp = pv[j];
-              idx = pj[j];
-              rtmp11[idx] -= mul1 * tmp;
-              rtmp22[idx] -= mul2 * tmp;
-            }
-            PetscCall(PetscLogFlops(2 + 4.0 * nz_tmp));
-          }
-          prow = *bjtmp++;
-        }
-
-        /* Now take care of diagonal 2x2 block. Note: prow = row here */
-        pc1 = rtmp11 + prow;
-        pc2 = rtmp22 + prow;
-
-        sctx.pv = *pc1;
-        pj      = bj + bi[prow];
-        rs      = 0.0;
-        for (j = 0; j < nz; j++) {
-          idx = pj[j];
-          if (idx != prow) rs += PetscAbsScalar(rtmp11[idx]);
-        }
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row));
-        if (sctx.newshift) goto endofwhile;
-
-        if (*pc2 != 0.0) {
-          pj     = nbj + bd[prow];
-          mul2   = (*pc2) / (*pc1); /* since diag is not yet inverted.*/
-          *pc2   = mul2;
-          nz_tmp = bi[prow + 1] - bd[prow] - 1;
-          for (j = 0; j < nz_tmp; j++) {
-            idx = pj[j];
-            tmp = rtmp11[idx];
-            rtmp22[idx] -= mul2 * tmp;
-          }
-          PetscCall(PetscLogFlops(1 + 2.0 * nz_tmp));
-        }
-
-        pj  = bj + bi[row];
-        pc1 = ba + bi[row];
-        pc2 = ba + bi[row + 1];
-
-        sctx.pv         = rtmp22[row + 1];
-        rs              = 0.0;
-        rtmp11[row]     = 1.0 / rtmp11[row];
-        rtmp22[row + 1] = 1.0 / rtmp22[row + 1];
-        /* copy row entries from dense representation to sparse */
-        for (j = 0; j < nz; j++) {
-          idx    = pj[j];
-          pc1[j] = rtmp11[idx];
-          pc2[j] = rtmp22[idx];
-          if (idx != row + 1) rs += PetscAbsScalar(pc2[j]);
-        }
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row + 1));
-        if (sctx.newshift) goto endofwhile;
-        break;
-
-      case 3:
-        for (j = 0; j < nz; j++) {
-          idx         = bjtmp[j];
-          rtmp11[idx] = 0.0;
-          rtmp22[idx] = 0.0;
-          rtmp33[idx] = 0.0;
-        }
-        /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
-        idx    = r[row];
-        nz_tmp = ai[idx + 1] - ai[idx];
-        ajtmp  = aj + ai[idx];
-        v1     = aa + ai[idx];
-        v2     = aa + ai[idx + 1];
-        v3     = aa + ai[idx + 2];
-        for (j = 0; j < nz_tmp; j++) {
-          idx         = ics[ajtmp[j]];
-          rtmp11[idx] = v1[j];
-          rtmp22[idx] = v2[j];
-          rtmp33[idx] = v3[j];
-        }
-        rtmp11[ics[r[row]]] += sctx.shift_amount;
-        rtmp22[ics[r[row + 1]]] += sctx.shift_amount;
-        rtmp33[ics[r[row + 2]]] += sctx.shift_amount;
-
-        /* loop over all pivot row blocks above this row block */
-        prow = *bjtmp++;
-        while (prow < row) {
-          pc1 = rtmp11 + prow;
-          pc2 = rtmp22 + prow;
-          pc3 = rtmp33 + prow;
-          if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 != 0.0) {
-            pv   = ba + bd[prow];
-            pj   = nbj + bd[prow];
-            mul1 = *pc1 * *pv;
-            mul2 = *pc2 * *pv;
-            mul3 = *pc3 * *pv;
-            ++pv;
-            *pc1 = mul1;
-            *pc2 = mul2;
-            *pc3 = mul3;
-
-            nz_tmp = bi[prow + 1] - bd[prow] - 1;
-            /* update this row based on pivot row */
-            for (j = 0; j < nz_tmp; j++) {
-              tmp = pv[j];
-              idx = pj[j];
-              rtmp11[idx] -= mul1 * tmp;
-              rtmp22[idx] -= mul2 * tmp;
-              rtmp33[idx] -= mul3 * tmp;
-            }
-            PetscCall(PetscLogFlops(3 + 6.0 * nz_tmp));
-          }
-          prow = *bjtmp++;
-        }
-
-        /* Now take care of diagonal 3x3 block in this set of rows */
-        /* note: prow = row here */
-        pc1 = rtmp11 + prow;
-        pc2 = rtmp22 + prow;
-        pc3 = rtmp33 + prow;
-
-        sctx.pv = *pc1;
-        pj      = bj + bi[prow];
-        rs      = 0.0;
-        for (j = 0; j < nz; j++) {
-          idx = pj[j];
-          if (idx != row) rs += PetscAbsScalar(rtmp11[idx]);
-        }
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row));
-        if (sctx.newshift) goto endofwhile;
-
-        if (*pc2 != 0.0 || *pc3 != 0.0) {
-          mul2   = (*pc2) / (*pc1);
-          mul3   = (*pc3) / (*pc1);
-          *pc2   = mul2;
-          *pc3   = mul3;
-          nz_tmp = bi[prow + 1] - bd[prow] - 1;
-          pj     = nbj + bd[prow];
-          for (j = 0; j < nz_tmp; j++) {
-            idx = pj[j];
-            tmp = rtmp11[idx];
-            rtmp22[idx] -= mul2 * tmp;
-            rtmp33[idx] -= mul3 * tmp;
-          }
-          PetscCall(PetscLogFlops(2 + 4.0 * nz_tmp));
-        }
-        ++prow;
-
-        pc2     = rtmp22 + prow;
-        pc3     = rtmp33 + prow;
-        sctx.pv = *pc2;
-        pj      = bj + bi[prow];
-        rs      = 0.0;
-        for (j = 0; j < nz; j++) {
-          idx = pj[j];
-          if (idx != prow) rs += PetscAbsScalar(rtmp22[idx]);
-        }
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row + 1));
-        if (sctx.newshift) goto endofwhile;
-
-        if (*pc3 != 0.0) {
-          mul3   = (*pc3) / (*pc2);
-          *pc3   = mul3;
-          pj     = nbj + bd[prow];
-          nz_tmp = bi[prow + 1] - bd[prow] - 1;
-          for (j = 0; j < nz_tmp; j++) {
-            idx = pj[j];
-            tmp = rtmp22[idx];
-            rtmp33[idx] -= mul3 * tmp;
-          }
-          PetscCall(PetscLogFlops(1 + 2.0 * nz_tmp));
-        }
-
-        pj  = bj + bi[row];
-        pc1 = ba + bi[row];
-        pc2 = ba + bi[row + 1];
-        pc3 = ba + bi[row + 2];
-
-        sctx.pv         = rtmp33[row + 2];
-        rs              = 0.0;
-        rtmp11[row]     = 1.0 / rtmp11[row];
-        rtmp22[row + 1] = 1.0 / rtmp22[row + 1];
-        rtmp33[row + 2] = 1.0 / rtmp33[row + 2];
-        /* copy row entries from dense representation to sparse */
-        for (j = 0; j < nz; j++) {
-          idx    = pj[j];
-          pc1[j] = rtmp11[idx];
-          pc2[j] = rtmp22[idx];
-          pc3[j] = rtmp33[idx];
-          if (idx != row + 2) rs += PetscAbsScalar(pc3[j]);
-        }
-
-        sctx.rs = rs;
-        PetscCall(MatPivotCheck(B, A, info, &sctx, row + 2));
-        if (sctx.newshift) goto endofwhile;
-        break;
-
-      default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Node size not yet supported ");
-      }
-      row += nodesz; /* Update the row */
-    }
-  endofwhile:;
-  } while (sctx.newshift);
-  PetscCall(PetscFree3(rtmp11, rtmp22, rtmp33));
-  PetscCall(PetscFree(tmp_vec2));
-  PetscCall(ISRestoreIndices(isicol, &ic));
-  PetscCall(ISRestoreIndices(isrow, &r));
-  PetscCall(ISRestoreIndices(iscol, &c));
-
-  (B)->ops->solve = MatSolve_SeqAIJ_inplace;
-  /* do not set solve add, since MatSolve_Inode + Add is faster */
-  C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ_inplace;
-  C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ_inplace;
-  C->assembled              = PETSC_TRUE;
-  C->preallocated           = PETSC_TRUE;
-  if (sctx.nshift) {
-    if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
-      PetscCall(PetscInfo(A, "number of shift_pd tries %" PetscInt_FMT ", shift_amount %g, diagonal shifted up by %e fraction top_value %e\n", sctx.nshift, (double)sctx.shift_amount, (double)sctx.shift_fraction, (double)sctx.shift_top));
-    } else if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
-      PetscCall(PetscInfo(A, "number of shift_nz tries %" PetscInt_FMT ", shift_amount %g\n", sctx.nshift, (double)sctx.shift_amount));
-    }
-  }
-  PetscCall(PetscLogFlops(C->cmap->n));
-  PetscCall(MatSeqAIJCheckInode(C));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
-
 PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
 {
   Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
@@ -2836,85 +2414,101 @@ static PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat, PetscInt ncolors, P
 
 #include <petsc/private/kernels/blockinvert.h>
 
+/*
+   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
+*/
+static PetscErrorCode MatInvertDiagonalForSOR_SeqAIJ_Inode(Mat A, PetscScalar omega, PetscScalar fshift)
+{
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
+  MatScalar       *ibdiag, *bdiag, work[25];
+  const MatScalar *v         = a->a;
+  PetscReal        zeropivot = 100. * PETSC_MACHINE_EPSILON, shift = 0.0;
+  PetscInt         m = a->inode.node_count, cnt = 0, i, j, row, nodesz;
+  PetscInt         k, ipvt[5];
+  PetscBool        allowzeropivot = PetscNot(A->erroriffailure), zeropivotdetected;
+  const PetscInt  *sizes          = a->inode.size_csr, *diag;
+
+  PetscFunctionBegin;
+  if (a->idiagState == ((PetscObject)A)->state) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &diag, NULL));
+  if (!a->inode.ibdiag) {
+    /* calculate space needed for diagonal blocks */
+    for (i = 0; i < m; i++) {
+      nodesz = sizes[i + 1] - sizes[i];
+      cnt += nodesz * nodesz;
+    }
+    a->inode.bdiagsize = cnt;
+    PetscCall(PetscMalloc3(cnt, &a->inode.ibdiag, cnt, &a->inode.bdiag, A->rmap->n, &a->inode.ssor_work));
+  }
+
+  /* copy over the diagonal blocks and invert them */
+  ibdiag = a->inode.ibdiag;
+  bdiag  = a->inode.bdiag;
+  cnt    = 0;
+  for (i = 0, row = 0; i < m; i++) {
+    nodesz = sizes[i + 1] - sizes[i];
+    for (j = 0; j < nodesz; j++) {
+      for (k = 0; k < nodesz; k++) bdiag[cnt + k * nodesz + j] = v[diag[row + j] - j + k];
+    }
+    PetscCall(PetscArraycpy(ibdiag + cnt, bdiag + cnt, nodesz * nodesz));
+
+    switch (nodesz) {
+    case 1:
+      /* Create matrix data structure */
+      if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot on row %" PetscInt_FMT, row);
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
+        A->factorerror_zeropivot_row   = row;
+        PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", row));
+      }
+      ibdiag[cnt] = 1.0 / ibdiag[cnt];
+      break;
+    case 2:
+      PetscCall(PetscKernel_A_gets_inverse_A_2(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 3:
+      PetscCall(PetscKernel_A_gets_inverse_A_3(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 4:
+      PetscCall(PetscKernel_A_gets_inverse_A_4(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    case 5:
+      PetscCall(PetscKernel_A_gets_inverse_A_5(ibdiag + cnt, ipvt, work, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nodesz);
+    }
+    cnt += nodesz * nodesz;
+    row += nodesz;
+  }
+  a->inode.ibdiagState = ((PetscObject)A)->state;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ *)A->data;
   PetscScalar        sum1 = 0.0, sum2 = 0.0, sum3 = 0.0, sum4 = 0.0, sum5 = 0.0, tmp0, tmp1, tmp2, tmp3;
-  MatScalar         *ibdiag, *bdiag, work[25], *t;
+  MatScalar         *ibdiag, *bdiag, *t;
   PetscScalar       *x, tmp4, tmp5, x1, x2, x3, x4, x5;
-  const MatScalar   *v = a->a, *v1 = NULL, *v2 = NULL, *v3 = NULL, *v4 = NULL, *v5 = NULL;
+  const MatScalar   *v1 = NULL, *v2 = NULL, *v3 = NULL, *v4 = NULL, *v5 = NULL;
   const PetscScalar *xb, *b;
-  PetscReal          zeropivot = 100. * PETSC_MACHINE_EPSILON, shift = 0.0;
-  PetscInt           n, m = a->inode.node_count, cnt = 0, i, j, row, i1, i2, nodesz;
-  PetscInt           sz, k, ipvt[5];
-  PetscBool          allowzeropivot, zeropivotdetected;
-  const PetscInt    *sizes = a->inode.size_csr, *idx, *diag = a->diag, *ii = a->i;
+  PetscInt           n, m = a->inode.node_count, cnt = 0, i, row, i1, i2, nodesz;
+  PetscInt           sz;
+  const PetscInt    *sizes = a->inode.size_csr, *idx, *diag, *ii = a->i;
 
   PetscFunctionBegin;
-  allowzeropivot = PetscNot(A->erroriffailure);
   PetscCheck(a->inode.size_csr, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing Inode Structure");
   PetscCheck(omega == 1.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for omega != 1.0; use -mat_no_inode");
   PetscCheck(fshift == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for fshift != 0.0; use -mat_no_inode");
+  PetscCall(MatInvertDiagonalForSOR_SeqAIJ_Inode(A, omega, fshift));
+  diag = a->diag;
 
-  if (!a->inode.ibdiagvalid) {
-    if (!a->inode.ibdiag) {
-      /* calculate space needed for diagonal blocks */
-      for (i = 0; i < m; i++) {
-        nodesz = sizes[i + 1] - sizes[i];
-        cnt += nodesz * nodesz;
-      }
-      a->inode.bdiagsize = cnt;
-
-      PetscCall(PetscMalloc3(cnt, &a->inode.ibdiag, cnt, &a->inode.bdiag, A->rmap->n, &a->inode.ssor_work));
-    }
-
-    /* copy over the diagonal blocks and invert them */
-    ibdiag = a->inode.ibdiag;
-    bdiag  = a->inode.bdiag;
-    cnt    = 0;
-    for (i = 0, row = 0; i < m; i++) {
-      nodesz = sizes[i + 1] - sizes[i];
-      for (j = 0; j < nodesz; j++) {
-        for (k = 0; k < nodesz; k++) bdiag[cnt + k * nodesz + j] = v[diag[row + j] - j + k];
-      }
-      PetscCall(PetscArraycpy(ibdiag + cnt, bdiag + cnt, nodesz * nodesz));
-
-      switch (nodesz) {
-      case 1:
-        /* Create matrix data structure */
-        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
-          PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot on row %" PetscInt_FMT, row);
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
-          A->factorerror_zeropivot_row   = row;
-          PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", row));
-        }
-        ibdiag[cnt] = 1.0 / ibdiag[cnt];
-        break;
-      case 2:
-        PetscCall(PetscKernel_A_gets_inverse_A_2(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 3:
-        PetscCall(PetscKernel_A_gets_inverse_A_3(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 4:
-        PetscCall(PetscKernel_A_gets_inverse_A_4(ibdiag + cnt, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      case 5:
-        PetscCall(PetscKernel_A_gets_inverse_A_5(ibdiag + cnt, ipvt, work, shift, allowzeropivot, &zeropivotdetected));
-        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        break;
-      default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nodesz);
-      }
-      cnt += nodesz * nodesz;
-      row += nodesz;
-    }
-    a->inode.ibdiagvalid = PETSC_TRUE;
-  }
   ibdiag = a->inode.ibdiag;
   bdiag  = a->inode.bdiag;
   t      = a->inode.ssor_work;
@@ -4399,7 +3993,6 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A, MatDuplicateOption cpvalues, Mat
   c->inode.checked          = PETSC_FALSE;
   c->inode.size_csr         = NULL;
   c->inode.node_count       = 0;
-  c->inode.ibdiagvalid      = PETSC_FALSE;
   c->inode.ibdiag           = NULL;
   c->inode.bdiag            = NULL;
   c->inode.mat_nonzerostate = -1;
@@ -4514,15 +4107,6 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
     PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes of %" PetscInt_FMT ". Limit used: %" PetscInt_FMT ". Using Inode routines\n", node_count, m, a->inode.limit));
   }
   a->inode.checked = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
-{
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-
-  PetscFunctionBegin;
-  a->inode.ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -202,26 +202,27 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_LU(Mat A)
   Mat_SeqAIJ                   *a  = static_cast<Mat_SeqAIJ *>(A->data);
   PetscInt                      m  = A->rmap->n;
   Mat_SeqAIJCUSPARSETriFactors *fs = static_cast<Mat_SeqAIJCUSPARSETriFactors *>(A->spptr);
-  const PetscInt               *Ai = a->i, *Aj = a->j, *Adiag = a->diag;
+  const PetscInt               *Ai = a->i, *Aj = a->j, *adiag;
   const MatScalar              *Aa = a->a;
   PetscInt                     *Mi, *Mj, Mnz;
   PetscScalar                  *Ma;
 
   PetscFunctionBegin;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   if (A->offloadmask == PETSC_OFFLOAD_CPU) { // A's latest factors are on CPU
     if (!fs->csrRowPtr) {                    // Is't the first time to do the setup? Use csrRowPtr since it is not null even when m=0
       // Re-arrange the (skewed) factored matrix and put the result into M, a regular csr matrix on host
-      Mnz = (Ai[m] - Ai[0]) + (Adiag[0] - Adiag[m]); // Lnz (without the unit diagonal) + Unz (with the non-unit diagonal)
+      Mnz = (Ai[m] - Ai[0]) + (adiag[0] - adiag[m]); // Lnz (without the unit diagonal) + Unz (with the non-unit diagonal)
       PetscCall(PetscMalloc1(m + 1, &Mi));
       PetscCall(PetscMalloc1(Mnz, &Mj)); // Mj is temp
       PetscCall(PetscMalloc1(Mnz, &Ma));
       Mi[0] = 0;
       for (PetscInt i = 0; i < m; i++) {
         PetscInt llen = Ai[i + 1] - Ai[i];
-        PetscInt ulen = Adiag[i] - Adiag[i + 1];
+        PetscInt ulen = adiag[i] - adiag[i + 1];
         PetscCall(PetscArraycpy(Mj + Mi[i], Aj + Ai[i], llen));                           // entries of L
         Mj[Mi[i] + llen] = i;                                                             // diagonal entry
-        PetscCall(PetscArraycpy(Mj + Mi[i] + llen + 1, Aj + Adiag[i + 1] + 1, ulen - 1)); // entries of U on the right of the diagonal
+        PetscCall(PetscArraycpy(Mj + Mi[i] + llen + 1, Aj + adiag[i + 1] + 1, ulen - 1)); // entries of U on the right of the diagonal
         Mi[i + 1] = Mi[i] + llen + ulen;
       }
       // Copy M (L,U) from host to device
@@ -276,10 +277,10 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_LU(Mat A)
     Mnz = Mi[m];
     for (PetscInt i = 0; i < m; i++) {
       PetscInt llen = Ai[i + 1] - Ai[i];
-      PetscInt ulen = Adiag[i] - Adiag[i + 1];
+      PetscInt ulen = adiag[i] - adiag[i + 1];
       PetscCall(PetscArraycpy(Ma + Mi[i], Aa + Ai[i], llen));                           // entries of L
-      Ma[Mi[i] + llen] = (MatScalar)1.0 / Aa[Adiag[i]];                                 // recover the diagonal entry
-      PetscCall(PetscArraycpy(Ma + Mi[i] + llen + 1, Aa + Adiag[i + 1] + 1, ulen - 1)); // entries of U on the right of the diagonal
+      Ma[Mi[i] + llen] = (MatScalar)1.0 / Aa[adiag[i]];                                 // recover the diagonal entry
+      PetscCall(PetscArraycpy(Ma + Mi[i] + llen + 1, Aa + adiag[i + 1] + 1, ulen - 1)); // entries of U on the right of the diagonal
     }
     PetscCallCUDA(cudaMemcpy(fs->csrVal, Ma, sizeof(*Ma) * Mnz, cudaMemcpyHostToDevice));
 
@@ -439,13 +440,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
   PetscInt                           n                  = A->rmap->n;
   Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors *)A->spptr;
   Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactor        = (Mat_SeqAIJCUSPARSETriFactorStruct *)cusparseTriFactors->upTriFactorPtr;
-  const PetscInt                    *aj = a->j, *adiag = a->diag, *vi;
-  const MatScalar                   *aa = a->a, *v;
+  const PetscInt                    *aj                 = a->j, *adiag, *vi;
+  const MatScalar                   *aa                 = a->a, *v;
   PetscInt                          *AiUp, *AjUp;
   PetscInt                           i, nz, nzUpper, offset;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     try {
       /* next, figure out the number of nonzeros in the upper triangular matrix. */
@@ -618,12 +620,13 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_Cheolesky(Mat A)
   Mat_SeqAIJ                   *a  = static_cast<Mat_SeqAIJ *>(A->data);
   PetscInt                      m  = A->rmap->n;
   Mat_SeqAIJCUSPARSETriFactors *fs = static_cast<Mat_SeqAIJCUSPARSETriFactors *>(A->spptr);
-  const PetscInt               *Ai = a->i, *Aj = a->j, *Adiag = a->diag;
+  const PetscInt               *Ai = a->i, *Aj = a->j, *adiag;
   const MatScalar              *Aa = a->a;
   PetscInt                     *Mj, Mnz;
   PetscScalar                  *Ma, *D;
 
   PetscFunctionBegin;
+  PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
   if (A->offloadmask == PETSC_OFFLOAD_CPU) { // A's latest factors are on CPU
     if (!fs->csrRowPtr) {                    // Is't the first time to do the setup? Use csrRowPtr since it is not null even m=0
       // Re-arrange the (skewed) factored matrix and put the result into M, a regular csr matrix on host.
@@ -684,7 +687,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_Cheolesky(Mat A)
     D   = fs->diag_h;
     Mnz = Ai[m];
     for (PetscInt i = 0; i < m; i++) {
-      D[i]      = Aa[Adiag[i]];   // actually Aa[Adiag[i]] is the inverse of the diagonal
+      D[i]      = Aa[adiag[i]];   // actually Aa[adiag[i]] is the inverse of the diagonal
       Ma[Ai[i]] = (MatScalar)1.0; // set the unit diagonal, which is cosmetic since cusparse does not really read it given CUSPARSE_DIAG_TYPE_UNIT
       for (PetscInt k = 0; k < Ai[i + 1] - Ai[i] - 1; k++) Ma[Ai[i] + 1 + k] = -Aa[Ai[i] + k];
     }
@@ -1757,14 +1760,13 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, 
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt  i;
-    PetscBool flg, missing;
+    PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJCUSPARSE, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_GPU, "Expected MATSEQAIJCUSPARSE, but input is %s", ((PetscObject)A)->type_name);
     PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-    PetscCall(MatMissingDiagonal(A, &missing, &i));
-    PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
+    PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing a diagonal entry");
   }
 
   /* Free the old stale stuff */
@@ -1882,17 +1884,17 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, 
 
   /* Estimate FLOPs of the numeric factorization */
   {
-    Mat_SeqAIJ    *Aseq = (Mat_SeqAIJ *)A->data;
-    PetscInt      *Ai, *Adiag, nzRow, nzLeft;
-    PetscLogDouble flops = 0.0;
+    Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ *)A->data;
+    PetscInt       *Ai, nzRow, nzLeft;
+    const PetscInt *adiag;
+    PetscLogDouble  flops = 0.0;
 
-    PetscCall(MatMarkDiagonal_SeqAIJ(A));
-    Ai    = Aseq->i;
-    Adiag = Aseq->diag;
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
+    Ai = Aseq->i;
     for (PetscInt i = 0; i < m; i++) {
-      if (Ai[i] < Adiag[i] && Adiag[i] < Ai[i + 1]) { /* There are nonzeros left to the diagonal of row i */
+      if (Ai[i] < adiag[i] && adiag[i] < Ai[i + 1]) { /* There are nonzeros left to the diagonal of row i */
         nzRow  = Ai[i + 1] - Ai[i];
-        nzLeft = Adiag[i] - Ai[i];
+        nzLeft = adiag[i] - Ai[i];
         /* We want to eliminate nonzeros left to the diagonal one by one. Assume each time, nonzeros right
           and include the eliminated one will be updated, which incurs a multiplication and an addition.
         */
@@ -2007,14 +2009,13 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, 
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt  i;
-    PetscBool flg, missing;
+    PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJCUSPARSE, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_GPU, "Expected MATSEQAIJCUSPARSE, but input is %s", ((PetscObject)A)->type_name);
     PetscCheck(A->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, A->rmap->n, A->cmap->n);
-    PetscCall(MatMissingDiagonal(A, &missing, &i));
-    PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
+    PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entries");
   }
 
   /* Free the old stale stuff */
@@ -3366,7 +3367,6 @@ finalizesym:
     c->nonzerorowcnt += (PetscInt)!!nn;
     c->rmax = PetscMax(c->rmax, nn);
   }
-  PetscCall(MatMarkDiagonal_SeqAIJ(C));
   PetscCall(PetscMalloc1(c->nz, &c->a));
   Ccsr->num_entries = c->nz;
 
@@ -3922,7 +3922,6 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y, PetscScalar a, Mat X, MatStr
     PetscCallCUSPARSE(cusparseSetPointerMode(cy->handle, CUSPARSE_POINTER_MODE_DEVICE));
     PetscCall(MatSeqAIJCUSPARSERestoreArrayRead(X, &ax));
     PetscCall(MatSeqAIJCUSPARSERestoreArray(Y, &ay));
-    PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   } else if (str == SAME_NONZERO_PATTERN) {
     cublasHandle_t cublasv2handle;
     PetscBLASInt   one = 1, bnz = 1;
@@ -3937,7 +3936,6 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y, PetscScalar a, Mat X, MatStr
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(MatSeqAIJCUSPARSERestoreArrayRead(X, &ax));
     PetscCall(MatSeqAIJCUSPARSERestoreArray(Y, &ay));
-    PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   } else {
     PetscCall(MatSeqAIJCUSPARSEInvalidateTranspose(Y, PETSC_FALSE));
     PetscCall(MatAXPY_SeqAIJ(Y, a, X, str));
@@ -3961,7 +3959,6 @@ static PetscErrorCode MatScale_SeqAIJCUSPARSE(Mat Y, PetscScalar a)
   PetscCall(PetscLogGpuFlops(bnz));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatSeqAIJCUSPARSERestoreArray(Y, &ay));
-  PetscCall(MatSeqAIJInvalidateDiagonal(Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3990,7 +3987,6 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
     PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
     A->offloadmask = PETSC_OFFLOAD_CPU;
   }
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4650,7 +4646,6 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar **a)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJCUSPARSE);
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4714,7 +4709,6 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar **a)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(a, 2);
   PetscCheckTypeName(A, MATSEQAIJCUSPARSE);
-  PetscCall(MatSeqAIJInvalidateDiagonal(A));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   *a = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4963,7 +4957,6 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       c->nonzerorowcnt += (PetscInt)!!nn;
       c->rmax = PetscMax(c->rmax, nn);
     }
-    PetscCall(MatMarkDiagonal_SeqAIJ(*C));
     PetscCall(PetscMalloc1(c->nz, &c->a));
     (*C)->nonzerostate++;
     PetscCall(PetscLayoutSetUp((*C)->rmap));

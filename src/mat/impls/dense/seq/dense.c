@@ -3048,13 +3048,6 @@ PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A, PetscBool *missing, PetscInt *d)
-{
-  PetscFunctionBegin;
-  *missing = PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* vals is not const */
 static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A, PetscInt col, PetscScalar **vals)
 {
@@ -3180,25 +3173,25 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        MatGetRowMin_SeqDense,
                                        MatGetColumnVector_SeqDense,
-                                       /*104*/ MatMissingDiagonal_SeqDense,
+                                       /*104*/ NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        /*109*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatMultHermitianTranspose_SeqDense,
                                        MatMultHermitianTransposeAdd_SeqDense,
-                                       /*114*/ NULL,
                                        NULL,
+                                       /*114*/ NULL,
                                        MatGetColumnReductions_SeqDense,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        /*119*/ NULL,
                                        NULL,
-                                       NULL,
                                        MatTransposeMatMultNumeric_SeqDense_SeqDense,
+                                       NULL,
                                        NULL,
                                        /*124*/ NULL,
                                        NULL,
@@ -3206,8 +3199,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        NULL,
                                        /*129*/ NULL,
-                                       NULL,
                                        MatCreateMPIMatConcatenateSeqMat_SeqDense,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        /*134*/ NULL,
@@ -3216,7 +3209,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        NULL,
                                        /*139*/ NULL,
-                                       NULL,
                                        NULL,
                                        NULL,
                                        NULL,

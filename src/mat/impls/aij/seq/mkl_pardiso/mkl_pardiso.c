@@ -176,12 +176,14 @@ static PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A, PetscBool sym, MatReus
     *nnz  = (INT_TYPE)aa->nz;
     *free = PETSC_FALSE;
   } else if (reuse == MAT_INITIAL_MATRIX) { /* need to get the triangular part */
-    PetscScalar *vals, *vv;
-    PetscInt    *row, *col, *jj;
-    PetscInt     m = A->rmap->n, nz, i;
+    PetscScalar    *vals, *vv;
+    PetscInt       *row, *col, *jj;
+    PetscInt        m = A->rmap->n, nz, i;
+    const PetscInt *adiag;
 
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
     nz = 0;
-    for (i = 0; i < m; i++) nz += aa->i[i + 1] - aa->diag[i];
+    for (i = 0; i < m; i++) nz += aa->i[i + 1] - adiag[i];
     PetscCall(PetscMalloc2(m + 1, &row, nz, &col));
     PetscCall(PetscMalloc1(nz, &vals));
     jj = col;
@@ -189,9 +191,9 @@ static PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A, PetscBool sym, MatReus
 
     row[0] = 0;
     for (i = 0; i < m; i++) {
-      PetscInt    *aj = aa->j + aa->diag[i];
-      PetscScalar *av = aav + aa->diag[i];
-      PetscInt     rl = aa->i[i + 1] - aa->diag[i], j;
+      PetscInt    *aj = aa->j + adiag[i];
+      PetscScalar *av = aav + adiag[i];
+      PetscInt     rl = aa->i[i + 1] - adiag[i], j;
 
       for (j = 0; j < rl; j++) {
         *jj = *aj;
@@ -209,13 +211,15 @@ static PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A, PetscBool sym, MatReus
     *nnz  = (INT_TYPE)nz;
     *free = PETSC_TRUE;
   } else {
-    PetscScalar *vv;
-    PetscInt     m = A->rmap->n, i;
+    PetscScalar    *vv;
+    PetscInt        m = A->rmap->n, i;
+    const PetscInt *adiag;
 
+    PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
     vv = *v;
     for (i = 0; i < m; i++) {
-      PetscScalar *av = aav + aa->diag[i];
-      PetscInt     rl = aa->i[i + 1] - aa->diag[i], j;
+      PetscScalar *av = aav + adiag[i];
+      PetscInt     rl = aa->i[i + 1] - adiag[i], j;
       for (j = 0; j < rl; j++) {
         *vv = *av;
         vv++;

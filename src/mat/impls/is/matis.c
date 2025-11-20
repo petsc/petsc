@@ -1526,34 +1526,6 @@ static PetscErrorCode MatCopy_IS(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMissingDiagonal_IS(Mat A, PetscBool *missing, PetscInt *d)
-{
-  Vec                v;
-  const PetscScalar *array;
-  PetscInt           i, n;
-
-  PetscFunctionBegin;
-  *missing = PETSC_FALSE;
-  PetscCall(MatCreateVecs(A, NULL, &v));
-  PetscCall(MatGetDiagonal(A, v));
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArrayRead(v, &array));
-  for (i = 0; i < n; i++)
-    if (array[i] == 0.) break;
-  PetscCall(VecRestoreArrayRead(v, &array));
-  PetscCall(VecDestroy(&v));
-  if (i != n) *missing = PETSC_TRUE;
-  if (d) {
-    *d = -1;
-    if (*missing) {
-      PetscInt rstart;
-      PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
-      *d = i + rstart;
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatISSetUpSF_IS(Mat B)
 {
   Mat_IS         *matis = (Mat_IS *)B->data;
@@ -3695,7 +3667,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->issymmetric             = MatIsSymmetric_IS;
   A->ops->isstructurallysymmetric = MatIsStructurallySymmetric_IS;
   A->ops->duplicate               = MatDuplicate_IS;
-  A->ops->missingdiagonal         = MatMissingDiagonal_IS;
   A->ops->copy                    = MatCopy_IS;
   A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
   A->ops->createsubmatrix         = MatCreateSubMatrix_IS;

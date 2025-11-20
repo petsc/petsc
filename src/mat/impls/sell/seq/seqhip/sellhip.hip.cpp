@@ -923,7 +923,6 @@ static PetscErrorCode MatZeroEntries_SeqSELLHIP(Mat A)
     }
   }
   PetscCall(PetscArrayzero(a->val, a->sliidx[a->totalslices]));
-  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
   else A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(PETSC_SUCCESS);
