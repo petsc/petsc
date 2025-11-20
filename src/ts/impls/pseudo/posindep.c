@@ -435,36 +435,6 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
-
-  Collective, No Fortran Support
-
-  Input Parameters:
-+ ts     - the timestep context
-. dtctx  - unused timestep context
-- update - latest solution vector
-
-  Output Parameters:
-+ newdt - the timestep to use for the next step
-- flag  - flag indicating whether the last time step was acceptable
-
-  Level: advanced
-
-  Note:
-  This routine always returns a flag of 1, indicating an acceptable
-  timestep.
-
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStep()`
-@*/
-PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, PetscReal *newdt, PetscBool *flag)
-{
-  PetscFunctionBegin;
-  // NOTE: This function was never used
-  *flag = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
 
