@@ -8504,6 +8504,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
   PetscValidType(mat, 1);
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCheck(cll != MAT_IGNORE_MATRIX, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot use MAT_IGNORE_MATRIX");
+  PetscCheck(cll != MAT_INPLACE_MATRIX, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot use MAT_INPLACE_MATRIX");
 
   MatCheckPreallocated(mat, 1);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
