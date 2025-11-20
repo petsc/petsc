@@ -357,7 +357,7 @@ static PetscErrorCode TSAdaptChoose_TSPseudo(TSAdapt adapt, TS ts, PetscReal h, 
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscCall((*pseudo->dt)(ts, next_h, pseudo->dtctx));
+  PetscCallBack("TSPSEUDO callback time step", (*pseudo->dt)(ts, next_h, pseudo->dtctx));
   PetscCall(PetscLogEventEnd(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
 
   *next_sc = 0;
@@ -375,7 +375,7 @@ static PetscErrorCode TSAdaptCheckStage_TSPseudo(TSAdapt adapt, TS ts, PetscReal
   if (pseudo->verify) {
     PetscReal dt;
     PetscCall(TSGetTimeStep(ts, &dt));
-    PetscCall((*pseudo->verify)(ts, Y, pseudo->verifyctx, &dt, accept));
+    PetscCallBack("TSPSEUDO callback verify time step", (*pseudo->verify)(ts, Y, pseudo->verifyctx, &dt, accept));
     PetscCall(TSSetTimeStep(ts, dt));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
