@@ -203,8 +203,8 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   DM                dm;
   TS_Pseudo        *pseudo = (TS_Pseudo *)ts->data;
   const PetscScalar mdt    = 1.0 / ts->time_step;
-  PetscBool         KSPSNES;
   PetscObjectState  Xstate;
+  PetscInt          snes_it;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -217,16 +217,16 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
   PetscCheck(rhsfunction || ifunction, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESKSPONLY, &KSPSNES));
   PetscCall(PetscObjectStateGet((PetscObject)X, &Xstate));
-  if (Xstate != pseudo->Xstate || ifunction || !KSPSNES) {
-    // X = ts->vec_sol0 for first SNES iteration, so pseudo->xdot = 0
+  PetscCall(SNESGetIterationNumber(snes, &snes_it));
+  if (Xstate == pseudo->Xstate && snes_it == 1) {
+    /* reuse the TSComputeIFunction() result performed inside TSStep_Pseudo() */
+    if (ifunction) PetscCall(VecCopy(pseudo->func, Y));
+    /* note that pseudo->func contains the negation of TSComputeRHSFunction() */
+    else PetscCall(VecWAXPY(Y, 1, pseudo->func, pseudo->xdot));
+  } else {
     PetscCall(VecAXPBYPCZ(pseudo->xdot, -mdt, mdt, 0, ts->vec_sol0, X));
     PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, pseudo->xdot, Y, PETSC_FALSE));
-  } else {
-    /* reuse the TSComputeIFunction() result performed inside TSStep_Pseudo() */
-    /* note that pseudo->func contains the negation of TSComputeRHSFunction() */
-    PetscCall(VecWAXPY(Y, 1, pseudo->func, pseudo->xdot));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
