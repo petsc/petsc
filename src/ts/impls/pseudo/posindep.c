@@ -6,9 +6,8 @@
 #define TSADAPTTSPSEUDO "tspseudo"
 
 typedef struct {
-  Vec update; /* work vector where new solution is formed */
-  Vec func;   /* work vector where F(t[i],u[i]) is stored */
-  Vec xdot;   /* work vector for time derivative of state */
+  Vec func; /* work vector where F(t[i],u[i]) is stored */
+  Vec xdot; /* work vector for time derivative of state */
 
   /* information used for Pseudo-timestepping */
 
@@ -53,6 +52,8 @@ typedef struct {
 
   This would be used in a custom adaptive timestepping implementation that needs access to the residual, but reuses the calculation done by `TSPSEUDO` by default.
 
+  To correctly get the residual reuse behavior, `solution` must be the same `Vec` that returned by `TSGetSolution()`.
+
 .seealso: [](ch_ts), `TSPSEUDO`
 @*/
 PetscErrorCode TSPseudoComputeFunction(TS ts, Vec solution, Vec *residual, PetscReal *fnorm)
@@ -87,28 +88,23 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   TSAdapt    adapt;
 
   PetscFunctionBegin;
-  if (ts->steps == 0) {
-    pseudo->dt_initial = ts->time_step;
-    PetscCall(VecCopy(ts->vec_sol, pseudo->update)); /* in all future updates pseudo->update already contains the current time solution */
-  }
+  if (ts->steps == 0) pseudo->dt_initial = ts->time_step;
 
   pseudo->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && pseudo->status != TS_STEP_COMPLETE) {
-    if (rejections) PetscCall(VecCopy(ts->vec_sol0, pseudo->update)); /* need to copy the solution because we got a rejection and pseudo->update contains intermediate computation */
     PetscCall(TSPreStage(ts, ts->ptime + ts->time_step));
-    PetscCall(SNESSolve(ts->snes, NULL, pseudo->update));
+    PetscCall(SNESSolve(ts->snes, NULL, ts->vec_sol));
     PetscCall(SNESGetIterationNumber(ts->snes, &nits));
     PetscCall(SNESGetLinearSolveIterations(ts->snes, &lits));
     ts->snes_its += nits;
     ts->ksp_its += lits;
     pseudo->fnorm = -1; /* The current norm is no longer valid */
-    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &pseudo->update));
+    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &ts->vec_sol));
     PetscCall(TSGetAdapt(ts, &adapt));
-    PetscCall(TSAdaptCheckStage(adapt, ts, ts->ptime + ts->time_step, pseudo->update, &accept));
+    PetscCall(TSAdaptCheckStage(adapt, ts, ts->ptime + ts->time_step, ts->vec_sol, &accept));
     if (!accept) goto reject_step;
 
     pseudo->status = TS_STEP_PENDING;
-    PetscCall(VecCopy(pseudo->update, ts->vec_sol));
     PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
     pseudo->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) {
@@ -122,6 +118,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   reject_step:
     ts->reject++;
     accept = PETSC_FALSE;
+    PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
@@ -150,7 +147,6 @@ static PetscErrorCode TSReset_Pseudo(TS ts)
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDestroy(&pseudo->update));
   PetscCall(VecDestroy(&pseudo->func));
   PetscCall(VecDestroy(&pseudo->xdot));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -224,8 +220,8 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESKSPONLY, &KSPSNES));
   PetscCall(PetscObjectStateGet((PetscObject)X, &Xstate));
   if (Xstate != pseudo->Xstate || ifunction || !KSPSNES) {
-    // X == ts->vec_sol for first SNES iteration, so pseudo->xdot == 0
-    PetscCall(VecAXPBYPCZ(pseudo->xdot, -mdt, mdt, 0, ts->vec_sol, X));
+    // X = ts->vec_sol0 for first SNES iteration, so pseudo->xdot = 0
+    PetscCall(VecAXPBYPCZ(pseudo->xdot, -mdt, mdt, 0, ts->vec_sol0, X));
     PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, pseudo->xdot, Y, PETSC_FALSE));
   } else {
     /* reuse the TSComputeIFunction() result performed inside TSStep_Pseudo() */
@@ -260,7 +256,6 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDuplicate(ts->vec_sol, &pseudo->update));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->func));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->xdot));
   PetscFunctionReturn(PETSC_SUCCESS);
