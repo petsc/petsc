@@ -84,7 +84,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
   PetscInt   nits, lits, rejections = 0;
   PetscBool  accept;
-  PetscReal  next_time_step = ts->time_step;
+  PetscReal  next_time_step = ts->time_step, fnorm;
   TSAdapt    adapt;
 
   PetscFunctionBegin;
@@ -127,14 +127,14 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   }
 
   // Check solution convergence
-  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, NULL));
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, &fnorm));
 
-  if (pseudo->fnorm < pseudo->fatol) {
+  if (fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g < fatol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->frtol));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (pseudo->fnorm / pseudo->fnorm_initial < pseudo->frtol) {
+  if (fnorm / pseudo->fnorm_initial < pseudo->frtol) {
     ts->reason = TS_CONVERGED_PSEUDO_FRTOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g / fnorm_initial %g < frtol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->fnorm_initial, (double)pseudo->fatol));
     PetscFunctionReturn(PETSC_SUCCESS);
