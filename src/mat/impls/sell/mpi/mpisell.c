@@ -891,26 +891,6 @@ static PetscErrorCode MatConjugate_MPISELL(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatRealPart_MPISELL(Mat A)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatRealPart(a->A));
-  PetscCall(MatRealPart(a->B));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatImaginaryPart(a->A));
-  PetscCall(MatImaginaryPart(a->B));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
@@ -1183,8 +1163,8 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                              MatConjugate_MPISELL,
                                              /*94*/ NULL,
                                              NULL,
-                                             MatRealPart_MPISELL,
-                                             MatImaginaryPart_MPISELL,
+                                             NULL,
+                                             NULL,
                                              NULL,
                                              /*99*/ NULL,
                                              NULL,
