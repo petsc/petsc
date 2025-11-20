@@ -404,69 +404,6 @@ static PetscErrorCode TSAdaptCreate_TSPseudo(TSAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  TSPseudoComputeTimeStep - Computes the next timestep for a currently running
-  pseudo-timestepping process.
-
-  Collective
-
-  Input Parameter:
-. ts - timestep context
-
-  Output Parameter:
-. dt - newly computed timestep
-
-  Level: developer
-
-  Note:
-  The routine to be called here to compute the timestep should be
-  set by calling `TSPseudoSetTimeStep()`.
-
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoTimeStepDefault()`, `TSPseudoSetTimeStep()`
-@*/
-PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscCall((*pseudo->dt)(ts, dt, pseudo->dtctx));
-  PetscCall(PetscLogEventEnd(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
-
-  Collective
-
-  Input Parameters:
-+ ts     - timestep context
-- update - latest solution vector
-
-  Output Parameters:
-+ dt   - newly computed timestep (if it had to shrink)
-- flag - indicates if current timestep was ok
-
-  Level: advanced
-
-  Notes:
-  The routine to be called here to compute the timestep should be
-  set by calling `TSPseudoSetVerifyTimeStep()`.
-
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStepDefault()`
-@*/
-PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBool *flag)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-
-  PetscFunctionBegin;
-  // NOTE: This function is never used
-  *flag = PETSC_TRUE;
-  if (pseudo->verify) PetscCall((*pseudo->verify)(ts, update, pseudo->verifyctx, dt, flag));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the
   last timestep.

@@ -809,10 +809,8 @@ PETSC_EXTERN PetscErrorCode TSFunctionDomainError(TS, PetscReal, Vec, PetscBool 
 
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStep(TS, PetscErrorCode (*)(TS, PetscReal *, void *), void *);
 PETSC_EXTERN PetscErrorCode TSPseudoTimeStepDefault(TS, PetscReal *, void *);
-PETSC_EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetMaxTimeStep(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS, PetscErrorCode (*)(TS, Vec, void *, PetscReal *, PetscBool *), void *);
-PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS, Vec, PetscReal *, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 PETSC_EXTERN PetscErrorCode TSPseudoComputeFunction(TS, Vec, Vec *, PetscReal *);
