@@ -1398,7 +1398,6 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJHIPSPARSE_ILU0(Mat fact, Mat A,
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt  i;
     PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJHIPSPARSE, &flg));
@@ -1644,7 +1643,6 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A,
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt  i;
     PetscBool flg, diagDense;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJHIPSPARSE, &flg));
