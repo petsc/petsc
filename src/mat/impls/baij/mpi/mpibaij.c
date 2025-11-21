@@ -714,40 +714,39 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
       PetscCallMPI(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       *nrm = PetscSqrtReal(*nrm);
     } else if (type == NORM_1) { /* max column sum */
-      PetscReal *tmp;
-      PetscInt  *jj, *garray = baij->garray, cstart = baij->rstartbs;
+      Vec          col;
+      PetscScalar *array;
+      PetscInt    *jj, *garray = baij->garray;
 
-      PetscCall(PetscCalloc1(mat->cmap->N, &tmp));
+      PetscCall(MatCreateVecs(mat, &col, NULL));
+      PetscCall(VecSet(col, 0.0));
+      PetscCall(VecGetArrayWrite(col, &array));
       v  = amat->a;
       jj = amat->j;
       for (i = 0; i < amat->nz; i++) {
         for (j = 0; j < bs; j++) {
-          col = bs * (cstart + *jj) + j; /* column index */
-          for (row = 0; row < bs; row++) {
-            tmp[col] += PetscAbsScalar(*v);
-            v++;
-          }
+          PetscInt col = bs * *jj + j; /* column index */
+
+          for (row = 0; row < bs; row++) array[col] += PetscAbsScalar(*v++);
         }
         jj++;
       }
+      PetscCall(VecRestoreArrayWrite(col, &array));
       v  = bmat->a;
       jj = bmat->j;
       for (i = 0; i < bmat->nz; i++) {
         for (j = 0; j < bs; j++) {
-          col = bs * garray[*jj] + j;
-          for (row = 0; row < bs; row++) {
-            tmp[col] += PetscAbsScalar(*v);
-            v++;
-          }
+          PetscScalar tmp = 0.0;
+
+          for (row = 0; row < bs; row++) tmp += PetscAbsScalar(*v++);
+          PetscCall(VecSetValue(col, bs * garray[*jj] + j, tmp, ADD_VALUES));
         }
         jj++;
       }
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, mat->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
-      *nrm = 0.0;
-      for (j = 0; j < mat->cmap->N; j++) {
-        if (tmp[j] > *nrm) *nrm = tmp[j];
-      }
-      PetscCall(PetscFree(tmp));
+      PetscCall(VecAssemblyBegin(col));
+      PetscCall(VecAssemblyEnd(col));
+      PetscCall(VecNorm(col, NORM_INFINITY, nrm));
+      PetscCall(VecDestroy(&col));
     } else if (type == NORM_INFINITY) { /* max row sum */
       PetscReal *sums;
       PetscCall(PetscMalloc1(bs, &sums));

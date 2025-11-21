@@ -1807,7 +1807,7 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
 {
   Mat_MPIAIJ      *aij  = (Mat_MPIAIJ *)mat->data;
   Mat_SeqAIJ      *amat = (Mat_SeqAIJ *)aij->A->data, *bmat = (Mat_SeqAIJ *)aij->B->data;
-  PetscInt         i, j, cstart = mat->cmap->rstart;
+  PetscInt         i, j;
   PetscReal        sum = 0.0;
   const MatScalar *v, *amata, *bmata;
 
@@ -1832,28 +1832,24 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
       *norm = PetscSqrtReal(*norm);
       PetscCall(PetscLogFlops(2.0 * amat->nz + 2.0 * bmat->nz));
     } else if (type == NORM_1) { /* max column norm */
-      PetscReal *tmp;
-      PetscInt  *jj, *garray = aij->garray;
-      PetscCall(PetscCalloc1(mat->cmap->N + 1, &tmp));
-      *norm = 0.0;
-      v     = amata;
-      jj    = amat->j;
-      for (j = 0; j < amat->nz; j++) {
-        tmp[cstart + *jj++] += PetscAbsScalar(*v);
-        v++;
-      }
+      Vec          col;
+      PetscScalar *array;
+      PetscInt    *jj, *garray = aij->garray;
+
+      PetscCall(MatCreateVecs(mat, &col, NULL));
+      PetscCall(VecSet(col, 0.0));
+      PetscCall(VecGetArrayWrite(col, &array));
+      v  = amata;
+      jj = amat->j;
+      for (j = 0; j < amat->nz; j++) array[*jj++] += PetscAbsScalar(*v++);
+      PetscCall(VecRestoreArrayWrite(col, &array));
       v  = bmata;
       jj = bmat->j;
-      for (j = 0; j < bmat->nz; j++) {
-        tmp[garray[*jj++]] += PetscAbsScalar(*v);
-        v++;
-      }
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, mat->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
-      for (j = 0; j < mat->cmap->N; j++) {
-        if (tmp[j] > *norm) *norm = tmp[j];
-      }
-      PetscCall(PetscFree(tmp));
-      PetscCall(PetscLogFlops(PetscMax(amat->nz + bmat->nz - 1, 0)));
+      for (j = 0; j < bmat->nz; j++) PetscCall(VecSetValue(col, garray[*jj++], PetscAbsScalar(*v++), ADD_VALUES));
+      PetscCall(VecAssemblyBegin(col));
+      PetscCall(VecAssemblyEnd(col));
+      PetscCall(VecNorm(col, NORM_INFINITY, norm));
+      PetscCall(VecDestroy(&col));
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
       for (j = 0; j < aij->A->rmap->n; j++) {
