@@ -130,7 +130,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
   else hessian = tao->hessian_pre;
 
   while (hessian) {
-    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)hessian, &flg, MATSEQAIJ, MATMPIAIJ, MATSEQDENSE, MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPIBAIJ, ""));
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)hessian, &flg, MATSEQAIJ, MATMPIAIJ, MATSEQDENSE, MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ, ""));
     if (flg) {
       A = hessian;
       PetscCall(PetscObjectReference((PetscObject)A));
