@@ -1832,7 +1832,7 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
       *norm = PetscSqrtReal(*norm);
       PetscCall(PetscLogFlops(2.0 * amat->nz + 2.0 * bmat->nz));
     } else if (type == NORM_1) { /* max column norm */
-      Vec          col;
+      Vec          col, bcol;
       PetscScalar *array;
       PetscInt    *jj, *garray = aij->garray;
 
@@ -1843,9 +1843,15 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
       jj = amat->j;
       for (j = 0; j < amat->nz; j++) array[*jj++] += PetscAbsScalar(*v++);
       PetscCall(VecRestoreArrayWrite(col, &array));
+      PetscCall(MatCreateVecs(aij->B, &bcol, NULL));
+      PetscCall(VecSet(bcol, 0.0));
+      PetscCall(VecGetArrayWrite(bcol, &array));
       v  = bmata;
       jj = bmat->j;
-      for (j = 0; j < bmat->nz; j++) PetscCall(VecSetValue(col, garray[*jj++], PetscAbsScalar(*v++), ADD_VALUES));
+      for (j = 0; j < bmat->nz; j++) array[*jj++] += PetscAbsScalar(*v++);
+      PetscCall(VecSetValues(col, aij->B->cmap->n, garray, array, ADD_VALUES));
+      PetscCall(VecRestoreArrayWrite(bcol, &array));
+      PetscCall(VecDestroy(&bcol));
       PetscCall(VecAssemblyBegin(col));
       PetscCall(VecAssemblyEnd(col));
       PetscCall(VecNorm(col, NORM_INFINITY, norm));
