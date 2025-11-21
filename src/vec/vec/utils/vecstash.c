@@ -191,8 +191,8 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr)
   if (newnmax < (stash->nmax + incr)) newnmax += 2 * incr;
 
   PetscCall(PetscMalloc2(bs * newnmax, &n_array, newnmax, &n_idx));
-  PetscCall(PetscMemcpy(n_array, stash->array, bs * stash->nmax * sizeof(PetscScalar)));
-  PetscCall(PetscMemcpy(n_idx, stash->idx, stash->nmax * sizeof(PetscInt)));
+  PetscCall(PetscArraycpy(n_array, stash->array, bs * stash->nmax));
+  PetscCall(PetscArraycpy(n_idx, stash->idx, stash->nmax));
   PetscCall(PetscFree2(stash->array, stash->idx));
 
   stash->array = n_array;
@@ -279,7 +279,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, const PetscInt *own
   for (PetscInt i = 0; i < stash->n; i++) {
     j = owner[i];
     if (bs == 1) svalues[start[j]] = stash->array[i];
-    else PetscCall(PetscMemcpy(svalues + bs * start[j], stash->array + bs * i, bs * sizeof(PetscScalar)));
+    else PetscCall(PetscArraycpy(svalues + bs * start[j], stash->array + bs * i, bs));
     sindices[start[j]] = stash->idx[i];
     start[j]++;
   }
@@ -408,7 +408,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
     PetscCall(PetscSortIntWithArray(stash->n, stash->idx, perm));
 
     /* Out-of-place copy of arr */
-    PetscCall(PetscMemcpy(arr, stash->array + perm[0] * bs, bs * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(arr, stash->array + perm[0] * bs, bs));
     for (i = 1, j = 0; i < stash->n; i++) {
       PetscInt k;
       if (stash->idx[i] == stash->idx[j]) {
@@ -429,7 +429,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
       }
     }
     stash->n = j + 1;
-    PetscCall(PetscMemcpy(stash->array, arr, stash->n * bs * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(stash->array, arr, stash->n * bs));
     PetscCall(PetscFree2(perm, arr));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

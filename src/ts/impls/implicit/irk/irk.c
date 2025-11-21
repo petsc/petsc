@@ -138,7 +138,7 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
     PetscCall(MatAssemblyBegin(A_baij, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A_baij, MAT_FINAL_ASSEMBLY));
     PetscCall(MatInvertBlockDiagonal(A_baij, &A_inv));
-    PetscCall(PetscMemcpy(gauss_A_inv, A_inv, nstages * nstages * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(gauss_A_inv, A_inv, nstages * nstages));
     PetscCall(MatDestroy(&A_baij));
   }
 

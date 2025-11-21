@@ -335,13 +335,13 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   PetscCheck(mapin->N == mapout->N, mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
   PetscCallMPI(MPI_Comm_size(mapin->comm, &size));
   if (size == 1) {
-    if (keysout != keysin) PetscCall(PetscMemcpy(keysout, keysin, mapin->n * sizeof(PetscInt)));
+    if (keysout != keysin) PetscCall(PetscArraycpy(keysout, keysin, mapin->n));
     PetscCall(PetscSortInt(mapout->n, keysout));
     if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (keysout != keysin) {
     PetscCall(PetscMalloc1(mapin->n, &keysincopy));
-    PetscCall(PetscMemcpy(keysincopy, keysin, mapin->n * sizeof(PetscInt)));
+    PetscCall(PetscArraycpy(keysincopy, keysin, mapin->n));
     keysin = keysincopy;
   }
   PetscCall(PetscParallelSortInt_Samplesort(mapin, mapout, keysin, keysout));

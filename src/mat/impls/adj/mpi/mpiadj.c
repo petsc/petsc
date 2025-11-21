@@ -346,7 +346,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
   PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, &flag));
 
   /* if a->j are the same */
-  PetscCall(PetscMemcmp(a->j, b->j, (a->nz) * sizeof(PetscInt), &flag));
+  PetscCall(PetscArraycmp(a->j, b->j, a->nz, &flag));
 
   PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);

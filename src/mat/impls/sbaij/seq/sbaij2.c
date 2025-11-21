@@ -1393,7 +1393,7 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A, Mat B, PetscBool *flg)
   if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* if a->a are the same */
-  PetscCall(PetscArraycmp(a->a, b->a, (a->nz) * (A->rmap->bs) * (A->rmap->bs), flg));
+  PetscCall(PetscArraycmp(a->a, b->a, a->nz * A->rmap->bs * A->rmap->bs, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

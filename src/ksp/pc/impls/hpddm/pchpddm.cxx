@@ -835,9 +835,11 @@ static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
   else {
     PetscCall(PCHPDDMDeflate_Private(pc, x, y)); /* y = Q x */
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) PetscCall(MatMult(A, y, ctx->v[1][0])); /* y = A Q x     */
-      else { /* KSPLSQR and finest level */ PetscCall(MatMult(A, y, ctx->parent->normal));               /* y = A Q x     */
-        PetscCall(MatMultHermitianTranspose(A, ctx->parent->normal, ctx->v[1][0]));                      /* y = A^T A Q x */
+      if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) PetscCall(MatMult(A, y, ctx->v[1][0])); /* y = A Q x */
+      else {
+        /* KSPLSQR and finest level */
+        PetscCall(MatMult(A, y, ctx->parent->normal));                              /* y = A Q x               */
+        PetscCall(MatMultHermitianTranspose(A, ctx->parent->normal, ctx->v[1][0])); /* y = A^T A Q x           */
       }
       PetscCall(VecWAXPY(ctx->v[1][1], -1.0, ctx->v[1][0], x)); /* y = (I - A Q) x                             */
       PetscCall(PCApply(ctx->pc, ctx->v[1][1], ctx->v[1][0]));  /* y = M^-1 (I - A Q) x                        */
@@ -1411,6 +1413,37 @@ static PetscErrorCode PCHPDDMCheckInclusion_Private(PC pc, IS is, IS is_local, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCHPDDMCheckMatStructure_Private(PC pc, Mat A, Mat B)
+{
+  Mat             X, Y;
+  const PetscInt *i[2], *j[2];
+  PetscBool       flg = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &X)); /* no common way to compare sparsity pattern, so just convert to MATSEQAIJ */
+  PetscCall(MatConvert(B, MATAIJ, MAT_INITIAL_MATRIX, &Y)); /* the second Mat (B = Neumann) should have a SUBSET_NONZERO_PATTERN MatStructure of the first one (A = Dirichlet) */
+  PetscCall(MatSeqAIJGetCSRAndMemType(X, &i[0], &j[0], nullptr, nullptr));
+  PetscCall(MatSeqAIJGetCSRAndMemType(Y, &i[1], &j[1], nullptr, nullptr));
+  for (PetscInt row = 0; (row < X->rmap->n) && flg; ++row) {
+    const PetscInt n = i[0][row + 1] - i[0][row];
+
+    for (PetscInt k = i[1][row]; k < i[1][row + 1]; ++k) {
+      PetscInt loc;
+
+      PetscCall(PetscFindInt(j[1][k], n, j[0] + i[0][row], &loc));
+      if (loc < 0) {
+        flg = PETSC_FALSE;
+        break;
+      }
+    }
+  }
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
+  PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER_INPUT, "Auxiliary Mat is supposedly the local Neumann matrix but it has a sparsity pattern which is not a subset of the one of the local assembled matrix");
+  PetscCall(MatDestroy(&Y));
+  PetscCall(MatDestroy(&X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool algebraic, Mat *sub)
 {
   IS is;
@@ -1854,6 +1887,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PC              pc_00;
             Mat             A11 = nullptr;
             Vec             d   = nullptr;
+            PetscReal       norm;
             const PetscInt *ranges;
             PetscMPIInt     size;
             char           *prefix;
@@ -1957,14 +1991,14 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 }
                 if (flg) PetscCall(PetscInfo(pc, "A11 block is likely diagonal so the PC will build an auxiliary Mat (which was not initially provided by the user)\n"));
               }
-              if (data->Neumann != PETSC_BOOL3_TRUE && !flg && A11) {
-                PetscReal norm;
-
+              if ((PetscDefined(USE_DEBUG) || (data->Neumann != PETSC_BOOL3_TRUE && !flg)) && A11) {
                 PetscCall(MatNorm(A11, NORM_INFINITY, &norm));
-                PetscCheck(norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0), PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_has_neumann != true with a nonzero or non-diagonal A11 block", pcpre ? pcpre : "", pcpre ? pcpre : "");
-                PetscCall(PetscInfo(pc, "A11 block is likely zero so the PC will build an auxiliary Mat (which was%s initially provided by the user)\n", data->aux ? "" : " not"));
-                PetscCall(MatDestroy(&data->aux));
-                flg = PETSC_TRUE;
+                if (data->Neumann != PETSC_BOOL3_TRUE && !flg) {
+                  PetscCheck(norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0), PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_has_neumann != true with a nonzero or non-diagonal A11 block", pcpre ? pcpre : "", pcpre ? pcpre : "");
+                  PetscCall(PetscInfo(pc, "A11 block is likely zero so the PC will build an auxiliary Mat (which was%s initially provided by the user)\n", data->aux ? "" : " not"));
+                  PetscCall(MatDestroy(&data->aux));
+                  flg = PETSC_TRUE;
+                }
               }
               if (!data->aux) { /* if A11 is near zero, e.g., Stokes equation, or diagonal, build an auxiliary (Neumann) Mat which is a (possibly slightly shifted) diagonal weighted by the inverse of the multiplicity */
                 PetscSF            scatter;
@@ -2031,6 +2065,12 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PCSetType(std::get<0>(*ctx)[1], PCHPDDM));
               PetscCall(PCHPDDMSetAuxiliaryMat(std::get<0>(*ctx)[1], uis, uaux, nullptr, nullptr)); /* transfer ownership of the auxiliary inputs from the inner (PCKSP) to the inner-most (PCHPDDM) PC */
               if (flg) static_cast<PC_HPDDM *>(std::get<0>(*ctx)[1]->data)->Neumann = PETSC_BOOL3_TRUE;
+              else if (PetscDefined(USE_DEBUG) && norm > PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0)) {
+                /* no check when A11 is near zero */
+                PetscCall(MatCreateSubMatrices(A11, 1, &uis, &uis, MAT_INITIAL_MATRIX, &sub));
+                PetscCall(PCHPDDMCheckMatStructure_Private(pc, sub[0], uaux));
+                PetscCall(MatDestroySubMatrices(1, &sub));
+              }
               PetscCall(PCSetFromOptions(std::get<0>(*ctx)[1]));
               PetscCall(PetscObjectDereference((PetscObject)uis));
               PetscCall(PetscObjectDereference((PetscObject)uaux));
@@ -2527,8 +2567,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               else cmp[3] = PETSC_FALSE;
               PetscCheck(cmp[0] == cmp[1] && cmp[2] == cmp[3], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_levels_1_pc_asm_sub_mat_type %s and auxiliary Mat of type %s", pcpre ? pcpre : "", ((PetscObject)D)->type_name, ((PetscObject)C)->type_name);
               if (!cmp[0] && !cmp[2]) {
-                if (!block) PetscCall(MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN));
-                else {
+                if (!block) {
+                  if (PetscDefined(USE_DEBUG)) PetscCall(PCHPDDMCheckMatStructure_Private(pc, D, C));
+                  PetscCall(MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN));
+                } else {
                   structure = DIFFERENT_NONZERO_PATTERN;
                   PetscCall(MatAXPY(D, 1.0, data->aux, structure));
                 }

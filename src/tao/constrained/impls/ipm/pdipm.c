@@ -68,7 +68,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
   if (pdipm->Ng) {
     /* (1.a) Inserting updated g(x) */
     PetscCall(VecGetArrayRead(tao->constraints_equality, &garr));
-    PetscCall(PetscMemcpy(carr, garr, pdipm->ng * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(carr, garr, pdipm->ng));
     PetscCall(VecRestoreArrayRead(tao->constraints_equality, &garr));
   }
 
@@ -89,7 +89,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
   if (pdipm->Nh) {
     /* (2.a) Inserting updated h(x) */
     PetscCall(VecGetArrayRead(tao->constraints_inequality, &harr));
-    PetscCall(PetscMemcpy(carr, harr, pdipm->nh * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(carr, harr, pdipm->nh));
     PetscCall(VecRestoreArrayRead(tao->constraints_inequality, &harr));
   }
 
@@ -229,7 +229,7 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
 
   /* Set Initialize X.x = tao->solution */
   PetscCall(VecGetArrayRead(tao->solution, &xarr));
-  PetscCall(PetscMemcpy(Xarr, xarr, pdipm->nx * sizeof(PetscScalar)));
+  PetscCall(PetscArraycpy(Xarr, xarr, pdipm->nx));
   PetscCall(VecRestoreArrayRead(tao->solution, &xarr));
 
   /* Initialize X.lambdae = 0.0 */
@@ -758,7 +758,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
     Xarr[i + pdipm->off_z] -= alpha_p * dXarr[i + pdipm->off_z];
   }
   PetscCall(VecGetArrayWrite(tao->solution, &taosolarr));
-  PetscCall(PetscMemcpy(taosolarr, Xarr, pdipm->nx * sizeof(PetscScalar)));
+  PetscCall(PetscArraycpy(taosolarr, Xarr, pdipm->nx));
   PetscCall(VecRestoreArrayWrite(tao->solution, &taosolarr));
 
   PetscCall(VecRestoreArrayWrite(X, &Xarr));

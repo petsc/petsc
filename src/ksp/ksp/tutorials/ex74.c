@@ -146,7 +146,7 @@ int main(int argc, char **argv)
     PetscCall(MatAssemblyBegin(A_baij, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A_baij, MAT_FINAL_ASSEMBLY));
     PetscCall(MatInvertBlockDiagonal(A_baij, &A_inv));
-    PetscCall(PetscMemcpy(A, A_inv, nstages * nstages * sizeof(PetscScalar)));
+    PetscCall(PetscArraycpy(A, A_inv, nstages * nstages));
     PetscCall(MatDestroy(&A_baij));
   }
   /* Scale (1/dt)*A^{-1} and (1/dt)*b */
