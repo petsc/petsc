@@ -10,7 +10,7 @@
 + sf        - star forest
 . layout    - `PetscLayout` defining the global space for roots
 . nleaves   - number of leaf vertices on the current process, each of these references a root on any process
-. ilocal    - locations of leaves in leafdata buffers, pass NULL for contiguous storage
+. ilocal    - locations of leaves in leafdata buffers, pass `NULL` for contiguous storage
 . localmode - copy mode for ilocal
 - gremote   - root vertices in global numbering corresponding to leaves in ilocal
 
@@ -27,7 +27,7 @@
 
 .seealso: `PetscSF`, `PetscSFGetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, const PetscInt *gremote)
+PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nleaves, PetscInt ilocal[], PetscCopyMode localmode, const PetscInt gremote[])
 {
   const PetscInt *range;
   PetscInt        i, nroots, ls = -1, ln = -1;
@@ -603,18 +603,18 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   Collective
 
   Input Parameters:
-+ layout           - `PetscLayout` defining the global index space and the rank that brokers each index
-. numRootIndices   - size of rootIndices
-. rootIndices      - `PetscInt` array of global indices of which this process requests ownership
-. rootLocalIndices - root local index permutation (NULL if no permutation)
-. rootLocalOffset  - offset to be added to root local indices
-. numLeafIndices   - size of leafIndices
-. leafIndices      - `PetscInt` array of global indices with which this process requires data associated
-. leafLocalIndices - leaf local index permutation (NULL if no permutation)
-- leafLocalOffset  - offset to be added to leaf local indices
++ layout           - `PetscLayout` defining the global index space and the MPI rank that brokers each index
+. numRootIndices   - size of `rootIndices`
+. rootIndices      - array of global indices of which this process requests ownership
+. rootLocalIndices - root local index permutation (`NULL` if no permutation)
+. rootLocalOffset  - offset to be added to `rootLocalIndices`
+. numLeafIndices   - size of `leafIndices`
+. leafIndices      - array of global indices with which this process requires data associated
+. leafLocalIndices - leaf local index permutation (`NULL` if no permutation)
+- leafLocalOffset  - offset to be added to `leafLocalIndices`
 
   Output Parameters:
-+ sfA - star forest representing the communication pattern from the layout space to the leaf space (NULL if not needed)
++ sfA - star forest representing the communication pattern from the layout space to the leaf space (`NULL` if not needed)
 - sf  - star forest representing the communication pattern from the root space to the leaf space
 
   Level: advanced
@@ -697,7 +697,7 @@ would build the following PetscSF
 
 .seealso: `PetscSF`, `PetscSFCreate()`
 @*/
-PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt *rootIndices, const PetscInt *rootLocalIndices, PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt *leafIndices, const PetscInt *leafLocalIndices, PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf)
+PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt rootIndices[], const PetscInt rootLocalIndices[], PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt leafIndices[], const PetscInt leafLocalIndices[], PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf)
 {
   MPI_Comm     comm = layout->comm;
   PetscMPIInt  size, rank;
