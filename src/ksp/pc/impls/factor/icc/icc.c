@@ -56,6 +56,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscCall(PCFactorGetMatSolverType(pc, &stype));
   if (!stype) {
     MatSolverType solverpackage;
+
     PetscCall(MatFactorGetSolverType(((PC_Factor *)icc)->fact, &solverpackage));
     PetscCall(PCFactorSetMatSolverType(pc, solverpackage));
   }
