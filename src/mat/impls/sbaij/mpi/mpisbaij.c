@@ -697,10 +697,10 @@ static PetscErrorCode MatNorm_MPISBAIJ(Mat mat, NormType type, PetscReal *norm)
       PetscCall(PetscMalloc1(2, &lnorm2));
       PetscCall(MatNorm(baij->A, type, lnorm2));
       *lnorm2 = (*lnorm2) * (*lnorm2);
-      lnorm2++; /* squar power of norm(A) */
+      lnorm2++; /* square power of norm(A) */
       PetscCall(MatNorm(baij->B, type, lnorm2));
       *lnorm2 = (*lnorm2) * (*lnorm2);
-      lnorm2--; /* squar power of norm(B) */
+      lnorm2--; /* square power of norm(B) */
       PetscCallMPI(MPIU_Allreduce(lnorm2, sum, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       *norm = PetscSqrtReal(sum[0] + 2 * sum[1]);
       PetscCall(PetscFree(lnorm2));
@@ -712,8 +712,7 @@ static PetscErrorCode MatNorm_MPISBAIJ(Mat mat, NormType type, PetscReal *norm)
       PetscInt      brow, bcol, col, bs = baij->A->rmap->bs, row, grow, gcol, mbs = amat->mbs;
       MatScalar    *v;
 
-      PetscCall(PetscMalloc1(mat->cmap->N, &rsum));
-      PetscCall(PetscArrayzero(rsum, mat->cmap->N));
+      PetscCall(PetscCalloc1(mat->cmap->N, &rsum));
       /* Amat */
       v  = amat->a;
       jj = amat->j;
