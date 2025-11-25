@@ -690,16 +690,16 @@ static PetscErrorCode MatCreateSubMatrix_Nest(Mat A, IS isrow, IS iscol, MatReus
   PetscCall(MatNestFindSubMat(A, &vs->isglobal, isrow, iscol, &sub));
   switch (reuse) {
   case MAT_INITIAL_MATRIX:
-    if (sub) PetscCall(PetscObjectReference((PetscObject)sub));
+    PetscCall(PetscObjectReference((PetscObject)sub));
+    if (sub) PetscCall(PetscObjectStateIncrease((PetscObject)sub));
     *B = sub;
     break;
   case MAT_REUSE_MATRIX:
     PetscCheck(sub == *B, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Submatrix was not used before in this call");
+    if (sub) PetscCall(PetscObjectStateIncrease((PetscObject)sub));
     break;
-  case MAT_IGNORE_MATRIX: /* Nothing to do */
+  default:
     break;
-  case MAT_INPLACE_MATRIX: /* Nothing to do */
-    SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MAT_INPLACE_MATRIX is not supported yet");
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

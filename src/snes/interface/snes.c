@@ -3063,7 +3063,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
         Bexp = Bexp_mine;
       } else {
         /* See if the matrix used to construct the preconditioner can be viewed and added directly */
-        PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)B, &flg, MATSEQAIJ, MATMPIAIJ, MATSEQDENSE, MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPIBAIJ, ""));
+        PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)B, &flg, MATSEQAIJ, MATMPIAIJ, MATSEQDENSE, MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ, ""));
         if (flg) Bexp = B;
         else {
           /* If the "preconditioning" matrix is itself MATSHELL or some other type without direct support */
