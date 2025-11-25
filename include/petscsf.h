@@ -137,12 +137,12 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF, PetscInt, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF, PetscLayout, PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF, PetscInt *, PetscInt *, const PetscInt *[], const PetscSFNode *[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const PetscInt[], PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt[], PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF, MPI_Group);
-PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscMPIInt *, const PetscMPIInt *[], const PetscInt *[], const PetscInt *[], const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscMPIInt *, const PetscMPIInt *[], const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF, MPI_Group *, MPI_Group *);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanksSF(PetscSF, PetscSF *);
@@ -151,12 +151,12 @@ PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm, PetscInt, PetscSF[], Pe
 PETSC_EXTERN PetscErrorCode PetscSFCreateStridedSF(PetscSF, PetscInt, PetscInt, PetscInt, PetscSF *);
 
 /* Build PetscSF from PetscLayout */
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt *, PetscCopyMode, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt[], PetscCopyMode, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraphLayout(PetscSF, PetscLayout *, PetscInt *, const PetscInt *[], PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout, PetscLayout, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscSF *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt[], const PetscInt[], PetscInt, PetscInt, const PetscInt[], const PetscInt[], PetscInt, PetscSF *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFMerge(PetscSF, PetscSF, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal *, const PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[]);
 
 /* PetscSection interoperability */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphSection(PetscSF, PetscSection, PetscSection);
@@ -200,13 +200,13 @@ PETSC_EXTERN PetscErrorCode PetscSFDeregisterPersistent(PetscSF, MPI_Datatype, c
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
 PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )
-static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt *ranks[], const PetscInt *roffset[], const PetscInt *rmine[], const PetscInt *rremote[])
 {
   return PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote);
 }
 
 PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFCreateEmbeddedRootSF()", )
-static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *esf)
+static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *esf)
 {
   return PetscSFCreateEmbeddedRootSF(sf, nselected, selected, esf);
 }

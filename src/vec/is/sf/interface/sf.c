@@ -1337,7 +1337,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
 
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *esf)
+PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *esf)
 {
   PetscInt           i, j, n, nroots, nleaves, esf_nleaves, *new_ilocal, minleaf, maxleaf, maxlocal;
   const PetscInt    *ilocal;
@@ -1422,7 +1422,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
 
 .seealso: `PetscSF`, `PetscSFCreateEmbeddedRootSF()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *newsf)
+PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *newsf)
 {
   const PetscSFNode *iremote;
   PetscSFNode       *new_iremote;
