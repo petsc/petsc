@@ -35,6 +35,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse reuse, Mat *n
 
     PetscCall(MatSetOption(M, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
     PetscCall(MatSetOption(M, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatSetOption(M, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     PetscCall(PetscObjectTypeCompare((PetscObject)M, MATSEQSBAIJ, &isSBAIJ));
     if (!isSBAIJ) PetscCall(PetscObjectTypeCompare((PetscObject)M, MATMPISBAIJ, &isSBAIJ));
     if (isSBAIJ) PetscCall(MatSetOption(M, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
@@ -48,6 +49,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse reuse, Mat *n
   }
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
+  if (reuse != MAT_REUSE_MATRIX) PetscCall(MatSetOption(M, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
 
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(mat, &M));

@@ -218,6 +218,7 @@ static PetscErrorCode PCTelescopeMatCreate_default(PC pc, PC_Telescope sred, Mat
 
     PetscCall(MatGetSize(Blocal, &mm, NULL));
     PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm, Blocal, mm, reuse, &Bred));
+    PetscCall(MatPropagateSymmetryOptions(B, Bred));
   }
   *A = Bred;
   PetscCall(ISDestroy(&iscol));
