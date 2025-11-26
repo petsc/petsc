@@ -119,6 +119,52 @@ cdef class FE(Object):
         CHKERR(PetscCLEAR(self.obj)); self.fe = newfe
         return self
 
+    def createByCell(
+        self,
+        dim: int,
+        nc: int,
+        ctype: DM.PolytopeType,
+        qorder: int = DETERMINE,
+        prefix: str | None = None,
+        comm: Comm | None = None) -> Self:
+        """Create a `FE` for basic FEM computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        dim
+            The spatial dimension.
+        nc
+            The number of components.
+        ctype
+            The cell type.
+        qorder
+            The quadrature order or `DETERMINE` to use `Space` polynomial
+            degree.
+        prefix
+            The options prefix, or `None`.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        petsc.PetscFECreateByCell
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
+        cdef PetscFE newfe = NULL
+        cdef PetscInt cdim = asInt(dim)
+        cdef PetscInt cnc = asInt(nc)
+        cdef PetscInt cqorder = asInt(qorder)
+        cdef PetscDMPolytopeType cCellType = ctype
+        cdef const char *cprefix = NULL
+        if prefix:
+            prefix = str2bytes(prefix, &cprefix)
+        CHKERR(PetscFECreateDefault(ccomm, cdim, cnc, cCellType, cprefix, cqorder, &newfe))
+        CHKERR(PetscCLEAR(self.obj)); self.fe = newfe
+        return self
+
     def createLagrange(
         self,
         dim: int,
