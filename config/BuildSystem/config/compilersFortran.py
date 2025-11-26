@@ -147,7 +147,12 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranBool(self):
-    '''Determine whether the Fortran compiler has interoperable Bool/logical'''
+    '''
+    Determine whether the Fortran compiler has interoperable Bool/logical
+
+    requires '-fpscomp logicals' or similar for Intel compilers
+    requires '-Munixlogical' for NVIDIA compilers
+    '''
     self.fortranBoolIsInteroperable = 1
     if self.argDB['with-batch']:
       self.logPrint('Using --with-batch, so assume that Fortran Bool is interoperable', 3, 'compilers')

@@ -277,7 +277,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp logicals')
+        flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
         if bopt == 'g':
           flags.extend(['-g','-O0'])
         elif bopt == 'O':
@@ -285,7 +285,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp:logicals')
+        flags.append('-fpscomp:logicals') # enforce Fortran logical to be compatible with C
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])
@@ -308,7 +308,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O0')
       # NVIDIA
       elif config.setCompilers.Configure.isNVC(compiler, self.log):
-        flags.append('-Munixlogical')
+        flags.append('-Munixlogical') # enforce Fortran logical to be compatible with C
         if bopt == 'g':
           flags.extend(['-g','-O0'])
         elif bopt == 'O':
