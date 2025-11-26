@@ -203,6 +203,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     const PetscInt    *row;
     PetscScalar       *val;
     const PetscScalar *vals;
+    PetscBool          option;
 
     PetscCall(MatGetSize(X, &m, &n));
     PetscCall(MatGetOwnershipRange(X, &start, &end));
@@ -230,8 +231,11 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
       PetscCall(PetscFree(val));
     }
     PetscCall(MatRestoreRowUpperTriangular(X));
+    PetscCall(MatGetOption(Y, MAT_NO_OFF_PROC_ENTRIES, &option));
+    PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, option));
   } else {
     Mat B;
 
@@ -248,6 +252,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   const PetscInt    *row;
   PetscScalar       *val;
   const PetscScalar *vals;
+  PetscBool          option;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(X, &m, &n));
@@ -286,8 +291,11 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   }
   PetscCall(MatRestoreRowUpperTriangular(Y));
   PetscCall(MatRestoreRowUpperTriangular(X));
+  PetscCall(MatGetOption(B, MAT_NO_OFF_PROC_ENTRIES, &option));
+  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, option));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

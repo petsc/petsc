@@ -766,7 +766,7 @@ static PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat, MatAssemblyType mode)
 
   PetscCall(MatStashScatterBegin_Private(mat, &mat->stash, mat->rmap->range));
   PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
-  PetscCall(PetscInfo(aij->A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
+  PetscCall(PetscInfo(mat, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
