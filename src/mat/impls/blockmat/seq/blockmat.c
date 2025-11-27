@@ -631,7 +631,7 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode)
     PetscCall(MatAssemblyBegin(aa[i], MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(aa[i], MAT_FINAL_ASSEMBLY));
   }
-  PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded,%" PetscInt_FMT " used\n", m, A->cmap->n / A->cmap->bs, fshift, a->nz));
+  PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n", m, A->cmap->n / A->cmap->bs, fshift, a->nz));
   PetscCall(PetscInfo(A, "Number of mallocs during MatSetValues() is %" PetscInt_FMT "\n", a->reallocs));
   PetscCall(PetscInfo(A, "Maximum nonzeros in any row is %" PetscInt_FMT "\n", rmax));
 

@@ -1,8 +1,7 @@
 [1] <(null)> PetscInfoSetFile(): Opened PetscInfo file ex182info.1
-[1] <mat:seqaij> MatAssemblyBegin_MPIAIJ(): Stash has 0 entries, uses 0 mallocs.
-[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 10; storage space: 0 unneeded,0 used
-[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,0 used
-[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,5 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 10; storage space: 0 unneeded, 0 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded, 0 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded, 5 used
 [1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
 [1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
 [1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 1
