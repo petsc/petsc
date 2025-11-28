@@ -479,6 +479,31 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 }
 
 /*@
+  DMLabelViewFromOptions - View a `DMLabel` in a particular way based on a request in the options database
+
+  Collective
+
+  Input Parameters:
++ label - the `DMLabel` object
+. obj   - optional object that provides the prefix for the options database (if `NULL` then the prefix in `obj` is used)
+- name  - option string that is used to activate viewing
+
+  Level: intermediate
+
+  Note:
+  See `PetscObjectViewFromOptions()` for a list of values that can be provided in the options database to determine how the `DMLabel` is viewed
+
+.seealso: [](ch_dmbase), `DMLabel`, `DMLabelView()`, `PetscObjectViewFromOptions()`, `DMLabelCreate()`
+@*/
+PetscErrorCode DMLabelViewFromOptions(DMLabel label, PeOp PetscObject obj, const char name[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)label, obj, name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMLabelReset - Destroys internal data structures in a `DMLabel`
 
   Not Collective
