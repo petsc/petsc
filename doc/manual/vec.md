@@ -1379,3 +1379,170 @@ two-dimensional `DMDA`, divided among four processes.
 Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four
 Processes)
 :::
+
+
+(sec_petscsf)=
+
+# PetscSF - an alternative to low-level MPI calls for data communication
+
+As discussed above, the `VecScatter` object allows one to define parallel communication between vectors by listing, with `IS` objects, which vector entries from one vector
+are to be communicated to another vector and where in the second vector they are to be inserted. `PetscSF` provides a similar more general functionality for arrays of any MPI datatype.
+
+`PetscSF` communicates between `rootdata` and `leafdata` arrays. `rootdata` is distributed across the MPI processes and its entries are indicated by a `PetscSFNode` pair consisting of the MPI `rank` the
+entry is located on and the `index` in the array on that MPI process.
+
+```
+typedef struct {
+  PetscInt rank;  /* MPI rank of owner */
+  PetscInt index; /* Index of node on rank */
+} PetscSFNode;
+```
+
+Each entry is uniquely owned at that location; in the same way a PETSc global vector has unique MPI process ownership of each entry.
+
+`leafdata` is similar to PETSc local vectors; each MPI process's `leafdata` array can contain "ghost values" that match values in other locations of the `leafdata` (on the same or different
+MPI processes). All these matching ghost values share a common root value in `rootdata`.
+
+
+We begin to explain the use of `PetscSF` with an example. First we construct an array that tells for each leaf entry on that MPI process where its root entry is:
+
+```
+  PetscInt    nroots, nleaves;
+  PetscSFNode *roots;
+
+  if (rank == 0) {
+    // the number of entries in rootdata on this MPI process
+    nroots = 2;
+    // provide the matching location in rootdata for each entry in leafdata
+    nleaves = 3;
+    roots[0].rank = 0; roots[0].index = 0;
+    roots[1].rank = 1; roots[1].index = 0;
+    roots[2].rank = 0; roots[2].index = 1;
+  } else {
+    nroots = 1;
+    nleaves = 3;
+    roots[0].rank = 0; roots[0].index = 0;
+    roots[1].rank = 0; roots[1].index = 1;
+    roots[2].rank = 1; roots[1].index = 0;
+  }
+```
+
+Next, we construct the `PetscSF` that encapsulates this information needed for communication:
+
+```
+  PetscSF sf;
+
+  PetscSFCreate(PETSC_COMM_WORLD, &sf);
+  PetscSFSetFromOptions(sf);
+  PetscSFSetGraph(sf, nroots, nleaves, NULL, PETSC_OWN_POINTER, roots, PETSC_OWN_POINTER);
+  PetscSFSetUp(sf);
+```
+
+Next we fill `rootdata`:
+
+```
+  PetscInt    *rootdata, *leafdata;
+
+  if (rank == 0) {
+    rootdata[0] = 1;
+    rootdata[1] = 2;
+  } else {
+    rootdata[0] = 3;
+  }
+```
+
+Finally, we use the `PetscSF` to communicate `rootdata` to `leafdata`:
+
+```
+  PetscSFBcastBegin(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE);
+  PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE);
+```
+
+Now `leafdata` on MPI rank 0 contains (1, 3, 2) and on MPI rank 1 contains (1, 2, 3).
+
+It is also possible to move `leafdata` to `rootdata` using
+
+```
+  PetscSFReduceBegin(sf, MPIU_INT, leafdata, rootdata, MPIU_SUM);
+  PetscSFReduceEnd(sf, MPIU_INT, leafdata, rootdata, MPIU_SUM);
+```
+
+In this case, since the reduction operation performed (the final argument of `PetscSFReduceBegin()`), is `MPIU_SUM` the final result in each entry of `rootdata` is the sum
+of the previous value at that location plus all the values it that entries leafs. So `rootdata` on MPI rank 0 contains (3, 6) while on MPI rank
+1 it contains (9).
+
+As shown in the example above, `PetscSFBcastBegin()` and `PetscSFBcastEnd()` (as well as other `PetscSF` functions) also take an `MPI_Op` reduction argument, though that is almost always `MPI_REPLACE`.
+
+## Non-contiguous storage of leafdata
+
+In the example above we treated the `leafdata` as sitting in a contiguous array with entries from 0 to one less than `nleaves`. This is indicated by the
+`NULL` argument in the call to `PetscSFSetGraph()`. More generally the `leafdata` array can have entries in it that are not accessed by the `PetscSF` operations. For example,
+
+```
+ PetscInt *leaves;
+
+ if (rank == 0) {
+   leaves[0] = 1;
+   leaves[1] = 2;
+   leaves[2] = 4;
+ } else {
+   leaves[0] = 2;
+   leaves[1] = 1;
+   leaves[2] = 0;
+ }
+  PetscSFSetGraph(sf, nroots, nleaves, leaves, PETSC_OWN_POINTER, roots, PETSC_OWN_POINTER);
+```
+
+means that the three entries of `leafdata` affected by `PetscSF` communication on MPI rank 0 are the array locations (1, 2, 4); meaning also that `leafdata` must be of length at least 5.
+On MPI rank 1, the arriving values from the three roots listed in `roots` are placed backwards in `leafdata`. Note that providing the `leaves` permutation array on MPI rank 1 is
+equivalent to listing the three values in `roots` in the opposite order.
+
+If we reran the initial communication with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` using the modified `sf` the resulting values in `leavedata` would be on MPI rank 0 (x, 1, 3, x, 2) and on
+MPI rank 1 (3, 2, 1) where x indicates the previous value in `leafdata` that was unchanged.
+
+
+
+## GPU usage
+
+`rootdata` and `leafdata` can live either on CPU memory or GPU memory. The `PetscSF` routines automatically detect the memory type. But the time for the calls to the `CUDA` or `HIP`
+routines for doing this determination (`cudaPointerGetAttributes()` or `hipPointerGetAttributes()`) is not trivial. To avoid the cost of the check,
+`PetscSF` provides the routines `PetscSFBcastWithMemTypeBegin()` and `PetscSFReduceWithMemTypeBegin()` where the user provides the memory type information.
+
+## Gathering leafdata but not reducing it
+
+One may wish to gather the entries of the `leafdata` for each root but not reduce them to a single value. This is done with
+
+```
+  PetscSFGatherBegin(sf, MPIU_INT, leafdata, multirootdata);
+  PetscSFGatherEnd(sf, MPIU_INT, leafdata, multirootdata);
+```
+
+Here `multirootdata` is (generally) an array larger than `rootdata` that has enough locations to store the value of each `leaf` of each local root. The values are stored contiguously
+for each root; that is `multirootdata` will contain
+
+```
+(first leaf of first root, second leaf of first root, third leaf of first root, ..., last leaf of first root, first leaf of second root, second leaf of second root, ...)
+```
+
+The number of leaves for each local root (sometimes called the degree of the root) can be obtained with calls to `PetscSFComputeDegreeBegin()` and `PetscSFComputeDegreeEnd()`.
+
+The data in `multirootdata` can be communicated to `leafdata` using
+
+```
+  PetscSFScatterBegin(sf, MPIU_INT, multirootdata, leafdata);
+  PetscSFScatterEnd(sf, MPIU_INT, multirootdata, leafdata);
+```
+
+## Optimized communication patterns
+
+
+A performance drawback to using `PetscSFSetGraph()` is that it requires explicitly listing in arrays all the entries of `roots`.
+`PetscSFSetGraphWithPattern()` provides an alternative way to indicate the communication graph for specific communication patterns.
+
+
+
+
+
+
+
+

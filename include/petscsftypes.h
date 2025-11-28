@@ -4,7 +4,7 @@
 /* SUBMANSEC = PetscSF */
 
 /*S
-   PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and `Vec` between MPI ranks.
+   PetscSF - PETSc object for managing the communication of certain entries of arrays and `Vec` between MPI processes.
 
    Level: intermediate
 
@@ -12,16 +12,33 @@
   A star  <https://en.wikipedia.org/wiki/Star_(graph_theory)> forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
-.seealso: `PetscSFCreate()`, `VecScatter`, `VecScatterCreate()`
+  The standard usage paradigm for `PetscSF` is to provide the communication pattern with `PetscSFSetGraph()` or `PetscSFSetGraphWithPattern()` and
+  then perform the communication using `PetscSFBcastBegin()` and `PetscSFBcastEnd()`, `PetscSFReduceBegin()` and `PetscSFReduceEnd()`.
+
+.seealso: [](sec_petscsf), `PetscSFCreate()`, `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`, `PetscSFBcastBegin()`, `PetscSFBcastEnd()`,
+          `PetscSFReduceBegin()`, `PetscSFReduceEnd()`, `VecScatter`, `VecScatterCreate()`
 S*/
 typedef struct _p_PetscSF *PetscSF;
 
 /*J
-    PetscSFType - String with the name of a `PetscSF` type
+  PetscSFType - String with the name of a `PetscSF` type. Each `PetscSFType` uses different mechanisms to perform the communication.
 
-   Level: beginner
+  Level: beginner
 
-.seealso: `PetscSFSetType()`, `PetscSF`
+  Available Types:
++ `PETSCSFBASIC`      - use MPI sends and receives
+. `PETSCSFNEIGHBOR`   - use MPI_Neighbor operations
+. `PETSCSFALLGATHERV` - use MPI_Allgatherv operations
+. `PETSCSFALLGATHER`  - use MPI_Allgather operations
+. `PETSCSFGATHERV`    - use MPI_Igatherv and MPI_Iscatterv operations
+. `PETSCSFGATHER`     - use MPI_Igather and MPI_Iscatter operations
+. `PETSCSFALLTOALL`   - use MPI_Ialltoall operations
+- `PETSCSFWINDOW`     - use MPI_Win operations
+
+  Note:
+  Some `PetscSFType` only provide specialized code for a subset of the `PetscSF` operations and use `PETSCSFBASIC` for the others.
+
+.seealso: [](sec_petscsf), `PetscSFSetType()`, `PetscSF`
 J*/
 typedef const char *PetscSFType;
 #define PETSCSFBASIC      "basic"
@@ -34,7 +51,7 @@ typedef const char *PetscSFType;
 #define PETSCSFWINDOW     "window"
 
 /*S
-   PetscSFNode - specifier of owner and index
+   PetscSFNode - specifier of MPI rank owner and local index for array or `Vec` entry locations that are to be communicated with a `PetscSF`
 
    Level: beginner
 
@@ -60,10 +77,10 @@ typedef const char *PetscSFType;
 
   Generally the values of `rank` should be in $[ 0,size)$  and the value of `index` greater than or equal to 0, but there are some situations that violate this.
 
-.seealso: `PetscSF`, `PetscSFSetGraph()`
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFSetGraph()`
 S*/
 typedef struct {
-  PetscInt rank;  /* Rank of owner */
+  PetscInt rank;  /* MPI rank of owner */
   PetscInt index; /* Index of node on rank */
 } PetscSFNode;
 
@@ -88,26 +105,26 @@ typedef enum {
 typedef struct _n_PetscSFLink *PetscSFLink;
 
 /*S
-     VecScatter - Object used to manage communication of data
-     between vectors in parallel or between parallel and sequential vectors. Manages both scatters and gathers
+  VecScatter - Object used to manage communication of data
+  between vectors in parallel or between parallel and sequential vectors. Manages both scatters and gathers
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   This is an alias for `PetscSF`
+  Note:
+  This is an alias for `PetscSF`.
 
-.seealso: `Vec`, `PetscSF`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
+.seealso: [](sec_petscsf), `Vec`, `PetscSF`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
 S*/
 typedef PetscSF VecScatter;
 
 /*J
-   VecScatterType - String with the name of a PETSc vector scatter type
+  VecScatterType - String with the name of a PETSc vector scatter type
 
-   Level: beginner
+  Level: beginner
 
-   Note:
-   This is an alias for `PetscSFType`
+  Note:
+  This is an alias for `PetscSFType`
 
-.seealso: `PetscSFType`, `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
+.seealso: [](sec_petscsf), `PetscSFType`, `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
 J*/
 typedef PetscSFType VecScatterType;
