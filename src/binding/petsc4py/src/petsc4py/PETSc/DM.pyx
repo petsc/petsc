@@ -346,6 +346,43 @@ cdef class DM(Object):
 
     #
 
+    def getUseNatural(self) -> bool:
+        """Get the flag for constructing a global-to-natural map.
+
+        Not collective.
+
+        Returns
+        -------
+        useNatural : bool
+            Whether a global-to-natural map is created.
+
+        See Also
+        --------
+        petsc.DMGetUseNatural
+
+        """
+        cdef PetscBool uN  = PETSC_FALSE
+        CHKERR(DMGetUseNatural(self.dm, &uN))
+        return toBool(uN)
+
+    def setUseNatural(self, useNatural : bool) -> None:
+        """Set the flag for constructing a global-to-natural map.
+
+        Not collective.
+
+        Parameters
+        ----------
+        useNatural : bool
+            Whether a global-to-natural map is created.
+
+        See Also
+        --------
+        petsc.DMSetUseNatural
+
+        """
+        cdef PetscBool uN  = useNatural
+        CHKERR(DMSetUseNatural(self.dm, uN))
+
     def setBasicAdjacency(self, useCone: bool, useClosure: bool) -> None:
         """Set the flags for determining variable influence.
 

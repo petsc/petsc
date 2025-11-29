@@ -168,6 +168,8 @@ cdef extern from * nogil:
     PetscErrorCode DMSetSectionSF(PetscDM, PetscSF)
     PetscErrorCode DMGetPointSF(PetscDM, PetscSF*)
     PetscErrorCode DMSetPointSF(PetscDM, PetscSF)
+    PetscErrorCode DMGetUseNatural(PetscDM, PetscBool *)
+    PetscErrorCode DMSetUseNatural(PetscDM, PetscBool)
 
     PetscErrorCode DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
     PetscErrorCode DMSetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec)

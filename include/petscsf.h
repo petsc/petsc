@@ -17,10 +17,10 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
    Values:
 +  `PETSCSF_PATTERN_GENERAL`   - A general graph. One sets the graph with `PetscSFSetGraph()` and usually does not use this enum directly.
-.  `PETSCSF_PATTERN_ALLGATHER` - A graph that every rank gathers all roots from all ranks (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-.  `PETSCSF_PATTERN_GATHER`    - A graph that rank 0 gathers all roots from all ranks (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
--  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every rank gathers different roots from all ranks (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-                                 In an ALLTOALL graph, we assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
+.  `PETSCSF_PATTERN_ALLGATHER` - A graph that every MPI process gathers all roots from all MPI processes (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+.  `PETSCSF_PATTERN_GATHER`    - A graph that MPI rank 0 gathers all roots from all MPI processes (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
+-  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every MPI process gathers different roots from all MPI processes (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+                                 We assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
                                  the size of the communicator. This does not mean one can not communicate multiple data items between a pair of processes. One just needs to
                                  create a new MPI datatype for the multiple data items, e.g., by `MPI_Type_contiguous`.
    Level: beginner
@@ -44,7 +44,7 @@ typedef enum {
 
    Level: advanced
 
-.seealso: `PetscSF`, `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
+.seealso: `PetscSF`, `PetscSFWindowFlavorType`, `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_SYNC_FENCE,
@@ -64,7 +64,7 @@ PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
    Level: advanced
 
-.seealso: `PetscSF`, `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
+.seealso: `PetscSF`, `PetscSFWindowSyncType`, `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_FLAVOR_CREATE,
@@ -137,12 +137,12 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF, PetscInt, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF, PetscLayout, PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF, PetscInt *, PetscInt *, const PetscInt *[], const PetscSFNode *[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const PetscInt[], PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt[], PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF, MPI_Group);
-PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscMPIInt *, const PetscMPIInt *[], const PetscInt *[], const PetscInt *[], const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscMPIInt *, const PetscMPIInt *[], const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF, MPI_Group *, MPI_Group *);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanksSF(PetscSF, PetscSF *);
@@ -151,12 +151,12 @@ PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm, PetscInt, PetscSF[], Pe
 PETSC_EXTERN PetscErrorCode PetscSFCreateStridedSF(PetscSF, PetscInt, PetscInt, PetscInt, PetscSF *);
 
 /* Build PetscSF from PetscLayout */
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt *, PetscCopyMode, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt[], PetscCopyMode, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraphLayout(PetscSF, PetscLayout *, PetscInt *, const PetscInt *[], PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout, PetscLayout, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscSF *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt[], const PetscInt[], PetscInt, PetscInt, const PetscInt[], const PetscInt[], PetscInt, PetscSF *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFMerge(PetscSF, PetscSF, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal *, const PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[]);
 
 /* PetscSection interoperability */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphSection(PetscSF, PetscSection, PetscSection);
@@ -200,13 +200,13 @@ PETSC_EXTERN PetscErrorCode PetscSFDeregisterPersistent(PetscSF, MPI_Datatype, c
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
 PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )
-static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt *ranks[], const PetscInt *roffset[], const PetscInt *rmine[], const PetscInt *rremote[])
 {
   return PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote);
 }
 
 PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFCreateEmbeddedRootSF()", )
-static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *esf)
+static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *esf)
 {
   return PetscSFCreateEmbeddedRootSF(sf, nselected, selected, esf);
 }

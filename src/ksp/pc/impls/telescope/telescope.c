@@ -728,7 +728,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PC pc, PetscOptionItems PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* PC simplementation specific API's */
+/* PC implementation specific API's */
 
 static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc, KSP *ksp)
 {

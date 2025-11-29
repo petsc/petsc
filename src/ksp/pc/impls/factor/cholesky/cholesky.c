@@ -65,21 +65,26 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       PetscCall(PCFactorSetUpMatSolverType(pc));
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
       if (canuseordering) {
-        PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
-        PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
-        /* check if dir->row == dir->col */
-        if (dir->row) {
-          PetscCall(ISEqual(dir->row, dir->col, &flg));
-          PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "row and column permutations must be equal");
-        }
-        PetscCall(ISDestroy(&dir->col)); /* only pass one ordering into CholeskyFactor */
+        PetscBool external;
 
-        flg = PETSC_FALSE;
-        PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &flg, NULL));
-        if (flg) {
-          PetscReal tol = 1.e-10;
-          PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
-          PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
+        PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+        PetscCall(PetscStrcmp(((PC_Factor *)dir)->ordering, MATORDERINGEXTERNAL, &external));
+        if (!external) {
+          PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
+          /* check if dir->row == dir->col */
+          if (dir->row) {
+            PetscCall(ISEqual(dir->row, dir->col, &flg));
+            PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "row and column permutations must be equal");
+          }
+          PetscCall(ISDestroy(&dir->col)); /* only pass one ordering into CholeskyFactor */
+
+          flg = PETSC_FALSE;
+          PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &flg));
+          if (flg) {
+            PetscReal tol = 1.e-10;
+            PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
+            PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
+          }
         }
       }
       PetscCall(MatCholeskyFactorSymbolic(((PC_Factor *)dir)->fact, pc->pmat, dir->row, &((PC_Factor *)dir)->info));
@@ -93,17 +98,22 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
+          PetscBool external;
+
           PetscCall(ISDestroy(&dir->row));
           PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
-          PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
-          PetscCall(ISDestroy(&dir->col)); /* only use dir->row ordering in CholeskyFactor */
+          PetscCall(PetscStrcmp(((PC_Factor *)dir)->ordering, MATORDERINGEXTERNAL, &external));
+          if (!external) {
+            PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
+            PetscCall(ISDestroy(&dir->col)); /* only use dir->row ordering in CholeskyFactor */
 
-          flg = PETSC_FALSE;
-          PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &flg, NULL));
-          if (flg) {
-            PetscReal tol = 1.e-10;
-            PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
-            PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
+            flg = PETSC_FALSE;
+            PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &flg));
+            if (flg) {
+              PetscReal tol = 1.e-10;
+              PetscCall(PetscOptionsGetReal(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_factor_nonzeros_along_diagonal", &tol, NULL));
+              PetscCall(MatReorderForNonzeroDiagonal(pc->pmat, tol, dir->row, dir->row));
+            }
           }
         }
       }

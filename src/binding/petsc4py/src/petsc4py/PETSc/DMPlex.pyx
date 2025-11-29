@@ -3472,6 +3472,123 @@ cdef class DMPlex(DM):
         """
         CHKERR(DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
 
+    def createNaturalVec(self) -> Vec:
+        """Return a natural vector.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexCreateNaturalVector
+
+        """
+        cdef Vec nv = Vec()
+        CHKERR(DMPlexCreateNaturalVector(self.dm, &nv.vec))
+        return nv
+
+    def naturalToGlobalBegin(self, Vec nv, Vec gv) -> None:
+        """Rearrange a `Vec` in the natural order to the Global order.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexNaturalToGlobalBegin
+
+        """
+        CHKERR(DMPlexNaturalToGlobalBegin(self.dm, nv.vec, gv.vec))
+
+    def naturalToGlobalEnd(self, Vec nv, Vec gv) -> None:
+        """Rearrange a `Vec` in the natural order to the Global order.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexNaturalToGlobalEnd
+
+        """
+        CHKERR(DMPlexNaturalToGlobalEnd(self.dm, nv.vec, gv.vec))
+
+    def globalToNaturalBegin(self, Vec gv, Vec nv) -> None:
+        """Rearrange a `Vec` in the Global order to the natural order.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexGlobalToNaturalBegin
+
+        """
+        CHKERR(DMPlexGlobalToNaturalBegin(self.dm, gv.vec, nv.vec))
+
+    def globalToNaturalEnd(self, Vec gv, Vec nv) -> None:
+        """Rearrange a `Vec` in the Global order to the natural order.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexGlobalToNaturalEnd
+
+        """
+        CHKERR(DMPlexGlobalToNaturalEnd(self.dm, gv.vec, nv.vec))
+
+    def setMigrationSF(self, SF sf) -> None:
+        """Set the `SF` for migrating from a parent `DM` into this `DM`.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMPlexSetMigrationSF
+
+        """
+        CHKERR(DMPlexSetMigrationSF(self.dm, sf.sf))
+
+    def getMigrationSF(self) -> SF:
+        """Get the `SF` for migrating from a parent `DM` into this `DM`.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMPlexGetMigrationSF
+
+        """
+        cdef SF sf = SF()
+        CHKERR(DMPlexGetMigrationSF(self.dm, &sf.sf))
+        CHKERR(PetscINCREF(sf.obj))
+        return sf
+
+    def createGlobalToNaturalSF(self, Section section, SF sfMigration) -> SF:
+        """Create the `SF` for mapping Global `Vec` to the Natural `Vec`.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexCreateGlobalToNaturalSF
+
+        """
+        cdef SF sf = SF()
+        CHKERR(DMPlexCreateGlobalToNaturalSF(self.dm, section.sec, sfMigration.sf, &sf.sf))
+        return sf
+
+    def migrateGlobalToNaturalSF(self, DM dmOld, SF sfNaturalOld, SF sfMigration) -> SF:
+        """Create the `SF` for mapping Global `Vec` to the Natural `Vec` in the new `DM`.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.DMPlexMigrateGlobalToNaturalSF
+
+        """
+        cdef SF sf = SF()
+        CHKERR(DMPlexMigrateGlobalToNaturalSF(dmOld.dm, self.dm, sfNaturalOld.sf, sfMigration.sf, &sf.sf))
+        return sf
+
 # --------------------------------------------------------------------
 
 

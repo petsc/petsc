@@ -192,3 +192,13 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexTransformSetDM(PetscDMPlexTransform, PetscDM)
     PetscErrorCode DMPlexTransformSetUp(PetscDMPlexTransform)
     PetscErrorCode DMPlexTransformView(PetscDMPlexTransform tr, PetscViewer v)
+
+    PetscErrorCode DMPlexCreateNaturalVector(PetscDM, PetscVec *)
+    PetscErrorCode DMPlexNaturalToGlobalBegin(PetscDM, PetscVec, PetscVec)
+    PetscErrorCode DMPlexNaturalToGlobalEnd(PetscDM, PetscVec, PetscVec)
+    PetscErrorCode DMPlexGlobalToNaturalBegin(PetscDM, PetscVec, PetscVec)
+    PetscErrorCode DMPlexGlobalToNaturalEnd(PetscDM, PetscVec, PetscVec)
+    PetscErrorCode DMPlexGetMigrationSF(PetscDM, PetscSF *)
+    PetscErrorCode DMPlexSetMigrationSF(PetscDM, PetscSF)
+    PetscErrorCode DMPlexCreateGlobalToNaturalSF(PetscDM, PetscSection, PetscSF, PetscSF *)
+    PetscErrorCode DMPlexMigrateGlobalToNaturalSF(PetscDM, PetscDM, PetscSF, PetscSF, PetscSF *)

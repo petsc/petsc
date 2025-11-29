@@ -1949,6 +1949,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                   PetscCall(MatTranspose(sub[0], MAT_INITIAL_MATRIX, &C));
                   PetscCall(MatDestroySubMatrices(1, &sub));
                   PetscCall(MatFindNonzeroRows(C, &data->is));
+                  PetscCheck(data->is, PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "No empty row, which likely means that some rows of A_10 are dense");
                   PetscCall(MatDestroy(&C));
                   PetscCall(ISDestroy(is));
                   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), A11->rmap->n, A11->rmap->rstart, 1, &loc));

@@ -680,15 +680,15 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
 
   lu->options.IterRefine = NOREFINE;
   PetscCall(PetscOptionsBool("-mat_superlu_dist_iterrefine", "Use iterative refinement", "None", lu->options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE, &flg, &set));
-  if (set) {
-    if (flg) lu->options.IterRefine = SLU_DOUBLE;
-    else lu->options.IterRefine = NOREFINE;
-  }
+  if (set && flg) lu->options.IterRefine = SLU_DOUBLE;
 
   if (PetscLogPrintInfo) lu->options.PrintStat = YES;
   else lu->options.PrintStat = NO;
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
   PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
+
+  lu->options.superlu_acc_offload = 1;
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_gpuoffload", "Offload factorization onto the GPUs", "None", (PetscBool)lu->options.superlu_acc_offload, (PetscBool *)&lu->options.superlu_acc_offload, NULL));
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &iflg));
   if (!iflg || context->busy) { /* additional options */
@@ -914,19 +914,20 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   B->ops->view    = MatView_SuperLU_DIST;
   B->ops->destroy = MatDestroy_SuperLU_DIST;
 
-  /* Set the default input options:
-     options.Fact              = DOFACT;
-     options.Equil             = YES;
-     options.ParSymbFact       = NO;
-     options.ColPerm           = METIS_AT_PLUS_A;
-     options.RowPerm           = LargeDiag_MC64;
-     options.ReplaceTinyPivot  = YES;
-     options.IterRefine        = DOUBLE;
-     options.Trans             = NOTRANS;
-     options.SolveInitialized  = NO; -hold the communication pattern used MatSolve() and MatMatSolve()
-     options.RefineInitialized = NO;
-     options.PrintStat         = YES;
-     options.SymPattern        = NO;
+  /* set_default_options_dist() sets the default input options to the following values:
+     options.Fact                = DOFACT;
+     options.Equil               = YES;
+     options.ParSymbFact         = NO;
+     options.ColPerm             = METIS_AT_PLUS_A;
+     options.RowPerm             = LargeDiag_MC64;
+     options.ReplaceTinyPivot    = NO;
+     options.IterRefine          = SLU_DOUBLE;
+     options.Trans               = NOTRANS;
+     options.SolveInitialized    = NO; -hold the communication pattern used MatSolve() and MatMatSolve()
+     options.RefineInitialized   = NO;
+     options.PrintStat           = YES;
+     options.superlu_acc_offload = 1;
+     options.SymPattern          = NO;
   */
   set_default_options_dist(&options);
 
@@ -1005,12 +1006,13 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 . -mat_superlu_dist_fact <SamePattern> - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
 . -mat_superlu_dist_iterrefine - use iterative refinement
 . -mat_superlu_dist_printstat - print factorization information
+. -mat_superlu_dist_gpuoffload - offload factorization onto the GPUs
 - -pc_precision single - use SuperLU_DIST single precision with PETSc double precision.
 
   Level: beginner
 
   Note:
-    If PETSc was configured with `--with-cuda` then this solver will automatically use the GPUs.
+    If PETSc was configured with `--with-cuda` then this solver will use the GPUs by default.
 
 .seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/

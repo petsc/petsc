@@ -14,10 +14,13 @@
   Output Parameter:
 . type - The `PetscMemType` of the pointer
 
+  Level: intermediate
+
   Notes:
   Currently only CUDA and HIP memtypes are supported.
 
-  Level: intermediate
+  The CUDA and HIP calls needed to determine the `PetscMemType` take a non-trivial amount of time, thus for optimal GPU performance this
+  routine should be used sparingly and instead the code should track the `PetscMemType` for its important arrays.
 
 .seealso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
 `PetscDeviceArrayCopy()`, `PetscDeviceArrayZero()`

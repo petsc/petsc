@@ -615,7 +615,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
 }
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
-static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_Cheolesky(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_Cholesky(Mat A)
 {
   Mat_SeqAIJ                   *a  = static_cast<Mat_SeqAIJ *>(A->data);
   PetscInt                      m  = A->rmap->n;
@@ -976,7 +976,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
   PetscCheck(cusparseTriFactors, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing cusparseTriFactors");
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
-  PetscCall(MatSeqAIJCUSPARSEBuildFactoredMatrix_Cheolesky(A));
+  PetscCall(MatSeqAIJCUSPARSEBuildFactoredMatrix_Cholesky(A));
 #else
   PetscCall(MatSeqAIJCUSPARSEBuildICCTriMatrices(A));
   if (!cusparseTriFactors->workVector) cusparseTriFactors->workVector = new THRUSTARRAY(n);
