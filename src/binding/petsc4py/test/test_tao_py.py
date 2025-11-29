@@ -143,10 +143,98 @@ class TestTaoPython(unittest.TestCase):
         return self.tao.getPythonContext()
 
 
+class MyGradientDescent:
+    def __init__(self):
+        self._ls = None
+
+    def create(self, tao):
+        self._ls = PETSc.TAOLineSearch().create(comm=PETSc.COMM_SELF)
+        self._ls.useTAORoutine(tao)
+        self._ls.setType(PETSc.TAOLineSearch.Type.UNIT)
+        self._ls.setInitialStepLength(0.2)
+
+    def destroy(self, tao):
+        self._ls.destroy()
+
+    def setUp(self, tao):
+        pass
+
+    def solve(self, tao):
+        x = tao.getSolution()
+        gradient = tao.getGradient()[0]
+        search_direction = gradient.copy()
+        for it in range(tao.getMaximumIterations()):
+            tao.setIterationNumber(it)
+
+            # search_direction = -gradient
+            tao.computeGradient(x, gradient)
+            gradient.copy(search_direction)
+            search_direction.scale(-1)
+
+            # x = x + .2 search_direction
+            f, s, reason = self._ls.apply(x, gradient, search_direction)
+
+            tao.monitor(f=f, res=gradient.norm())
+
+            if reason < 0:
+                raise RuntimeError('LS failed.')
+
+            if tao.checkConverged() > 0:
+                break
+
+    def step(self, tao, x, g, s):
+        raise RuntimeError('Should only be called by builtin solve.')
+
+    def preStep(self, tao):
+        raise RuntimeError('Should only be called by builtin solve.')
+
+    def postStep(self, tao):
+        raise RuntimeError('Should only be called by builtin solve.')
+
+
+class TestTaoPythonOptimiser(unittest.TestCase):
+    def setUp(self):
+        self.tao = PETSc.TAO()
+        self.tao.createPython(MyGradientDescent(), comm=PETSc.COMM_SELF)
+
+    def tearDown(self):
+        self.tao.destroy()
+        self.tao = None
+
+    def testSolve(self):
+        tao = self.tao
+
+        opts = PETSc.Options('test_tao_python_optimiser_')
+        opts['tao_max_it'] = 100
+        opts['tao_gatol'] = 1e-6
+
+        tao.setOptionsPrefix('test_tao_python_optimiser_')
+        tao.setFromOptions()
+
+        x = PETSc.Vec().createSeq(2, comm=tao.getComm())
+        x.set(0.5)
+
+        tao.setSolution(x)
+        tao.setObjective(Objective())
+        tao.setGradient(Gradient(), x.copy())
+
+        tao.solve()
+
+        self.assertEqual(tao.getMaximumIterations(), 100)
+        self.assertAlmostEqual(tao.getTolerances()[0], 1e-6)
+        self.assertGreater(tao.getIterationNumber(), 0)
+        self.assertGreater(tao.getConvergedReason(), 0)
+        self.assertAlmostEqual(x[0], 1.0, places=5)
+        self.assertAlmostEqual(x[1], 2.0, places=5)
+        self.assertGreater(tao.getObjectiveValue(), 0)
+        self.assertAlmostEqual(tao.getObjectiveValue(), 0, places=5)
+
+
 # --------------------------------------------------------------------
 
 if numpy.iscomplexobj(PETSc.ScalarType()):
     del TestTaoPython
+    del TestTaoPythonOptimiser
 
 if __name__ == '__main__':
     unittest.main()
