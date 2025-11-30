@@ -135,7 +135,7 @@ int main(int argc, char **argv)
   }
   PetscCall(PetscObjectSetName((PetscObject)dm, "Example_DM"));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-  PetscCall(DMPlexFilter(dm, filter, filterValue, user.ignoreLabelHalo, user.sanitizeSubmesh, &ownershipTransferSF, &subdm));
+  PetscCall(DMPlexFilter(dm, filter, filterValue, user.ignoreLabelHalo, user.sanitizeSubmesh, PetscObjectComm((PetscObject)dm), &ownershipTransferSF, &subdm));
   PetscCall(DMLabelDestroy(&filter));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscObjectSetName((PetscObject)subdm, "Example_SubDM"));

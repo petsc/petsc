@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     PetscCall(PetscFinalize());
     return 0;
   }
-  PetscCall(DMPlexFilter(dm, filter, filterValue, PETSC_FALSE, PETSC_FALSE, NULL, &subdm));
+  PetscCall(DMPlexFilter(dm, filter, filterValue, PETSC_FALSE, PETSC_FALSE, PetscObjectComm((PetscObject)dm), NULL, &subdm));
   PetscCall(DMLabelDestroy(&filter));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscObjectSetName((PetscObject)subdm, "Example_SubDM"));
