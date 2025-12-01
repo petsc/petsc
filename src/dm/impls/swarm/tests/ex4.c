@@ -531,7 +531,7 @@ int main(int argc, char **argv)
        args: -ts_basicsymplectic_type 3
      test:
        suffix: bsi_4
-       args: -ts_basicsymplectic_type 4 -ts_dt 0.0001
+       args: -ts_basicsymplectic_type 4 -ts_time_step 0.0001
 
    testset:
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -1,-1 -dm_plex_box_upper 1,1 \
@@ -549,7 +549,7 @@ int main(int argc, char **argv)
        args: -ts_basicsymplectic_type 3
      test:
        suffix: bsi_2d_4
-       args: -ts_basicsymplectic_type 4 -ts_dt 0.0001
+       args: -ts_basicsymplectic_type 4 -ts_time_step 0.0001
 
    testset:
      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -1,-1,-1 -dm_plex_box_upper 1,1,1 \
@@ -567,7 +567,7 @@ int main(int argc, char **argv)
        args: -ts_basicsymplectic_type 3
      test:
        suffix: bsi_3d_4
-       args: -ts_basicsymplectic_type 4 -ts_dt 0.0001
+       args: -ts_basicsymplectic_type 4 -ts_time_step 0.0001
 
    testset:
      args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_density constant \

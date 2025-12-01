@@ -24,7 +24,7 @@
 
 -ts_type rosw
 -ts_max_time 300.0
--ts_dt 0.01
+-ts_time_step 0.01
 -ts_adapt_dt_max .01
 
 -ts_monitor_draw_solution

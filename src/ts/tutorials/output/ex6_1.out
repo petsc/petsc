@@ -2,8 +2,11 @@ Solving a linear TS problem on 1 processor
 avg. error (2 norm) = 0.00135504, avg. error (max norm) = 0.00195424
 TS Object: 1 MPI process
   type: euler
+  initial time step=0.000143637
   maximum steps=4
   maximum time=100.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=4
   total number of RHS Jacobian evaluations=4
   total number of rejected steps=0

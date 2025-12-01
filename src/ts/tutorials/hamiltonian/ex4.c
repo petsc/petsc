@@ -3098,7 +3098,7 @@ int main(int argc, char **argv)
             -ftop_ksp_type lsqr -ftop_pc_type none -ftop_ksp_rtol 1.e-14 -ptof_pc_type lu \
           -em_type primal -petscspace_degree 1 -em_snes_atol 1.e-12 -em_snes_error_if_not_converged \
             -em_ksp_error_if_not_converged -em_pc_type svd -em_proj_pc_type lu \
-          -ts_dt 0.03 -ts_max_steps 2 -ts_max_time 100 \
+          -ts_time_step 0.03 -ts_max_steps 2 -ts_max_time 100 \
           -emax_tao_type brgn -emax_tao_max_it 100 -emax_tao_brgn_regularization_type l2pure \
             -emax_tao_brgn_regularizer_weight 1e-5 -tao_brgn_subsolver_tao_bnk_ksp_rtol 1e-12 \
             -emax_start_step 1 -emax_solve_step 1 \

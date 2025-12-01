@@ -7,7 +7,10 @@
 TS Object: 1 MPI process
   type: bdf
     Order=2
+  initial time step=0.001
   maximum time=0.5
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of I function evaluations=114
   total number of I Jacobian evaluations=93
   total number of nonlinear solver iterations=93

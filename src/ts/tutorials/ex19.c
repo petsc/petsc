@@ -256,6 +256,6 @@ int main(int argc, char **argv)
    test:
       requires: !single
       suffix: bdf_reject
-      args: -ts_type bdf -ts_dt 0.5 -ts_max_steps 1 -ts_max_reject {{0 1 2}separate_output} -ts_error_if_step_fails false -ts_adapt_monitor
+      args: -ts_type bdf -ts_time_step 0.5 -ts_max_steps 1 -ts_max_step_rejections {{0 1 2}separate_output} -ts_error_if_step_fails false -ts_adapt_monitor
 
 TEST*/

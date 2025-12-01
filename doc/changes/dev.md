@@ -79,7 +79,7 @@
 ```{rubric} SNES:
 ```
 
--  Change the `destroy()` function argument of `SNESSetConvergenceTest()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+- Change the `destroy()` function argument of `SNESSetConvergenceTest()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
 
 ```{rubric} SNESLineSearch:
 ```
@@ -87,10 +87,12 @@
 ```{rubric} TS:
 ```
 
--  Change the `destroy()` function argument of `TSTrajectorySetTransform()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
--  Add `TSPseudoComputeFunction()` to get nonlinear residual while avoiding recalculation if possible
--  Remove unused `TSPseudoVerifyTimeStepDefault()`
--  Remove `TSPseudoComputeTimeStep()` and `TSPseudoVerifyTimeStep()`
+- Add `TSPseudoComputeFunction()` to get nonlinear residual while avoiding recalculation if possible
+- Remove unused `TSPseudoVerifyTimeStepDefault()`
+- Remove `TSPseudoComputeTimeStep()` and `TSPseudoVerifyTimeStep()`
+- Change the `destroy()` function argument of `TSTrajectorySetTransform()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+- Correct option `-ts_max_reject` to `-ts_max_step_rejections`
+- Correct option `-ts_dt` to `-ts_time_step`
 
 ```{rubric} TAO:
 ```

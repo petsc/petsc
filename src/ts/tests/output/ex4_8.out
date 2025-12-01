@@ -15,8 +15,11 @@ TS Object: 1 MPI process
     Order: 5
     FSAL property: yes
     Abscissa c =  0.000000  0.200000  0.300000  0.800000  0.888889  1.000000  1.000000 
+  initial time step=0.01
   maximum steps=100
   maximum time=1.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=601
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001

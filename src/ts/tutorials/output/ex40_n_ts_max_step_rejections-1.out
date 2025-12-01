@@ -1,15 +1,19 @@
       TSAdapt basic alpha 0: step   0 rejected t=0          + 2.500e-01 dt=2.500e-02  wlte=  538  wltea=   -1 wlter=   -1
+      TSAdapt basic alpha 0: step   0 rejected t=0          + 2.500e-02 dt=2.500e-03  wlte= 20.5  wltea=   -1 wlter=   -1
 TS Object: 1 MPI process
   type: alpha
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5
+  initial time step=0.25
   maximum steps=1
   maximum time=30.
-  total number of I function evaluations=6
-  total number of I Jacobian evaluations=3
-  total number of nonlinear solver iterations=3
-  total number of linear solver iterations=3
+  maximum number of step rejections=1
+  maximum number of SNES failures allowed=1
+  total number of I function evaluations=12
+  total number of I Jacobian evaluations=6
+  total number of nonlinear solver iterations=6
+  total number of linear solver iterations=6
   total number of nonlinear solve failures=0
-  total number of rejected steps=1
+  total number of rejected steps=2
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI process
     type: basic

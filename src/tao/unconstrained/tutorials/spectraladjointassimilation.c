@@ -231,7 +231,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetExactFinalTime(appctx.ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetTolerances(appctx.ts, 1e-7, NULL, 1e-7, NULL));
   PetscCall(TSSetFromOptions(appctx.ts));
-  /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
+  /* Need to save initial timestep user may have set with -ts_time_step so it can be reset for each new TSSolve() */
   PetscCall(TSGetTimeStep(appctx.ts, &appctx.initial_dt));
   PetscCall(TSSetRHSFunction(appctx.ts, NULL, TSComputeRHSFunctionLinear, &appctx));
   PetscCall(TSSetRHSJacobian(appctx.ts, appctx.SEMop.stiff, appctx.SEMop.stiff, TSComputeRHSJacobianConstant, &appctx));
@@ -658,7 +658,7 @@ PetscErrorCode MonitorDestroy(void **ctx)
    test:
      suffix: cn
      requires: !single
-     args: -ts_type cn -ts_dt .003 -pc_type lu -E 10 -N 8 -ncoeff 5 -tao_bqnls_mat_lmvm_scale_type none
+     args: -ts_type cn -ts_time_step .003 -pc_type lu -E 10 -N 8 -ncoeff 5 -tao_bqnls_mat_lmvm_scale_type none
 
    test:
      suffix: 2

@@ -10,7 +10,7 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_time_step 9.53674e-9
 
     w = -kappa \Delta u  + u^3  - u
     u_t =  \Delta w
@@ -19,7 +19,7 @@ Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 
 Evolve the Cahn-Hillard equations: (this fails after a few timesteps 12/17/2017)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason   -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason   -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_time_step 5.96046e-06 -cahn-hillard
 
 */
 #include <petscdm.h>
@@ -313,7 +313,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa)
      requires: !complex !single
 
    test:
-     args: -ts_monitor -snes_monitor -pc_type lu -snes_converged_reason -ts_type beuler -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
+     args: -ts_monitor -snes_monitor -pc_type lu -snes_converged_reason -ts_type beuler -da_refine 5 -ts_time_step 9.53674e-9 -ts_max_steps 50
      requires: x
 
 TEST*/

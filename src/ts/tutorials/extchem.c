@@ -20,7 +20,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
     See also h2_10sp.inp for another example
 
     Determine sensitivity of final temperature on each variables initial conditions
-    -ts_dt 1.e-5 -ts_type cn -ts_adjoint_solve -ts_adjoint_view_solution draw
+    -ts_time_step 1.e-5 -ts_type cn -ts_adjoint_solve -ts_adjoint_view_solution draw
 
     The solution for component i = 0 is the temperature.
 

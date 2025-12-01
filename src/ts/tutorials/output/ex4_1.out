@@ -102,8 +102,11 @@ Timestep 99: time = 0.0142201 2-norm error = 0.0013428 max norm error = 0.001671
 Timestep 100: time = 0.0143637 2-norm error = 0.00134389 max norm error = 0.00166276
 TS Object: 1 MPI process
   type: euler
+  initial time step=0.000143637
   maximum steps=100
   maximum time=1.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=100
   total number of RHS Jacobian evaluations=100
   total number of rejected steps=0

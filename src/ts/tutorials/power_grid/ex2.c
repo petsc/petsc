@@ -240,7 +240,7 @@ int main(int argc, char **argv)
       requires: !complex
 
    test:
-      args: -nox -ts_dt 10
+      args: -nox -ts_time_step 10
       output_file: output/empty.out
 
 TEST*/

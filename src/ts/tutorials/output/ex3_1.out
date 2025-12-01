@@ -104,8 +104,11 @@ avg. error (2 norm) = 0.000913004, avg. error (max norm) = 0.00130754
 TS Object: 1 MPI process
   type: ssp
     Scheme: rks2
+  initial time step=0.0005
   maximum steps=100
   maximum time=100.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=500
   total number of RHS Jacobian evaluations=500
   total number of rejected steps=0

@@ -7,7 +7,7 @@ static char help[] = "Vlasov-Poisson example of central orbits\n";
 
   and we probably want it to run fast and not check convergence
 
-    -convest_num_refine 0 -ts_dt 0.01 -ts_max_steps 100 -ts_max_time 100 -output_step 10
+    -convest_num_refine 0 -ts_time_step 0.01 -ts_max_steps 100 -ts_max_time 100 -output_step 10
 */
 
 #include <petscts.h>
@@ -1150,7 +1150,7 @@ int main(int argc, char **argv)
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic\
-           -dm_view -output_step 50 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -dm_view -output_step 50 -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: none_bsi_2d_1
        args: -ts_basicsymplectic_type 1 -em_type none -error
@@ -1182,7 +1182,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic\
            -em_type primal -em_pc_type svd\
-           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10\
+           -dm_view -output_step 50 -error -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10\
            -petscspace_degree 2 -petscfe_default_quadrature_order 3 -sigma 1.0e-8 -timeScale 2.0e-14
      test:
        suffix: poisson_bsi_2d_1
@@ -1203,7 +1203,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_convergence_estimate -convest_num_refine 2 -em_type primal \
            -mat_type baij -em_ksp_error_if_not_converged -em_pc_type svd \
-           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10 \
+           -dm_view -output_step 50 -error -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10 \
            -sigma 1.0e-8 -timeScale 2.0e-14
      test:
        suffix: im_2d_0
@@ -1225,7 +1225,7 @@ int main(int argc, char **argv)
            -ts_type basicsymplectic -ts_convergence_estimate -convest_num_refine 2 \
            -em_snes_type ksponly -em_pc_type svd -em_type primal -petscspace_degree 1\
            -dm_view -output_step 50\
-           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14 -ts_dt 0.01 -ts_max_time 1.0 -ts_max_steps 10
+           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14 -ts_time_step 0.01 -ts_max_time 1.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_mesh_1
        args: -ts_basicsymplectic_type 4
@@ -1249,7 +1249,7 @@ int main(int argc, char **argv)
            -ts_convergence_estimate -convest_num_refine 2 \
              -em_pc_type lu\
            -dm_view -output_step 50 -error\
-           -sigma 1.0e-8 -timeScale 2.0e-14 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -sigma 1.0e-8 -timeScale 2.0e-14 -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_multiple_1
        args: -ts_type basicsymplectic -ts_basicsymplectic_type 1
@@ -1258,7 +1258,7 @@ int main(int argc, char **argv)
        args: -ts_type basicsymplectic -ts_basicsymplectic_type 2
      test:
        suffix: bsi_2d_multiple_3
-       args: -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_dt 0.001
+       args: -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_time_step 0.001
      test:
        suffix: im_2d_multiple_0
        args: -ts_type theta -ts_theta_theta 0.5 \
@@ -1270,7 +1270,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -em_pc_type fieldsplit -ksp_rtol 1e-10 -em_ksp_type preonly -em_type mixed -em_ksp_error_if_not_converged\
            -dm_view -output_step 50 -error -dm_refine 0\
-           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14 -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_4_rt_1
        args: -ts_type basicsymplectic -ts_basicsymplectic_type 4\

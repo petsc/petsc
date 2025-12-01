@@ -6,8 +6,11 @@
 2-norm of error 3.82162e-07
 TS Object: 1 MPI process
   type: beuler
+  initial time step=0.005
   maximum steps=5
   maximum time=4.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=24
   total number of RHS Jacobian evaluations=17
   total number of nonlinear solver iterations=17

@@ -207,18 +207,18 @@ PetscErrorCode InitialConditions(DM da, Vec U)
    test:
       suffix: 2
       nsize: 2
-      args: -ts_max_steps 10 -ts_dt 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
+      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
 
    test:
       suffix: 3
       nsize: 2
-      args: -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi
+      args: -ts_max_steps 10 -ts_time_step 10 -ts_adjoint_monitor_draw_sensi
       output_file: output/empty.out
 
    test:
       suffix: 4
       nsize: 2
-      args: -ts_max_steps 10 -ts_dt 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -snes_fd_color
+      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -snes_fd_color
       output_file: output/ex5adj_2.out
 
    test:

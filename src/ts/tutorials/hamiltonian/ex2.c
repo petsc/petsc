@@ -53,7 +53,7 @@ For a Landau Damping verification run, we use
   # EM Solve
   -em_type primal -petscspace_degree 1 -em_snes_atol 1.e-12 -em_snes_error_if_not_converged -em_ksp_error_if_not_converged -em_pc_type svd -em_proj_pc_type lu
   # Timestepping
-  -ts_type basicsymplectic -ts_basicsymplectic_type 1 -ts_dt 0.03 -ts_max_steps 1500 -ts_max_time 100
+  -ts_type basicsymplectic -ts_basicsymplectic_type 1 -ts_time_step 0.03 -ts_max_steps 1500 -ts_max_time 100
   # Monitoring
   -output_step 1 -check_vel_res -efield_monitor -poisson_monitor -positions_monitor -dm_swarm_print_coords 0 -remap_uf_view draw
     -ftop_ksp_lsqr_monitor -ftop_ksp_converged_reason
@@ -2489,7 +2489,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_species 1 -twostream -charges -1.,1. -sigma 1.0e-8 \
              -cosine_coefficients 0.01,0.5 -perturbed_weights -total_weight 1. \
            -ts_type basicsymplectic -ts_basicsymplectic_type 2 \
-             -ts_dt 0.01 -ts_max_time 5 -ts_max_steps 10 \
+             -ts_time_step 0.01 -ts_max_time 5 -ts_max_steps 10 \
            -em_snes_atol 1.e-15 -em_snes_error_if_not_converged -em_ksp_error_if_not_converged \
            -output_step 1 -check_vel_res -dm_swarm_print_coords 1 -dm_swarm_print_weights 1
      test:
@@ -2526,7 +2526,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_species 1 -charges -1.,1. \
              -cosine_coefficients 0.01,0.5 -perturbed_weights -total_weight 1. \
            -ts_type basicsymplectic -ts_basicsymplectic_type 1 \
-             -ts_dt 0.03 -ts_max_time 500 -ts_max_steps 1 \
+             -ts_time_step 0.03 -ts_max_time 500 -ts_max_steps 1 \
            -em_snes_atol 1.e-12 -em_snes_error_if_not_converged -em_ksp_error_if_not_converged \
            -output_step 1 -check_vel_res -dm_swarm_print_coords 1 -dm_swarm_print_weights 1
 
@@ -2586,7 +2586,7 @@ int main(int argc, char **argv)
            -dm_swarm_num_species 1 -charges -1.,1. \
              -cosine_coefficients 0.01,0.5 -perturbed_weights -total_weight 1. \
            -ts_type discgrad -ts_discgrad_type average \
-             -ts_dt 0.03 -ts_max_time 500 -ts_max_steps 1 \
+             -ts_time_step 0.03 -ts_max_time 500 -ts_max_steps 1 \
            -snes_type qn \
            -em_snes_atol 1.e-12 -em_snes_error_if_not_converged -em_ksp_error_if_not_converged \
            -output_step 1 -check_vel_res -dm_swarm_print_coords 1 -dm_swarm_print_weights 1

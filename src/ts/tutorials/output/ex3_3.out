@@ -21,8 +21,11 @@ TS Object: 1 MPI process
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
+  initial time step=0.000143637
   maximum steps=3
   maximum time=100.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=12
   total number of RHS Jacobian evaluations=12
   total number of linear solver iterations=12

@@ -115,13 +115,13 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
 /*TEST
 
     test:
-      args: -ts_type beuler -ts_dt 0.1 -ts_event_monitor
+      args: -ts_type beuler -ts_time_step 0.1 -ts_event_monitor
 
     test:
       suffix: 2
-      args: -ts_type beuler -ts_dt 0.2 -ts_event_monitor
+      args: -ts_type beuler -ts_time_step 0.2 -ts_event_monitor
 
     test:
       suffix: 3
-      args: -ts_type beuler -ts_dt 0.5 -ts_event_monitor
+      args: -ts_type beuler -ts_time_step 0.5 -ts_event_monitor
 TEST*/

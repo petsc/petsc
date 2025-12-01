@@ -546,11 +546,11 @@ PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, M
 /*TEST
 
     test:
-      args: -nox -ts_type ssp -ts_dt 0.0005
+      args: -nox -ts_type ssp -ts_time_step 0.0005
 
     test:
       suffix: 2
-      args: -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1
+      args: -nox -ts_type ssp -ts_time_step 0.0005 -time_dependent_rhs 1
 
     test:
       suffix: 3
@@ -571,27 +571,27 @@ PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, M
     test:
       requires: !single
       suffix: pod_guess
-      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type pod -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_time_step 0.0005 -ksp_guess_type pod -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: pod_guess_Ainner
-      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type pod -ksp_guess_pod_Ainner -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_time_step 0.0005 -ksp_guess_type pod -ksp_guess_pod_Ainner -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: fischer_guess
-      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_time_step 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: fischer_guess_2
-      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_time_step 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: fischer_guess_3
-      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 3,10 -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_time_step 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 3,10 -pc_type none -ksp_converged_reason
 
     test:
       requires: !single

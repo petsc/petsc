@@ -1,8 +1,11 @@
 TS Object: 1 MPI process
   type: alpha2
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5, Beta=0.25
+  initial time step=0.01
   maximum steps=10
   maximum time=31.4159
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of I function evaluations=24
   total number of I Jacobian evaluations=12
   total number of nonlinear solver iterations=12

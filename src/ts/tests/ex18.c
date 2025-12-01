@@ -106,7 +106,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, M
 /*TEST
 
   testset:
-    args: -ts_view_solution -ts_max_steps 10 -ts_dt 0.1 -ts_view_solution -ts_adapt_type {{none basic}} -ts_exact_final_time matchstep -snes_error_if_not_converged
+    args: -ts_view_solution -ts_max_steps 10 -ts_time_step 0.1 -ts_view_solution -ts_adapt_type {{none basic}} -ts_exact_final_time matchstep -snes_error_if_not_converged
 
     test:
       output_file: output/ex18_1.out
@@ -121,6 +121,6 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, M
     test:
       output_file: output/ex18_1.out
       suffix: dirk_explicit_first_random_dae
-      args: -dae -ts_type dirk -ts_dirk_type es122sal -random 1 -ts_max_reject -1
+      args: -dae -ts_type dirk -ts_dirk_type es122sal -random 1 -ts_max_step_rejections -1
 
 TEST*/

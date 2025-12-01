@@ -24,7 +24,7 @@ const char *const *TSConvergedReasons = TSConvergedReasons_Shifted + 4;
   in `TSView()`. `TSSetFromOptions(`) does call `SNESSetFromOptions()` which can lead to users being confused
   by help messages about meaningless `SNES` options.
 
-.seealso: [](ch_ts), `TS`, `SNES`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
+.seealso: [](ch_ts), `TS`, `SNES`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`, `TSSetTimeStep()`
 @*/
 PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
 {
@@ -40,11 +40,12 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
   t->problem_type  = TS_NONLINEAR;
   t->equation_type = TS_EQ_UNSPECIFIED;
 
-  t->ptime            = 0.0;
-  t->time_step        = 0.1;
-  t->max_time         = PETSC_MAX_REAL;
-  t->exact_final_time = TS_EXACTFINALTIME_UNSPECIFIED;
-  t->steps            = 0;
+  t->ptime             = 0.0;
+  t->time_step         = 0.1;
+  t->initial_time_step = t->time_step;
+  t->max_time          = PETSC_MAX_REAL;
+  t->exact_final_time  = TS_EXACTFINALTIME_UNSPECIFIED;
+  t->steps             = 0;
   PetscObjectParameterSetDefault(t, max_steps, PETSC_INT_MAX);
   PetscObjectParameterSetDefault(t, run_steps, PETSC_INT_MAX);
   t->steprestart = PETSC_TRUE;

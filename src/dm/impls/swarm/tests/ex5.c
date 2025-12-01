@@ -7,7 +7,7 @@ static char help[] = "Vlasov example of central orbits\n";
 
   and we probably want it to run fast and not check convergence
 
-    -convest_num_refine 0 -ts_dt 0.01 -ts_max_steps 100 -ts_max_time 100 -output_step 10
+    -convest_num_refine 0 -ts_time_step 0.01 -ts_max_steps 100 -ts_max_time 100 -output_step 10
 */
 
 #include <petscts.h>
@@ -575,7 +575,7 @@ int main(int argc, char **argv)
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic -ts_convergence_estimate -convest_num_refine 2 \
-           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -dm_view -output_step 50 -error -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_1
        args: -ts_basicsymplectic_type 1
@@ -587,14 +587,14 @@ int main(int argc, char **argv)
        args: -ts_basicsymplectic_type 3
      test:
        suffix: bsi_2d_4
-       args: -ts_basicsymplectic_type 4 -ts_dt 0.0001
+       args: -ts_basicsymplectic_type 4 -ts_time_step 0.0001
 
    testset:
      requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)
      args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type theta -ts_theta_theta 0.5 -ts_convergence_estimate -convest_num_refine 2 \
              -mat_type baij -ksp_error_if_not_converged -pc_type lu \
-           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -dm_view -output_step 50 -error -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: im_2d_0
        args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5
@@ -604,7 +604,7 @@ int main(int argc, char **argv)
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 10,10 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 -petscpartitioner_type simple \
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic -ts_convergence_estimate -convest_num_refine 2 \
-           -dm_view -output_step 50 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -dm_view -output_step 50 -ts_time_step 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_mesh_1
        args: -ts_basicsymplectic_type 1 -error
@@ -635,7 +635,7 @@ int main(int argc, char **argv)
        args: -ts_type basicsymplectic -ts_basicsymplectic_type 2
      test:
        suffix: bsi_2d_multiple_3
-       args: -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_dt 0.001
+       args: -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_time_step 0.001
      test:
        suffix: im_2d_multiple_0
        args: -ts_type theta -ts_theta_theta 0.5 \

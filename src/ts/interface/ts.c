@@ -37,13 +37,13 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_time_span <t0,...tf>                                           - sets the time span, solutions are computed and stored for each indicated time, init_time and max_time are set
 . -ts_eval_times <t0,...tn>                                          - time points where solutions are computed and stored for each indicated time
 . -ts_max_steps <steps>                                              - maximum time-step number to execute until (possibly with nonzero starting value)
-. -ts_run_steps <steps>                                              - maximum number of time steps for TSSolve to take on each call
+. -ts_run_steps <steps>                                              - maximum number of time steps for `TSSolve()` to take on each call
 . -ts_init_time <time>                                               - initial time to start computation
 . -ts_final_time <time>                                              - final time to compute to (deprecated: use `-ts_max_time`)
-. -ts_dt <dt>                                                        - initial time step
+. -ts_time_step <dt>                                                 - initial time step (only a suggestion, the actual initial time step used differ)
 . -ts_exact_final_time <stepover,interpolate,matchstep>              - whether to stop at the exact given final time and how to compute the solution at that time
 . -ts_max_snes_failures <maxfailures>                                - Maximum number of nonlinear solve failures allowed
-. -ts_max_reject <maxrejects>                                        - Maximum number of step rejections before step fails
+. -ts_max_step_rejections <maxrejects>                               - Maximum number of step rejections before step fails
 . -ts_error_if_step_fails <true,false>                               - Error if no step succeeds
 . -ts_rtol <rtol>                                                    - relative tolerance for local truncation error
 . -ts_atol <atol>                                                    - Absolute tolerance for local truncation error
@@ -123,13 +123,15 @@ PetscErrorCode TSSetFromOptions(TS ts)
   PetscCall(PetscOptionsInt("-ts_max_steps", "Maximum time step number to execute to (possibly with non-zero starting value)", "TSSetMaxSteps", ts->max_steps, &ts->max_steps, NULL));
   PetscCall(PetscOptionsInt("-ts_run_steps", "Maximum number of time steps to take on each call to TSSolve()", "TSSetRunSteps", ts->run_steps, &ts->run_steps, NULL));
   PetscCall(PetscOptionsReal("-ts_init_time", "Initial time", "TSSetTime", ts->ptime, &ts->ptime, NULL));
-  PetscCall(PetscOptionsReal("-ts_dt", "Initial time step", "TSSetTimeStep", ts->time_step, &time_step, &flg));
+  PetscCall(PetscOptionsDeprecated("-ts_dt", "-ts_time_step", "3.25", NULL));
+  PetscCall(PetscOptionsReal("-ts_time_step", "Initial time step", "TSSetTimeStep", ts->time_step, &time_step, &flg));
   if (flg) PetscCall(TSSetTimeStep(ts, time_step));
   PetscCall(PetscOptionsEnum("-ts_exact_final_time", "Option for handling of final time step", "TSSetExactFinalTime", TSExactFinalTimeOptions, (PetscEnum)ts->exact_final_time, (PetscEnum *)&eftopt, &flg));
   if (flg) PetscCall(TSSetExactFinalTime(ts, eftopt));
   PetscCall(PetscOptionsInt("-ts_max_snes_failures", "Maximum number of nonlinear solve failures", "TSSetMaxSNESFailures", ts->max_snes_failures, &ts->max_snes_failures, &flg));
   if (flg) PetscCall(TSSetMaxSNESFailures(ts, ts->max_snes_failures));
-  PetscCall(PetscOptionsInt("-ts_max_reject", "Maximum number of step rejections before step fails", "TSSetMaxStepRejections", ts->max_reject, &ts->max_reject, &flg));
+  PetscCall(PetscOptionsDeprecated("-ts_max_reject", "-ts_max_step_rejections", "3.25", NULL));
+  PetscCall(PetscOptionsInt("-ts_max_step_rejections", "Maximum number of step rejections before step fails", "TSSetMaxStepRejections", ts->max_reject, &ts->max_reject, &flg));
   if (flg) PetscCall(TSSetMaxStepRejections(ts, ts->max_reject));
   PetscCall(PetscOptionsBool("-ts_error_if_step_fails", "Error if no step succeeds", "TSSetErrorIfStepFails", ts->errorifstepfailed, &ts->errorifstepfailed, NULL));
   PetscCall(PetscOptionsBoundedReal("-ts_rtol", "Relative tolerance for local truncation error", "TSSetTolerances", ts->rtol, &ts->rtol, NULL, 0));
@@ -1887,6 +1889,8 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 
   In the debugger you can do call `TSView`(ts,0) to display the `TS` solver. (The same holds for any PETSc object viewer).
 
+  The "initial time step" displayed is the default time step from `TSCreate()` or that set with `TSSetTimeStep()` or `-ts_time_step`
+
 .seealso: [](ch_ts), `TS`, `PetscViewer`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode TSView(TS ts, PetscViewer viewer)
@@ -1918,9 +1922,12 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
       PetscUseTypeMethod(ts, view, viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  initial time step=%g\n", (double)ts->initial_time_step));
     if (ts->max_steps < PETSC_INT_MAX) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum steps=%" PetscInt_FMT "\n", ts->max_steps));
     if (ts->run_steps < PETSC_INT_MAX) PetscCall(PetscViewerASCIIPrintf(viewer, "  run steps=%" PetscInt_FMT "\n", ts->run_steps));
     if (ts->max_time < PETSC_MAX_REAL) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum time=%g\n", (double)ts->max_time));
+    if (ts->max_reject != PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum number of step rejections=%" PetscInt_FMT "\n", ts->max_reject));
+    if (ts->max_snes_failures != PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum number of SNES failures allowed=%" PetscInt_FMT "\n", ts->max_snes_failures));
     if (ts->ifuncs) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of I function evaluations=%" PetscInt_FMT "\n", ts->ifuncs));
     if (ts->ijacs) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of I Jacobian evaluations=%" PetscInt_FMT "\n", ts->ijacs));
     if (ts->rhsfuncs) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of RHS function evaluations=%" PetscInt_FMT "\n", ts->rhsfuncs));
@@ -1935,8 +1942,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of rejected steps=%" PetscInt_FMT "\n", ts->reject));
     if (ts->vrtol) PetscCall(PetscViewerASCIIPrintf(viewer, "  using vector of relative error tolerances, "));
     else PetscCall(PetscViewerASCIIPrintf(viewer, "  using relative error tolerance of %g, ", (double)ts->rtol));
-    if (ts->vatol) PetscCall(PetscViewerASCIIPrintf(viewer, "  using vector of absolute error tolerances\n"));
-    else PetscCall(PetscViewerASCIIPrintf(viewer, "  using absolute error tolerance of %g\n", (double)ts->atol));
+    if (ts->vatol) PetscCall(PetscViewerASCIIPrintf(viewer, "using vector of absolute error tolerances\n"));
+    else PetscCall(PetscViewerASCIIPrintf(viewer, "using absolute error tolerance of %g\n", (double)ts->atol));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(TSAdaptView(ts->adapt, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -2141,8 +2148,7 @@ PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps)
 }
 
 /*@
-  TSSetTimeStep - Allows one to reset the timestep at any time,
-  useful for simple pseudo-timestepping codes.
+  TSSetTimeStep - Allows one to reset the timestep at any time.
 
   Logically Collective
 
@@ -2150,7 +2156,15 @@ PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps)
 + ts        - the `TS` context obtained from `TSCreate()`
 - time_step - the size of the timestep
 
+  Options Database Key:
+. -ts_time_step <dt> - provide the initial time step
+
   Level: intermediate
+
+  Notes:
+  This is only a suggestion, the actual initial time step used may differ
+
+  If this is called after `TSSetUp()`, it will not change the initial time step value printed by `TSView()`
 
 .seealso: [](ch_ts), `TS`, `TSPSEUDO`, `TSGetTimeStep()`, `TSSetTime()`
 @*/
@@ -2160,6 +2174,7 @@ PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, time_step, 2);
   ts->time_step = time_step;
+  if (ts->setupcalled == PETSC_FALSE) ts->initial_time_step = time_step;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5005,7 +5020,7 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
 }
 
 /*@
-  TSSetMaxStepRejections - Sets the maximum number of step rejections before a time step fails
+  TSSetMaxStepRejections - Sets the maximum number of step rejections allowed in a single time-step attempt before a time step fails in `TSSolve()` with `TS_DIVERGED_STEP_REJECTED`
 
   Not Collective
 
@@ -5014,14 +5029,15 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
 - rejects - maximum number of rejected steps, pass `PETSC_UNLIMITED` for unlimited
 
   Options Database Key:
-. -ts_max_reject - Maximum number of step rejections before a step fails
+. -ts_max_step_rejections - Maximum number of step rejections before a step fails
 
   Level: intermediate
 
   Developer Note:
   The options database name is incorrect.
 
-.seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxSNESFailures()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
+.seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxSNESFailures()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`,
+          `TSGetConvergedReason()`, `TSSolve()`, `TS_DIVERGED_STEP_REJECTED`
 @*/
 PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 {
@@ -5037,7 +5053,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 }
 
 /*@
-  TSSetMaxSNESFailures - Sets the maximum number of failed `SNES` solves
+  TSSetMaxSNESFailures - Sets the maximum number of failed `SNES` solves allowed before `TSSolve()` is ended with a `TSConvergedReason` of `TS_DIVERGED_NONLINEAR_SOLVE`
 
   Not Collective
 
@@ -5050,7 +5066,8 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `SNESGetConvergedReason()`, `TSGetConvergedReason()`
+.seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `SNESGetConvergedReason()`,
+          `TSGetConvergedReason()`, `TS_DIVERGED_NONLINEAR_SOLVE`, `TSConvergedReason`
 @*/
 PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 {
