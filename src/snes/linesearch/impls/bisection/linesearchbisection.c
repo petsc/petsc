@@ -19,6 +19,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetTolerances(linesearch, NULL, NULL, &rtol, &atol, &ltol, &max_it));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
+  PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
 
   /* pre-check */
   PetscCall(SNESLineSearchPreCheck(linesearch, X, Y, &changed_y));
@@ -111,7 +112,6 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
           PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
         }
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-        PetscFunctionReturn(PETSC_SUCCESS);
         break;
       }
 
@@ -182,9 +182,6 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchComputeNorms(linesearch));
   PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &fnorm, NULL));
   SNESLineSearchCheckFunctionDomainError(snes, linesearch, fnorm);
-
-  /* finalization */
-  PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -198,7 +195,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
 .  -snes_linesearch_damping <1.0> - initial `lambda` on entry to the line search
 .  -snes_linesearch_rtol <1e\-8>  - relative tolerance for the directional derivative
 .  -snes_linesearch_atol <1e\-6>  - absolute tolerance for the directional derivative
--  -snes_linesearch_ltol <1e\-6>  - minimum absolute change in `lambda` allowed
+-  -snes_linesearch_ltol <1e\-6>  - minimum absolute change in `lambda` allowed (this is an alternative to setting a maximum number of iterations)
 
    Level: intermediate
 
