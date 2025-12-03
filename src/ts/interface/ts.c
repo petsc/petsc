@@ -877,7 +877,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
   Level: developer
 
   Notes:
-  If F(t,U,Udot)=0 is the DAE, the required Jacobian is
+  If $ F(t,U,\dot{U})=0 $ is the DAE, the required Jacobian is
 .vb
    dF/dU + shift*dF/dUdot
 .ve

@@ -52,13 +52,13 @@ typedef struct {
   Input Parameters:
 + ts           - timestepping context
 . nstages      - number of stages, this is the dimension of the matrices below
-. A            - stage coefficients (dimension nstages*nstages, row-major)
-. b            - step completion table (dimension nstages)
-. c            - abscissa (dimension nstages)
-. binterp      - coefficients of the interpolation formula (dimension nstages)
-. A_inv        - inverse of A (dimension nstages*nstages, row-major)
-. A_inv_rowsum - row sum of the inverse of A (dimension nstages)
-- I_s          - identity matrix (dimension nstages*nstages)
+. A            - stage coefficients (dimension `nstages` * `nstages`, row-major)
+. b            - step completion table (dimension `nstages`)
+. c            - abscissa (dimension `nstages`)
+. binterp      - coefficients of the interpolation formula (dimension `nstages`), optional (use `NULL` to skip)
+. A_inv        - inverse of `A` (dimension `nstages` * `nstages`, row-major), optional (use `NULL` to skip)
+. A_inv_rowsum - row sum of the inverse of `A` (dimension `nstages`), optional (use `NULL` to skip)
+- I_s          - identity matrix (dimension `nstages` * `nstages`), optional (use `NULL` to skip)
 
   Level: advanced
 
@@ -821,7 +821,7 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
 }
 
 /*MC
-      TSIRK - ODE and DAE solver using Implicit Runge-Kutta schemes
+  TSIRK - ODE and DAE solver using Implicit Runge-Kutta schemes
 
   Level: beginner
 
@@ -830,7 +830,7 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
 
   Gauss-Legrendre methods are currently supported. These are A-stable symplectic methods with an arbitrary number of stages. The order of accuracy is 2s
   when using s stages. The default method uses three stages and thus has an order of six. The number of stages (thus order) can be set with
-  -ts_irk_nstages or `TSIRKSetNumStages()`.
+  `-ts_irk_nstages` or `TSIRKSetNumStages()`.
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`, `TSType`
 M*/
