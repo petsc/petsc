@@ -177,6 +177,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
       } else PetscCall(VecDestroy(diagonal));
     }
     if (!diagonal) PetscCall(MatShift(aux, PETSC_SMALL * norm));
+    PetscCall(MatEliminateZeros(aux, PETSC_TRUE));
   } else {
     PetscBool flg;
 
@@ -2140,26 +2141,53 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             }
             PetscCall(MatCreateVecs(P00, &v, nullptr));
             PetscCall(MatSchurComplementGetAinvType(P, &type));
-            PetscCheck(type == MAT_SCHUR_COMPLEMENT_AINV_DIAG || type == MAT_SCHUR_COMPLEMENT_AINV_LUMP, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "-%smat_schur_complement_ainv_type %s", ((PetscObject)P)->prefix ? ((PetscObject)P)->prefix : "", MatSchurComplementAinvTypes[type]);
-            if (type == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
-              PetscCall(MatGetRowSum(P00, v));
-              if (A00 == P00) PetscCall(PetscObjectReference((PetscObject)A00));
-              PetscCall(MatDestroy(&P00));
-              PetscCall(VecGetArrayRead(v, &array));
-              PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)A00), A00->rmap->n, A00->cmap->n, A00->rmap->N, A00->cmap->N, 1, nullptr, 0, nullptr, &P00));
-              PetscCall(MatSetOption(P00, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-              for (n = A00->rmap->rstart; n < A00->rmap->rend; ++n) PetscCall(MatSetValue(P00, n, n, array[n - A00->rmap->rstart], INSERT_VALUES));
-              PetscCall(MatAssemblyBegin(P00, MAT_FINAL_ASSEMBLY));
-              PetscCall(MatAssemblyEnd(P00, MAT_FINAL_ASSEMBLY));
-              PetscCall(VecRestoreArrayRead(v, &array));
-              PetscCall(MatSchurComplementUpdateSubMatrices(P, A00, P00, A01, A10, A11)); /* replace P00 by diag(sum of each row of P00) */
-              PetscCall(MatDestroy(&P00));
-            } else PetscCall(MatGetDiagonal(P00, v));
-            PetscCall(VecReciprocal(v)); /* inv(diag(P00))       */
-            PetscCall(VecSqrtAbs(v));    /* sqrt(inv(diag(P00))) */
-            PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &B));
-            PetscCall(MatDiagonalScale(B, v, nullptr));
-            if (B01) PetscCall(MatDiagonalScale(B01, v, nullptr));
+            PetscCheck(type == MAT_SCHUR_COMPLEMENT_AINV_DIAG || type == MAT_SCHUR_COMPLEMENT_AINV_LUMP || type == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "-%smat_schur_complement_ainv_type %s",
+                       ((PetscObject)P)->prefix ? ((PetscObject)P)->prefix : "", MatSchurComplementAinvTypes[type]);
+            if (type != MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) {
+              if (type == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
+                PetscCall(MatGetRowSum(P00, v));
+                if (A00 == P00) PetscCall(PetscObjectReference((PetscObject)A00));
+                PetscCall(MatDestroy(&P00));
+                PetscCall(VecGetArrayRead(v, &array));
+                PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)A00), A00->rmap->n, A00->cmap->n, A00->rmap->N, A00->cmap->N, 1, nullptr, 0, nullptr, &P00));
+                PetscCall(MatSetOption(P00, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+                for (n = A00->rmap->rstart; n < A00->rmap->rend; ++n) PetscCall(MatSetValue(P00, n, n, array[n - A00->rmap->rstart], INSERT_VALUES));
+                PetscCall(MatAssemblyBegin(P00, MAT_FINAL_ASSEMBLY));
+                PetscCall(MatAssemblyEnd(P00, MAT_FINAL_ASSEMBLY));
+                PetscCall(VecRestoreArrayRead(v, &array));
+                PetscCall(MatSchurComplementUpdateSubMatrices(P, A00, P00, A01, A10, A11)); /* replace P00 by diag(sum of each row of P00) */
+                PetscCall(MatDestroy(&P00));
+              } else PetscCall(MatGetDiagonal(P00, v));
+              PetscCall(VecReciprocal(v)); /* inv(diag(P00))       */
+              PetscCall(VecSqrtAbs(v));    /* sqrt(inv(diag(P00))) */
+              PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &B));
+              PetscCall(MatDiagonalScale(B, v, nullptr));
+              if (B01) PetscCall(MatDiagonalScale(B01, v, nullptr));
+            } else { /* not the same as MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG in MatSchurComplementGetPmat(), which considers process block diagonal, instead of point block diagonal, as done here */
+              Mat     D00;
+              MatType type;
+
+              PetscCall(MatCreate(PetscObjectComm((PetscObject)A00), &D00));
+              PetscCall(MatSetType(D00, MATAIJ));
+              PetscCall(MatSetOptionsPrefix(D00, ((PetscObject)A00)->prefix));
+              PetscCall(MatAppendOptionsPrefix(D00, "block_diagonal_"));
+              PetscCall(MatSetFromOptions(D00));                          /* for setting -mat_block_size dynamically */
+              PetscCall(MatConvert(A00, MATAIJ, MAT_INITIAL_MATRIX, &B)); /* not all MatTypes have a MatInvertBlockDiagonal() implementation, plus one may want to use a different block size than the one of A00 */
+              PetscCall(MatSetBlockSizesFromMats(B, D00, D00));
+              PetscCall(MatInvertBlockDiagonalMat(B, D00));
+              PetscCall(MatDestroy(&B));
+              PetscCall(MatGetType(A01, &type));                            /* cache MatType */
+              PetscCall(MatConvert(A01, MATAIJ, MAT_INPLACE_MATRIX, &A01)); /* MatProduct is not versatile enough to fallback gracefully if no implementation found, so MatConvert() */
+              PetscCall(MatMatMult(D00, A01, MAT_INITIAL_MATRIX, PETSC_CURRENT, &B));
+              PetscCall(MatDestroy(&D00));
+              PetscCall(MatConvert(A01, type, MAT_INPLACE_MATRIX, &A01)); /* reset to previous MatType */
+              PetscCall(MatConvert(B, type, MAT_INPLACE_MATRIX, &B));
+              if (!B01) { /* symmetric case */
+                B01 = A01;
+                PetscCall(PetscObjectReference((PetscObject)B01));
+              }
+            }
+            if (B01 && B01 != A01) PetscCall(MatSetBlockSizesFromMats(B01, A01, A01)); /* TODO: remove this line once Firedrake is fixed */
             PetscCall(VecDestroy(&v));
             PetscCall(MatCreateNormalHermitian(B, &N));
             PetscCall(PCHPDDMSetAuxiliaryMatNormal_Private(pc, B, N, &P, pcpre, &diagonal, B01));
@@ -2170,6 +2198,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PetscObjectReference((PetscObject)P));
             }
             if (diagonal) {
+              PetscCall(MatSetOption(P, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE)); /* may have missing diagonal entries */
               PetscCall(MatDiagonalSet(P, diagonal, ADD_VALUES));
               PetscCall(PCSetOperators(pc, P, P)); /* replace P by A01^T inv(diag(P00)) A01 - diag(P11) */
               PetscCall(VecDestroy(&diagonal));

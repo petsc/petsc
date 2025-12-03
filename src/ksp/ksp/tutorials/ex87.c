@@ -53,7 +53,7 @@ int main(int argc, char **args)
   PetscCall(PetscStrncpy(dir, ".", sizeof(dir)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-load_dir", dir, sizeof(dir), NULL));
   /* loading matrices and auxiliary data for the diagonal blocks */
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s", dir, id == 3 ? "D" : (id == 2 ? "E" : (id == 1 ? "B" : "A"))));
   PetscCall(MatAndISLoad(prefix, "00", A[0], is[0], aux[0], size));
   PetscCall(MatAndISLoad(prefix, "11", A[3], is[1], aux[1], size));
   /* loading the off-diagonal block with a coherent row/column layout */
@@ -63,7 +63,7 @@ int main(int argc, char **args)
   PetscCall(MatGetLocalSize(A[3], &m, NULL));
   PetscCall(MatGetSize(A[3], &M, NULL));
   PetscCall(MatSetSizes(A[2], m, n, M, N));
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s10.dat", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s10.dat", dir, id == 3 ? "D" : (id == 2 ? "E" : (id == 1 ? "B" : "A"))));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
   PetscCall(MatLoad(A[2], viewer));
   PetscCall(PetscViewerDestroy(&viewer));
@@ -90,10 +90,11 @@ int main(int argc, char **args)
   } else {
     PetscCall(MatCreate(PETSC_COMM_WORLD, A + 1));
     PetscCall(MatSetSizes(A[1], n, m, N, M));
-    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/C01.dat", dir));
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/E01.dat", dir));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
     PetscCall(MatLoad(A[1], viewer));
     PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(MatConvert(A[0], MATBAIJ, MAT_INPLACE_MATRIX, A));
   }
   if (flg[0]) PetscCall(MatDestroy(A + 3));
   else {
@@ -144,10 +145,12 @@ int main(int argc, char **args)
   } else PetscCall(MatSetBlockSize(A[0], 2));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(MatCreateVecs(S, &b, &x));
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
-  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
-  PetscCall(VecLoad(b, viewer));
-  PetscCall(PetscViewerDestroy(&viewer));
+  if (id != 2) {
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 3 ? "D" : (id == 1 ? "B" : "A")));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
+    PetscCall(VecLoad(b, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  } else PetscCall(VecSetRandom(b, NULL));
   PetscCall(KSPSolve(ksp, b, x));
   flg[1] = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewer", flg + 1, NULL));
@@ -311,7 +314,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       suffix: nonsymmetric_least_squares
       output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
-      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system diffusion -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 20 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type jacobi -prefix_push fieldsplit_1_ -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -prefix_push pc_hpddm_levels_1_ -sub_pc_type lu -sub_pc_factor_shift_type nonzero -eps_nev 5 -st_share_sub_ksp -prefix_pop -prefix_pop
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system diffusion -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 20 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type pbjacobi -prefix_push fieldsplit_1_ -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -prefix_push pc_hpddm_levels_1_ -sub_pc_type lu -sub_pc_factor_shift_type nonzero -eps_nev 5 -eps_gen_non_hermitian -st_share_sub_ksp -prefix_pop -prefix_pop -fieldsplit_1_mat_schur_complement_ainv_type {{diag blockdiag}shared output}
 
    test:
       requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
