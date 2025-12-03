@@ -845,7 +845,7 @@ int main(int argc, char **argv)
 
    build:
      depends: pipeInterface.c pipeImpls.c
-     #TODO: bugs in DMNetwrok causing segfault with __float128
+     #TODO: bugs in DMNetwork causing segfault with __float128
      requires: mumps !__float128
 
    test:

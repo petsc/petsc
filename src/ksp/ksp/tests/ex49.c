@@ -56,11 +56,14 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /* With complex numbers:
-     - PETSc cholesky does not support hermitian matrices
-     - CHOLMOD only supports hermitian matrices
+     - PETSc Cholesky does not support Hermitian matrices
+     - CHOLMOD only supports Hermitian matrices
      - SUPERLU_DIST seems supporting both
   */
-  if (test_hermitian) PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_TRUE));
+  if (test_hermitian) {
+    PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_TRUE));
+    PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_FALSE));
+  }
 
   {
     Mat M;

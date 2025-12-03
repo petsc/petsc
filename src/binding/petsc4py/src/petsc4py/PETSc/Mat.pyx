@@ -1355,7 +1355,7 @@ cdef class Mat(Object):
         Parameters
         ----------
         mat
-            Matrix A to represent the hermitian transpose of.
+            Matrix A to represent the Hermitian transpose of.
 
         Notes
         -----

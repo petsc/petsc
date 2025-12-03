@@ -1532,7 +1532,6 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
       A->ops->multadd          = MatMultAdd_MPISBAIJ_Hermitian;
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
-      A->symmetric             = PETSC_BOOL3_FALSE;
     }
 #endif
     break;
@@ -1581,13 +1580,8 @@ static PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat, Vec ll, Vec rr)
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
   Mat           a = baij->A, b = baij->B;
   PetscInt      nv, m, n;
-  PetscBool     flg;
 
   PetscFunctionBegin;
-  if (ll != rr) {
-    PetscCall(VecEqual(ll, rr, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format, left and right scaling vectors must be same");
-  }
   if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(MatGetLocalSize(mat, &m, &n));
@@ -2161,9 +2155,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   B->structurally_symmetric      = PETSC_BOOL3_TRUE;
   B->symmetry_eternal            = PETSC_TRUE;
   B->structural_symmetry_eternal = PETSC_TRUE;
-#if defined(PETSC_USE_COMPLEX)
-  B->hermitian = PETSC_BOOL3_FALSE;
-#else
+#if !defined(PETSC_USE_COMPLEX)
   B->hermitian = PETSC_BOOL3_TRUE;
 #endif
 

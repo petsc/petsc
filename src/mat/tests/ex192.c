@@ -129,7 +129,7 @@ int main(int argc, char **args)
   }
 
 #if defined(PETSC_USE_COMPLEX)
-  if (isolver == 0 && symm && !data_provided) { /* MUMPS (5.0.0) does not have support for hermitian matrices, so make them symmetric */
+  if (isolver == 0 && symm && !data_provided) { /* MUMPS (5.0.0) does not have support for Hermitian matrices, so make them symmetric */
     PetscScalar im  = PetscSqrtScalar((PetscScalar)-1.);
     PetscScalar val = -1.0;
     val             = val + im;

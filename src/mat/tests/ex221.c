@@ -178,7 +178,7 @@ int main(int argc, char **args)
     PetscCall(MatMultTransposeAddEqual(A, S, 10, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult transpose add\n", test));
     PetscCall(MatMultHermitianTransposeAddEqual(A, S, 10, &flg));
-    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult hermitian transpose add\n", test));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult Hermitian transpose add\n", test));
     if (testzerorows) {
       Mat       ST, B, C, BT, BTT;
       IS        zr;

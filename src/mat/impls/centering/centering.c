@@ -73,6 +73,8 @@ PetscErrorCode MatCreateCentering(MPI_Comm comm, PetscInt n, PetscInt N, Mat *C)
   (*C)->symmetric                   = PETSC_BOOL3_TRUE;
   (*C)->symmetry_eternal            = PETSC_TRUE;
   (*C)->structural_symmetry_eternal = PETSC_TRUE;
+  (*C)->structurally_symmetric      = PETSC_BOOL3_TRUE;
+  if (!PetscDefined(USE_COMPLEX)) (*C)->hermitian = PETSC_BOOL3_TRUE;
   PetscCall(MatSetUp(*C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

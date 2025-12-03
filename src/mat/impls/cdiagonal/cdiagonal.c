@@ -119,8 +119,6 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(mat->data));
-  mat->structural_symmetry_eternal = PETSC_FALSE;
-  mat->symmetry_eternal            = PETSC_FALSE;
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConstantDiagonalGetConstant_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
