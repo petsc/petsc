@@ -3,10 +3,11 @@
 */
 #include <petsc/private/tsimpl.h> /*I   "petscts.h"   I*/
 
+#define TSADAPTTSPSEUDO "tspseudo"
+
 typedef struct {
-  Vec update; /* work vector where new solution is formed */
-  Vec func;   /* work vector where F(t[i],u[i]) is stored */
-  Vec xdot;   /* work vector for time derivative of state */
+  Vec func; /* work vector where F(t[i],u[i]) is stored */
+  Vec xdot; /* work vector for time derivative of state */
 
   /* information used for Pseudo-timestepping */
 
@@ -25,157 +26,115 @@ typedef struct {
   PetscReal fatol, frtol;
 
   PetscObjectState Xstate; /* state of input vector to TSComputeIFunction() with 0 Xdot */
+
+  TSStepStatus status;
 } TS_Pseudo;
 
-/* ------------------------------------------------------------------------------*/
+/*@C
+  TSPseudoComputeFunction - Compute nonlinear residual for pseudo-timestepping
 
-/*@
-  TSPseudoComputeTimeStep - Computes the next timestep for a currently running
-  pseudo-timestepping process.
+  This computes the residual for $\dot U = 0$, i.e. $F(U, 0)$ for the IFunction.
 
   Collective
 
-  Input Parameter:
-. ts - timestep context
+  Input Parameters:
++ ts       - the timestep context
+- solution - the solution vector
 
   Output Parameter:
-. dt - newly computed timestep
-
-  Level: developer
-
-  Note:
-  The routine to be called here to compute the timestep should be
-  set by calling `TSPseudoSetTimeStep()`.
-
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoTimeStepDefault()`, `TSPseudoSetTimeStep()`
-@*/
-PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscCall((*pseudo->dt)(ts, dt, pseudo->dtctx));
-  PetscCall(PetscLogEventEnd(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* ------------------------------------------------------------------------------*/
-/*@C
-  TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
-
-  Collective, No Fortran Support
-
-  Input Parameters:
-+ ts     - the timestep context
-. dtctx  - unused timestep context
-- update - latest solution vector
-
-  Output Parameters:
-+ newdt - the timestep to use for the next step
-- flag  - flag indicating whether the last time step was acceptable
++ residual - the nonlinear residual
+- fnorm    - the norm of the nonlinear residual
 
   Level: advanced
 
   Note:
-  This routine always returns a flag of 1, indicating an acceptable
-  timestep.
+  `TSPSEUDO` records the nonlinear residual and the `solution` vector used to generate it. If given the same `solution` vector (as determined by the vectors `PetscObjectState`), this function will return those recorded values.
 
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStep()`
+  This would be used in a custom adaptive timestepping implementation that needs access to the residual, but reuses the calculation done by `TSPSEUDO` by default.
+
+  To correctly get the residual reuse behavior, `solution` must be the same `Vec` that returned by `TSGetSolution()`.
+
+.seealso: [](ch_ts), `TSPSEUDO`
 @*/
-PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, PetscReal *newdt, PetscBool *flag)
+PetscErrorCode TSPseudoComputeFunction(TS ts, Vec solution, Vec *residual, PetscReal *fnorm)
 {
-  PetscFunctionBegin;
-  *flag = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
-
-  Collective
-
-  Input Parameters:
-+ ts     - timestep context
-- update - latest solution vector
-
-  Output Parameters:
-+ dt   - newly computed timestep (if it had to shrink)
-- flag - indicates if current timestep was ok
-
-  Level: advanced
-
-  Notes:
-  The routine to be called here to compute the timestep should be
-  set by calling `TSPseudoSetVerifyTimeStep()`.
-
-.seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStepDefault()`
-@*/
-PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBool *flag)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
+  TS_Pseudo       *pseudo = (TS_Pseudo *)ts->data;
+  PetscObjectState Xstate;
 
   PetscFunctionBegin;
-  *flag = PETSC_TRUE;
-  if (pseudo->verify) PetscCall((*pseudo->verify)(ts, update, pseudo->verifyctx, dt, flag));
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(solution, VEC_CLASSID, 2);
+  if (residual) PetscValidHeaderSpecific(*residual, VEC_CLASSID, 3);
+  if (fnorm) PetscAssertPointer(fnorm, 4);
+
+  PetscCall(PetscObjectStateGet((PetscObject)solution, &Xstate));
+  if (Xstate != pseudo->Xstate || pseudo->fnorm < 0) {
+    PetscCall(VecZeroEntries(pseudo->xdot));
+    PetscCall(TSComputeIFunction(ts, ts->ptime, solution, pseudo->xdot, pseudo->func, PETSC_FALSE));
+    pseudo->Xstate = Xstate;
+    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  }
+  if (residual) *residual = pseudo->func;
+  if (fnorm) *fnorm = pseudo->fnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* --------------------------------------------------------------------------------*/
 
 static PetscErrorCode TSStep_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-  PetscInt   nits, lits, reject;
-  PetscBool  stepok;
-  PetscReal  next_time_step = ts->time_step;
+  PetscInt   nits, lits, rejections = 0;
+  PetscBool  accept;
+  PetscReal  next_time_step = ts->time_step, fnorm;
+  TSAdapt    adapt;
 
   PetscFunctionBegin;
-  if (ts->steps == 0) {
-    pseudo->dt_initial = ts->time_step;
-    PetscCall(VecCopy(ts->vec_sol, pseudo->update)); /* in all future updates pseudo->update already contains the current time solution */
-  }
-  PetscCall(TSPseudoComputeTimeStep(ts, &next_time_step));
-  for (reject = 0; reject < ts->max_reject; reject++, ts->reject++) {
-    ts->time_step = next_time_step;
-    if (reject) PetscCall(VecCopy(ts->vec_sol, pseudo->update)); /* need to copy the solution because we got a rejection and pseudo->update contains intermediate computation */
+  if (ts->steps == 0) pseudo->dt_initial = ts->time_step;
+
+  pseudo->status = TS_STEP_INCOMPLETE;
+  while (!ts->reason && pseudo->status != TS_STEP_COMPLETE) {
     PetscCall(TSPreStage(ts, ts->ptime + ts->time_step));
-    PetscCall(SNESSolve(ts->snes, NULL, pseudo->update));
+    PetscCall(SNESSolve(ts->snes, NULL, ts->vec_sol));
     PetscCall(SNESGetIterationNumber(ts->snes, &nits));
     PetscCall(SNESGetLinearSolveIterations(ts->snes, &lits));
     ts->snes_its += nits;
     ts->ksp_its += lits;
-    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &pseudo->update));
-    PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime + ts->time_step, pseudo->update, &stepok));
-    if (!stepok) {
-      next_time_step = ts->time_step;
-      continue;
-    }
     pseudo->fnorm = -1; /* The current norm is no longer valid */
-    PetscCall(TSPseudoVerifyTimeStep(ts, pseudo->update, &next_time_step, &stepok));
-    if (stepok) break;
+    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &ts->vec_sol));
+    PetscCall(TSGetAdapt(ts, &adapt));
+    PetscCall(TSAdaptCheckStage(adapt, ts, ts->ptime + ts->time_step, ts->vec_sol, &accept));
+    if (!accept) goto reject_step;
+
+    pseudo->status = TS_STEP_PENDING;
+    PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
+    pseudo->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
+    if (!accept) {
+      ts->time_step = next_time_step;
+      goto reject_step;
+    }
+    ts->ptime += ts->time_step;
+    ts->time_step = next_time_step;
+    break;
+
+  reject_step:
+    ts->reject++;
+    accept = PETSC_FALSE;
+    PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
+      ts->reason = TS_DIVERGED_STEP_REJECTED;
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
   }
-  if (reject >= ts->max_reject) {
-    ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, reject));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
 
-  PetscCall(VecCopy(pseudo->update, ts->vec_sol));
-  ts->ptime += ts->time_step;
-  ts->time_step = next_time_step;
+  // Check solution convergence
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, &fnorm));
 
-  PetscCall(VecZeroEntries(pseudo->xdot));
-  PetscCall(TSComputeIFunction(ts, ts->ptime, pseudo->update, pseudo->xdot, pseudo->func, PETSC_FALSE));
-  PetscCall(PetscObjectStateGet((PetscObject)pseudo->update, &pseudo->Xstate));
-  PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-
-  if (pseudo->fnorm < pseudo->fatol) {
+  if (fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g < fatol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->frtol));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (pseudo->fnorm / pseudo->fnorm_initial < pseudo->frtol) {
+  if (fnorm / pseudo->fnorm_initial < pseudo->frtol) {
     ts->reason = TS_CONVERGED_PSEUDO_FRTOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g / fnorm_initial %g < frtol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->fnorm_initial, (double)pseudo->fatol));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -183,14 +142,11 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSReset_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDestroy(&pseudo->update));
   PetscCall(VecDestroy(&pseudo->func));
   PetscCall(VecDestroy(&pseudo->xdot));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -208,8 +164,6 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetTimeStep_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot)
 {
@@ -249,8 +203,8 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   DM                dm;
   TS_Pseudo        *pseudo = (TS_Pseudo *)ts->data;
   const PetscScalar mdt    = 1.0 / ts->time_step;
-  PetscBool         KSPSNES;
   PetscObjectState  Xstate;
+  PetscInt          snes_it;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -263,15 +217,16 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
   PetscCheck(rhsfunction || ifunction, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESKSPONLY, &KSPSNES));
   PetscCall(PetscObjectStateGet((PetscObject)X, &Xstate));
-  if (Xstate != pseudo->Xstate || ifunction || !KSPSNES) {
-    PetscCall(VecAXPBYPCZ(pseudo->xdot, -mdt, mdt, 0, ts->vec_sol, X));
-    PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, pseudo->xdot, Y, PETSC_FALSE));
-  } else {
+  PetscCall(SNESGetIterationNumber(snes, &snes_it));
+  if (Xstate == pseudo->Xstate && snes_it == 1) {
     /* reuse the TSComputeIFunction() result performed inside TSStep_Pseudo() */
+    if (ifunction) PetscCall(VecCopy(pseudo->func, Y));
     /* note that pseudo->func contains the negation of TSComputeRHSFunction() */
-    PetscCall(VecWAXPY(Y, 1, pseudo->func, pseudo->xdot));
+    else PetscCall(VecWAXPY(Y, 1, pseudo->func, pseudo->xdot));
+  } else {
+    PetscCall(VecAXPBYPCZ(pseudo->xdot, -mdt, mdt, 0, ts->vec_sol0, X));
+    PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, pseudo->xdot, Y, PETSC_FALSE));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -301,13 +256,10 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDuplicate(ts->vec_sol, &pseudo->update));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->func));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->xdot));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, void *dummy)
 {
@@ -315,12 +267,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal pti
   PetscViewer viewer = (PetscViewer)dummy;
 
   PetscFunctionBegin;
-  if (pseudo->fnorm < 0) { /* The last computed norm is stale, recompute */
-    PetscCall(VecZeroEntries(pseudo->xdot));
-    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
-    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-  }
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, NULL));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "TS %" PetscInt_FMT " dt %g time %g fnorm %g\n", step, (double)ts->time_step, (double)ptime, (double)pseudo->fnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
@@ -365,6 +312,90 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  dt_increment - increase in timestep on successful step %g\n", (double)pseudo->dt_increment));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  dt_max - maximum time %g\n", (double)pseudo->dt_max));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.  Use with `TSPseudoSetTimeStep()`.
+
+  Collective, No Fortran Support
+
+  Input Parameters:
++ ts    - the timestep context
+- dtctx - unused timestep context
+
+  Output Parameter:
+. newdt - the timestep to use for the next step
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TSPseudoSetTimeStep()`, `TSPseudoComputeTimeStep()`, `TSPSEUDO`
+@*/
+PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
+{
+  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
+  PetscReal  inc    = pseudo->dt_increment, fnorm;
+
+  PetscFunctionBegin;
+  PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, &fnorm));
+  if (pseudo->fnorm_initial < 0) {
+    /* first time through so compute initial function norm */
+    pseudo->fnorm_initial  = fnorm;
+    pseudo->fnorm_previous = fnorm;
+  }
+  if (fnorm == 0.0) *newdt = 1.e12 * inc * ts->time_step;
+  else if (pseudo->increment_dt_from_initial_dt) *newdt = inc * pseudo->dt_initial * pseudo->fnorm_initial / fnorm;
+  else *newdt = inc * ts->time_step * pseudo->fnorm_previous / fnorm;
+  if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt, pseudo->dt_max);
+  pseudo->fnorm_previous = fnorm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSAdaptChoose_TSPseudo(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
+  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
+  PetscCallBack("TSPSEUDO callback time step", (*pseudo->dt)(ts, next_h, pseudo->dtctx));
+  PetscCall(PetscLogEventEnd(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
+
+  *next_sc = 0;
+  *wlte    = -1; /* Weighted local truncation error was not evaluated */
+  *wltea   = -1; /* Weighted absolute local truncation error was not evaluated */
+  *wlter   = -1; /* Weighted relative local truncation error was not evaluated */
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSAdaptCheckStage_TSPseudo(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept)
+{
+  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
+
+  PetscFunctionBegin;
+  if (pseudo->verify) {
+    PetscReal dt;
+    PetscCall(TSGetTimeStep(ts, &dt));
+    PetscCallBack("TSPSEUDO callback verify time step", (*pseudo->verify)(ts, Y, pseudo->verifyctx, &dt, accept));
+    PetscCall(TSSetTimeStep(ts, dt));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*MC
+  TSADAPTTSPSEUDO - TSPseudo adaptive controller for time stepping
+
+  Level: developer
+
+  Note:
+  This is only meant to be used with `TSPSEUDO` time integrator.
+
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`, `TSPSEUDO`
+M*/
+static PetscErrorCode TSAdaptCreate_TSPseudo(TSAdapt adapt)
+{
+  PetscFunctionBegin;
+  adapt->ops->choose = TSAdaptChoose_TSPseudo;
+  adapt->checkstage  = TSAdaptCheckStage_TSPseudo;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -512,8 +543,6 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------------- */
-
 typedef PetscErrorCode (*FCN1)(TS, Vec, void *, PetscReal *, PetscBool *); /* force argument to next function to not be extern C*/
 static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx)
 {
@@ -651,8 +680,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Pseudo;
   ts->ops->snesfunction   = SNESTSFormFunction_Pseudo;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Pseudo;
-  ts->default_adapt_type  = TSADAPTNONE;
+  ts->default_adapt_type  = TSADAPTTSPSEUDO;
   ts->usessnes            = PETSC_TRUE;
+
+  PetscCall(TSAdaptRegister(TSADAPTTSPSEUDO, TSAdaptCreate_TSPseudo));
 
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESGetType(snes, &stype));
@@ -680,46 +711,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetMaxTimeStep_C", TSPseudoSetMaxTimeStep_Pseudo));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoIncrementDtFromInitialDt_C", TSPseudoIncrementDtFromInitialDt_Pseudo));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetTimeStep_C", TSPseudoSetTimeStep_Pseudo));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.  Use with `TSPseudoSetTimeStep()`.
-
-  Collective, No Fortran Support
-
-  Input Parameters:
-+ ts    - the timestep context
-- dtctx - unused timestep context
-
-  Output Parameter:
-. newdt - the timestep to use for the next step
-
-  Level: advanced
-
-.seealso: [](ch_ts), `TSPseudoSetTimeStep()`, `TSPseudoComputeTimeStep()`, `TSPSEUDO`
-@*/
-PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
-  PetscReal  inc    = pseudo->dt_increment;
-
-  PetscFunctionBegin;
-  if (pseudo->fnorm < 0.0) {
-    PetscCall(VecZeroEntries(pseudo->xdot));
-    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
-    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-  }
-  if (pseudo->fnorm_initial < 0) {
-    /* first time through so compute initial function norm */
-    pseudo->fnorm_initial  = pseudo->fnorm;
-    pseudo->fnorm_previous = pseudo->fnorm;
-  }
-  if (pseudo->fnorm == 0.0) *newdt = 1.e12 * inc * ts->time_step;
-  else if (pseudo->increment_dt_from_initial_dt) *newdt = inc * pseudo->dt_initial * pseudo->fnorm_initial / pseudo->fnorm;
-  else *newdt = inc * ts->time_step * pseudo->fnorm_previous / pseudo->fnorm;
-  if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt, pseudo->dt_max);
-  pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
