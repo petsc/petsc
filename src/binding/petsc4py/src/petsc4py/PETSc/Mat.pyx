@@ -5651,12 +5651,15 @@ cdef class Mat(Object):
             CHKERR(MatDenseGetArray(self.mat, &data))
         cdef int typenum = NPY_PETSC_SCALAR
         cdef int itemsize = <int>sizeof(PetscScalar)
-        cdef int flags = NPY_ARRAY_FARRAY
+        cdef int flags = NPY_ARRAY_FARRAY_RO if readonly else NPY_ARRAY_FARRAY
         cdef npy_intp dims[2], strides[2]
         dims[0] = <npy_intp>m; strides[0] = <npy_intp>sizeof(PetscScalar)
         dims[1] = <npy_intp>N; strides[1] = <npy_intp>(lda*sizeof(PetscScalar))
-        array = <object>PyArray_New(<PyTypeObject*>ndarray, 2, dims, typenum,
-                                    strides, data, itemsize, flags, NULL)
+        cdef ndarray array = PyArray_New(<PyTypeObject*>ndarray, 2,
+                                         dims, typenum, strides,
+                                         data, itemsize, flags, NULL)
+        Py_INCREF(<PyObject*>self)
+        PyArray_SetBaseObject(array, self)
         if readonly:
             CHKERR(MatDenseRestoreArrayRead(self.mat, <const PetscScalar**>&data))
         else:

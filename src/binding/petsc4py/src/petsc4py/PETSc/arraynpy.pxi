@@ -27,7 +27,9 @@ cdef extern from "<petsc4py/numpy.h>":
     enum: NPY_ARRAY_WRITEABLE
     enum: NPY_ARRAY_NOTSWAPPED
     enum: NPY_ARRAY_CARRAY
+    enum: NPY_ARRAY_CARRAY_RO
     enum: NPY_ARRAY_FARRAY
+    enum: NPY_ARRAY_FARRAY_RO
 
     ndarray PyArray_FROM_O(object)
     ndarray PyArray_FROM_OT(object, int)
@@ -51,6 +53,7 @@ cdef extern from "<petsc4py/numpy.h>":
     ndarray PyArray_New(PyTypeObject*, int, npy_intp[], int, npy_intp[], void*, int, int, PyObject*)
     ndarray PyArray_SimpleNewFromData(int, npy_intp[], int, void*)
 
+    int PyArray_SetBaseObject(ndarray, object) except -1
 
 cdef extern from "<petsc4py/numpy.h>":
 
