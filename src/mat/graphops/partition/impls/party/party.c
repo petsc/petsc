@@ -223,7 +223,6 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *lo
 }
 
 static PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const char *local)
-
 {
   MatPartitioning_Party *party = (MatPartitioning_Party *)part->data;
 
