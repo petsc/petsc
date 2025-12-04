@@ -16,7 +16,7 @@ configure_options = [
   '--download-hpddm=1',
   '--with-precision=__float128',
   '--with-clanguage=cxx',
-  '--with-mpi-f90module-visibility=0',
+  '--with-mpi-ftn-module=mpi_f08',
   '--with-strict-petscerrorcode',
   '--with-coverage',
   ]

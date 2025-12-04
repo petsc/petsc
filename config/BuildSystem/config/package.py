@@ -1064,7 +1064,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''Adds a small make check for the project'''
     self.addMakeRule(self.package + 'check','', \
                          ['@echo "*** Checking ' + self.name + ' ***"',\
-                          '$(shell [ "$(V)" != "1" ] && echo @) cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
+                          '$(shell [ "$(V)" != "1" ] && echo @)cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
     self.framework.postchecks.append(self.package + 'check')
 
   def addTest(self, dir, rule):
@@ -1072,7 +1072,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     self.addMakeRule(self.package + 'test','', \
                          ['@echo "*** Testing ' + self.name + ' ***"',\
                           '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.errorflg',\
-                          '$(shell [ "$(V)" != "1" ] && echo @) cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
+                          '$(shell [ "$(V)" != "1" ] && echo @)cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
 
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''

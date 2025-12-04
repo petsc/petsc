@@ -4,6 +4,53 @@
 
 Make sure the suffix of your Fortran files is .F90, not .f or .f90.
 
+## Fortran and MPI
+
+By default PETSc uses the MPI Fortran module `mpi`. To use `mpi_f08` run `./configure` with `--with-mpi-ftn-module=mpi_f08`.
+
+We do not recommend it but it is possible to write Fortran code that works with both `use mpi` or `use mpi_f08`.
+You must declare MPI objects using `MPIU_XXX` (for example `MPIU_Comm`, which the PETSc include files map to either `integer4` or `type(MPI_XXX)`.
+In addition, you must handle `MPIU_Status` declarations and access to entries using the Fortran preprocessor. For example,
+
+```fortran
+#if defined(PETSC_USE_MPI_F08)
+  MPIU_Status status
+#else
+  MPIU_Status status(MPI_STATUS_SIZE)
+#endif
+```
+
+and then
+
+```fortran
+#if defined(PETSC_USE_MPI_F08)
+      tag = status%MPI_TAG
+#else
+      tag = status(MPI_TAG)
+#endif
+```
+
+## Numerical Constants
+
+Since Fortran compilers do not automatically change the length of numerical constant arguments (integer and real) in subroutine calls to the expected length PETSc provides parameters that indicate the constants' kind.
+
+```fortran
+   interface
+     subroutine SampleSubroutine(real, complex, integer, MPIinteger)
+       PetscReal real         ! real(PETSC_REAL_KIND)
+       PetscComplex complex   ! real(PETSC_REAL_KIND) or complex(PETSC_REAL_KIND)
+       PetscInt integer       ! integer(PETSC_INT_KIND)
+       PetscMPIInt MPIinteger ! integer(PETSC_MPIINT_KIND)
+     end subroutine
+   end interface
+   ...
+   ! Fortran () automatically sets the complex KIND to correspond to the KIND of constant arguments
+   call SampleSubroutine(real = 1.0_PETSC_REAL_KIND, complex = (0.1_PETSC_REAL_KIND, 0.0_PETSC_REAL_KIND), integer = 1_PETSC_INT_KIND, MPIinteger = 1_PETSC_MPIINT_KIND)
+   ! For variable arguments one must set the complex kind explicitly or it defaults to single precision
+   PetscReal a = 0.1, b = 0.0
+   call SampleSubroutine(real = 1.0_PETSC_REAL_KIND, complex = cmplx(a, b, PETSC_REAL_KIND), integer = 1_PETSC_INT_KIND, MPIinteger = 1_PETSC_MPIINT_KIND)
+```
+
 ## Basic Fortran API Differences
 
 (sec_fortran_includes)=
@@ -19,34 +66,16 @@ At the beginning of every function and module definition you need something like
 ```
 
 The Fortran include files for PETSc are located in the directory
-`$PETSC_DIR/include/petsc/finclude` and the module files are located in `$PETSC_DIR/$PETSC_ARCH/include`
+`$PETSC_DIR/$PETSC_ARCH/include/petsc/finclude` and the module files are located in `$PETSC_DIR/$PETSC_ARCH/include`
 
 The include files are nested, that is, for example, `petsc/finclude/petscmat.h` automatically includes
-`petsc/finclude/petscvec.h` and so on. Except for `petscsys` which is nested in the other modules,
-modules are **not** nested. Thus if your routine uses, for example, both
-`Mat` and `Vec` operations you need
-
-```c
-use petscvec
-use petscmat
-```
-
-The reason they are not nested is that they are very large and including all of them slows down the compile time.
-One can use
+`petsc/finclude/petscvec.h` and so on. The modules are also nested. One can use
 
 ```c
 use petsc
 ```
 
-to include all of them. In addition, if you have a routine that does not have function calls for an object, but has
-the object as an argument you can use, for example,
-
-```c
-subroutine FormFunction(snes,x,f,dummy,ierr)
-  use petscvec
-  use petscsnesdef
-  implicit none
-```
+to include all of them.
 
 ### Declaring PETSc Object Variables
 
@@ -364,31 +393,6 @@ for a full demonstration.
 
 See {any}`sec_writing_application_codes`.
 
-### Duplicating Multiple Vectors
-
-The Fortran interface to `VecDuplicateVecs()` differs slightly from
-the C/C++ variant. To create `n` vectors of the same
-format as an existing vector, the user must declare a vector array,
-`v_new` of size `n`. Then, after `VecDuplicateVecs()` has been
-called, `v_new` will contain (pointers to) the new PETSc vector
-objects. When finished with the vectors, the user should destroy them by
-calling `VecDestroyVecs()`. For example, the following code fragment
-duplicates `v_old` to form two new vectors, `v_new(1)` and
-`v_new(2)`.
-
-```fortran
-Vec          v_old, v_new(2)
-PetscInt     ierr
-PetscScalar  alpha
-....
-PetscCall(VecDuplicateVecs(v_old, 2, v_new, ierr))
-alpha = 4.3
-PetscCall(VecSet(v_new(1), alpha, ierr))
-alpha = 6.0
-PetscCall(VecSet(v_new(2), alpha, ierr))
-....
-PetscCall(VecDestroyVecs(2, v_new, ierr))
-```
 
 (sec_fortran_examples)=
 

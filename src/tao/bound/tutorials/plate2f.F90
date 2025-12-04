@@ -247,7 +247,7 @@ contains
     end if
 
     ft = ft*area
-    PetscCallMPI(MPI_Allreduce(ft, fcn, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD, ierr))
+    PetscCallMPI(MPI_Allreduce(ft, fcn, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD, ierr))
 
 ! Restore vectors
     PetscCall(VecRestoreArray(localX, x_v, ierr))

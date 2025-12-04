@@ -43,7 +43,6 @@ configure_options = [
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-elemental=1',
-  '--with-mpi-f90module-visibility=0',
   #'--download-sundials2=1',
   #'--download-hypre=1',
   #'--download-suitesparse=1',

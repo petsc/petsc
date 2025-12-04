@@ -6,13 +6,12 @@
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petsclog.h>
 program SchoolDay
-  use petscmpi  ! or mpi or mpi_f08
   use petscsys
   implicit none
 
   ! Settings:
   integer, parameter        :: verbose = 0               ! 0: silent, >=1 : increasing amount of debugging output
-  integer, parameter        :: msgLen = 30             ! number of reals which is sent with MPI_Isend
+  integer4, parameter       :: msgLen = 30             ! number of reals which is sent with MPI_Isend
   PetscReal, parameter      :: second = 0.1             ! time is sped up by a factor 10
 
   ! Codes
@@ -32,15 +31,18 @@ program SchoolDay
   ! MPI-stuff
   PetscMPIInt              :: rank, size
   PetscReal, allocatable    :: message(:, :)
-  integer                   :: item, maxItem
-  integer4                  :: status(MPI_STATUS_SIZE)
-  PetscMPIInt req
-  integer(c_int) msgLen_c_int
+  integer                   :: item
+  PetscMPIInt :: maxItem
+#if defined(PETSC_USE_MPI_F08)
+  MPIU_Status                  :: status
+#else
+  MPIU_Status                  :: status(MPI_STATUS_SIZE)
+#endif
+  MPIU_Request req
 
   ! Own stuff
   integer4                  :: role                 ! is this process a BOY, a GIRL or a TEACHER?
   integer4                  :: i, j
-  integer4, parameter        :: one = 1
 
 !     Initializations
   PetscCallA(PetscInitialize(ierr))
@@ -49,7 +51,7 @@ program SchoolDay
 
   if (rank == 0) then
     role = TEACHER
-  else if (rank < 0.4*size) then
+  else if (rank < 0.4_PETSC_REAL_KIND*size) then
     role = GIRL
   else
     role = BOY
@@ -58,7 +60,7 @@ program SchoolDay
   allocate (message(msgLen, msglen))
   do i = 1, msgLen
     do j = 1, msgLen
-      message(i, j) = 10.0*j + i*1.0/(rank + one)
+      message(i, j) = 10.0_PETSC_REAL_KIND*j + i*1.0_PETSC_REAL_KIND/(rank + 1_PETSC_MPIINT_KIND)
     end do
   end do
 !
@@ -85,12 +87,9 @@ program SchoolDay
   PetscCallA(PetscLogFlops(23000d0, ierr))
   PetscCallA(PetscSleep(1*second, ierr))
   if (size > 1) then
-    PetscCallMPIA(MPI_Isend(message, msgLen, MPI_DOUBLE_PRECISION, mod(rank + 1, size), tagMsg + rank, PETSC_COMM_WORLD, req, ierr))
-    PetscCallMPIA(MPI_Recv(message, msgLen, MPI_DOUBLE_PRECISION, mod(rank - 1 + size, size), tagMsg + mod(rank - 1 + size, size), PETSC_COMM_WORLD, status, ierr))
+    PetscCallMPIA(MPI_Isend(message, msgLen, MPIU_REAL, mod(rank + 1_PETSC_MPIINT_KIND, size), tagMsg + rank, PETSC_COMM_WORLD, req, ierr))
+    PetscCallMPIA(MPI_Recv(message, msgLen, MPIU_REAL, mod(rank - 1_PETSC_MPIINT_KIND + size, size), tagMsg + mod(rank - 1_PETSC_MPIINT_KIND + size, size), PETSC_COMM_WORLD, status, ierr))
     PetscCallMPIA(MPI_Wait(req, MPI_STATUS_IGNORE, ierr))
-    msgLen_c_int = msgLen
-    ierr = PetscASend(msgLen_c_int, MPI_DOUBLE_PRECISION)
-    ierr = PetscARecv(msgLen_c_int, MPI_DOUBLE_PRECISION)
   end if
   PetscCallA(PetscLogEventEnd(Lessons, ierr))
 
@@ -123,12 +122,10 @@ program SchoolDay
   PetscCallA(PetscLogEventBegin(Afternoon, ierr))
 
   item = rank*(3 - rank)
-  PetscCallMPIA(MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX, PETSC_COMM_WORLD, ierr))
-  ierr = PetscAReduce()
+  PetscCallMPIA(MPI_Allreduce(item, maxItem, 1_PETSC_MPIINT_KIND, MPI_INTEGER, MPI_MAX, PETSC_COMM_WORLD, ierr))
 
   item = rank*(10 - rank)
-  PetscCallMPIA(MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX, PETSC_COMM_WORLD, ierr))
-  ierr = PetscAReduce()
+  PetscCallMPIA(MPI_Allreduce(item, maxItem, 1_PETSC_MPIINT_KIND, MPI_INTEGER, MPI_MAX, PETSC_COMM_WORLD, ierr))
 
   PetscCallA(PetscLogFlops(58988d0, ierr))
   PetscCallA(PetscSleep(0.6*second, ierr))
@@ -200,12 +197,9 @@ program SchoolDay
   PetscCallA(PetscLogFlops(23000d0, ierr))
   PetscCallA(PetscSleep(1*second, ierr))
   if (size > 1) then
-    PetscCallMPIA(MPI_Isend(message, msgLen, MPI_DOUBLE_PRECISION, mod(rank + 1, size), tagMsg + rank, PETSC_COMM_WORLD, req, ierr))
-    PetscCallMPIA(MPI_Recv(message, msgLen, MPI_DOUBLE_PRECISION, mod(rank - 1 + size, size), tagMsg + mod(rank - 1 + size, size), PETSC_COMM_WORLD, status, ierr))
+    PetscCallMPIA(MPI_Isend(message, msgLen, MPIU_REAL, mod(rank + 1_PETSC_MPIINT_KIND, size), tagMsg + rank, PETSC_COMM_WORLD, req, ierr))
+    PetscCallMPIA(MPI_Recv(message, msgLen, MPIU_REAL, mod(rank - 1_PETSC_MPIINT_KIND + size, size), tagMsg + mod(rank - 1_PETSC_MPIINT_KIND + size, size), PETSC_COMM_WORLD, status, ierr))
     PetscCallMPIA(MPI_Wait(req, MPI_STATUS_IGNORE, ierr))
-    msgLen_c_int = msgLen
-    ierr = PetscASend(msgLen_c_int, MPI_DOUBLE_PRECISION)
-    ierr = PetscARecv(msgLen_c_int, MPI_DOUBLE_PRECISION)
   end if
   PetscCallA(PetscLogEventEnd(Lessons, ierr))
 

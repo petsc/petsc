@@ -41,7 +41,7 @@ contains
     PetscErrorCode ierr
     PetscInt ctx
     PetscScalar mone
-    MPI_Comm comm
+    MPIU_Comm comm
 
     character(len=PETSC_MAX_PATH_LEN) :: outputString
 

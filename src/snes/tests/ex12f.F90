@@ -11,7 +11,7 @@ module ex12fmodule
     DM da
     Vec F
     Vec xl
-    MPI_Comm comm
+    MPIU_Comm comm
     PetscInt N
   end type User
   type monctx

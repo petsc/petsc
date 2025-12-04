@@ -1403,7 +1403,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       try:
         sys.path.append(os.path.join(self.petscdir.dir,'lib','petsc','bin'))
         import generatefortranbindings
-        generatefortranbindings.main(self.petscdir.dir, '', self.arch.arch)
+        generatefortranbindings.main(self.petscdir.dir, '', self.arch.arch, self.mpi.mpi_f08)
       except RuntimeError as e:
         raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
 

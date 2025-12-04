@@ -5,23 +5,20 @@ module petscmpi
 #if defined(PETSC_HAVE_MPIUNI)
   use mpiuni
 #else
-#if defined(PETSC_HAVE_MPI_F90MODULE)
-  use mpi
+#if defined(PETSC_HAVE_MPI_FTN_MODULE)
+  use PETSC_MPI_FTN_MODULE
 #else
 #include "mpif.h"
 #endif
 #endif
 
-  public:: MPIU_REAL, MPIU_SUM, MPIU_SCALAR, MPIU_INTEGER
-  public:: PETSC_COMM_WORLD, PETSC_COMM_SELF
+  MPIU_Datatype :: MPIU_REAL
+  MPIU_Datatype :: MPIU_SCALAR
+  MPIU_Datatype :: MPIU_INTEGER
+  MPIU_Op :: MPIU_SUM
 
-  integer4 :: MPIU_REAL
-  integer4 :: MPIU_SUM
-  integer4 :: MPIU_SCALAR
-  integer4 :: MPIU_INTEGER
-
-  MPI_Comm::PETSC_COMM_WORLD = 0
-  MPI_Comm::PETSC_COMM_SELF = 0
+  MPIU_Comm:: PETSC_COMM_WORLD
+  MPIU_Comm:: PETSC_COMM_SELF
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
@@ -36,19 +33,24 @@ end module petscmpi
 ! ------------------------------------------------------------------------
 module petscsysdef
   use, intrinsic :: ISO_C_binding
-#if defined(PETSC_HAVE_MPI_F90MODULE_VISIBILITY)
   use petscmpi
-#else
-  use petscmpi, only: MPIU_REAL, MPIU_SUM, MPIU_SCALAR, MPIU_INTEGER, PETSC_COMM_WORLD, PETSC_COMM_SELF
-#endif
   PetscReal, parameter :: PetscReal_Private = 1.0
   integer, parameter   :: PETSC_REAL_KIND = kind(PetscReal_Private)
+
+  PetscScalar, parameter :: PetscScalar_Private = (1.0, 0.0)
+  integer, parameter   :: PETSC_SCALAR_KIND = kind(PetscScalar_Private)
+
+  PetscInt, parameter :: PetscInt_Private = 1
+  integer, parameter   :: PETSC_INT_KIND = kind(PetscInt_Private)
+
+  PetscMPIInt, parameter :: PetscMPIInt_Private = 1
+  integer, parameter   :: PETSC_MPIINT_KIND = kind(PetscMPIInt_Private)
 
   PetscBool, parameter :: PETSC_TRUE = .true._C_BOOL
   PetscBool, parameter :: PETSC_FALSE = .false._C_BOOL
 
   PetscInt, parameter :: PETSC_DECIDE = -1
-  PetscInt, parameter :: PETSC_DECIDE_INTEGER = -1
+  PetscInt, parameter :: PETSC_DECIDE_INTEGER = -1_PETSC_INT_KIND
   PetscReal, parameter :: PETSC_DECIDE_REAL = -1.0_PETSC_REAL_KIND
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DECIDE
@@ -217,7 +219,7 @@ module petscsysdef
   PetscReal, pointer :: PETSC_NULL_REAL_POINTER(:)
   PetscBool PETSC_NULL_BOOL
   PetscEnum PETSC_NULL_ENUM
-  MPI_Comm PETSC_NULL_MPI_COMM
+  MPIU_Comm PETSC_NULL_MPI_COMM
 !
 !     Basic math constants
 !
@@ -287,6 +289,7 @@ module petscsys
       PETSC_NULL_REAL_ARRAY, APETSC_NULL_INTEGER_POINTER, &
       PETSC_NULL_SCALAR_POINTER, PETSC_NULL_REAL_POINTER)
       use, intrinsic :: ISO_C_binding
+      use petscmpi
       character(*) PETSC_NULL_CHARACTER
       PetscInt PETSC_NULL_INTEGER
       PetscScalar PETSC_NULL_SCALAR
@@ -295,7 +298,7 @@ module petscsys
       PetscBool PETSC_NULL_BOOL
       PetscEnum PETSC_NULL_ENUM
       external PETSC_NULL_FUNCTION
-      MPI_Comm PETSC_NULL_MPI_COMM
+      MPIU_Comm PETSC_NULL_MPI_COMM
       PetscInt PETSC_NULL_INTEGER_ARRAY(*)
       PetscScalar PETSC_NULL_SCALAR_ARRAY(*)
       PetscReal PETSC_NULL_REAL_ARRAY(*)
@@ -639,10 +642,10 @@ end module petscdraw
 !------------------------------------------------------------------------
 subroutine PetscSetCOMM(c1, c2)
   use, intrinsic :: ISO_C_binding
-  use petscmpi, only: PETSC_COMM_WORLD, PETSC_COMM_SELF
+  use petscmpi
 
   implicit none
-  MPI_Comm c1, c2
+  MPIU_Comm c1, c2
 
   PETSC_COMM_WORLD = c1
   PETSC_COMM_SELF = c2
@@ -650,9 +653,9 @@ end
 
 subroutine PetscGetCOMM(c1)
   use, intrinsic :: ISO_C_binding
-  use petscmpi, only: PETSC_COMM_WORLD
+  use petscmpi
   implicit none
-  MPI_Comm c1
+  MPIU_Comm c1
 
   c1 = PETSC_COMM_WORLD
 end subroutine PetscGetCOMM
@@ -676,10 +679,11 @@ end subroutine PetscSetModuleBlock
 
 subroutine PetscSetModuleBlockMPI(freal, fscalar, fsum, finteger)
   use, intrinsic :: ISO_C_binding
-  use petscmpi, only: MPIU_REAL, MPIU_SUM, MPIU_SCALAR, MPIU_INTEGER
+  use petscmpi
   implicit none
 
-  integer4 freal, fscalar, fsum, finteger
+  MPIU_Datatype freal, fscalar, finteger
+  MPIU_Op fsum
 
   MPIU_REAL = freal
   MPIU_SCALAR = fscalar

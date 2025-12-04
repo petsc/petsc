@@ -259,6 +259,7 @@ $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o     : $(OBJDIR)/src/snes/ftn-mod/petscsnes
 $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o   : $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o
 $(OBJDIR)/src/ml/ftn-mod/petscmlmod.o   : $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o
 # Fortran code depends on modules
+$(OBJDIR)/src/sys/ftn-src/somefort.o             : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 $(OBJDIR)/src/sys/objects/ftn-src/optionenum.o   : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 $(OBJDIR)/src/sys/classes/bag/ftn-src/bagenum.o  : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 

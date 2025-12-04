@@ -5,7 +5,7 @@
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscvec.h>
-module ex21f90module
+module ex21module
   use petscsys
   implicit none
   type MyStruct
@@ -41,7 +41,7 @@ end module
 !
 subroutine F90Array1dCreateMyStruct(array, start, len, ptr)
   use petscsys
-  use ex21f90module
+  use ex21module
   implicit none
   PetscInt start, len
   type(MyStruct), target :: array(start:start + len - 1)
@@ -52,7 +52,7 @@ end subroutine
 
 subroutine F90Array1dAccessMyStruct(ptr, address)
   use petscsys
-  use ex21f90module
+  use ex21module
   implicit none
   type(MyStruct), pointer :: ptr(:)
   PetscFortranAddr address
@@ -63,7 +63,7 @@ subroutine F90Array1dAccessMyStruct(ptr, address)
 end subroutine
 
 subroutine F90Array1dDestroyMyStruct(ptr)
-  use ex21f90module
+  use ex21module
   implicit none
   type(MyStruct), pointer :: ptr(:)
 
@@ -72,7 +72,7 @@ end subroutine
 
 program main
   use petscvec
-  use ex21f90module
+  use ex21module
   implicit none
 
 !

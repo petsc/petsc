@@ -11,7 +11,7 @@
 
          PetscScalar, parameter ::  two = 2.0
          Vec vec
-         MPI_Comm comm
+         MPIU_Comm comm
          PetscErrorCode ierr
          PetscMPIInt rank
 

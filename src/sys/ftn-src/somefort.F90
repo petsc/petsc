@@ -7,8 +7,9 @@
 #include <petsc/finclude/petscsys.h>
       subroutine MPIU_Abort(comm, ierr)
         use, intrinsic :: ISO_C_binding
+        use petscmpi
         implicit none
-        MPI_Comm comm
+        MPIU_Comm comm
         PetscMPIInt ierr, nierr, ciportable
         call PetscCIEnabledPortableErrorOutput(ciportable)
         if (ciportable == 1) then
