@@ -348,8 +348,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             IPf_idx = 0;
             for (PetscInt grid_r = 0, f_off = 0, ipidx = 0; grid_r < ctx->num_grids; grid_r++, f_off = ctx->species_offset[grid_r]) { // IPf_idx += nip_loc_r*Nfloc_r
               PetscInt nip_loc_r = numCells[grid_r] * Nq, Nfloc_r = Nf[grid_r];
-              for (PetscInt ei_r = 0, loc_fdf_idx = 0; ei_r < numCells[grid_r]; ++ei_r) {
-                for (PetscInt qi = 0; qi < Nq; qi++, ipidx++, loc_fdf_idx++) {
+              for (PetscInt ei_r = 0; ei_r < numCells[grid_r]; ++ei_r) {
+                for (PetscInt qi = 0; qi < Nq; qi++, ipidx++) {
                   const PetscReal wi = ww[ipidx], x = xx[ipidx], y = yy[ipidx];
                   PetscReal       temp1[3] = {0, 0, 0}, temp2 = 0;
 #if LANDAU_DIM == 2
@@ -364,7 +364,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   }
 #endif
                   for (PetscInt f = 0; f < Nfloc_r; ++f) {
-                    const PetscInt idx = b_id * IPf_sz_glb + ipf_offset[grid_r] + f * nip_loc_r + ei_r * Nq + qi; // IPf_idx + f*nip_loc_r + loc_fdf_idx;
+                    const PetscInt idx = b_id * IPf_sz_glb + ipf_offset[grid_r] + f * nip_loc_r + ei_r * Nq + qi;
+
                     temp1[0] += dudx[idx] * nu_beta[f + f_off] * invMass[f + f_off] * (*lambdas)[grid][grid_r];
                     temp1[1] += dudy[idx] * nu_beta[f + f_off] * invMass[f + f_off] * (*lambdas)[grid][grid_r];
 #if LANDAU_DIM == 3

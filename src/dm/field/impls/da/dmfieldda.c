@@ -28,7 +28,7 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscInt i, c, dim;
+    PetscInt i, dim;
     PetscInt nc;
     DM       dm = field->dm;
 
@@ -36,10 +36,10 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(DMGetDimension(dm, &dim));
     nc = field->numComponents;
-    for (i = 0, c = 0; i < (1 << dim); i++) {
+    for (i = 0; i < (1 << dim); i++) {
       PetscInt j;
 
-      for (j = 0; j < nc; j++, c++) {
+      for (j = 0; j < nc; j++) {
         PetscScalar val = dafield->cornerVals[nc * i + j];
 
 #if !defined(PETSC_USE_COMPLEX)

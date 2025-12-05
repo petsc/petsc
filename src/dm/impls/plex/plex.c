@@ -8004,7 +8004,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
     for (PetscInt f = 0; f < PetscMax(1, numFields); f++) {
       PetscInt fStart    = oldOffsets[f];
       PetscInt fNewStart = newOffsets[f];
-      for (PetscInt p = 0, newP = 0, o = fStart, oNew = fNewStart; p < numPoints; p++) {
+      for (PetscInt p = 0, o = fStart, oNew = fNewStart; p < numPoints; p++) {
         PetscInt b    = points[2 * p];
         PetscInt bDof = 0, bSecDof = 0, bOff;
 
@@ -8019,7 +8019,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
         if (b >= aStart && b < aEnd) PetscCall(PetscSectionGetDof(aSec, b, &bDof));
         if (bDof) {
           PetscCall(PetscSectionGetOffset(aSec, b, &bOff));
-          for (PetscInt q = 0; q < bDof; q++, newP++) {
+          for (PetscInt q = 0; q < bDof; q++) {
             PetscInt a = anchors[bOff + q], aDof = 0;
 
             if (a >= sStart && a < sEnd) {
@@ -8041,7 +8041,6 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
           // Insert the identity matrix in this block
           for (PetscInt d = 0; d < bSecDof; d++) modMat[(o + d) * newNumIndices + oNew + d] = 1;
           oNew += bSecDof;
-          newP++;
         }
         o += bSecDof;
       }
