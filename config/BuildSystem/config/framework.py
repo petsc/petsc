@@ -176,6 +176,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler terminal output when checking if compiles succeed'))
     help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 1, 'Ignore linker terminal output when checking if links succeed'))
     help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings in terminal output when checking if it succeeded'))
+    help.addArgument('Framework', '-ignoreCxxBoundCheck=<bool>', nargs.ArgBool(None, 0, 'Ignore Cxx dialect bound check'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-with-packages-search-path',  nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
@@ -1374,6 +1375,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     minCxxVersionBlameList = {}
     maxCxxVersionBlameList = {}
     for child in ndepGraph:
+      if self.argDB['ignoreCxxBoundCheck']: continue
       if (self.argDB['with-batch'] and
           hasattr(child,'package') and
           'download-'+child.package in self.framework.clArgDB and
