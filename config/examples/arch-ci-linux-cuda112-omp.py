@@ -18,7 +18,11 @@ if __name__ == '__main__':
     '--with-openmp',
     '--with-threadsafety',
     '--download-kokkos',
+    '--download-kokkos-commit=4.3.00',
     '--download-kokkos-kernels',
+    '--download-kokkos-kernels-commit=4.3.00',
+    '-ignoreCxxBoundCheck=1', # manually match cxx-dialect for kokkos v4, as kokkos v5 uses cxx-dialect=20
+    '--with-cxx-dialect=17',
     '--download-umpire',
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',

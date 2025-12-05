@@ -676,7 +676,7 @@ linux-cuda-latest:
     - cuda13
   variables:
     TEST_ARCH: arch-ci-linux-cuda-latest
-    TEST_OPTS: -j3 query=requires queryval=cuda
+    TEST_OPTS: -j3 query='requires,requires' queryval='cuda,kokkos_kernels'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-single-cxx:
