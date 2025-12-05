@@ -20,27 +20,36 @@ EXTERN_C_BEGIN
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
       #include <cmumps_c.h>
-      #define MUMPS_c       cmumps_c
-      #define MUMPS_STRUC_C CMUMPS_STRUC_C
-      #define MumpsScalar   CMUMPS_COMPLEX
+      #define MUMPS_c     cmumps_c
+      #define MumpsScalar CMUMPS_COMPLEX
     #else
       #include <zmumps_c.h>
-      #define MUMPS_c       zmumps_c
-      #define MUMPS_STRUC_C ZMUMPS_STRUC_C
-      #define MumpsScalar   ZMUMPS_COMPLEX
+      #define MUMPS_c     zmumps_c
+      #define MumpsScalar ZMUMPS_COMPLEX
     #endif
   #else
     #if defined(PETSC_USE_REAL_SINGLE)
       #include <smumps_c.h>
-      #define MUMPS_c       smumps_c
-      #define MUMPS_STRUC_C SMUMPS_STRUC_C
-      #define MumpsScalar   SMUMPS_REAL
+      #define MUMPS_c     smumps_c
+      #define MumpsScalar SMUMPS_REAL
     #else
       #include <dmumps_c.h>
-      #define MUMPS_c       dmumps_c
-      #define MUMPS_STRUC_C DMUMPS_STRUC_C
-      #define MumpsScalar   DMUMPS_REAL
+      #define MUMPS_c     dmumps_c
+      #define MumpsScalar DMUMPS_REAL
     #endif
+  #endif
+#endif
+#if defined(PETSC_USE_COMPLEX)
+  #if defined(PETSC_USE_REAL_SINGLE)
+    #define MUMPS_STRUC_C CMUMPS_STRUC_C
+  #else
+    #define MUMPS_STRUC_C ZMUMPS_STRUC_C
+  #endif
+#else
+  #if defined(PETSC_USE_REAL_SINGLE)
+    #define MUMPS_STRUC_C SMUMPS_STRUC_C
+  #else
+    #define MUMPS_STRUC_C DMUMPS_STRUC_C
   #endif
 #endif
 EXTERN_C_END
@@ -536,7 +545,7 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
          an easy translation between omp_comm and petsc_comm). See MUMPS-5.1.2 manual p82.                   \
          omp_comm is a small shared memory communicator, hence doing multiple Bcast as shown below is OK. \
       */ \
-        SMUMPS_STRUC_C tmp; /* All MUMPS_STRUC_C types have same lengths on these info arrays */ \
+        MUMPS_STRUC_C tmp; /* All MUMPS_STRUC_C types have same lengths on these info arrays */ \
         PetscCallMPI(MPI_Bcast(mumps->id.infog, PETSC_STATIC_ARRAY_LENGTH(tmp.infog), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
         PetscCallMPI(MPI_Bcast(mumps->id.info, PETSC_STATIC_ARRAY_LENGTH(tmp.info), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
         PetscCallMPI(MPI_Bcast(mumps->id.rinfog, PETSC_STATIC_ARRAY_LENGTH(tmp.rinfog), MPIU_MUMPSREAL(&mumps->id), 0, mumps->omp_comm)); \

@@ -321,7 +321,6 @@ static inline PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
 
 /*  isoviscous analytic solution for IC */
 static inline PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
-
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -512,7 +511,6 @@ static inline PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, A
 
 /*  computes the residual of the z-component of eqn (1) above */
 static inline PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
-
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;

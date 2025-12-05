@@ -205,8 +205,8 @@ class Configure(config.package.Package):
         self.logPrintBox('Installing MUMPS; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommandSeq(
           ['mkdir -p '+libDir+' '+includeDir,
-           'cp -f lib/*.* '+libDir+'/.',
-           'cp -f include/*.* '+includeDir+'/.'
+           'cp -f lib/*.* '+libDir,
+           'cp -f include/*.* '+includeDir
           ], cwd=self.packageDir, timeout=60, log = self.log)
         if self.argDB['with-mumps-serial']:
           output,err,ret = config.package.Package.executeShellCommand(['cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)

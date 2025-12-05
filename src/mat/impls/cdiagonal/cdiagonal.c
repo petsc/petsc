@@ -86,7 +86,6 @@ static PetscErrorCode MatNorm_ConstantDiagonal(Mat A, NormType type, PetscReal *
 }
 
 static PetscErrorCode MatCreateSubMatrices_ConstantDiagonal(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
-
 {
   Mat B;
 

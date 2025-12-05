@@ -102,7 +102,6 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, void *ct
 }
 
 int main(int argc, char **argv)
-
 {
   TS  ts;
   Vec x, c, clocal;
