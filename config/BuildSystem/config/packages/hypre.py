@@ -51,7 +51,9 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     if not hasattr(self.compilers, 'FC'):
       args.append('--disable-fortran')
-    if self.mpi.include:
+    if self.mpi.usingMPIUni:
+      args.append('--without-MPI')
+    elif self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relevant only on AIX?]
       args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
     libdirs = []
