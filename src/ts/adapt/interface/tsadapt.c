@@ -41,7 +41,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
   -ts_adapt_type my_scheme
 .ve
 
-.seealso: [](ch_ts), `TSAdaptRegisterAll()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdaptRegisterAll()`
 @*/
 PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TSAdapt))
 {
@@ -124,7 +124,7 @@ PetscErrorCode TSAdaptInitializePackage(void)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdaptDestroy()`, `TSAdaptType`, `TSAdaptGetType()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSGetAdapt()`, `TSAdaptDestroy()`, `TSAdaptType`, `TSAdaptGetType()`
 @*/
 PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
 {
@@ -158,7 +158,7 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
 
   Level: intermediate
 
-.seealso: `TSAdapt`, `TSAdaptType`, `TSAdaptSetType()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptType`, `TSAdaptSetType()`
 @*/
 PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
 {
@@ -212,6 +212,37 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSAdaptView - Prints the `TSAdapt` data structure.
+
+  Collective
+
+  Input Parameters:
++ adapt  - the `TSAdapt` context obtained from `TSGetAdapt()`
+- viewer - visualization context
+
+  Options Database Key:
+. -ts_view - calls `TSView()` at end of `TSStep()`
+
+  Level: advanced
+
+  Notes:
+  This is called by `TSView()` so rarely called directly.
+
+  The available visualization contexts include
++     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
+-     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
+  output where only the first processor opens
+  the file. All other processes send their
+  data to the first process to print.
+
+  The user can open an alternative visualization context with
+  `PetscViewerASCIIOpen()` - output to a specified file.
+
+  In the debugger you can do call `TSAdaptView`(adapt,0) to display the `TSAdapt`. (The same holds for any PETSc object viewer).
+
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSView()`, `PetscViewer`, `PetscViewerASCIIOpen()`
+@*/
 PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
 {
   PetscBool isascii, isbinary, isnone, isglee;
@@ -267,7 +298,7 @@ PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
 
   Level: developer
 
-.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdapt`, `TSAdaptCreate()`, `TSAdaptDestroy()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSGetAdapt()`, `TSAdapt`, `TSAdaptCreate()`, `TSAdaptDestroy()`
 @*/
 PetscErrorCode TSAdaptReset(TSAdapt adapt)
 {
@@ -309,7 +340,7 @@ PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 {
@@ -342,7 +373,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 
   Level: advanced
 
-.seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept))
 {
@@ -367,7 +398,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
 {
@@ -400,7 +431,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
   Fortran Note:
   Use `PETSC_CURRENT_REAL`
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptGetSafety()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptGetSafety()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal reject_safety)
 {
@@ -431,7 +462,7 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal rejec
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptSetSafety()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptSetSafety()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *reject_safety)
 {
@@ -459,7 +490,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptGetMaxIgnore()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptGetMaxIgnore()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore)
 {
@@ -484,7 +515,7 @@ PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptSetMaxIgnore()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptSetMaxIgnore()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
 {
@@ -516,7 +547,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
   Fortran Note:
   Use `PETSC_CURRENT_REAL`
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptGetClip()`, `TSAdaptSetScaleSolveFailed()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptGetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
 PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
 {
@@ -546,7 +577,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
 PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 {
@@ -573,7 +604,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptGetScaleSolveFailed()`, `TSAdaptGetClip()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptGetScaleSolveFailed()`, `TSAdaptGetClip()`
 @*/
 PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
 {
@@ -599,7 +630,7 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetClip()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetClip()`
 @*/
 PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 {
@@ -632,7 +663,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
   Fortran Note:
   Use `PETSC_CURRENT_REAL`
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptGetStepLimits()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptGetStepLimits()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hmax)
 {
@@ -664,7 +695,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hma
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptSetStepLimits()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptSetStepLimits()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *hmax)
 {
@@ -703,7 +734,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
   Note:
   This function is automatically called by `TSSetFromOptions()`
 
-.seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
           `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetStepLimits()`, `TSAdaptSetMonitor()`
 @*/
 PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems PetscOptionsObject)
@@ -772,7 +803,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems PetscOption
 
   Level: developer
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptCreate()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptCreate()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 {
@@ -798,7 +829,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 
   Level: developer
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt order, PetscInt stageorder, PetscReal ccfl, PetscReal cost, PetscBool inuse)
 {
@@ -843,7 +874,7 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt or
   Note:
   The current scheme is always returned in the first slot
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt **order, const PetscInt **stageorder, const PetscReal **ccfl, const PetscReal **cost)
 {
@@ -878,7 +909,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
   The input value of parameter accept is retained from the last time step, so it will be `PETSC_FALSE` if the step is
   being retried after an initial rejection.
 
-.seealso: [](ch_ts), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`
 @*/
 PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept)
 {
@@ -1004,7 +1035,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
   Developer Notes:
   There is no theory to support this option
 
-.seealso: [](ch_ts), `TSAdapt`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`
 @*/
 PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 {
@@ -1029,7 +1060,7 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 
   Level: developer
 
-.seealso: [](ch_ts), `TSAdapt`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`
 @*/
 PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
@@ -1105,7 +1136,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
   Note:
   `TSAdapt` creation is handled by `TS`, so users should not need to call this function.
 
-.seealso: [](ch_ts), `TSAdapt`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptDestroy()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptDestroy()`
 @*/
 PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
 {

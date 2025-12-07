@@ -1706,9 +1706,8 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
 /*MC
-      TSROSW - ODE solver using Rosenbrock-W schemes
+  TSROSW - ODE solver using Rosenbrock-W schemes
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
@@ -1717,59 +1716,62 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   Level: beginner
 
   Notes:
+  This is an IMEX method.
+
   This method currently only works with autonomous ODE and DAE.
 
   Consider trying `TSARKIMEX` if the stiff part is strongly nonlinear.
 
-  Since this uses a single linear solve per time-step if you wish to lag the jacobian or preconditioner computation you must use also -snes_lag_jacobian_persists true or -snes_lag_jacobian_preconditioner true
+  Since this uses a single linear solve per time-step if you wish to lag the Jacobian or preconditioner computation you must use also `-snes_lag_jacobian_persists true`.
 
   Developer Notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
-.vb
-  udot = f(u)
-.ve
+$$
+  \dot{u} = f(u)
+$$
   by the stage equations
-.vb
-  k_i = h f(u_0 + sum_j alpha_ij k_j) + h J sum_j gamma_ij k_j
-.ve
+$$
+  k_i = h f(u_0 + \sum_j \alpha_{ij} k_j) + h J \sum_j \gamma_{ij} k_j
+$$
   and step completion formula
-.vb
-  u_1 = u_0 + sum_j b_j k_j
-.ve
-  with step size h and coefficients alpha_ij, gamma_ij, and b_i. Implementing the method in this form would require f(u)
-  and the Jacobian J to be available, in addition to the shifted matrix I - h gamma_ii J. Following Hairer and Wanner,
+$$
+  u_1 = u_0 + \sum_j b_j k_j
+$$
+  with step size $h$ and coefficients $\alpha_{ij}$, $\gamma_{ij}$, and $b_i$. Implementing the method in this form would require $f(u)$
+  and the Jacobian $J$ to be available, in addition to the shifted matrix $I - h \gamma_{ii} J$. Following Hairer and Wanner,
   we define new variables for the stage equations
-.vb
-  y_i = gamma_ij k_j
-.ve
-  The k_j can be recovered because Gamma is invertible. Let C be the lower triangular part of Gamma^{-1} and define
-.vb
-  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-1}
-.ve
+$$
+  y_i = \gamma_{ij} k_j
+$$
+  The $ k_j $ can be recovered because $\Gamma$ is invertible. Let $C$ be the lower triangular part of $\Gamma^{-1}$ and define
+$$
+  A = \Alpha \Gamma^{-1}, bt^T = b^T \Gamma^{-1}
+$$
   to rewrite the method as
-.vb
-  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
-  u_1 = u_0 + sum_j bt_j y_j
-.ve
+$$
+  [M/(h \gamma_ii) - J] y_i = f(u_0 + \sum_j a_{ij} y_j) + M \sum_j (c_{ij}/h) y_j \\
+  u_1 = u_0 + \sum_j bt_j y_j
+$$
 
-   where we have introduced the mass matrix M. Continue by defining
-.vb
-  ydot_i = 1/(h gamma_ii) y_i - sum_j (c_ij/h) y_j
-.ve
+   where we have introduced the mass matrix $M$. Continue by defining
+$$
+  \dot{y}_i = 1/(h \gamma_ii) y_i - \sum_j (c_{ij}/h) y_j
+$$
    or, more compactly in tensor notation
-.vb
-  Ydot = 1/h (Gamma^{-1} \otimes I) Y .
-.ve
-   Note that Gamma^{-1} is lower triangular. With this definition of Ydot in terms of known quantities and the current
-   stage y_i, the stage equations reduce to performing one Newton step (typically with a lagged Jacobian) on the
+$$
+  \dot{Y} = 1/h (Gamma^{-1} \otimes I) Y .
+$$
+   Note that $\Gamma^{-1}$ is lower triangular. With this definition of $\dot{Y} in terms of known quantities and the current
+   stage $y_i$, the stage equations reduce to performing one Newton step (typically with a lagged Jacobian) on the
    equation
-.vb
-  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
-.ve
-   with initial guess y_i = 0.
+$$
+  g(u_0 + \sum_j a_{ij} y_j + y_i, \dot{y}_i) = 0
+$$
+   with initial guess $y_i = 0$.
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
-          `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`,
+          `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`,
+          `TSROSW4L`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 {

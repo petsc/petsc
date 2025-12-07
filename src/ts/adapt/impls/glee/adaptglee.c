@@ -134,7 +134,7 @@ static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
 
    Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
 {

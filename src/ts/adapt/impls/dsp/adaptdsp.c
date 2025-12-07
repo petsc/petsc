@@ -366,7 +366,7 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
 
    Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`, `TSAdaptType`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 {

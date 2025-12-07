@@ -152,7 +152,6 @@ class Package(config.base.Configure):
     self.libraries       = framework.require('config.libraries', self)
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
-    self.sourceControl   = framework.require('config.sourceControl',self)
     self.python          = framework.require('config.packages.Python',self)
     try:
       import PETSc.options

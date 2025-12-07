@@ -27,7 +27,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `IS`, `TSRHSSplitGetIS()`
+.seealso: [](ch_ts), `TS`, `IS`, `TSRHSSplitGetIS()`, `TSARKIMEXSetFastSlowSplit()`
 @*/
 PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
 {
@@ -157,7 +157,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEX`
+.seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEX`, `TSARKIMEXSetFastSlowSplit()`
 @*/
 PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIFunctionFn *ifunc, void *ctx)
 {
@@ -211,7 +211,7 @@ PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIF
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSRHSSplitSetIFunction`, `TSIJacobianFn`, `IS`, `TSRHSSplitSetIS()`
+.seealso: [](ch_ts), `TS`, `TSRHSSplitSetIFunction`, `TSIJacobianFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEXSetFastSlowSplit()`
 @*/
 PetscErrorCode TSRHSSplitSetIJacobian(TS ts, const char splitname[], Mat Amat, Mat Pmat, TSIJacobianFn *ijac, void *ctx)
 {
@@ -316,7 +316,7 @@ PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[])
   TSRHSSplitGetSNES - Returns the `SNES` (nonlinear solver) associated with
   a `TS` (timestepper) context when RHS splits are used.
 
-  Not Collective, but snes is parallel if ts is parallel
+  Not Collective, but `snes` is parallel if `ts` is parallel
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`

@@ -8,7 +8,7 @@
 + dm          - The surface mesh
 . layers      - The number of extruded layers
 . thickness   - The total thickness of the extruded layers, or `PETSC_DETERMINE`
-. tensor      - Flag to create tensor produt cells
+. tensor      - Flag to create tensor product cells
 . symmetric   - Flag to extrude symmetrically about the surface
 . periodic    - Flag to extrude periodically
 . normal      - Surface normal vector, or `NULL`

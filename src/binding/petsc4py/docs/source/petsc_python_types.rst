@@ -106,9 +106,9 @@ with step size :math:`0.2` is used. Therefore the update becomes
 
 
 .. note::
-  
-  This setup is also well suited for non line search based quasi netwon
-  optimzation algorithms. It provides a general interface for using the TAO 
+
+  This setup is also well suited for non-linesearch-based quasi-Newton
+  optimization algorithms. It provides a general interface for using the TAO
   provided state and functionality on a custom algorithm.
 
 The optimizer can be used from Python as
