@@ -1047,7 +1047,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
              '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log']
     if not isinstance(rules, list): rules = [rules]
     for rule in rules:
-      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log 2>&1 ||\
+      steps.append('$(shell [ "$(V)" != "1" ] && echo @)cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log 2>&1 ||\
                     (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.build.log" && exit 1)')
     self.addMakeRule(self.package + 'build', '', steps)
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
@@ -1064,7 +1064,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''Adds a small make check for the project'''
     self.addMakeRule(self.package + 'check','', \
                          ['@echo "*** Checking ' + self.name + ' ***"',\
-                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
+                          '$(shell [ "$(V)" != "1" ] && echo @) cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
     self.framework.postchecks.append(self.package + 'check')
 
   def addTest(self, dir, rule):
@@ -1072,7 +1072,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     self.addMakeRule(self.package + 'test','', \
                          ['@echo "*** Testing ' + self.name + ' ***"',\
                           '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.package + '.errorflg',\
-                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
+                          '$(shell [ "$(V)" != "1" ] && echo @) cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
 
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
