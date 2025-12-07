@@ -897,15 +897,15 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 @*/
 PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contains)
 {
+  PetscInt pStart, pEnd;
+
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscAssertPointer(contains, 3);
+  /* DMLabelGetBounds() calls DMLabelCreateIndex() only if needed */
+  PetscCall(DMLabelGetBounds(label, &pStart, &pEnd));
   PetscCall(DMLabelMakeAllValid_Private(label));
-  if (PetscDefined(USE_DEBUG)) {
-    PetscCheck(label->bt, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
-    PetscCheck(!(point < label->pStart) && !(point >= label->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, label->pStart, label->pEnd);
-  }
-  *contains = PetscBTLookup(label->bt, point - label->pStart) ? PETSC_TRUE : PETSC_FALSE;
+  *contains = point >= pStart && point < pEnd && (PetscBTLookup(label->bt, point - label->pStart) ? PETSC_TRUE : PETSC_FALSE);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1117,10 +1117,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
   PetscCall(DMLabelLookupStratum(label, value, &v));
   if (v < 0) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (label->bt) {
-    PetscCheck(!(point < label->pStart) && !(point >= label->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, label->pStart, label->pEnd);
-    PetscCall(PetscBTClear(label->bt, point - label->pStart));
-  }
+  if (label->bt && point >= label->pStart && point < label->pEnd) PetscCall(PetscBTClear(label->bt, point - label->pStart));
 
   /* Delete key */
   PetscCall(DMLabelMakeInvalid_Private(label, v));
@@ -1547,8 +1544,7 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
       for (i = 0; i < label->stratumSizes[v]; ++i) {
         const PetscInt point = points[i];
 
-        PetscCheck(!(point < label->pStart) && !(point >= label->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, label->pStart, label->pEnd);
-        PetscCall(PetscBTClear(label->bt, point - label->pStart));
+        if (point >= label->pStart && point < label->pEnd) PetscCall(PetscBTClear(label->bt, point - label->pStart));
       }
       PetscCall(ISRestoreIndices(label->points[v], &points));
     }
