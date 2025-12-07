@@ -2417,10 +2417,10 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
 
 PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf, PetscInt rc, PetscInt qc, PetscTabulation Tab[], const PetscInt rf[], const PetscInt qf[], PetscTabulation Tabf[], PetscFEGeom *fegeom, PetscFEGeom *fegeomNbr, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {
-  PetscInt dOffset = 0, fOffset = 0, f, g;
+  PetscInt dOffset = 0, fOffset = 0, f;
 
-  /* f is the field number in the DS, g is the field number in u[] */
-  for (f = 0, g = 0; f < Nf; ++f) {
+  /* f is the field number in the DS */
+  for (f = 0; f < Nf; ++f) {
     PetscBool isCohesive;
     PetscInt  Ns, s;
 
@@ -2436,7 +2436,7 @@ PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf,
       const PetscInt  Nbf = T->Nb;
       const PetscInt  Ncf = T->Nc;
 
-      for (s = 0; s < Ns; ++s, ++g) {
+      for (s = 0; s < Ns; ++s) {
         const PetscInt   r  = isCohesive ? rc : rf[s];
         const PetscInt   q  = isCohesive ? qc : qf[s];
         const PetscReal *Bq = &T->T[0][(r * Nq + q) * Nbf * Ncf];
