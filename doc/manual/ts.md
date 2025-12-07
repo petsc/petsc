@@ -701,6 +701,8 @@ TSARKIMEX. This is achieved by using the following APIs:
 
 Note that this ODE system can also be solved by padding zeros in the implicit part and using the standard IMEX methods. However, one needs to provide the full-dimensional Jacobian whereas only a partial Jacobian is needed for the fast-slow split which is more efficient in storage and speed.
 
+(sec_ts_glee)=
+
 ## GLEE methods
 
 In this section, we describe explicit and implicit time stepping methods
@@ -968,6 +970,9 @@ scheme, `TSRK3` - $3$rd-order, $3$-stage RK scheme,
   at each iteration to a file in vtk format,
   `TSMonitorSolutionVTK()`.
 
+
+(sec_ts_error_control)=
+
 ## Error control via variable time-stepping
 
 Most of the time stepping methods available in PETSc have an error
@@ -1058,11 +1063,6 @@ step $k$, if $\rm wlte_{k+1} \le 1.0$, then the step is
 accepted and the next step is modified according to
 {eq}`hnew`; otherwise, the step is rejected and retaken
 with the step length computed in {eq}`hnew`.
-
-`TSADAPTGLEE` is an extension of the basic
-adaptor to treat ${\rm Tol}_{\rm A}$ and ${\rm Tol}_{\rm R}$
-as separate criteria. it can also control global errors if the
-integrator (e.g., `TSGLEE`) provides this information.
 
 ## Handling of discontinuities
 

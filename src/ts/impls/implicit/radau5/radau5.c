@@ -70,7 +70,7 @@ static void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, do
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->work));
 }
 
-static void radau5_(int *, void *, double *, double *, double *, double *, double *, double *, int *, void *, int *, int *, int *, void *, int *, int *, int *, void *, int *, double *, int *, int *, int *, double *, void *, int *);
+extern void radau5_(int *, void *, double *, double *, double *, double *, double *, double *, int *, void *, int *, int *, int *, void *, int *, int *, int *, void *, int *, double *, int *, int *, int *, double *, void *, int *);
 
 static PetscErrorCode TSSolve_Radau5(TS ts)
 {
@@ -131,18 +131,18 @@ static PetscErrorCode TSDestroy_Radau5(TS ts)
 }
 
 /*MC
-      TSRADAU5 - ODE solver using the external RADAU5 package, requires ./configure --download-radau5
+  TSRADAU5 - ODE solver using the external RADAU5 package, requires ./configure --download-radau5
 
-    Level: beginner
+  Level: beginner
 
-    Notes:
-    This uses its own nonlinear solver and dense matrix direct solver so PETSc `SNES` and `KSP` options do not apply.
+  Notes:
+  This uses its own nonlinear solver and dense matrix direct solver so PETSc `SNES` and `KSP` options do not apply.
 
-    Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
+  Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
 
-    Uses its own memory for the dense matrix storage and factorization
+  Uses its own memory for the dense matrix storage and factorization
 
-    Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
+  Can only handle ODEs of the form $ \dot{u} = -F(t,u) + G(t,u) $
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/

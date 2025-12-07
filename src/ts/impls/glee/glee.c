@@ -62,7 +62,17 @@ typedef struct {
 } TS_GLEE;
 
 /*MC
-     TSGLEE23 - Second order three stage GLEE method
+     TSGLEEi1 - Second order three stage implicit GLEE method
+
+     This method has two stages.
+     s = 3, r = 2
+
+     Level: advanced
+
+.seealso: [](ch_ts), `TSGLEE`
+M*/
+/*MC
+     TSGLEE23 - Second order three stage explicit GLEE method
 
      This method has three stages.
      s = 3, r = 2
@@ -72,7 +82,7 @@ typedef struct {
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEE24 - Second order four stage GLEE method
+     TSGLEE24 - Second order four stage explicit GLEE method
 
      This method has four stages.
      s = 4, r = 2
@@ -82,7 +92,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEE25i - Second order five stage GLEE method
+     TSGLEE25i - Second order five stage explict GLEE method
 
      This method has five stages.
      s = 5, r = 2
@@ -92,7 +102,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEE35  - Third order five stage GLEE method
+     TSGLEE35  - Third order five stage explicit GLEE method
 
      This method has five stages.
      s = 5, r = 2
@@ -102,7 +112,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEEEXRK2A  - Second order six stage GLEE method
+     TSGLEEEXRK2A  - Second order six stage explict GLEE method
 
      This method has six stages.
      s = 6, r = 2
@@ -112,7 +122,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEERK32G1  - Third order eight stage GLEE method
+     TSGLEERK32G1  - Third order eight stage explicit GLEE method
 
      This method has eight stages.
      s = 8, r = 2
@@ -122,7 +132,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 /*MC
-     TSGLEERK285EX  - Second order nine stage GLEE method
+     TSGLEERK285EX  - Second order nine stage explicit GLEE method
 
      This method has nine stages.
      s = 9, r = 2
@@ -611,7 +621,6 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TSReset_GLEE(TS ts)
 {
   TS_GLEE *glee = (TS_GLEE *)ts->data;
@@ -765,8 +774,6 @@ static PetscErrorCode TSStartingMethod_GLEE(TS ts)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems PetscOptionsObject)
 {
@@ -998,18 +1005,20 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
 /*MC
-      TSGLEE - ODE and DAE solver using General Linear with Error Estimation schemes
+  TSGLEE - ODE and DAE solver using General Linear with Error Estimation schemes
 
-  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
+  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`
+  and for `TSGLEEi1` the Jacobian of the right-hand side using `TSSetRHSJacobian()`
 
   Level: beginner
 
-  Note:
-  The default is `TSGLEE35`, it can be changed with `TSGLEESetType()` or -ts_glee_type
+  Notes:
+  The default is `TSGLEE35`, it can be changed with `TSGLEESetType()` or `-ts_glee_type type`
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
+  The only implicit scheme is `TSGLEEi1`
+
+.seealso: [](ch_ts), [](sec_ts_glee), `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
           `TSGLEE23`, `TSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
           `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`, `TSType`
 M*/

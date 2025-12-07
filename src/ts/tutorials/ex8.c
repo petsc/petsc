@@ -26,6 +26,7 @@ struct _Problem {
 
 /*
       Stiff 3-variable system from chemical reactions, due to Robertson (1966), problem ROBER in Hairer&Wanner, ODE 2, 1996
+      https://archimede.uniba.it/~testset/report/rober.pdf
 */
 static PetscErrorCode RoberFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
 {

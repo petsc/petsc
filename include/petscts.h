@@ -1107,7 +1107,7 @@ PETSC_EXTERN PetscFunctionList TSSSPList;
 
    Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSGetAdapt()`, `TSAdaptCreate()`, `TSAdaptType`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TS`, `TSGetAdapt()`, `TSAdaptCreate()`, `TSAdaptType`
 S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
@@ -1116,7 +1116,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 
    Level: beginner
 
-.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TS`, `TSAdapt`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSGetAdapt()`, `TSAdaptSetType()`, `TS`, `TSAdapt`
 J*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE    "none"

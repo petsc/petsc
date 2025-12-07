@@ -43,7 +43,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt, TS ts, PetscReal h, Petsc
 
    Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
 {

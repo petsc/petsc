@@ -489,8 +489,6 @@ static PetscErrorCode TSView_BDF(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
-
 static PetscErrorCode TSBDFSetOrder_BDF(TS ts, PetscInt order)
 {
   TS_BDF *bdf = (TS_BDF *)ts->data;
@@ -511,14 +509,16 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts, PetscInt *order)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
-
 /*MC
-      TSBDF - DAE solver using BDF methods
+  TSBDF - DAE solver using implicit backward differentiation formula (BDF) methods suitable for stiff ODEs.
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`
+  Options Database Keys:
++  -ts_bdf_order <n>                               - Order of the BDF method
+-  -ts_bdf_initial_guess_extrapolate <true, false> - Extrapolate the initial guess of the nonlinear solve from previous time steps, defaults to true
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`, `TSBDFSetOrder()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 {
@@ -552,8 +552,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   PetscCall(TSBDFSetOrder(ts, 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ------------------------------------------------------------ */
 
 /*@
   TSBDFSetOrder - Set the order of the `TSBDF` method
