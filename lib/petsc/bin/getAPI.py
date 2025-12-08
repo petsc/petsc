@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 #
-#  Processes PETSc's include/petsc*.h and source files to determine
-#  the PETSc enums, structs, functions and classes
+#  Processes PETSc's (or SLEPc's) header and source files to determine
+#  the PETSc enums, structs, functions, and classes
 #
-#  Calling sequence: (must be called in the PETSC_DIR directory)
-#      getAPI
+#  Calling sequence:
+#      getAPI(directory)
 #
 #  Notes:
 #    const char *fill_array_of_strings[]              + fills up an array of strings; the array already exists in the calling routine
@@ -18,6 +18,10 @@ import pickle
 import pathlib
 import subprocess
 from subprocess import check_output
+
+def mansecpath(mansec):
+  '''Given a manual section, returns the path where it is located (it differs in some SLEPc classes)'''
+  return os.path.join('sys','classes',mansec) if mansec in ['bv','ds','fn','rg','st'] else mansec
 
 verbose = False
 
@@ -221,7 +225,7 @@ def findmansec(line,mansec,submansec):
     mansecs[mansec].add(submansec)
   return mansec,submansec
 
-def getIncludeFiles(filename):
+def getIncludeFiles(filename,pkgname):
   import re
 
   file = os.path.basename(filename)
@@ -237,7 +241,7 @@ def getIncludeFiles(filename):
       line = regcomment.sub("",line)
       line = regcomment2.sub("",line)
       line = line.replace('#include <','').replace('>','').strip()
-      if not line == file and os.path.isfile(os.path.join('include',line)):
+      if not line == file and os.path.isfile(os.path.join('include',line)) or (pkgname == 'slepc' and line.startswith('petsc')):
         included.append(line)
     line = f.readline()
   includefiles[file] = IncludeFile(mansec,file,included)
@@ -426,13 +430,13 @@ def findlmansec(dir):  # could use dir to determine mansec
     if not submansec: submansec = mansec
     return mansec,submansec
 
-def getpossiblefunctions():
+def getpossiblefunctions(pkgname):
    '''Gets a list of all the functions in the include/ directory that may be used in the binding for other languages'''
    try:
-     output = check_output('grep -F -e "PETSC_EXTERN PetscErrorCode" -e "static inline PetscErrorCode" include/*.h', shell=True).decode('utf-8')
+     output = check_output('grep -F -e "' + pkgname.upper() + '_EXTERN PetscErrorCode" -e "static inline PetscErrorCode" include/*.h', shell=True).decode('utf-8')
    except subprocess.CalledProcessError as e:
      raise RuntimeError('Unable to find possible functions in the include files')
-   funs = output.replace('PETSC_EXTERN','').replace('PetscErrorCode','').replace('static inline','')
+   funs = output.replace('' + pkgname.upper() + '_EXTERN','').replace('PetscErrorCode','').replace('static inline','')
    functiontoinclude = {}
    for i in funs.split('\n'):
      file = i[i.find('/') + 1:i.find('.') + 2]
@@ -440,10 +444,10 @@ def getpossiblefunctions():
      functiontoinclude[f] = file.replace('types','')
 
    try:
-     output = check_output('grep "PETSC_EXTERN [a-zA-Z]* *[a-zA-Z]*;" include/*.h', shell=True).decode('utf-8')
+     output = check_output('grep "' + pkgname.upper() + '_EXTERN [a-zA-Z]* *[a-zA-Z]*;" include/*.h', shell=True).decode('utf-8')
    except subprocess.CalledProcessError as e:
      raise RuntimeError('Unable to find possible functions in the include files')
-   funs = output.replace('PETSC_EXTERN','')
+   funs = output.replace('' + pkgname.upper() + '_EXTERN','')
    for i in funs.split('\n'):
      if not i: continue
      i = i.replace(';','').split()
@@ -627,11 +631,11 @@ def getFunctions(mansec, functiontoinclude, filename):
 
 ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
 
-def getAPI():
+def getAPI(directory,pkgname = 'petsc'):
   global typedefs
-  args = [os.path.join('include',i) for i in os.listdir('include') if i.endswith('.h') and not i.endswith('deprecated.h')]
+  args = [os.path.join('include',i) for i in os.listdir(os.path.join(directory,'include')) if i.endswith('.h') and not i.endswith('deprecated.h')]
   for i in args:
-    getIncludeFiles(i)
+    getIncludeFiles(i,pkgname)
   verbosePrint('Include files -------------------------------------')
   for i in includefiles.keys():
     verbosePrint(includefiles[i])
@@ -667,8 +671,9 @@ def getAPI():
   for i in args:
     getClasses(i)
 
-  functiontoinclude = getpossiblefunctions()
-  for dirpath, dirnames, filenames in os.walk('src',topdown=True):
+  functiontoinclude = getpossiblefunctions(pkgname)
+  for dirpath, dirnames, filenames in os.walk(os.path.join(directory,'src'),topdown=True):
+    dirpath = dirpath.replace(directory + '/','')
     dirnames[:] = [d for d in dirnames if d not in ForbiddenDirectories]
     if not os.path.isfile(os.path.join(dirpath,'makefile')): continue
     mansec, submansec = findlmansec(dirpath)
@@ -690,132 +695,143 @@ def getAPI():
     if not mansec: raise RuntimeError(i + ' does not have a MANSEC or SUBMANSEC')
     getFunctions(mansec.lower(), functiontoinclude, i)
 
-  # these functions are funky macros in C and cannot be parsed directly
-  funcs['PetscOptionsBegin']             = Function('PetscOptionsBegin')
-  funcs['PetscOptionsBegin'].mansec      = 'sys'
-  funcs['PetscOptionsBegin'].file        = 'aoptions.c';
-  funcs['PetscOptionsBegin'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsBegin'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsBegin'].opaquestub  = True
-  funcs['PetscOptionsBegin'].arguments   = [Argument('comm',   'MPI_Comm'),
-                                            Argument('prefix', 'char', stars = 0, array = True, const = True),
-                                            Argument('mess',   'char', stars = 0, array = True, const = True),
-                                            Argument('sec',    'char', stars = 0, array = True, const = True)]
-  funcs['PetscOptionsEnd']               = Function('PetscOptionsEnd')
-  funcs['PetscOptionsEnd'].mansec        = 'sys'
-  funcs['PetscOptionsEnd'].file          = 'aoptions.c';
-  funcs['PetscOptionsEnd'].includefile   = 'petscoptions.h'
-  funcs['PetscOptionsEnd'].dir           = 'src/sys/objects/'
-  funcs['PetscOptionsEnd'].opaquestub    = True
+  if pkgname == 'petsc':
+    # a few special cases that must be handled manually
+    typedefs['PetscBool'] = Typedef('PetscBool','sys','petscsys.h','PetscBool')
+    classes['PetscNull'] = Class('PetscNull')
+    classes['PetscNull'].includefile = 'petscsys.h'
+    classes['PetscNull'].mansec = 'sys'
+    classes['PetscNull'].submansec = 'sys'
+    classes['PetscNull'].petscobject = False
+    classes['PetscObject'].petscobject = False
+    classes['PetscObject'].includefile = 'petscsys.h'
 
-  funcs['PetscOptionsBool']             = Function('PetscOptionsBool')
-  funcs['PetscOptionsBool'].mansec      = 'sys'
-  funcs['PetscOptionsBool'].file        = 'aoptions.c';
-  funcs['PetscOptionsBool'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsBool'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsBool'].opaquestub  = True
-  funcs['PetscOptionsBool'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
-                                           Argument('text',          'char',      stars = 0, array = True, const = True),
-                                           Argument('man',           'char',      stars = 0, array = True, const = True),
-                                           Argument('currentvalue',  'PetscBool'),
-                                           Argument('value',         'PetscBool', stars = 1),
-                                           Argument('set',           'PetscBool', stars = 1)]
-  funcs['PetscOptionsBool3']             = Function('PetscOptionsBool3')
-  funcs['PetscOptionsBool3'].mansec      = 'sys'
-  funcs['PetscOptionsBool3'].file        = 'aoptions.c';
-  funcs['PetscOptionsBool3'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsBool3'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsBool3'].opaquestub  = True
-  funcs['PetscOptionsBool3'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
-                                            Argument('text',          'char',      stars = 0, array = True, const = True),
-                                            Argument('man',           'char',      stars = 0, array = True, const = True),
-                                            Argument('currentvalue',  'PetscBool3'),
-                                            Argument('value',         'PetscBool3', stars = 1),
-                                            Argument('set',           'PetscBool3', stars = 1)]
-  funcs['PetscOptionsInt']             = Function('PetscOptionsInt')
-  funcs['PetscOptionsInt'].mansec      = 'sys'
-  funcs['PetscOptionsInt'].file        = 'aoptions.c';
-  funcs['PetscOptionsInt'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsInt'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsInt'].opaquestub  = True
-  funcs['PetscOptionsInt'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
-                                          Argument('text',          'char',      stars = 0, array = True, const = True),
-                                          Argument('man',           'char',      stars = 0, array = True, const = True),
-                                          Argument('currentvalue',  'PetscInt'),
-                                          Argument('value',         'PetscInt', stars = 1),
-                                          Argument('set',           'PetscBool', stars = 1)]
-  funcs['PetscOptionsReal']             = Function('PetscOptionsReal')
-  funcs['PetscOptionsReal'].mansec      = 'sys'
-  funcs['PetscOptionsReal'].file        = 'aoptions.c';
-  funcs['PetscOptionsReal'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsReal'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsReal'].opaquestub  = True
-  funcs['PetscOptionsReal'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
-                                           Argument('text',          'char',      stars = 0, array = True, const = True),
-                                           Argument('man',           'char',      stars = 0, array = True, const = True),
-                                           Argument('currentvalue',  'PetscReal'),
-                                           Argument('value',         'PetscReal', stars = 1),
-                                           Argument('set',           'PetscBool', stars = 1)]
-  funcs['PetscOptionsScalar']             = Function('PetscOptionsScalar')
-  funcs['PetscOptionsScalar'].mansec      = 'sys'
-  funcs['PetscOptionsScalar'].file        = 'aoptions.c';
-  funcs['PetscOptionsScalar'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsScalar'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsScalar'].opaquestub  = True
-  funcs['PetscOptionsScalar'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+    # these functions are funky macros in C and cannot be parsed directly
+    funcs['PetscOptionsBegin']             = Function('PetscOptionsBegin')
+    funcs['PetscOptionsBegin'].mansec      = 'sys'
+    funcs['PetscOptionsBegin'].file        = 'aoptions.c';
+    funcs['PetscOptionsBegin'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsBegin'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsBegin'].opaquestub  = True
+    funcs['PetscOptionsBegin'].arguments   = [Argument('comm',   'MPI_Comm'),
+                                              Argument('prefix', 'char', stars = 0, array = True, const = True),
+                                              Argument('mess',   'char', stars = 0, array = True, const = True),
+                                              Argument('sec',    'char', stars = 0, array = True, const = True)]
+    funcs['PetscOptionsEnd']               = Function('PetscOptionsEnd')
+    funcs['PetscOptionsEnd'].mansec        = 'sys'
+    funcs['PetscOptionsEnd'].file          = 'aoptions.c';
+    funcs['PetscOptionsEnd'].includefile   = 'petscoptions.h'
+    funcs['PetscOptionsEnd'].dir           = 'src/sys/objects/'
+    funcs['PetscOptionsEnd'].opaquestub    = True
+
+    funcs['PetscOptionsBool']             = Function('PetscOptionsBool')
+    funcs['PetscOptionsBool'].mansec      = 'sys'
+    funcs['PetscOptionsBool'].file        = 'aoptions.c';
+    funcs['PetscOptionsBool'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsBool'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsBool'].opaquestub  = True
+    funcs['PetscOptionsBool'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
                                              Argument('text',          'char',      stars = 0, array = True, const = True),
                                              Argument('man',           'char',      stars = 0, array = True, const = True),
-                                             Argument('currentvalue',  'PetscScalar'),
-                                             Argument('value',         'PetscScalar', stars = 1),
+                                             Argument('currentvalue',  'PetscBool'),
+                                             Argument('value',         'PetscBool', stars = 1),
                                              Argument('set',           'PetscBool', stars = 1)]
-  funcs['PetscOptionsScalarArray']             = Function('PetscOptionsScalarArray')
-  funcs['PetscOptionsScalarArray'].mansec      = 'sys'
-  funcs['PetscOptionsScalarArray'].file        = 'aoptions.c';
-  funcs['PetscOptionsScalarArray'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsScalarArray'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsScalarArray'].opaquestub  = True
-  funcs['PetscOptionsScalarArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
+    funcs['PetscOptionsBool3']             = Function('PetscOptionsBool3')
+    funcs['PetscOptionsBool3'].mansec      = 'sys'
+    funcs['PetscOptionsBool3'].file        = 'aoptions.c';
+    funcs['PetscOptionsBool3'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsBool3'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsBool3'].opaquestub  = True
+    funcs['PetscOptionsBool3'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+                                              Argument('text',          'char',      stars = 0, array = True, const = True),
+                                              Argument('man',           'char',      stars = 0, array = True, const = True),
+                                              Argument('currentvalue',  'PetscBool3'),
+                                              Argument('value',         'PetscBool3', stars = 1),
+                                              Argument('set',           'PetscBool3', stars = 1)]
+    funcs['PetscOptionsInt']             = Function('PetscOptionsInt')
+    funcs['PetscOptionsInt'].mansec      = 'sys'
+    funcs['PetscOptionsInt'].file        = 'aoptions.c';
+    funcs['PetscOptionsInt'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsInt'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsInt'].opaquestub  = True
+    funcs['PetscOptionsInt'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+                                            Argument('text',          'char',      stars = 0, array = True, const = True),
+                                            Argument('man',           'char',      stars = 0, array = True, const = True),
+                                            Argument('currentvalue',  'PetscInt'),
+                                            Argument('value',         'PetscInt', stars = 1),
+                                            Argument('set',           'PetscBool', stars = 1)]
+    funcs['PetscOptionsReal']             = Function('PetscOptionsReal')
+    funcs['PetscOptionsReal'].mansec      = 'sys'
+    funcs['PetscOptionsReal'].file        = 'aoptions.c';
+    funcs['PetscOptionsReal'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsReal'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsReal'].opaquestub  = True
+    funcs['PetscOptionsReal'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+                                             Argument('text',          'char',      stars = 0, array = True, const = True),
+                                             Argument('man',           'char',      stars = 0, array = True, const = True),
+                                             Argument('currentvalue',  'PetscReal'),
+                                             Argument('value',         'PetscReal', stars = 1),
+                                             Argument('set',           'PetscBool', stars = 1)]
+    funcs['PetscOptionsScalar']             = Function('PetscOptionsScalar')
+    funcs['PetscOptionsScalar'].mansec      = 'sys'
+    funcs['PetscOptionsScalar'].file        = 'aoptions.c';
+    funcs['PetscOptionsScalar'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsScalar'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsScalar'].opaquestub  = True
+    funcs['PetscOptionsScalar'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+                                               Argument('text',          'char',      stars = 0, array = True, const = True),
+                                               Argument('man',           'char',      stars = 0, array = True, const = True),
+                                               Argument('currentvalue',  'PetscScalar'),
+                                               Argument('value',         'PetscScalar', stars = 1),
+                                               Argument('set',           'PetscBool', stars = 1)]
+    funcs['PetscOptionsScalarArray']             = Function('PetscOptionsScalarArray')
+    funcs['PetscOptionsScalarArray'].mansec      = 'sys'
+    funcs['PetscOptionsScalarArray'].file        = 'aoptions.c';
+    funcs['PetscOptionsScalarArray'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsScalarArray'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsScalarArray'].opaquestub  = True
+    funcs['PetscOptionsScalarArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
+                                                    Argument('text',          'char',        stars = 0, array = True, const = True),
+                                                    Argument('man',           'char',        stars = 0, array = True, const = True),
+                                                    Argument('value',         'PetscScalar', array = 1),
+                                                    Argument('n',             'PetscInt',    stars = 1),
+                                                    Argument('set',           'PetscBool',   stars = 1)]
+    funcs['PetscOptionsIntArray']             = Function('PetscOptionsIntArray')
+    funcs['PetscOptionsIntArray'].mansec      = 'sys'
+    funcs['PetscOptionsIntArray'].file        = 'aoptions.c';
+    funcs['PetscOptionsIntArray'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsIntArray'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsIntArray'].opaquestub  = True
+    funcs['PetscOptionsIntArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
+                                                 Argument('text',          'char',        stars = 0, array = True, const = True),
+                                                 Argument('man',           'char',        stars = 0, array = True, const = True),
+                                                 Argument('value',         'PetscInt',    array = 1),
+                                                 Argument('n',             'PetscInt',    stars = 1),
+                                                 Argument('set',           'PetscBool',   stars = 1)]
+    funcs['PetscOptionsRealArray']             = Function('PetscOptionsRealArray')
+    funcs['PetscOptionsRealArray'].mansec      = 'sys'
+    funcs['PetscOptionsRealArray'].file        = 'aoptions.c';
+    funcs['PetscOptionsRealArray'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsRealArray'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsRealArray'].opaquestub  = True
+    funcs['PetscOptionsRealArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
                                                   Argument('text',          'char',        stars = 0, array = True, const = True),
                                                   Argument('man',           'char',        stars = 0, array = True, const = True),
-                                                  Argument('value',         'PetscScalar', array = 1),
+                                                  Argument('value',         'PetscReal',    array = 1),
                                                   Argument('n',             'PetscInt',    stars = 1),
                                                   Argument('set',           'PetscBool',   stars = 1)]
-  funcs['PetscOptionsIntArray']             = Function('PetscOptionsIntArray')
-  funcs['PetscOptionsIntArray'].mansec      = 'sys'
-  funcs['PetscOptionsIntArray'].file        = 'aoptions.c';
-  funcs['PetscOptionsIntArray'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsIntArray'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsIntArray'].opaquestub  = True
-  funcs['PetscOptionsIntArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
-                                               Argument('text',          'char',        stars = 0, array = True, const = True),
-                                               Argument('man',           'char',        stars = 0, array = True, const = True),
-                                               Argument('value',         'PetscInt',    array = 1),
-                                               Argument('n',             'PetscInt',    stars = 1),
-                                               Argument('set',           'PetscBool',   stars = 1)]
-  funcs['PetscOptionsRealArray']             = Function('PetscOptionsRealArray')
-  funcs['PetscOptionsRealArray'].mansec      = 'sys'
-  funcs['PetscOptionsRealArray'].file        = 'aoptions.c';
-  funcs['PetscOptionsRealArray'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsRealArray'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsRealArray'].opaquestub  = True
-  funcs['PetscOptionsRealArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
-                                                Argument('text',          'char',        stars = 0, array = True, const = True),
-                                                Argument('man',           'char',        stars = 0, array = True, const = True),
-                                                Argument('value',         'PetscReal',    array = 1),
-                                                Argument('n',             'PetscInt',    stars = 1),
-                                                Argument('set',           'PetscBool',   stars = 1)]
-  funcs['PetscOptionsBoolArray']             = Function('PetscOptionsBoolArray')
-  funcs['PetscOptionsBoolArray'].mansec      = 'sys'
-  funcs['PetscOptionsBoolArray'].file        = 'aoptions.c';
-  funcs['PetscOptionsBoolArray'].includefile = 'petscoptions.h'
-  funcs['PetscOptionsBoolArray'].dir         = 'src/sys/objects/'
-  funcs['PetscOptionsBoolArray'].opaquestub  = True
-  funcs['PetscOptionsBoolArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
-                                                Argument('text',          'char',        stars = 0, array = True, const = True),
-                                                Argument('man',           'char',        stars = 0, array = True, const = True),
-                                                Argument('value',         'PetscBool',   array = 1),
-                                                Argument('n',             'PetscInt',    stars = 1),
-                                                Argument('set',           'PetscBool',   stars = 1)]
+    funcs['PetscOptionsBoolArray']             = Function('PetscOptionsBoolArray')
+    funcs['PetscOptionsBoolArray'].mansec      = 'sys'
+    funcs['PetscOptionsBoolArray'].file        = 'aoptions.c';
+    funcs['PetscOptionsBoolArray'].includefile = 'petscoptions.h'
+    funcs['PetscOptionsBoolArray'].dir         = 'src/sys/objects/'
+    funcs['PetscOptionsBoolArray'].opaquestub  = True
+    funcs['PetscOptionsBoolArray'].arguments   = [Argument('opt',           'char',        stars = 0, array = True, const = True),
+                                                  Argument('text',          'char',        stars = 0, array = True, const = True),
+                                                  Argument('man',           'char',        stars = 0, array = True, const = True),
+                                                  Argument('value',         'PetscBool',   array = 1),
+                                                  Argument('n',             'PetscInt',    stars = 1),
+                                                  Argument('set',           'PetscBool',   stars = 1)]
 
   verbosePrint('Classes  ---------------------------------------------')
   for i in classes.keys():
@@ -837,4 +853,4 @@ def getAPI():
 
 #
 if __name__ ==  '__main__':
-  getAPI()
+  getAPI(sys.argv[1])
