@@ -1152,7 +1152,18 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     PetscCall(PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_(comm)));
     PetscCall(PetscPrintf(comm, "Parallel Cone Section:\n"));
     PetscCall(PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_(comm)));
+    PetscCall(PetscPrintf(comm, "Migration SF:\n"));
     PetscCall(PetscSFView(coneSF, NULL));
+    if (original) {
+      PetscViewer viewer;
+
+      PetscCall(PetscPrintf(comm, "Serial Renumbering:\n"));
+      PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_(comm), PETSC_COMM_SELF, &viewer));
+      PetscCall(ISLocalToGlobalMappingView(original, viewer));
+      PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_(comm), PETSC_COMM_SELF, &viewer));
+    }
+    PetscCall(PetscPrintf(comm, "Parallel Renumbering:\n"));
+    PetscCall(ISLocalToGlobalMappingView(renumbering, PETSC_VIEWER_STDOUT_(comm)));
   }
   PetscCall(DMPlexGetConeOrientations(dm, &cones));
   PetscCall(DMPlexGetConeOrientations(dmParallel, &newCones));

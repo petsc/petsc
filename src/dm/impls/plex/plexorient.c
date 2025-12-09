@@ -751,9 +751,9 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
   PetscInt          *cellComp, *faceComp;
   const PetscInt    *cells = NULL, *faces = NULL;
   PetscInt           cStart = 0, cEnd = 0, fStart = 0, fEnd = 0;
-  PetscInt           numLeaves, numRoots, dim, Ncomp, totNeighbors = 0;
+  PetscInt           numLeaves, numRoots, pdepth, Ncomp, totNeighbors = 0;
   PetscMPIInt        rank, size;
-  PetscBool          view, viewSync;
+  PetscBool          view, viewSync, faceIsVertex = PETSC_FALSE;
   PetscViewer        viewer = NULL, selfviewer = NULL;
 
   PetscFunctionBegin;
@@ -765,6 +765,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
 
   if (cellIS) PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   if (faceIS) PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
+  PetscCall(DMPlexGetPointDepth(dm, faces ? faces[fStart] : fStart, &pdepth));
+  if (!pdepth) faceIsVertex = PETSC_TRUE;
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints));
   /* Truth Table
@@ -776,7 +778,6 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
          T       1 flip      no
          T       2 flips     yes
   */
-  PetscCall(DMGetDimension(dm, &dim));
   PetscCall(PetscBTCreate(cEnd - cStart, &flippedCells));
   PetscCall(PetscBTMemzero(cEnd - cStart, flippedCells));
   PetscCall(PetscCalloc2(cEnd - cStart, &cellComp, fEnd - fStart, &faceComp));
@@ -799,6 +800,29 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
    - Create the adj on each process
    - Bootstrap to complete graph on proc 0
   */
+  viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)dm));
+  if (viewSync) PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
+  if (faceIsVertex && lpoints) {
+    // Need to first flip cells which hit parallel boundary on wrong face
+    for (PetscInt c = cStart; c < cEnd; ++c) {
+      const PetscInt  cell = cells ? cells[c] : c;
+      const PetscInt *cone;
+      PetscInt        cS, ls, le;
+
+      PetscCall(DMPlexGetCone(dm, cell, &cone));
+      PetscCall(DMPlexGetConeSize(dm, cell, &cS));
+      PetscCheck(cS == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Size of cone for edge %" PetscInt_FMT " must be 2, not %" PetscInt_FMT, cell, cS);
+      PetscCall(PetscFindInt(cone[0], numLeaves, lpoints, &ls));
+      PetscCall(PetscFindInt(cone[1], numLeaves, lpoints, &le));
+      if (ls >= 0 && le < 0) {
+        PetscCall(PetscBTSet(flippedCells, c - cStart));
+        if (view) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: Flipped cell %" PetscInt_FMT " to meet parallel boundary on shared face %" PetscInt_FMT "\n", rank, cell, cone[0]));
+      }
+    }
+  }
+  PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
+  if (viewSync) PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscCall(DMPlexOrient_Serial(dm, cellIS, faceIS, &Ncomp, cellComp, faceComp, flippedCells));
   if (view) {
     PetscViewer v;
@@ -813,6 +837,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
     PetscCall(PetscViewerFlush(v));
     PetscCall(PetscViewerASCIIPopSynchronized(v));
   }
+  if (viewSync) PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
   /* Now all subdomains are oriented, but we need a consistent parallel orientation */
   // TODO: This all has to be rewritten to filter cones/supports to the ISes
   if (numLeaves >= 0) {
@@ -848,7 +874,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
       PetscCall(DMPlexGetConeOrientation(dm, neighbor, &ornt));
       for (c = 0; c < coneSize; ++c)
         if (cone[c] == face) break;
-      if (dim == 1) {
+      if (faceIsVertex) {
         /* Use cone position instead, shifted to -1 or 1 */
         if (PetscBTLookup(flippedCells, nind)) rorntComp[face].rank = 1 - c * 2;
         else rorntComp[face].rank = c * 2 - 1;
@@ -857,6 +883,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         else rorntComp[face].rank = ornt[c] < 0 ? 1 : -1;
       }
       rorntComp[face].index = faceComp[GetPointIndex(face, fStart, fEnd, faces)];
+      if (view) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: Boundary face %" PetscInt_FMT " component %" PetscInt_FMT " orientation %" PetscInt_FMT "\n", rank, face, rorntComp[face].index, rorntComp[face].rank));
     }
     // Communicate boundary edge orientations
     PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, rorntComp, lorntComp, MPI_REPLACE));
@@ -864,9 +891,6 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
   }
   /* Get process adjacency */
   PetscCall(PetscMalloc2(Ncomp, &numNeighbors, Ncomp, &neighbors));
-  viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)dm));
-  if (viewSync) PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
   for (PetscInt comp = 0; comp < Ncomp; ++comp) {
     PetscInt n;
 
@@ -895,7 +919,10 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
             // Filter support
             if (GetPointIndex(supp[s], cStart, cEnd, cells) >= 0) ++Ns;
           }
-          PetscCheck(Ns == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary face %" PetscInt_FMT " should see one cell, not %" PetscInt_FMT, face, Ns);
+          // Skip if the face is in the interior
+          if (Ns > 1) continue;
+          // Skip if there is a lone vertex
+          if (!lorntComp[face].rank) continue;
           if (view)
             PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %" PetscInt_FMT ", Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%" PetscInt_FMT ", %" PetscInt_FMT ") with orientation %" PetscInt_FMT "\n", rank, comp, l, face,
                                              rpoints[l].index, rrank, rcomp, lorntComp[face].rank));
@@ -913,10 +940,14 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
       const PetscInt face = lpoints[neighbors[comp][n]];
       const PetscInt o    = rorntComp[face].rank * lorntComp[face].rank;
 
-      if (o < 0) match[off] = PETSC_TRUE;
-      else if (o > 0) match[off] = PETSC_FALSE;
-      else
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ") neighbor: %" PetscInt_FMT " comp: %" PetscInt_FMT, face, rorntComp[face].rank, lorntComp[face].rank, neighbors[comp][n], comp);
+      if (faceIsVertex) {
+        match[off] = rorntComp[face].rank != lorntComp[face].rank ? PETSC_TRUE : PETSC_FALSE;
+      } else {
+        if (o < 0) match[off] = PETSC_TRUE;
+        else if (o > 0) match[off] = PETSC_FALSE;
+        else
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ") neighbor: %" PetscInt_FMT " comp: %" PetscInt_FMT, face, rorntComp[face].rank, lorntComp[face].rank, neighbors[comp][n], comp);
+      }
       nrankComp[off].rank  = rpoints[neighbors[comp][n]].rank;
       nrankComp[off].index = lorntComp[lpoints[neighbors[comp][n]]].index;
     }
@@ -973,6 +1004,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
             const PetscInt    q = Noff[adj[off].rank] + adj[off].index;
             const PetscScalar o = val[off] ? 1.0 : 0.0;
 
+            // Do not set values for processes that have no face to orient
+            if (!Nc[adj[off].rank]) continue;
             PetscCall(MatSetValues(G, 1, &r, 1, &q, &o, INSERT_VALUES));
             PetscCall(MatSetValues(G, 1, &q, 1, &r, &o, INSERT_VALUES));
           }
@@ -1033,7 +1066,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         PetscCall(PetscMalloc1(Noff[size], &flips));
         for (PetscInt p = 0; p < Noff[size]; ++p) {
           flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
-          if (view && flips[p]) PetscCall(PetscPrintf(comm, "Flipping Proc+Comp %" PetscInt_FMT ":\n", p));
+          if (view && flips[p]) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Flipping Proc+Comp %" PetscInt_FMT ":\n", p));
         }
         for (PetscInt p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
       }
