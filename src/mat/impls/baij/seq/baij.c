@@ -1832,7 +1832,6 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A, PetscViewer viewer)
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  block size is %" PetscInt_FMT "\n", bs));
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     const char *matname;
     Mat         aij;

@@ -20,11 +20,9 @@ PC Object: 1 MPI process
           rows=512, cols=512
           package used to perform factorization: petsc
           total: nonzeros=29639, allocated nonzeros=29639
-              block size is 1
   linear system matrix, which is also used to construct the preconditioner:
   Mat Object: 1 MPI process
     type: seqsbaij
     rows=512, cols=512
     total: nonzeros=1856, allocated nonzeros=1856
     total number of mallocs used during MatSetValues calls=0
-        block size is 1

@@ -165,21 +165,18 @@ SNES Object: 4 MPI processes
                     rows=2, cols=2
                     package used to perform factorization: petsc
                     total: nonzeros=3, allocated nonzeros=3
-                        block size is 1
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqsbaij
               rows=2, cols=2
               total: nonzeros=3, allocated nonzeros=3
               total number of mallocs used during MatSetValues calls=0
-                  block size is 1
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_hpddm_coarse_) 2 MPI processes
           type: mpisbaij
           rows=2, cols=2
           total: nonzeros=3, allocated nonzeros=3
           total number of mallocs used during MatSetValues calls=0
-              block size is 1
     linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: mpiaij

@@ -79,19 +79,16 @@ Mat Object: 3 MPI processes
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     ISLocalToGlobalMapping Object: 3 MPI processes
       type not yet set
     [0] 0 0
@@ -179,19 +176,16 @@ Mat Object: 3 MPI processes
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=0, cols=0
       total: nonzeros=0, allocated nonzeros=0
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=0, cols=0
       total: nonzeros=0, allocated nonzeros=0
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     ISLocalToGlobalMapping Object: 3 MPI processes
       type not yet set
     [0] 0 0
@@ -231,19 +225,16 @@ Mat Object: 3 MPI processes
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=0, cols=0
       total: nonzeros=0, allocated nonzeros=0
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     ISLocalToGlobalMapping Object: 3 MPI processes
       type not yet set
     [0] 0 0
@@ -307,13 +298,11 @@ Mat Object: 2 MPI processes
       rows=24, cols=24
       total: nonzeros=48, allocated nonzeros=48
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     Mat Object: 1 MPI process
       type: seqsbaij
       rows=12, cols=12
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
     ISLocalToGlobalMapping Object: 2 MPI processes
       type not yet set
     [0] 0 0
