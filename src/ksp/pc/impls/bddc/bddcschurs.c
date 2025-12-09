@@ -1273,39 +1273,47 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       for (PetscInt sub = 0; sub < n_local_subs; sub++) {
         Mat                Asub, Ssub;
         const PetscScalar *vals;
+        PetscInt           size_all_sub;
 
+        F = NULL;
+        PetscCall(ISGetLocalSize(is_sub_schur[sub], &size_schur_sub));
+        PetscCall(ISGetLocalSize(is_sub_all[sub], &size_all_sub));
         PetscCall(MatCreateSubMatrix(A, is_sub_all[sub], is_sub_all[sub], MAT_INITIAL_MATRIX, &Asub));
-        PetscCall(MatGetFactor(Asub, sub_schurs->mat_solver_type, sub_schurs->mat_factor_type, &F));
-        PetscCheck(F, PetscObjectComm((PetscObject)Asub), PETSC_ERR_SUP, "MatGetFactor not supported by matrix instance of type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information", ((PetscObject)Asub)->type_name);
-        PetscCall(MatSetErrorIfFailure(Asub, PETSC_TRUE));
+        if (size_schur_sub == size_all_sub) {
+          /* we can't use MatFactor when size_schur == size_of_the_problem */
+          PetscCall(MatConvert(Asub, MATDENSE, MAT_INITIAL_MATRIX, &Ssub));
+        } else {
+          PetscCall(MatGetFactor(Asub, sub_schurs->mat_solver_type, sub_schurs->mat_factor_type, &F));
+          PetscCheck(F, PetscObjectComm((PetscObject)Asub), PETSC_ERR_SUP, "MatGetFactor not supported by matrix instance of type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information", ((PetscObject)Asub)->type_name);
+          PetscCall(MatSetErrorIfFailure(Asub, PETSC_TRUE));
 #if defined(PETSC_HAVE_MKL_PARDISO)
-        if (benign_trick) PetscCall(MatMkl_PardisoSetCntl(F, 10, 10));
+          if (benign_trick) PetscCall(MatMkl_PardisoSetCntl(F, 10, 10));
 #endif
-        /* subsets ordered last */
-        PetscCall(MatFactorSetSchurIS(F, is_sub_schur_all[sub]));
+          /* subsets ordered last */
+          PetscCall(MatFactorSetSchurIS(F, is_sub_schur_all[sub]));
 
-        /* factorization step */
-        switch (sub_schurs->mat_factor_type) {
-        case MAT_FACTOR_CHOLESKY:
-          PetscCall(MatCholeskyFactorSymbolic(F, Asub, NULL, NULL));
-          /* be sure that icntl 19 is not set by command line */
-          PetscCall(MatMumpsSetIcntl(F, 19, 2));
-          PetscCall(MatCholeskyFactorNumeric(F, Asub, NULL));
-          S_lower_triangular = PETSC_TRUE;
-          break;
-        case MAT_FACTOR_LU:
-          PetscCall(MatLUFactorSymbolic(F, Asub, NULL, NULL, NULL));
-          /* be sure that icntl 19 is not set by command line */
-          PetscCall(MatMumpsSetIcntl(F, 19, 3));
-          PetscCall(MatLUFactorNumeric(F, Asub, NULL));
-          break;
-        default:
-          SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unsupported factor type %s", MatFactorTypes[sub_schurs->mat_factor_type]);
+          /* factorization step */
+          switch (sub_schurs->mat_factor_type) {
+          case MAT_FACTOR_CHOLESKY:
+            PetscCall(MatCholeskyFactorSymbolic(F, Asub, NULL, NULL));
+            /* be sure that icntl 19 is not set by command line */
+            PetscCall(MatMumpsSetIcntl(F, 19, 2));
+            PetscCall(MatCholeskyFactorNumeric(F, Asub, NULL));
+            S_lower_triangular = PETSC_TRUE;
+            break;
+          case MAT_FACTOR_LU:
+            PetscCall(MatLUFactorSymbolic(F, Asub, NULL, NULL, NULL));
+            /* be sure that icntl 19 is not set by command line */
+            PetscCall(MatMumpsSetIcntl(F, 19, 3));
+            PetscCall(MatLUFactorNumeric(F, Asub, NULL));
+            break;
+          default:
+            SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unsupported factor type %s", MatFactorTypes[sub_schurs->mat_factor_type]);
+          }
+          PetscCall(MatFactorCreateSchurComplement(F, &Ssub, NULL));
         }
         PetscCall(MatDestroy(&Asub));
-        PetscCall(MatFactorCreateSchurComplement(F, &Ssub, NULL));
         PetscCall(MatDenseGetArrayRead(Ssub, &vals));
-        PetscCall(ISGetLocalSize(is_sub_schur[sub], &size_schur_sub));
         PetscCall(ISGetIndices(is_sub_schur[sub], &idxs));
         PetscCall(MatSetValues(S_all, size_schur_sub, idxs, size_schur_sub, idxs, vals, INSERT_VALUES));
         PetscCall(ISRestoreIndices(is_sub_schur[sub], &idxs));

@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   /* Make submesh. */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "filter", &filter));
   PetscCall(DMLabelSetValue(filter, 15, filterValue)); /* last cell */
-  PetscCall(DMPlexFilter(dm, filter, filterValue, PETSC_FALSE, PETSC_FALSE, NULL, &subdm));
+  PetscCall(DMPlexFilter(dm, filter, filterValue, PETSC_FALSE, PETSC_FALSE, PetscObjectComm((PetscObject)dm), NULL, &subdm));
   PetscCall(DMLabelDestroy(&filter));
   PetscCall(PetscObjectSetName((PetscObject)subdm, "Example_SubDM"));
   PetscCall(DMViewFromOptions(subdm, NULL, "-dm_view"));

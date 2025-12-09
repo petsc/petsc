@@ -8,18 +8,20 @@ PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 #include <petscdmlabeltypes.h>
 
 PETSC_EXTERN PetscFunctionList DMLabelList;
-PETSC_EXTERN PetscErrorCode    DMLabelCreate(MPI_Comm, const char[], DMLabel *);
-PETSC_EXTERN PetscErrorCode    DMLabelSetType(DMLabel, DMLabelType);
-PETSC_EXTERN PetscErrorCode    DMLabelGetType(DMLabel, DMLabelType *);
-PETSC_EXTERN PetscErrorCode    DMLabelRegister(const char[], PetscErrorCode (*)(DMLabel));
-PETSC_EXTERN PetscErrorCode    DMLabelRegisterAll(void);
-PETSC_EXTERN PetscErrorCode    DMLabelRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode    DMLabelSetUp(DMLabel);
-PETSC_EXTERN PetscErrorCode    DMLabelSetFromOptions(DMLabel);
-PETSC_EXTERN PetscErrorCode    DMLabelView(DMLabel, PetscViewer);
-PETSC_EXTERN PetscErrorCode    DMLabelDuplicate(DMLabel, DMLabel *);
-PETSC_EXTERN PetscErrorCode    DMLabelReset(DMLabel);
-PETSC_EXTERN PetscErrorCode    DMLabelDestroy(DMLabel *);
+
+PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char[], DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelSetType(DMLabel, DMLabelType);
+PETSC_EXTERN PetscErrorCode DMLabelGetType(DMLabel, DMLabelType *);
+PETSC_EXTERN PetscErrorCode DMLabelRegister(const char[], PetscErrorCode (*)(DMLabel));
+PETSC_EXTERN PetscErrorCode DMLabelRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMLabelRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode DMLabelSetUp(DMLabel);
+PETSC_EXTERN PetscErrorCode DMLabelSetFromOptions(DMLabel);
+PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMLabelViewFromOptions(DMLabel, PetscObject, const char[]);
+PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelReset(DMLabel);
+PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
 
 PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);

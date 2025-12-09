@@ -2570,7 +2570,7 @@ PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
   PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)sw), "singlecell", &label));
   PetscCall(DMAddLabel(dmc, label));
   PetscCall(DMLabelSetValue(label, cellID, 1));
-  PetscCall(DMPlexFilter(dmc, label, 1, PETSC_FALSE, PETSC_FALSE, NULL, &subdmc));
+  PetscCall(DMPlexFilter(dmc, label, 1, PETSC_FALSE, PETSC_FALSE, PetscObjectComm((PetscObject)dmc), NULL, &subdmc));
   PetscCall(PetscObjectGetName((PetscObject)dmc, &name));
   PetscCall(PetscObjectSetName((PetscObject)subdmc, name));
   PetscCall(DMSwarmSetCellDM(cellswarm, subdmc));

@@ -421,6 +421,48 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexCreateCohesiveSubmesh(self.dm, flag, NULL, cvalue, &subdm.dm))
         return subdm
 
+    def filter(self, label: DMLabel | None = None, value: int | None = None, ignoreHalo: bool = False,
+               sanitizeSubMesh: bool = False, comm: Comm | None = None) -> tuple[DMPlex, SF]:
+        """Extract a subset of mesh cells defined by a label as a separate mesh.
+
+        Collective.
+
+        Parameters
+        ----------
+        cellLabel
+            label marking cells to be contained in the new mesh
+        value
+            label value to use
+        ignoreHalo
+            Flag indicating if labeled points that are in the halo are ignored
+        sanitizeSubmesh
+            Flag indicating if a subpoint is forced to be owned by a rank that owns
+            a subcell that contains that point in its closure
+        comm
+           The communicator you want the mesh on
+
+        See Also
+        --------
+        DM, DMPlex, petsc.DMPlexFilter
+
+        """
+        cdef DM subdm = DMPlex()
+        cdef PetscDMLabel clbl = NULL
+        cdef MPI_Comm ccomm = MPI_COMM_NULL
+        cdef MPI_Comm dmcomm = MPI_COMM_NULL
+        cdef PetscInt cvalue = -1
+        cdef PetscBool cignoreHalo = ignoreHalo
+        cdef PetscBool csanitize = sanitizeSubMesh
+        cdef SF sf = SF()
+        if label is not None:
+            clbl = (<DMLabel?>label).dmlabel
+        if value is not None:
+            cvalue = asInt(value)
+        CHKERR(PetscObjectGetComm(<PetscObject>self.dm, &dmcomm))
+        ccomm = def_Comm(comm, dmcomm)
+        CHKERR(DMPlexFilter(self.dm, clbl, cvalue, cignoreHalo, csanitize, ccomm, &sf.sf, &subdm.dm))
+        return subdm, sf
+
     def getChart(self) -> tuple[int, int]:
         """Return the interval for all mesh points [``pStart``, ``pEnd``).
 

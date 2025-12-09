@@ -82,6 +82,8 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexCreateGmsh(MPI_Comm, PetscViewer, PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateCoordinateSpace(PetscDM, PetscInt, PetscBool, PetscBool)
 
+    PetscErrorCode DMPlexFilter(PetscDM, PetscDMLabel, PetscInt, PetscBool, PetscBool, MPI_Comm, PetscSF *, PetscDM *)
+
     PetscErrorCode DMPlexSetAdjacencyUseAnchors(PetscDM, PetscBool)
     PetscErrorCode DMPlexGetAdjacencyUseAnchors(PetscDM, PetscBool*)
     PetscErrorCode DMPlexGetAdjacency(PetscDM, PetscInt, PetscInt*, PetscInt*[])

@@ -4317,7 +4317,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
   const PetscInt *idx_V, *idx_C;
   Mat             F, Brhs = NULL;
   Vec             dummy_vec;
-  PetscBool       isLU, isCHOL, need_benign_correction, sparserhs;
+  PetscBool       isPreonly, isLU, isCHOL, need_benign_correction, sparserhs;
   PetscInt       *idx_V_B;
   PetscInt        lda_rhs, n_vertices, n_constraints, *p0_lidx_I;
   PetscInt        n_eff_vertices, n_eff_constraints;
@@ -4482,11 +4482,13 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
   /* determine if can use MatSolve routines instead of calling KSPSolve on ksp_R */
   PetscCall(KSPGetPC(pcbddc->ksp_R, &pc_R));
   PetscCall(PCSetUp(pc_R));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pcbddc->ksp_R, KSPPREONLY, &isPreonly));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_R, PCLU, &isLU));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_R, PCCHOLESKY, &isCHOL));
   lda_rhs                = n_R;
   need_benign_correction = PETSC_FALSE;
-  if (isLU || isCHOL) {
+  F                      = NULL;
+  if (isPreonly && (isLU || isCHOL)) {
     PetscCall(PCFactorGetMatrix(pc_R, &F));
   } else if (sub_schurs && sub_schurs->reuse_solver) {
     PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
@@ -4498,7 +4500,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
     if (type == MAT_FACTOR_LU) isLU = PETSC_TRUE;
     PetscCall(MatGetSize(F, &lda_rhs, NULL));
     need_benign_correction = (PetscBool)(!!reuse_solver->benign_n);
-  } else F = NULL;
+  }
 
   /* determine if we can use a sparse right-hand side */
   sparserhs = PETSC_FALSE;
