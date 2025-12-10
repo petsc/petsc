@@ -96,7 +96,6 @@ PC Object: (fc_) 4 MPI processes
                     rows=512, cols=512
                     package used to perform factorization: petsc
                     total: nonzeros=12308, allocated nonzeros=12308
-                        block size is 1
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
               type: seqaij
@@ -153,7 +152,6 @@ PC Object: (fc_) 4 MPI processes
                         rows=256, cols=256
                         package used to perform factorization: petsc
                         total: nonzeros=1162, allocated nonzeros=1162
-                            block size is 1
                 linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
                   type: seqaij
@@ -305,7 +303,6 @@ PC Object: (fc_) 4 MPI processes
                     rows=512, cols=512
                     package used to perform factorization: petsc
                     total: nonzeros=12308, allocated nonzeros=12308
-                        block size is 1
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
               type: seqaij
@@ -362,7 +359,6 @@ PC Object: (fc_) 4 MPI processes
                         rows=256, cols=256
                         package used to perform factorization: petsc
                         total: nonzeros=1162, allocated nonzeros=1162
-                            block size is 1
                 linear system matrix, which is also used to construct the preconditioner:
                 Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
                   type: seqaij

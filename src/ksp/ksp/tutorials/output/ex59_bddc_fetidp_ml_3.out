@@ -74,14 +74,12 @@ PC Object: (physical_) 4 MPI processes
               rows=72, cols=72
               package used to perform factorization: petsc
               total: nonzeros=1044, allocated nonzeros=1044
-                  block size is 1
       linear system matrix, which is also used to construct the preconditioner:
       Mat Object: (physical_pc_bddc_dirichlet_) 1 MPI process
         type: seqsbaij
         rows=72, cols=72
         total: nonzeros=300, allocated nonzeros=300
         total number of mallocs used during MatSetValues calls=0
-            block size is 1
   --- Correction solver (rank 0)
     KSP Object: (physical_pc_bddc_neumann_) 1 MPI process
       type: preonly

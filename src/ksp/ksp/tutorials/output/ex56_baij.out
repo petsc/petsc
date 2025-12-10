@@ -15,4 +15,3 @@ PC Object: 8 MPI processes
     total: nonzeros=876024, allocated nonzeros=876024
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
-        block size is 3

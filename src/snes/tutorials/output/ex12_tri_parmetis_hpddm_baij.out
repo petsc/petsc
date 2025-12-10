@@ -69,7 +69,6 @@ SNES Object: 4 MPI processes
                 Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
                   type: seqsbaij
                   package used to perform factorization: petsc
-                      block size is 1
           linear system matrix, which is also used to construct the preconditioner:
           Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
             type: seqaij
@@ -105,17 +104,14 @@ SNES Object: 4 MPI processes
                   Mat Object: (pc_hpddm_coarse_redundant_) 1 MPI process
                     type: seqbaij
                     package used to perform factorization: petsc
-                        block size is 20
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: 1 MPI process
               type: seqbaij
               total number of mallocs used during MatSetValues calls=0
-                  block size is 20
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_hpddm_coarse_) 2 MPI processes
           type: mpibaij
           total number of mallocs used during MatSetValues calls=0
-              block size is 20
     linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: mpiaij

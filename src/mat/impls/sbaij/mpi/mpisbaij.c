@@ -909,12 +909,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer 
       PetscCall(PetscViewerASCIIPrintf(viewer, "Information on VecScatter used in matrix-vector product: \n"));
       PetscCall(VecScatterView(baij->Mvctx, viewer));
       PetscFunctionReturn(PETSC_SUCCESS);
-    } else if (format == PETSC_VIEWER_ASCII_INFO) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  block size is %" PetscInt_FMT "\n", bs));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
+    } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_FACTOR_INFO) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (isdraw) {

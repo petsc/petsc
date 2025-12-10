@@ -148,14 +148,12 @@ SNES Object: 6 MPI processes
                     rows=48, cols=48, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=804, allocated nonzeros=804
-                        block size is 2
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_1_sub_) 1 MPI process
               type: seqsbaij
               rows=48, cols=48, bs=2
               total: nonzeros=608, allocated nonzeros=608
               total number of mallocs used during MatSetValues calls=0
-                  block size is 2
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij
@@ -197,14 +195,12 @@ SNES Object: 6 MPI processes
                     rows=192, cols=192, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=3012, allocated nonzeros=3012
-                        block size is 2
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_2_sub_) 1 MPI process
               type: seqsbaij
               rows=192, cols=192, bs=2
               total: nonzeros=3008, allocated nonzeros=3008
               total number of mallocs used during MatSetValues calls=0
-                  block size is 2
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij
@@ -246,14 +242,12 @@ SNES Object: 6 MPI processes
                     rows=384, cols=384, bs=2
                     package used to perform factorization: petsc
                     total: nonzeros=7428, allocated nonzeros=7428
-                        block size is 2
             linear system matrix, which is also used to construct the preconditioner:
             Mat Object: (mg_levels_3_sub_) 1 MPI process
               type: seqsbaij
               rows=384, cols=384, bs=2
               total: nonzeros=7424, allocated nonzeros=7424
               total number of mallocs used during MatSetValues calls=0
-                  block size is 2
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 6 MPI processes
           type: mpisbaij

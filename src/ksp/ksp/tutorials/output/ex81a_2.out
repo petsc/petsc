@@ -44,7 +44,6 @@ PC Object: 3 MPI processes
       rows=6, cols=6, bs=2
       total: nonzeros=12, allocated nonzeros=12
       total number of mallocs used during MatSetValues calls=0
-          block size is 2
   Split number 2 Fields  2
   KSP Object: (fieldsplit_2_) 3 MPI processes
     type: preonly
@@ -61,7 +60,6 @@ PC Object: 3 MPI processes
       rows=12, cols=12, bs=2
       total: nonzeros=24, allocated nonzeros=24
       total number of mallocs used during MatSetValues calls=0
-          block size is 2
   Split number 3 Fields  3
   KSP Object: (fieldsplit_3_) 3 MPI processes
     type: preonly

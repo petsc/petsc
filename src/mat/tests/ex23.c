@@ -1209,7 +1209,7 @@ PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping mapping, IS is, IS *newis)
       output_file: output/ex23_13.out
       nsize: 3
       args: -m 12 -n 17 -test_trans -nr 2 -nc 3 -diffmap -permmap
-      filter: grep -v "type:" | grep -v "block size is 1" | grep -v "not using I-node routines"
+      filter: grep -v "type:" | grep -v "not using I-node routines"
       test:
         suffix: baij
         args: -mat_is_localmat_type baij
