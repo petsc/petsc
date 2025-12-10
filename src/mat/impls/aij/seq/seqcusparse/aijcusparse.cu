@@ -740,7 +740,11 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_Cholesky(Mat A, Vec b, Vec x)
 
   // Solve diag(D) Z = Y. Actually just do Y = Y*D since D is already inverted in MatCholeskyFactorNumeric_SeqAIJ().
   // It is basically a vector element-wise multiplication, but cublas does not have it!
+  #if CCCL_VERSION >= 3001000
+  PetscCallThrust(thrust::transform(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), cuda::std::multiplies<PetscScalar>()));
+  #else
   PetscCallThrust(thrust::transform(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), thrust::multiplies<PetscScalar>()));
+  #endif
 
   // Solve U X = Y
   if (fs->cpermIndices) { // if need to permute, we need to use the intermediate buffer X
@@ -4804,7 +4808,11 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       auto Czb   = thrust::make_zip_iterator(thrust::make_tuple(Ccoo->begin(), Ccsr->column_indices->begin(), Ccsr->values->begin(), wPerm->begin()));
       auto p1    = Ccusp->coords->begin();
       auto p2    = Ccusp->coords->begin();
+#if CCCL_VERSION >= 3001000
+      cuda::std::advance(p2, Annz);
+#else
       thrust::advance(p2, Annz);
+#endif
       PetscCallThrust(thrust::merge(thrust::device, Azb, Aze, Bzb, Bze, Czb, IJCompare4()));
 #if PETSC_PKG_CUDA_VERSION_LT(10, 0, 0)
       thrust::transform(Bcib, Bcie, Bcib, Shift(-A->cmap->n));
@@ -4859,7 +4867,11 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
         auto rT = CcsrT->row_offsets->begin();
         if (AT) {
           rT = thrust::copy(AcsrT->row_offsets->begin(), AcsrT->row_offsets->end(), rT);
+#if CCCL_VERSION >= 3001000
+          cuda::std::advance(rT, -1);
+#else
           thrust::advance(rT, -1);
+#endif
         }
         if (BT) {
           auto titb = thrust::make_transform_iterator(BcsrT->row_offsets->begin(), Shift(a->nz));
@@ -4946,7 +4958,11 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       PetscCheck(Ccsr->num_entries == Acsr->num_entries + Bcsr->num_entries, PETSC_COMM_SELF, PETSC_ERR_COR, "C nnz %" PetscInt_FMT " != %" PetscInt_FMT " + %" PetscInt_FMT, Ccsr->num_entries, Acsr->num_entries, Bcsr->num_entries);
       PetscCheck(Ccusp->coords->size() == Ccsr->values->size(), PETSC_COMM_SELF, PETSC_ERR_COR, "permSize %" PetscInt_FMT " != %" PetscInt_FMT, (PetscInt)Ccusp->coords->size(), (PetscInt)Ccsr->values->size());
       auto pmid = Ccusp->coords->begin();
+#if CCCL_VERSION >= 3001000
+      cuda::std::advance(pmid, Acsr->num_entries);
+#else
       thrust::advance(pmid, Acsr->num_entries);
+#endif
       PetscCall(PetscLogGpuTimeBegin());
       auto zibait = thrust::make_zip_iterator(thrust::make_tuple(Acsr->values->begin(), thrust::make_permutation_iterator(Ccsr->values->begin(), Ccusp->coords->begin())));
       auto zieait = thrust::make_zip_iterator(thrust::make_tuple(Acsr->values->end(), thrust::make_permutation_iterator(Ccsr->values->begin(), pmid)));

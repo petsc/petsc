@@ -2,6 +2,7 @@
 #include <petsc/private/petschpddm.h>
 #include <petscdevice_cuda.h>
 #include <thrust/device_ptr.h>
+#include <thrust/copy.h>
 
 PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *data, const PetscScalar *b, PetscScalar *x, PetscInt n, MPI_Comm comm)
 {
