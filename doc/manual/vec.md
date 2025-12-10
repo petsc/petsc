@@ -491,27 +491,27 @@ access them using the natural grid indexing. This is done with the
 routines
 
 ```
-DMDAVecGetArray(DM da,Vec l,void *array);
+DMDAVecGetArray(DM dm,Vec l,void *array);
 ... use the array indexing it with 1, 2, or 3 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArray(DM da,Vec l,void *array);
-DMDAVecGetArrayRead(DM da,Vec l,void *array);
+DMDAVecRestoreArray(DM dm,Vec l,void *array);
+DMDAVecGetArrayRead(DM dm,Vec l,void *array);
 ... use the array indexing it with 1, 2, or 3 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
+DMDAVecRestoreArrayRead(DM dm,Vec l,void *array);
 ```
 
 where `array` is a multidimensional C array with the same dimension as `da`, and
 
 ```
-DMDAVecGetArrayDOF(DM da,Vec l,void *array);
+DMDAVecGetArrayDOF(DM dm,Vec l,void *array);
 ... use the array indexing it with 2, 3, or 4 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
-DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);
+DMDAVecRestoreArrayDOF(DM dm,Vec l,void *array);
+DMDAVecGetArrayDOFRead(DM dm,Vec l,void *array);
 ... use the array indexing it with 2, 3, or 4 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
+DMDAVecRestoreArrayDOFRead(DM dm,Vec l,void *array);
 ```
 
 where `array` is a multidimensional C array with one more dimension than
@@ -524,13 +524,13 @@ for a scalar problem in two dimensions, one could use
 ```
 PetscScalar **f,**u;
 ...
-DMDAVecGetArrayRead(DM da,Vec local,&u);
-DMDAVecGetArray(DM da,Vec global,&f);
+DMDAVecGetArrayRead(DM dm,Vec local,&u);
+DMDAVecGetArray(DM dm,Vec global,&f);
 ...
   f[i][j] = u[i][j] - ...
 ...
-DMDAVecRestoreArrayRead(DM da,Vec local,&u);
-DMDAVecRestoreArray(DM da,Vec global,&f);
+DMDAVecRestoreArrayRead(DM dm,Vec local,&u);
+DMDAVecRestoreArray(DM dm,Vec global,&f);
 ```
 
 :::{admonition} Listing: <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex3.c.html">SNES Tutorial src/snes/tutorials/ex3.c</a>
@@ -555,19 +555,19 @@ and write the residual evaluation using
 
 ```
 Node **f,**u;
-DMDAVecGetArray(DM da,Vec local,&u);
-DMDAVecGetArray(DM da,Vec global,&f);
+DMDAVecGetArray(DM dm,Vec local,&u);
+DMDAVecGetArray(DM dm,Vec global,&f);
  ...
     f[i][j].omega = ...
  ...
-DMDAVecRestoreArray(DM da,Vec local,&u);
-DMDAVecRestoreArray(DM da,Vec global,&f);
+DMDAVecRestoreArray(DM dm,Vec local,&u);
+DMDAVecRestoreArray(DM dm,Vec global,&f);
 ```
 
 The `DMDAVecGetArray` routines are also provided for GPU access with CUDA, HIP, and Kokkos. For example,
 
 ```
-DMDAVecGetKokkosOffsetView(DM da,Vec vec,Kokkos::View<const PetscScalar*XX*,MemorySpace> *ov)
+DMDAVecGetKokkosOffsetView(DM dm,Vec vec,Kokkos::View<const PetscScalar*XX*,MemorySpace> *ov)
 ```
 
 where `*XX*` can contain any number of `*`. This allows one to write very natural Kokkos multi-dimensional parallel for kernels
@@ -586,8 +586,8 @@ The global indices of the lower left corner of the local portion of vectors obta
 as well as the local array size can be obtained with the commands
 
 ```
-DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
-DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
+DMDAGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
+DMDAGetGhostCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
 ```
 
 These values can then be used as loop bounds for local function evaluations as demonstrated in the function examples above.
@@ -767,8 +767,8 @@ vector objects that use the `DM` layout information with the
 routines
 
 ```
-DMCreateGlobalVector(DM da,Vec *g);
-DMCreateLocalVector(DM da,Vec *l);
+DMCreateGlobalVector(DM dm,Vec *g);
+DMCreateLocalVector(DM dm,Vec *l);
 ```
 
 These vectors will generally serve as the building blocks for local and
@@ -791,8 +791,8 @@ done by scattering a global vector into its local parts by using the
 two-stage commands
 
 ```
-DMGlobalToLocalBegin(DM da,Vec g,InsertMode iora,Vec l);
-DMGlobalToLocalEnd(DM da,Vec g,InsertMode iora,Vec l);
+DMGlobalToLocalBegin(DM dm,Vec g,InsertMode iora,Vec l);
+DMGlobalToLocalEnd(DM dm,Vec g,InsertMode iora,Vec l);
 ```
 
 which allows the overlap of communication and computation. Since the
@@ -806,15 +806,15 @@ One can scatter the local vectors into the distributed global vector with the
 command
 
 ```
-DMLocalToGlobal(DM da,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g);
 ```
 
 or the commands
 
 ```
-DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g);
 /* (Computation to overlap with communication) */
-DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g);
 ```
 
 In general this is used with an `InsertMode` of `ADD_VALUES`,
@@ -827,8 +827,8 @@ vector with correct ghost point values. This scatter may be done with
 the commands
 
 ```
-DMLocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
-DMLocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalBegin(DM dm,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalEnd(DM dm,Vec l1,InsertMode iora,Vec l2);
 ```
 
 Since both local vectors, `l1` and `l2`, must be compatible with `da`, they should be generated by
@@ -843,9 +843,9 @@ return them when no longer needed. This is done with the
 routines
 
 ```
-DMGetLocalVector(DM da,Vec *l);
+DMGetLocalVector(DM dm,Vec *l);
 ... use the local vector l ...
-DMRestoreLocalVector(DM da,Vec *l);
+DMRestoreLocalVector(DM dm,Vec *l);
 ```
 
 (sec_scatter)=
@@ -1139,7 +1139,7 @@ global node number of each local node, including the ghost nodes, can be
 obtained by calling
 
 ```
-DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
+DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *map);
 ```
 
 followed by
@@ -1366,7 +1366,7 @@ PETSc uses to parallelize. This ordering context can be obtained with
 the command
 
 ```
-DMDAGetAO(DM da,AO *ao);
+DMDAGetAO(DM dm,AO *ao);
 ```
 
 In Figure {any}`fig_daao`, we indicate the orderings for a

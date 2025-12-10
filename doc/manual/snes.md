@@ -1324,10 +1324,10 @@ is scalable. An example of this for 2D distributed arrays is given below
 that uses the utility routine `DMCreateColoring()`.
 
 ```
-DMCreateColoring(da,IS_COLORING_GHOSTED, &iscoloring);
-MatFDColoringCreate(J,iscoloring, &fdcoloring);
+DMCreateColoring(dm, IS_COLORING_GHOSTED, &iscoloring);
+MatFDColoringCreate(J, iscoloring, &fdcoloring);
 MatFDColoringSetFromOptions(fdcoloring);
-ISColoringDestroy( &iscoloring);
+ISColoringDestroy(&iscoloring);
 ```
 
 Note that the routine `MatFDColoringCreate()` currently is only
