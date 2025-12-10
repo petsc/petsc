@@ -14,6 +14,7 @@
 
 - Make `SYCL` a `devicePackage`, i.e., builds `--with-sycl` now have `PETSC_HAVE_DEVICE` defined
 - Add the option `--with-devicelanguage` to compile `PetscDevice` code using either a C or C++ compiler
+- Add `Caliper`, an instrumentation and performance profiling library that can be used to profile `Hypre`.
 
 ```{rubric} Sys:
 ```

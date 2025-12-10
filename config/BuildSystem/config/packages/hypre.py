@@ -38,11 +38,12 @@ class Configure(config.package.GNUPackage):
     self.sycl          = framework.require('config.packages.SYCL',self)
     self.umpire        = framework.require('config.packages.Umpire',self)
     self.openmp        = framework.require('config.packages.OpenMP',self)
+    self.caliper       = framework.require('config.packages.Caliper',self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.scalar        = framework.require('PETSc.options.scalarTypes',self)
     self.languages     = framework.require('PETSc.options.languages',self)
     self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps         = [self.cuda,self.hip,self.openmp,self.umpire]
+    self.odeps         = [self.cuda,self.hip,self.openmp,self.umpire,self.caliper]
     if self.setCompilers.isCrayKNL(None,self.log):
       self.installwithbatch = 0
 
@@ -164,6 +165,11 @@ class Configure(config.package.GNUPackage):
         args.append('--with-umpire-include="'+self.umpire.include[0]+'"')
         args.append('--with-umpire-lib="'+self.libraries.toString(self.umpire.dlib)+'"')
         args.append('--with-umpire-lib-dirs=')
+
+    if self.caliper.found: # For Hypre profiling
+      args.append('--with-caliper')
+      args.append('--with-caliper-include="'+self.caliper.include[0]+'"')
+      args.append('--with-caliper-lib="'+self.libraries.toString(self.caliper.dlib)+'"')
 
     if self.usesopenmp == 'no':
       if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):

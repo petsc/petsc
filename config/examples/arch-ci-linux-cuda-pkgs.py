@@ -45,6 +45,7 @@ if __name__ == '__main__':
     '--download-hwloc',
     #'--download-umpire', #'hypre' reserves 4G VRAM for each MPI process
     '--download-hypre',
+    '--download-caliper',
     '--download-raja',
     '--download-amgx',
     '--download-zfp',
