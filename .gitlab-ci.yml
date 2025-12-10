@@ -644,7 +644,7 @@ linux-cuda-latest:
     - .stage-3
     - .linux_test
   tags:
-    - cuda12
+    - cuda13
   variables:
     TEST_ARCH: arch-ci-linux-cuda-latest
     TEST_OPTS: -j3 query=requires queryval=cuda
