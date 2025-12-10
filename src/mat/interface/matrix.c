@@ -8092,7 +8092,7 @@ PetscErrorCode MatSetBlockSizes(Mat mat, PetscInt rbs, PetscInt cbs)
   Input Parameters:
 + mat     - the matrix
 . fromRow - matrix from which to copy row block size
-- fromCol - matrix from which to copy column block size (can be same as fromRow)
+- fromCol - matrix from which to copy column block size (can be same as `fromRow`)
 
   Level: developer
 
@@ -8104,6 +8104,7 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat, Mat fromRow, Mat fromCol)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(fromRow, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(fromCol, MAT_CLASSID, 3);
+  PetscTryTypeMethod(mat, setblocksizes, fromRow->rmap->bs, fromCol->cmap->bs);
   PetscCall(PetscLayoutSetBlockSize(mat->rmap, fromRow->rmap->bs));
   PetscCall(PetscLayoutSetBlockSize(mat->cmap, fromCol->cmap->bs));
   PetscFunctionReturn(PETSC_SUCCESS);
