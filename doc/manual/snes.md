@@ -1090,7 +1090,7 @@ hence $\sqrt{1 + ||u||}$ need be computed only once. This
 information may be set with the options
 
 ```
-MatMFFDWPSetComputeNormU(Mat mat, PetscBool );
+MatMFFDWPSetComputeNormU(Mat, PetscBool);
 ```
 
 or `-mat_mffd_compute_normu <true or false>`. This information is used
@@ -1347,7 +1347,7 @@ all, of the upper bounds may be infinity (indicated by `SNES_VI_INF`).
 The commands
 
 ```
-SNESVISetVariableBounds(SNES, Vec L, Vec H);
+SNESVISetVariableBounds(SNES snes, Vec L, Vec H);
 SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, Vec))
 ```
 
