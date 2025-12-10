@@ -77,7 +77,7 @@ To create a `SNES` solver, one must first call `SNESCreate()` as
 follows:
 
 ```
-SNESCreate(MPI_Comm comm,SNES *snes);
+SNESCreate(MPI_Comm comm, SNES *snes);
 ```
 
 The user must then set routines for evaluating the residual function {math:numref}`fx0`
@@ -87,7 +87,7 @@ discussed in the following sections.
 To choose a nonlinear solution method, the user can either call
 
 ```
-SNESSetType(SNES snes,SNESType method);
+SNESSetType(SNES snes, SNESType method);
 ```
 
 or use the option `-snes_type <method>`, where details regarding the
@@ -111,7 +111,7 @@ After having set these routines and options, the user solves the problem
 by calling
 
 ```
-SNESSolve(SNES snes,Vec b,Vec x);
+SNESSolve(SNES snes, Vec b, Vec x);
 ```
 
 where `x` should be initialized to the initial guess before calling and contains the solution on return.
@@ -132,7 +132,7 @@ When solving a system of nonlinear equations, the user must provide a
 a residual function {math:numref}`fx0`, which is set using
 
 ```
-SNESSetFunction(SNES snes,Vec f,PetscErrorCode (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
+SNESSetFunction(SNES snes, Vec f, PetscErrorCode (*FormFunction)(SNES snes, Vec x, Vec f, void *ctx), void *ctx);
 ```
 
 The argument `f` is an optional vector for storing the solution; pass `NULL` to have the `SNES` allocate it for you.
@@ -158,7 +158,7 @@ Jacobian matrix, `A`, at the current iterate, `x`, as is typically
 done with
 
 ```
-SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,Vec x,Mat A,Mat B,void *ctx),void *ctx);
+SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, PetscErrorCode (*FormJacobian)(SNES snes, Vec x, Mat A, Mat B, void *ctx), void *ctx);
 ```
 
 The arguments of the routine `FormJacobian()` are the current iterate,
@@ -375,7 +375,7 @@ Every `SNES` has a line search context of type `SNESLineSearch` that
 may be retrieved using
 
 ```
-SNESGetLineSearch(SNES snes,SNESLineSearch *ls);.
+SNESGetLineSearch(SNES snes, SNESLineSearch *ls);.
 ```
 
 There are several default options for the line searches. The order of
@@ -390,7 +390,7 @@ necessary to monitor the progress of the nonlinear iteration. In this
 case, `-snes_linesearch_norms` or
 
 ```
-SNESLineSearchSetComputeNorms(SNESLineSearch ls,PetscBool norms);
+SNESLineSearchSetComputeNorms(SNESLineSearch ls, PetscBool norms);
 ```
 
 may be used to turn off function, step, and solution norm computation at
@@ -451,7 +451,7 @@ Custom line search types may either be defined using
 in the model of the preexisting ones and register it using
 
 ```
-SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch));.
+SNESLineSearchRegister(const char sname[], PetscErrorCode (*function)(SNESLineSearch));.
 ```
 
 ### Trust Region Methods
@@ -717,7 +717,7 @@ There are four `SNESFAS` cycle types, `SNES_FAS_MULTIPLICATIVE`,
 type may be set with
 
 ```
-SNESFASSetType(SNES snes,SNESFASType fastype);.
+SNESFASSetType(SNES snes, SNESFASType fastype);.
 ```
 
 and the cycle type, 1 for V, 2 for W, may be set with
@@ -739,7 +739,7 @@ SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth);
 and the level cycles with
 
 ```
-SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
+SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes);.
 ```
 
 Also akin to `PCMG`, the restriction and prolongation at a level may
@@ -770,7 +770,7 @@ nonlinear subproblems, solves them independently in parallel, and
 combines those solutions into a new approximate solution.
 
 ```
-SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]);
+SNESNASMSetSubdomains(SNES snes, PetscInt n, SNES subsnes[], VecScatter iscatter[], VecScatter oscatter[], VecScatter gscatter[]);
 ```
 
 allows for the user to create these local subdomains. Problems set up
@@ -781,7 +781,7 @@ overlapping updates added. `PC_ASM_RESTRICT` updates in a
 nonoverlapping fashion. This may be set with
 
 ```
-SNESNASMSetType(SNES snes,PCASMType type);.
+SNESNASMSetType(SNES snes, PCASMType type);.
 ```
 
 `SNESASPIN` is a helper `SNES` type that sets up a nonlinearly
@@ -816,7 +816,7 @@ initial guess. The following routine sets these parameters, which are
 used in many of the default `SNES` convergence tests:
 
 ```
-SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol, PetscInt its,PetscInt fcts);
+SNESSetTolerances(SNES snes, PetscReal atol, PetscReal rtol, PetscReal stol, PetscInt its, PetscInt fcts);
 ```
 
 This routine also sets the maximum numbers of allowable nonlinear
@@ -836,7 +836,7 @@ Users can set their own customized convergence tests in `SNES` by
 using the command
 
 ```
-SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,PetscInt it,PetscReal xnorm, PetscReal gnorm,PetscReal f,SNESConvergedReason reason, void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
+SNESSetConvergenceTest(SNES snes, PetscErrorCode (*test)(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason reason, void *cctx), void *cctx,PetscErrorCode (*destroy)(void *cctx));
 ```
 
 The final argument of the convergence test routine, `cctx`, denotes an
@@ -888,8 +888,8 @@ cross-process testing easier.
 The routines
 
 ```
-SNESGetSolution(SNES snes,Vec *x);
-SNESGetFunction(SNES snes,Vec *r,void *ctx,int(**func)(SNES,Vec,Vec,void*));
+SNESGetSolution(SNES snes, Vec *x);
+SNESGetFunction(SNES snes, Vec *r, void *ctx, int(**func)(SNES, Vec, Vec, void*));
 ```
 
 return the solution vector and function vector from a `SNES` context.
@@ -1012,7 +1012,7 @@ The user can create a matrix-free context for use within `SNES` with
 the routine
 
 ```
-MatCreateSNESMF(SNES snes,Mat *mat);
+MatCreateSNESMF(SNES snes, Mat *mat);
 ```
 
 This routine creates the data structures needed for the matrix-vector
@@ -1036,7 +1036,7 @@ The user can set one parameter to control the Jacobian-vector product
 approximation with the command
 
 ```
-MatMFFDSetFunctionError(Mat mat,PetscReal rerror);
+MatMFFDSetFunctionError(Mat mat, PetscReal rerror);
 ```
 
 The parameter `rerror` should be set to the square root of the
@@ -1053,7 +1053,7 @@ default routines accessible via `-mat_mffd_type <ds or wp>`. For
 the default approach there is one “tuning” parameter, set with
 
 ```
-MatMFFDDSSetUmin(Mat mat,PetscReal umin);
+MatMFFDDSSetUmin(Mat mat, PetscReal umin);
 ```
 
 This parameter, `umin` (or $u_{min}$), is a bit involved; its
@@ -1090,7 +1090,7 @@ hence $\sqrt{1 + ||u||}$ need be computed only once. This
 information may be set with the options
 
 ```
-MatMFFDWPSetComputeNormU(Mat mat,PetscBool );
+MatMFFDWPSetComputeNormU(Mat mat, PetscBool );
 ```
 
 or `-mat_mffd_compute_normu <true or false>`. This information is used
@@ -1102,9 +1102,9 @@ It is also possible to monitor the differencing parameters h that are
 computed via the routines
 
 ```
-MatMFFDSetHHistory(Mat,PetscScalar *,int);
-MatMFFDResetHHistory(Mat,PetscScalar *,int);
-MatMFFDGetH(Mat,PetscScalar *);
+MatMFFDSetHHistory(Mat, PetscScalar *,int);
+MatMFFDResetHHistory(Mat, PetscScalar *,int);
+MatMFFDGetH(Mat, PetscScalar *);
 ```
 
 We include an explicit example of using matrix-free methods in {any}`ex3.c <snes_ex3>`.
@@ -1192,7 +1192,7 @@ FormJacobian(snes,x, &J, &J, &user);
   rows. These columns in the Jacobian can all be computed simultaneously.
 */
 MatColoringCreate(J, &coloring);
-MatColoringSetType(coloring,MATCOLORINGSL);
+MatColoringSetType(coloring, MATCOLORINGSL);
 MatColoringSetFromOptions(coloring);
 MatColoringApply(coloring, &iscoloring);
 MatColoringDestroy(&coloring);
@@ -1209,7 +1209,7 @@ MatFDColoringSetFromOptions(fdcoloring);
   Tell SNES to use the routine SNESComputeJacobianDefaultColor()
   to compute Jacobians.
 */
-SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring);
+SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, fdcoloring);
 ```
 
 Of course, we are cheating a bit. If we do not have an analytic formula
@@ -1274,7 +1274,7 @@ As for the matrix-free computation of Jacobians ({any}`sec_nlmatrixfree`), two p
 finite difference Jacobian approximation. These are set with the command
 
 ```
-MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
+MatFDColoringSetParameters(MatFDColoring fdcoloring, PetscReal rerror, PetscReal umin);
 ```
 
 The parameter `rerror` is the square root of the relative error in the
@@ -1347,8 +1347,8 @@ all, of the upper bounds may be infinity (indicated by `SNES_VI_INF`).
 The commands
 
 ```
-SNESVISetVariableBounds(SNES,Vec L,Vec H);
-SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
+SNESVISetVariableBounds(SNES, Vec L, Vec H);
+SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, Vec))
 ```
 
 are used to indicate that one is solving a variational inequality. Problems with box constraints can be solved with
@@ -1372,7 +1372,7 @@ instance to define the step for an outer `SNES` instance. The inner
 instance may be extracted using
 
 ```
-SNESGetNPC(SNES snes,SNES *npc);
+SNESGetNPC(SNES snes, SNES *npc);
 ```
 
 and passed run-time options using the `-npc_` prefix. Nonlinear
@@ -1405,19 +1405,19 @@ argument to `-snes_composite_sneses`. There are additive
 (`SNES_COMPOSITE_MULTIPLICATIVE`) variants which may be set with
 
 ```
-SNESCompositeSetType(SNES,SNESCompositeType);
+SNESCompositeSetType(SNES, SNESCompositeType);
 ```
 
 New subsolvers may be added to the composite solver with
 
 ```
-SNESCompositeAddSNES(SNES,SNESType);
+SNESCompositeAddSNES(SNES, SNESType);
 ```
 
 and accessed with
 
 ```
-SNESCompositeGetSNES(SNES,PetscInt,SNES *);
+SNESCompositeGetSNES(SNES, PetscInt, SNES *);
 ```
 
 ```{eval-rst}

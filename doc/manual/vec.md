@@ -47,7 +47,7 @@ The most basic way to create a vector with a local size of `m` and a global size
 use
 
 ```
-VecCreate(MPI_Comm comm,Vec *v);
+VecCreate(MPI_Comm comm, Vec *v);
 VecSetSizes(Vec v, PetscInt m, PetscInt M);
 VecSetFromOptions(Vec v);
 ```
@@ -69,13 +69,13 @@ communicator.
 Instead of, or before calling `VecSetFromOptions()`, one can call
 
 ```
-VecSetType(Vec v,VecType <VECCUDA, VECHIP, VECKOKKOS etc>)
+VecSetType(Vec v, VecType <VECCUDA, VECHIP, VECKOKKOS etc>)
 ```
 
 One can create vectors whose entries are stored on GPUs using the convenience routine,
 
 ```
-VecCreateMPICUDA(MPI_Comm comm,PetscInt m,PetscInt M,Vec *x);
+VecCreateMPICUDA(MPI_Comm comm, PetscInt m, PetscInt M, Vec *x);
 ```
 
 There are convenience creation routines for almost all vector types; we recommend using the more verbose form because it allows
@@ -85,7 +85,7 @@ For applications running in parallel that involve multi-dimensional structured g
 Hence, PETSc provides two powerful abstract objects (lower level) `PetscSection` (see {any}`ch_petscsection`) and (higher level) `DM` (see {any}`ch_dmbase`) to help manage the vectors and matrices needed for such applications. Using `DM`, parallel vectors can be created easily with
 
 ```
-DMCreateGlobalVector(DM dm,Vec *v)
+DMCreateGlobalVector(DM dm, Vec *v)
 ```
 
 The `DM` object, see {any}`sec_struct`, {any}`sec_stag`, and {any}`ch_unstructured` for more details on `DM` for structured grids, staggered
@@ -93,7 +93,7 @@ structured grids, and for unstructured grids,
 manages creating the correctly sized parallel vectors efficiently. One controls the type of vector that `DM` creates by calling
 
 ```
-DMSetVecType(DM dm,VecType vt)
+DMSetVecType(DM dm, VecType vt)
 ```
 
 or by calling `DMSetFromOptions(DM dm)` and using the option `-dm_vec_type <standard or cuda or kokkos etc>`
@@ -135,7 +135,7 @@ One creates a `DMDA` two
 dimensions with the convenience routine
 
 ```
-DMDACreate2d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMDAStencilType st,PetscInt M, PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DM *da);
+DMDACreate2d(MPI_Comm comm, DMBoundaryType xperiod, DMBoundaryType yperiod, DMDAStencilType st, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof, PetscInt s, PetscInt *lx, PetscInt *ly, DM *da);
 ```
 
 The arguments `M` and `N` indicate the global numbers of grid points
@@ -178,11 +178,11 @@ The commands for creating `DMDA`
 in one and three dimensions are analogous:
 
 ```
-DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,DM *inra);
+DMDACreate1d(MPI_Comm comm, DMBoundaryType xperiod, PetscInt M, PetscInt w, PetscInt s, PetscInt *lc, DM *inra);
 ```
 
 ```
-DMDACreate3d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
+DMDACreate3d(MPI_Comm comm, DMBoundaryType xperiod, DMBoundaryType yperiod, DMBoundaryType zperiod, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt w, PetscInt s, PetscInt *lx, PetscInt *ly, PetscInt *lz, DM *inra);
 ```
 
 The routines to create a `DM` are collective so that all
@@ -233,7 +233,7 @@ See {any}`ch_network` for discussion of creating vectors with `DMNETWORK`.
 One can examine (print out) a vector with the command
 
 ```
-VecView(Vec x,PetscViewer v);
+VecView(Vec x, PetscViewer v);
 ```
 
 To print the vector to the screen, one can use the viewer
@@ -248,14 +248,14 @@ To create a new vector of the same format and parallel layout as an existing vec
 use
 
 ```
-VecDuplicate(Vec old,Vec *new);
+VecDuplicate(Vec old, Vec *new);
 ```
 
 To create several new vectors of the same format as an existing vector,
 use
 
 ```
-VecDuplicateVecs(Vec old,PetscInt n,Vec **new);
+VecDuplicateVecs(Vec old, PetscInt n, Vec **new);
 ```
 
 This routine creates an array of pointers to vectors. The two routines
@@ -281,15 +281,15 @@ It is also possible to create vectors that use an array the user provides rather
 vectors can be created with the routines such as
 
 ```
-VecCreateSeqWithArray(PETSC_COMM_SELF,PetscInt bs,PetscInt n,PetscScalar *array,Vec *V);
+VecCreateSeqWithArray(PETSC_COMM_SELF, PetscInt bs, PetscInt n, PetscScalar *array, Vec *V);
 ```
 
 ```
-VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscScalar *array,Vec *V);
+VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscScalar *array, Vec *V);
 ```
 
 ```
-VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscScalar *array,Vec *V);
+VecCreateMPICUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscScalar *array, Vec *V);
 ```
 
 The `array` pointer should be a GPU memory location for GPU vectors.
@@ -303,7 +303,7 @@ in the array; `n*sizeof(PetscScalar)`.
 One can assign a single value to all components of a vector with
 
 ```
-VecSet(Vec x,PetscScalar value);
+VecSet(Vec x, PetscScalar value);
 ```
 
 Assigning values to individual vector components is more
@@ -312,7 +312,7 @@ code. Assigning a set of components on a CPU is a two-step process: one first
 calls
 
 ```
-VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
+VecSetValues(Vec x, PetscInt n, PetscInt *indices, PetscScalar *values, INSERT_VALUES);
 ```
 
 any number of times on any or all of the processes. The argument `n`
@@ -346,7 +346,7 @@ Rather than inserting elements in a vector, one may wish to add
 values. This process is also done with the command
 
 ```
-VecSetValues(Vec x,PetscInt n,PetscInt *indices, PetscScalar *values,ADD_VALUES);
+VecSetValues(Vec x, PetscInt n, PetscInt *indices, PetscScalar *values, ADD_VALUES);
 ```
 
 Again, one must call the assembly routines `VecAssemblyBegin()` and
@@ -374,7 +374,7 @@ in. The routine `VecGetArray()` returns a pointer to the elements local to
 the process:
 
 ```
-VecGetArray(Vec v,PetscScalar **array);
+VecGetArray(Vec v, PetscScalar **array);
 ```
 
 When access to the array is no longer needed, the user should call
@@ -429,7 +429,7 @@ VecCUDAGetArray(Vec v, PetscScalar **array);
 or
 
 ```
-VecGetArrayAndMemType(Vec v, PetscScalar **array,PetscMemType *mtype);
+VecGetArrayAndMemType(Vec v, PetscScalar **array, PetscMemType *mtype);
 ```
 
 which, in the first case, returns a GPU memory address and, in the second case, returns either a CPU or GPU memory
@@ -440,7 +440,7 @@ to the GPU code.
 It can also be convenient to treat the vector entries as a Kokkos view. One first creates Kokkos vectors and then calls
 
 ```
-VecGetKokkosView(Vec v, Kokkos::View<const PetscScalar*,MemorySpace> *kv)
+VecGetKokkosView(Vec v, Kokkos::View<const PetscScalar*, MemorySpace> *kv)
 ```
 
 to set or access the vector entries.
@@ -450,7 +450,7 @@ For parallel vectors, either CPU or GPU-based, it is possible to determine a pro
 routine
 
 ```
-VecGetOwnershipRange(Vec vec,PetscInt *start,PetscInt *end);
+VecGetOwnershipRange(Vec vec, PetscInt *start, PetscInt *end);
 ```
 
 The argument `start` indicates the first component owned by the local
@@ -467,19 +467,19 @@ the local values in the vector.
 Very occasionally, all MPI processes need to know all the range values, these can be obtained with
 
 ```
-VecGetOwnershipRanges(Vec vec,PetscInt range[]);
+VecGetOwnershipRanges(Vec vec, PetscInt range[]);
 ```
 
 The number of elements stored locally can be accessed with
 
 ```
-VecGetLocalSize(Vec v,PetscInt *size);
+VecGetLocalSize(Vec v, PetscInt *size);
 ```
 
 The global vector length can be determined by
 
 ```
-VecGetSize(Vec v,PetscInt *size);
+VecGetSize(Vec v, PetscInt *size);
 ```
 
 (sec_struct_set)=
@@ -491,27 +491,27 @@ access them using the natural grid indexing. This is done with the
 routines
 
 ```
-DMDAVecGetArray(DM dm,Vec l,void *array);
+DMDAVecGetArray(DM dm, Vec l, void *array);
 ... use the array indexing it with 1, 2, or 3 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArray(DM dm,Vec l,void *array);
-DMDAVecGetArrayRead(DM dm,Vec l,void *array);
+DMDAVecRestoreArray(DM dm, Vec l, void *array);
+DMDAVecGetArrayRead(DM dm, Vec l, void *array);
 ... use the array indexing it with 1, 2, or 3 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayRead(DM dm,Vec l,void *array);
+DMDAVecRestoreArrayRead(DM dm, Vec l, void *array);
 ```
 
 where `array` is a multidimensional C array with the same dimension as `da`, and
 
 ```
-DMDAVecGetArrayDOF(DM dm,Vec l,void *array);
+DMDAVecGetArrayDOF(DM dm, Vec l, void *array);
 ... use the array indexing it with 2, 3, or 4 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayDOF(DM dm,Vec l,void *array);
-DMDAVecGetArrayDOFRead(DM dm,Vec l,void *array);
+DMDAVecRestoreArrayDOF(DM dm, Vec l, void *array);
+DMDAVecGetArrayDOFRead(DM dm, Vec l, void *array);
 ... use the array indexing it with 2, 3, or 4 dimensions ...
 ... depending on the dimension of the DMDA ...
-DMDAVecRestoreArrayDOFRead(DM dm,Vec l,void *array);
+DMDAVecRestoreArrayDOFRead(DM dm, Vec l, void *array);
 ```
 
 where `array` is a multidimensional C array with one more dimension than
@@ -522,15 +522,15 @@ entries as all other entries are undefined. For example,
 for a scalar problem in two dimensions, one could use
 
 ```
-PetscScalar **f,**u;
+PetscScalar **f, **u;
 ...
-DMDAVecGetArrayRead(DM dm,Vec local,&u);
-DMDAVecGetArray(DM dm,Vec global,&f);
+DMDAVecGetArrayRead(DM dm, Vec local, &u);
+DMDAVecGetArray(DM dm, Vec global, &f);
 ...
   f[i][j] = u[i][j] - ...
 ...
-DMDAVecRestoreArrayRead(DM dm,Vec local,&u);
-DMDAVecRestoreArray(DM dm,Vec global,&f);
+DMDAVecRestoreArrayRead(DM dm, Vec local, &u);
+DMDAVecRestoreArray(DM dm, Vec global, &f);
 ```
 
 :::{admonition} Listing: <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex3.c.html">SNES Tutorial src/snes/tutorials/ex3.c</a>
@@ -547,27 +547,27 @@ e.g.
 
 ```
 typedef struct {
-  PetscScalar u,v,omega,temperature;
+  PetscScalar u, v, omega, temperature;
 } Node;
 ```
 
 and write the residual evaluation using
 
 ```
-Node **f,**u;
-DMDAVecGetArray(DM dm,Vec local,&u);
-DMDAVecGetArray(DM dm,Vec global,&f);
+Node **f, **u;
+DMDAVecGetArray(DM dm, Vec local, &u);
+DMDAVecGetArray(DM dm, Vec global, &f);
  ...
     f[i][j].omega = ...
  ...
-DMDAVecRestoreArray(DM dm,Vec local,&u);
-DMDAVecRestoreArray(DM dm,Vec global,&f);
+DMDAVecRestoreArray(DM dm, Vec local, &u);
+DMDAVecRestoreArray(DM dm, Vec global, &f);
 ```
 
 The `DMDAVecGetArray` routines are also provided for GPU access with CUDA, HIP, and Kokkos. For example,
 
 ```
-DMDAVecGetKokkosOffsetView(DM dm,Vec vec,Kokkos::View<const PetscScalar*XX*,MemorySpace> *ov)
+DMDAVecGetKokkosOffsetView(DM dm, Vec vec, Kokkos::View<const PetscScalar*XX*, MemorySpace> *ov)
 ```
 
 where `*XX*` can contain any number of `*`. This allows one to write very natural Kokkos multi-dimensional parallel for kernels
@@ -586,8 +586,8 @@ The global indices of the lower left corner of the local portion of vectors obta
 as well as the local array size can be obtained with the commands
 
 ```
-DMDAGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
-DMDAGetGhostCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
+DMDAGetCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p);
+DMDAGetGhostCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p);
 ```
 
 These values can then be used as loop bounds for local function evaluations as demonstrated in the function examples above.
@@ -649,57 +649,57 @@ See {any}`ch_network` for a discussion on setting vector values with `DMNETWORK`
 ```{eval-rst}
 .. table:: PETSc Vector Operations
 
-   +-----------------------------------------------------------+-----------------------------------+
-   | **Function Name**                                         | **Operation**                     |
-   +===========================================================+===================================+
-   | ``VecAXPY(Vec y,PetscScalar a,Vec x);``                   | :math:`y = y + a*x`               |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecAYPX(Vec y,PetscScalar a,Vec x);``                   | :math:`y = x + a*y`               |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecWAXPY(Vec  w,PetscScalar a,Vec x,Vec y);``           | :math:`w = a*x + y`               |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecAXPBY(Vec y,PetscScalar a,PetscScalar b,Vec x);``    | :math:`y = a*x + b*y`             |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecAXPBYPCZ(Vec z,PetscScalar a,PetscScalar b,          | :math:`z = a*x + b*y + c*z`       |
-   | PetscScalar c,Vec x,Vec y);``                             |                                   |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecScale(Vec x, PetscScalar a);``                       | :math:`x = a*x`                   |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecDot(Vec x, Vec y, PetscScalar *r);``                 | :math:`r = \bar{x}^T*y`           |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecTDot(Vec x, Vec y, PetscScalar *r);``                | :math:`r = x'*y`                  |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecNorm(Vec x, NormType type,  PetscReal *r);``         | :math:`r = ||x||_{type}`          |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecSum(Vec x, PetscScalar *r);``                        | :math:`r = \sum x_{i}`            |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecCopy(Vec x, Vec y);``                                | :math:`y = x`                     |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecSwap(Vec x, Vec y);``                                | :math:`y = x` while               |
-   |                                                           | :math:`x = y`                     |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecPointwiseMult(Vec w,Vec x,Vec y);``                  | :math:`w_{i} = x_{i}*y_{i}`       |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecPointwiseDivide(Vec w,Vec x,Vec y);``                | :math:`w_{i} = x_{i}/y_{i}`       |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecMDot(Vec x,PetscInt n,Vec y[],PetscScalar *r);``     | :math:`r[i] = \bar{x}^T*y[i]`     |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecMTDot(Vec x,PetscInt n,Vec y[],PetscScalar *r);``    | :math:`r[i] = x^T*y[i]`           |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecMAXPY(Vec y,PetscInt n, PetscScalar *a, Vec x[]);``  | :math:`y = y + \sum_i a_{i}*x[i]` |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecMax(Vec x, PetscInt *idx, PetscReal *r);``           | :math:`r = \max x_{i}`            |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecMin(Vec x, PetscInt *idx, PetscReal *r);``           | :math:`r = \min x_{i}`            |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecAbs(Vec x);``                                        | :math:`x_i = |x_{i}|`             |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecReciprocal(Vec x);``                                 | :math:`x_i = 1/x_{i}`             |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecShift(Vec x,PetscScalar s);``                        | :math:`x_i = s + x_{i}`           |
-   +-----------------------------------------------------------+-----------------------------------+
-   | ``VecSet(Vec x,PetscScalar alpha);``                      | :math:`x_i = \alpha`              |
-   +-----------------------------------------------------------+-----------------------------------+
+   +--------------------------------------------------------------+-----------------------------------+
+   | **Function Name**                                            | **Operation**                     |
+   +==============================================================+===================================+
+   | ``VecAXPY(Vec y, PetscScalar a, Vec x);``                    | :math:`y = y + a*x`               |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecAYPX(Vec y, PetscScalar a, Vec x);``                    | :math:`y = x + a*y`               |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecWAXPY(Vec  w, PetscScalar a, Vec x, Vec y);``           | :math:`w = a*x + y`               |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecAXPBY(Vec y, PetscScalar a, PetscScalar b, Vec x);``    | :math:`y = a*x + b*y`             |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecAXPBYPCZ(Vec z, PetscScalar a, PetscScalar b,           | :math:`z = a*x + b*y + c*z`       |
+   | PetscScalar c, Vec x, Vec y);``                              |                                   |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecScale(Vec x, PetscScalar a);``                          | :math:`x = a*x`                   |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecDot(Vec x, Vec y, PetscScalar *r);``                    | :math:`r = \bar{x}^T*y`           |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecTDot(Vec x, Vec y, PetscScalar *r);``                   | :math:`r = x'*y`                  |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecNorm(Vec x, NormType type, PetscReal *r);``             | :math:`r = ||x||_{type}`          |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecSum(Vec x, PetscScalar *r);``                           | :math:`r = \sum x_{i}`            |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecCopy(Vec x, Vec y);``                                   | :math:`y = x`                     |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecSwap(Vec x, Vec y);``                                   | :math:`y = x` while               |
+   |                                                              | :math:`x = y`                     |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecPointwiseMult(Vec w, Vec x, Vec y);``                   | :math:`w_{i} = x_{i}*y_{i}`       |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecPointwiseDivide(Vec w, Vec x, Vec y);``                 | :math:`w_{i} = x_{i}/y_{i}`       |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecMDot(Vec x, PetscInt n, Vec y[], PetscScalar *r);``     | :math:`r[i] = \bar{x}^T*y[i]`     |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecMTDot(Vec x, PetscInt n, Vec y[], PetscScalar *r);``    | :math:`r[i] = x^T*y[i]`           |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecMAXPY(Vec y, PetscInt n, PetscScalar *a, Vec x[]);``    | :math:`y = y + \sum_i a_{i}*x[i]` |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecMax(Vec x, PetscInt *idx, PetscReal *r);``              | :math:`r = \max x_{i}`            |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecMin(Vec x, PetscInt *idx, PetscReal *r);``              | :math:`r = \min x_{i}`            |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecAbs(Vec x);``                                           | :math:`x_i = |x_{i}|`             |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecReciprocal(Vec x);``                                    | :math:`x_i = 1/x_{i}`             |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecShift(Vec x, PetscScalar s);``                          | :math:`x_i = s + x_{i}`           |
+   +--------------------------------------------------------------+-----------------------------------+
+   | ``VecSet(Vec x, PetscScalar alpha);``                        | :math:`x_i = \alpha`              |
+   +--------------------------------------------------------------+-----------------------------------+
 ```
 :::
 
@@ -717,24 +717,24 @@ inner products and/or norms to share the same communication (thus
 improving parallel efficiency). For example, one may have code such as
 
 ```
-VecDot(Vec x,Vec y,PetscScalar *dot);
-VecMDot(Vec x,PetscInt nv, Vec y[],PetscScalar *dot);
-VecNorm(Vec x,NormType NORM_2,PetscReal *norm2);
-VecNorm(Vec x,NormType NORM_1,PetscReal *norm1);
+VecDot(Vec x, Vec y, PetscScalar *dot);
+VecMDot(Vec x, PetscInt nv, Vec y[], PetscScalar *dot);
+VecNorm(Vec x, NormType NORM_2, PetscReal *norm2);
+VecNorm(Vec x, NormType NORM_1, PetscReal *norm1);
 ```
 
 This code works fine, but it performs four separate parallel
 communication operations. Instead, one can write
 
 ```
-VecDotBegin(Vec x,Vec y,PetscScalar *dot);
-VecMDotBegin(Vec x, PetscInt nv,Vec y[],PetscScalar *dot);
-VecNormBegin(Vec x,NormType NORM_2,PetscReal *norm2);
-VecNormBegin(Vec x,NormType NORM_1,PetscReal *norm1);
-VecDotEnd(Vec x,Vec y,PetscScalar *dot);
-VecMDotEnd(Vec x, PetscInt nv,Vec y[],PetscScalar *dot);
-VecNormEnd(Vec x,NormType NORM_2,PetscReal *norm2);
-VecNormEnd(Vec x,NormType NORM_1,PetscReal *norm1);
+VecDotBegin(Vec x, Vec y, PetscScalar *dot);
+VecMDotBegin(Vec x, PetscInt nv, Vec y[], PetscScalar *dot);
+VecNormBegin(Vec x, NormType NORM_2, PetscReal *norm2);
+VecNormBegin(Vec x, NormType NORM_1, PetscReal *norm1);
+VecDotEnd(Vec x, Vec y, PetscScalar *dot);
+VecMDotEnd(Vec x,  PetscInt nv, Vec y[], PetscScalar *dot);
+VecNormEnd(Vec x, NormType NORM_2, PetscReal *norm2);
+VecNormEnd(Vec x, NormType NORM_1, PetscReal *norm1);
 ```
 
 With this code, the communication is delayed until the first call to
@@ -767,8 +767,8 @@ vector objects that use the `DM` layout information with the
 routines
 
 ```
-DMCreateGlobalVector(DM dm,Vec *g);
-DMCreateLocalVector(DM dm,Vec *l);
+DMCreateGlobalVector(DM dm, Vec *g);
+DMCreateLocalVector(DM dm, Vec *l);
 ```
 
 These vectors will generally serve as the building blocks for local and
@@ -791,8 +791,8 @@ done by scattering a global vector into its local parts by using the
 two-stage commands
 
 ```
-DMGlobalToLocalBegin(DM dm,Vec g,InsertMode iora,Vec l);
-DMGlobalToLocalEnd(DM dm,Vec g,InsertMode iora,Vec l);
+DMGlobalToLocalBegin(DM dm, Vec g, InsertMode iora, Vec l);
+DMGlobalToLocalEnd(DM dm, Vec g, InsertMode iora, Vec l);
 ```
 
 which allows the overlap of communication and computation. Since the
@@ -806,15 +806,15 @@ One can scatter the local vectors into the distributed global vector with the
 command
 
 ```
-DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobal(DM dm, Vec l, InsertMode mode, Vec g);
 ```
 
 or the commands
 
 ```
-DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobalBegin(DM dm, Vec l, InsertMode mode, Vec g);
 /* (Computation to overlap with communication) */
-DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g);
+DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g);
 ```
 
 In general this is used with an `InsertMode` of `ADD_VALUES`,
@@ -827,8 +827,8 @@ vector with correct ghost point values. This scatter may be done with
 the commands
 
 ```
-DMLocalToLocalBegin(DM dm,Vec l1,InsertMode iora,Vec l2);
-DMLocalToLocalEnd(DM dm,Vec l1,InsertMode iora,Vec l2);
+DMLocalToLocalBegin(DM dm, Vec l1, InsertMode iora, Vec l2);
+DMLocalToLocalEnd(DM dm, Vec l1, InsertMode iora, Vec l2);
 ```
 
 Since both local vectors, `l1` and `l2`, must be compatible with `da`, they should be generated by
@@ -843,9 +843,9 @@ return them when no longer needed. This is done with the
 routines
 
 ```
-DMGetLocalVector(DM dm,Vec *l);
+DMGetLocalVector(DM dm, Vec *l);
 ... use the local vector l ...
-DMRestoreLocalVector(DM dm,Vec *l);
+DMRestoreLocalVector(DM dm, Vec *l);
 ```
 
 (sec_scatter)=
@@ -866,7 +866,7 @@ on the infrastructure discussed below.
 The following command creates an index set based on a list of integers:
 
 ```
-ISCreateGeneral(MPI_Comm comm,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
+ISCreateGeneral(MPI_Comm comm, PetscInt n, PetscInt *indices, PetscCopyMode mode, IS *is);
 ```
 
 When `mode` is `PETSC_COPY_VALUES`, this routine copies the `n`
@@ -880,7 +880,7 @@ Another standard index set is defined by a starting point (`first`)
 and a stride (`step`), and can be created with the command
 
 ```
-ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is);
+ISCreateStride(MPI_Comm comm, PetscInt n, PetscInt first, PetscInt step, IS *is);
 ```
 
 The meaning of `n`, `first`, and `step` correspond to the MATLAB notation
@@ -896,9 +896,9 @@ On rare occasions, the user may need to access information directly from
 an index set. Several commands assist in this process:
 
 ```
-ISGetSize(IS is,PetscInt *size);
-ISStrideGetInfo(IS is,PetscInt *first,PetscInt *stride);
-ISGetIndices(IS is,PetscInt **indices);
+ISGetSize(IS is, PetscInt *size);
+ISStrideGetInfo(IS is, PetscInt *first, PetscInt *stride);
+ISGetIndices(IS is, PetscInt **indices);
 ```
 
 The function `ISGetIndices()` returns a pointer to a list of the
@@ -916,7 +916,7 @@ have used to generate the list of indices.
 A blocked version of index sets can be created with the command
 
 ```
-ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
+ISCreateBlock(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt *indices, PetscCopyMode mode, IS *is);
 ```
 
 This version is used for defining operations in which each element of
@@ -937,9 +937,9 @@ To copy selected components from one vector to another, one uses the
 following set of commands:
 
 ```
-VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
-VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
-VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
+VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *ctx);
+VecScatterBegin(VecScatter ctx, Vec x, Vec y, INSERT_VALUES, SCATTER_FORWARD);
+VecScatterEnd(VecScatter ctx, Vec x, Vec y, INSERT_VALUES, SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
 ```
 
@@ -981,8 +981,8 @@ scatter backward, switching the roles of the sender and receiver. This
 is done by using
 
 ```
-VecScatterBegin(VecScatter ctx,Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE);
-VecScatterEnd(VecScatter ctx,Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE);
+VecScatterBegin(VecScatter ctx, Vec y, Vec x, INSERT_VALUES, SCATTER_REVERSE);
+VecScatterEnd(VecScatter ctx, Vec y, Vec x, INSERT_VALUES, SCATTER_REVERSE);
 ```
 
 Note that the roles of the first two arguments to these routines must be
@@ -1013,15 +1013,15 @@ Vec         p, x;         /* initial vector, destination vector */
 VecScatter  scatter;      /* scatter context */
 IS          from, to;     /* index sets that define the scatter */
 PetscScalar *values;
-PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
+PetscInt    idx_from[] = {100, 200}, idx_to[] = {0, 1};
 
-VecCreateSeq(PETSC_COMM_SELF,2,&x);
-ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
-ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,PETSC_COPY_VALUES,&to);
-VecScatterCreate(p,from,x,to,&scatter);
-VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
-VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
-VecGetArray(x,&values);
+VecCreateSeq(PETSC_COMM_SELF, 2, &x);
+ISCreateGeneral(PETSC_COMM_SELF, 2, idx_from, PETSC_COPY_VALUES, &from);
+ISCreateGeneral(PETSC_COMM_SELF, 2, idx_to, PETSC_COPY_VALUES, &to);
+VecScatterCreate(p, from, x, to, &scatter);
+VecScatterBegin(scatter, p, x, INSERT_VALUES, SCATTER_FORWARD);
+VecScatterEnd(scatter, p, x, INSERT_VALUES, SCATTER_FORWARD);
+VecGetArray(x, &values);
 ISDestroy(&from);
 ISDestroy(&to);
 VecScatterDestroy(&scatter);
@@ -1042,12 +1042,12 @@ scatters back into the global solution vector. In the simplest case, this
 may be written as
 
 ```
-VecScatterBegin(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
-VecScatterEnd(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode SCATTER_FORWARD);
+VecScatterBegin(VecScatter scatter, Vec globalin, Vec localin, InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
+VecScatterEnd(VecScatter scatter, Vec globalin, Vec localin, InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
 /* For example, do local calculations from localin to localout */
 ...
-VecScatterBegin(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode SCATTER_REVERSE);
-VecScatterEnd(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode SCATTER_REVERSE);
+VecScatterBegin(VecScatter scatter, Vec localout, Vec globalout, InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
+VecScatterEnd(VecScatter scatter, Vec localout, Vec globalout, InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
 ```
 
 In this case, the scatter is used in a way similar to the usage of `DMGlobalToLocal()` and `DMLocalToGlobal()` discussed above.
@@ -1064,9 +1064,9 @@ a local numbering scheme to the PETSc global numbering scheme, recall their use 
 This is done via the following routines
 
 ```
-ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt N,PetscInt* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);
-ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,PetscInt n,PetscInt *in,PetscInt *out);
-ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
+ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt N, PetscInt* globalnum, PetscCopyMode mode, ISLocalToGlobalMapping* ctx);
+ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx, PetscInt n, PetscInt *in, PetscInt *out);
+ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx, IS isin, IS* isout);
 ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *ctx);
 ```
 
@@ -1095,7 +1095,7 @@ If one is given a list of block indices in a global numbering, the
 routine
 
 ```
-ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingMode type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
+ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx, ISGlobalToLocalMappingMode type, PetscInt nin, PetscInt idxin[], PetscInt *nout, PetscInt idxout[]);
 ```
 
 will provide a new list of indices in the local numbering. Again,
@@ -1119,13 +1119,13 @@ locally). To set values into a vector with the local numbering, one must
 first call
 
 ```
-VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
+VecSetLocalToGlobalMapping(Vec v, ISLocalToGlobalMapping ctx);
 ```
 
 and then call
 
 ```
-VecSetValuesLocal(Vec x,PetscInt n,const PetscInt indices[],const PetscScalar values[],INSERT_VALUES);
+VecSetValuesLocal(Vec x, PetscInt n, const PetscInt indices[], const PetscScalar values[], INSERT_VALUES);
 ```
 
 Now the `indices` use the local numbering rather than the global,
@@ -1139,14 +1139,14 @@ global node number of each local node, including the ghost nodes, can be
 obtained by calling
 
 ```
-DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *map);
+DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *map);
 ```
 
 followed by
 
 ```
-VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);
-MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping);
+VecSetLocalToGlobalMapping(Vec v, ISLocalToGlobalMapping map);
+MatSetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping rmapping, ISLocalToGlobalMapping cmapping);
 ```
 
 Now, entries may be added to the vector and matrix using the local
@@ -1175,13 +1175,13 @@ An alternative approach is to allocate global vectors with space
 preallocated for the ghost values.
 
 ```
-VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,Vec *vv)
+VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, PetscInt *ghosts, Vec *vv)
 ```
 
 or
 
 ```
-VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,PetscScalar *array,Vec *vv)
+VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, PetscInt *ghosts, PetscScalar *array, Vec *vv)
 ```
 
 Here `n` is the number of local vector entries, `N` is the number of
@@ -1210,15 +1210,15 @@ numbering.
 A common usage of a ghosted vector is given by
 
 ```
-VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
-VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
-VecGhostGetLocalForm(Vec globalin,Vec *localin);
-VecGhostGetLocalForm(Vec globalout,Vec *localout);
+VecGhostUpdateBegin(Vec globalin, InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
+VecGhostUpdateEnd(Vec globalin, InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
+VecGhostGetLocalForm(Vec globalin, Vec *localin);
+VecGhostGetLocalForm(Vec globalout, Vec *localout);
 ...  Do local calculations from localin to localout ...
-VecGhostRestoreLocalForm(Vec globalin,Vec *localin);
-VecGhostRestoreLocalForm(Vec globalout,Vec *localout);
-VecGhostUpdateBegin(Vec globalout,InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
-VecGhostUpdateEnd(Vec globalout,InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
+VecGhostRestoreLocalForm(Vec globalin, Vec *localin);
+VecGhostRestoreLocalForm(Vec globalout, Vec *localout);
+VecGhostUpdateBegin(Vec globalout, InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
+VecGhostUpdateEnd(Vec globalout, InsertMode ADD_VALUES, ScatterMode SCATTER_REVERSE);
 ```
 
 The routines `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()` are
@@ -1271,7 +1271,7 @@ and efficiently with the various orderings. To define a new application
 ordering (called an `AO` in PETSc), one can call the routine
 
 ```
-AOCreateBasic(MPI_Comm comm,PetscInt n,const PetscInt apordering[],const PetscInt petscordering[],AO *ao);
+AOCreateBasic(MPI_Comm comm, PetscInt n, const PetscInt apordering[], const PetscInt petscordering[], AO *ao);
 ```
 
 The arrays `apordering` and `petscordering`, respectively, contain a
@@ -1295,13 +1295,13 @@ The user can create the PETSc `AO` mappings in several ways. For
 example, if using two processes, one could call
 
 ```
-AOCreateBasic(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
+AOCreateBasic(PETSC_COMM_WORLD, 2,{0, 3}, {3, 4}, &ao);
 ```
 
 on the first process and
 
 ```
-AOCreateBasic(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
+AOCreateBasic(PETSC_COMM_WORLD, 3, {1, 2, 4}, {2, 1, 0}, &ao);
 ```
 
 on the other process.
@@ -1310,8 +1310,8 @@ Once the application ordering has been created, it can be used with
 either of the commands
 
 ```
-AOPetscToApplication(AO ao,PetscInt n,PetscInt *indices);
-AOApplicationToPetsc(AO ao,PetscInt n,PetscInt *indices);
+AOPetscToApplication(AO ao, PetscInt n, PetscInt *indices);
+AOApplicationToPetsc(AO ao, PetscInt n, PetscInt *indices);
 ```
 
 Upon input, the `n`-dimensional array `indices` specifies the
@@ -1325,7 +1325,7 @@ used in the call to `AOCreateBasic()`.
 An alternative routine to create the application ordering, `AO`, is
 
 ```
-AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
+AOCreateBasicIS(IS apordering, IS petscordering, AO *ao);
 ```
 
 where index sets are used
@@ -1334,8 +1334,8 @@ instead of integer arrays.
 The mapping routines
 
 ```
-AOPetscToApplicationIS(AO ao,IS indices);
-AOApplicationToPetscIS(AO ao,IS indices);
+AOPetscToApplicationIS(AO ao, IS indices);
+AOApplicationToPetscIS(AO ao, IS indices);
 ```
 
 will map index sets (`IS` objects) between orderings. Both the
@@ -1366,7 +1366,7 @@ PETSc uses to parallelize. This ordering context can be obtained with
 the command
 
 ```
-DMDAGetAO(DM dm,AO *ao);
+DMDAGetAO(DM dm, AO *ao);
 ```
 
 In Figure {any}`fig_daao`, we indicate the orderings for a
