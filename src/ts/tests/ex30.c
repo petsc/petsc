@@ -1101,7 +1101,7 @@ int main(int argc, char **argv)
           -ksp_type gmres -ksp_error_if_not_converged -dm_landau_verbose 4 -print_entropy \
           -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_rtol 1e-12 -ptof_ksp_error_if_not_converged\
           -snes_converged_reason -snes_monitor -snes_rtol 1e-12 -snes_stol 1e-12 \
-          -ts_dt 0.01 -ts_rtol 1e-1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler
+          -ts_time_step 0.01 -ts_rtol 1e-1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler
     test:
       suffix: cpu
       args: -dm_landau_device_type cpu -pc_type jacobi
@@ -1120,7 +1120,7 @@ int main(int argc, char **argv)
           -ftop_ksp_type cg -ftop_pc_type jacobi -ftop_ksp_rtol 1e-12 -ftop_ksp_error_if_not_converged -ksp_type preonly -pc_type lu -ksp_error_if_not_converged \
           -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_rtol 1e-12 -ptof_ksp_error_if_not_converged \
           -snes_converged_reason -snes_monitor -snes_rtol 1e-12 -snes_stol 1e-12 \
-          -ts_dt 0.1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler -print_entropy
+          -ts_time_step 0.1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler -print_entropy
     test:
       suffix: cpu_3d
       args: -dm_landau_device_type cpu
@@ -1132,7 +1132,7 @@ int main(int argc, char **argv)
   test:
     suffix: conserve
     requires: !complex double defined(PETSC_USE_DMLANDAU_2D) !cuda
-    args: -dm_landau_batch_size 4 -dm_refine 0 -dm_landau_num_species_grid 1 -dm_landau_thermal_temps 1 -petscspace_degree 3 -snes_converged_reason -ts_type beuler -ts_dt .1 \
+    args: -dm_landau_batch_size 4 -dm_refine 0 -dm_landau_num_species_grid 1 -dm_landau_thermal_temps 1 -petscspace_degree 3 -snes_converged_reason -ts_type beuler -ts_time_step .1 \
           -ts_max_steps 1 -ksp_type preonly -ksp_error_if_not_converged -snes_rtol 1e-14 -snes_stol 1e-14 -dm_landau_device_type cpu -number_particles_per_dimension 20 \
           -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_rtol 1e-14 -ptof_ksp_error_if_not_converged -pc_type lu -dm_landau_simplex 1 -use_uniform_particle_grid false -dm_landau_sphere -print_entropy -number_particles_per_dimension 50 -ftop_ksp_type cg -ftop_pc_type jacobi -ftop_ksp_rtol 1e-14
 

@@ -203,8 +203,11 @@ Timestep 100: step size = 0.0005, time = 0.05, 2-norm error = 0.00627104, max no
 avg. error (2 norm) = 0.00957673, avg. error (max norm) = 0.0136904
 TS Object: 1 MPI process
   type: beuler
+  initial time step=0.0005
   maximum steps=100
   maximum time=100.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of I function evaluations=100
   total number of I Jacobian evaluations=100
   total number of linear solver iterations=4

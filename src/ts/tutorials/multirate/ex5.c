@@ -1,6 +1,6 @@
 /*
   Note:
-  To performance a convergence study, a reference solution can be generated with a small stepsize and stored into a binary file, e.g. -ts_type ssp -ts_dt 1e-5 -ts_max_steps 30000 -ts_view_solution binary:reference.bin
+  To performance a convergence study, a reference solution can be generated with a small stepsize and stored into a binary file, e.g. -ts_type ssp -ts_time_step 1e-5 -ts_max_steps 30000 -ts_view_solution binary:reference.bin
   Errors can be computed in the following runs with -simulation -f reference.bin
 
   Multirate RK options:
@@ -841,27 +841,27 @@ int main(int argc, char *argv[])
       depends: finitevolume1d.c
 
     test:
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 0
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 0
 
     test:
       suffix: 2
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 1
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 1
       output_file: output/ex5_1.out
 
     test:
       suffix: 3
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 0
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 0
 
     test:
       suffix: 4
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 1
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 1
       output_file: output/ex5_3.out
 
     test:
       suffix: 5
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 0 -recursive_split
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 0 -recursive_split
 
     test:
       suffix: 6
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 1 -recursive_split
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_time_step 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 1 -recursive_split
 TEST*/

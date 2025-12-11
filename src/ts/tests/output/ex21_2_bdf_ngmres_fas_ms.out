@@ -43,8 +43,11 @@ X range of indices: 0 5, Y range of indices: 3 5
 TS Object: 2 MPI processes
   type: bdf
     Order=2
+  initial time step=0.001
   maximum steps=5
   maximum time=1.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 2 MPI processes
     type: none

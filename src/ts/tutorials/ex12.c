@@ -276,22 +276,22 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
 /*TEST
 
     test:
-      args: -da_grid_x 20 -ts_max_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -ksp_monitor_short
+      args: -da_grid_x 20 -ts_max_time 3 -ts_time_step 1e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -ksp_monitor_short
       requires: !single
 
     test:
       suffix: 2
-      args: -da_grid_x 20 -ts_max_time 0.11 -ts_dt 1e-1 -ts_type glle -ts_monitor -ksp_monitor_short
+      args: -da_grid_x 20 -ts_max_time 0.11 -ts_time_step 1e-1 -ts_type glle -ts_monitor -ksp_monitor_short
       requires: !single
 
     test:
       suffix: glvis_da_2d_vect
-      args: -usemonitor 0 -da_grid_x 20 -ts_max_time 0.3 -ts_dt 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0
+      args: -usemonitor 0 -da_grid_x 20 -ts_max_time 0.3 -ts_time_step 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0
       requires: !single
 
     test:
       suffix: glvis_da_2d_vect_ll
-      args: -usemonitor 0 -da_grid_x 20 -ts_max_time 0.3 -ts_dt 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0 -viewer_glvis_dm_da_ll
+      args: -usemonitor 0 -da_grid_x 20 -ts_max_time 0.3 -ts_time_step 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0 -viewer_glvis_dm_da_ll
       requires: !single
 
 TEST*/

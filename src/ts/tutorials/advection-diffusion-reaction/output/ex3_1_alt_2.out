@@ -44,8 +44,11 @@ TS Object: 1 MPI process
   Explicit first stage: yes
   FSAL property: yes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
+  initial time step=8.33333e-06
   maximum steps=1000
   maximum time=0.3
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI process
     type: basic

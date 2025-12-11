@@ -12,7 +12,10 @@
 Interpolated solution at time 1. between steps 9 and 10
 TS Object: 1 MPI process
   type: euler
+  initial time step=0.1
   maximum time=1.
+  maximum number of step rejections=10
+  maximum number of SNES failures allowed=1
   total number of RHS function evaluations=10
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001

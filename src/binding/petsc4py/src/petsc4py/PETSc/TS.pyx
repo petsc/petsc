@@ -1942,7 +1942,7 @@ cdef class TS(Object):
 
         Notes
         -----
-        ``-ts_max_reject`` can be used to set this from the commandline
+        ``-ts_max_step_rejections`` can be used to set this from the commandline
 
         See Also
         --------

@@ -974,24 +974,24 @@ int main(int argc, char **argv)
     requires: triangle !single !complex
     args: -dm_plex_separate_marker -sol_type trig_trig -dm_refine 2 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-      -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1 -ts_monitor_cancel \
+      -dmts_check .001 -ts_max_steps 4 -ts_time_step 0.1 -ts_monitor_cancel \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_0_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
       -omega 0.5 -part_layout_type box -part_lower 0.25,0.25 -part_upper 0.75,0.75 -Npb 5 \
-      -part_ts_max_steps 2 -part_ts_dt 0.05 -part_ts_convergence_estimate -convest_num_refine 1 -part_ts_monitor_cancel
+      -part_ts_max_steps 2 -part_ts_time_step 0.05 -part_ts_convergence_estimate -convest_num_refine 1 -part_ts_monitor_cancel
   test:
     suffix: 2d_tri_p2_p1_p1_exit
     requires: triangle !single !complex
     args: -dm_plex_separate_marker -sol_type trig_trig -dm_refine 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-      -dmts_check .001 -ts_max_steps 10 -ts_dt 0.1 \
+      -dmts_check .001 -ts_max_steps 10 -ts_time_step 0.1 \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_0_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
       -omega 0.5 -part_layout_type box -part_lower 0.25,0.25 -part_upper 0.75,0.75 -Npb 5 \
-      -part_ts_max_steps 20 -part_ts_dt 0.05
+      -part_ts_max_steps 20 -part_ts_time_step 0.05
 
 TEST*/

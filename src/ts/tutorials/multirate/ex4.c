@@ -24,11 +24,11 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 /*
   Example:
-     ./ex4 -da_grid_x 40 -initial 1 -hratio 1 -limit mc -ts_dt 0.01 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
-     ./ex4 -da_grid_x 40 -initial 2 -hratio 1 -limit mc -ts_dt 0.01 -ts_max_time 2.5 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
-     ./ex4 -da_grid_x 40 -initial 3 -hratio 1 -limit mc -ts_dt 0.01 -ts_max_time 4.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
-     ./ex4 -da_grid_x 40 -initial 4 -hratio 1 -limit koren3 -ts_dt 0.01 -ts_max_time 4.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
-     ./ex4 -da_grid_x 40 -initial 5 -hratio 1 -limit mc -ts_dt 0.01 -ts_max_time 5.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+     ./ex4 -da_grid_x 40 -initial 1 -hratio 1 -limit mc -ts_time_step 0.01 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+     ./ex4 -da_grid_x 40 -initial 2 -hratio 1 -limit mc -ts_time_step 0.01 -ts_max_time 2.5 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+     ./ex4 -da_grid_x 40 -initial 3 -hratio 1 -limit mc -ts_time_step 0.01 -ts_max_time 4.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+     ./ex4 -da_grid_x 40 -initial 4 -hratio 1 -limit koren3 -ts_time_step 0.01 -ts_max_time 4.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+     ./ex4 -da_grid_x 40 -initial 5 -hratio 1 -limit mc -ts_time_step 0.01 -ts_max_time 5.0 -ts_type mprk -ts_mprk_type 2a22 -ts_monitor_draw_solution -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
 
   Contributed by: Aidan Hamilton <aidan@udel.edu>
 */
@@ -1437,28 +1437,28 @@ int main(int argc, char *argv[])
 
     test:
       suffix: 1
-      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_time_step 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22
       output_file: output/ex4_1.out
 
     test:
       suffix: 2
-      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 1
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_time_step 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type 2a22 -ts_use_splitrhsfunction 1
       output_file: output/ex4_1.out
 
     test:
       suffix: 3
-      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_dt 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
+      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_time_step 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 0
       output_file: output/ex4_3.out
 
     test:
       suffix: 4
       nsize: 2
-      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_dt 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
+      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_time_step 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
       output_file: output/ex4_3.out
 
     test:
       suffix: 5
       nsize: 4
-      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_dt 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
+      args: -da_grid_x 40 -initial 1 -hratio 2 -limit mc -ts_time_step 0.1 -ts_max_steps 24 -ts_max_time 7.0 -ts_type mprk -ts_mprk_type 2a22 -physics shallow -bc_type outflow -xmin 0 -xmax 50 -ts_use_splitrhsfunction 1
       output_file: output/ex4_3.out
 TEST*/

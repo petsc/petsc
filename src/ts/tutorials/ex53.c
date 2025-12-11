@@ -2210,7 +2210,7 @@ int main(int argc, char **argv)
     requires: triangle
     args: -sol_type trig_linear -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -dmts_check .0001 -ts_max_steps 5 -ts_dt 0.00001 -ts_monitor_extreme
+      -dmts_check .0001 -ts_max_steps 5 -ts_time_step 0.00001 -ts_monitor_extreme
 
   test:
     # -dm_refine 2 -convest_num_refine 3 get L_2 convergence rate: [1.9, 2.1, 1.8]
@@ -2218,7 +2218,7 @@ int main(int argc, char **argv)
     requires: triangle
     args: -sol_type trig_linear -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -convest_num_refine 1 -ts_convergence_estimate -ts_convergence_temporal 0 -ts_max_steps 1 -ts_dt 0.00001 -pc_type lu
+      -convest_num_refine 1 -ts_convergence_estimate -ts_convergence_temporal 0 -ts_max_steps 1 -ts_time_step 0.00001 -pc_type lu
 
   test:
     suffix: 3d_trig_linear
@@ -2273,18 +2273,18 @@ int main(int argc, char **argv)
     test:
       suffix: 2d_terzaghi
       requires: double
-      args: -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
+      args: -ts_time_step 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
 
     test:
       # -dm_plex_box_faces 1,64 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [1.1, 1.1, 1.1]
       suffix: 2d_terzaghi_tconv
-      args: -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
+      args: -ts_time_step 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
 
     test:
       # -dm_plex_box_faces 1,16 -convest_num_refine 4 gives L_2 convergence rate: [1.7, 1.2, 1.1]
       # if we add -displacement_petscspace_degree 3 -tracestrain_petscspace_degree 2 -pressure_petscspace_degree 2, we get [2.1, 1.6, 1.5]
       suffix: 2d_terzaghi_sconv
-      args: -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
+      args: -ts_time_step 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
   testset:
     args: -sol_type mandel -dm_plex_simplex 0 -dm_plex_box_lower -0.5,-0.125 -dm_plex_box_upper 0.5,0.125 -dm_plex_separate_marker -dm_refine 1 \
@@ -2294,17 +2294,17 @@ int main(int argc, char **argv)
     test:
       suffix: 2d_mandel
       requires: double
-      args: -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
+      args: -ts_time_step 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
 
     test:
       # -dm_refine 3 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [1.6, 0.93, 1.2]
       suffix: 2d_mandel_sconv
-      args: -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
+      args: -ts_time_step 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
     test:
       # -dm_refine 5 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [0.26, -0.0058, 0.26]
       suffix: 2d_mandel_tconv
-      args: -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
+      args: -ts_time_step 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
 
   testset:
     requires: ctetgen !complex
@@ -2313,14 +2313,14 @@ int main(int argc, char **argv)
 
     test:
       suffix: 3d_cryer
-      args: -ts_dt 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 \
+      args: -ts_time_step 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 \
             -pc_type svd
 
     test:
       # -bd_dm_refine 3 -dm_refine_volume_limit_pre 0.004 -convest_num_refine 2 gives L_2 convergence rate: []
       suffix: 3d_cryer_sconv
       args: -bd_dm_refine 1 -dm_refine_volume_limit_pre 0.00666667 \
-            -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 \
+            -ts_time_step 1e-5 -dt_initial 1e-5 -ts_max_steps 2 \
             -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
             -pc_type lu -pc_factor_shift_type nonzero
 
@@ -2329,7 +2329,7 @@ int main(int argc, char **argv)
       # -bd_dm_refine 3 -ref_limit 0.00666667 -ts_max_steps 5 -convest_num_refine 2 gives L_2 convergence rate: [0.47, -0.43, 1.5]
       suffix: 3d_cryer_tconv
       args: -bd_dm_refine 1 -dm_refine_volume_limit_pre 0.00666667 \
-            -ts_dt 0.023 -ts_max_time 0.092 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 \
+            -ts_time_step 0.023 -ts_max_time 0.092 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 \
             -pc_type lu -pc_factor_shift_type nonzero
 
 TEST*/

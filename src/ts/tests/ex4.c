@@ -531,11 +531,11 @@ PetscErrorCode PostStep(TS ts)
     test:
       suffix: 7
       requires: !single
-      args: -ts_fd -ts_type beuler -test_PostStep -ts_dt .1
+      args: -ts_fd -ts_type beuler -test_PostStep -ts_time_step .1
 
     test:
       suffix: 8
       requires: !single
-      args: -ts_type rk -ts_rk_type 5dp -ts_dt .01 -ts_adapt_type none -ts_view
+      args: -ts_type rk -ts_rk_type 5dp -ts_time_step .01 -ts_adapt_type none -ts_view
 
 TEST*/

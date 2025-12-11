@@ -42,7 +42,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         -draw_save -draw_save_single_file
 
         Compute the sensitivities of the solution of the first temperature on the initial conditions
-        -ts_adjoint_solve  -ts_dt 1.e-5 -ts_type cn -ts_adjoint_view_solution draw
+        -ts_adjoint_solve  -ts_time_step 1.e-5 -ts_type cn -ts_adjoint_view_solution draw
 
         Turn off diffusion
         -diffusion no

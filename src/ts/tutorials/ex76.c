@@ -1681,41 +1681,41 @@ int main(int argc, char **argv)
       suffix: 2d_tri_p2_p1_p1
       args: -sol_type quadratic \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1
+            -dmts_check .001 -ts_max_steps 4 -ts_time_step 0.1
 
     test:
       # Using -dm_refine 5 -convest_num_refine 2 gives L_2 convergence rate: [0.89, 0.011, 1.0]
       suffix: 2d_tri_p2_p1_p1_tconv
       args: -sol_type cubic_trig \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -ts_max_steps 4 -ts_dt 0.1 -ts_convergence_estimate -convest_num_refine 1
+            -ts_max_steps 4 -ts_time_step 0.1 -ts_convergence_estimate -convest_num_refine 1
 
     test:
       # Using -dm_refine 3 -convest_num_refine 3 gives L_2 convergence rate: [3.0, 2.5, 1.9]
       suffix: 2d_tri_p2_p1_p1_sconv
       args: -sol_type cubic \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -ts_max_steps 1 -ts_dt 1e-4 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
+            -ts_max_steps 1 -ts_time_step 1e-4 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
     test:
       suffix: 2d_tri_p3_p2_p2
       args: -sol_type cubic \
             -vel_petscspace_degree 3 -pres_petscspace_degree 2 -temp_petscspace_degree 2 \
-            -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1
+            -dmts_check .001 -ts_max_steps 4 -ts_time_step 0.1
 
     test:
       # Using -dm_refine 3 -convest_num_refine 3 gives L_2 convergence rate: [3.0, 2.1, 3.1]
       suffix: 2d_tri_p2_p1_p1_tg_sconv
       args: -sol_type taylor_green \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -ts_max_steps 1 -ts_dt 1e-8 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
+            -ts_max_steps 1 -ts_time_step 1e-8 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
     test:
       # Using -dm_refine 3 -convest_num_refine 2 gives L_2 convergence rate: [1.2, 1.5, 1.2]
       suffix: 2d_tri_p2_p1_p1_tg_tconv
       args: -sol_type taylor_green \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -ts_max_steps 4 -ts_dt 0.1 -ts_convergence_estimate -convest_num_refine 1
+            -ts_max_steps 4 -ts_time_step 0.1 -ts_convergence_estimate -convest_num_refine 1
 
   testset:
     requires: triangle !single
@@ -1733,7 +1733,7 @@ int main(int argc, char **argv)
       suffix: 2d_tri_p2_p1_p1_conduct
       args: -sol_type quadratic \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
-            -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1 \
+            -dmts_check .001 -ts_max_steps 4 -ts_time_step 0.1 \
             -pc_fieldsplit_schur_precondition full \
               -fieldsplit_pressure_ksp_max_it 2 -fieldsplit_pressure_pc_type svd
 
@@ -1741,14 +1741,14 @@ int main(int argc, char **argv)
       suffix: 2d_tri_p2_p1_p2_conduct_pipe
       args: -sol_type pipe \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 2 \
-            -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1
+            -dmts_check .001 -ts_max_steps 4 -ts_time_step 0.1
 
     test:
       suffix: 2d_tri_p2_p1_p2_conduct_pipe_wiggly_sconv
       args: -sol_type pipe_wiggly -Fr 1e10 \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 2 \
             -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
-            -ts_max_steps 1 -ts_dt 1e10 \
+            -ts_max_steps 1 -ts_time_step 1e10 \
             -ksp_atol 1e-12 -ksp_max_it 300 \
               -fieldsplit_pressure_ksp_atol 1e-14
 

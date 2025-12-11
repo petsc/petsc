@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 
     testset:
       requires: !single !complex
-      args: -da_grid_x 5 -da_grid_y 5 -da_refine 2 -dm_view -ts_type bdf -ts_adapt_type none -ts_dt 1e-3 -ts_monitor -ts_max_steps 5 -ts_view -snes_rtol 1e-6 -snes_type ngmres -npc_snes_type fas
+      args: -da_grid_x 5 -da_grid_y 5 -da_refine 2 -dm_view -ts_type bdf -ts_adapt_type none -ts_time_step 1e-3 -ts_monitor -ts_max_steps 5 -ts_view -snes_rtol 1e-6 -snes_type ngmres -npc_snes_type fas
       filter: grep -v "total number of"
       test:
         suffix: 1_bdf_ngmres_fas_ms
