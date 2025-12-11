@@ -2655,7 +2655,17 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
   since it is usually slower, one should use a `KSPType` of `KSPRICHARDSON`
   (or equivalently `-ksp_type richardson`) to achieve this. Using `KSPPREONLY` will not work since it only applies a single cycle of multigrid.
 
-  PETSc provides its own geometric and algebraic multigrid solvers `PCMG` and `PCGAMG`, also see `PCHMG` which is useful for certain multicomponent problems
+  PETSc provides its own geometric and algebraic multigrid solvers `PCMG` and `PCGAMG`, also see `PCHMG` which is useful for certain multicomponent problems.
+
+  hypre supports performance logging via the `Caliper` library.  With `--download-hypre --download-caliper`, hypre will be automatically configured with the support.
+
+  Enabling Caliper logging requires setting the `CALI_CONFIG` environment variable before running your hypre code. For example,
+
+  .vb
+    export CALI_CONFIG=runtime-report,max_column_width=200,calc.inclusive,mpi-report,output=stdout
+  .ve
+
+  Then run a hypre code, and you will see profiling results on stdout. See https://software.llnl.gov/Caliper/#guides for more options.
 
   GPU Notes:
   To configure hypre BoomerAMG so that it can utilize NVIDIA GPUs run ./configure --download-hypre --with-cuda
