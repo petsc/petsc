@@ -186,8 +186,8 @@ certain arrays they must pass `PETSC_NULL_XXX_POINTER` as the argument. For exam
 
 ```fortran
 PetscInt, pointer :: lx(:), ly(:)
-PetscCallA(DMDAGetOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
-PetscCallA(DMDARestoreOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
+PetscCallA(DMDAGetOwnershipRanges(dm, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
+PetscCallA(DMDARestoreOwnershipRanges(dm, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
 ```
 
 Arguments that are fully defined Fortran derived types (C structs), such as `MatFactorInfo` or `PetscSFNode`,
