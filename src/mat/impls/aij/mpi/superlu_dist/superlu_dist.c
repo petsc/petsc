@@ -687,8 +687,10 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
   PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
 
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(8, 0, 0)
   lu->options.superlu_acc_offload = 1;
   PetscCall(PetscOptionsBool("-mat_superlu_dist_gpuoffload", "Offload factorization onto the GPUs", "None", (PetscBool)lu->options.superlu_acc_offload, (PetscBool *)&lu->options.superlu_acc_offload, NULL));
+#endif
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &iflg));
   if (!iflg || context->busy) { /* additional options */
@@ -1005,7 +1007,7 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 . -mat_superlu_dist_fact <SamePattern> - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
 . -mat_superlu_dist_iterrefine - use iterative refinement
 . -mat_superlu_dist_printstat - print factorization information
-. -mat_superlu_dist_gpuoffload - offload factorization onto the GPUs
+. -mat_superlu_dist_gpuoffload - offload factorization onto the GPUs, requires SuperLU_DIST 8.0.0 or later
 - -pc_precision single - use SuperLU_DIST single precision with PETSc double precision. Currently this does not accept an options prefix, so
                          regardless of the `PC` prefix you must use no prefix here
 
