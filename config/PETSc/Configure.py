@@ -1401,8 +1401,9 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']:
       self.logPrintBox('Generating Fortran binding')
       try:
-        from utils import generatefortranbindings
-        generatefortranbindings.main(self.petscdir.dir, self.arch.arch)
+        sys.path.append(os.path.join(self.petscdir.dir,'lib','petsc','bin'))
+        import generatefortranbindings
+        generatefortranbindings.main(self.petscdir.dir, '', self.arch.arch)
       except RuntimeError as e:
         raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
 
