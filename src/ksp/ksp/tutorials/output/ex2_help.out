@@ -284,8 +284,8 @@ Viewer (-ksp_view_diagonal_scale) options:
   -ksp_gmres_breakdown_tolerance: <now 0.1 : formerly 0.1>: Divergence breakdown tolerance during GMRES restart (KSPGMRESSetBreakdownTolerance)
   -ksp_gmres_preallocate: <now FALSE : formerly FALSE> Preallocate Krylov vectors (KSPGMRESSetPreAllocateVectors)
   Pick at most one of -------------
-    -ksp_gmres_classicalgramschmidt: Classical (unmodified) Gram-Schmidt (fast) (KSPGMRESSetOrthogonalization)
-    -ksp_gmres_modifiedgramschmidt: Modified Gram-Schmidt (slow,more stable) (KSPGMRESSetOrthogonalization)
+    -ksp_gmres_classicalgramschmidt: classical (unmodified) Gram-Schmidt (fast) (KSPGMRESSetOrthogonalization)
+    -ksp_gmres_modifiedgramschmidt: modified Gram-Schmidt (slow, more stable) (KSPGMRESSetOrthogonalization)
   -ksp_gmres_cgs_refinement_type: <now REFINE_NEVER : formerly REFINE_NEVER> Type of iterative refinement for classical (unmodified) Gram-Schmidt (choose one of) REFINE_NEVER REFINE_IFNEEDED REFINE_ALWAYS (KSPGMRESSetCGSRefinementType)
   -ksp_gmres_krylov_monitor: <now FALSE : formerly FALSE> Plot the Krylov directions (KSPMonitorSet)
 Viewer (-is_view) options:

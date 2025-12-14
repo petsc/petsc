@@ -70,7 +70,7 @@
   3 KSP Residual norm 2.074e-10
 KSP Object: (fc_) 1 MPI process
   type: fgmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
@@ -113,7 +113,7 @@ PC Object: (fc_) 1 MPI process
     KSP solver for S = A11 - A10 inv(A00) A01
       KSP Object: (fc_fieldsplit_pressure_) 1 MPI process
         type: gmres
-          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=100, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
@@ -245,7 +245,7 @@ PC Object: (fc_) 1 MPI process
   2 KSP Residual norm 2.41211e-07
 KSP Object: (fc_) 1 MPI process
   type: fgmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
@@ -288,7 +288,7 @@ PC Object: (fc_) 1 MPI process
     KSP solver for S = A11 - A10 inv(A00) A01
       KSP Object: (fc_fieldsplit_pressure_) 1 MPI process
         type: gmres
-          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=100, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.

@@ -9,7 +9,7 @@
   8 KSP Residual norm 3.48864e-07
 KSP Object: 1 MPI process
   type: gmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-25, divergence=10000.
@@ -33,7 +33,7 @@ Norm of error 6.92543e-07, Iterations 8
   4 KSP Residual norm 1.33045e-07
 KSP Object: 1 MPI process
   type: gmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-25, divergence=10000.

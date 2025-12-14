@@ -450,20 +450,20 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
     switch (gmres->cgstype) {
-    case (KSP_GMRES_CGS_REFINE_NEVER):
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
+    case KSP_GMRES_CGS_REFINE_NEVER:
+      cstr = "classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement";
       break;
-    case (KSP_GMRES_CGS_REFINE_ALWAYS):
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
+    case KSP_GMRES_CGS_REFINE_ALWAYS:
+      cstr = "classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement";
       break;
-    case (KSP_GMRES_CGS_REFINE_IFNEEDED):
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
+    case KSP_GMRES_CGS_REFINE_IFNEEDED:
+      cstr = "classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement when needed";
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Unknown orthogonalization");
     }
   } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
-    cstr = "Modified Gram-Schmidt Orthogonalization";
+    cstr = "modified Gram-Schmidt orthogonalization";
   } else {
     cstr = "unknown orthogonalization";
   }
@@ -535,9 +535,9 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObj
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_gmres_preallocate", "Preallocate Krylov vectors", "KSPGMRESSetPreAllocateVectors", flg, &flg, NULL));
   if (flg) PetscCall(KSPGMRESSetPreAllocateVectors(ksp));
-  PetscCall(PetscOptionsBoolGroupBegin("-ksp_gmres_classicalgramschmidt", "Classical (unmodified) Gram-Schmidt (fast)", "KSPGMRESSetOrthogonalization", &flg));
+  PetscCall(PetscOptionsBoolGroupBegin("-ksp_gmres_classicalgramschmidt", "classical (unmodified) Gram-Schmidt (fast)", "KSPGMRESSetOrthogonalization", &flg));
   if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp, KSPGMRESClassicalGramSchmidtOrthogonalization));
-  PetscCall(PetscOptionsBoolGroupEnd("-ksp_gmres_modifiedgramschmidt", "Modified Gram-Schmidt (slow,more stable)", "KSPGMRESSetOrthogonalization", &flg));
+  PetscCall(PetscOptionsBoolGroupEnd("-ksp_gmres_modifiedgramschmidt", "modified Gram-Schmidt (slow, more stable)", "KSPGMRESSetOrthogonalization", &flg));
   if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp, KSPGMRESModifiedGramSchmidtOrthogonalization));
   PetscCall(PetscOptionsEnum("-ksp_gmres_cgs_refinement_type", "Type of iterative refinement for classical (unmodified) Gram-Schmidt", "KSPGMRESSetCGSRefinementType", KSPGMRESCGSRefinementTypes, (PetscEnum)gmres->cgstype, (PetscEnum *)&gmres->cgstype, &flg));
   flg = PETSC_FALSE;
