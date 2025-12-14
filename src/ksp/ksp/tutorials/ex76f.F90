@@ -1,5 +1,5 @@
 !
-!   Description: Solves a linear systems using PCHPDDM.
+!   Description: Solves a linear system using PCHPDDM.
 !
 #include <petsc/finclude/petscksp.h>
 program main
@@ -16,56 +16,67 @@ program main
   PetscInt m, N
   PetscViewer viewer
   character*(PETSC_MAX_PATH_LEN) dir, name
-  character*(8) fmt
-  character(1) crank, csize
+  PetscLayout map
   PetscBool flg
   PetscErrorCode ierr
 
   PetscCallA(PetscInitialize(ierr))
 
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
+  PetscCheckA(size == 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, 'This example requires 4 processes')
   N = 1
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-rhs', N, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
-  PetscCallA(MatCreate(PETSC_COMM_SELF, aux, ierr))
-  PetscCallA(ISCreate(PETSC_COMM_SELF, is, ierr))
   dir = '.'
   PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-load_dir', dir, flg, ierr))
-  fmt = '(I1)'
-  write (crank, fmt) rank
-  write (csize, fmt) size
-  write (name, '(a)') trim(dir)//'/sizes_'//crank//'_'//csize//'.dat'
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, viewer, ierr))
-  PetscCallA(ISCreate(PETSC_COMM_SELF, sizes, ierr))
+  ! loading matrices
+  write (name, '(a,a,i0,a)') trim(dir), '/sizes_', size, '.dat'
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
+  PetscCallA(ISCreate(PETSC_COMM_WORLD, sizes, ierr))
   PetscCallA(ISLoad(sizes, viewer, ierr))
   PetscCallA(ISGetIndices(sizes, idx, ierr))
   PetscCallA(MatSetSizes(A, idx(1), idx(2), idx(3), idx(4), ierr))
+  PetscCallA(MatCreate(PETSC_COMM_WORLD, Y, ierr))
+  PetscCallA(MatSetSizes(Y, idx(5), idx(5), PETSC_DETERMINE, PETSC_DETERMINE, ierr))
+  PetscCallA(MatSetUp(Y, ierr))
   PetscCallA(ISRestoreIndices(sizes, idx, ierr))
   PetscCallA(ISDestroy(sizes, ierr))
   PetscCallA(PetscViewerDestroy(viewer, ierr))
-  write (name, '(a)') trim(dir)//'/A.dat'
+  write (name, '(a,a)') trim(dir), '/A.dat'
   PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
   PetscCallA(MatLoad(A, viewer, ierr))
   PetscCallA(PetscViewerDestroy(viewer, ierr))
-  write (name, '(a)') trim(dir)//'/is_'//crank//'_'//csize//'.dat'
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, viewer, ierr))
-  PetscCallA(ISLoad(is, viewer, ierr))
+  write (name, '(a,a,i0,a)') trim(dir), '/is_', size, '.dat'
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
+  PetscCallA(ISCreate(PETSC_COMM_WORLD, sizes, ierr))
+  PetscCallA(MatGetLayouts(Y, map, PETSC_NULL_LAYOUT, ierr))
+  PetscCallA(ISSetLayout(sizes, map, ierr))
+  PetscCallA(ISLoad(sizes, viewer, ierr))
+  PetscCallA(ISGetLocalSize(sizes, m, ierr))
+  PetscCallA(ISGetIndices(sizes, idx, ierr))
+  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, m, idx, PETSC_COPY_VALUES, is, ierr))
+  PetscCallA(ISRestoreIndices(sizes, idx, ierr))
+  PetscCallA(ISDestroy(sizes, ierr))
   PetscCallA(PetscViewerDestroy(viewer, ierr))
-  write (name, '(a)') trim(dir)//'/Neumann_'//crank//'_'//csize//'.dat'
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, viewer, ierr))
+  write (name, '(a,a,i0,a)') trim(dir), '/Neumann_', size, '.dat'
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
+  PetscCallA(MatLoad(Y, viewer, ierr))
+  PetscCallA(PetscViewerDestroy(viewer, ierr))
+  PetscCallA(MatGetDiagonalBlock(Y, C, ierr))
+  PetscCallA(MatDuplicate(C, MAT_COPY_VALUES, aux, ierr))
+  PetscCallA(MatDestroy(Y, ierr))
   PetscCallA(MatSetBlockSizesFromMats(aux, A, A, ierr))
-  PetscCallA(MatLoad(aux, viewer, ierr))
-  PetscCallA(PetscViewerDestroy(viewer, ierr))
   PetscCallA(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE, ierr))
   PetscCallA(MatSetOption(aux, MAT_SYMMETRIC, PETSC_TRUE, ierr))
+  ! ready for testing
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
   PetscCallA(KSPSetOperators(ksp, A, A, ierr))
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCHPDDM, ierr))
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscCallA(PCHPDDMSetAuxiliaryMat(pc, is, aux, PETSC_NULL_FUNCTION, PETSC_NULL_INTEGER, ierr))
-  PetscCallA(PCHPDDMHasNeumannMat(pc, PETSC_FALSE, ierr))
+  PetscCallA(PCHPDDMHasNeumannMat(pc, PETSC_FALSE, ierr)) ! PETSC_TRUE is fine as well, just testing
 #endif
   PetscCallA(ISDestroy(is, ierr))
   PetscCallA(MatDestroy(aux, ierr))
