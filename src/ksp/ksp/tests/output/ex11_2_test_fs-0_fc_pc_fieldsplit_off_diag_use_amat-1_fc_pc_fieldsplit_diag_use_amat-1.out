@@ -53,7 +53,7 @@
 KSP Object: (fc_) 4 MPI processes
   type: fgmres
     restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
+    happy breakdown tolerance=1e-30
   maximum iterations=4000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
@@ -114,7 +114,7 @@ PC Object: (fc_) 4 MPI processes
       KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
         type: fgmres
           restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          happy breakdown tolerance=1e-30
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning
@@ -260,7 +260,7 @@ PC Object: (fc_) 4 MPI processes
 KSP Object: (fc_) 4 MPI processes
   type: fgmres
     restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
+    happy breakdown tolerance=1e-30
   maximum iterations=4000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
@@ -321,7 +321,7 @@ PC Object: (fc_) 4 MPI processes
       KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
         type: fgmres
           restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          happy breakdown tolerance=1e-30
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning

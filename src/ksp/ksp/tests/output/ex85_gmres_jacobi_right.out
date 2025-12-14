@@ -6,7 +6,7 @@ Iteratively computed extreme singular values: max 1.5 min 0.5 max/min 3.
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
+    happy breakdown tolerance=1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-14, absolute=1e-14, divergence=10000.
   right preconditioning

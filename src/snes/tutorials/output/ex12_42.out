@@ -83,7 +83,7 @@ SNES Object: 1 MPI process
       KSP Object: (fas_coarse_) 1 MPI process
         type: gmres
           restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          happy breakdown tolerance=1e-30
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -117,7 +117,7 @@ SNES Object: 1 MPI process
       KSP Object: (fas_levels_1_) 1 MPI process
         type: gmres
           restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          happy breakdown tolerance=1e-30
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -152,7 +152,7 @@ SNES Object: 1 MPI process
       KSP Object: (fas_levels_2_) 1 MPI process
         type: gmres
           restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          happy breakdown tolerance=1e-30
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning

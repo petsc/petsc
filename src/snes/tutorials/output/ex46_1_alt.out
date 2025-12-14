@@ -19,7 +19,7 @@ SNESLineSearch Object: 1 MPI process
   KSP Object: 1 MPI process
     type: fgmres
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-      happy breakdown tolerance 1e-30
+      happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
     tolerances: relative=1e-05, absolute=1e-25, divergence=10000.
     right preconditioning
@@ -66,7 +66,7 @@ SNESLineSearch Object: 1 MPI process
           KSP Object: (mg_levels_1_esteig_) 1 MPI process
             type: gmres
               restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-              happy breakdown tolerance 1e-30
+              happy breakdown tolerance=1e-30
             maximum iterations=10, initial guess is zero
             tolerances: relative=1e-12, absolute=1e-25, divergence=10000.
             left preconditioning

@@ -469,7 +469,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   }
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT ", using %s\n", gmres->max_k, cstr));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance %g\n", (double)gmres->haptol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance=%g\n", (double)gmres->haptol));
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "%s restart %" PetscInt_FMT, cstr, gmres->max_k));
   }

@@ -426,7 +426,7 @@ SNES Object: 1 MPI process
   KSP Object: 1 MPI process
     type: gmres
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-      happy breakdown tolerance 1e-30
+      happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
     tolerances: relative=1e-09, absolute=1e-10, divergence=10000.
     left preconditioning
@@ -442,7 +442,7 @@ SNES Object: 1 MPI process
         KSP Object: (fieldsplit_velocity_) 1 MPI process
           type: gmres
             restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+            happy breakdown tolerance=1e-30
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -477,7 +477,7 @@ SNES Object: 1 MPI process
         KSP Object: (fieldsplit_pressure_) 1 MPI process
           type: gmres
             restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+            happy breakdown tolerance=1e-30
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -573,7 +573,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
   KSP Object: 1 MPI process
     type: gmres
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-      happy breakdown tolerance 1e-30
+      happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
     tolerances: relative=1e-09, absolute=1e-10, divergence=10000.
     left preconditioning
@@ -602,7 +602,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
         KSP Object: (fieldsplit_velocity_) 1 MPI process
           type: gmres
             restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+            happy breakdown tolerance=1e-30
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -643,7 +643,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
         KSP Object: (fieldsplit_pressure_) 1 MPI process
           type: gmres
             restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+            happy breakdown tolerance=1e-30
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -686,7 +686,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
                 KSP Object: (fieldsplit_velocity_) 1 MPI process
                   type: gmres
                     restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-                    happy breakdown tolerance 1e-30
+                    happy breakdown tolerance=1e-30
                   maximum iterations=10000, initial guess is zero
                   tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning

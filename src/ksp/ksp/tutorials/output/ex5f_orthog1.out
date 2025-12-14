@@ -1,7 +1,7 @@
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using modified Gram-Schmidt orthogonalization
-    happy breakdown tolerance 1e-30
+    happy breakdown tolerance=1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
@@ -31,7 +31,7 @@ Relative norm of residual 0.000000433, Iterations 04
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using modified Gram-Schmidt orthogonalization
-    happy breakdown tolerance 1e-30
+    happy breakdown tolerance=1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning

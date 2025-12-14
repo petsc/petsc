@@ -29,7 +29,7 @@ SNES Object: 2 MPI processes
   KSP Object: 2 MPI processes
     type: gmres
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
-      happy breakdown tolerance 1e-30
+      happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
     tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
