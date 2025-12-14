@@ -1065,46 +1065,56 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
   SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
-  PetscBool           func_accept, snes_div_func;
+  PetscBool           func_accept;
+  char                reject_stage_message[512];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscAssertPointer(accept, 5);
+  *accept = PETSC_TRUE;
 
   PetscCall(TSFunctionDomainError(ts, t, Y, &func_accept));
+  if (!func_accept) {
+    PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by TSSetFunctionDomainError()\n", ts->steps));
+    PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by TSSetFunctionDomainError()\n", ((PetscObject)adapt)->type_name, ts->steps));
+    goto reject_stage;
+  }
+
   if (ts->snes) PetscCall(SNESGetConvergedReason(ts->snes, &snesreason));
-  snes_div_func = (PetscBool)(snesreason == SNES_DIVERGED_FUNCTION_DOMAIN);
-  if (func_accept && snesreason < 0 && !snes_div_func) {
-    *accept = PETSC_FALSE;
+  if (snesreason == SNES_DIVERGED_FUNCTION_DOMAIN) {
+    PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by SNES invalid function domain\n", ts->steps));
+    PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by SNES invalid function domain\n", ((PetscObject)adapt)->type_name, ts->steps));
+    goto reject_stage;
+  } else if (snesreason < 0) {
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failure: %s\n", ts->steps, SNESConvergedReasons[snesreason]));
     if (++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures != PETSC_UNLIMITED) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
-      if (adapt->monitor) {
-        PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected t=%-11g+%10.3e, nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed\n", ((PetscObject)adapt)->type_name, ts->steps,
-                                         (double)ts->ptime, (double)ts->time_step, ts->num_snes_failures));
-        PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-      }
+      PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected t=%-11g+%10.3e, nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed\n",
+                              ((PetscObject)adapt)->type_name, ts->steps, (double)ts->ptime, (double)ts->time_step, ts->num_snes_failures));
     }
-  } else {
-    *accept = (PetscBool)(func_accept && !snes_div_func);
-    if (*accept && adapt->checkstage) PetscCall((*adapt->checkstage)(adapt, ts, t, Y, accept));
-    if (!*accept) {
-      const char *user_func = !func_accept ? "TSSetFunctionDomainError()" : "TSAdaptSetCheckStage";
-      const char *snes_err  = "SNES invalid function domain";
-      const char *err_msg   = snes_div_func && func_accept ? snes_err : user_func;
-      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by %s\n", ts->steps, err_msg));
-      if (adapt->monitor) {
-        PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by %s\n", ((PetscObject)adapt)->type_name, ts->steps, err_msg));
-        PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-      }
-    }
+    goto reject_stage;
   }
 
-  if (!*accept && !ts->reason) {
+  if (adapt->checkstage) {
+    PetscCallBack("TSAdapt callback check stage", (*adapt->checkstage)(adapt, ts, t, Y, accept));
+    if (!*accept) {
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by TSAdaptSetCheckStage\n", ts->steps));
+      PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by TSAdaptSetCheckStage\n", ((PetscObject)adapt)->type_name, ts->steps));
+      goto reject_stage;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+
+reject_stage:
+  *accept = PETSC_FALSE;
+  if (adapt->monitor) {
+    PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "%s", reject_stage_message));
+    PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
+  }
+  if (!ts->reason) {
     PetscReal dt, new_dt;
     PetscCall(TSGetTimeStep(ts, &dt));
     new_dt = dt * adapt->scale_solve_failed;
