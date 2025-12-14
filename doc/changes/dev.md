@@ -24,6 +24,7 @@
 ```
 
 - Add `PetscCallHYPRE()` to check HYPRE error codes and print error messages on failure
+- Add `PetscBTCountSet()` to count set bits in `PetscBT`
 
 
 ```{rubric} Event Logging:
