@@ -292,12 +292,11 @@ PetscErrorCode MatSetFromOptions(Mat B)
     PetscCall(PetscLayoutSetBlockSize(B->cmap, newbs));
   }
 
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, 256, &flg));
-  if (flg) {
-    PetscCall(MatSetType(B, type));
-  } else if (!((PetscObject)B)->type_name) {
-    PetscCall(MatSetType(B, deft));
-  }
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, PETSC_STATIC_ARRAY_LENGTH(type), &flg));
+  if (flg) PetscCall(MatSetType(B, type));
+  else if (!((PetscObject)B)->type_name) PetscCall(MatSetType(B, deft));
+
+  if (newbs > 0) PetscTryTypeMethod(B, setblocksizes, newbs, newbs);
 
   PetscCall(PetscOptionsName("-mat_is_symmetric", "Checks if mat is symmetric on MatAssemblyEnd()", "MatIsSymmetric", &B->checksymmetryonassembly));
   PetscCall(PetscOptionsReal("-mat_is_symmetric", "Checks if mat is symmetric on MatAssemblyEnd()", "MatIsSymmetric", B->checksymmetrytol, &B->checksymmetrytol, NULL));
