@@ -1,7 +1,7 @@
 Linear solve converged due to CONVERGED_RTOL iterations 20
 KSP Object: 8 MPI processes
   type: fgmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
   maximum iterations=50, initial guess is zero
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test

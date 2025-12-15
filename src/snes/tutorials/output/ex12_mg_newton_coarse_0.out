@@ -63,8 +63,8 @@ SNES Object: 1 MPI process
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI process
         type: gmres
-          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+          happy breakdown tolerance=1e-30
         maximum iterations=10, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -94,8 +94,8 @@ SNES Object: 1 MPI process
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI process
         type: gmres
-          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+          happy breakdown tolerance=1e-30
         maximum iterations=10, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -125,8 +125,8 @@ SNES Object: 1 MPI process
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 1 MPI process
         type: gmres
-          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          happy breakdown tolerance 1e-30
+          restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+          happy breakdown tolerance=1e-30
         maximum iterations=10, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning

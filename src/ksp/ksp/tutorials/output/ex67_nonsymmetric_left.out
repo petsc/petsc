@@ -7,8 +7,8 @@
 Linear solve converged due to CONVERGED_RTOL iterations 5
 KSP Object: 1 MPI process
   type: gmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+    happy breakdown tolerance=1e-30
   maximum iterations=12, initial guess is zero
   tolerances: relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning
@@ -33,8 +33,8 @@ PC Object: 1 MPI process
 Linear solve converged due to CONVERGED_RTOL iterations 4
 KSP Object: 1 MPI process
   type: gmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+    happy breakdown tolerance=1e-30
   maximum iterations=12, initial guess is zero
   tolerances: relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning

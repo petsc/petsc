@@ -2811,8 +2811,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
       bB->j[k]    = garray[bj] * bs + br;
     }
   }
+  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
 
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &B));

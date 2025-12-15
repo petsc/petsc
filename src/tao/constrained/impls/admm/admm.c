@@ -247,10 +247,10 @@ static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool
 
   PetscFunctionBegin;
   switch (am->update) {
-  case (TAO_ADMM_UPDATE_BASIC):
+  case TAO_ADMM_UPDATE_BASIC:
     break;
-  case (TAO_ADMM_UPDATE_ADAPTIVE):
-  case (TAO_ADMM_UPDATE_ADAPTIVE_RELAXED):
+  case TAO_ADMM_UPDATE_ADAPTIVE:
+  case TAO_ADMM_UPDATE_ADAPTIVE_RELAXED:
     if (H && (am->muold != am->mu)) {
       if (!Identity) {
         PetscCall(MatAXPY(H, am->mu - am->muold, Constraint, DIFFERENT_NONZERO_PATTERN));
@@ -367,9 +367,9 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
 
   if (!is_reg_shell) {
     switch (am->regswitch) {
-    case (TAO_ADMM_REGULARIZER_USER):
+    case TAO_ADMM_REGULARIZER_USER:
       break;
-    case (TAO_ADMM_REGULARIZER_SOFT_THRESH):
+    case TAO_ADMM_REGULARIZER_SOFT_THRESH:
       /* Soft Threshold. */
       break;
     }

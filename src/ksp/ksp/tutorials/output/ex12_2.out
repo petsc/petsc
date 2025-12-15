@@ -30,8 +30,8 @@ Mat Object:
  25 KSP Residual norm 6.43512e-09
 KSP Object:
   type: gmres
-    restart=30, using Modified Gram-Schmidt Orthogonalization
-    happy breakdown tolerance 1e-30
+    restart=30, using modified Gram-Schmidt orthogonalization
+    happy breakdown tolerance=1e-30
   maximum iterations=10000, initial guess is zero
   tolerances: relative=1e-08, absolute=1e-50, divergence=10000.
   left preconditioning
