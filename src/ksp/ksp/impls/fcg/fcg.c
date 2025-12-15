@@ -267,23 +267,29 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPDestroy_FCG(KSP ksp)
+static PetscErrorCode KSPReset_FCG(KSP ksp)
 {
   PetscInt i;
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
-  /* Destroy "standard" work vecs */
-  PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
-
   /* Destroy P and C vectors and the arrays that manage pointers to them */
   if (fcg->nvecs) {
     for (i = 0; i < fcg->nchunks; ++i) {
       PetscCall(VecDestroyVecs(fcg->chunksizes[i], &fcg->pPvecs[i]));
       PetscCall(VecDestroyVecs(fcg->chunksizes[i], &fcg->pCvecs[i]));
     }
+    fcg->nchunks = fcg->nvecs = 0;
   }
   PetscCall(PetscFree5(fcg->Pvecs, fcg->Cvecs, fcg->pPvecs, fcg->pCvecs, fcg->chunksizes));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPDestroy_FCG(KSP ksp)
+{
+  KSP_FCG *fcg = (KSP_FCG *)ksp->data;
+
+  PetscFunctionBegin;
   /* free space used for singular value calculations */
   if (ksp->calc_sings) PetscCall(PetscFree4(fcg->e, fcg->d, fcg->ee, fcg->dd));
   PetscCall(KSPDestroyDefault(ksp));
@@ -549,6 +555,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_FCG;
   ksp->ops->solve          = KSPSolve_FCG;
+  ksp->ops->reset          = KSPReset_FCG;
   ksp->ops->destroy        = KSPDestroy_FCG;
   ksp->ops->view           = KSPView_FCG;
   ksp->ops->setfromoptions = KSPSetFromOptions_FCG;
