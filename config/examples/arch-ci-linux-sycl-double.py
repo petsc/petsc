@@ -15,7 +15,6 @@ if __name__ == '__main__':
     '--with-fc=0',
     '--COPTFLAGS=-g -O2',
     '--CXXOPTFLAGS=-g -O2',
-    '--CXXPPFLAGS=-std=c++17',
     '--SYCLOPTFLAGS=-g -O2',
     # To suppress warnings in checking Kokkos-Kernels headers like:
     # Kokkos_MathematicalFunctions.hpp:299:34: warning: comparison with infinity always evaluates
