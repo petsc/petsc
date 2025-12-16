@@ -78,6 +78,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   const PetscReal     *maxCell, *Lstart, *L;
   VecType              vecType;
   MatType              matType;
+  MatOrderingType      otype;
   PetscBool            dist, sparseLocalize, useCeed, balance_partition;
   DMReorderDefaultFlag reorder;
 
@@ -94,10 +95,12 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
-  PetscCall(DMPlexReorderGetDefault(dmin, &reorder));
-  PetscCall(DMPlexReorderSetDefault(dmout, reorder));
   PetscCall(DMGetSparseLocalize(dmin, &sparseLocalize));
   PetscCall(DMSetSparseLocalize(dmout, sparseLocalize));
+  PetscCall(DMReorderSectionGetDefault(dmin, &reorder));
+  PetscCall(DMReorderSectionSetDefault(dmout, reorder));
+  PetscCall(DMReorderSectionGetType(dmin, &otype));
+  PetscCall(DMReorderSectionSetType(dmout, otype));
   PetscCall(DMPlexGetUseCeed(dmin, &useCeed));
   PetscCall(DMPlexSetUseCeed(dmout, useCeed));
   PetscCall(DMPlexGetPartitionBalance(dmin, &balance_partition));
