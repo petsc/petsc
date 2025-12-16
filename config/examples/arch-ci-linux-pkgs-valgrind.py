@@ -12,6 +12,8 @@ configure_options = [
   '--with-mpi-dir=/nfs/gce/projects/petsc/soft/u22.04/mpich-4.3.0-p2-ucx', # requires 'UCX_SYSV_HUGETLB_MODE=n' to avoid: WARNING: valgrind ignores shmget(shmflg) SHM_HUGETLB
   #'--download-mpich=1',
   #'--with-hwloc=0', # make sure mpich is built without hwloc - as it doesn't work with valgrind
+  '--with-cudac=0',
+  '--with-hipc=0',
   '--download-make=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
