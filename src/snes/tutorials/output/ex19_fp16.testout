@@ -1,0 +1,2 @@
+lid velocity = 0.00160027, prandtl # = 1., grashof # = 1.
+Number of SNES iterations = 1
