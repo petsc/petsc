@@ -15,9 +15,27 @@
 
   Level: advanced
 
-  Note:
+  Notes:
   See `DMSetApplicationContext()` and `DMGetApplicationContext()` for how to get user information into
   this routine
+
+  The provided function should have a signature matching
+.vb
+   PetscErrorCode your_form_couple_method(DM dm, Mat J, PetscInt *dnz, PetscInt *onz, PetscInt rstart, PetscInt nrows, PetscInt start, PetscInt end);
+.ve
+  where
++ dm     - the composite object
+. J      - the constructed matrix, or `NULL`. If provided, the function should fill the existing nonzero pattern with zeros (only `dm` and `rstart` are valid in this case).
+. dnz    - array counting the number of on-diagonal non-zero entries per row, where on-diagonal means that this process owns both the row and column
+. onz    - array counting the number of off-diagonal non-zero entries per row, where off-diagonal means that this process owns the row
+. rstart - offset into `*nz` arrays, for local row index `r`, update `onz[r - rstart]` or `dnz[r - rstart]`
+. nrows  - number of owned global rows
+. start  - the first owned global index
+- end    - the last owned global index + 1
+
+  If `J` is not `NULL`, then the only other valid parameter is `rstart`
+
+  The user coupling function has a weird and poorly documented interface and is not tested, it should be removed
 
 .seealso: `DMCOMPOSITE`, `DM`
 @*/
