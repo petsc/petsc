@@ -80,6 +80,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J)
   }
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  if (dm->prealloc_skip) PetscFunctionReturn(PETSC_SUCCESS);
   MatPreallocateBegin(PetscObjectComm((PetscObject)dm), m, m, dnz, onz);
   /* loop over packed objects, handling one at a time */
   next = com->next;
