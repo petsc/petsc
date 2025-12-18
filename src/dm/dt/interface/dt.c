@@ -3441,6 +3441,19 @@ PetscErrorCode PetscDTCreateQuadratureByCell(DMPolytopeType ct, PetscInt qorder,
 
   PetscFunctionBegin;
   switch (ct) {
+  case DM_POLYTOPE_POINT: {
+    PetscReal *x, *w;
+
+    PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, q));
+    PetscCall(PetscQuadratureSetCellType(*q, ct));
+    PetscCall(PetscQuadratureSetOrder(*q, 0));
+    PetscCall(PetscMalloc1(1, &x));
+    PetscCall(PetscMalloc1(1, &w));
+    x[0] = 0.;
+    w[0] = 1.;
+    PetscCall(PetscQuadratureSetData(*q, dim, 1, 1, x, w));
+    *fq = NULL;
+  } break;
   case DM_POLYTOPE_SEGMENT:
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
   case DM_POLYTOPE_QUADRILATERAL:
