@@ -1422,8 +1422,8 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char
   Collective on `PETSC_COMM_WORLD`
 
   Options Database Keys:
-+ -options_view                    - Calls `PetscOptionsView()`
-. -options_left                    - Prints unused options that remain in the database
++ -options_view                    - Calls `PetscOptionsView()` to display all options in the database
+. -options_left                    - Prints unused options that remain in the database (default value is `true`)
 . -objects_dump [all]              - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 . -mpidump                         - Calls PetscMPIDump()
 . -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
@@ -1584,9 +1584,6 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-options_left", &flg3, &flg1));
   if (!flg1) flg3 = PETSC_TRUE;
   if (flg3) {
-    if (!flg2 && flg1) { /* have not yet printed the options */
-      PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD));
-    }
     PetscCall(PetscOptionsAllUsed(NULL, &nopt));
     if (nopt) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "WARNING! There are options you set that were not used!\n"));

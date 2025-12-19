@@ -9,6 +9,8 @@
 ```{rubric} General:
 ```
 
+- Change behavior of `-options_left` when set to `true`: it no longer triggers a call to `PetscOptionsView()`
+
 ```{rubric} Configure/Build:
 ```
 
