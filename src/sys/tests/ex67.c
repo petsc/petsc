@@ -47,6 +47,8 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    requires: defined(PETSC_HAVE_COMPLEX)
+
     suffix: 0
     output_file: output/empty.out
 
