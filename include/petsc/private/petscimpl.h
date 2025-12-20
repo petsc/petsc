@@ -498,7 +498,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       #define PETSC_GENERIC_CV(type, result) type * : result, const type * : result, volatile type * : result, const volatile type * : result
 
       #if PetscDefined(HAVE_COMPLEX)
-        #define PETSC_GENERIC_CV_COMPLEX(result) PETSC_GENERIC_CV(PetscComplex, result)
+        #define PETSC_GENERIC_CV_COMPLEX(result) , PETSC_GENERIC_CV(PetscComplex, result)
       #else
         #define PETSC_GENERIC_CV_COMPLEX(result)
       #endif
@@ -516,13 +516,13 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
           PETSC_GENERIC_CV(       int32_t, PETSC_INT32), \
           PETSC_GENERIC_CV(      uint32_t, PETSC_INT32), \
           PETSC_GENERIC_CV(       int64_t, PETSC_INT64), \
-          PETSC_GENERIC_CV(      uint64_t, PETSC_INT64), \
+          PETSC_GENERIC_CV(      uint64_t, PETSC_INT64) \
           PETSC_GENERIC_CV_COMPLEX(PETSC_COMPLEX))
 
       #define PETSC_GENERIC_CV_STRINGIZE(type) PETSC_GENERIC_CV(type, PetscStringize(type))
 
       #if PetscDefined(HAVE_COMPLEX)
-        #define PETSC_GENERIC_CV_STRINGIZE_COMPLEX PETSC_GENERIC_CV_STRINGIZE(PetscComplex)
+        #define PETSC_GENERIC_CV_STRINGIZE_COMPLEX , PETSC_GENERIC_CV_STRINGIZE(PetscComplex)
       #else
         #define PETSC_GENERIC_CV_STRINGIZE_COMPLEX
       #endif
@@ -540,7 +540,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
           PETSC_GENERIC_CV_STRINGIZE(int32_t), \
           PETSC_GENERIC_CV_STRINGIZE(uint32_t), \
           PETSC_GENERIC_CV_STRINGIZE(int64_t), \
-          PETSC_GENERIC_CV_STRINGIZE(uint64_t), \
+          PETSC_GENERIC_CV_STRINGIZE(uint64_t) \
           PETSC_GENERIC_CV_STRINGIZE_COMPLEX)
     #else // PETSC_C_VERSION >= 11 || defined(__cplusplus)
       #define PetscAssertPointer_PetscDataType(h) PETSC_CHAR

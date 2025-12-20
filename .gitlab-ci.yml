@@ -114,6 +114,15 @@ check-ci-settings:
 # The following tests run on the cloud as part of stage-1.
 #
 
+fp16-arm:
+  extends: .stage-1
+  tags:
+    - linux-arm-stage1
+  variables:
+    CONFIG_OPTS: --with-precision=__fp16 --with-fc=0 --with-mpi-dir=/software/mpich-4.2.3 --with-blaslapack-dir=/software/f2cblaslapack
+    TEST_SEARCH: vec_vec_tests-ex6%
+    MAKE_CXXFLAGS: -O1 -Werror
+
 ompi-cuda:
   extends: .stage-1
   tags:

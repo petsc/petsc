@@ -12,6 +12,11 @@ QUIET = $(shell [ "$(V)" = "0" ] && echo @)
 ex55: ex55k.o
 
 #-------------------------------------------------------------------------
+ifeq ($(PETSC_PRECISION),__fp16)
+  TESTEX19OUT = output/ex19_fp16.testout
+else
+  TESTEX19OUT = output/ex19_1.testout
+endif
 
 #  these tests are used by the makefile in PETSC_DIR for basic tests of the install and should not be removed
 testex5f: ex5f.PETSc
@@ -28,7 +33,7 @@ testex5f: ex5f.PETSc
 	${RM} -f ex5f.tmp ex5f.dtmp;
 testex19: ex19.PETSc
 	-${QUIET}${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19.tmp 2>&1;
-	-${QUIET}${DIFF} output/ex19_1.testout ex19.tmp > ex19.dtmp;
+	-${QUIET}${DIFF} ${TESTEX19OUT} ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process"; \
 	else \
@@ -39,8 +44,8 @@ testex19: ex19.PETSc
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 testex19_mpi:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19.tmp 2>&1;
-	-${QUIET}${DIFF} output/ex19_1.testout ex19.tmp > ex19.dtmp;
+	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres -snes_type newtontrdc  > ex19.tmp 2>&1;
+	-${QUIET}${DIFF} ${TESTEX19OUT} ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with 2 MPI processes"; \
 	else \
