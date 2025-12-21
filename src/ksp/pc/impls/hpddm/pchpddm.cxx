@@ -2163,7 +2163,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &B));
               PetscCall(MatDiagonalScale(B, v, nullptr));
               if (B01) PetscCall(MatDiagonalScale(B01, v, nullptr));
-            } else { /* not the same as MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG in MatSchurComplementGetPmat(), which considers process block diagonal, instead of point block diagonal, as done here */
+            } else {
               Mat     D00;
               MatType type;
 
