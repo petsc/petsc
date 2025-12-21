@@ -40,8 +40,8 @@ if __name__ == '__main__':
     '--download-magma',
     '--download-kblas',
     '--download-h2opus',
-    '--download-kokkos',
-    '--download-kokkos-kernels',
+    # '--download-kokkos', # Kokkos-5.0 requires c++20 and cuda-12.2 or above, which break many packages
+    # '--download-kokkos-kernels',
     '--download-hwloc',
     #'--download-umpire', #'hypre' reserves 4G VRAM for each MPI process
     '--download-hypre',

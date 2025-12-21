@@ -28,7 +28,9 @@ if __name__ == '__main__':
     '--with-precision=double',
     '--with-clanguage=c',
     '--download-kokkos',
+    '--download-kokkos-commit=4.7.01', #TODO: Update to Kokkos-5.0 with rocm-6.2+
     '--download-kokkos-kernels',
+    '--download-kokkos-kernels-commit=4.7.01',
     # '--download-hypre', # does not support complex on the GPU yet
     # '--download-mfem',  # requires hypre
     '--download-magma',

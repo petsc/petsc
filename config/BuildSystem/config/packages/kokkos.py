@@ -6,8 +6,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.7.01'
-    self.minversion       = '3.7.01'
+    self.gitcommit        = '5.0.0'
+    self.minversion       = '4.3.00'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git','https://github.com/kokkos/kokkos/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['kokkos']
@@ -17,11 +17,7 @@ class Configure(config.package.CMakePackage):
                              ['libkokkoscontainers.a','libkokkoscore.a']]
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
-    self.minCxxVersion    = 'c++17'
-    # nvcc_wrapper in Kokkos-4.0.00 does not handle -std=c++20 correctly (it wrongly passes that to -Xcompiler).
-    # Though Kokkos/develop fixed the problem, we set maxCxxVersion to c++17 here to lower the standard PETSc would use as a workaround.
-    # TODO: remove this line once we use newer Kokkos versions
-    self.maxCxxVersion    = 'c++17'
+    self.minCxxVersion    = 'c++20'
     self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is available, it will be modified.
     self.hastests         = 1
     self.requiresrpath    = 1
