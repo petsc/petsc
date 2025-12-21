@@ -612,6 +612,26 @@ linux-cuda-pkgs:
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
     OMP_PROC_BIND: false
 
+linux-kokkos-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - cuda-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-kokkos-cuda
+    # run all tests that:
+    # 1. require cuda, OR
+    # 2. require kokkos[_kernels]
+    #
+    # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
+    # shell, and I could not manage to escape it enough times...
+    TEST_OPTS: -j3 queryval='cuda,kokkos*' query='requires,requires'
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
+    OMP_PROC_BIND: false
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-11-27-cuda/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: cuda/12.8.0-rz6425d
+
 linux-cuda112-omp:
   extends:
     - .stage-3
