@@ -6,8 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.version          = ''
     self.versionname      = ''
-    self.gitcommit        = '4d1bda0016c42bbe9c0470ca976f10cf6774fd8a' # main Jul 5 2023, with cuda-12 update
-    self.download         = ['git://https://github.com/NVIDIA/AMGX', 'https://github.com/NVIDIA/AMGX/archive/'+self.gitcommit+'.tar.gz']
+    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/amgx-2.4.0.tar.gz']
     self.gitsubmodules    = ['.']
     self.functions        = []
     self.includes         = ['amgx_c.h']
