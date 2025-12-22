@@ -1102,8 +1102,8 @@ It is also possible to monitor the differencing parameters h that are
 computed via the routines
 
 ```
-MatMFFDSetHHistory(Mat, PetscScalar *,int);
-MatMFFDResetHHistory(Mat, PetscScalar *,int);
+MatMFFDSetHHistory(Mat, PetscScalar *, int);
+MatMFFDResetHHistory(Mat, PetscScalar *, int);
 MatMFFDGetH(Mat, PetscScalar *);
 ```
 
@@ -1185,7 +1185,7 @@ MatColoring   coloring;
   because clearly if we had a routine to compute the Jacobian we wouldn't
   need to use finite differences.
 */
-FormJacobian(snes,x, &J, &J, &user);
+FormJacobian(snes, x, &J, &J, &user);
 
 /*
    Color the matrix, i.e. determine groups of columns that share no common
