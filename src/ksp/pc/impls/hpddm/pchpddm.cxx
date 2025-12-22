@@ -143,7 +143,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
   }
   PetscCall(ISDestroy(is + 2));
   PetscCall(ISDestroy(is + 1));
-  PetscCall(PetscOptionsGetString(nullptr, pcpre, "-pc_hpddm_levels_1_sub_pc_type", type, sizeof(type), nullptr));
+  PetscCall(PetscOptionsGetString(((PetscObject)pc)->options, pcpre, "-pc_hpddm_levels_1_sub_pc_type", type, sizeof(type), nullptr));
   PetscCall(PetscStrcmp(type, PCQR, &flg));
   if (!flg) {
     Mat conjugate = *splitting[splitting[1] ? 1 : 0];
@@ -413,17 +413,17 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems PetscOption
     PetscCall(PetscOptionsRangeInt(prefix, "Number of processes used to assemble the coarsest operator", "PCHPDDM", n, &n, nullptr, 1, PetscMax(1, previous / 2)));
 #if PetscDefined(HAVE_MUMPS)
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "pc_hpddm_coarse_"));
-    PetscCall(PetscOptionsHasName(nullptr, prefix, "-mat_mumps_use_omp_threads", &flg));
+    PetscCall(PetscOptionsHasName(PetscOptionsObject->options, prefix, "-mat_mumps_use_omp_threads", &flg));
     if (flg) {
       char type[64]; /* same size as in src/ksp/pc/impls/factor/factimpl.c */
 
       PetscCall(PetscStrncpy(type, n > 1 && PetscDefined(HAVE_MUMPS) ? MATSOLVERMUMPS : MATSOLVERPETSC, sizeof(type))); /* default solver for a MatMPIAIJ or a MatSeqAIJ */
-      PetscCall(PetscOptionsGetString(nullptr, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), nullptr));
+      PetscCall(PetscOptionsGetString(PetscOptionsObject->options, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), nullptr));
       PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
       PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-%smat_mumps_use_omp_threads and -%spc_factor_mat_solver_type != %s", prefix, prefix, MATSOLVERMUMPS);
       size = n;
       n    = -1;
-      PetscCall(PetscOptionsGetInt(nullptr, prefix, "-mat_mumps_use_omp_threads", &n, nullptr));
+      PetscCall(PetscOptionsGetInt(PetscOptionsObject->options, prefix, "-mat_mumps_use_omp_threads", &n, nullptr));
       PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Need to specify a positive integer for -%smat_mumps_use_omp_threads", prefix);
       PetscCheck(n * size <= previous, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%d MPI process%s x %d OpenMP thread%s greater than %d available MPI process%s for the coarsest operator", (int)size, size > 1 ? "es" : "", (int)n, n > 1 ? "s" : "", (int)previous, previous > 1 ? "es" : "");
     }
@@ -1864,8 +1864,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 
   if (!ismatis) {
     PetscCall(PCHPDDMSetUpNeumannOverlap_Private(pc));
-    PetscCall(PetscOptionsGetBool(nullptr, pcpre, "-pc_hpddm_block_splitting", &block, nullptr));
-    PetscCall(PetscOptionsGetInt(nullptr, pcpre, "-pc_hpddm_harmonic_overlap", &overlap, nullptr));
+    PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, pcpre, "-pc_hpddm_block_splitting", &block, nullptr));
+    PetscCall(PetscOptionsGetInt(((PetscObject)pc)->options, pcpre, "-pc_hpddm_harmonic_overlap", &overlap, nullptr));
     PetscCall(PetscObjectTypeCompare((PetscObject)P, MATSCHURCOMPLEMENT, &flg));
     if (data->is || flg) {
       if (block || overlap != -1) {
@@ -1874,7 +1874,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       } else if (flg) {
         PCHPDDMSchurPreType type = PC_HPDDM_SCHUR_PRE_GENEO;
 
-        PetscCall(PetscOptionsGetEnum(nullptr, pcpre, "-pc_hpddm_schur_precondition", PCHPDDMSchurPreTypes, (PetscEnum *)&type, &flg));
+        PetscCall(PetscOptionsGetEnum(((PetscObject)pc)->options, pcpre, "-pc_hpddm_schur_precondition", PCHPDDMSchurPreTypes, (PetscEnum *)&type, &flg));
         if (type == PC_HPDDM_SCHUR_PRE_LEAST_SQUARES) {
           PetscCall(ISDestroy(&data->is)); /* destroy any previously user-set objects since they will be set automatically */
           PetscCall(MatDestroy(&data->aux));
@@ -2127,7 +2127,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PCHPDDMSchurPreType type = PC_HPDDM_SCHUR_PRE_LEAST_SQUARES;
 
           PetscCall(MatSchurComplementGetSubMatrices(P, &A00, &P00, &A01, &A10, &A11));
-          PetscCall(PetscOptionsGetEnum(nullptr, pcpre, "-pc_hpddm_schur_precondition", PCHPDDMSchurPreTypes, (PetscEnum *)&type, &flg));
+          PetscCall(PetscOptionsGetEnum(((PetscObject)pc)->options, pcpre, "-pc_hpddm_schur_precondition", PCHPDDMSchurPreTypes, (PetscEnum *)&type, &flg));
           if (type == PC_HPDDM_SCHUR_PRE_LEAST_SQUARES) {
             Mat                        B01;
             Vec                        diagonal = nullptr;
@@ -2163,7 +2163,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &B));
               PetscCall(MatDiagonalScale(B, v, nullptr));
               if (B01) PetscCall(MatDiagonalScale(B01, v, nullptr));
-            } else { /* not the same as MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG in MatSchurComplementGetPmat(), which considers process block diagonal, instead of point block diagonal, as done here */
+            } else {
               Mat     D00;
               MatType type;
 
@@ -2212,7 +2212,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
           PetscFunctionReturn(PETSC_SUCCESS);
         } else {
-          PetscCall(PetscOptionsGetString(nullptr, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), nullptr));
+          PetscCall(PetscOptionsGetString(((PetscObject)pc)->options, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), nullptr));
           PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
           PetscCheck(!algebraic || !block, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
           if (overlap != -1) {
@@ -2266,7 +2266,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     } else {
       is[0] = data->is;
       if (algebraic || ctx) subdomains = PETSC_TRUE;
-      PetscCall(PetscOptionsGetBool(nullptr, pcpre, "-pc_hpddm_define_subdomains", &subdomains, nullptr));
+      PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, pcpre, "-pc_hpddm_define_subdomains", &subdomains, nullptr));
       if (ctx) PetscCheck(subdomains, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_define_subdomains false", pcpre, pcpre);
       if (PetscBool3ToBool(data->Neumann)) {
         PetscCheck(!block, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
@@ -2277,10 +2277,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc));
     }
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : ""));
-    PetscCall(PetscOptionsGetEnum(nullptr, prefix, "-st_matstructure", MatStructures, (PetscEnum *)&structure, &flg)); /* if not user-provided, force its value when possible */
-    if (!flg && structure == SAME_NONZERO_PATTERN) {                                                                   /* cannot call STSetMatStructure() yet, insert the appropriate option in the database, parsed by STSetFromOptions() */
+    PetscCall(PetscOptionsGetEnum(((PetscObject)pc)->options, prefix, "-st_matstructure", MatStructures, (PetscEnum *)&structure, &flg)); /* if not user-provided, force its value when possible */
+    if (!flg && structure == SAME_NONZERO_PATTERN) { /* cannot call STSetMatStructure() yet, insert the appropriate option in the database, parsed by STSetFromOptions() */
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-%spc_hpddm_levels_1_st_matstructure", pcpre ? pcpre : ""));
-      PetscCall(PetscOptionsSetValue(nullptr, prefix, MatStructures[structure]));
+      PetscCall(PetscOptionsSetValue(((PetscObject)pc)->options, prefix, MatStructures[structure]));
     }
     flg = PETSC_FALSE;
     if (data->share) {
@@ -2355,10 +2355,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PetscNew(&h));
               h->ksp = nullptr;
               PetscCall(PetscCalloc1(2, &h->A));
-              PetscCall(PetscOptionsHasName(nullptr, prefix, "-eps_nev", &flg));
+              PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, prefix, "-eps_nev", &flg));
               if (!flg) {
-                PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_nsv", &flg));
-                if (!flg) PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_threshold_relative", &flg));
+                PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, prefix, "-svd_nsv", &flg));
+                if (!flg) PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, prefix, "-svd_threshold_relative", &flg));
               } else flg = PETSC_FALSE;
               PetscCall(ISSort(ov[0]));
               if (!flg) PetscCall(ISSort(ov[1]));
@@ -2447,6 +2447,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               }
               if (!h->ksp) {
                 PetscBool share = data->share;
+
                 PetscCall(KSPCreate(PETSC_COMM_SELF, &h->ksp));
                 PetscCall(KSPSetType(h->ksp, KSPPREONLY));
                 PetscCall(KSPSetOperators(h->ksp, A0, A0));
@@ -2458,38 +2459,38 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                     PetscCall(KSPSetFromOptions(h->ksp));
                   } else {
                     MatSolverType type;
-                    PetscCall(KSPGetPC(ksp[0], &pc));
-                    PetscCall(PetscObjectTypeCompareAny((PetscObject)pc, &data->share, PCLU, PCCHOLESKY, ""));
+
+                    PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp[0]->pc, &data->share, PCLU, PCCHOLESKY, ""));
                     if (data->share) {
-                      PetscCall(PCFactorGetMatSolverType(pc, &type));
+                      PetscCall(PCFactorGetMatSolverType(ksp[0]->pc, &type));
                       if (!type) {
-                        if (PetscDefined(HAVE_MUMPS)) PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
-                        else if (PetscDefined(HAVE_MKL_PARDISO)) PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMKL_PARDISO));
+                        if (PetscDefined(HAVE_MUMPS)) PetscCall(PCFactorSetMatSolverType(ksp[0]->pc, MATSOLVERMUMPS));
+                        else if (PetscDefined(HAVE_MKL_PARDISO)) PetscCall(PCFactorSetMatSolverType(ksp[0]->pc, MATSOLVERMKL_PARDISO));
                         else data->share = PETSC_FALSE;
-                        if (data->share) PetscCall(PCSetFromOptions(pc));
+                        if (data->share) PetscCall(PCSetFromOptions(ksp[0]->pc));
                       } else {
                         PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &data->share));
                         if (!data->share) PetscCall(PetscStrcmp(type, MATSOLVERMKL_PARDISO, &data->share));
                       }
                       if (data->share) {
                         std::tuple<KSP, IS, Vec[2]> *p;
-                        PetscCall(PCFactorGetMatrix(pc, &A));
+
+                        PetscCall(PCFactorGetMatrix(ksp[0]->pc, &A));
                         PetscCall(MatFactorSetSchurIS(A, h->is[4]));
                         PetscCall(KSPSetUp(ksp[0]));
                         PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_eps_shell_", pcpre ? pcpre : ""));
                         PetscCall(KSPSetOptionsPrefix(h->ksp, prefix));
                         PetscCall(KSPSetFromOptions(h->ksp));
-                        PetscCall(KSPGetPC(h->ksp, &pc));
-                        PetscCall(PCSetType(pc, PCSHELL));
+                        PetscCall(PCSetType(h->ksp->pc, PCSHELL));
                         PetscCall(PetscNew(&p));
                         std::get<0>(*p) = ksp[0];
                         PetscCall(ISEmbed(ov[0], ov[1], PETSC_TRUE, &std::get<1>(*p)));
                         PetscCall(MatCreateVecs(A, std::get<2>(*p), std::get<2>(*p) + 1));
-                        PetscCall(PCShellSetContext(pc, p));
-                        PetscCall(PCShellSetApply(pc, PCApply_Schur));
-                        PetscCall(PCShellSetApplyTranspose(pc, PCApply_Schur<Vec, true>));
-                        PetscCall(PCShellSetMatApply(pc, PCApply_Schur<Mat>));
-                        PetscCall(PCShellSetDestroy(pc, PCDestroy_Schur));
+                        PetscCall(PCShellSetContext(h->ksp->pc, p));
+                        PetscCall(PCShellSetApply(h->ksp->pc, PCApply_Schur));
+                        PetscCall(PCShellSetApplyTranspose(h->ksp->pc, PCApply_Schur<Vec, true>));
+                        PetscCall(PCShellSetMatApply(h->ksp->pc, PCApply_Schur<Mat>));
+                        PetscCall(PCShellSetDestroy(h->ksp->pc, PCDestroy_Schur));
                       }
                     }
                     if (!data->share) PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since neither MUMPS nor MKL PARDISO is used\n"));
@@ -2741,7 +2742,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PCFactorGetMatrix(s, b));
             PetscCall(MatSetOptionsPrefix(*b, ((PetscObject)s)->prefix));
             n = -1;
-            PetscCall(PetscOptionsGetInt(nullptr, ((PetscObject)s)->prefix, "-mat_mumps_icntl_26", &n, nullptr));
+            PetscCall(PetscOptionsGetInt(((PetscObject)pc)->options, ((PetscObject)s)->prefix, "-mat_mumps_icntl_26", &n, nullptr));
             if (n == 1) {                                /* allocates a square MatDense of size is[1]->map->n, so one */
               PetscCall(MatNestGetISs(N, is, nullptr));  /*  needs to be able to deactivate this path when dealing    */
               PetscCall(MatFactorSetSchurIS(*b, is[1])); /*  with a large constraint space in order to avoid OOM      */

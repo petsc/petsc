@@ -841,9 +841,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   }
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
-    IS          ccis;
     PetscBool   isset, isspd = PETSC_FALSE, issym = PETSC_FALSE, flg;
-    PetscInt    rstart, rend;
     char        lscname[256];
     PetscObject LSC_L;
 
@@ -854,8 +852,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->schurscale == (PetscScalar)-1.0) jac->schurscale = (isset && isspd) ? 1.0 : -1.0;
     PetscCall(MatIsSymmetricKnown(pc->pmat, &isset, &issym));
 
-    /* When extracting off-diagonal submatrices, we take complements from this range */
-    PetscCall(MatGetOwnershipRangeColumn(pc->mat, &rstart, &rend));
     PetscCall(PetscObjectTypeCompareAny(jac->offdiag_use_amat ? (PetscObject)pc->mat : (PetscObject)pc->pmat, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
 
     if (jac->schur) {
@@ -870,27 +866,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       PetscCall(MatSchurComplementGetKSP(jac->schur, &kspInner));
       ilink = jac->head;
-      PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-      if (jac->offdiag_use_amat) {
-        PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, scall, &jac->B));
-      } else {
-        PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, scall, &jac->B));
-      }
-      PetscCall(ISDestroy(&ccis));
-      if (!flg) {
-        ilink = ilink->next;
-        PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-        if (jac->offdiag_use_amat) {
-          PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, scall, &jac->C));
-        } else {
-          PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, scall, &jac->C));
-        }
-        PetscCall(ISDestroy(&ccis));
-      } else {
+      PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->is, ilink->next->is, scall, &jac->B));
+      if (!flg) PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->next->is, ilink->is, scall, &jac->C));
+      else {
         PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &isset, &flg));
         if (isset && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
         else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
+      ilink = ilink->next;
       PetscCall(MatSchurComplementUpdateSubMatrices(jac->schur, jac->mat[0], jac->pmat[0], jac->B, jac->C, jac->mat[1]));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
         PetscCall(MatDestroy(&jac->schurp));
@@ -911,27 +894,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
-      PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-      if (jac->offdiag_use_amat) {
-        PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->B));
-      } else {
-        PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->B));
-      }
-      PetscCall(ISDestroy(&ccis));
-      ilink = ilink->next;
-      if (!flg) {
-        PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-        if (jac->offdiag_use_amat) {
-          PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
-        } else {
-          PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
-        }
-        PetscCall(ISDestroy(&ccis));
-      } else {
+      PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->is, ilink->next->is, MAT_INITIAL_MATRIX, &jac->B));
+      if (!flg) PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->next->is, ilink->is, MAT_INITIAL_MATRIX, &jac->C));
+      else {
         PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &isset, &flg));
         if (isset && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
         else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
+      ilink = ilink->next;
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
       PetscCall(MatCreate(((PetscObject)jac->mat[0])->comm, &jac->schur));
       PetscCall(MatSetType(jac->schur, MATSCHURCOMPLEMENT));
@@ -1066,35 +1036,15 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!LSC_L) PetscCall(PetscObjectQuery((PetscObject)pc->mat, lscname, &LSC_L));
     if (LSC_L) PetscCall(PetscObjectCompose((PetscObject)jac->schur, "LSC_Lp", LSC_L));
   } else if (jac->type == PC_COMPOSITE_GKB) {
-    IS       ccis;
-    PetscInt rstart, rend;
-
     PetscCheck(nsplit == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "To use GKB preconditioner you must have exactly 2 fields");
-
     ilink = jac->head;
-
-    /* When extracting off-diagonal submatrices, we take complements from this range */
-    PetscCall(MatGetOwnershipRangeColumn(pc->mat, &rstart, &rend));
-
-    PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-    if (jac->offdiag_use_amat) {
-      PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->B));
-    } else {
-      PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->B));
-    }
-    PetscCall(ISDestroy(&ccis));
+    PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->is, ilink->next->is, MAT_INITIAL_MATRIX, &jac->B));
     /* Create work vectors for GKB algorithm */
     PetscCall(VecDuplicate(ilink->x, &jac->u));
     PetscCall(VecDuplicate(ilink->x, &jac->Hu));
     PetscCall(VecDuplicate(ilink->x, &jac->w2));
+    PetscCall(MatCreateSubMatrix(jac->offdiag_use_amat ? pc->mat : pc->pmat, ilink->next->is, ilink->is, MAT_INITIAL_MATRIX, &jac->C));
     ilink = ilink->next;
-    PetscCall(ISComplement(ilink->is_col, rstart, rend, &ccis));
-    if (jac->offdiag_use_amat) {
-      PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
-    } else {
-      PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ccis, MAT_INITIAL_MATRIX, &jac->C));
-    }
-    PetscCall(ISDestroy(&ccis));
     /* Create work vectors for GKB algorithm */
     PetscCall(VecDuplicate(ilink->x, &jac->v));
     PetscCall(VecDuplicate(ilink->x, &jac->d));
