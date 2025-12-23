@@ -89,11 +89,15 @@ static PetscErrorCode PCFactorGetUseInPlace_Factor(PC pc, PetscBool *flg)
   Input Parameter:
 . pc - the preconditioner context
 
+  Level: intermediate
+
   Note:
   After you have called this function (which has to be after the `KSPSetOperators()` or `PCSetOperators()`) you can call `PCFactorGetMatrix()` and then set factor options on that matrix.
   This function raises an error if the requested combination of solver package and matrix type is not supported.
 
-  Level: intermediate
+  Developer Note:
+  This function should have a name that clearly indicates that this calls `MatGetFactor()` and thus populates the `->factor` field. The `MatSetSolverType` portion of the name
+  may not add value to the clarity of the purpose of the function and could be removed.
 
 .seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetMatSolverType()`, `PCFactorGetMatrix()`
 @*/
