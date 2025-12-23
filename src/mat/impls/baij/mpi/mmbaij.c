@@ -274,5 +274,9 @@ PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale)
   PetscCall(VecRestoreArray(uglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->B, NULL, uglyoo));
+  PetscCall(PetscFree(uglyrmapd));
+  PetscCall(PetscFree(uglyrmapo));
+  PetscCall(VecDestroy(&uglydd));
+  PetscCall(VecDestroy(&uglyoo));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
