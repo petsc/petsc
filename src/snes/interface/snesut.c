@@ -748,7 +748,7 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
   }
   if (PetscIsInfOrNanReal(fnorm)) {
     PetscCall(PetscInfo(snes, "Failed to converged, function norm is NaN\n"));
-    *reason = SNES_DIVERGED_FNORM_NAN;
+    *reason = SNES_DIVERGED_FUNCTION_NANORINF;
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
     PetscCall(PetscInfo(snes, "Converged due to function norm %14.12e < %14.12e\n", (double)fnorm, (double)snes->abstol));
     *reason = SNES_CONVERGED_FNORM_ABS;
@@ -787,7 +787,7 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
 - dummy - unused context
 
   Output Parameter:
-. reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
+. reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FUNCTION_NANORINF`
 
   Options Database Key:
 . -snes_convergence_test skip - see `SNESSetFromOptions()`
@@ -809,7 +809,7 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
 
   if (fnorm != fnorm) {
     PetscCall(PetscInfo(snes, "Failed to converged, function norm is NaN\n"));
-    *reason = SNES_DIVERGED_FNORM_NAN;
+    *reason = SNES_DIVERGED_FUNCTION_NANORINF;
   } else if (it == snes->max_its) {
     *reason = SNES_CONVERGED_ITS;
   }

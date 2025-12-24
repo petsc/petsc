@@ -1,8 +1,8 @@
-static char help[] = "Artificial test to check that snes->domainerror is being reset appropriately";
+static char help[] = "Artificial test to check that snes->functiondomainerror is being reset appropriately";
 
 /* ------------------------------------------------------------------------
 
-    Artificial test to check that snes->domainerror is being reset appropriately
+    Artificial test to check that snes->functiondomainerror is being reset appropriately
 
   ------------------------------------------------------------------------- */
 
@@ -88,7 +88,7 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr)
        Test for domain error.
        Artificial test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
        Declare (0.5-value,0.5+value) to be infeasible.
-       In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
+       In later iterations, snes->functiondomainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
     if ((half - user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half + user->value)) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "DOMAIN ERROR: x=%g\n", (double)PetscRealPart(x[i])));

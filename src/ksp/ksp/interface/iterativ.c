@@ -2127,13 +2127,13 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, PeCtx ctx)
   Input Parameters:
 + ksp - the linear solver `KSP` context.
 . pc  - the preconditioner context
-- vec - a vector that will be initialized with Inf to indicate lack of convergence
+- vec - a vector that will be initialized with infinity to indicate lack of convergence
 
   Level: developer
 
   Note:
   This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI processes. By initializing the vector
-  with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI processes that an error occurred on
+  with infinity the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI processes that an error occurred on
   at least one of the processes.
 
   This may be called by a subset of the processes in the `PC`.

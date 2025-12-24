@@ -203,7 +203,7 @@ PetscErrorCode SNESConvergedDefault_VI(SNES snes, PetscInt it, PetscReal xnorm, 
   }
   if (fnorm != fnorm) {
     PetscCall(PetscInfo(snes, "Failed to converged, function norm is NaN\n"));
-    *reason = SNES_DIVERGED_FNORM_NAN;
+    *reason = SNES_DIVERGED_FUNCTION_NANORINF;
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
     PetscCall(PetscInfo(snes, "Converged due to function norm %g < %g\n", (double)fnorm, (double)snes->abstol));
     *reason = SNES_CONVERGED_FNORM_ABS;

@@ -977,8 +977,8 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   Level: intermediate
 
   Note:
-  This handles negative values, Inf, and Nan in the expected IEEE floating pointing manner. For example, the square root of a negative real number is Nan
-  and 1/0.0 is Inf.
+  This handles negative values, in infinity, and NaN in the expected IEEE floating pointing manner. For example, the square root of a negative real number is NaN
+  and 1/0.0 is infinity.
 
 .seealso: `Vec`
 @*/

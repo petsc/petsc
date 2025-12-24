@@ -149,9 +149,10 @@ struct _p_SNES {
   PetscInt numLinearSolveFailures;
   PetscInt maxLinearSolveFailures;
 
-  PetscBool domainerror;         /* set with SNESSetFunctionDomainError() */
-  PetscBool jacobiandomainerror; /* set with SNESSetJacobianDomainError() */
-  PetscBool checkjacdomainerror; /* if or not check Jacobian domain error after Jacobian evaluations */
+  PetscBool functiondomainerror;  /* set with SNESSetFunctionDomainError() */
+  PetscBool objectivedomainerror; /* set with SNESSetObjectiveDomainError() */
+  PetscBool jacobiandomainerror;  /* set with SNESSetJacobianDomainError() */
+  PetscBool checkjacdomainerror;  /* if SNESCheckJacobianDomainError() is called after Jacobian evaluations */
 
   PetscBool ksp_ewconv; /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void     *kspconvctx; /* Eisenstat-Walker KSP convergence context */
@@ -226,7 +227,7 @@ struct _DMSNESOps {
    propagates to all the levels. If instead, they get out a specific level and set the function on that level,
    subsequent changes to the original level will no longer propagate to that level.
 
-.seealso: [](ch_ts), `SNES`, `SNESCreate()`, `DM`, `DMGetDMSNESWrite()`, `DMGetDMSNES()`,  `DMKSP`, `DMTS`, `DMSNESSetFunction()`, `DMSNESGetFunction()`,
+.seealso: [](ch_snes), `SNES`, `SNESCreate()`, `DM`, `DMGetDMSNESWrite()`, `DMGetDMSNES()`,  `DMKSP`, `DMTS`, `DMSNESSetFunction()`, `DMSNESGetFunction()`,
           `DMSNESSetFunctionContextDestroy()`, `DMSNESSetMFFunction()`, `DMSNESSetNGS()`, `DMSNESGetNGS()`, `DMSNESSetJacobian()`, `DMSNESGetJacobian()`,
           `DMSNESSetJacobianContextDestroy()`, `DMSNESSetPicard()`, `DMSNESGetPicard()`, `DMSNESSetObjective()`, `DMSNESGetObjective()`, `DMCopyDMSNES()`
 S*/
@@ -313,35 +314,182 @@ PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode KSPPostSolve_SNESEW(KSP,
 PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, void *);
 PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
 
-/*
-    Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf.
-    domainerror is reset here, once reason is set, to allow subsequent iterations to be feasible (e.g. line search).
-*/
-#define SNESCheckFunctionNorm(snes, beta) \
+/*MC
+  SNESCheckFunctionDomainError - Called after a `SNESComputeFunction()` and `VecNorm()` in a `SNES` solver to check if the function norm is infinity or NaN and
+  if the function callback set with `SNESSetFunction()` called `SNESSetFunctionDomainError()`.
+
+  Synopsis:
+  #include <snesimpl.h>
+  void SNESCheckFunctionDomainError(SNES snes, PetscReal fnorm)
+
+  Collective
+
+  Input Parameters:
++ snes  - the `SNES` solver object
+- fnorm - the value of the norm
+
+  Level: developer
+
+  Notes:
+  If `fnorm` is infinity or NaN and `SNESSetErrorIfNotConverged()` was set, this immediately generates a `PETSC_ERR_CONV_FAILED`.
+
+  If `fnorm` is infinity or NaN and `SNESSetFunctionDomainError()` was called, this sets the `SNESConvergedReason` to `SNES_DIVERGED_FUNCTION_DOMAIN`
+  and exits the solver
+
+  Otherwise if `fnorm` is infinity or NaN, this sets the `SNESConvergedReason` to `SNES_DIVERGED_FUNCTION_NANORINF` and exits the solver
+
+  Developer Note:
+  This function exists so that `SNESSetFunctionDomainError()` does not need to be a collective operation since making it collective
+  would be cumbersome in most applications and require extra communication. Instead, `SNESSetFunctionDomainError()` sets the `functiondomainerror`
+  flag in the `SNES` object to true, `SNESComputeFunction()` checks that flag and sets a NaN into its local part of the vector if the flag has been set.
+  Then, when `VecNorm()` is called on the vector containing the computed function value, any NaN is propagated to all MPI processes without
+  any additional communication. Virtually all nonlinear solvers need to compute the function norm at some point so no extra communication needs to take place.
+
+.seealso: [](ch_snes), `SNESSetFunctionDomainError()`, `SNESCheckObjectiveDomainError()`, `PETSC_ERR_CONV_FAILED`, `SNESSetErrorIfNotConverged()`, `SNES_DIVERGED_FUNCTION_DOMAIN`,
+          `SNESConvergedReason`, `SNES_DIVERGED_FUNCTION_NAN`
+MC*/
+#define SNESCheckFunctionDomainError(snes, fnorm) \
   do { \
-    if (PetscIsInfOrNanReal(beta)) { \
-      PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Nan or Inf norm"); \
+    if (PetscIsInfOrNanReal(fnorm)) { \
+      PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to infinity or NaN norm"); \
       { \
         PetscBool domainerror; \
-        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
-        if (domainerror) { \
-          snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN; \
-          snes->domainerror = PETSC_FALSE; \
-        } else snes->reason = SNES_DIVERGED_FNORM_NAN; \
+        PetscCallMPI(MPIU_Allreduce(&snes->functiondomainerror, &domainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        if (domainerror) snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
+        else snes->reason = SNES_DIVERGED_FUNCTION_NANORINF; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
   } while (0)
 
-#define SNESCheckJacobianDomainerror(snes) \
+/*MC
+  SNESCheckObjectiveDomainError - Called after a `SNESComputeObjective()` in a `SNES` solver to check if the objective value is infinity or NaN and/or
+  if the function callback set with `SNESSetObjective()` called `SNESSetObjectiveDomainError()`.
+
+  Synopsis:
+  #include <snesimpl.h>
+  void SNESCheckObjectiveDomainError(SNES snes, PetscReal fobj)
+
+  Collective
+
+  Input Parameters:
++ snes  - the `SNES` solver object
+- fobj - the value of the objective function
+
+  Level: developer
+
+  Notes:
+  If `fobj` is infinity or NaN and `SNESSetErrorIfNotConverged()` was set, this immediately generates a `PETSC_ERR_CONV_FAILED`.
+
+  If `SNESSetObjectiveDomainError()` was called, this sets the `SNESConvergedReason` to `SNES_DIVERGED_OBJECTIVE_DOMAIN`
+  and exits the solver
+
+  Otherwise if `fobj` is infinity or NaN, this sets the `SNESConvergedReason` to `SNES_DIVERGED_OBJECTIVE_NANORINF` and exits the solver
+
+.seealso: [](ch_snes), `SNESSetObjectiveDomainError()`, `PETSC_ERR_CONV_FAILED`, `SNESSetErrorIfNotConverged()`, `SNES_DIVERGED_OBJECTIVE_DOMAIN`, `SNES_DIVERGED_FUNCTION_DOMAIN`,
+          `SNESSetFunctionDomainError()`, `SNESConvergedReason`, `SNES_DIVERGED_OBJECTIVE_NANORINF`, `SNES_DIVERGED_FUNCTION_NAN`, `SNESLineSearchCheckObjectiveDomainError()`
+MC*/
+#define SNESCheckObjectiveDomainError(snes, fobj) \
+  do { \
+    if (snes->errorifnotconverged) { \
+      PetscCheck(!snes->objectivedomainerror, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due objective domain error"); \
+      PetscCheck(!PetscIsInfOrNanReal(fobj), PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to infinity or NaN norm"); \
+    } \
+    if (snes->objectivedomainerror) { \
+      snes->reason = SNES_DIVERGED_OBJECTIVE_DOMAIN; \
+      PetscFunctionReturn(PETSC_SUCCESS); \
+    } else if (PetscIsInfOrNanReal(fobj)) { \
+      snes->reason = SNES_DIVERGED_OBJECTIVE_NANORINF; \
+      PetscFunctionReturn(PETSC_SUCCESS); \
+    } \
+  } while (0)
+
+/*MC
+  SNESCheckJacobianDomainError - Called after a `SNESComputeJacobian()` in a SNES solver to check if `SNESSetJacobianDomainError()` has been called.
+
+  Synopsis:
+  #include <snesimpl.h>
+  void SNESCheckJacobianDomainError(SNES snes)
+
+  Collective
+
+  Input Parameters:
+. snes  - the `SNES` solver object
+
+  Level: developer
+
+  Notes:
+  This turns the non-collective `SNESSetJacobianDomainError()` into a collective operation
+
+  This check is done in debug mode or if `SNESSetCheckJacobianDomainError()` has been called
+
+.seealso: [](ch_snes), `SNESSetCheckJacobianDomainError()`, `SNESCheckObjectiveDomainError()`, `SNESSetFunctionDomainError()`, `PETSC_ERR_CONV_FAILED`, `SNESSetErrorIfNotConverged()`, `SNES_DIVERGED_FUNCTION_DOMAIN`,
+          `SNESConvergedReason`, `SNES_DIVERGED_FUNCTION_NAN`
+MC*/
+#define SNESCheckJacobianDomainError(snes) \
   do { \
     if (snes->checkjacdomainerror) { \
       PetscBool domainerror; \
       PetscCallMPI(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
       if (domainerror) { \
-        snes->reason              = SNES_DIVERGED_JACOBIAN_DOMAIN; \
-        snes->jacobiandomainerror = PETSC_FALSE; \
+        snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN; \
         PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+    } \
+  } while (0)
+
+/*MC
+  SNESCheckLineSearchFailure - Checks if a `SNESLineSearchApply()` has failed and possibly ends the current `SNESSolve()` if so
+
+  Synopsis:
+  #include <snesimpl.h>
+  void SNESCheckLineSearchFailure(SNES snes)
+
+  Collective
+
+  Input Parameters:
+. snes  - the `SNES` solver object
+
+  Level: developer
+
+  Notes:
+  If `SNESLineSearchApply()` produces a `SNES_LINESEARCH_FAILED_NANORINF` or `SNES_LINESEARCH_FAILED_NANORINF` the `SNESSolve()` is ended.
+
+  If the `SNESLineSearchApply()` produces any other failure reason and the number of failed steps is greater than the number set with
+  `SNESSetMaxNonlinearStepFailures()` the `SNESSolve()` is ended
+
+.seealso: [](ch_snes), `SNESLineSearchApply()`, `SNESSetFunctionDomainError()`, `PETSC_ERR_CONV_FAILED`, `SNESSetErrorIfNotConverged()`, `SNES_DIVERGED_FUNCTION_DOMAIN`,
+          `SNESConvergedReason`, `SNES_DIVERGED_FUNCTION_NAN`, `SNESSolve()`, `SNESSetMaxNonlinearStepFailures()`
+MC*/
+#define SNESCheckLineSearchFailure(snes) \
+  do { \
+    SNESLineSearchReason lsreason; \
+    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsreason)); \
+    if (lsreason) { \
+      if (lsreason == SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN) { \
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESLineSearchApply() has produced failure with function domain"); \
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+      if (lsreason == SNES_LINESEARCH_FAILED_NANORINF) { \
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESLineSearchApply() has produced failure with infinity or NaN"); \
+        snes->reason = SNES_DIVERGED_FUNCTION_NANORINF; \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+      if (lsreason == SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN) { \
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESLineSearchApply() has produced failure with objective function domain"); \
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+      if (lsreason == SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN) { \
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESLineSearchApply() has produced failure with Jacobian domain"); \
+        snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN; \
+        PetscFunctionReturn(PETSC_SUCCESS); \
+      } \
+      if (++snes->numFailures >= snes->maxFailures) { \
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESLineSearchApply() has produced failure"); \
+        snes->reason = SNES_DIVERGED_LINE_SEARCH; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
@@ -357,9 +505,11 @@ PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode SNESEWSetFromOptions_Pri
     if (kspreason < 0) { \
       if (kspreason == KSP_DIVERGED_NANORINF) { \
         PetscBool domainerror; \
-        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
-        if (domainerror) snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
-        else snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
+        PetscCallMPI(MPIU_Allreduce(&snes->functiondomainerror, &domainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        if (domainerror) { \
+          snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN; \
+          snes->functiondomainerror = PETSC_FALSE; \
+        } else snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } else { \
         if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) { \

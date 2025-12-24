@@ -333,7 +333,7 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
     PetscCall(SNESComputeFunction(snes, X, R));
     PetscCall(VecAXPY(R, 1, Q));           /* R <- R + Q */
     PetscCall(VecNorm(R, NORM_2, &fnorm)); /* fnorm <- ||R|| */
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
 
     /* Monitor convergence */
     PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
@@ -346,7 +346,7 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
       PetscTryTypeMethod(snes, update, snes->iter);
 
       PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-      SNESCheckJacobianDomainerror(snes);
+      SNESCheckJacobianDomainError(snes);
       PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
       /* Solve J deltaX_Q = Q, where J is Jacobian matrix */
       PetscCall(KSPSolve(snes->ksp, Q, deltaX_Q));
@@ -484,7 +484,7 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
       PetscCall(VecNormEnd(R, NORM_2, &fnorm));
       PetscCall(VecNormEnd(X, NORM_2, &xnorm));
       PetscCall(VecNormEnd(deltaX, NORM_2, &ynorm));
-
+      SNESCheckFunctionDomainError(snes, fnorm);
       if (PetscLogPrintInfo) PetscCall(SNESNewtonALCheckArcLength(snes, DeltaX, data->lambda_update, stepSize));
 
       /* Monitor convergence */

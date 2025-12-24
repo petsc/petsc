@@ -25,11 +25,10 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems
 
 static PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
-  Vec                  X, Y, F;
-  PetscReal            xnorm, fnorm, ynorm;
-  PetscInt             maxits, i;
-  SNESLineSearchReason lsresult;
-  SNESConvergedReason  reason;
+  Vec                 X, Y, F;
+  PetscReal           xnorm, fnorm, ynorm;
+  PetscInt            maxits, i;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
@@ -59,7 +58,7 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
     else snes->vec_func_init_set = PETSC_FALSE;
 
     PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
   }
   if (snes->npc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
     PetscCall(SNESApplyNPC(snes, X, F, Y));
@@ -87,14 +86,9 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
   for (i = 1; i < maxits + 1; i++) {
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
-    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsresult));
+    if (snes->reason) break;
+    SNESCheckLineSearchFailure(snes);
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
-    if (lsresult) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        break;
-      }
-    }
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;

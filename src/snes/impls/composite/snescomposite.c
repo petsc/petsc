@@ -92,7 +92,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
       } else {
         PetscCall(VecNorm(F, NORM_2, fnorm));
       }
-      SNESCheckFunctionNorm(snes, *fnorm);
+      SNESCheckFunctionDomainError(snes, *fnorm);
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
     PetscCall(SNESComputeFunction(snes, X, F));
@@ -102,7 +102,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
       } else {
         PetscCall(VecNorm(F, NORM_2, fnorm));
       }
-      SNESCheckFunctionNorm(snes, *fnorm);
+      SNESCheckFunctionDomainError(snes, *fnorm);
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -164,7 +164,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes, Vec X, Vec B, Vec F
       } else {
         PetscCall(VecNorm(F, NORM_2, fnorm));
       }
-      SNESCheckFunctionNorm(snes, *fnorm);
+      SNESCheckFunctionDomainError(snes, *fnorm);
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -284,6 +284,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
   } else {
     PetscCall(VecNorm(F, NORM_2, fnorm));
   }
+  SNESCheckFunctionDomainError(snes, *fnorm);
 
   /* take the minimum-normed candidate if it beats the combination by a factor of rtol or the combination has stagnated */
   min_fnorm = jac->fnorms[0];
@@ -714,7 +715,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     } else {
       PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
     }
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = 0;
     snes->norm = fnorm;
@@ -769,7 +770,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
         PetscCall(VecNormEnd(X, NORM_2, &xnorm));
         PetscCall(VecNormEnd(Y, NORM_2, &snorm));
       }
-      SNESCheckFunctionNorm(snes, fnorm);
+      SNESCheckFunctionDomainError(snes, fnorm);
     } else if (normtype == SNES_NORM_ALWAYS) {
       PetscCall(VecNormBegin(X, NORM_2, &xnorm));
       PetscCall(VecNormBegin(Y, NORM_2, &snorm));

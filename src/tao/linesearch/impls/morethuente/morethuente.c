@@ -78,7 +78,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
   PetscCall(VecDot(g, s, &dginit));
   if (PetscIsInfOrNanReal(dginit)) {
-    PetscCall(PetscInfo(ls, "Initial Line Search step * g is Inf or Nan (%g)\n", (double)dginit));
+    PetscCall(PetscInfo(ls, "Initial Line Search step * g is infinity or NaN (%g)\n", (double)dginit));
     ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

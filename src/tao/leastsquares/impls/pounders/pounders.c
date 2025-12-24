@@ -49,7 +49,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
     PetscCall(VecDot(F, F, fsum));
   }
   PetscCall(PetscInfo(tao, "Least-squares residual norm: %20.19e\n", (double)*fsum));
-  PetscCheck(!PetscIsInfOrNanReal(*fsum), PETSC_COMM_SELF, PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(*fsum), PETSC_COMM_SELF, PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

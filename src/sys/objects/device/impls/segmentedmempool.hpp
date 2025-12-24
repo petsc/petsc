@@ -790,7 +790,7 @@ inline SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::Se
 . ptr - the pointer holding the allocation
 
   Notes:
-  req_size cannot be negative. If req_size if zero, ptr is set to nullptr
+  `req_size` cannot be negative. If `req_size` if zero, `ptr` is set to `nullptr`
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
 inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate(PetscInt req_size, value_type **ptr, const stream_type *stream, size_type alignment) noexcept
@@ -810,8 +810,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
     vptr = ret_ptr;
     std::align(alignment, size, vptr, aligned_size);
     ret_ptr = reinterpret_cast<value_type *>(vptr);
-    // sets memory to NaN or infinity depending on the type to catch out uninitialized memory
-    // accesses.
+    // sets memory to infinity or NaN depending on the type to catch out uninitialized memory accesses.
     if (PetscDefined(USE_DEBUG)) PetscCall(allocator_.set_canary(ret_ptr, size, stream));
   }
   *ptr = ret_ptr;
@@ -826,7 +825,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 - stream - the stream to release it on
 
   Notes:
-  If ptr is not owned by the pool it is unchanged.
+  If `ptr` is not owned by the pool it is unchanged.
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
 inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::deallocate(value_type **ptr, const stream_type *stream) noexcept
@@ -857,7 +856,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 . ptr - pointer to the new region
 
   Notes:
-  ptr must have been allocated by the pool.
+  `ptr` must have been allocated by the pool.
 
   It's OK to shrink the buffer, even down to 0 (in which case it is just deallocated).
 */

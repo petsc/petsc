@@ -372,7 +372,10 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   PetscCall(SNESGetAlwaysComputesFinalResidual(smoothd, &flg));
   if (!flg) PetscCall(SNESComputeFunction(smoothd, X, FPC));
   PetscCall(VecCopy(FPC, F));
-  if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
+  if (fnorm) {
+    PetscCall(VecNorm(F, NORM_2, fnorm));
+    SNESCheckFunctionDomainError(snes, *fnorm);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -402,7 +405,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   PetscCall(SNESGetAlwaysComputesFinalResidual(smoothu, &flg));
   if (!flg) PetscCall(SNESComputeFunction(smoothu, X, FPC));
   PetscCall(VecCopy(FPC, F));
-  if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
+  if (fnorm) {
+    PetscCall(VecNorm(F, NORM_2, fnorm));
+    SNESCheckFunctionDomainError(snes, *fnorm);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -612,14 +618,13 @@ With the coarse RHS (defect correction) as below.
  */
 static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 {
-  Vec                  F, B, Xhat;
-  Vec                  X_c, Xo_c, F_c, B_c;
-  SNESConvergedReason  reason;
-  PetscReal            xnorm, fnorm, ynorm;
-  SNESLineSearchReason lsresult;
-  SNES                 next;
-  Mat                  restrct, interpolate;
-  SNES_FAS            *fas = (SNES_FAS *)snes->data, *fasc;
+  Vec                 F, B, Xhat;
+  Vec                 X_c, Xo_c, F_c, B_c;
+  SNESConvergedReason reason;
+  PetscReal           xnorm, fnorm, ynorm;
+  SNES                next;
+  Mat                 restrct, interpolate;
+  SNES_FAS           *fas = (SNES_FAS *)snes->data, *fasc;
 
   PetscFunctionBegin;
   PetscCall(SNESFASCycleGetCorrection(snes, &next));
@@ -636,6 +641,7 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
     PetscCall(SNESComputeFunction(snes, Xhat, F));
     if (fas->eventresidual) PetscCall(PetscLogEventEnd(fas->eventresidual, snes, 0, 0, 0));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
+    SNESCheckFunctionDomainError(snes, fnorm);
     X_c  = next->vec_sol;
     Xo_c = next->work[0];
     F_c  = next->vec_func;
@@ -674,14 +680,8 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 
     /* additive correction of the coarse direction*/
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Xhat));
-    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsresult));
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &snes->norm, &ynorm));
-    if (lsresult) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(PETSC_SUCCESS);
-      }
-    }
+    SNESCheckLineSearchFailure(snes);
   } else {
     PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm));
   }
@@ -840,7 +840,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-  SNESCheckFunctionNorm(snes, fnorm);
+  SNESCheckFunctionDomainError(snes, fnorm);
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));

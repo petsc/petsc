@@ -822,7 +822,7 @@ static PetscErrorCode TaoSolve_PDIPM(Tao tao)
     if (reason < 0) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes), "SNES solve did not converged due to reason %s\n", SNESConvergedReasons[reason]));
 
     /* Check TAO convergence */
-    PetscCheck(!PetscIsInfOrNanReal(pdipm->obj), PETSC_COMM_SELF, PETSC_ERR_SUP, "User-provided compute function generated Inf or NaN");
+    PetscCheck(!PetscIsInfOrNanReal(pdipm->obj), PETSC_COMM_SELF, PETSC_ERR_SUP, "User-provided compute function generated infinity or NaN");
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

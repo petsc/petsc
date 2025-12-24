@@ -42,6 +42,8 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
    alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy)
    */
   PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
+  SNESLineSearchCheckJacobianDomainError(snes, linesearch);
+
   PetscCall(VecDot(F, F, &alpha));
   PetscCall(MatMult(snes->jacobian, Y, W));
   PetscCall(VecDot(Y, W, &ptAp));
@@ -50,6 +52,7 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   PetscCall(SNESComputeFunction(snes, X, F));
 
   PetscCall(VecNorm(F, NORM_2, fnorm));
+  SNESLineSearchCheckFunctionDomainError(snes, linesearch, *fnorm);
   PetscCall(VecNorm(X, NORM_2, xnorm));
   PetscCall(VecNorm(Y, NORM_2, ynorm));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -173,14 +176,13 @@ static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 */
 static PetscErrorCode SNESSolve_NCG(SNES snes)
 {
-  SNES_NCG            *ncg = (SNES_NCG *)snes->data;
-  Vec                  X, dX, lX, F, dXold;
-  PetscReal            fnorm, ynorm, xnorm, beta = 0.0;
-  PetscScalar          dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
-  PetscInt             maxits, i;
-  SNESLineSearchReason lsresult = SNES_LINESEARCH_SUCCEEDED;
-  SNESLineSearch       linesearch;
-  SNESConvergedReason  reason;
+  SNES_NCG           *ncg = (SNES_NCG *)snes->data;
+  Vec                 X, dX, lX, F, dXold;
+  PetscReal           fnorm, ynorm, xnorm, beta = 0.0;
+  PetscScalar         dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
+  PetscInt            maxits, i;
+  SNESLineSearch      linesearch;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
@@ -219,7 +221,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 
     /* convergence test */
     PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(VecCopy(F, dX));
   }
   if (snes->npc) {
@@ -254,14 +256,9 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     /* some update types require the old update direction or conjugate direction */
     if (ncg->type != SNES_NCG_FR) PetscCall(VecCopy(dX, dXold));
     PetscCall(SNESLineSearchApply(linesearch, X, F, &fnorm, lX));
-    PetscCall(SNESLineSearchGetReason(linesearch, &lsresult));
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
-    if (lsresult) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(PETSC_SUCCESS);
-      }
-    }
+    SNESCheckLineSearchFailure(snes);
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscFunctionReturn(PETSC_SUCCESS);

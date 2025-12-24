@@ -2342,7 +2342,7 @@ M*/
   be used when studying the performance of individual operations on GPU such as vector operations and
   matrix-vector operations.
 
-  If this option is not used then times for most of the events in the `-log_view` output will be listed as Nan, indicating the times are not available
+  If this option is not used then times for most of the events in the `-log_view` output will be listed as NaN, indicating the times are not available
 
   This routine should only be called once near the beginning of the program. Once it is started
   it cannot be turned off.

@@ -226,8 +226,9 @@ static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
   PetscCall(SNESVIProjectOntoBounds(snes, X));
   PetscCall(SNESComputeFunction(snes, X, vi->phi));
-  if (snes->domainerror) {
+  if (snes->functiondomainerror) { /* this is wrong because functiondomainerror is not collective */
     snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
+    snes->functiondomainerror = PETSC_FALSE;
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -236,7 +237,7 @@ static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
   PetscCall(VecNormBegin(X, NORM_2, &xnorm)); /* xnorm <- ||x||  */
   PetscCall(VecNormEnd(X, NORM_2, &xnorm));
-  SNESCheckFunctionNorm(snes, vi->merit);
+  SNESCheckFunctionDomainError(snes, vi->merit);
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = vi->phinorm;
@@ -260,7 +261,7 @@ static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-    SNESCheckJacobianDomainerror(snes);
+    SNESCheckJacobianDomainError(snes);
     sdm->ops->computefunction = SNESVIComputeFunction;
 
     /* Get the diagonal shift and row scaling vectors */
@@ -303,8 +304,9 @@ static PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm));
     PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n", (double)vi->phinorm, (double)gnorm, (double)ynorm, (int)lssucceed));
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    if (snes->domainerror) {
+    if (snes->functiondomainerror) {
       snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
+      snes->functiondomainerror = PETSC_FALSE;
       sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(PETSC_SUCCESS);
     }

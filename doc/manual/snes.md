@@ -241,6 +241,16 @@ and check the reason to confirm if the solver succeeded. See {any}`sec_vi` for h
 provide `SNES` with bounds on the variables to solve (differential) variational inequalities
 and how to control properties of the line step computed.
 
+## Function Domain Errors and infinity or NaN
+
+Occasionally nonlinear solvers will propose solutions $u$, where the function value (or the objective function set with `SNESSetObjective()`) contains infinity or NaN.
+This can be due to bugs in the application code or because the proposed solution is not in the domain of the function. The application function can call `SNESSetFunctionDomainError()` or
+`SNESSetObjectiveDomainError()` to indicate $u$ is not in the function's domain.
+
+Some `SNESSolve()` implementations (and related `SNESLineSearchApply()` routines) attempt to recover from the infinity or NaN; generally by shrinking the step size.
+If they are unable to recover the `SNESConvergedReason` returned will be `SNES_DIVERGED_FUNCTION_DOMAIN`, `SNES_DIVERGED_OJECTIVE_DOMAIN`, `SNES_DIVERGED_FUNCTION_NANORINF`, or `SNES_DIVERGED_OJECTIVE_NANORINF`.
+
+
 (sec_nlsolvers)=
 
 ## The Nonlinear Solvers

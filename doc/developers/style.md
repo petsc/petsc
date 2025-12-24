@@ -59,6 +59,10 @@ important. We use several conventions
 
 10. Typedefs for functions should end in `Fn` as in, for example, `SNESFunctionFn`.
 
+11. Use the phrase `infinity or NaN` not `NaN or infinity`.
+
+12. Use the abbreviation NaN for Not-a-Number.
+
 (stylepetsccount)=
 
 ## PETSc and standard datatypes

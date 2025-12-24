@@ -1,4 +1,5 @@
 #include <petsc/private/linesearchimpl.h>
+#include <petsc/private/snesimpl.h>
 #include <petscsnes.h>
 
 static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
@@ -38,11 +39,12 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
     fnrm_old = gnorm * gnorm;
   } else {
     PetscCall(SNESComputeObjective(snes, X, &fnrm_old));
+    SNESLineSearchCheckObjectiveDomainError(snes, fnrm_old);
   }
   lambda_mid = 0.5 * (lambda + lambda_old);
 
   for (i = 0; i < max_it; i++) {
-    /* check whether new lambda is NaN or Inf - if so, iteratively shrink towards lambda_old */
+    /* repeatedly cut lambda until the norm or objective function is not infinity or NaN or lambda is too small */
     while (PETSC_TRUE) {
       PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
@@ -81,7 +83,7 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
       if (!PetscIsInfOrNanReal(fnrm)) break;
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambda = %g is Inf or Nan, cutting lambda\n", (double)lambda));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambda = %g is infinity or NaN, cutting lambda\n", (double)lambda));
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
 
@@ -89,14 +91,14 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
       if (lambda <= minlambda) {
         if (monitor) {
           PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-          PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambda = %g <= lambda_min = %g is Inf or Nan, can not further cut lambda\n", (double)lambda, (double)lambda));
+          PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambda = %g <= lambda_min = %g is infinity or NaN, can not further cut lambda\n", (double)lambda, (double)lambda));
           PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
         }
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
-      /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
+      /* forbid the search from ever going back to the "failed" length that generates infinity or NaN */
       maxlambda = .95 * lambda;
 
       /* shrink lambda towards the previous one which was viable */
@@ -203,9 +205,9 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
   PetscCall((*linesearch->ops->snesfunc)(snes, X, F));
 
   PetscCall(SNESLineSearchComputeNorms(linesearch));
-
+  PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &gnorm, NULL));
+  SNESLineSearchCheckFunctionDomainError(snes, linesearch, gnorm);
   if (monitor) {
-    PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &gnorm, NULL));
     PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
     PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search terminated: lambda = %g, fnorm = %g\n", (double)lambda, (double)gnorm));
     PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));

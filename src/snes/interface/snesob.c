@@ -20,7 +20,7 @@
   This is not used in the `SNESLINESEARCHCP` line search.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`,
-          `SNESObjectiveFn`
+          `SNESObjectiveFn`, `SNESSetObjectiveDomainError()`
 @*/
 PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
 {

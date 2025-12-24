@@ -346,7 +346,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- || F || */
-  SNESCheckFunctionNorm(snes, fnorm);
+  SNESCheckFunctionDomainError(snes, fnorm);
   PetscCall(VecNorm(X, NORM_2, &xnorm)); /* xnorm <- || X || */
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
@@ -370,7 +370,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
 
     /* dogleg method */
     PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-    SNESCheckJacobianDomainerror(snes);
+    SNESCheckJacobianDomainError(snes);
     PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian));
     PetscCall(KSPSolve(snes->ksp, F, YNtmp)); /* Quasi Newton Solution */
     SNESCheckKSPSolve(snes);                  /* this is necessary but old tr.c did not have it*/
@@ -481,7 +481,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
       PetscCall(VecCopy(Y, snes->vec_sol_update));
       PetscCall(SNESComputeFunction(snes, W, G)); /*  F(X-Y) = G */
       PetscCall(VecNorm(G, NORM_2, &gnorm));      /* gnorm <- || g || */
-      SNESCheckFunctionNorm(snes, gnorm);
+      SNESCheckFunctionDomainError(snes, gnorm);
       g = 0.5 * PetscSqr(gnorm); /* minimizing function g(W) */
       if (f0 == mp) rho = 0.0;
       else rho = (f0 - g) / (f0 - mp); /* actual improvement over predicted improvement */

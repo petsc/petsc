@@ -129,18 +129,17 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 
 static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-  SNES_NGMRES         *ngmres = (SNES_NGMRES *)snes->data;
-  Vec                  X, F, B, D, Y;         /* present solution, residual, and preconditioned residual */
-  Vec                  XA, FA, XM, FM;        /* candidate linear combination answers */
-  PetscReal            fnorm, fMnorm, fAnorm; /* coefficients and RHS to the minimization problem */
-  PetscReal            xnorm, xMnorm, xAnorm;
-  PetscReal            ynorm, yMnorm, yAnorm;
-  PetscInt             k, k_restart, l, ivec, restart_count = 0;
-  PetscReal            objmin, objM, objA, obj; /* support for objective functions minimization */
-  PetscBool            selectRestart;           /* solution selection data */
-  SNESConvergedReason  reason;
-  SNESLineSearchReason lssucceed;
-  SNESObjectiveFn     *objective;
+  SNES_NGMRES        *ngmres = (SNES_NGMRES *)snes->data;
+  Vec                 X, F, B, D, Y;         /* present solution, residual, and preconditioned residual */
+  Vec                 XA, FA, XM, FM;        /* candidate linear combination answers */
+  PetscReal           fnorm, fMnorm, fAnorm; /* coefficients and RHS to the minimization problem */
+  PetscReal           xnorm, xMnorm, xAnorm;
+  PetscReal           ynorm, yMnorm, yAnorm;
+  PetscInt            k, k_restart, l, ivec, restart_count = 0;
+  PetscReal           objmin, objM, objA, obj; /* support for objective functions minimization */
+  PetscBool           selectRestart;           /* solution selection data */
+  SNESConvergedReason reason;
+  SNESObjectiveFn    *objective;
   /*
       These two variables are initialized to prevent compilers/analyzers from producing false warnings about these variables being passed
       to SNESNGMRESSelect_Private() without being set when SNES_NGMRES_RESTART_DIFFERENCE, the values are not used in the subroutines in that case
@@ -180,17 +179,18 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(PETSC_SUCCESS);
     }
-    PetscCall(VecNorm(F, NORM_2, &fnorm));
   } else {
     if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
     else snes->vec_func_init_set = PETSC_FALSE;
-
-    PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
   }
+  PetscCall(VecNorm(F, NORM_2, &fnorm));
+  SNESCheckFunctionDomainError(snes, fnorm);
   PetscCall(SNESGetObjective(snes, &objective, NULL));
   objmin = fnorm;
-  if (objective) PetscCall(SNESComputeObjective(snes, X, &objmin));
+  if (objective) {
+    PetscCall(SNESComputeObjective(snes, X, &objmin));
+    SNESCheckObjectiveDomainError(snes, objmin);
+  }
   obj = objmin;
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
@@ -233,16 +233,12 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
       fMnorm = fnorm;
 
       PetscCall(SNESLineSearchApply(snes->linesearch, XM, FM, &fMnorm, Y));
-      PetscCall(SNESLineSearchGetReason(snes->linesearch, &lssucceed));
-      if (lssucceed) {
-        if (++snes->numFailures >= snes->maxFailures) {
-          snes->reason = SNES_DIVERGED_LINE_SEARCH;
-          PetscFunctionReturn(PETSC_SUCCESS);
-        }
-      }
+      if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     }
-    if (objective) PetscCall(SNESComputeObjective(snes, XM, &objM));
-    else objM = fMnorm;
+    if (objective) {
+      PetscCall(SNESComputeObjective(snes, XM, &objM));
+      SNESCheckObjectiveDomainError(snes, objM);
+    } else objM = fMnorm;
     objmin = PetscMin(objmin, objM);
 
     PetscCall(SNESNGMRESFormCombinedSolution_Private(snes, ivec, l, XM, FM, fMnorm, X, XA, FA));
@@ -253,14 +249,19 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
     } else {
       PetscCall(SNESNGMRESNorms_Private(snes, l, X, F, XM, FM, XA, FA, D, NULL, NULL, &xMnorm, NULL, &yMnorm, &xAnorm, &fAnorm, &yAnorm));
     }
-    if (objective) PetscCall(SNESComputeObjective(snes, XA, &objA));
-    else objA = fAnorm;
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
+    if (objective) {
+      PetscCall(SNESComputeObjective(snes, XA, &objA));
+      SNESCheckObjectiveDomainError(snes, objA);
+    } else objA = fAnorm;
 
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
     PetscCall(SNESNGMRESSelect_Private(snes, k_restart, XM, FM, xMnorm, fMnorm, yMnorm, objM, XA, FA, xAnorm, fAnorm, yAnorm, objA, dnorm, objmin, dminnorm, X, F, Y, &xnorm, &fnorm, &ynorm));
-    if (objective) PetscCall(SNESComputeObjective(snes, X, &obj));
-    else obj = fnorm;
+    SNESCheckFunctionDomainError(snes, fnorm);
+    if (objective) {
+      PetscCall(SNESComputeObjective(snes, X, &obj));
+      SNESCheckObjectiveDomainError(snes, obj);
+    } else obj = fnorm;
     selectRestart = PETSC_FALSE;
 
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
