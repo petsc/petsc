@@ -1,5 +1,5 @@
 #include <petsc/finclude/petscksp.h>
-module ex13f90module
+module ex13module
   use petscksp
   type User
     Vec x
@@ -210,7 +210,7 @@ contains
 end module
 
 program main
-  use ex13f90module
+  use ex13module
   implicit none
 
 !    User-defined context that contains all the data structures used

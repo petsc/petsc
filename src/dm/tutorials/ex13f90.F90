@@ -27,7 +27,7 @@ program main
 
   PetscErrorCode ierr
   PetscMPIInt rank, size
-  MPI_Comm comm
+  MPIU_Comm comm
   Vec Lvec, coords
   DM SolScal, CoordDM
   DMBoundaryType b_x, b_y, b_z

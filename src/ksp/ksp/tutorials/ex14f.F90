@@ -325,7 +325,7 @@ program main
   use ex14fmodule
   implicit none
 
-  MPI_Comm comm
+  MPIU_Comm comm
   Vec X, Y, F
   Mat J
   KSP ksp

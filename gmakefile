@@ -68,7 +68,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(filter-out help clean distclean check info gmakeinfo checkbadSource checkbadFileChange deletefortranbindings fortranbindings alletags etags clangformat checkclangformat lint get% %build,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help clean distclean check info gmakeinfo checkbadSource checkbadFileChange deletefortranbindings fortranbindings alletags etags clangformat checkclangformat fprettify lint get% %build,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
@@ -259,6 +259,7 @@ $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o     : $(OBJDIR)/src/snes/ftn-mod/petscsnes
 $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o   : $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o
 $(OBJDIR)/src/ml/ftn-mod/petscmlmod.o   : $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o
 # Fortran code depends on modules
+$(OBJDIR)/src/sys/ftn-src/somefort.o             : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 $(OBJDIR)/src/sys/objects/ftn-src/optionenum.o   : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 $(OBJDIR)/src/sys/classes/bag/ftn-src/bagenum.o  : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 

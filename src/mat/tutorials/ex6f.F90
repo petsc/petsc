@@ -18,7 +18,7 @@ module solver_context_ex6f
       use petscmat
       import MatCtx
       implicit none
-      MPI_Comm :: comm
+      MPIU_Comm :: comm
       PetscInt :: mloc, nloc, m, n
       type(MatCtx) :: ctx
       Mat :: mat
@@ -29,7 +29,7 @@ module solver_context_ex6f
       use petscmat
       import MatCtx
       implicit none
-      MPI_Comm :: comm
+      MPIU_Comm :: comm
       Mat :: mat
       type(MatCtx) :: ctx
       PetscErrorCode :: ierr
@@ -39,7 +39,7 @@ module solver_context_ex6f
       use petscmat
       import MatCtx
       implicit none
-      MPI_Comm :: comm
+      MPIU_Comm :: comm
       Mat :: mat
       type(MatCtx), pointer :: ctx
       PetscErrorCode :: ierr

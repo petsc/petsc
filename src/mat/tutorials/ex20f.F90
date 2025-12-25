@@ -14,7 +14,7 @@ module ex20fmodule
       use petscmat
       import MatCtx
       implicit none
-      MPI_Comm :: comm
+      MPIU_Comm :: comm
       PetscInt :: mloc, nloc, m, n
       type(MatCtx) :: ctx
       Mat :: mat

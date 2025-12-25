@@ -11,10 +11,8 @@ program main
   PetscMPIInt rank
   PetscInt    ::   i, ng, rstart, rend, M
   PetscInt, pointer, dimension(:) :: gindices
-  PetscScalar, parameter :: sone = 1.0
   Vec   ::         x
   ISLocalToGlobalMapping :: ltog
-  PetscInt, parameter :: one = 1
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
@@ -27,11 +25,19 @@ program main
 !        just the global size.
 !
   PetscCallA(VecCreate(PETSC_COMM_WORLD, x, ierr))
-  PetscCallA(VecSetSizes(x, rank + one, PETSC_DECIDE, ierr))
+  PetscCallA(VecSetSizes(x, rank + 1_PETSC_INT_KIND, PETSC_DECIDE, ierr))
   PetscCallA(VecSetFromOptions(x, ierr))
 
-  PetscCallA(VecSet(x, sone, ierr))
-
+#if defined(PETSC_USE_COMPLEX)
+  ! Fortran () automatically sets the complex KIND to correspond to the KIND of the constant arguments
+  PetscCallA(VecSet(x, (1.0_PETSC_REAL_KIND, 0.0_PETSC_REAL_KIND), ierr))
+  ! Alternatively one can set it explicitly using
+  PetscCallA(VecSet(x, cmplx(1.0_PETSC_REAL_KIND, 0.0_PETSC_REAL_KIND, PETSC_REAL_KIND), ierr))
+#else
+  PetscCallA(VecSet(x, 1.0_PETSC_REAL_KIND, ierr))
+  ! Alternatively one can set it explicitly using
+  PetscCallA(VecSet(x, 1.0_PETSC_REAL_KIND, ierr))
+#endif
 !
 !     Set the local to global ordering for the vector. Each processor
 !     generates a list of the global indices for each local index. Note that
@@ -56,7 +62,7 @@ program main
 
   if (gindices(ng - 1) == M) gindices(ng - 1) = 0
 
-  PetscCallA(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, one, ng, gindices, PETSC_COPY_VALUES, ltog, ierr))
+  PetscCallA(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 1_PETSC_INT_KIND, ng, gindices, PETSC_COPY_VALUES, ltog, ierr))
   PetscCallA(VecSetLocalToGlobalMapping(x, ltog, ierr))
   PetscCallA(ISLocalToGlobalMappingDestroy(ltog, ierr))
   deallocate (gindices)
@@ -71,7 +77,11 @@ program main
   !   contributions will be added together.
 
   do i = 0, ng - 1
-    PetscCallA(VecSetValuesLocal(x, one, [i], [sone], ADD_VALUES, ierr))
+#if defined(PETSC_USE_COMPLEX)
+    PetscCallA(VecSetValuesLocal(x, 1_PETSC_INT_KIND, [i], [(1.0_PETSC_REAL_KIND, 0.0_PETSC_REAL_KIND)], ADD_VALUES, ierr))
+#else
+    PetscCallA(VecSetValuesLocal(x, 1_PETSC_INT_KIND, [i], [1.0_PETSC_REAL_KIND], ADD_VALUES, ierr))
+#endif
   end do
 
   !

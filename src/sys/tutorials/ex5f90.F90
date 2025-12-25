@@ -2,7 +2,7 @@
 #include <petsc/finclude/petscbag.h>
 #include <petsc/finclude/petscviewer.h>
 
-module ex5f90module
+module ex5module
   use petscsys
   use petscbag
 !     Data structure used to contain information about the problem
@@ -23,14 +23,14 @@ module ex5f90module
     character*(80) :: c
     type(tuple) :: pos
   end type bag_data_type
-end module ex5f90module
+end module ex5module
 
 module ex5f90Bag_interface_module
-  use ex5f90module
+  use ex5module
 
   interface PetscBagGetData
     subroutine PetscBagGetData(bag, data, ierr)
-      use ex5f90module
+      use ex5module
       PetscBag bag
       type(bag_data_type), pointer :: data
       PetscErrorCode ierr

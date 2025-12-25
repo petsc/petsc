@@ -9,7 +9,6 @@
 !
 #include <petsc/finclude/petsctao.h>
 module chwirut2fmodule
-  use petscmpi              ! or mpi or mpi_f08
   use petsctao
   implicit none
   PetscReal t(0:213)
@@ -249,15 +248,22 @@ contains
     PetscReal x(n), f(1)
     PetscMPIInt tag
     PetscInt index
-    PetscMPIInt status(MPI_STATUS_SIZE)
-
+#if defined(PETSC_USE_MPI_F08)
+    MPIU_Status status
+#else
+    MPIU_Status status(MPI_STATUS_SIZE)
+#endif
     tag = IDLE_TAG
     f = 0.0
     ! Send check-in message to rank-0
     PetscCallMPI(MPI_Send(f, one, MPIU_SCALAR, zero, IDLE_TAG, PETSC_COMM_WORLD, ierr))
     do while (tag /= DIE_TAG)
       PetscCallMPI(MPI_Recv(x, nn, MPIU_SCALAR, zero, MPI_ANY_TAG, PETSC_COMM_WORLD, status, ierr))
+#if defined(PETSC_USE_MPI_F08)
+      tag = status%MPI_TAG
+#else
       tag = status(MPI_TAG)
+#endif
       if (tag == IDLE_TAG) then
         PetscCallMPI(MPI_Send(f, one, MPIU_SCALAR, zero, IDLE_TAG, PETSC_COMM_WORLD, ierr))
       else if (tag /= DIE_TAG) then
@@ -284,7 +290,11 @@ contains
   subroutine StopWorkers(ierr)
 
     integer checkedin
-    PetscMPIInt status(MPI_STATUS_SIZE)
+#if defined(PETSC_USE_MPI_F08)
+    MPIU_Status status
+#else
+    MPIU_Status status(MPI_STATUS_SIZE)
+#endif
     PetscMPIInt source
     PetscReal f(1), x(n)
     PetscErrorCode ierr
@@ -294,7 +304,11 @@ contains
     do while (checkedin < size - 1)
       PetscCallMPI(MPI_Recv(f, one, MPIU_SCALAR, MPI_ANY_SOURCE, MPI_ANY_TAG, PETSC_COMM_WORLD, status, ierr))
       checkedin = checkedin + 1
+#if defined(PETSC_USE_MPI_F08)
+      source = status%MPI_SOURCE
+#else
       source = status(MPI_SOURCE)
+#endif
       do i = 1, n
         x(i) = 0.0
       end do
@@ -323,7 +337,12 @@ contains
     PetscInt i, checkedin
     PetscInt finished_tasks
     PetscMPIInt next_task
-    PetscMPIInt status(MPI_STATUS_SIZE), tag, source
+    PetscMPIInt tag, source
+#if defined(PETSC_USE_MPI_F08)
+    MPIU_Status status
+#else
+    MPIU_Status status(MPI_STATUS_SIZE)
+#endif
     PetscInt dummy
 
     PetscReal, pointer :: f_v(:), x_v(:)
@@ -349,8 +368,13 @@ contains
 
       do while (finished_tasks < m .or. checkedin < size - 1)
         PetscCallMPI(MPI_Recv(fval, one, MPIU_SCALAR, MPI_ANY_SOURCE, MPI_ANY_TAG, PETSC_COMM_WORLD, status, ierr))
+#if defined(PETSC_USE_MPI_F08)
+        tag = status%MPI_TAG
+        source = status%MPI_SOURCE
+#else
         tag = status(MPI_TAG)
         source = status(MPI_SOURCE)
+#endif
         if (tag == IDLE_TAG) then
           checkedin = checkedin + 1
         else

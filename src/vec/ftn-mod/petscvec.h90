@@ -2,9 +2,14 @@
       interface
         subroutine PetscSFBcastBegin(sf, unit, rarray, larray, op, ierr)
           use, intrinsic :: ISO_C_binding
+#if defined(PETSC_USE_MPI_F08)
+          import tPetscSF, MPI_Datatype, MPI_Op
+#else
           import tPetscSF
+#endif
           PetscSF :: sf
-          PetscMPIInt :: unit, op
+          MPIU_Datatype :: unit
+          MPIU_Op :: op
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
@@ -12,9 +17,14 @@
 
         subroutine PetscSFBcastEnd(sf, unit, rarray, larray, op, ierr)
           use, intrinsic :: ISO_C_binding
+#if defined(PETSC_USE_MPI_F08)
+          import tPetscSF, MPI_Datatype, MPI_Op
+#else
           import tPetscSF
+#endif
           PetscSF :: sf
-          PetscMPIInt :: unit, op
+          MPIU_Datatype :: unit
+          MPIU_Op :: op
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
@@ -22,9 +32,14 @@
 
         subroutine PetscSFReduceBegin(sf, unit, larray, rarray, op, ierr)
           use, intrinsic :: ISO_C_binding
+#if defined(PETSC_USE_MPI_F08)
+          import tPetscSF, MPI_Datatype, MPI_Op
+#else
           import tPetscSF
+#endif
           PetscSF :: sf
-          PetscMPIInt :: unit, op
+          MPIU_Datatype :: unit
+          MPIU_Op :: op
           type(*) :: larray(:)
           type(*) :: rarray(:)
           PetscErrorCode :: ierr
@@ -32,9 +47,14 @@
 
         subroutine PetscSFReduceEnd(sf, unit, larray, rarray, op, ierr)
           use, intrinsic :: ISO_C_binding
+#if defined(PETSC_USE_MPI_F08)
+          import tPetscSF, MPI_Datatype, MPI_Op
+#else
           import tPetscSF
+#endif
           PetscSF :: sf
-          PetscMPIInt :: unit, op
+          MPIU_Datatype :: unit
+          MPIU_Op :: op
           type(*) :: larray(:)
           type(*) :: rarray(:)
           PetscErrorCode :: ierr

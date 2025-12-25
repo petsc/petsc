@@ -2554,39 +2554,6 @@ PetscErrorCode PetscLogGpuEnergyMeterEnd(void)
 
 #endif /* PETSC_USE_LOG*/
 
-/* -- Utility functions for logging from Fortran -- */
-
-PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
-{
-  PetscFunctionBegin;
-#if PetscDefined(USE_LOG)
-  PetscCall(PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1));
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
-  PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_send_len, &petsc_send_len_th));
-  #endif
-#endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
-{
-  PetscFunctionBegin;
-#if PetscDefined(USE_LOG)
-  PetscCall(PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1));
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
-  PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_recv_len, &petsc_recv_len_th));
-  #endif
-#endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_EXTERN PetscErrorCode PetscAReduce(void)
-{
-  PetscFunctionBegin;
-  if (PetscDefined(USE_LOG)) PetscCall(PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, 1));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
 

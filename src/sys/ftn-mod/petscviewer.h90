@@ -8,8 +8,9 @@ interface
   end subroutine
   subroutine PetscViewerASCIIOpenWithFileUnit(comm, unit, lab, ierr)
     use, intrinsic :: ISO_C_binding
+    use petscmpi
     import tPetscViewer
-    MPI_Comm, intent(in) :: comm
+    MPIU_Comm, intent(in) :: comm
     integer, intent(in) :: unit
     PetscViewer, intent(out) :: lab
     PetscErrorCode, intent(out):: ierr

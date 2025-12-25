@@ -17,7 +17,7 @@ contains
     integer line, n, p
     PetscInt ctx
     PetscErrorCode ierr
-    MPI_Comm comm
+    MPIU_Comm comm
     character*(*) fun, file, mess
 
     write (6, *) 'My error handler ', mess

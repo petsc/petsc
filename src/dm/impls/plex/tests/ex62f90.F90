@@ -29,7 +29,7 @@ program ex62f90
   PetscMPIInt                        :: rank, numProc
   PetscBool                          :: flg
   PetscErrorCode                     :: ierr
-  MPI_Comm                           :: comm
+  MPIU_Comm                          :: comm
   type(tPetscViewer)                 :: viewer
 
   character(len=MXSTLN)              :: sJunk

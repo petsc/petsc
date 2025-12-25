@@ -1,7 +1,6 @@
 #include <petsc/finclude/petscksp.h>
 #include <petsc/finclude/petscdmda.h>
 program main              !   Solves the linear system  J x = f
-  use petscmpi  ! or mpi or mpi_f08
   use petscksp
   use petscdmda
   implicit none

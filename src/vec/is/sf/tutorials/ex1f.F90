@@ -5,7 +5,6 @@
 !     This is a copy of ex1.c but currently only tests the broadcast operation
 #include <petsc/finclude/petscvec.h>
 program main
-  use petscmpi  ! or mpi or mpi_f08
   use petscvec
   implicit none
 
