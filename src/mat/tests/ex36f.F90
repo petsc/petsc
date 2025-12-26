@@ -17,98 +17,130 @@ module ex36fmodule
 !  location.)
 !
 contains
-  subroutine Demo1()
+  subroutine Demo1(m, n)
 
+    PetscInt, intent(in) :: m, n
     Mat A
-    PetscInt n, m
-    PetscErrorCode ierr
     PetscScalar, pointer :: aa(:, :)
+    PetscErrorCode ierr
 
-    n = 4
-    m = 5
-
-!  Create matrix
-
+    ! Create matrix
     PetscCall(MatCreate(PETSC_COMM_SELF, A, ierr))
     PetscCall(MatSetSizes(A, m, n, m, n, ierr))
     PetscCall(MatSetType(A, MATSEQDENSE, ierr))
     PetscCall(MatSetUp(A, ierr))
 
-!  Access array storage
+    ! Access array storage
     PetscCall(MatDenseGetArray(A, aa, ierr))
 
-!  Set matrix values directly
+    ! Set matrix values directly
     PetscCall(FillUpMatrix(m, n, aa))
 
     PetscCall(MatDenseRestoreArray(A, aa, ierr))
 
-!  Finalize matrix assembly
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
-
-!  View matrix
+    ! View matrix
     PetscCall(MatView(A, PETSC_VIEWER_STDOUT_SELF, ierr))
 
-!  Clean up
+    ! Clean up
     PetscCall(MatDestroy(A, ierr))
-  end
+  end subroutine Demo1
 
 ! -----------------------------------------------------------------
 !
-!  Demo2 -  This subroutine demonstrates the use of user-allocated dense
-!  matrix storage.
+!  Demo2 -  This subroutine demonstrates the use of user-provided dense
+!  matrix storage. Using allocate (typically heap memory)
 !
-  subroutine Demo2()
+  subroutine Demo2(m, n)
 
-    PetscInt n, m
-    PetscErrorCode ierr
-    parameter(m=5, n=4)
+    PetscInt, intent(in) :: m, n
     Mat A
-    PetscScalar aa(m, n)
+    PetscScalar, pointer :: aa(:, :)
+    PetscErrorCode ierr
 
-!  Create matrix
+    allocate (aa(m, n))
+
+    ! Create matrix
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, n, aa, A, ierr))
 
-!  Set matrix values directly
+    ! Set matrix values directly
     PetscCall(FillUpMatrix(m, n, aa))
 
-!  Finalize matrix assembly
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
-
-!  View matrix
+    ! View matrix
     PetscCall(MatView(A, PETSC_VIEWER_STDOUT_SELF, ierr))
 
-!  Clean up
+    ! Clean up
     PetscCall(MatDestroy(A, ierr))
-  end
+    deallocate (aa)
+  end subroutine Demo2
+
+! -----------------------------------------------------------------
+!
+!  Demo3 -  This subroutine demonstrates the use of user-provided dense
+!  matrix storage. Using fixed dimensions (typically stack memory)
+!
+  subroutine Demo3(m, n)
+
+    PetscInt, intent(in) :: m, n
+    Mat A
+    PetscScalar :: aa(m, n)
+    PetscErrorCode ierr
+
+    ! Create matrix
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, n, aa, A, ierr))
+
+    ! Set matrix values directly
+    PetscCall(FillUpMatrix(m, n, aa))
+
+    ! View matrix
+    PetscCall(MatView(A, PETSC_VIEWER_STDOUT_SELF, ierr))
+
+    ! Clean up
+    PetscCall(MatDestroy(A, ierr))
+    if (aa(1, 1) == 2.0) then
+      print *, 'Error in a(1,1)'
+    end if
+  end subroutine Demo3
 
 ! -----------------------------------------------------------------
 
   subroutine FillUpMatrix(m, n, X)
-    PetscInt m, n, i, j
-    PetscScalar X(m, n)
+    PetscInt, intent(in) :: m, n
+    PetscScalar, intent(out) :: X(m, n)
+    PetscInt i, j
 
     do j = 1, n
       do i = 1, m
         X(i, j) = 1.0/real(i + j - 1)
       end do
     end do
-    end module ex36fmodule
+  end subroutine FillUpMatrix
+end module ex36fmodule
 
-    end program main
-    use ex36fmodule
-    implicit none
+program main
+  use ex36fmodule
+  implicit none
 
-    PetscErrorCode ierr
+  PetscErrorCode ierr
+  PetscInt, parameter :: m = 5, n = 4
 
-    PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscInitialize(ierr))
 
-!  Demo of PETSc-allocated dense matrix storage
-    call Demo1()
+  ! Demo of PETSc-allocated dense matrix storage
+  call Demo1(m, n)
 
-!  Demo of user-allocated dense matrix storage
-    call Demo2()
+  ! Demo of user-provided dense matrix storage (heap)
+  call Demo2(m, n)
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  ! Demo of user-provided dense matrix storage (stack)
+  call Demo3(m, n)
+
+  PetscCallA(PetscFinalize(ierr))
+end program main
+
+!/*TEST
+!
+!   test:
+!      nsize: 1
+!      output_file: output/ex36f.out
+!
+!TEST*/
