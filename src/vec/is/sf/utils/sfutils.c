@@ -220,10 +220,12 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   Note:
   Caller must `PetscFree()` `remoteOffsets` if it was requested
 
+  To distribute data from the `rootSection` to the `leafSection`, see  `PetscSFCreateSectionSF()` or `PetscSectionMigrateData()`.
+
   Fortran Note:
   Use `PetscSFDestroyRemoteOffsets()` when `remoteOffsets` is no longer needed.
 
-.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`, `PetscSFCreateSectionSF()`
 @*/
 PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt *remoteOffsets[], PetscSection leafSection)
 {
@@ -420,9 +422,9 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   Level: advanced
 
   Notes:
-  `remoteOffsets` can be `NULL` if `sf` does not reference any points in leafSection
+  `remoteOffsets` can be `NULL` if `sf` does not reference any points in `leafSection`
 
-.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`, `PetscSFDistributeSection()`
 @*/
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
 {

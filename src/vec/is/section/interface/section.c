@@ -4059,3 +4059,68 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   PetscCall(ISRestoreIndices(points, &points_));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  PetscSectionMigrateData - Migrate data described by a `PetscSection` using a `PetscSF` that defines a original-to-new (root-to-leaf) point mapping
+
+  Collective
+
+  Input Parameters:
++ migratePointSF - defines the mapping (communication) of the root points to the leaf points
+. datatype       - the type of data
+. rootSection    - the `PetscSection` that describes the data layout on the root points (how many dof and what fields are associated with each root point)
+- rootData       - the existing data array described by `rootSection`, may be `NULL` is storage size of `rootSection` is zero
+
+  Output Parameters:
++ leafSection   - the new `PetscSection` that describes the data layout on the leaf points
+. leafData      - the redistributed data array that is associated with the leaf points
+- migrateDataSF - defines the mapping (communication) of the `rootData` array to the `leafData` array, may be `NULL` if not needed
+
+  Level: advanced
+
+  Notes:
+  This function can best be thought of as applying `PetscSFBcastBegin()` to an array described by a `PetscSection`.
+  While `PetscSFBcastBegin()` is limited to broadcasting data that is of the same size for every index, this function allows the data to be a different size for each index.
+  The size and layout of that irregularly sized data before and after `PetscSFBcastBegin()` is described by the `rootSection` and `leafSection`, respectively.
+
+  This function combines `PetscSFDistributeSection()`, `PetscSFCreateSectionSF()`, and `PetscSFBcastBegin()`/`PetscSFBcastEnd()` into a single call.
+  `migrateDataSF` can be used to repeat the `PetscSFBcastBegin()`/`PetscSFBcastEnd()` on a different data array described by the same `rootSection`.
+
+  This should not be used for global-to-local type communciation patterns.
+  For this use case, see `PetscSectionCreateGlobalSection()` and `PetscSFSetGraphSection()`.
+
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSFDistributeSection()`, `PetscSFCreateSectionSF()`, `DMPlexDistributeData()`
+@*/
+PetscErrorCode PetscSectionMigrateData(PetscSF migratePointSF, MPI_Datatype datatype, PetscSection rootSection, const void *rootData, PetscSection leafSection, void *leafData[], PetscSF *migrateDataSF)
+{
+  PetscSF     fieldSF;
+  PetscInt   *remoteOffsets, fieldSize;
+  PetscMPIInt dataSize;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(migratePointSF, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(rootSection, PETSC_SECTION_CLASSID, 3);
+  if (rootData) PetscAssertPointer(rootData, 4);
+  else {
+    PetscInt size;
+    PetscCall(PetscSectionGetStorageSize(rootSection, &size));
+    PetscCheck(size == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "originalData may be NULL iff the storage size of originalSection is zero, but is %" PetscInt_FMT, size);
+  }
+  PetscValidHeaderSpecific(leafSection, PETSC_SECTION_CLASSID, 5);
+  PetscAssertPointer(leafData, 6);
+  if (migrateDataSF) PetscAssertPointer(migrateDataSF, 7);
+
+  PetscCall(PetscSFDistributeSection(migratePointSF, rootSection, &remoteOffsets, leafSection));
+  PetscCall(PetscSFCreateSectionSF(migratePointSF, rootSection, remoteOffsets, leafSection, &fieldSF));
+  PetscCall(PetscFree(remoteOffsets));
+
+  PetscCall(PetscSectionGetStorageSize(leafSection, &fieldSize));
+  PetscCallMPI(MPI_Type_size(datatype, &dataSize));
+  PetscCall(PetscMalloc(fieldSize * dataSize, leafData));
+  PetscCall(PetscSFBcastBegin(fieldSF, datatype, rootData, *leafData, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(fieldSF, datatype, rootData, *leafData, MPI_REPLACE));
+
+  if (migrateDataSF) *migrateDataSF = fieldSF;
+  else PetscCall(PetscSFDestroy(&fieldSF));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
