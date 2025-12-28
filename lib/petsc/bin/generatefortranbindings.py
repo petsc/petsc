@@ -75,7 +75,8 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
       fun.arguments[0].typename = 'PetscFortranAddr'
       fun.arguments[2].typename = 'PetscFortranAddr'
       funname = funname + 'Raw'
-    fd.write('  interface ' + funname + '\n')
+    if funname.startswith('PetscObject') or funname == 'PetscBarrier': fd.write('  interface ' + funname + '\n')
+    else: fd.write('  interface ' +  '\n')
     fi = fun
     func = ''
     dims = ['']
@@ -705,6 +706,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
           # if we always generate the fortran stubs simply mark these functions as opaque when SAWs is not available
           fd.write('#if defined(PETSC_HAVE_SAWS)\n')
         fd.write('  interface ' + funname + '\n')
+#        fd.write('  interface ' + '\n')
         fd.write('    module procedure ' + funname  + ii + '\n')
         fd.write('  end interface\n')
         if funname.startswith('PetscObjectSAWs') or funname == 'PetscObjectViewSAWs':
