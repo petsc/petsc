@@ -7,20 +7,20 @@
 #define LESS_EQUAL_BIT 1
 
 typedef struct {
-  uint8_t    axis;
-  char       are_handles_leaves;
-  PetscReal  split;
-  PetscCount greater_handle, less_equal_handle;
+  uint8_t    axis;                              // Coordinate direction that stem splits on
+  char       are_handles_leaves;                // Bit-wise boolean for whether the greater_handle and less_equal_handle index kdtree->stems or kstree->leaves
+  PetscReal  split;                             // Coordinate value that stem splits on
+  PetscCount greater_handle, less_equal_handle; // Handle (index) of the child nodes of the tree
 } KDStem;
 
 typedef struct {
-  PetscInt   count;
-  PetscCount indices_handle, coords_handle;
+  PetscInt   count;                         // Number of points in leaf
+  PetscCount indices_handle, coords_handle; // Index into the indices or coordinates array for the points in leaf
 } KDLeaf;
 
 struct _n_PetscKDTree {
-  PetscInt dim;
-  PetscInt max_bucket_size;
+  PetscInt dim;             // Coordinate dimension of the tree
+  PetscInt max_bucket_size; // Maximum number of points stored at each leaf
 
   PetscBool  is_root_leaf;
   PetscCount root_handle;
