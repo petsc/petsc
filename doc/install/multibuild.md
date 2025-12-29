@@ -197,5 +197,5 @@ Most of the time this will work, if there are errors regarding compiling Fortran
 need to also do:
 
 ```console
-$ make allfortranstubs
+$ make fortranbindings
 ```
