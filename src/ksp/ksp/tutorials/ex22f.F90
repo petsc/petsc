@@ -12,6 +12,7 @@
 #include <petsc/finclude/petscksp.h>
 module ex22fmodule
   use petscksp
+  use petscdmda
   implicit none
 
 contains
@@ -26,7 +27,7 @@ contains
     PetscInt ctx
 
     PetscCall(KSPGetDM(ksp, da, ierr))
-    PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, my, mz, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, ierr))
+    PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, my, mz, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
     h = 1.0/real((mx - 1)*(my - 1)*(mz - 1))
 
     PetscCall(VecSet(b, h, ierr))
@@ -48,7 +49,7 @@ contains
     i1 = 1
     i7 = 7
     PetscCall(KSPGetDM(ksp, da, ierr))
-    PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, my, mz, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, ierr))
+    PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, my, mz, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
 
     Hx = 1.0/real(mx - 1)
     Hy = 1.0/real(my - 1)
@@ -108,8 +109,6 @@ contains
 end module ex22fmodule
 
 program main
-  use petscdmda
-  use petscksp
   use ex22fmodule
   implicit none
 
