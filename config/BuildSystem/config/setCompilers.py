@@ -744,8 +744,8 @@ class Configure(config.base.Configure):
     '''Returns true if system is processor-type is ARM'''
     global isARM_value
     if isARM_value == -1:
-       (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
-       if not status and (output.lower().strip() == 'arm'):
+       (output, error, status) = config.base.Configure.executeShellCommand('uname -m', log = log)
+       if not status and (output.lower().strip().startswith('arm') or output.lower().strip().startswith('aarch')):
          if log: log.write('Detected ARM processor\n\n')
          isARM_value = True
        else:
