@@ -206,7 +206,7 @@ static PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(inA, &cstart, &cend));
   PetscCall(MatGetSize(ina->A, NULL, &n));
-  PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapd));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n, &r_rmapd));
   nt = 0;
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (inA->rmap->mapping->indices[i] * bs >= cstart && inA->rmap->mapping->indices[i] * bs < cend) {
@@ -215,7 +215,7 @@ static PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
     }
   }
   PetscCheck(nt * bs == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt*bs %" PetscInt_FMT " n %" PetscInt_FMT, nt * bs, n);
-  PetscCall(PetscMalloc1(n + 1, &uglyrmapd));
+  PetscCall(PetscMalloc1(n, &uglyrmapd));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
       for (j = 0; j < bs; j++) uglyrmapd[(r_rmapd[i] - 1) * bs + j - cstart] = i * bs + j;
@@ -224,10 +224,10 @@ static PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   PetscCall(PetscFree(r_rmapd));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &uglydd));
 
-  PetscCall(PetscCalloc1(ina->Nbs + 1, &lindices));
+  PetscCall(PetscCalloc1(ina->Nbs, &lindices));
   for (i = 0; i < B->nbs; i++) lindices[garray[i]] = i + 1;
   no = inA->rmap->mapping->n - nt;
-  PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapo));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n, &r_rmapo));
   nt = 0;
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (lindices[inA->rmap->mapping->indices[i]]) {
@@ -237,7 +237,7 @@ static PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   }
   PetscCheck(nt <= no, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT, nt, n);
   PetscCall(PetscFree(lindices));
-  PetscCall(PetscMalloc1(nt * bs + 1, &uglyrmapo));
+  PetscCall(PetscMalloc1(nt * bs, &uglyrmapo));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (r_rmapo[i]) {
       for (j = 0; j < bs; j++) uglyrmapo[(r_rmapo[i] - 1) * bs + j] = i * bs + j;
