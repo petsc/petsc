@@ -206,32 +206,38 @@ static Vec       auglydd = NULL, auglyoo = NULL;        /* work vectors used to 
 static PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
 {
   Mat_MPIAIJ *ina = (Mat_MPIAIJ *)inA->data; /*access private part of matrix */
-  PetscInt    i, n, nt, cstart, cend, no, *garray = ina->garray, *lindices;
+  PetscInt    i, j, n, nt, cstart, cend, no, *garray = ina->garray, *lindices, bs = inA->rmap->bs;
   PetscInt   *r_rmapd, *r_rmapo;
 
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(inA, &cstart, &cend));
   PetscCall(MatGetSize(ina->A, NULL, &n));
-  PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapd));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n, &r_rmapd));
   nt = 0;
   for (i = 0; i < inA->rmap->mapping->n; i++) {
-    if (inA->rmap->mapping->indices[i] >= cstart && inA->rmap->mapping->indices[i] < cend) {
+    if (inA->rmap->mapping->indices[i] * bs >= cstart && inA->rmap->mapping->indices[i] * bs < cend) {
       nt++;
       r_rmapd[i] = inA->rmap->mapping->indices[i] + 1;
     }
   }
-  PetscCheck(nt == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt %" PetscInt_FMT " n %" PetscInt_FMT, nt, n);
-  PetscCall(PetscMalloc1(n + 1, &auglyrmapd));
+  PetscCheck(nt * bs == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt*bs %" PetscInt_FMT " n %" PetscInt_FMT, nt * bs, n);
+  PetscCall(PetscMalloc1(n, &auglyrmapd));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
-    if (r_rmapd[i]) auglyrmapd[(r_rmapd[i] - 1) - cstart] = i;
+    if (r_rmapd[i]) {
+      for (j = 0; j < bs; j++) auglyrmapd[(r_rmapd[i] - 1) * bs + j - cstart] = i * bs + j;
+    }
   }
   PetscCall(PetscFree(r_rmapd));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &auglydd));
 
-  PetscCall(PetscCalloc1(inA->cmap->N + 1, &lindices));
-  for (i = 0; i < ina->B->cmap->n; i++) lindices[garray[i]] = i + 1;
+  /* This loop handling the setup for the off-diagonal local portion of the matrix is extremely similar to
+     its counterpart in the MPIBAIJ version of this code.
+     The tricky difference is that lindices[] uses block-based indexing (just as in the BAIJ code),
+     but garray[] uses element-based indexing; hence the multiplications / divisions involving bs. */
+  PetscCall(PetscCalloc1(inA->cmap->N / bs, &lindices));
+  for (i = 0; i < ina->B->cmap->n / bs; i++) lindices[garray[i * bs] / bs] = i + 1;
   no = inA->rmap->mapping->n - nt;
-  PetscCall(PetscCalloc1(inA->rmap->mapping->n + 1, &r_rmapo));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n, &r_rmapo));
   nt = 0;
   for (i = 0; i < inA->rmap->mapping->n; i++) {
     if (lindices[inA->rmap->mapping->indices[i]]) {
@@ -241,12 +247,14 @@ static PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   }
   PetscCheck(nt <= no, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT, nt, n);
   PetscCall(PetscFree(lindices));
-  PetscCall(PetscMalloc1(nt + 1, &auglyrmapo));
+  PetscCall(PetscMalloc1(nt * bs, &auglyrmapo));
   for (i = 0; i < inA->rmap->mapping->n; i++) {
-    if (r_rmapo[i]) auglyrmapo[(r_rmapo[i] - 1)] = i;
+    if (r_rmapo[i]) {
+      for (j = 0; j < bs; j++) auglyrmapo[(r_rmapo[i] - 1) * bs + j] = i * bs + j;
+    }
   }
   PetscCall(PetscFree(r_rmapo));
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt, &auglyoo));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt * bs, &auglyoo));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -276,5 +284,9 @@ PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A, Vec scale)
   PetscCall(VecRestoreArray(auglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->B, NULL, auglyoo));
+  PetscCall(PetscFree(auglyrmapd));
+  PetscCall(PetscFree(auglyrmapo));
+  PetscCall(VecDestroy(&auglydd));
+  PetscCall(VecDestroy(&auglyoo));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
