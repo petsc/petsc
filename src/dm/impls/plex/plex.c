@@ -4211,7 +4211,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   Input Parameters:
 + dm      - The `DMPLEX`
 . p       - The mesh point
-- useCone - `PETSC_TRUE` for the closure, otherwise return the star
+- useCone - `PETSC_TRUE` for the closure, otherwise return the support
 
   Input/Output Parameter:
 . points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...];
