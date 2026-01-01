@@ -2333,7 +2333,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               Mat                   A0, *a;                    /* with an SVD: [ A_00  A_01       ] */
               IS                    ov[2], rows, cols, stride; /*              [ A_10  A_11  A_12 ] */
               const PetscInt       *i[2], bs = P->cmap->bs;    /* with a GEVP: [ A_00  A_01       ] */
-              PetscInt              n[2];                      /*              [ A_10  A_11  A_12 ] */
+              PetscInt              n[2], location;            /*              [ A_10  A_11  A_12 ] */
               std::vector<PetscInt> v[2];                      /*              [       A_21  A_22 ] */
 
               do {
@@ -2367,7 +2367,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               for (PetscInt j = 0; j < 2; ++j) PetscCall(ISGetIndices(ov[j], i + j));
               v[1].reserve((n[1] - n[0]) / bs);
               for (PetscInt j = 0; j < n[1]; j += bs) { /* indices of the (2,2) block */
-                PetscInt location;
                 PetscCall(ISLocate(ov[0], i[1][j], &location));
                 if (location < 0) v[1].emplace_back(j / bs);
               }
@@ -2376,7 +2375,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(PetscObjectReference((PetscObject)h->A[1]));
                 v[0].reserve((n[0] - P->rmap->n) / bs);
                 for (PetscInt j = 0; j < n[1]; j += bs) { /* row indices of the (1,2) block */
-                  PetscInt location;
                   PetscCall(ISLocate(loc, i[1][j], &location));
                   if (location < 0) {
                     PetscCall(ISLocate(ov[0], i[1][j], &location));
@@ -2397,7 +2395,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               }
               v[0].reserve((n[0] - P->rmap->n) / bs);
               for (PetscInt j = 0; j < n[0]; j += bs) {
-                PetscInt location;
                 PetscCall(ISLocate(loc, i[0][j], &location));
                 if (location < 0) v[0].emplace_back(j / bs);
               }
