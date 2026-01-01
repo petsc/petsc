@@ -391,13 +391,13 @@ M*/
     do { \
       jmp_buf _Petsc_jmpbuf; \
       PetscXIOErrorHandlerFn *volatile _Petsc_xioerrhdl = PETSC_NULLPTR; \
-      PetscBool _Petsc_isdrawx, _Petsc_xioerr, _Petsc_xioerr_local = PETSC_FALSE; \
+      PetscBool _Petsc_isdrawx, _Petsc_xioerr = PETSC_FALSE; \
       PetscCall(PetscObjectTypeCompare((PetscObject)(draw), PETSC_DRAW_X, &_Petsc_isdrawx)); \
       if (_Petsc_isdrawx) { \
         PetscCall(PetscMemcpy(&_Petsc_jmpbuf, &PetscXIOErrorHandlerJumpBuf, sizeof(_Petsc_jmpbuf))); \
         _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump); \
         if (setjmp(PetscXIOErrorHandlerJumpBuf)) { \
-          _Petsc_xioerr_local = PETSC_TRUE; \
+          _Petsc_xioerr = PETSC_TRUE; \
           do { \
             PetscDrawCollectiveEnd(draw); \
           } \
@@ -436,7 +436,7 @@ M*/
     if (_Petsc_isdrawx) { \
       (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
       PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &_Petsc_jmpbuf, sizeof(PetscXIOErrorHandlerJumpBuf))); \
-      PetscCallMPI(MPIU_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &_Petsc_xioerr, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
         PetscFunctionReturn(PETSC_SUCCESS); \

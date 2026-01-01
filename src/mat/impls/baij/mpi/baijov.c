@@ -525,7 +525,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
 {
   IS          *isrow_block, *iscol_block;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *)C->data;
-  PetscInt     nmax, nstages_local, nstages, i, pos, max_no, N = C->cmap->N, bs = C->rmap->bs;
+  PetscInt     nmax, nstages, i, pos, max_no, N = C->cmap->N, bs = C->rmap->bs;
   Mat_SeqBAIJ *subc;
   Mat_SubSppt *smat;
   PetscBool    sym = PETSC_FALSE, flg[2];
@@ -561,10 +561,10 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
   if (!nmax) nmax = 1;
 
   if (scall == MAT_INITIAL_MATRIX) {
-    nstages_local = ismax / nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
+    nstages = ismax / nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
 
     /* Make sure every processor loops through the nstages */
-    PetscCallMPI(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
     /* Allocate memory to hold all the submatrices and dummy submatrices */
     PetscCall(PetscCalloc1(ismax + nstages, submat));

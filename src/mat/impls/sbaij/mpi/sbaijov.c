@@ -16,7 +16,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
   Mat_MPISBAIJ   *c = (Mat_MPISBAIJ *)C->data;
   Mat_SeqSBAIJ   *asub_i;
   PetscBT         table;
-  PetscInt       *ai, brow, nz, nis, l, nmax, nstages_local, nstages, max_no, pos;
+  PetscInt       *ai, brow, nz, nis, l, nmax, nstages, max_no, pos;
   const PetscInt *idx;
   PetscBool       flg;
 
@@ -49,10 +49,10 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
     /* Determine the number of stages through which submatrices are done */
     nmax = 20 * 1000000 / (c->Nbs * sizeof(PetscInt));
     if (!nmax) nmax = 1;
-    nstages_local = is_max / nmax + ((is_max % nmax) ? 1 : 0);
+    nstages = is_max / nmax + ((is_max % nmax) ? 1 : 0);
 
     /* Make sure every processor loops through the nstages */
-    PetscCallMPI(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
     {
       const PetscObject obj = (PetscObject)c->A;
