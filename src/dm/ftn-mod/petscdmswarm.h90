@@ -1,27 +1,30 @@
-      interface
-        subroutine DMSwarmGetField(dm, fieldname, blocksize, dtype, data, ierr)
-          use, intrinsic :: ISO_C_binding
-          use petscsys, only: ePetscDataType
-          import tDM
-          DM dm
-          character(len=*) :: fieldname
-          PetscInt blocksize
-          PetscDataType dtype
-          PetscScalar, pointer :: data(:)
-          PetscErrorCode ierr
-        end subroutine
-      end interface
+interface
+  subroutine DMSwarmGetField(dm, fieldname, blocksize, dtype, data, ierr)
+    use, intrinsic :: ISO_C_binding
+    use petscsys, only: ePetscDataType
+    import tDM
+    DM dm
+    character(len=*) :: fieldname
+    PetscInt blocksize
+    PetscDataType dtype
+    PetscScalar, pointer :: data(:)
+    PetscErrorCode ierr
+  end subroutine
 
-      interface
-        subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
-          use, intrinsic :: ISO_C_binding
-          use petscsys, only: ePetscDataType
-          import tDM
-          DM dm
-          character(len=*) :: fieldname
-          PetscInt blocksize
-          PetscDataType dtype
-          PetscScalar, pointer :: data(:)
-          PetscErrorCode ierr
-        end subroutine
-      end interface
+  subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
+    use, intrinsic :: ISO_C_binding
+    use petscsys, only: ePetscDataType
+    import tDM
+    DM dm
+    character(len=*) :: fieldname
+    PetscInt blocksize
+    PetscDataType dtype
+    PetscScalar, pointer :: data(:)
+    PetscErrorCode ierr
+  end subroutine
+end interface
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::DMSwarmGetField
+!DEC$ ATTRIBUTES DLLEXPORT::DMSwarmRestoreField
+#endif
