@@ -2215,7 +2215,7 @@ static PetscErrorCode MatNorm_SeqAIJ(Mat A, NormType type, PetscReal *nrm)
   } else if (type == NORM_1) {
     PetscReal *tmp;
     PetscInt  *jj = a->j;
-    PetscCall(PetscCalloc1(A->cmap->n + 1, &tmp));
+    PetscCall(PetscCalloc1(A->cmap->n, &tmp));
     *nrm = 0.0;
     for (j = 0; j < a->nz; j++) {
       tmp[*jj++] += PetscAbsScalar(*v);
@@ -2225,7 +2225,7 @@ static PetscErrorCode MatNorm_SeqAIJ(Mat A, NormType type, PetscReal *nrm)
       if (tmp[j] > *nrm) *nrm = tmp[j];
     }
     PetscCall(PetscFree(tmp));
-    PetscCall(PetscLogFlops(PetscMax(a->nz - 1, 0)));
+    PetscCall(PetscLogFlops(a->nz));
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j = 0; j < A->rmap->n; j++) {
@@ -2237,7 +2237,7 @@ static PetscErrorCode MatNorm_SeqAIJ(Mat A, NormType type, PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    PetscCall(PetscLogFlops(PetscMax(a->nz - 1, 0)));
+    PetscCall(PetscLogFlops(a->nz));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for two norm");
   PetscCall(MatSeqAIJRestoreArrayRead(A, &v));
   PetscFunctionReturn(PETSC_SUCCESS);

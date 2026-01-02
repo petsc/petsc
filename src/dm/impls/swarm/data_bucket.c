@@ -562,7 +562,7 @@ PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket db)
 static PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBucket db)
 {
   PetscInt f;
-  double   memory_usage_total, memory_usage_total_local = 0.0;
+  double   memory_usage_total = 0.0;
 
   PetscFunctionBegin;
   PetscCall(PetscPrintf(comm, "DMSwarmDataBucketView: \n"));
@@ -573,9 +573,9 @@ static PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBuc
 
   for (f = 0; f < db->nfields; ++f) {
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-    memory_usage_total_local += memory_usage_f;
+    memory_usage_total += memory_usage_f;
   }
-  PetscCallMPI(MPIU_Allreduce(&memory_usage_total_local, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
 
   for (f = 0; f < db->nfields; ++f) {
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;

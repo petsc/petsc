@@ -1315,7 +1315,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   PetscCall(PetscHMapICreate(&neighs));
   for (i = 0; i < newnleaves; i++) PetscCall(PetscHMapIPut(neighs, newleafdata[i], &iter, &missing));
   PetscCall(PetscHMapIGetSize(neighs, &mapping->info_nproc));
-  PetscCall(PetscMalloc1(mapping->info_nproc + 1, &mapping->info_procs));
+  PetscCall(PetscMalloc1(mapping->info_nproc, &mapping->info_procs));
   PetscCall(PetscHMapIGetKeys(neighs, (i = 0, &i), mapping->info_procs));
   for (i = 0; i < mapping->info_nproc; i++) { /* put info for self first */
     if (mapping->info_procs[i] == rank) {
