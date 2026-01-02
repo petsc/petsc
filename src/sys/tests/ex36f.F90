@@ -36,9 +36,6 @@ end
 !
 !/*TEST
 !
-!   build:
-!     requires: defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-!
 !   test:
 !     requires: !complex
 !

@@ -29,9 +29,6 @@ end
 !
 !/*TEST
 !
-!   build:
-!     requires: defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-!
 !   test:
 !     suffix: 0
 !     output_file: output/empty.out

@@ -72,6 +72,7 @@ program main
 end program main
 
 !/*TEST
+!
 !     build:
 !       requires: !complex
 !     test:
