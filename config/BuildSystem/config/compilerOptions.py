@@ -44,7 +44,7 @@ class CompilerOptions(config.base.Configure):
         if language == 'CUDA':
           flags.extend(['-x cuda'])
       elif bopt == 'g':
-        flags.extend(['-g3','-O0'])
+        flags.extend(['-O0','-g3'])
       elif bopt == 'O':
         flags.append('-g')
         if config.setCompilers.Configure.isClang(compiler, self.log):
@@ -161,7 +161,7 @@ class CompilerOptions(config.base.Configure):
           # HIP can cause buggy code with -O0
           flags.extend(['-g'])
         else:
-          flags.extend(['-g','-O0'])
+          flags.extend(['-O0','-g'])
       elif bopt in ['O']:
         flags.append('-g')
         if 'USER' in os.environ:
@@ -279,7 +279,7 @@ class CompilerOptions(config.base.Configure):
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
         flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
         if bopt == 'g':
-          flags.extend(['-g','-O0'])
+          flags.extend(['-O0','-g'])
         elif bopt == 'O':
           flags.append('-g')
           flags.append('-O3')
