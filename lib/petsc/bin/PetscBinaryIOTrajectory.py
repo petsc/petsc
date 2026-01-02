@@ -5,7 +5,6 @@
 #
 #  Make sure $PETSC_DIR/bin is in your PYTHONPATH
 #
-from __future__ import print_function
 import os
 import PetscBinaryIO
 import numpy as np

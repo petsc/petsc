@@ -22,11 +22,11 @@
 #    the documentation to be stored under DMLabel but the function interfaces need to go into the DMPLEX Fortran module
 #    (not the DM Fortran module) since they depend on DMPlexTransform.
 #
-from __future__ import print_function
 import os
 import pathlib
 import shutil
 import sys
+import string
 import subprocess
 from subprocess import check_output
 sys.path.insert(0,os.path.realpath(os.path.dirname(__file__)))
@@ -36,7 +36,7 @@ CToFortranTypes = {'int':'integer4', 'ptrdiff_t':'PetscInt64', 'float':'PetscFor
                    'double':'PetscFortranDouble', 'short':None, 'size_t':'PetscSizeT', 'rocblas_status':None, 'PetscBT':None,
                    'PetscEnum':None, 'PetscDLHandle':None}
 
-Letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','w','x','y']
+Letters = string.ascii_lowercase.replace('tuv','').replace('z','')
 verbose = False
 
 def verbosePrint(text):
@@ -76,7 +76,7 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
       fun.arguments[2].typename = 'PetscFortranAddr'
       funname = funname + 'Raw'
     if funname.startswith('PetscObject') or funname == 'PetscBarrier': fd.write('  interface ' + funname + '\n')
-    else: fd.write('  interface ' +  '\n')
+    else: fd.write('  interface\n')
     fi = fun
     func = ''
     dims = ['']
@@ -706,7 +706,6 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
           # if we always generate the fortran stubs simply mark these functions as opaque when SAWs is not available
           fd.write('#if defined(PETSC_HAVE_SAWS)\n')
         fd.write('  interface ' + funname + '\n')
-#        fd.write('  interface ' + '\n')
         fd.write('    module procedure ' + funname  + ii + '\n')
         fd.write('  end interface\n')
         if funname.startswith('PetscObjectSAWs') or funname == 'PetscObjectViewSAWs':
