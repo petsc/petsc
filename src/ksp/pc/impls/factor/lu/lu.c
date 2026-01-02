@@ -94,9 +94,9 @@ static PetscErrorCode PCSetUp_LU(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       PetscBool canuseordering;
 
+      PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       if (!dir->hdr.reuseordering) {
-        PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
-        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           PetscBool external;

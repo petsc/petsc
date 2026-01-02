@@ -31,8 +31,8 @@ int main(int argc, char **argv)
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, stencil_type, M, N, P, m, n, p, w, s, 0, 0, 0, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMSetMatType(da, MATMPIBAIJ));
   PetscCall(DMCreateMatrix(da, &mat));
+  PetscCall(MatSetFromOptions(mat));
 
   idx[0].i = 1;
   idx[0].j = 1;
@@ -52,6 +52,28 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
 
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matdiagonalscalelocal", &flg, NULL));
+  if (flg) {
+    Vec         vec, scaling;
+    PetscInt    size;
+    PetscMPIInt rank;
+
+    PetscCall(DMGetLocalVector(da, &vec));
+    /* We need to duplicate vec, since we are not allowed to write to its ghost values, yet we need a vector in which
+       we can write to these locations for testing MatDiagonalScaleLocal(). */
+    PetscCall(VecDuplicate(vec, &scaling));
+    PetscCall(VecGetLocalSize(scaling, &size));
+    PetscCall(PetscFree(values));
+    PetscCall(VecGetArrayWrite(scaling, &values));
+    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+    for (i = 0; i < size; i++) values[i] = (PetscScalar)(rank + 1);
+    PetscCall(VecRestoreArrayWrite(scaling, &values));
+    PetscCall(MatDiagonalScaleLocal(mat, scaling));
+    PetscCall(DMRestoreLocalVector(da, &vec));
+    PetscCall(DMRestoreLocalVector(da, &scaling));
+  }
+
   /* Free memory */
   PetscCall(PetscFree(values));
   PetscCall(MatDestroy(&mat));
@@ -59,3 +81,31 @@ int main(int argc, char **argv)
   PetscCall(PetscFinalize());
   return 0;
 }
+
+/*TEST
+
+      test:
+         suffix: baij
+         nsize: 2
+         args: -mat_type baij
+         output_file: output/empty.out
+
+      test:
+         suffix: aij
+         nsize: 2
+         args: -mat_type aij
+         output_file: output/empty.out
+
+      test:
+         suffix: baij-diagonalscalelocal
+         nsize: 2
+         args: -mat_type baij -test_matdiagonalscalelocal
+         output_file: output/empty.out
+
+      test:
+         suffix: aij-diagonalscalelocal
+         nsize: 2
+         args: -mat_type aij -test_matdiagonalscalelocal
+         output_file: output/empty.out
+
+TEST*/

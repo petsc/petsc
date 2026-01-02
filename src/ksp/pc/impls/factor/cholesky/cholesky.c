@@ -91,11 +91,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       PetscCall(MatGetInfo(((PC_Factor *)dir)->fact, MAT_LOCAL, &info));
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
+      PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       if (!dir->hdr.reuseordering) {
         PetscBool canuseordering;
 
-        PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
-        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           PetscBool external;

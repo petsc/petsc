@@ -1405,7 +1405,7 @@ namespace detail
 // ==========================================================================================
 // SubMatIndexFunctor
 //
-// Iterator which permutes a linear index range into matrix indices for am nrows x ncols
+// Iterator which permutes a linear index range into matrix indices for an nrows x ncols
 // submat with leading dimension lda. Essentially SubMatIndexFunctor(i) returns the index for
 // the i'th sequential entry in the matrix.
 // ==========================================================================================

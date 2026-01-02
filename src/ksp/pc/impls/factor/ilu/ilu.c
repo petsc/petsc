@@ -134,11 +134,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       PetscCall(MatGetInfo(((PC_Factor *)ilu)->fact, MAT_LOCAL, &info));
       ilu->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
+      PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       if (!ilu->hdr.reuseordering) {
         PetscBool canuseordering;
 
-        PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
-        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)ilu)->fact, &canuseordering));
         if (canuseordering) {
           /* compute a new ordering for the ILU */
