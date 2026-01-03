@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     import os
     config.package.CMakePackage.__init__(self, framework)
-    self.version       = '3.4.0'
+    self.version       = '3.4.1'
     self.gitcommit     = self.version
     self.download      = ['git://https://gitlab.com/libeigen/eigen.git',
                           'https://gitlab.com/libeigen/eigen/-/archive/'+self.gitcommit+'/eigen-'+self.gitcommit+'.tar.gz',
@@ -27,4 +27,6 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DENABLE_OPENMP=OFF')
+    args.append('-DEIGEN_BUILD_BLAS=OFF')
+    args.append('-DEIGEN_BUILD_LAPACK=OFF')
     return args

@@ -14,7 +14,7 @@ class Configure(config.package.GNUPackage):
     self.ssl   = framework.require('config.packages.ssl', self)
     self.gmp   = framework.require('config.packages.gmp', self)
     self.mpfr  = framework.require('config.packages.mpfr', self)
-    self.eigen = framework.require('config.packages.eigen', self)
+    self.eigen = framework.require('config.packages.Eigen', self)
     self.deps  = [self.ssl, self.gmp, self.mpfr, self.eigen]
     return
 
