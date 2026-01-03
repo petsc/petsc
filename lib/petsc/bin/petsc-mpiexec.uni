@@ -13,6 +13,6 @@ if [ "$1" = "-np" -o "$1" = "-n" ]; then
 fi
 
 # Execute the program with options
-os=`uname`
-if [ "$os" = "Darwin" ]; then export DYLD_LIBRARY_PATH=${LIBRARY_PATH}; fi
+os=$(uname)
+if [ "$os" = "Darwin" ]; then export DYLD_LIBRARY_PATH="${LIBRARY_PATH}"; fi
 exec "$@"

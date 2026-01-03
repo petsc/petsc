@@ -32,26 +32,26 @@ FBLASLAPACK=f2cblaslapack-3.8.0.q2
 
 if [ $# -lt 2 ]
 then
-  echo Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
-  echo The result is put into the tarball ${FBLASLAPACK}
+  echo "Usage: toclapack.sh <blas-src-dir> <lapack-src-dir>"
+  echo "The result is put into the tarball ${FBLASLAPACK}"
   exit
 fi
 
 # Path tools and temp directory
 F2C=f2c
 CC=cc
-AWK=awk
+AWK="awk"
 TMP=${PWD}/toclapack.$$
-OS=`uname`
+OS=$(uname)
 if [ "${OS}" == "Darwin" ]; then
   LEX=/usr/local/opt/flex/bin/flex
   LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
 else
-  LEX=lex
+  LEX="lex"
   LEXFLAGS=-lfl
 fi
-SED=sed
-TAR=tar
+SED="sed"
+TAR="tar"
 
 # Some vars
 BIN=${TMP}/bin
@@ -64,19 +64,19 @@ ORIG="$PWD"
 MAXPROCS="16"
 TESTING="0"   # 0: don't include second, dsecnd and qsecnd
 
-if [ `uname` = Darwin ]
+if [ "$(uname)" = Darwin ]
 then
   SED=gsed
 fi
 
 # 0) Create the temp directory and compile some scripts
-mkdir $TMP
-mkdir $BIN
-mkdir $PAC
-mkdir $BLASDIR
-mkdir $LAPACKDIR
+mkdir "$TMP"
+mkdir "$BIN"
+mkdir "$PAC"
+mkdir "$BLASDIR"
+mkdir "$LAPACKDIR"
 
-cat <<EOF > $BIN/lenscrub.l
+cat <<EOF > "$BIN"/lenscrub.l
 /* {definitions} */
 iofun	"("[^;]*";"
 decl	"("[^)]*")"[,;\n]
@@ -116,8 +116,8 @@ len	[a-z][a-z0-9]*_len
 .			{ printf("%s", yytext); /* unchanged */ }
 EOF
 
-${LEX} -o${BIN}/lenscrub.c ${BIN}/lenscrub.l
-${CC} -o ${BIN}/lenscrub ${BIN}/lenscrub.c ${LEXFLAGS}
+${LEX} -o"${BIN}"/lenscrub.c "${BIN}"/lenscrub.l
+${CC} -o "${BIN}"/lenscrub "${BIN}"/lenscrub.c "${LEXFLAGS}"
 
 # 1) Write down the package makefile
 
@@ -203,13 +203,13 @@ cleanlib:
 dist: cleanblaslapck cleanlib
 	cd ..; 	$(RM) f2cblaslapack.tar.gz; \
 	$(TAR) --create --gzip --file f2cblaslapack.tar.gz f2cblaslapack
-' > ${PAC}/makefile
+' > "${PAC}"/makefile
 
 # 2) Transform fortran source to c from blas and lapack
 
 # Create list of files that won't be processed by f2c
 # Those functions correspond to extra precision routines and codes with f90 constructs
-cat > ${TMP}/skip.list << EOF
+cat > "${TMP}"/skip.list << EOF
 SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\
    sla_gercond.o sla_rpvgrw.o ssysvxx.o ssyrfsx.o			\
    sla_syrfsx_extended.o sla_syamv.o sla_syrcond.o sla_syrpvgrw.o	\
@@ -248,24 +248,24 @@ ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
 EOF
 
 QL=${TMP}/ql.sed
-echo "
+printf '
 	s/doublereal/quadreal/g;
 	s/doublecomplex/quadcomplex/g;
 	s/([^a-zA-Z_]+)real/\\1doublereal/g;
 	s/([^a-zA-Z_1-9]+)dlamch_([^a-zA-Z_1-9]+)/\\1qlamch_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc1_([^a-zA-Z_1-9]+)/\\1qlamc1_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc2_([^a-zA-Z_1-9]+)/\\1qlamc2_\\2/g;
-	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1qlamc3_\\2/g;" > $QL
+	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1qlamc3_\\2/g;\n' > "$QL"
 
 HL=${TMP}/hl.sed
-echo "
+printf '
 	s/doublereal/halfreal/g;
 	s/doublecomplex/halfcomplex/g;
 	s/([^a-zA-Z_]+)real/\\1doublereal/g;
 	s/([^a-zA-Z_1-9]+)dlamch_([^a-zA-Z_1-9]+)/\\1hlamch_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc1_([^a-zA-Z_1-9]+)/\\1hlamc1_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc2_([^a-zA-Z_1-9]+)/\\1hlamc2_\\2/g;
-	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1hlamc3_\\2/g;" > $HL
+	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1hlamc3_\\2/g;\n' > "$HL"
 
 for p in blas qblas hblas lapack qlapack hlapack; do
 	case $p in
@@ -273,74 +273,74 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		SRC="$BLASSRC"
 		DES="$BLASDIR"
 		NOOP=""
-		echo "pow_ii" > ${TMP}/AUX.list
+		echo "pow_ii" > "${TMP}"/AUX.list
                 # Utility functions (not part of BLAS public interface) go in AUX because
                 # it's possible to build only the AUX part (needed by libf2clapack.a) while
                 # using an external BLAS (such as BLIS).
-		echo $'pow_si\nsmaxloc\nsf__cabs' >> ${TMP}/AUX.list
-		echo $'pow_di\ndmaxloc\ndf__cabs' >> ${TMP}/AUX.list
-		cd $SRC
-		files="`ls *.f`"
-		cd -
+		echo $'pow_si\nsmaxloc\nsf__cabs' >> "${TMP}"/AUX.list
+		echo $'pow_di\ndmaxloc\ndf__cabs' >> "${TMP}"/AUX.list
+		cd "$SRC" || exit
+		files="$(ls -- *.f)"
+		cd - || exit
 		;;
 	qblas) 
 		SRC="$TMP"
 		DES="$BLASDIR"
 		NOOP=""
-		echo $'pow_qi\nqmaxloc\nqf__cabs' > ${TMP}/QUAD.list
-		files="`cat ${TMP}/ql.list`"
+		echo $'pow_qi\nqmaxloc\nqf__cabs' > "${TMP}"/QUAD.list
+		files="$(cat "${TMP}"/ql.list)"
 		;;
 	hblas) 
 		SRC="$TMP"
 		DES="$BLASDIR"
 		NOOP=""
-		echo $'pow_hi\nhmaxloc\nhf__cabs' > ${TMP}/HALF.list
-		files="`cat ${TMP}/hl.list`"
+		echo $'pow_hi\nhmaxloc\nhf__cabs' > "${TMP}"/HALF.list
+		files="$(cat "${TMP}"/hl.list)"
 		;;
 
 	lapack)
 		SRC="$LAPACKSRC"
 		DES="$LAPACKDIR"
 		NOOP="slaruv dlaruv slamch dlamch"
-		rm ${TMP}/AUX.list
-		echo 'slamch' > ${TMP}/SINGLE.list
-		echo 'dlamch' > ${TMP}/DOUBLE.list
+		rm "${TMP}"/AUX.list
+		echo 'slamch' > "${TMP}"/SINGLE.list
+		echo 'dlamch' > "${TMP}"/DOUBLE.list
 		if [[ ${TESTING} != "0" ]]; then
-			echo 'second' >> ${TMP}/SINGLE.list
-			echo 'dsecnd' >> ${TMP}/DOUBLE.list
+			echo 'second' >> "${TMP}"/SINGLE.list
+			echo 'dsecnd' >> "${TMP}"/DOUBLE.list
 		fi
-		rm ${TMP}/QUAD.list
-		rm ${TMP}/HALF.list
-		rm ${TMP}/ql.list
-		rm ${TMP}/hl.list
-		cd $SRC
-		files="`ls *.f`"
-		cd -
+		rm "${TMP}"/QUAD.list
+		rm "${TMP}"/HALF.list
+		rm "${TMP}"/ql.list
+		rm "${TMP}"/hl.list
+		cd "$SRC" || exit
+		files="$(ls -- *.f)"
+		cd - || exit
 		;;
 	qlapack)
 		NOOP="qlaruv qlamch"
-		echo $'qlamch' > ${TMP}/QUAD.list
+		echo $'qlamch' > "${TMP}"/QUAD.list
 		SRC="$TMP"
 		DES="$LAPACKDIR"
-		files="`cat ${TMP}/ql.list`"
+		files="$(cat "${TMP}"/ql.list)"
 		;;
 
         hlapack)
 		NOOP="hlaruv hlamch"
-		echo $'hlamch' > ${TMP}/HALF.list
+		echo $'hlamch' > "${TMP}"/HALF.list
 		SRC="$TMP"
 		DES="$LAPACKDIR"
-		files="`cat ${TMP}/hl.list`"
+		files="$(cat "${TMP}"/hl.list)"
 	esac
 
 	# Transform sources
 	BACK="${PWD}"
-	cd $SRC
+	cd "$SRC" || exit
 	NPROC="0"
 	for file in $files; do
-		base=`echo $file | $SED -e 's/\.f//g'`
-		[[ ${p} = lapack || ${p} = qlapack || ${p} = hlapack ]] && grep -q ${base}.o ${TMP}/skip.list && continue
-                echo ${base} | grep 2stage && continue
+		base=$(echo "$file" | $SED -e 's/\.f//g')
+		[[ ${p} = lapack || ${p} = qlapack || ${p} = hlapack ]] && grep -q "${base}".o "${TMP}"/skip.list && continue
+                echo "${base}" | grep 2stage && continue
 		# Get the precision of the BLAS and LAPACK routines
 		case $base in
 		chla_transtype)	PR="AUX";;
@@ -373,7 +373,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		# - Replace sqrt, sin, cos, log and exp by M(*)
 		# - Replace max and min by f2cmax and f2cmin
                 # - F90 constructs that snuck into LAPACK
-		case $base in [zwk]*) $SED -r -e "s/\bAIMAG\b/DIMAG/g;" ${base}.f;; *) cat ${base}.f;; esac |
+		case $base in [zwk]*) $SED -r -e "s/\bAIMAG\b/DIMAG/g;" "${base}".f;; *) cat "${base}".f;; esac |
 		$SED -r -e "
 			s/RECURSIVE//g;
 			s/CHARACTER\\(1\\)/CHARACTER/g;
@@ -395,7 +395,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
                         s/^[ ]*LOGICAL,/       LOGICAL/g;
                         s/:://g;
 		" |
-		$F2C -a -A -R | ${BIN}/lenscrub |
+		$F2C -a -A -R | "${BIN}"/lenscrub |
              	$SED -e "
                         1 i\
                         #define len_trim__(cad,len) ({ \
@@ -417,7 +417,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			s/myexit_\\(void\\)/mecago_()/g;
 			s/char subnam\\[([0-9]+)\\]/char subnam[\\1] = {0}/g;
 			$( for i in sqrt sin cos log exp; do
-				echo "s/([^a-zA-Z_1-9]+)${i}([^a-zA-Z_1-9]+)/\\1M(${i})\\2/g;"
+				printf 's/([^a-zA-Z_1-9]+)%s([^a-zA-Z_1-9]+)/\\1M(%s)\\2/g;\n' "$i" "$i"
 			done )
 			s/([^a-zA-Z_1-9]+)max([^a-zA-Z_1-9]+)/\\1f2cmax\\2/g;
 			s/([^a-zA-Z_1-9]+)min([^a-zA-Z_1-9]+)/\\1f2cmin\\2/g;" |
@@ -435,12 +435,12 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		$SED -e "
 			s/#include \"f2c.h\"/#define __LAPACK_PRECISION_$PR\\n&/g" |
 		if [[ $p = qblas || $p = qlapack ]]; then
-			$SED -r -f $QL
+			$SED -r -f "$QL"
 		elif [[ $p = hblas || $p = hlapack ]]; then
-			$SED -r -f $HL
+			$SED -r -f "$HL"
 		else
 			cat
-		fi > ${DES}/${base}.c &
+		fi > "${DES}"/"${base}".c &
 
 		# Quick way to parallelize this loop
 		NPROC="$(( NPROC+1 ))"
@@ -448,7 +448,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 
 		# Create the routines with quad precision from the double ones
 		if [[ $PR = DOUBLE ]]; then
-			qbase="$( echo $base | $SED -r -e '
+			qbase="$( echo "$base" | $SED -r -e '
 				s/^dcabs1/qcabs1/
 				s/^dsdot/qddot/
 				s/^dz/qw/
@@ -457,18 +457,18 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				/^i?z[^d]/ { s/z/w/ }
 				s/^sdsdot/dqddot/
 				/^ila[dz]l[rc]/ { y/dz/qw/; }' )";
-			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${qbase}_\\2/g;" >> $QL
+			printf 's/([^a-zA-Z_1-9]+)%s_([^a-zA-Z_1-9]+)/\\1%s_\\2/g;\n' "${base}" "${qbase}" >> "$QL"
                         if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
-                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${qbase}1_\\2/g;" >> $QL;
-                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${qbase}2_\\2/g;" >> $QL;
+                           printf 's/([^a-zA-Z_1-9]+)%s1_([^a-zA-Z_1-9]+)/\\1%s1_\\2/g;\n' "${base}" "${qbase}" >> "$QL";
+                           printf 's/([^a-zA-Z_1-9]+)%s2_([^a-zA-Z_1-9]+)/\\1%s2_\\2/g;\n' "${base}" "${qbase}" >> "$QL";
                         fi;
-			cp $base.f ${TMP}/${qbase}.f
-			echo ${qbase}.f >> ${TMP}/ql.list
+			cp "$base".f "${TMP}"/"${qbase}".f
+			echo "${qbase}".f >> "${TMP}"/ql.list
 		fi
 
 		# Create the routines with half precision from the double ones  h - half-real k half-complex
 		if [[ $PR = DOUBLE ]]; then
-			hbase="$( echo $base | $SED -r -e '
+			hbase="$( echo "$base" | $SED -r -e '
 				s/^dcabs1/hcabs1/
 				s/^dsdot/hddot/
 				s/^dz/hw/
@@ -477,28 +477,28 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				/^i?z[^d]/ { s/z/k/ }
 				s/^sdsdot/dhddot/
 				/^ila[dz]l[rc]/ { y/dz/hk/; }' )";
-			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${hbase}_\\2/g;" >> $HL
+			printf 's/([^a-zA-Z_1-9]+)%s_([^a-zA-Z_1-9]+)/\\1%s_\\2/g;\n' "${base}" "${hbase}" >> "$HL"
                         if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
-                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${hbase}1_\\2/g;" >> $HL;
-                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${hbase}2_\\2/g;" >> $HL;
+                           printf 's/([^a-zA-Z_1-9]+)%s1_([^a-zA-Z_1-9]+)/\\1%s1_\\2/g;\n' "${base}" "${hbase}" >> "$HL";
+                           printf 's/([^a-zA-Z_1-9]+)%s2_([^a-zA-Z_1-9]+)/\\1%s2_\\2/g;\n' "${base}" "${hbase}" >> "$HL";
                         fi;
-			cp $base.f ${TMP}/${hbase}.f
-			echo ${hbase}.f >> ${TMP}/hl.list
+			cp "$base".f "${TMP}"/"${hbase}".f
+			echo "${hbase}".f >> "${TMP}"/hl.list
 		fi
 
 		# Separate the files by precision
-		echo $base >> ${TMP}/${PR}.list
+		echo "$base" >> "${TMP}"/${PR}.list
 	done
 	wait
-        cd $BACK
+        cd "$BACK" || exit
 
 	# Create the makefile
 	case $p in
 	blas|lapack)
-		cat >> ${DES}/makefile << EOF
-AUXO = `cat ${TMP}/AUX.list | $AWK '{printf("%s.o ", $1)}'`
-SINGLEO = `cat ${TMP}/SINGLE.list | $AWK '{printf("%s.o ", $1)}'`
-DOUBLEO = `cat ${TMP}/DOUBLE.list | $AWK '{printf("%s.o ", $1)}'`
+		cat >> "${DES}"/makefile << EOF
+AUXO = $(cat "${TMP}"/AUX.list | $AWK '{printf("%s.o ", $1)}')
+SINGLEO = $(cat "${TMP}"/SINGLE.list | $AWK '{printf("%s.o ", $1)}')
+DOUBLEO = $(cat "${TMP}"/DOUBLE.list | $AWK '{printf("%s.o ", $1)}')
 
 lib: \$(SINGLEO) \$(DOUBLEO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(AUXO)
@@ -518,8 +518,8 @@ EOF
 		;;
 
 	qblas|qlapack)
-		cat >> ${DES}/makefile << EOF
-QUADO = `cat ${TMP}/QUAD.list | $AWK '{printf("%s.o ", $1)}'`
+		cat >> "${DES}"/makefile << EOF
+QUADO = $(cat "${TMP}"/QUAD.list | $AWK '{printf("%s.o ", $1)}')
 
 quad: \$(QUADO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(QUADO) \$(AUXO)
@@ -531,8 +531,8 @@ qlib: \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(AUXO)
 EOF
 		;;
 	hblas|hlapack)
-		cat >> ${DES}/makefile << EOF
-HALFO = `cat ${TMP}/HALF.list | $AWK '{printf("%s.o ", $1)}'`
+		cat >> "${DES}"/makefile << EOF
+HALFO = $(cat "${TMP}"/HALF.list | $AWK '{printf("%s.o ", $1)}')
 
 half: \$(HALFO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(HALFO) \$(AUXO)
@@ -549,14 +549,14 @@ EOF
 
 	# Add to the makefile the files that should be built without optimizations
 	for f in $NOOP; do
-		echo "${f}.o: ${f}.c ; \$(CC) \$(CNOOPT) -c \$< -o \$@" >> ${DES}/makefile
+		echo "${f}.o: ${f}.c ; \$(CC) \$(CNOOPT) -c \$< -o \$@" >> "${DES}"/makefile
 	done
 done
         # remove duplicate xerbla.o xerbla_array.o from lapack makefile
-        $SED -i -e 's/xerbla.o//; s/xerbla_array.o//' ${LAPACKDIR}/makefile
+        $SED -i -e 's/xerbla.o//; s/xerbla_array.o//' "${LAPACKDIR}"/makefile
 
 	# Take care some special source files
-	cat << EOF > ${TMP}/xerbla.c
+	cat << EOF > "${TMP}"/xerbla.c
 #include "f2c.h"
 
 void xerbla_(char *srname, integer *info) {
@@ -564,10 +564,10 @@ void xerbla_(char *srname, integer *info) {
 		srname, *info);
 }
 EOF
-	cp ${TMP}/xerbla.c ${BLASDIR}
+	cp "${TMP}"/xerbla.c "${BLASDIR}"
 #	cp ${TMP}/xerbla.c ${LAPACKDIR}
 
-	cat << EOF > ${TMP}/xerbla_array.c
+	cat << EOF > "${TMP}"/xerbla_array.c
 #include "f2c.h"
 #include <stdlib.h>
 
@@ -581,10 +581,10 @@ int xerbla_array_(char *srname, integer *info, int len) {
     return 0;
 }
 EOF
-	cp ${TMP}/xerbla_array.c ${BLASDIR}
+	cp "${TMP}"/xerbla_array.c "${BLASDIR}"
 #	cp ${TMP}/xerbla_array.c ${LAPACKDIR}
 
-	cat << EOF > ${LAPACKDIR}/slamch.c
+	cat << EOF > "${LAPACKDIR}"/slamch.c
 /*  -- translated by f2c (version 20100827).
    You must link the resulting object file with libf2c:
 	on Microsoft Windows system, link with libf2c.lib;
@@ -1579,7 +1579,7 @@ L10:
 } /* slamc5_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/dlamch.c
+	cat << EOF > "${LAPACKDIR}"/dlamch.c
 /*  -- translated by f2c (version 20100827).
    You must link the resulting object file with libf2c:
 	on Microsoft Windows system, link with libf2c.lib;
@@ -2574,7 +2574,7 @@ L10:
 } /* dlamc5_ */
 
 EOF
-	cat << EOF > ${LAPACKDIR}/qlamch.c
+	cat << EOF > "${LAPACKDIR}"/qlamch.c
 /*  -- translated by f2c (version 20090411).
    You must link the resulting object file with libf2c:
 	on Microsoft Windows system, link with libf2c.lib;
@@ -3569,7 +3569,7 @@ L10:
 
 } /* qlamc5_ */
 EOF
-	cat << EOF > ${LAPACKDIR}/hlamch.c
+	cat << EOF > "${LAPACKDIR}"/hlamch.c
 /*  -- translated by f2c (version 20090411).
    You must link the resulting object file with libf2c:
 	on Microsoft Windows system, link with libf2c.lib;
@@ -4565,7 +4565,7 @@ L10:
 } /* hlamc5_ */
 EOF
 	if [[ $TESTING != 0 ]]; then
-		cat << EOF > ${LAPACKDIR}/second.c
+		cat << EOF > "${LAPACKDIR}"/second.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -4585,7 +4585,7 @@ real second_()
 } /* second_ */
 EOF
 
-		cat << EOF > ${LAPACKDIR}/dsecnd.c
+		cat << EOF > "${LAPACKDIR}"/dsecnd.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -4606,7 +4606,7 @@ doublereal dsecnd_()
 EOF
 	fi
 
-	cat << EOF > ${BLASDIR}/lsame.c
+	cat << EOF > "${BLASDIR}"/lsame.c
 #include "f2c.h"
 
 logical lsame_(char *ca, char *cb)
@@ -4709,7 +4709,7 @@ e
 } /* lsame_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/lsamen.c
+	cat << EOF > "${LAPACKDIR}"/lsamen.c
 #include "f2c.h"
 #include <string.h>
 
@@ -4781,7 +4781,7 @@ L20:
 } /* lsamen_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/chla_transtype.c
+	cat << EOF > "${LAPACKDIR}"/chla_transtype.c
 /*  -- translated by f2c (version 20100827).
    You must link the resulting object file with libf2c:
 	on Microsoft Windows system, link with libf2c.lib;
@@ -4842,7 +4842,7 @@ EOF
 } /* chla_transtype__ */
 EOF
 
-	cat <<EOF > ${TMP}/f2c.h
+	cat <<EOF > "${TMP}"/f2c.h
 /* f2c.h  --  Standard Fortran to C header file */
 
 /**  barf  [ba:rf]  2.  "He suggested using FORTRAN, and everybody barfed."
@@ -5214,11 +5214,11 @@ typedef logical (*L_fp)();
 #endif
 #endif
 EOF
-	cp ${TMP}/f2c.h ${BLASDIR}
-	cp ${TMP}/f2c.h ${LAPACKDIR}
+	cp "${TMP}"/f2c.h "${BLASDIR}"
+	cp "${TMP}"/f2c.h "${LAPACKDIR}"
 
 
-	cat <<EOF > ${BLASDIR}/pow_ii.c
+	cat <<EOF > "${BLASDIR}"/pow_ii.c
 #include "f2c.h"
 integer pow_ii(integer *_x, integer *_n) {
 	integer x=*_x, n=*_n, pow; unsigned long int u;
@@ -5247,7 +5247,7 @@ EOF
 		h) P="HALF";;
 		esac
 
-		cat <<EOF > ${BLASDIR}/pow_${i}i.c
+		cat <<EOF > "${BLASDIR}"/pow_${i}i.c
 #define __LAPACK_PRECISION_${P}
 #include "f2c.h"
 dscalar ${i}pow_ui(scalar *_x, integer n) {
@@ -5263,7 +5263,7 @@ dscalar ${i}pow_ui(scalar *_x, integer n) {
 	return pow;
 }
 EOF
-		cat <<EOF > ${BLASDIR}/${i}maxloc.c
+		cat <<EOF > "${BLASDIR}"/${i}maxloc.c
 #define __LAPACK_PRECISION_${P}
 #include "f2c.h"
 integer ${i}maxloc_(scalar *w, integer s, integer e, integer *n)
@@ -5275,7 +5275,7 @@ integer ${i}maxloc_(scalar *w, integer s, integer e, integer *n)
 }
 EOF
 
-		cat <<EOF > ${BLASDIR}/${i}f__cabs.c
+		cat <<EOF > "${BLASDIR}"/${i}f__cabs.c
 #define __LAPACK_PRECISION_${P}
 #include "f2c.h"
 scalar ${i}f__cabs(scalar r, scalar i) {
@@ -5301,10 +5301,10 @@ EOF
 		
 # 3) Make the package, copy it to the current directory
 #	 and remove temp directory
-cd $TMP
-$TAR --create --gzip --file $ORIG/${FBLASLAPACK}.tar.gz ${FBLASLAPACK}
-cd $ORIG 
-rm -r $TMP
+cd "$TMP" || exit
+$TAR --create --gzip --file "$ORIG"/${FBLASLAPACK}.tar.gz ${FBLASLAPACK}
+cd "$ORIG" || exit 
+rm -r "$TMP"
 
 # 4) Testing the single and double routines in BLAS and LAPACK
 # In order to execute the available tests in blas and lapack I have to

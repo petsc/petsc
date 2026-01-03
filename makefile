@@ -361,6 +361,28 @@ checkfprettifyformat: checkgitclean fprettify
           false;\
         fi;
 
+# Check and fix the style/formatting of sh scripts
+shellcheck:
+	@shellcheck --format=diff $$(git ls-files \*.sh) $$(file lib/petsc/bin/* lib/petsc/bin/maint/* | grep "/usr/bin/env sh" | cut -d: -f1) | patch -p1
+
+# Cannot use the following line since it encouters many problems we will likely not fix
+#   shellcheck --format=tty $$(git ls-files \*.sh) $$(file lib/petsc/bin/* lib/petsc/bin/maint/* | grep "/usr/bin/env sh" | cut -d: -f1)
+checkshellcheck: shellcheck
+	@if ! git diff --quiet; then \
+          printf "The current commit has shellcheck problems\n" ;\
+          if [ -z "${CI_PIPELINE_ID}"  ]; then \
+            printf "Please run 'git diff' to check\n"; \
+            git diff --stat; \
+          else \
+            git diff --patch-with-stat >  ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch; \
+            git diff --patch-with-stat --color=always | head -1000; \
+            if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch` -gt 1000 ]; then \
+              printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch (in CI artifacts) for all changes\n"; \
+            fi;\
+          fi;\
+          false;\
+        fi;
+
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
 abitest:
 	@if [ "${PETSC_DIR_ABI_OLD}" = "" ] || [ "${PETSC_ARCH_ABI_OLD}" = "" ]; \

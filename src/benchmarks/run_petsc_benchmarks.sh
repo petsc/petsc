@@ -107,8 +107,8 @@ parse_matrix_list() {
     local source_list_file=$1
     local benchmark_list=""
     local id=0
-    for mtx in $(cat ${source_list_file}); do
-	echo $mtx >&2
+    for mtx in $(cat "${source_list_file}"); do
+	echo "$mtx" >&2
         if [[ ! "$mtx" =~ ^[0-9]+$ ]]; then
             if [[ "$mtx" =~ ^[a-zA-Z0-9_-]+$ ]]; then
                 id=$(${SSGET} -s "[ @name == $mtx ]")
@@ -128,7 +128,7 @@ parse_matrix_list() {
 }
 
 if [ $use_matrix_list_file -eq 1 ]; then
-    MATRIX_LIST=($(parse_matrix_list $MATRIX_LIST_FILE))
+    MATRIX_LIST=($(parse_matrix_list "$MATRIX_LIST_FILE"))
     NUM_PROBLEMS=${#MATRIX_LIST[@]}
 fi
 
