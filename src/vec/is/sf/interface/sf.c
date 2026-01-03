@@ -697,7 +697,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
   for (i = 0, count = 0; i < nroots; i++)
     if (roots[i].rank >= 0) count++;
   if (count == nroots) newilocal = NULL;
-  else { /* Index for sparse leaves and compact "roots" array (which is to become our leaves). */ PetscCall(PetscMalloc1(count, &newilocal));
+  else { // Index for sparse leaves and compact "roots" array (which is to become our leaves).
+    PetscCall(PetscMalloc1(count, &newilocal));
     for (i = 0, count = 0; i < nroots; i++) {
       if (roots[i].rank >= 0) {
         newilocal[count]   = i;
