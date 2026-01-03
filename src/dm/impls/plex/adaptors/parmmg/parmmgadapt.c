@@ -393,7 +393,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   for (i = 0, numVerticesNewLoc = 0; i < numVerticesNew; ++i) {
     if (owners[i] == rank) numVerticesNewLoc++;
   }
-  PetscCall(PetscMalloc2(numVerticesNewLoc * dim, &verticesNewLoc, numVerticesNew, &verticesNewSorted));
+  PetscCall(PetscMalloc1(numVerticesNewLoc * dim, &verticesNewLoc));
   for (i = 0, c = 0; i < numVerticesNew; i++) {
     if (owners[i] == rank) {
       for (j = 0; j < dim; ++j) verticesNewLoc[dim * c + j] = verticesNew[dim * i + j];
@@ -442,7 +442,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   }
   PetscCall(PetscFree4(facesNew, faceTagsNew, ridges, requiredFaces));
   PetscCall(PetscFree2(owners, gv_new));
-  PetscCall(PetscFree2(verticesNewLoc, verticesNewSorted));
+  PetscCall(PetscFree(verticesNewLoc));
   if (flg) PetscCall(DMLabelDestroy(&bdLabel));
 
   /* Rebuild cell labels */
