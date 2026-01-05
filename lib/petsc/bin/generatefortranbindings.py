@@ -666,7 +666,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     for j in classes[i].functions: # loop over functions in class
       generateFortranInterface(pkgname,petscarch,classesext,enumsext,structs,senumsext,j,mpi_f08,classes[i].functions[j])
 
-    if i in ['PetscObject', 'PetscTabulation','SlepcConvMon']: continue
+    if i in ['PetscObject', 'PetscTabulation']: continue
     file = classes[i].includefile + '90'
     if not file.startswith(pkgname): file = pkgname + file
     with open(os.path.join(petscarch,'ftn', getAPI.mansecpath(classes[i].mansec),file),"a") as fd:
@@ -730,7 +730,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
 ##########  $PETSC_ARCH/ftn/MANSEC/*.hf90
 
   for i in classes.keys():
-    if i in ['PetscObject', 'PetscIntStack', 'PetscTabulation','SlepcConvMon']: continue
+    if i in ['PetscObject', 'PetscIntStack', 'PetscTabulation']: continue
     with open(os.path.join(petscarch,'ftn', getAPI.mansecpath(classes[i].mansec),classes[i].includefile + 'f90'),"a") as fd:
 
       fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
