@@ -176,7 +176,7 @@ typedef struct {
 } XMUMPS_STRUC_C;
 
 // Note: fixed-size arrays are allocated by MUMPS; redirect them to the outer struct
-#define AllocatInternalID(MUMPS_STRUC_T, outer) \
+#define AllocateInternalID(MUMPS_STRUC_T, outer) \
   do { \
     MUMPS_STRUC_T *inner; \
     PetscCall(PetscNew(&inner)); \
@@ -202,14 +202,14 @@ static inline PetscErrorCode MatMumpsAllocateInternalID(XMUMPS_STRUC_C *outer, P
   outer->precision = precision;
 #if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
   #if defined(PETSC_USE_COMPLEX)
-  if (precision == PETSC_PRECISION_SINGLE) AllocatInternalID(CMUMPS_STRUC_C, outer);
-  else AllocatInternalID(ZMUMPS_STRUC_C, outer);
+  if (precision == PETSC_PRECISION_SINGLE) AllocateInternalID(CMUMPS_STRUC_C, outer);
+  else AllocateInternalID(ZMUMPS_STRUC_C, outer);
   #else
-  if (precision == PETSC_PRECISION_SINGLE) AllocatInternalID(SMUMPS_STRUC_C, outer);
-  else AllocatInternalID(DMUMPS_STRUC_C, outer);
+  if (precision == PETSC_PRECISION_SINGLE) AllocateInternalID(SMUMPS_STRUC_C, outer);
+  else AllocateInternalID(DMUMPS_STRUC_C, outer);
   #endif
 #else
-  AllocatInternalID(MUMPS_STRUC_C, outer);
+  AllocateInternalID(MUMPS_STRUC_C, outer);
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
