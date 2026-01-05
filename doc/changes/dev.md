@@ -119,6 +119,7 @@
 ```
 
 - Change the final argument of `DMShellSetDestroyContext()` to `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+- Add `DMLabelGetValueISGlobal()` to get globally consistent `IS` of values in a `DMLabel`
 
 ```{rubric} DMSwarm:
 ```
