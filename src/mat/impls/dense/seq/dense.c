@@ -2658,9 +2658,8 @@ PetscErrorCode MatConjugate_SeqDense(Mat A)
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArray(A, &aa));
-  for (j = 0; j < A->cmap->n; j++) {
+  for (j = 0; j < A->cmap->n; j++)
     for (i = 0; i < A->rmap->n; i++) aa[i + j * mat->lda] = PetscConj(aa[i + j * mat->lda]);
-  }
   PetscCall(MatDenseRestoreArray(A, &aa));
   if (mat->tau)
     for (i = 0; i < min; i++) mat->tau[i] = PetscConj(mat->tau[i]);

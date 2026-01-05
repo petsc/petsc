@@ -1027,16 +1027,12 @@ static PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A, PetscBool *flg)
 
 static PetscErrorCode MatConjugate_SeqSBAIJ(Mat A)
 {
-#if defined(PETSC_USE_COMPLEX)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
   PetscInt      i, nz = a->bs2 * a->i[a->mbs];
   MatScalar    *aa = a->a;
 
   PetscFunctionBegin;
   for (i = 0; i < nz; i++) aa[i] = PetscConj(aa[i]);
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

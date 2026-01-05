@@ -2414,18 +2414,13 @@ PetscErrorCode MatEqual_SeqSELL(Mat A, Mat B, PetscBool *flg)
 
 PetscErrorCode MatConjugate_SeqSELL(Mat A)
 {
-#if defined(PETSC_USE_COMPLEX)
-  Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
-  PetscInt     i;
+  Mat_SeqSELL *a   = (Mat_SeqSELL *)A->data;
   PetscScalar *val = a->val;
 
   PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
-  #if defined(PETSC_HAVE_CUPM)
+  for (PetscInt i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
+#if defined(PETSC_HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
-  #endif
-#else
-  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

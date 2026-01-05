@@ -1229,7 +1229,6 @@ PetscErrorCode VecDotNorm2_SeqKokkos(Vec xin, Vec yin, PetscScalar *dp, PetscSca
 
 PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
 {
-#if defined(PETSC_USE_COMPLEX)
   PetscScalarKokkosView xv;
 
   PetscFunctionBegin;
@@ -1238,9 +1237,6 @@ PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
   PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, xin->map->n), KOKKOS_LAMBDA(const PetscInt &i) { xv(i) = PetscConj(xv(i)); }));
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
