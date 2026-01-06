@@ -201,7 +201,8 @@ function petsc_testrun() {
   #  If it is a lack of GPU resources or MPI failure (Intel) then try once more
   #  See: src/sys/error/err.c
   #  Error #134 added to handle problems with the Radeon card for hip testing
-  if [ $cmd_res -eq 96 -o $cmd_res -eq 97 -o $cmd_res -eq 98 -o $cmd_res -eq 134 ]; then
+  #  Error #144 added to handle problems with the MPI [ch3:sock] received packet of unknown type (1852472100)
+  if [ $cmd_res -eq 96 -o $cmd_res -eq 97 -o $cmd_res -eq 98 -o $cmd_res -eq 134 -o $cmd_res -eq 144 ]; then
     printf "# retrying ${tlabel}\n" | tee -a ${testlogerrfile}
     sleep 3
     eval "{ time -p $cmd ; } 2>> timing.out"
