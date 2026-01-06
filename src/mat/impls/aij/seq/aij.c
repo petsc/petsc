@@ -2989,19 +2989,14 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y, PetscScalar a, Mat X, MatStructure str)
 
 PETSC_INTERN PetscErrorCode MatConjugate_SeqAIJ(Mat mat)
 {
-#if defined(PETSC_USE_COMPLEX)
   Mat_SeqAIJ  *aij = (Mat_SeqAIJ *)mat->data;
-  PetscInt     i, nz;
+  PetscInt     i, nz = aij->nz;
   PetscScalar *a;
 
   PetscFunctionBegin;
-  nz = aij->nz;
   PetscCall(MatSeqAIJGetArray(mat, &a));
   for (i = 0; i < nz; i++) a[i] = PetscConj(a[i]);
   PetscCall(MatSeqAIJRestoreArray(mat, &a));
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

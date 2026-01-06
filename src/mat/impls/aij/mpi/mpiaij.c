@@ -2126,13 +2126,11 @@ PETSC_INTERN PetscErrorCode MatConjugate_SeqAIJ(Mat);
 
 static PetscErrorCode MatConjugate_MPIAIJ(Mat mat)
 {
-  PetscFunctionBegin;
-  if (PetscDefined(USE_COMPLEX)) {
-    Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
 
-    PetscCall(MatConjugate_SeqAIJ(aij->A));
-    PetscCall(MatConjugate_SeqAIJ(aij->B));
-  }
+  PetscFunctionBegin;
+  PetscCall(MatConjugate_SeqAIJ(aij->A));
+  PetscCall(MatConjugate_SeqAIJ(aij->B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

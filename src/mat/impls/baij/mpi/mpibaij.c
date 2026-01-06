@@ -1850,13 +1850,11 @@ static PetscErrorCode MatAXPY_MPIBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure 
 
 static PetscErrorCode MatConjugate_MPIBAIJ(Mat mat)
 {
-  PetscFunctionBegin;
-  if (PetscDefined(USE_COMPLEX)) {
-    Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)mat->data;
+  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)mat->data;
 
-    PetscCall(MatConjugate_SeqBAIJ(a->A));
-    PetscCall(MatConjugate_SeqBAIJ(a->B));
-  }
+  PetscFunctionBegin;
+  PetscCall(MatConjugate_SeqBAIJ(a->A));
+  PetscCall(MatConjugate_SeqBAIJ(a->B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

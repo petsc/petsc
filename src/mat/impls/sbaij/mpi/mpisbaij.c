@@ -1284,13 +1284,11 @@ static PetscErrorCode MatRestoreRowUpperTriangular_MPISBAIJ(Mat A)
 
 static PetscErrorCode MatConjugate_MPISBAIJ(Mat mat)
 {
-  PetscFunctionBegin;
-  if (PetscDefined(USE_COMPLEX)) {
-    Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)mat->data;
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)mat->data;
 
-    PetscCall(MatConjugate(a->A));
-    PetscCall(MatConjugate(a->B));
-  }
+  PetscFunctionBegin;
+  PetscCall(MatConjugate(a->A));
+  PetscCall(MatConjugate(a->B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -881,13 +881,11 @@ static PetscErrorCode MatSetUp_MPISELL(Mat A)
 
 static PetscErrorCode MatConjugate_MPISELL(Mat mat)
 {
-  PetscFunctionBegin;
-  if (PetscDefined(USE_COMPLEX)) {
-    Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
+  Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
-    PetscCall(MatConjugate_SeqSELL(sell->A));
-    PetscCall(MatConjugate_SeqSELL(sell->B));
-  }
+  PetscFunctionBegin;
+  PetscCall(MatConjugate_SeqSELL(sell->A));
+  PetscCall(MatConjugate_SeqSELL(sell->B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
