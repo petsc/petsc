@@ -172,11 +172,12 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
     PetscCall(PetscArraycpy(map->range, range, map->size + 1));
     break;
   case PETSC_USE_POINTER:
-    map->range_alloc = PETSC_FALSE;
-    break;
-  default:
+    map->range_alloc = PETSC_FALSE; /* fall through */
+  case PETSC_OWN_POINTER:
     map->range = (PetscInt *)range;
     break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Received invalid PetscCopyMode somehow");
   }
   map->rstart = map->range[rank];
   map->rend   = map->range[rank + 1];

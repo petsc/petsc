@@ -55,23 +55,19 @@ int main(int argc, char **argv)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matdiagonalscalelocal", &flg, NULL));
   if (flg) {
-    Vec         vec, scaling;
+    Vec         vec;
     PetscInt    size;
     PetscMPIInt rank;
 
     PetscCall(DMGetLocalVector(da, &vec));
-    /* We need to duplicate vec, since we are not allowed to write to its ghost values, yet we need a vector in which
-       we can write to these locations for testing MatDiagonalScaleLocal(). */
-    PetscCall(VecDuplicate(vec, &scaling));
-    PetscCall(VecGetLocalSize(scaling, &size));
+    PetscCall(VecGetLocalSize(vec, &size));
     PetscCall(PetscFree(values));
-    PetscCall(VecGetArrayWrite(scaling, &values));
+    PetscCall(VecGetArrayWrite(vec, &values));
     PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
     for (i = 0; i < size; i++) values[i] = (PetscScalar)(rank + 1);
-    PetscCall(VecRestoreArrayWrite(scaling, &values));
-    PetscCall(MatDiagonalScaleLocal(mat, scaling));
+    PetscCall(VecRestoreArrayWrite(vec, &values));
+    PetscCall(MatDiagonalScaleLocal(mat, vec));
     PetscCall(DMRestoreLocalVector(da, &vec));
-    PetscCall(DMRestoreLocalVector(da, &scaling));
   }
 
   /* Free memory */
