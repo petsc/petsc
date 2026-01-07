@@ -76,6 +76,7 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   for (p = 0; p < ctx->npoints; p++) {
     ctx->list[p].point_index = p;
     ctx->list[p].cell_index  = swarm_cellid[p];
+    PetscCheck(ctx->list[p].cell_index >= 0 && ctx->list[p].cell_index < ctx->ncells, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell index %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", swarm_cellid[p], ctx->ncells);
   }
   PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmSortApplyCellIndexSort(ctx));

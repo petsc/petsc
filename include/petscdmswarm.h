@@ -205,3 +205,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCellDMGetCellID(DMSwarmCellDM, const char *[]
 PETSC_EXTERN PetscErrorCode DMSwarmCellDMGetSort(DMSwarmCellDM, DMSwarmSort *);
 PETSC_EXTERN PetscErrorCode DMSwarmCellDMSetSort(DMSwarmCellDM, DMSwarmSort);
 PETSC_EXTERN PetscErrorCode DMSwarmCellDMGetBlockSize(DMSwarmCellDM, DM, PetscInt *);
+
+PETSC_EXTERN PetscErrorCode DMSwarmPreallocateMassMatrix(DM, DM, Mat, PetscInt *, PetscInt *, PetscCtx);
+PETSC_EXTERN PetscErrorCode DMSwarmFillMassMatrix(DM, DM, Mat, PetscInt, PetscInt, PetscBool, PetscInt, const PetscInt[], PetscReal *[], PetscCtx);

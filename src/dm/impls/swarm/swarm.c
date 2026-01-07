@@ -444,58 +444,48 @@ static PetscErrorCode DMSwarmCreateVectorFromFields_Private(DM sw, PetscInt Nf, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* This creates a "mass matrix" between a finite element and particle space. If a finite element interpolant is given by
+/*@
+  DMSwarmPreallocateMassMatrix - Preallocate particle mass matrix between a `DMSWARM` and a `DMPLEX`
 
-     \hat f = \sum_i f_i \phi_i
+  Collective
 
-   and a particle function is given by
+  Input Parameters:
++ dmc    - The `DMSWARM` object
+. dmf    - The `DMPLEX` object
+. mass   - The mass matrix to preallocate
+. rStart - The starting row index for this process
+. maxC   - The maximum number of columns per row
+- ctx    - The user context
 
-     f = \sum_i w_i \delta(x - x_i)
+  Level: developer
 
-   then we want to require that
-
-     M \hat f = M_p f
-
-   where the particle mass matrix is given by
-
-     (M_p)_{ij} = \int \phi_i \delta(x - x_j)
-
-   The way Dave May does particles, they amount to quadratue weights rather than delta functions, so he has |J| is in
-   his integral. We allow this with the boolean flag.
-*/
-static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass, PetscBool useDeltaFunction, PetscCtx ctx)
+.seealso: [](ch_unstructured), `DM`, `DMSWARM`, `DMPLEX`, `DMCreateMassMatrix()`, `DMSwarmFillMassMatrix()`
+@*/
+PetscErrorCode DMSwarmPreallocateMassMatrix(DM dmc, DM dmf, Mat mass, PetscInt *rStart, PetscInt *maxC, PetscCtx ctx)
 {
-  const char   *name = "Mass Matrix";
-  MPI_Comm      comm;
-  DMSwarmCellDM celldm;
-  PetscDS       prob;
-  PetscSection  fsection, globalFSection;
-  PetscHSetIJ   ht;
-  PetscLayout   rLayout, colLayout;
-  PetscInt     *dnz, *onz;
-  PetscInt      locRows, locCols, rStart, colStart, colEnd, *rowIDXs;
-  PetscReal    *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
-  PetscScalar  *elemMat;
-  PetscInt      dim, Nf, Nfc, cStart, cEnd, totDim, maxC = 0, totNc = 0;
-  const char  **coordFields;
-  PetscReal   **coordVals;
-  PetscInt     *bs;
+  MPI_Comm     comm;
+  PetscHSetIJ  ht;
+  PetscDS      ds;
+  PetscSection fsection, globalFSection;
+  PetscLayout  rLayout, colLayout;
+  PetscInt    *dnz, *onz;
+  PetscInt     cStart, cEnd, locRows, locCols, colStart, colEnd, Nf, totNc = 0;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(mass, MAT_CLASSID, 3);
+  PetscAssertPointer(rStart, 4);
+  PetscAssertPointer(maxC, 5);
   PetscCall(PetscObjectGetComm((PetscObject)mass, &comm));
-  PetscCall(DMGetCoordinateDim(dmf, &dim));
-  PetscCall(DMGetDS(dmf, &prob));
-  PetscCall(PetscDSGetNumFields(prob, &Nf));
-  PetscCall(PetscDSGetTotalDimension(prob, &totDim));
-  PetscCall(PetscMalloc3(dim, &v0, dim * dim, &J, dim * dim, &invJ));
+  PetscCall(DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd));
   PetscCall(DMGetLocalSection(dmf, &fsection));
   PetscCall(DMGetGlobalSection(dmf, &globalFSection));
-  PetscCall(DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd));
+  PetscCall(DMGetDS(dmf, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(MatGetLocalSize(mass, &locRows, &locCols));
-
-  PetscCall(DMSwarmGetCellDMActive(dmc, &celldm));
-  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
-  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &bs));
+  PetscCall(PetscCalloc2(locRows, &dnz, locRows, &onz));
+  PetscCall(PetscHSetIJCreate(&ht));
 
   PetscCall(PetscLayoutCreate(comm, &colLayout));
   PetscCall(PetscLayoutSetLocalSize(colLayout, locCols));
@@ -508,32 +498,27 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscCall(PetscLayoutSetLocalSize(rLayout, locRows));
   PetscCall(PetscLayoutSetBlockSize(rLayout, 1));
   PetscCall(PetscLayoutSetUp(rLayout));
-  PetscCall(PetscLayoutGetRange(rLayout, &rStart, NULL));
+  PetscCall(PetscLayoutGetRange(rLayout, rStart, NULL));
   PetscCall(PetscLayoutDestroy(&rLayout));
 
-  PetscCall(PetscCalloc2(locRows, &dnz, locRows, &onz));
-  PetscCall(PetscHSetIJCreate(&ht));
-
-  PetscCall(PetscSynchronizedFlush(comm, NULL));
   for (PetscInt field = 0; field < Nf; ++field) {
     PetscObject  obj;
     PetscClassId id;
     PetscInt     Nc;
 
-    PetscCall(PetscDSGetDiscretization(prob, field, &obj));
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
     totNc += Nc;
   }
-  /* count non-zeros */
   PetscCall(DMSwarmSortGetAccess(dmc));
   for (PetscInt field = 0; field < Nf; ++field) {
     PetscObject  obj;
     PetscClassId id;
     PetscInt     Nc;
 
-    PetscCall(PetscDSGetDiscretization(prob, field, &obj));
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
@@ -544,7 +529,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
-      maxC = PetscMax(maxC, numCIndices);
+      *maxC = PetscMax(*maxC, numCIndices);
       {
         PetscHashIJKey key;
         PetscBool      missing;
@@ -555,12 +540,12 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
             for (PetscInt j = 0; j < numCIndices; ++j) {
               for (PetscInt c = 0; c < Nc; ++c) {
                 // TODO Need field offset on particle here
-                key.i = cindices[j] * totNc + c + rStart; /* global cols (from Swarm) */
+                key.i = cindices[j] * totNc + c + *rStart; /* global cols (from Swarm) */
                 if (key.i < 0) continue;
                 PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
                 PetscCheck(missing, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
-                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
-                else ++onz[key.i - rStart];
+                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - *rStart];
+                else ++onz[key.i - *rStart];
               }
             }
           }
@@ -570,23 +555,81 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
     }
   }
+  PetscCall(DMSwarmSortRestoreAccess(dmc));
   PetscCall(PetscHSetIJDestroy(&ht));
   PetscCall(MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL));
   PetscCall(MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   PetscCall(PetscFree2(dnz, onz));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMSwarmFillMassMatrix - Assemble the particle mass matrix between a `DMSWARM` and a `DMPLEX`
+
+  Collective
+
+  Input Parameters:
++ dmc              - The `DMSWARM` object
+. dmf              - The `DMPLEX` object
+. mass             - The mass matrix to fill up
+. rStart           - The starting row index for this process
+. maxC             - The maximum number of columns per row
+. useDeltaFunction - Flag to use a delta function for the particle shape function
+. Nfc              - The number of swarm coordinate fields
+. bs               - The block size for each swarm coordinate field
+. coordVals        - The values for each particle for each swarm coordinate field
+- ctx              - The user context
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMSWARM`, `DMPLEX`, `DMCreateMassMatrix()`, `DMSwarmPreallocateMassMatrix()`
+@*/
+PetscErrorCode DMSwarmFillMassMatrix(DM dmc, DM dmf, Mat mass, PetscInt rStart, PetscInt maxC, PetscBool useDeltaFunction, PetscInt Nfc, const PetscInt bs[], PetscReal *coordVals[], PetscCtx ctx)
+{
+  const char  *name = "Mass Matrix";
+  PetscDS      ds;
+  PetscSection fsection, globalFSection;
+  PetscInt     dim, cStart, cEnd, Nf, totDim, totNc = 0, *rowIDXs;
+  PetscReal   *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
+  PetscScalar *elemMat;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(mass, MAT_CLASSID, 3);
+  PetscCall(DMGetCoordinateDim(dmf, &dim));
+  PetscCall(DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd));
+  PetscCall(DMGetLocalSection(dmf, &fsection));
+  PetscCall(DMGetGlobalSection(dmf, &globalFSection));
+  PetscCall(DMGetDS(dmf, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(PetscDSGetTotalDimension(ds, &totDim));
+  for (PetscInt field = 0; field < Nf; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
+    totNc += Nc;
+  }
+
   PetscCall(PetscMalloc3(maxC * totNc * totDim, &elemMat, maxC * totNc, &rowIDXs, maxC * dim, &xi));
+  PetscCall(PetscMalloc3(dim, &v0, dim * dim, &J, dim * dim, &invJ));
+  PetscCall(DMSwarmSortGetAccess(dmc));
   for (PetscInt field = 0; field < Nf; ++field) {
     PetscTabulation Tcoarse;
     PetscObject     obj;
     PetscClassId    id;
     PetscInt        Nc;
 
-    PetscCall(PetscDSGetDiscretization(prob, field, &obj));
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
 
-    for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(dmc, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
     for (PetscInt cell = cStart; cell < cEnd; ++cell) {
       PetscInt *findices, *cindices;
       PetscInt  numFIndices, numCIndices;
@@ -627,12 +670,52 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(PetscTabulationDestroy(&Tcoarse));
     }
-    for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmRestoreField(dmc, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
   }
-  PetscCall(PetscFree3(elemMat, rowIDXs, xi));
   PetscCall(DMSwarmSortRestoreAccess(dmc));
+  PetscCall(PetscFree3(elemMat, rowIDXs, xi));
   PetscCall(PetscFree3(v0, J, invJ));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* This creates a "mass matrix" between a finite element and particle space. If a finite element interpolant is given by
+
+     \hat f = \sum_i f_i \phi_i
+
+   and a particle function is given by
+
+     f = \sum_i w_i \delta(x - x_i)
+
+   then we want to require that
+
+     M \hat f = M_p f
+
+   where the particle mass matrix is given by
+
+     (M_p)_{ij} = \int \phi_i \delta(x - x_j)
+
+   The way Dave May does particles, they amount to quadratue weights rather than delta functions, so he has |J| is in
+   his integral. We allow this with the boolean flag.
+*/
+static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass, PetscBool useDeltaFunction, PetscCtx ctx)
+{
+  DMSwarmCellDM celldm;
+  PetscInt      rStart, maxC = 0;
+  PetscInt      Nfc;
+  const char  **coordFields;
+  PetscReal   **coordVals;
+  PetscInt     *bs;
+
+  PetscFunctionBegin;
+  PetscCall(DMSwarmPreallocateMassMatrix(dmc, dmf, mass, &rStart, &maxC, ctx));
+
+  PetscCall(DMSwarmGetCellDMActive(dmc, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &bs));
+  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(dmc, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
+  PetscCall(DMSwarmFillMassMatrix(dmc, dmf, mass, rStart, maxC, useDeltaFunction, Nfc, bs, coordVals, ctx));
+  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmRestoreField(dmc, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
   PetscCall(PetscFree2(coordVals, bs));
+
   PetscCall(MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mass, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
