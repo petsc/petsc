@@ -627,6 +627,7 @@ class Configure(script.Script):
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)
     output = self.filterLinkOutput(output)
+    if returnCode or len(output): self.log.write("Linker failure:\n"+str(returnCode)+' '+output+'\n')
     return not (returnCode or len(output))
 
   def getLinkerFlagsName(language):
