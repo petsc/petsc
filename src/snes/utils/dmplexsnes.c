@@ -1,6 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I "petscdmplex.h" I*/
 #include <petsc/private/snesimpl.h>   /*I "petscsnes.h"   I*/
 #include <petscds.h>
+#include <petscdraw.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
@@ -163,27 +164,8 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  SNESMonitorFields - Monitors the residual for each field separately
-
-  Collective
-
-  Input Parameters:
-+ snes   - the `SNES` context, must have an attached `DM`
-. its    - iteration number
-. fgnorm - 2-norm of residual
-- vf     - `PetscViewerAndFormat` of `PetscViewerType` `PETSCVIEWERASCII`
-
-  Level: intermediate
-
-  Note:
-  This routine prints the residual norm at each iteration.
-
-.seealso: [](ch_snes), `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`
-@*/
-PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+static PetscErrorCode SNESMonitorFields_ASCII(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewer viewer, PetscViewerFormat format)
 {
-  PetscViewer        viewer = vf->viewer;
   Vec                res;
   DM                 dm;
   PetscSection       s;
@@ -192,7 +174,6 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   PetscInt           numFields, f, pStart, pEnd, p;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(SNESGetFunction(snes, &res, NULL, NULL));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetLocalSection(dm, &s));
@@ -211,7 +192,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   }
   PetscCall(VecRestoreArrayRead(res, &r));
   PetscCallMPI(MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
-  PetscCall(PetscViewerPushFormat(viewer, vf->format));
+  PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e [", its, (double)fgnorm));
   for (f = 0; f < numFields; ++f) {
@@ -222,6 +203,84 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscCall(PetscFree2(lnorms, norms));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESMonitorFields_Draw(SNES snes, PetscInt its, PetscViewer viewer, PetscViewerFormat format)
+{
+  DM          *subdm, dm;
+  Vec         *subv, res;
+  IS          *subidx;
+  PetscViewer *subview;
+  PetscSection s;
+  PetscInt     Nf;
+  const char  *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)snes, &prefix));
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(SNESGetFunction(snes, &res, NULL, NULL));
+  PetscCall(DMGetLocalSection(dm, &s));
+  PetscCall(PetscSectionGetNumFields(s, &Nf));
+  PetscCall(PetscMalloc4(Nf, &subdm, Nf, &subv, Nf, &subidx, Nf, &subview));
+
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscDraw   draw;
+    const char *name;
+
+    PetscCall(DMCreateSubDM(dm, 1, &f, &subidx[f], &subdm[f]));
+    PetscCall(DMGetGlobalVector(subdm[f], &subv[f]));
+    PetscCall(PetscSectionGetFieldName(s, f, &name));
+    PetscCall(PetscObjectSetName((PetscObject)subv[f], name));
+    PetscCall(VecISCopy(res, subidx[f], SCATTER_REVERSE, subv[f]));
+
+    PetscCall(PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes), NULL, name, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, &subview[f]));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subview[f], prefix));
+    PetscCall(PetscViewerSetFromOptions(subview[f]));
+    PetscCall(PetscViewerDrawGetDraw(subview[f], 0, &draw));
+    PetscCall(PetscDrawSetPause(draw, -2.));
+    PetscCall(VecView(subv[f], subview[f]));
+  }
+
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscCall(DMRestoreGlobalVector(subdm[f], &subv[f]));
+    PetscCall(ISDestroy(&subidx[f]));
+    PetscCall(DMDestroy(&subdm[f]));
+    PetscCall(PetscViewerDestroy(&subview[f]));
+  }
+  PetscCall(PetscFree4(subdm, subv, subidx, subview));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  SNESMonitorFields - Monitors the residual norm or draws the residual, for each field separately
+
+  Collective
+
+  Input Parameters:
++ snes   - the `SNES` context, must have an attached `DM`
+. its    - iteration number
+. fgnorm - 2-norm of residual
+- vf     - `PetscViewerAndFormat` of `PetscViewerType` `PETSCVIEWERASCII` or `PETSCVIEWERDRAW`
+
+  Level: intermediate
+
+  Note:
+  This routine prints the residual norm at each iteration.
+
+.seealso: [](ch_snes), `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`
+@*/
+PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer viewer = vf->viewer;
+  PetscBool   isascii, isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
+  if (isascii) PetscCall(SNESMonitorFields_ASCII(snes, its, fgnorm, viewer, vf->format));
+  else if (isdraw) PetscCall(SNESMonitorFields_Draw(snes, its, viewer, vf->format));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

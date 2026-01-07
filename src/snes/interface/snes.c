@@ -546,20 +546,16 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopTab(viewer));
   } else {
     PetscViewerFormat format;
-    PetscBool         pop = PETSC_FALSE;
 
     PetscCall(SNESGetSolution(snes, &u));
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (u && isascii) {
-      if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
-        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
-        pop = PETSC_TRUE;
-      }
+      if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
       PetscCall(PetscViewerASCIIPrintf(viewer, "solution vector:\n"));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(VecView(u, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
-      if (pop) PetscCall(PetscViewerPopFormat(viewer));
+      if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerPopFormat(viewer));
     }
   }
   if (isdraw) {
