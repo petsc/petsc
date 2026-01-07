@@ -249,11 +249,13 @@ int main(int argc, char **args)
     PetscCall(MatProductNumeric(C)); /* reuse symbolic C */
 
     PetscCall(MatPtAPMultEqual(A, P, C, mcheck, &flg));
-    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatProduct_PtAP");
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatProduct_PtAP with reused symbolic");
     PetscCall(MatDestroy(&C));
 
     /* (4.2) Test user driver */
     PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+    PetscCall(MatPtAPMultEqual(A, P, C, mcheck, &flg));
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP with MAT_INITIAL_MATRIX");
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha = 1.0;
@@ -263,7 +265,7 @@ int main(int argc, char **args)
       PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
     }
     PetscCall(MatPtAPMultEqual(A, P, C, mcheck, &flg));
-    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP");
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP with MAT_REUSE_MATRIX");
 
     /* 5) Test MatRARt() */
     /* ----------------- */

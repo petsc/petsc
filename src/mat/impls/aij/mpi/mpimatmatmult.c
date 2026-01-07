@@ -95,7 +95,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
   Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
   Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
-  PetscScalar       *cda = cd->a, *coa = co->a;
+  PetscScalar       *cda, *coa;
   Mat_SeqAIJ        *p_loc, *p_oth;
   PetscScalar       *apa, *ca;
   PetscInt           cm = C->rmap->n;
@@ -103,7 +103,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   PetscInt          *api, *apj, *apJ, i, k;
   PetscInt           cstart = C->cmap->rstart;
   PetscInt           cdnz, conz, k0, k1;
-  const PetscScalar *dummy;
+  const PetscScalar *dummy1, *dummy2, *dummy3, *dummy4;
   MPI_Comm           comm;
   PetscMPIInt        size;
 
@@ -139,10 +139,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   api = ptap->api;
   apj = ptap->apj;
   /* trigger copy to CPU */
-  PetscCall(MatSeqAIJGetArrayRead(a->A, &dummy));
-  PetscCall(MatSeqAIJRestoreArrayRead(a->A, &dummy));
-  PetscCall(MatSeqAIJGetArrayRead(a->B, &dummy));
-  PetscCall(MatSeqAIJRestoreArrayRead(a->B, &dummy));
+  PetscCall(MatSeqAIJGetArrayRead(a->A, &dummy1));
+  PetscCall(MatSeqAIJGetArrayRead(a->B, &dummy2));
+  PetscCall(MatSeqAIJGetArrayRead(ptap->P_loc, &dummy3));
+  if (ptap->P_oth) PetscCall(MatSeqAIJGetArrayRead(ptap->P_oth, &dummy4));
+  PetscCall(MatSeqAIJGetArrayWrite(c->A, &cda));
+  PetscCall(MatSeqAIJGetArrayWrite(c->B, &coa));
   for (i = 0; i < cm; i++) {
     /* compute apa = A[i,:]*P */
     AProw_nonscalable(i, ad, ao, p_loc, p_oth, apa);
@@ -175,6 +177,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
       apa[apJ[k++]] = 0.0;
     }
   }
+  PetscCall(MatSeqAIJRestoreArrayRead(a->A, &dummy1));
+  PetscCall(MatSeqAIJRestoreArrayRead(a->B, &dummy2));
+  PetscCall(MatSeqAIJRestoreArrayRead(ptap->P_loc, &dummy3));
+  if (ptap->P_oth) PetscCall(MatSeqAIJRestoreArrayRead(ptap->P_oth, &dummy4));
+  PetscCall(MatSeqAIJRestoreArrayWrite(c->A, &cda));
+  PetscCall(MatSeqAIJRestoreArrayWrite(c->B, &coa));
+
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
