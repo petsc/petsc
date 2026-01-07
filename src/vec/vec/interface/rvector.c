@@ -2530,7 +2530,7 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar *a[])
   array provided by the user. This is useful to avoid copying an array
   into a vector.
 
-  Logically Collective; No Fortran Support
+  Logically Collective
 
   Input Parameters:
 + vec   - the vector
