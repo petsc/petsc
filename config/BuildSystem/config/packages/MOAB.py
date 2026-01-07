@@ -27,7 +27,7 @@ class Configure(config.package.GNUPackage):
     self.compilerFlags  = framework.require('config.compilerFlags', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.mpi            = framework.require('config.packages.MPI', self)
-    self.eigen          = framework.require('config.packages.eigen', self)
+    self.eigen          = framework.require('config.packages.Eigen', self)
     self.hdf5           = framework.require('config.packages.HDF5', self)
     self.netcdf         = framework.require('config.packages.netCDF', self)
     self.metis          = framework.require('config.packages.METIS',self)
