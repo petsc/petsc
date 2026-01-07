@@ -454,7 +454,7 @@ static cJSON_bool print_number(const cJSON *const item, printbuffer *const outpu
 
   if (output_buffer == NULL) return false;
 
-  /* This checks for NaN and Infinity */
+  /* This checks for NaN and infinity */
   if (isnan(d) || isinf(d)) {
     length = snprintf((char *)number_buffer, sizeof(number_buffer) / sizeof(number_buffer[0]), "null");
   } else if (d == (double)item->valueint) {

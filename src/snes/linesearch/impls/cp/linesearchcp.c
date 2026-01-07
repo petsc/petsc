@@ -156,11 +156,11 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       break;
     }
 
-    /* if lambda is NaN or Inf, do not accept update but exit with previous lambda */
+    /* if lambda is infinity or NaN, do not accept update but exit with previous lambda */
     if (PetscIsInfOrNanReal(lambda_update)) {
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambda_update is NaN or Inf\n"));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambda_update is infinity or NaN\n"));
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));

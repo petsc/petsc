@@ -273,6 +273,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 
   PetscCall(VecNorm(state, NORM_2, &xnorm));
   PetscCall(VecNorm(residual, NORM_2, &fnorm));
+  SNESCheckFunctionDomainError(snes, fnorm);
   snes->ttol = fnorm * snes->rtol;
 
   if (snes->ops->converged) {

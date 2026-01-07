@@ -163,7 +163,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
 PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, PetscReal objM, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal objA, PetscReal dnorm, PetscReal objmin, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
 {
   SNES_NGMRES         *ngmres = (SNES_NGMRES *)snes->data;
-  SNESLineSearchReason lssucceed;
+  SNESLineSearchReason lsreason;
   PetscBool            selectA;
 
   PetscFunctionBegin;
@@ -187,14 +187,23 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
     } else {
       PetscCall(SNESNGMRESGetAdditiveLineSearch_Private(snes, &ngmres->additive_linesearch));
       PetscCall(SNESLineSearchApply(ngmres->additive_linesearch, X, F, fnorm, Y));
-      PetscCall(SNESLineSearchGetReason(ngmres->additive_linesearch, &lssucceed));
-      PetscCall(SNESLineSearchGetNorms(ngmres->additive_linesearch, xnorm, fnorm, ynorm));
-      if (lssucceed) {
-        if (++snes->numFailures >= snes->maxFailures) {
-          snes->reason = SNES_DIVERGED_LINE_SEARCH;
-          PetscFunctionReturn(PETSC_SUCCESS);
-        }
+      PetscCall(SNESLineSearchGetReason(ngmres->additive_linesearch, &lsreason));
+      if (lsreason == SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN) {
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNES solver has not converged");
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
+      if (lsreason == SNES_LINESEARCH_FAILED_NANORINF) {
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNES solver has not converged");
+        snes->reason = SNES_DIVERGED_FUNCTION_NANORINF;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+      if (lsreason && ++snes->numFailures >= snes->maxFailures) {
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNES solver has not converged");
+        snes->reason = SNES_DIVERGED_LINE_SEARCH;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+      PetscCall(SNESLineSearchGetNorms(ngmres->additive_linesearch, xnorm, fnorm, ynorm));
     }
     if (ngmres->monitor) {
       PetscReal        objT = *fnorm;

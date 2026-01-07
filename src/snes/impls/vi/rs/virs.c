@@ -297,7 +297,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS   *vi = (SNES_VINEWTONRSLS *)snes->data;
   PetscInt             maxits, i, lits;
-  SNESLineSearchReason lssucceed;
+  SNESLineSearchReason lsreason;
   PetscReal            fnorm, gnorm, xnorm = 0, ynorm;
   Vec                  Y, X, F;
   KSPConvergedReason   kspreason;
@@ -332,7 +332,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscCall(SNESComputeFunction(snes, X, F));
   PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));
   PetscCall(VecNorm(X, NORM_2, &xnorm)); /* xnorm <- ||x||  */
-  SNESCheckFunctionNorm(snes, fnorm);
+  SNESCheckFunctionDomainError(snes, fnorm);
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -355,7 +355,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
     PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-    SNESCheckJacobianDomainerror(snes);
+    SNESCheckJacobianDomainError(snes);
 
     /* Create active and inactive index sets */
 
@@ -535,25 +535,36 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ynorm = 1;
     gnorm = fnorm;
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &gnorm, Y));
-    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lssucceed));
-    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm));
-    PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n", (double)fnorm, (double)gnorm, (double)ynorm, (int)lssucceed));
-    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscCall(DMDestroyVI(snes->dm));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    if (lssucceed) {
-      if (++snes->numFailures >= snes->maxFailures) {
+    PetscCall(DMDestroyVI(snes->dm));
+    if (snes->reason) break;
+    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsreason));
+    if (lsreason) {
+      if (snes->stol * xnorm > ynorm) {
+        snes->reason = SNES_CONVERGED_SNORM_RELATIVE;
+        break;
+      } else if (lsreason == SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN) {
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+        break;
+      } else if (lsreason == SNES_LINESEARCH_FAILED_NANORINF) {
+        snes->reason = SNES_DIVERGED_FUNCTION_NANORINF;
+        break;
+      } else if (lsreason == SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN) {
+        snes->reason = SNES_DIVERGED_OBJECTIVE_DOMAIN;
+        break;
+      } else if (lsreason == SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN) {
+        snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN;
+        break;
+      } else if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
+
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         PetscCall(SNESVICheckLocalMin_Private(snes, snes->jacobian, F, X, gnorm, &ismin));
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
     }
-    PetscCall(DMDestroyVI(snes->dm));
+    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm));
+    PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n", (double)fnorm, (double)gnorm, (double)ynorm, (int)lsreason));
     /* Update function and solution vectors */
     fnorm = gnorm;
     /* Monitor convergence */

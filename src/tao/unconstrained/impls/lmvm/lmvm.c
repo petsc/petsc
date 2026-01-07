@@ -19,7 +19,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
   PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm));
 
-  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
 
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));

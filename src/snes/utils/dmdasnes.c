@@ -109,7 +109,7 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
     SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "Cannot use imode=%d", (int)dmdasnes->residuallocalimode);
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscCall(VecFlag(F, snes->domainerror));
+  PetscCall(VecFlag(F, snes->functiondomainerror));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

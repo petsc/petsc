@@ -470,7 +470,7 @@ static PetscErrorCode SNESSolve_Multiblock(SNES snes)
   else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-  SNESCheckFunctionNorm(snes, fnorm);
+  SNESCheckFunctionDomainError(snes, fnorm);
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -510,7 +510,7 @@ static PetscErrorCode SNESSolve_Multiblock(SNES snes)
     /* Compute F(X^{new}) */
     PetscCall(SNESComputeFunction(snes, X, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
 
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;

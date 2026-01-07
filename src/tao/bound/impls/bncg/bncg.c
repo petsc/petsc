@@ -73,7 +73,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
   if (nDiff > 0 || !tao->recycle) PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient));
   PetscCall(VecNorm(cg->unprojected_gradient, NORM_2, &gnorm));
-  PetscCheck(!PetscIsInfOrNanReal(cg->f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(cg->f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
 
   /* Estimate the active set and compute the projected gradient */
   PetscCall(TaoBNCGEstimateActiveSet(tao, cg->as_type));
@@ -96,7 +96,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
   PetscCall(VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W));
   PetscCall(VecNorm(cg->W, NORM_2, &resnorm));
-  PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
   PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
@@ -954,7 +954,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     /* Standard convergence test */
     PetscCall(VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W));
     PetscCall(VecNorm(cg->W, NORM_2, &resnorm));
-    PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+    PetscCheck(!PetscIsInfOrNanReal(resnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
     PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);

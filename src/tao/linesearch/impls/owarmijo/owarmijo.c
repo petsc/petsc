@@ -218,7 +218,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {
-      PetscCall(PetscInfo(ls, "Initial Line Search step * g is Inf or Nan (%g)\n", (double)gdx));
+      PetscCall(PetscInfo(ls, "Initial Line Search step * g is infinity or NaN (%g)\n", (double)gdx));
       ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
       PetscFunctionReturn(PETSC_SUCCESS);
     }

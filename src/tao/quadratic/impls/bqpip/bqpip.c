@@ -45,7 +45,7 @@ static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
   PetscCall(VecDot(tao->solution, qp->Work, &fff));
   qp->pobj = fff + qp->d;
 
-  PetscCheck(!PetscIsInfOrNanReal(qp->pobj), PETSC_COMM_SELF, PETSC_ERR_USER, "User provided data contains Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(qp->pobj), PETSC_COMM_SELF, PETSC_ERR_USER, "User provided data contains infinity or NaN");
 
   /* Initialize slack vectors */
   /* T = XU - X; G = X - XL */

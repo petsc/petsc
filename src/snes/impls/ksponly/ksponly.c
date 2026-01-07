@@ -31,7 +31,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   if (snes->numbermonitors && (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) {
     PetscReal fnorm;
     PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(SNESMonitor(snes, 0, fnorm));
   }
 
@@ -40,8 +40,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 
   /* Solve J Y = F, where J is Jacobian matrix */
   PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-
-  SNESCheckJacobianDomainerror(snes);
+  SNESCheckJacobianDomainError(snes);
 
   PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
   if (ksponly->transpose_solve) {
@@ -63,7 +62,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     PetscReal fnorm;
     PetscCall(SNESComputeFunction(snes, X, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(SNESMonitor(snes, 1, fnorm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

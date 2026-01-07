@@ -7,7 +7,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   Vec         X, F, Y, W, G;
   SNES        snes;
   PetscReal   ynorm;
-  PetscReal   lambda_left, lambda, lambda_right, lambda_old;
+  PetscReal   lambda_left, lambda, lambda_right, lambda_old, fnorm;
   PetscScalar fty_left, fty, fty_initial;
   PetscViewer monitor;
   PetscReal   rtol, atol, ltol;
@@ -67,14 +67,18 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
     it         = 0;
 
     while (PETSC_TRUE) {
-      /* check for NaN or Inf */
+      /* check for infinity or NaN */
       if (PetscIsInfOrNanScalar(fty)) {
         if (monitor) {
           PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search fty is NaN or Inf!\n"));
+          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search fty is infinity or NaN!\n"));
           PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
         }
-        PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
+        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_CONV_FAILED, "infinity or NaN in function evaluation");
+        if (snes->functiondomainerror) {
+          PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN));
+          snes->functiondomainerror = PETSC_FALSE;
+        } else PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
         PetscFunctionReturn(PETSC_SUCCESS);
         break;
       }
@@ -176,6 +180,8 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   PetscCall(VecCopy(W, X));
   PetscCall((*linesearch->ops->snesfunc)(snes, X, F));
   PetscCall(SNESLineSearchComputeNorms(linesearch));
+  PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &fnorm, NULL));
+  SNESLineSearchCheckFunctionDomainError(snes, linesearch, fnorm);
 
   /* finalization */
   PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));

@@ -336,7 +336,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (PetscIsInfOrNanReal(*f)) {
-    PetscCall(PetscInfo(ls, "Initial Line Search Function Value is Inf or Nan (%g)\n", (double)*f));
+    PetscCall(PetscInfo(ls, "Initial Line Search Function Value is infinity or NaN (%g)\n", (double)*f));
     *reason = TAOLINESEARCH_FAILED_INFORNAN;
   }
 

@@ -82,6 +82,11 @@
 ```
 
 - Change the `destroy()` function argument of `SNESSetConvergenceTest()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+- Add `SNESSetObjectiveDomainError()`
+- Change `SNES_DIVERGED_FNORM_NAN` to `SNES_DIVERGED_FUNCTION_NANORINF`
+- Add `SNES_DIVERGED_OBJECTIVE_NANORINF`
+- Add `SNES_DIVERGED_OBJECTIVE_DOMAIN`
+- Add developer functions `SNESCheckFunctionDomainError()`, `SNESLineSearchCheckFunctionDomainError()`, `SNESCheckObjectiveDomainError()`, `SNESLineSearchCheckObjectiveDomainError()`, `SNESCheckJacobianDomainError()`, and `SNESLineSearchCheckJacobianDomainError()`
 
 ```{rubric} SNESLineSearch:
 ```

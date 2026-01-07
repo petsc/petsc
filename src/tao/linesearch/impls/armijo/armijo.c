@@ -173,7 +173,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscCall(VecDot(g, s, &gdx));
 
   if (PetscIsInfOrNanReal(gdx)) {
-    PetscCall(PetscInfo(ls, "Initial Line Search step * g is Inf or Nan (%g)\n", (double)gdx));
+    PetscCall(PetscInfo(ls, "Initial Line Search step * g is infinity or NaN (%g)\n", (double)gdx));
     ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

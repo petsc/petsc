@@ -240,7 +240,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
     else snes->vec_func_init_set = PETSC_FALSE;
 
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = 0;
     snes->norm = fnorm;
@@ -265,7 +265,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
       PetscCall(SNESComputeFunction(snes, X, F));
       PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-      SNESCheckFunctionNorm(snes, fnorm);
+      SNESCheckFunctionDomainError(snes, fnorm);
     }
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));

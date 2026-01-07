@@ -85,7 +85,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
 - ctx   - Optional user context
 
   Output Parameter:
-. reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
+. reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FUNCTION_NANORINF`
 
   Options Database Key:
 . -snes_convergence_test correct_pressure - see `SNESSetFromOptions()`

@@ -234,6 +234,6 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 
    test:
       args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type secant
-      filter: grep Inf
+      filter: grep infinity
 
 TEST*/

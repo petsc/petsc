@@ -66,8 +66,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   Vec                  Y, D, Dold;
   PetscInt             i, i_r;
   PetscReal            fnorm, xnorm, ynorm;
-  SNESLineSearchReason lssucceed;
-  PetscBool            badstep, powell, periodic, restart;
+  SNESLineSearchReason lsreason;
+  PetscBool            powell, periodic, restart;
   PetscScalar          DolddotD, DolddotDold;
   SNESConvergedReason  reason;
 #if defined(PETSC_USE_INFO)
@@ -108,7 +108,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     else snes->vec_func_init_set = PETSC_FALSE;
   }
   PetscCall(VecNorm(F, NORM_2, &fnorm));
-  SNESCheckFunctionNorm(snes, fnorm);
+  SNESCheckFunctionDomainError(snes, fnorm);
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
@@ -156,7 +156,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     /* scale the initial update */
     if (qn->scale_type == SNES_QN_SCALE_JACOBIAN && restart) {
       PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
-      SNESCheckJacobianDomainerror(snes);
+      SNESCheckJacobianDomainError(snes);
       PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
       PetscCall(MatLMVMSetJ0KSP(qn->B, snes->ksp));
     }
@@ -179,20 +179,13 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 #endif
     PetscCall(VecCopy(D, Dold));
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
-    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lssucceed));
-    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
-    badstep = PETSC_FALSE;
-    if (lssucceed) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        break;
-      }
-      badstep = PETSC_TRUE;
-    }
+    if (snes->reason) break;
+    SNESCheckLineSearchFailure(snes);
+    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsreason));
 
+    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
     /* convergence monitoring */
-    PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n", (double)fnorm, (double)gnorm, (double)ynorm, (int)lssucceed));
+    PetscCall(PetscInfo(snes, "fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n", (double)fnorm, (double)gnorm, (double)ynorm, (int)lsreason));
 
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter  = i + 1;
@@ -241,7 +234,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     /* restart if either powell or periodic restart is satisfied. */
     restart = PETSC_FALSE;
-    if (badstep || powell || periodic) {
+    if (lsreason || powell || periodic) {
       restart = PETSC_TRUE;
       if (qn->monflg) {
         PetscCall(PetscViewerASCIIAddTab(qn->monitor, ((PetscObject)snes)->tablevel + 2));

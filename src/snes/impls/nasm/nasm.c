@@ -680,6 +680,7 @@ static PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec Xfinal
   F = snes->vec_func;
   if (snes->normschedule == SNES_NORM_NONE) PetscCall(SNESComputeFunction(snes, X, F));
   PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
+  SNESCheckJacobianDomainError(snes);
   PetscCall(SNESGetDM(snes, &dm));
   if (nasm->eventrestrictinterp) PetscCall(PetscLogEventBegin(nasm->eventrestrictinterp, snes, 0, 0, 0));
   if (nasm->fjtype != 1) {
@@ -745,7 +746,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     else snes->vec_func_init_set = PETSC_FALSE;
 
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-    SNESCheckFunctionNorm(snes, fnorm);
+    SNESCheckFunctionDomainError(snes, fnorm);
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = 0;
     snes->norm = fnorm;
@@ -772,7 +773,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
       PetscCall(SNESComputeFunction(snes, X, F));
       PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
-      SNESCheckFunctionNorm(snes, fnorm);
+      SNESCheckFunctionDomainError(snes, fnorm);
     }
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
@@ -789,7 +790,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   }
   if (nasm->finaljacobian) {
     PetscCall(SNESNASMComputeFinalJacobian_Private(snes, X));
-    SNESCheckJacobianDomainerror(snes);
+    SNESCheckJacobianDomainError(snes);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

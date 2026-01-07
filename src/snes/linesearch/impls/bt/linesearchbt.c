@@ -109,6 +109,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   /* if the SNES has an objective set, use that instead of the function value */
   if (objective) {
     PetscCall(SNESComputeObjective(snes, X, &f));
+    SNESLineSearchCheckObjectiveDomainError(snes, f);
   } else {
     f = 0.5 * PetscSqr(fnorm);
   }
@@ -125,6 +126,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (initslope == 0.0) initslope = -1.0;
   }
 
+  /* repeatedly cut lambda until the norm or objective function is not infinity or NaN or lambda is too small */
   while (PETSC_TRUE) {
     PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
@@ -152,10 +154,10 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (!PetscIsInfOrNanReal(g)) break;
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n", (double)lambda));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: objective function at lambdas = %g is infinity or NaN, cutting lambda\n", (double)lambda));
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
-    if (lambda <= minlambda) SNESCheckFunctionNorm(snes, g);
+    if (lambda <= minlambda) SNESCheckFunctionDomainError(snes, g);
     lambda *= .5;
   }
 
@@ -200,6 +202,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       }
       if (objective) {
         PetscCall(SNESComputeObjective(snes, W, &g));
+        SNESLineSearchCheckObjectiveDomainError(snes, g);
       } else {
         PetscCall((*linesearch->ops->snesfunc)(snes, W, G));
         if (linesearch->ops->vinorm) {
@@ -208,11 +211,12 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
         } else {
           PetscCall(VecNorm(G, NORM_2, &gnorm));
         }
+        SNESLineSearchCheckFunctionDomainError(snes, linesearch, gnorm);
         g = 0.5 * PetscSqr(gnorm);
       }
       if (PetscIsInfOrNanReal(g)) {
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
-        PetscCall(PetscInfo(snes, "Aborted due to Nan or Inf in function evaluation\n"));
+        PetscCall(PetscInfo(snes, "Aborted due to infinity or NaN in function evaluation\n"));
         PetscFunctionReturn(PETSC_SUCCESS);
       }
       if (monitor) {
@@ -277,6 +281,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
         }
         if (objective) {
           PetscCall(SNESComputeObjective(snes, W, &g));
+          SNESLineSearchCheckObjectiveDomainError(snes, g);
         } else {
           PetscCall((*linesearch->ops->snesfunc)(snes, W, G));
           if (linesearch->ops->vinorm) {
@@ -285,12 +290,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
           } else {
             PetscCall(VecNorm(G, NORM_2, &gnorm));
           }
+          SNESLineSearchCheckFunctionDomainError(snes, linesearch, gnorm);
           g = 0.5 * PetscSqr(gnorm);
-        }
-        if (PetscIsInfOrNanReal(g)) {
-          PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
-          PetscCall(PetscInfo(snes, "Aborted due to Nan or Inf in function evaluation\n"));
-          PetscFunctionReturn(PETSC_SUCCESS);
         }
         if (g <= f + lambda * alpha * initslope) { /* is reduction enough? */
           if (monitor) {
@@ -333,12 +334,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
     } else {
       PetscCall(VecNorm(G, NORM_2, &gnorm));
     }
+    SNESLineSearchCheckFunctionDomainError(snes, linesearch, gnorm);
     PetscCall(VecNorm(Y, NORM_2, &ynorm));
-    if (PetscIsInfOrNanReal(gnorm)) {
-      PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
-      PetscCall(PetscInfo(snes, "Aborted due to Nan or Inf in function evaluation\n"));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
   }
 
   /* copy the solution over */

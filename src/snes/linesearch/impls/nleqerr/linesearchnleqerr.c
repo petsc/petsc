@@ -249,6 +249,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(SNESComputeFunction(snes, X, F));
   PetscCall(VecNorm(X, NORM_2, &xnorm));
   PetscCall(VecNorm(F, NORM_2, &fnorm));
+  SNESLineSearchCheckFunctionDomainError(snes, linesearch, fnorm);
   PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm < 0 ? PETSC_INFINITY : ynorm));
   PetscFunctionReturn(PETSC_SUCCESS);

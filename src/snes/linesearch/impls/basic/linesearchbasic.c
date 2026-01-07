@@ -31,6 +31,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   if (linesearch->norms || snes->iter < snes->max_its - 1) {
     PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
+    SNESLineSearchCheckFunctionDomainError(snes, linesearch, fnorm);
   }
   if (linesearch->norms) {
     PetscCall(VecNormBegin(Y, NORM_2, &linesearch->ynorm));
@@ -43,10 +44,6 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
       PetscCall((*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm));
     } else linesearch->fnorm = fnorm;
-  }
-  if (PetscIsInfOrNanReal(fnorm)) {
-    PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
-    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* copy the solution over */

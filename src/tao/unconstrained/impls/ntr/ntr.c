@@ -90,7 +90,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   /* Check convergence criteria */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
   PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm));
-  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
   needH = 1;
 
   tao->reason = TAO_CONTINUE_ITERATING;
@@ -195,7 +195,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         PetscCall(TaoComputeGradient(tao, tao->solution, tao->gradient));
 
         PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm));
-        PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+        PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
         needH = 1;
 
         PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
@@ -420,7 +420,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       f = ftrial;
       PetscCall(TaoComputeGradient(tao, tao->solution, tao->gradient));
       PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm));
-      PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+      PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
       needH = 1;
       PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
       PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust));

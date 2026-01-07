@@ -58,7 +58,8 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 }
 
 /*@
-  SNESGetNPCFunction - Gets the current function value and its norm from a nonlinear preconditioner after `SNESSolve()` has been called on that `SNES`
+  SNESGetNPCFunction - Gets the current function value (for the callback function provided by `SNESSetFunction()`,
+  and its norm from a nonlinear preconditioner after `SNESSolve()` has been called on that `SNES`
 
   Collective
 

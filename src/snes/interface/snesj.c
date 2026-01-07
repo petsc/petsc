@@ -92,7 +92,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   if (dms->ops->computemffunction) {
     PetscCall(SNESComputeMFFunction(snes, x1, j1a));
   } else {
-    PetscCall(SNESComputeFunction(snes, x1, j1a));
+    PetscCall(SNESComputeFunction(snes, x1, j1a)); /* does not handle use of SNESSetFunctionDomainError() correctly */
   }
 
   PetscOptionsBegin(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->prefix, "Differencing options", "SNES");
@@ -129,7 +129,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
     if (dms->ops->computemffunction) {
       PetscCall(SNESComputeMFFunction(snes, x2, j2a));
     } else {
-      PetscCall(SNESComputeFunction(snes, x2, j2a));
+      PetscCall(SNESComputeFunction(snes, x2, j2a)); /* does not handle use of SNESSetFunctionDomainError() correctly */
     }
     PetscCall(VecAXPY(j2a, -1.0, j1a));
     /* Communicate scale=1/dx_i to all processors */

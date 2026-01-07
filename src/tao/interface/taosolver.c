@@ -717,7 +717,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, " Maximum Iterations\n"));
         break;
       case TAO_DIVERGED_NAN:
-        PetscCall(PetscViewerASCIIPrintf(viewer, " NAN or Inf encountered\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, " NAN or infinity encountered\n"));
         break;
       case TAO_DIVERGED_MAXFCN:
         PetscCall(PetscViewerASCIIPrintf(viewer, " Maximum Function Evaluations\n"));
@@ -1620,7 +1620,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " TAO,", its));
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Function value: %g,", (double)fct));
   if (gnorm >= PETSC_INFINITY) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual: Inf \n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual: infinity \n"));
   } else {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual: %g \n", (double)gnorm));
   }
@@ -1721,7 +1721,7 @@ PetscErrorCode TaoMonitorDefaultShort(Tao tao, void *ctx)
   PetscCall(PetscViewerASCIIPrintf(viewer, "iter = %3" PetscInt_FMT ",", its));
   PetscCall(PetscViewerASCIIPrintf(viewer, " Function value %g,", (double)fct));
   if (gnorm >= PETSC_INFINITY) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: Inf \n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: infinity \n"));
   } else if (gnorm > 1.e-6) {
     PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: %g \n", (double)gnorm));
   } else if (gnorm > 1.e-11) {
@@ -2002,7 +2002,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (PetscIsInfOrNanReal(f)) {
-    PetscCall(PetscInfo(tao, "Failed to converged, function value is Inf or NaN\n"));
+    PetscCall(PetscInfo(tao, "Failed to converged, function value is infinity or NaN\n"));
     reason = TAO_DIVERGED_NAN;
   } else if (f <= fmin && cnorm <= catol) {
     PetscCall(PetscInfo(tao, "Converged due to function value %g < minimum function value %g\n", (double)f, (double)fmin));

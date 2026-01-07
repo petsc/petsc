@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   /* Compute the objective function and gradient */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &tron->f, tao->gradient));
   PetscCall(VecNorm(tao->gradient, NORM_2, &tron->gnorm));
-  PetscCheck(!PetscIsInfOrNanReal(tron->f) && !PetscIsInfOrNanReal(tron->gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(tron->f) && !PetscIsInfOrNanReal(tron->gnorm), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated infinity or NaN");
 
   /* Project the gradient and calculate the norm */
   PetscCall(VecBoundGradientProjection(tao->gradient, tao->solution, tao->XL, tao->XU, tao->gradient));

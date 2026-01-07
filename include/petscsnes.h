@@ -245,8 +245,7 @@ PETSC_EXTERN PetscErrorCode SNESPythonSetType(SNES, const char[]);
 PETSC_EXTERN PetscErrorCode SNESPythonGetType(SNES, const char *[]);
 
 PETSC_EXTERN PetscErrorCode SNESSetFunctionDomainError(SNES);
-PETSC_EXTERN PetscErrorCode SNESGetFunctionDomainError(SNES, PetscBool *);
-PETSC_EXTERN PetscErrorCode SNESGetJacobianDomainError(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESSetObjectiveDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetJacobianDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
@@ -256,19 +255,26 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
    Values:
-+  `SNES_CONVERGED_FNORM_ABS`      - 2-norm(F) <= abstol
-.  `SNES_CONVERGED_FNORM_RELATIVE` - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
-.  `SNES_CONVERGED_SNORM_RELATIVE` - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
-.  `SNES_CONVERGED_USER`           - The user has indicated convergence for an arbitrary reason
-.  `SNES_DIVERGED_FUNCTION_COUNT`  - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
-.  `SNES_DIVERGED_DTOL`            - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
-.  `SNES_DIVERGED_FNORM_NAN`       - the 2-norm of the current function evaluation is not-a-number (NaN), this
-                                     is usually caused by a division of 0 by 0.
-.  `SNES_DIVERGED_MAX_IT`          - `SNESSolve()` has reached the maximum number of iterations requested
-.  `SNES_DIVERGED_LINE_SEARCH`     - The line search has failed. This only occurs for `SNES` solvers that use a line search
-.  `SNES_DIVERGED_LOCAL_MIN`       - the algorithm seems to have stagnated at a local minimum that is not zero.
-.  `SNES_DIVERGED_USER`            - The user has indicated divergence for an arbitrary reason
--  `SNES_CONVERGED_ITERATING       - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
++  `SNES_CONVERGED_FNORM_ABS`         - $ ||F|| \le abstol $
+.  `SNES_CONVERGED_FNORM_RELATIVE`    - $ ||F|| <= rtol*||F(x_0))|| $ where $x_0 $ is the initial guess
+.  `SNES_CONVERGED_SNORM_RELATIVE`    - The 2-norm of the last step $ \le stol * ||x|| $ where $ x $ is the current solution
+.  `SNES_CONVERGED_USER`              - The user has indicated convergence for an arbitrary reason
+.  `SNES_DIVERGED_FUNCTION_COUNT`     - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
+.  `SNES_DIVERGED_DTOL`               - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
+.  `SNES_DIVERGED_FUNCTION_NANORINF`  - the 2-norm of the current function evaluation is not-a-number (NaN) or infinity, (this
+                                        is usually caused by a division of 0 by 0) and the solver could not recover from this (by, for example, cutting the step size)
+.  `SNES_DIVERGED_OBJECTIVE_NANORINF` - the object function evaluation is not-a-number (NaN) or infinity, (this
+                                        is usually caused by a division of 0 by 0) and the solver could not recover from this (by, for example, cutting the step size)
+.  `SNES_DIVERGED_FUNCTION_DOMAIN`    - the function evaluation occurred outside the function's domain (function callback provided by
+                                        `SNESSetFunction()` called `SNESSetObjectiveDomainError()`) and the solver could not recover from this (by, for example, cutting the step size)
+.  `SNES_DIVERGED_OBJECTIVE_DOMAIN`   - the object function evaluation occurred outside the function's domain (function callback provided by
+                                        `SNESSetObjective()` called `SNESSetObjectiveDomainError()`) and the solver could not recover from this (by, for example, cutting the step size)
+.  `SNES_DIVERGED_JACOBIAN_DOMAIN`    - the Jacobian evaluation occurred outside the function's domain (function callback provided by
+                                        `SNESSetJacobian()` called `SNESSetJacobianDomainError()`)
+.  `SNES_DIVERGED_MAX_IT`             - `SNESSolve()` has reached the maximum number of iterations requested
+.  `SNES_DIVERGED_LINE_SEARCH`        - The line search has failed. This only occurs for `SNES` solvers that use a line search
+.  `SNES_DIVERGED_LOCAL_MIN`          - the algorithm seems to have stagnated at a local minimum that is not zero.
+-  `SNES_CONVERGED_ITERATING          - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
 
    Level: beginner
 
@@ -278,25 +284,25 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
    testing with `-pc_type lu` to eliminate the linear solver as the cause of the problem).
 
    `SNES_DIVERGED_LOCAL_MIN` can only occur when using a `SNES` solver that uses a line search (`SNESLineSearch`).
-   The line search wants to minimize Q(alpha) = 1/2 || F(x + alpha s) ||^2_2  this occurs
-   at Q'(alpha) = s^T F'(x+alpha s)^T F(x+alpha s) = 0. If s is the Newton direction - F'(x)^(-1)F(x) then
-   you get Q'(alpha) = -F(x)^T F'(x)^(-1)^T F'(x+alpha s)F(x+alpha s); when alpha = 0
-   Q'(0) = - ||F(x)||^2_2 which is always NEGATIVE if F'(x) is invertible. This means the Newton
-   direction is a descent direction and the line search should succeed if alpha is small enough.
+   The line search wants to $ \min Q(\alpha) = 1/2 || F(x + \alpha s) ||^2_2 $  this occurs
+   at $ Q'(\alpha) = s^T F'(x+\alpha s)^T F(x+\alpha s) = 0$. If $s$ is the Newton direction $ - F'(x)^(-1)F(x)$ then
+   $ Q'(\alpha) = -F(x)^T F'(x)^(-1)^T F'(x+\alpha s)F(x+\alpha s)$; when $\alpha = 0$
+   $Q'(0) = - ||F(x)||^2_2 $ which is always NEGATIVE if $F'(x)$ is invertible. This means the Newton
+   direction is a descent direction and the line search should succeed if $\alpha $ is small enough.
 
-   If F'(x) is NOT invertible AND F'(x)^T F(x) = 0 then Q'(0) = 0 and the Newton direction
+   If $F'(x)$ is NOT invertible AND $F'(x)^T F(x) = 0 $ then $Q'(0) = 0 $ and the Newton direction
    is NOT a descent direction so the line search will fail. All one can do at this point
    is change the initial guess and try again.
 
    An alternative explanation: Newton's method can be regarded as replacing the function with
-   its linear approximation and minimizing the 2-norm of that. That is F(x+s) approx F(x) + F'(x)s
-   so we minimize || F(x) + F'(x) s ||^2_2; do this using Least Squares. If F'(x) is invertible then
-   s = - F'(x)^(-1)F(x) otherwise F'(x)^T F'(x) s = -F'(x)^T F(x). If F'(x)^T F(x) is NOT zero then there
-   exists a nontrivial (that is F'(x)s != 0) solution to the equation and this direction is
-   s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x) so Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
-   = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x)). Since we are assuming (F'(x)^T F(x)) != 0
-   and F'(x)^T F'(x) has no negative eigenvalues Q'(0) < 0 so s is a descent direction and the line
-   search should succeed for small enough alpha.
+   its linear approximation and minimizing the 2-norm of that. That is $F(x+s) \approx F(x) + F'(x)s$
+   so we minimize $ || F(x) + F'(x) s ||^2_2$ using Least Squares. If $F'(x)$ is invertible then
+   $s = - F'(x)^(-1)F(x)$ otherwise $F'(x)^T F'(x) s = -F'(x)^T F(x)$. If $F'(x)^T F(x)$ is NOT zero then there
+   exists a nontrivial (that is $F'(x)s \ne 0$) solution to the equation and this direction is
+   $s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x)$ so $Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
+   = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x))$. Since we are assuming $(F'(x)^T F(x)) \ne 0$
+   and $F'(x)^T F'(x)$ has no negative eigenvalues $Q'(0) < 0$ so $s$ is a descent direction and the line
+   search should succeed for small enough $\alpha$.
 
    Note that this RARELY happens in practice. Far more likely the linear system is not being solved
    (well enough?) or the Jacobian is wrong.
@@ -318,7 +324,7 @@ typedef enum {                       /* converged */
   SNES_DIVERGED_FUNCTION_DOMAIN      = -1, /* the new x location passed the function is not in the domain of F */
   SNES_DIVERGED_FUNCTION_COUNT       = -2,
   SNES_DIVERGED_LINEAR_SOLVE         = -3, /* the linear solve failed */
-  SNES_DIVERGED_FNORM_NAN            = -4,
+  SNES_DIVERGED_FUNCTION_NANORINF    = -4,
   SNES_DIVERGED_MAX_IT               = -5,
   SNES_DIVERGED_LINE_SEARCH          = -6,  /* the line search failed */
   SNES_DIVERGED_INNER                = -7,  /* inner solve failed */
@@ -328,13 +334,15 @@ typedef enum {                       /* converged */
   SNES_DIVERGED_TR_DELTA             = -11,
   SNES_CONVERGED_TR_DELTA_DEPRECATED = -11,
   SNES_DIVERGED_USER                 = -12, /* The user has indicated divergence for an arbitrary reason */
+  SNES_DIVERGED_OBJECTIVE_DOMAIN     = -13,
+  SNES_DIVERGED_OBJECTIVE_NANORINF   = -14,
 
   SNES_CONVERGED_ITERATING = 0
 } SNESConvergedReason;
 PETSC_EXTERN const char *const *SNESConvergedReasons;
 
 /*MC
-   SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol
+   SNES_CONVERGED_FNORM_ABS - $||F|| \le abstol$
 
    Level: beginner
 
@@ -342,7 +350,7 @@ PETSC_EXTERN const char *const *SNESConvergedReasons;
 M*/
 
 /*MC
-   SNES_CONVERGED_FNORM_RELATIVE - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
+   SNES_CONVERGED_FNORM_RELATIVE - $||F|| \le rtol*||F(x_0)||$ where $x_0$ is the initial guess
 
    Level: beginner
 
@@ -350,8 +358,8 @@ M*/
 M*/
 
 /*MC
-  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
-  solution and stol is the 4th argument to `SNESSetTolerances()`
+  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step $\le stol * ||x||$ where $x$ is the current
+  solution and $stol$ is the 4th argument to `SNESSetTolerances()`
 
   Options Database Key:
   -snes_stol <stol> - the step tolerance
@@ -379,8 +387,34 @@ M*/
 M*/
 
 /*MC
-   SNES_DIVERGED_FNORM_NAN - the 2-norm of the current function evaluation is not-a-number (NaN), this
-   is usually caused by a division of 0 by 0.
+   SNES_DIVERGED_FUNCTION_NANORINF - the 2-norm of the current function evaluation is not-a-number (NaN) or infinity, this
+   is usually caused by a division of 0 by 0, or infinity.  See `SNESSetFunctionDomainError()`
+
+   Level: beginner
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+M*/
+
+/*MC
+   SNES_DIVERGED_FUNCTION_DOMAIN - the function provided with `SNESSetFunction()` called `SNESSetFunctionDomainError()` and
+   the solver could not recoverer.
+
+   Level: beginner
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+M*/
+
+/*MC
+   SNES_DIVERGED_OBJECTIVE_DOMAIN - the function provided with `SNESSetObjective()` called `SNESSetObjectiveDomainError()` and
+   the solver could not recoverer.
+
+   Level: beginner
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+M*/
+
+/*MC
+   SNES_DIVERGED_JACOBIAN_DOMAIN - the function provided with `SNESSetJacobian()` called `SNESSetJacobianDomainError()`
 
    Level: beginner
 
@@ -854,18 +888,21 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt);
     SNESLineSearchReason - indication if the line search has succeeded or failed and why
 
   Values:
-+  `SNES_LINESEARCH_SUCCEEDED`       - the line search succeeded
-.  `SNES_LINESEARCH_FAILED_NANORINF` - a not a number of infinity appeared in the computions
-.  `SNES_LINESEARCH_FAILED_DOMAIN`   - the function was evaluated outside of its domain, see `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
-.  `SNES_LINESEARCH_FAILED_REDUCT`   - the linear search failed to get the requested decrease in its norm or objective
-.  `SNES_LINESEARCH_FAILED_USER`     - used by `SNESLINESEARCHNLEQERR` to indicate the user changed the search direction inappropriately
--  `SNES_LINESEARCH_FAILED_FUNCTION` - indicates the maximum number of function evaluations allowed has been surpassed, `SNESConvergedReason` is also
-                                       set to `SNES_DIVERGED_FUNCTION_COUNT`
++  `SNES_LINESEARCH_SUCCEEDED`              - the line search succeeded
+.  `SNES_LINESEARCH_FAILED_NANORINF`        - a not a number of infinity appeared in the computions
+.  `SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN` - the function was evaluated outside of its domain, see `SNESSetFunctionDomainError()`
+.  `SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN`- the objective function was evaluated outside of its domain, see `SNESSetObjectiveDomainError()`
+.  `SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN` - the Jacobian was evaluated outside of its domain, see `SNESSetJacobianDomainError()`
+.  `SNES_LINESEARCH_FAILED_REDUCT`          - the linear search failed to get the requested decrease in its norm or objective
+.  `SNES_LINESEARCH_FAILED_USER`            - used by `SNESLINESEARCHNLEQERR` to indicate the user changed the search direction inappropriately
+-  `SNES_LINESEARCH_FAILED_FUNCTION`        - indicates the maximum number of function evaluations allowed has been surpassed, `SNESConvergedReason` is also
+                                              set to `SNES_DIVERGED_FUNCTION_COUNT`
 
    Level: intermediate
 
    Developer Note:
-   Some of these reasons overlap with values of `SNESConvergedReason`
+   Some of these reasons overlap with values of `SNESConvergedReason`. It is possibly a better design to have `SNESConvergedReaon` alone used also for indicating line
+   search failures.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`,
           `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
@@ -873,7 +910,9 @@ E*/
 typedef enum {
   SNES_LINESEARCH_SUCCEEDED,
   SNES_LINESEARCH_FAILED_NANORINF,
-  SNES_LINESEARCH_FAILED_DOMAIN,
+  SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN,
+  SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN,
+  SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN,
   SNES_LINESEARCH_FAILED_REDUCT, /* INSUFFICIENT REDUCTION */
   SNES_LINESEARCH_FAILED_USER,
   SNES_LINESEARCH_FAILED_FUNCTION
