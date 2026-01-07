@@ -71,6 +71,7 @@
 ```
 
 - Add multi-precision support for MUMPS. One could use `-pc_precision <single, double>` to set the precision to be used by MUMPS, which can be different from `PetscScalar`'s precision
+- Add support for MUMPS out-of-core facility with the option `-mat_mumps_ooc_tmpdir <dir>` and new functions `MatMumpsSetOocTmpDir()`, `MatMumpsGetOocTmpDir()`
 
 ```{rubric} KSP:
 ```

@@ -34,7 +34,8 @@ int main(int argc, char **args)
   PetscInt    i, j, Ii, J, Istart, Iend, m = 8, n = 7, its;
   PetscBool   flg = PETSC_FALSE, flg_ilu = PETSC_FALSE, flg_ch = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
-  PetscBool flg_mumps = PETSC_FALSE, flg_mumps_ch = PETSC_FALSE;
+  char      tmpdir[PETSC_MAX_PATH_LEN];
+  PetscBool flg_mumps = PETSC_FALSE, flg_mumps_ch = PETSC_FALSE, test_mumps_ooc_api = PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   PetscBool flg_superlu = PETSC_FALSE;
@@ -373,6 +374,20 @@ int main(int argc, char **args)
 
   PetscCall(KSPSetFromOptions(ksp));
 
+#if defined(PETSC_HAVE_MUMPS)
+  // The OOC options must be set before PCSetUp()/KSPSetUp(), as MUMPS requires them be set after the initialization phase and before the (numeric) factorization phase.
+  if (flg_mumps || flg_mumps_ch) {
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mumps_ooc_api", &test_mumps_ooc_api, NULL));
+    if (test_mumps_ooc_api) {
+      PetscCall(PetscStrncpy(tmpdir, "OOC_XXXXXX", sizeof(tmpdir)));
+      if (rank == 0) PetscCall(PetscMkdtemp(tmpdir));
+      PetscCallMPI(MPI_Bcast(tmpdir, 11, MPI_CHAR, 0, PETSC_COMM_WORLD));
+      PetscCall(MatMumpsSetIcntl(F, 22, 1)); // enable out-of-core
+      PetscCall(MatMumpsSetOocTmpDir(F, tmpdir));
+    }
+  }
+#endif
+
   /* Get info from matrix factors */
   PetscCall(KSPSetUp(ksp));
 
@@ -424,11 +439,28 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
   }
 
+#if defined(PETSC_HAVE_MUMPS)
+  // Get the OCC tmpdir via F before it is destroyed in KSPDestroy().
+  if (test_mumps_ooc_api) {
+    const char *dir;
+
+    PetscCall(MatMumpsGetOocTmpDir(F, &dir));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, " OOC_TMPDIR = %s\n", dir));
+  }
+#endif
+
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   PetscCall(KSPDestroy(&ksp));
+
+#if defined(PETSC_HAVE_MUMPS)
+  // Files created by MUMPS under the OOC tmpdir were automatically deleted by MUMPS with JOB_END (-2)
+  // during KSP/PCDestroy(), but we need to remove the tmpdir created by us.
+  if (test_mumps_ooc_api && rank == 0) PetscCall(PetscRMTree(tmpdir));
+#endif
+
   PetscCall(VecDestroy(&u));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
@@ -450,12 +482,26 @@ int main(int argc, char **args)
       args: -use_petsc_lu
       output_file: output/ex52_2.out
 
-   test:
+   testset:
       suffix: mumps
       nsize: 3
       requires: mumps
-      args: -use_mumps_lu
       output_file: output/ex52_1.out
+      args: -use_mumps_lu
+
+      test:
+        suffix: mumps
+
+      test:
+        suffix: mumps_ooc
+        requires: !defined(PETSCTEST_VALGRIND)
+        args: -mat_mumps_icntl_22 1 -mat_mumps_ooc_tmpdir /tmp
+
+      test:
+        suffix: mumps_ooc_api
+        requires: !defined(PETSCTEST_VALGRIND)
+        args: -mat_mumps_icntl_22 1 -test_mumps_ooc_api
+        filter: grep -v "OOC_TMPDIR"
 
    test:
       suffix: mumps_2

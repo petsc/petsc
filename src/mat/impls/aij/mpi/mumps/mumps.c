@@ -176,7 +176,7 @@ typedef struct {
 } XMUMPS_STRUC_C;
 
 // Note: fixed-size arrays are allocated by MUMPS; redirect them to the outer struct
-#define AllocatInternalID(MUMPS_STRUC_T, outer) \
+#define AllocateInternalID(MUMPS_STRUC_T, outer) \
   do { \
     MUMPS_STRUC_T *inner; \
     PetscCall(PetscNew(&inner)); \
@@ -202,14 +202,14 @@ static inline PetscErrorCode MatMumpsAllocateInternalID(XMUMPS_STRUC_C *outer, P
   outer->precision = precision;
 #if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
   #if defined(PETSC_USE_COMPLEX)
-  if (precision == PETSC_PRECISION_SINGLE) AllocatInternalID(CMUMPS_STRUC_C, outer);
-  else AllocatInternalID(ZMUMPS_STRUC_C, outer);
+  if (precision == PETSC_PRECISION_SINGLE) AllocateInternalID(CMUMPS_STRUC_C, outer);
+  else AllocateInternalID(ZMUMPS_STRUC_C, outer);
   #else
-  if (precision == PETSC_PRECISION_SINGLE) AllocatInternalID(SMUMPS_STRUC_C, outer);
-  else AllocatInternalID(DMUMPS_STRUC_C, outer);
+  if (precision == PETSC_PRECISION_SINGLE) AllocateInternalID(SMUMPS_STRUC_C, outer);
+  else AllocateInternalID(DMUMPS_STRUC_C, outer);
   #endif
 #else
-  AllocatInternalID(MUMPS_STRUC_C, outer);
+  AllocateInternalID(MUMPS_STRUC_C, outer);
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2524,6 +2524,8 @@ static PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, PETSC_UNUSED const Ma
     PetscCall(MatDenseRestoreArrayRead(F->schur, &array));
   }
 
+  if (mumps->id.ICNTL(22)) PetscCall(PetscStrncpy(mumps->id.ooc_prefix, ((PetscObject)F)->prefix, sizeof(((MUMPS_STRUC_C *)NULL)->ooc_prefix)));
+
   PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) {
     PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in numerical factorization: INFOG(1)=%d, INFO(2)=%d " MUMPS_MANUALS, mumps->id.INFOG(1), mumps->id.INFO(2));
@@ -2817,7 +2819,13 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 #endif
   /* PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_21","ICNTL(21): the distribution (centralized or distributed) of the solution vectors","None",mumps->id.ICNTL(21),&mumps->id.ICNTL(21),NULL)); we only use distributed solution vector */
 
-  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_22", "ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)", "None", mumps->id.ICNTL(22), &mumps->id.ICNTL(22), NULL));
+  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_22", "ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)", "None", mumps->id.ICNTL(22), &mumps->id.ICNTL(22), &flg));
+  if (flg && mumps->id.ICNTL(22) != 1) mumps->id.ICNTL(22) = 0; // MUMPS treats values other than 1 as 0. Normalize it so we can safely use 'if (mumps->id.ICNTL(22))'
+  if (mumps->id.ICNTL(22)) {
+    // MUMPS will use the /tmp directory if -mat_mumps_ooc_tmpdir is not set by user.
+    // We don't provide option -mat_mumps_ooc_prefix, as we use F's prefix as OOC_PREFIX, which is set later during MatFactorNumeric_MUMPS() to also handle cases where users enable OOC via MatMumpsSetICNTL().
+    PetscCall(PetscOptionsString("-mat_mumps_ooc_tmpdir", "Out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, sizeof(((MUMPS_STRUC_C *)NULL)->ooc_tmpdir), NULL));
+  }
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_23", "ICNTL(23): max size of the working memory (MB) that can allocate per processor", "None", mumps->id.ICNTL(23), &mumps->id.ICNTL(23), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_24", "ICNTL(24): detection of null pivot rows (0 or 1)", "None", mumps->id.ICNTL(24), &mumps->id.ICNTL(24), NULL));
   if (mumps->id.ICNTL(24)) mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
@@ -2852,8 +2860,6 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   if (flg) ID_CNTL_SET(mumps->id, 5, cntl);
   PetscCall(PetscOptionsReal("-mat_mumps_cntl_7", "CNTL(7): dropping parameter used during BLR", "None", (PetscReal)ID_CNTL_GET(mumps->id, 7), &cntl, &flg));
   if (flg) ID_CNTL_SET(mumps->id, 7, cntl);
-
-  PetscCall(PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, sizeof(mumps->id.ooc_tmpdir), NULL));
 
   PetscCall(PetscOptionsIntArray("-mat_mumps_view_info", "request INFO local to each processor", "", info, &ninfo, NULL));
   if (ninfo) {
@@ -3445,6 +3451,63 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
       if (mumps->CNTL_pre[1 + 2 * i] == icntl) *val = mumps->CNTL_pre[2 + 2 * i];
     }
   } else *val = ID_CNTL_GET(mumps->id, icntl);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMumpsSetOocTmpDir - Set MUMPS out-of-core `OOC_TMPDIR` <https://mumps-solver.org/index.php?page=doc>
+
+  Logically Collective
+
+  Input Parameters:
++ F      - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`.
+- tmpdir - temporary directory for out-of-core facility.
+
+  Level: beginner
+
+  Note:
+  To make it effective, this routine must be called before the numeric factorization, i.e., `PCSetUp()`.
+  If `ooc_tmpdir` is not set, MUMPS will also check the environment variable `MUMPS_OOC_TMPDIR`. But if neither was defined, it will use /tmp by default.
+
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetOocTmpDir`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+@*/
+PetscErrorCode MatMumpsSetOocTmpDir(Mat F, const char *tmpdir)
+{
+  Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
+  PetscValidType(F, 1);
+  PetscCall(PetscStrncpy(mumps->id.ooc_tmpdir, tmpdir, sizeof(((MUMPS_STRUC_C *)NULL)->ooc_tmpdir)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMumpsGetOocTmpDir - Get MUMPS out-of-core `OOC_TMPDIR` <https://mumps-solver.org/index.php?page=doc>
+
+  Logically Collective
+
+  Input Parameter:
+. F - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`.
+
+  Output Parameter:
+. tmpdir - temporary directory for out-of-core facility.
+
+  Level: beginner
+
+  Note:
+  The returned string is read-only and user should not try to change it.
+
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetOocTmpDir`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+@*/
+PetscErrorCode MatMumpsGetOocTmpDir(Mat F, const char **tmpdir)
+{
+  Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
+  PetscValidType(F, 1);
+  if (tmpdir) *tmpdir = mumps->id.ooc_tmpdir;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
