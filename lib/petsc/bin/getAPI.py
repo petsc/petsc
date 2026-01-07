@@ -590,13 +590,14 @@ def getFunctions(mansec, functiontoinclude, filename):
               if i.find('*') > -1: arg.stars = 1
               if i.find('**') > -1: arg.stars = 2
               argname = re.findall(r' [*]*([a-zA-Z0-9_]*)[\[\]]*',i)
-              if argname:
+              if argname and argname[0]:
                 arg.name = argname[0]
                 if arg.name.lower() in argnames:
                   arg.name = 'M_' + arg.name
                 argnames.append(arg.name.lower())
               else:
-                arg.name = 'noname'
+                arg.name   = 'noname'
+                fun.opaque = True
               i =  regblank.sub('',reg.sub(r'\1\2 ',i).strip()).replace('*','').replace('[]','')
               arg.typename = i
               # fix input character arrays that are written as *variable name
@@ -857,13 +858,12 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
 
 #
 if __name__ ==  '__main__':
-  if len(sys.argv) < 2: print("Usage getAPI.py [--verbose]  directory")
-  verbose = False
-  if len(sys.argv) == 3:
-    if sys.argv[1] == '--verbose':
-      verbose = True
-      directory = sys.argv[2]
-    else: print("Usage getAPI.py [--verbose]  directory")
-  else:
-    directory = sys.argv[1]
-  getAPI(directory, verbose = verbose)
+  import argparse
+
+  parser = argparse.ArgumentParser(description='Generate PETSc/SLEPc API', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--verbose', action='store_true', required=False, help='show generated API')
+  parser.add_argument('--package', metavar='petsc/slepc', required=False, help='package name', default='petsc')
+  parser.add_argument('directory', help='root directory, either PETSC_DIR or SLEPC_DIR')
+  args = parser.parse_args()
+
+  getAPI(args.directory, args.package, args.verbose)

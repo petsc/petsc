@@ -36,7 +36,6 @@ CToFortranTypes = {'int':'integer4', 'ptrdiff_t':'PetscInt64', 'float':'PetscFor
                    'double':'PetscFortranDouble', 'short':None, 'size_t':'PetscSizeT', 'rocblas_status':None, 'PetscBT':None,
                    'PetscEnum':None, 'PetscDLHandle':None}
 
-Letters = string.ascii_lowercase.replace('tuv','').replace('z','')
 verbose = False
 
 def verbosePrint(text):
@@ -90,7 +89,7 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
         if k.stringlen: continue
         ktypename = k.typename
         if cnt: fd.write(',')
-        fd.write(Letters[cnt])
+        fd.write(k.name)
         if not ktypename in simportset:
           if ktypename in classes or ktypename == 'VecScatter':
             if simport: simport = simport + ','
@@ -106,8 +105,8 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
             simport = simport + ktypename
         simportset.add(ktypename)
         cnt = cnt + 1
-      if cnt: fd.write(',')
-      fd.write(' z)\n')
+      if cnt: fd.write(', ')
+      fd.write('ierr)\n')
       fd.write('  use, intrinsic :: ISO_C_binding\n')
       if simport: fd.write('  import ' + simport + '\n')
 
@@ -119,22 +118,22 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
           ktypename =CToFortranTypes[ktypename]
         if ktypename == 'char':
           if getattr(k, 'char_type', None) == 'single':
-            fd.write('  character :: ' + Letters[cnt] + '\n')
+            fd.write('  character :: ' + k.name + '\n')
           else:
-            fd.write('  character(*) :: ' + Letters[cnt] + '\n')
+            fd.write('  character(*) :: ' + k.name + '\n')
         elif ktypename in senums:
-          fd.write('  character(*) :: ' + Letters[cnt] + '\n')
+          fd.write('  character(*) :: ' + k.name + '\n')
         elif k.array and k.stars:
-          if not dim or dim == '1d': fd.write('  ' + ktypename + ', pointer :: ' +  Letters[cnt]  + '(:)\n')
-          else: fd.write('  ' + ktypename + ', pointer :: ' +  Letters[cnt]  + '(:,:)\n')
+          if not dim or dim == '1d': fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:)\n')
+          else: fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:,:)\n')
         elif k.array:
-          fd.write('  ' + ktypename + ' :: ' +  Letters[cnt]  + '(*)\n')
+          fd.write('  ' + ktypename + ' :: ' +  k.name  + '(*)\n')
         elif k.isfunction:
-          fd.write('  ' + 'external ' + Letters[cnt]  + '\n')
+          fd.write('  ' + 'external ' + k.name  + '\n')
         else:
-          fd.write('  ' + ktypename + ' :: ' + Letters[cnt] + '\n')
+          fd.write('  ' + ktypename + ' :: ' + k.name + '\n')
         cnt = cnt + 1
-      fd.write('  PetscErrorCode z\n')
+      fd.write('  PetscErrorCode :: ierr\n')
       fd.write('  end subroutine\n')
     fd.write('  end interface\n')
     fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
@@ -243,7 +242,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
         fd.write('*')
       if not (k.typename == 'char' or k.typename in senums or k.array or k.typename == 'PeCtx'):
         fd.write('*')
-      fd.write(Letters[cnt])
+      fd.write(k.name)
       if (k.typename == 'char' and getattr(k, 'char_type', None) != 'single') or (not k.stars and k.array): fd.write('[]')
       cnt = cnt + 1
     if cnt: fd.write(', ')
@@ -253,7 +252,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
     for k in fun.arguments:
       if k.stringlen: continue
       if k.typename in senums or k.typename == 'char':
-        fd.write(', PETSC_FORTRAN_CHARLEN_T l_'  + Letters[cnt])
+        fd.write(', PETSC_FORTRAN_CHARLEN_T l_'  + k.name)
       cnt = cnt + 1
     fd.write(')\n{\n')
 
@@ -267,19 +266,19 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
     else:
       # functions that destroy objects should return immediately if null, -2, -3
       if fun.arguments and fun.arguments[0].typename in classes and fun.name.endswith('Destroy'):
-        fd.write('  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a);\n')
+        fd.write('  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(' + fun.arguments[0].name + ');\n')
 
       # handle arguments that may return a null object
       cnt = 0
       for k in fun.arguments:
         if k.stringlen: continue
         if k.stars and k.typename  in classes:
-          fd.write('  PetscBool null_' + Letters[cnt] + ' = !*(void**) ' + Letters[cnt] + ' ? PETSC_TRUE : PETSC_FALSE;\n')
+          fd.write('  PetscBool null_' + k.name + ' = !*(void**) ' + k.name + ' ? PETSC_TRUE : PETSC_FALSE;\n')
         cnt = cnt + 1
 
       # prevent an existing object from being overwritten by a new create
       if fun.arguments and fun.arguments[-1].typename in classes and fun.name.endswith('Create'):
-        fd.write('  PETSC_FORTRAN_OBJECT_CREATE(' + Letters[len(fun.arguments)-1] + ');\n')
+        fd.write('  PETSC_FORTRAN_OBJECT_CREATE(' + fun.arguments[-1].name + ');\n')
 
       # handle string argument fixes
       cnt = 0
@@ -289,16 +288,16 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
           if getattr(k, 'char_type', None) == 'single': pass
           elif not k.stars:
             if k.const:
-              fd.write('  char* c_' + Letters[cnt] + ';\n')
-              fd.write('  FIXCHAR(' + Letters[cnt] + ', l_' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
+              fd.write('  char* c_' + k.name + ';\n')
+              fd.write('  FIXCHAR(' + k.name + ', l_' + k.name + ', c_' + k.name + ');\n')
           elif k.stars:
-            fd.write('  char* c_' + Letters[cnt] + ' = PETSC_NULLPTR;\n')
+            fd.write('  char* c_' + k.name + ' = PETSC_NULLPTR;\n')
         elif k.typename in senums:
           if not k.stars:
-            fd.write('  char* c_' + Letters[cnt] + ';\n')
-            fd.write('  FIXCHAR(' + Letters[cnt] + ', l_' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
+            fd.write('  char* c_' + k.name + ';\n')
+            fd.write('  FIXCHAR(' + k.name + ', l_' + k.name + ', c_' + k.name + ');\n')
           elif k.stars:
-            fd.write('  char* c_' + Letters[cnt] + ' = PETSC_NULLPTR;\n')
+            fd.write('  char* c_' + k.name + ' = PETSC_NULLPTR;\n')
         cnt = cnt + 1
 
       # handle viewer argument fixes
@@ -306,7 +305,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
       for k in fun.arguments:
         if k.stringlen: continue
         if k.typename == 'PetscViewer' and not k.stars and not k.array:
-          fd.write('  PetscViewer v_' + Letters[cnt] + ' = PetscPatchDefaultViewers(' + Letters[cnt] + ');\n')
+          fd.write('  PetscViewer v_' + k.name + ' = PetscPatchDefaultViewers(' + k.name + ');\n')
         cnt = cnt + 1
 
       # handle any arguments that may be null
@@ -315,15 +314,15 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
         if k.stringlen: continue
         if k.stars or k.array:
           if k.typename in classes:
-            fd.write('  CHKFORTRANNULLOBJECT(' + Letters[cnt] + ');\n')
+            fd.write('  CHKFORTRANNULLOBJECT(' + k.name + ');\n')
           elif k.typename == 'PetscInt':
-            fd.write('  CHKFORTRANNULLINTEGER(' + Letters[cnt] + ');\n')
+            fd.write('  CHKFORTRANNULLINTEGER(' + k.name + ');\n')
           elif k.typename == 'PetscReal':
-            fd.write('  CHKFORTRANNULLREAL(' + Letters[cnt] + ');\n')
+            fd.write('  CHKFORTRANNULLREAL(' + k.name + ');\n')
           elif k.typename == 'PetscScalar':
-            fd.write('  CHKFORTRANNULLSCALAR(' + Letters[cnt] + ');\n')
+            fd.write('  CHKFORTRANNULLSCALAR(' + k.name + ');\n')
           elif k.typename == 'PetscBool':
-            fd.write('  CHKFORTRANNULLBOOL(' + Letters[cnt] + ');\n')
+            fd.write('  CHKFORTRANNULLBOOL(' + k.name + ');\n')
         cnt = cnt + 1
 
       # call C function
@@ -347,13 +346,13 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
 #        if k.typename == 'void' and k.stars == 2:
 #          fd.write('&')
         if k.stringlen:
-          fd.write('l_' + Letters[cnt - 1])
+          fd.write('l_' + fun.arguments[cnt-1].name)
           continue
         if k.typename == 'PetscViewer' and not k.stars and not k.array:
           fd.write('v_')
         if k.typename in structs.keys() and structs[k.typename].opaque:
           fd.write('*')
-        fd.write(Letters[cnt])
+        fd.write(k.name)
         if k.typename == 'PetscBool' and not k.stars and not k.array:
           # handle bool argument fixes (-1 needs to be corrected to 1 for Intel compilers)
           fd.write(' ? PETSC_TRUE : PETSC_FALSE')
@@ -370,12 +369,12 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
         if k.typename == 'char' or k.typename in senums:
           if k.typename == 'char' and getattr(k, 'char_type', None) == 'single': pass
           elif not k.stars and (k.const or k.typename in senums):
-            fd.write('  FREECHAR(' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
+            fd.write('  FREECHAR(' + k.name + ', c_' + k.name + ');\n')
           else:
             if k.stars:
-              fd.write('  *ierr = PetscStrncpy((char *)' + Letters[cnt] + ', c_' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
+              fd.write('  *ierr = PetscStrncpy((char *)' + k.name + ', c_' + k.name + ', l_' + k.name + ');\n')
               fd.write('  if (*ierr) return;\n');
-            fd.write('  FIXRETURNCHAR(PETSC_TRUE, ' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
+            fd.write('  FIXRETURNCHAR(PETSC_TRUE, ' + k.name + ', l_' + k.name + ');\n')
         cnt = cnt + 1
 
       # handle arguments that may return a null PETSc object
@@ -383,7 +382,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
       for k in fun.arguments:
         if k.stringlen: continue
         if k.stars and k.typename in classes:
-          fd.write('  if (! null_' + Letters[cnt] + ' && !*(void**) ' + Letters[cnt] + ') *(void **) ' + Letters[cnt] + ' = (void *)-2;\n')
+          fd.write('  if (! null_' + k.name + ' && !*(void**) ' + k.name + ') *(void **) ' + k.name + ' = (void *)-2;\n')
         cnt = cnt + 1
 
     fd.write('}\n')
@@ -411,25 +410,25 @@ def generateFortranStub(senums, funname, fun, fd, opts):
     for k in fun.arguments:
       if k.stringlen: continue
       if cnt: fd.write(',')
-      fd.write(Letters[cnt])
+      fd.write(k.name)
       cnt = cnt + 1
-    fd.write(',z)\n')
+    fd.write(',ierr)\n')
     cnt = 0
     for k in fun.arguments:
       if k.stringlen: continue
       ktypename = k.typename.replace('MPI_', 'MPIU_').replace('MPIU_Fint', 'MPI_Fint')
       if fi[cnt] == 'O':
-        fd.write('  PetscNull :: ' + Letters[cnt] + '\n')
+        fd.write('  PetscNull :: ' + k.name + '\n')
       elif ktypename in senums or ktypename == 'char':
-        fd.write('  character(*) :: ' + Letters[cnt] + '\n')
+        fd.write('  character(*) :: ' + k.name + '\n')
       elif k.array and k.stars:
-        fd.write('  ' + ktypename + ', pointer :: ' +  Letters[cnt] + '(:)\n')
+        fd.write('  ' + ktypename + ', pointer :: ' +  k.name + '(:)\n')
       elif k.array:
-        fd.write('  ' + ktypename + ' :: '+ Letters[cnt] + '(*)\n')
+        fd.write('  ' + ktypename + ' :: '+ k.name + '(*)\n')
       else:
-        fd.write('  '+ ktypename + ' :: ' + Letters[cnt] + '\n')
+        fd.write('  '+ ktypename + ' :: ' + k.name + '\n')
       cnt = cnt + 1
-    fd.write('  PetscErrorCode z\n')
+    fd.write('  PetscErrorCode ierr\n')
     fd.write('  call ' + funname + 'Raw(')
     cnt = 0
     for k in fun.arguments:
@@ -437,7 +436,7 @@ def generateFortranStub(senums, funname, fun, fd, opts):
       ktypename = k.typename.replace('MPI_', 'MPIU_').replace('MPIU_Fint', 'MPI_Fint')
       if cnt: fd.write(',')
       if fi[cnt] == 'a':
-        fd.write(Letters[cnt])
+        fd.write(k.name)
       else:
         typename = ktypename.upper().replace('PETSC','')
         if typename == 'INT': typename = 'INTEGER'
@@ -445,7 +444,7 @@ def generateFortranStub(senums, funname, fun, fd, opts):
         if k.array and k.stars: fd.write('_POINTER')
         elif k.array: fd.write('_ARRAY')
       cnt = cnt + 1
-    fd.write(',z)\n')
+    fd.write(',ierr)\n')
     fd.write('  end subroutine\n')
 
 ##########  main
@@ -557,8 +556,8 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
   if not slepcdir:
     # special polymorphic routines handled with macros
     with open(os.path.join(petscarch,'include', 'petsc', 'finclude', 'petscsys.h'),"a") as fd:
-      fd.write('#define PetscObjectCompose(a,b,c,z) PetscObjectComposeRaw(a%v,b,c%v,z)\n')
-      fd.write('#define PetscObjectQuery(a,b,c,z) PetscObjectQueryRaw(a%v,b,c%v,z)\n')
+      fd.write('#define PetscObjectCompose(obj,name,otherobject,ierr) PetscObjectComposeRaw(obj%v,name,otherobject%v,ierr)\n')
+      fd.write('#define PetscObjectQuery(obj,name,otherobject,ierr) PetscObjectQueryRaw(obj%v,name,otherobject%v,ierr)\n')
 
   for i in files.keys():
     if i.endswith('types.h') or i in skipinc: continue
@@ -752,15 +751,15 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
        # generate Fortran subroutines for PetscObject methods for each PetscObject subclass (KSP etc)
       if classes[i].petscobject:
         ii = i.replace('Petsc', '')
-        fd.write('  function PetscObjectCast' + ii + '(a)\n')
-        fd.write('    ' + i + ' a\n')
+        fd.write('  function PetscObjectCast' + ii + '(obj)\n')
+        fd.write('    ' + i + ' obj\n')
         fd.write('    PetscObject PetscObjectCast' + ii + '\n')
-        fd.write('    PetscObjectCast' + ii + '%v = a%v\n')
+        fd.write('    PetscObjectCast' + ii + '%v = obj%v\n')
         fd.write('  end function \n')
-        fd.write('  subroutine PetscBarrier' + ii + '(a,z)\n')
-        fd.write('    ' + i + ' a\n')
-        fd.write('    PetscErrorCode z\n')
-        fd.write('    call PetscBarrier(PetscObjectCast(a),z)\n')
+        fd.write('  subroutine PetscBarrier' + ii + '(obj,ierr)\n')
+        fd.write('    ' + i + ' obj\n')
+        fd.write('    PetscErrorCode ierr\n')
+        fd.write('    call PetscBarrier(PetscObjectCast(obj),ierr)\n')
         fd.write('  end subroutine \n')
 
         for funname in petscobjectfunctions:
@@ -782,10 +781,10 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
           for k in fi.arguments:
             if k.stringlen: continue
             if cnt: fd.write(', ')
-            fd.write(Letters[cnt])
+            fd.write(k.name)
             cnt = cnt + 1
-          fd.write(' , z)\n')
-          fd.write('  ' + i + ' a\n')
+          fd.write(', ierr)\n')
+          fd.write('  ' + i + ' ' + fi.arguments[0].name + '\n')
           cnt = 1
           for k in fi.arguments[1:]:
             if k.stringlen: continue
@@ -793,29 +792,29 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
             if ktypename in CToFortranTypes:
               ktypename = CToFortranTypes[ktypename]
             if ktypename in senumsext:
-              fd.write('  character(*) :: ' + Letters[cnt] + '\n')
+              fd.write('  character(*) :: ' + k.name + '\n')
             elif ktypename == 'char':
               if k.char_type != 'single':
-                fd.write('  character(*) :: ' + Letters[cnt] + '\n')
+                fd.write('  character(*) :: ' + k.name + '\n')
               elif k.char_type == 'single':
-                fd.write('  character(len=1) :: ' + Letters[cnt] + '\n')
+                fd.write('  character(len=1) :: ' + k.name + '\n')
             elif k.array and k.stars:
-              fd.write('  ' + ktypename + ', pointer :: ' +  Letters[cnt]  + '(:)\n')
+              fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:)\n')
             elif k.array:
-              fd.write('  ' + ktypename + ' :: ' +  Letters[cnt]  + '(*)\n')
+              fd.write('  ' + ktypename + ' :: ' +  k.name  + '(*)\n')
             else:
-              fd.write('  ' + ktypename + ' :: ' + Letters[cnt] + '\n')
+              fd.write('  ' + ktypename + ' :: ' + k.name + '\n')
             cnt = cnt + 1
-          fd.write('  PetscErrorCode z\n')
+          fd.write('  PetscErrorCode ierr\n')
           fd.write('  call ' + funname  + '(PetscObjectCast(')
           cnt = 0
           for k in fi.arguments:
             if k.stringlen: continue
             if cnt: fd.write(', ')
-            fd.write(Letters[cnt])
+            fd.write(k.name)
             if cnt == 0: fd.write(')')
             cnt = cnt + 1
-          fd.write(', z)\n')
+          fd.write(', ierr)\n')
           fd.write('  end subroutine \n')
           if funname.startswith('PetscObjectSAWs') or funname == 'PetscObjectViewSAWs':
             fd.write('#endif\n')
