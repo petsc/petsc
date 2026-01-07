@@ -235,9 +235,8 @@ def main(PETSC_DIR, build_dir):
       try:
         git_ref_release = subprocess.check_output(['git', 'rev-parse', 'origin/release']).rstrip()
         edit_branch = 'release' if git_ref == git_ref_release else 'main'
-      except subprocess.CalledProcessError:
+      except:
         print("WARNING: checking branch for man page edit links failed")
-        numberErrors = numberErrors + 1
         edit_branch = 'main'
 
       for dirname in mandirs:
