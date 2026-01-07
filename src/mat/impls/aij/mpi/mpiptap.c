@@ -1865,7 +1865,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   PetscInt            *api, *apj, am = A->rmap->n, j, col, apnz;
   PetscScalar         *apa;
   const PetscInt      *cols;
-  const PetscScalar   *vals;
+  const PetscScalar   *vals, *array, *dummy1, *dummy2, *dummy3, *dummy4;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
@@ -1895,19 +1895,31 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)ptap->P_loc->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)ptap->P_oth->data;
-  apa = ptap->apa;
   api = ap->i;
   apj = ap->j;
+
+  // Use MatSeqAIJGetArrayXXX to sync the matrix on host before accessing its values in the style of (Mat_SeqAIJ *)dat->a on host
+  PetscCall(MatSeqAIJGetArrayWrite(AP_loc, &apa));
+  PetscCall(MatSeqAIJGetArrayRead(a->A, &dummy1));
+  PetscCall(MatSeqAIJGetArrayRead(a->B, &dummy2));
+  PetscCall(MatSeqAIJGetArrayRead(ptap->P_loc, &dummy3));
+  if (ptap->P_oth) PetscCall(MatSeqAIJGetArrayRead(ptap->P_oth, &dummy4));
   for (i = 0; i < am; i++) {
-    /* AP[i,:] = A[i,:]*P = Ad*P_loc Ao*P_oth */
-    AProw_nonscalable(i, ad, ao, p_loc, p_oth, apa);
+    /* AP[i,:] = A[i,:]*P = Ad*P_loc + Ao*P_oth */
+    AProw_nonscalable(i, ad, ao, p_loc, p_oth, ptap->apa); // Directly access the value arrays from the Mat_SeqAIJ structs
     apnz = api[i + 1] - api[i];
     for (j = 0; j < apnz; j++) {
-      col                 = apj[j + api[i]];
-      ap->a[j + ap->i[i]] = apa[col];
-      apa[col]            = 0.0;
+      col               = apj[j + api[i]];
+      apa[j + ap->i[i]] = ptap->apa[col];
+      ptap->apa[col]    = 0.0;
     }
   }
+  PetscCall(MatSeqAIJRestoreArrayWrite(AP_loc, &apa));
+  PetscCall(MatSeqAIJRestoreArrayRead(a->A, &dummy1));
+  PetscCall(MatSeqAIJRestoreArrayRead(a->B, &dummy2));
+  PetscCall(MatSeqAIJRestoreArrayRead(ptap->P_loc, &dummy3));
+  if (ptap->P_oth) PetscCall(MatSeqAIJRestoreArrayRead(ptap->P_oth, &dummy4));
+
   /* We have modified the contents of local matrix AP_loc and must increase its ObjectState, since we are not doing AssemblyBegin/End on it. */
   PetscCall(PetscObjectStateIncrease((PetscObject)AP_loc));
 
@@ -1924,7 +1936,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   cm    = C_loc->rmap->N;
   c_seq = (Mat_SeqAIJ *)C_loc->data;
   cols  = c_seq->j;
-  vals  = c_seq->a;
+
+  PetscCall(MatSeqAIJGetArrayRead(C_loc, &array));
+  vals = array;
 
   /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assembled is PETSC_FALSE and */
   /* when there are no off-processor parts.  */
@@ -1944,14 +1958,16 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
       vals += ncols;
     }
   } else {
-    PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat(C, c_seq->j, c_seq->i, c_seq->a));
+    PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat(C, c_seq->j, c_seq->i, vals));
   }
+  PetscCall(MatSeqAIJRestoreArrayRead(C_loc, &array));
 
   /* Co -> C, off-processor part */
   cm    = C_oth->rmap->N;
   c_seq = (Mat_SeqAIJ *)C_oth->data;
   cols  = c_seq->j;
-  vals  = c_seq->a;
+  PetscCall(MatSeqAIJGetArrayRead(C_oth, &array));
+  vals = array;
   for (i = 0; i < cm; i++) {
     ncols = c_seq->i[i + 1] - c_seq->i[i];
     row   = p->garray[i];
@@ -1959,6 +1975,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
     cols += ncols;
     vals += ncols;
   }
+  PetscCall(MatSeqAIJRestoreArrayRead(C_oth, &array));
 
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
