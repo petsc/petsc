@@ -11,7 +11,7 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=3',
-    #'--with-debugging=0', # TODO: fix mat_tests-ex62_14_mpiaijcusparse_cpu mat_tests-ex62_14_mpiaijcusparse_seq_cpu
+    '--with-debugging=0',
     '--with-cuda',
     '--with-openmp',
     '--with-shared-libraries',
