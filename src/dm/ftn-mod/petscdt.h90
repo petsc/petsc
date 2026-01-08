@@ -1,11 +1,15 @@
-     interface
-       subroutine PetscQuadratureRestoreData(q, dim, nc, np, p, w, ierr)
-         use, intrinsic :: ISO_C_binding
-         import tPetscQuadrature
-         PetscInt dim, nc, np
-         PetscReal, pointer :: p(:)
-         PetscReal, pointer :: w(:)
-         PetscErrorCode ierr
-         PetscQuadrature q
-       end subroutine
-     end interface
+interface
+  subroutine PetscQuadratureRestoreData(q, dim, nc, np, p, w, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tPetscQuadrature
+    PetscInt dim, nc, np
+    PetscReal, pointer :: p(:)
+    PetscReal, pointer :: w(:)
+    PetscErrorCode ierr
+    PetscQuadrature q
+  end subroutine
+end interface
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscQuadratureRestoreData
+#endif

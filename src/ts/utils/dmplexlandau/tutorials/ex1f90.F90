@@ -83,6 +83,7 @@ program DMPlexTestLandauInterface
 end program DMPlexTestLandauInterface
 
 !/*TEST
+!
 !  build:
 !    requires: defined(PETSC_USE_DMLANDAU_2D)
 !

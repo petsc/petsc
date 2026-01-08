@@ -10,7 +10,6 @@
 ##   OUTFILE ... The output file where the HTML code will be written to";
 
 
-from __future__ import print_function
 import os
 import sys
 import time

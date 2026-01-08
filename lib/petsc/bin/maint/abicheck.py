@@ -11,7 +11,6 @@
 #                 -report_format  <format of the report file, either xml or html. Optional with default=html>
 #
 
-from __future__ import print_function
 import os, sys
 import subprocess
 import argparse

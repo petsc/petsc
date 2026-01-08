@@ -1,54 +1,54 @@
-        interface DMCompositeGetEntries
-          subroutine DMCompositeGetEntries1(dm1, d1, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM
-            DM dm1
-            DM d1
-            PetscErrorCode ierr
-          end subroutine
+interface
+  subroutine DMCompositeRestoreGlobalISs(dm, iss, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM, tIS
+    DM dm
+    IS, pointer :: iss(:)
+    PetscErrorCode ierr
+  end subroutine
 
-          subroutine DMCompositeGetEntries2(dm1, d1, d2, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM
-            DM dm1
-            DM d1, d2
-            PetscErrorCode ierr
-          end subroutine
+  subroutine DMCompositeRestoreLocalISs(dm, iss, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM, tIS
+    DM dm
+    IS, pointer :: iss(:)
+    PetscErrorCode ierr
+  end subroutine
+end interface
 
-          subroutine DMCompositeGetEntries3(dm1, d1, d2, d3, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM
-            DM dm1
-            DM d1, d2, d3
-            PetscErrorCode ierr
-          end subroutine
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::DMCompositeRestoreGlobalISs
+!DEC$ ATTRIBUTES DLLEXPORT::DMCompositeRestoreLocalISs
+#endif
 
-          subroutine DMCompositeGetEntries4(dm1, d1, d2, d3, d4, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM
-            DM dm1
-            PetscInt d2, d4
-            DM d1, d3
-            PetscErrorCode ierr
-          end subroutine
-        end interface
-
-        interface DMCompositeRestoreGlobalISs
-          subroutine DMCompositeRestoreGlobalISs(dm, iss, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM, tIS
-            DM dm
-            IS, pointer :: iss(:)
-            PetscErrorCode ierr
-          end subroutine
-        end interface
-
-        interface DMCompositeRestoreLocalISs
-          subroutine DMCompositeRestoreLocalISs(dm, iss, ierr)
-            use, intrinsic :: ISO_C_binding
-            import tDM, tIS
-            DM dm
-            IS, pointer :: iss(:)
-            PetscErrorCode ierr
-          end subroutine
-        end interface
+interface DMCompositeGetEntries
+  subroutine DMCompositeGetEntries1(dm1, d1, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM dm1
+    DM d1
+    PetscErrorCode ierr
+  end subroutine
+  subroutine DMCompositeGetEntries2(dm1, d1, d2, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM dm1
+    DM d1, d2
+    PetscErrorCode ierr
+  end subroutine
+  subroutine DMCompositeGetEntries3(dm1, d1, d2, d3, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM dm1
+    DM d1, d2, d3
+    PetscErrorCode ierr
+  end subroutine
+  subroutine DMCompositeGetEntries4(dm1, d1, d2, d3, d4, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM dm1
+    PetscInt d2, d4
+    DM d1, d3
+    PetscErrorCode ierr
+  end subroutine
+end interface DMCompositeGetEntries

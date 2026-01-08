@@ -126,6 +126,7 @@ program main
 end
 
 !/*TEST
+!
 !   build:
 !     depends: ex21.c
 !

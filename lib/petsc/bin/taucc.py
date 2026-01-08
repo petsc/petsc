@@ -11,7 +11,6 @@
 #           -leave_tmp       : do not delete temporary files
 #           -E               : run preprocessor only
 #
-from __future__ import print_function
 import commands
 import sys
 import os

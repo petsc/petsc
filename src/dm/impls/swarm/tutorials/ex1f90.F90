@@ -103,6 +103,7 @@ program DMSwarmTestProjection
 end program DMSwarmTestProjection
 
 !/*TEST
+!
 !  build:
 !    requires: double !complex
 !

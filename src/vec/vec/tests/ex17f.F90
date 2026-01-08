@@ -69,10 +69,8 @@
         PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_SELF, ierr))
       end if
 
-#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       PetscCallA(PetscBarrier(y, ierr))
       PetscCallA(PetscBarrier(is1, ierr))
-#endif
       PetscCallA(VecDestroy(x, ierr))
       PetscCallA(VecDestroy(y, ierr))
       PetscCallA(ISDestroy(is1, ierr))

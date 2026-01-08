@@ -1,83 +1,67 @@
-     interface
-       subroutine KSPRestoreConvergenceHistory(ksp, r, na, ierr)
-         use, intrinsic :: ISO_C_binding
-         import tKSP
-         KSP ksp
-         PetscInt na
-         PetscReal, pointer :: r(:)
-         PetscErrorCode, intent(out) :: ierr
-       end subroutine
-     end interface
+interface
+  subroutine KSPRestoreConvergenceHistory(ksp, r, na, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tKSP
+    KSP ksp
+    PetscInt na
+    PetscReal, pointer :: r(:)
+    PetscErrorCode, intent(out) :: ierr
+  end subroutine
 
-     interface
-       subroutine PCBJacobiRestoreSubKSP(a, b, c, d, z)
-         use, intrinsic :: ISO_C_binding
-         import tPC, tKSP
-         PC :: a
-         PetscInt :: b
-         PetscInt :: c
-         KSP, pointer :: d(:)
-         PetscErrorCode z
-       end subroutine
-     end interface
+  subroutine PCBJacobiRestoreSubKSP(a, b, c, d, z)
+    use, intrinsic :: ISO_C_binding
+    import tPC, tKSP
+    PC :: a
+    PetscInt :: b
+    PetscInt :: c
+    KSP, pointer :: d(:)
+    PetscErrorCode z
+  end subroutine
+
+  subroutine PCASMRestoreSubKSP(a, b, c, d, z)
+    use, intrinsic :: ISO_C_binding
+    import tPC, tKSP
+    PC :: a
+    PetscInt :: b
+    PetscInt :: c
+    KSP, pointer :: d(:)
+    PetscErrorCode z
+  end subroutine
+
+  subroutine PCGASMRestoreSubKSP(a, b, c, d, z)
+    use, intrinsic :: ISO_C_binding
+    import tPC, tKSP
+    PC :: a
+    PetscInt :: b
+    PetscInt :: c
+    KSP, pointer :: d(:)
+    PetscErrorCode z
+  end subroutine
+
+  subroutine PCFieldsplitRestoreSubKSP(a, b, d, z)
+    use, intrinsic :: ISO_C_binding
+    import tPC, tKSP
+    PC :: a
+    PetscInt :: b
+    KSP, pointer :: d(:)
+    PetscErrorCode z
+  end subroutine
+
+  subroutine PCFieldSplitSchurRestoreSubKSP(a, b, d, z)
+    use, intrinsic :: ISO_C_binding
+    import tPC, tKSP
+    PC :: a
+    PetscInt :: b
+    KSP, pointer :: d(:)
+    PetscErrorCode z
+  end subroutine
+end interface
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::KSPRestoreConvergenceHistory
 !DEC$ ATTRIBUTES DLLEXPORT::PCBJacobiRestoreSubKSP
-#endif
-
-     interface
-       subroutine PCASMRestoreSubKSP(a, b, c, d, z)
-         use, intrinsic :: ISO_C_binding
-         import tPC, tKSP
-         PC :: a
-         PetscInt :: b
-         PetscInt :: c
-         KSP, pointer :: d(:)
-         PetscErrorCode z
-       end subroutine
-     end interface
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PCASMRestoreSubKSP
-#endif
-
-     interface
-       subroutine PCGASMRestoreSubKSP(a, b, c, d, z)
-         use, intrinsic :: ISO_C_binding
-         import tPC, tKSP
-         PC :: a
-         PetscInt :: b
-         PetscInt :: c
-         KSP, pointer :: d(:)
-         PetscErrorCode z
-       end subroutine
-     end interface
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PCGASMRestoreSubKSP
-#endif
-
-     interface
-       subroutine PCFieldsplitRestoreSubKSP(a, b, d, z)
-         use, intrinsic :: ISO_C_binding
-         import tPC, tKSP
-         PC :: a
-         PetscInt :: b
-         KSP, pointer :: d(:)
-         PetscErrorCode z
-       end subroutine
-     end interface
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PCFieldSplitRestoreSubKSP
-#endif
-
-     interface
-       subroutine PCFieldSplitSchurRestoreSubKSP(a, b, d, z)
-         use, intrinsic :: ISO_C_binding
-         import tPC, tKSP
-         PC :: a
-         PetscInt :: b
-         KSP, pointer :: d(:)
-         PetscErrorCode z
-       end subroutine
-     end interface
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PCFieldsplitRestoreSubKSP
 !DEC$ ATTRIBUTES DLLEXPORT::PCFieldSplitSchurRestoreSubKSP
 #endif

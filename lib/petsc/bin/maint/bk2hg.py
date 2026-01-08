@@ -10,7 +10,6 @@
 # local-bk-repo is a valid bk repository
 # local-hg-repo is a new location
 
-from __future__ import print_function
 import sys
 import os
 import time

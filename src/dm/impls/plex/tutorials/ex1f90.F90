@@ -96,6 +96,7 @@ program DMPlexTestField
 end program DMPlexTestField
 
 !/*TEST
+!
 !  test:
 !    suffix: 0
 !    requires: triangle

@@ -1,34 +1,36 @@
-  interface DMPlexRestoreCone
-    subroutine DMPlexRestoreCone(a, b, c, z)
-      use, intrinsic :: ISO_C_binding
-      import tDM
-      DM :: a
-      PetscInt :: b
-      PetscInt, pointer :: c(:)
-      PetscErrorCode z
-    end subroutine
-  end interface
+interface
+  subroutine DMPlexRestoreCone(a, b, c, z)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM :: a
+    PetscInt :: b
+    PetscInt, pointer :: c(:)
+    PetscErrorCode z
+  end subroutine
 
-  interface DMPlexRestoreSupport
-    subroutine DMPlexRestoreSupport(a, b, c, z)
-      use, intrinsic :: ISO_C_binding
-      import tDM
-      DM :: a
-      PetscInt :: b
-      PetscInt, pointer :: c(:)
-      PetscErrorCode z
-    end subroutine
-  end interface
+  subroutine DMPlexRestoreSupport(a, b, c, z)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM :: a
+    PetscInt :: b
+    PetscInt, pointer :: c(:)
+    PetscErrorCode z
+  end subroutine
 
-  interface DMPlexRestoreFullMeet
-    subroutine DMPlexRestoreFullMeet(a, b, c, d, e, z)
-      use, intrinsic :: ISO_C_binding
-      import tDM
-      DM :: a
-      PetscInt :: b
-      PetscInt :: c(*)
-      PetscInt :: d
-      PetscInt, pointer :: e(:)
-      PetscErrorCode z
-    end subroutine
-  end interface
+  subroutine DMPlexRestoreFullMeet(a, b, c, d, e, z)
+    use, intrinsic :: ISO_C_binding
+    import tDM
+    DM :: a
+    PetscInt :: b
+    PetscInt :: c(*)
+    PetscInt :: d
+    PetscInt, pointer :: e(:)
+    PetscErrorCode z
+  end subroutine
+end interface
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::DMPlexRestoreCone
+!DEC$ ATTRIBUTES DLLEXPORT::DMPlexRestoreSupport
+!DEC$ ATTRIBUTES DLLEXPORT::DMPlexRestoreFullMeet
+#endif
