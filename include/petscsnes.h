@@ -251,6 +251,7 @@ PETSC_EXTERN PetscErrorCode SNESSetCheckJacobianDomainError(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 
 #define SNES_CONVERGED_TR_DELTA_DEPRECATED SNES_CONVERGED_TR_DELTA PETSC_DEPRECATED_ENUM(3, 12, 0, "SNES_DIVERGED_TR_DELTA", )
+#define SNES_DIVERGED_FNORM_NAN_DEPRECATED SNES_DIVERGED_FNORM_NAN PETSC_DEPRECATED_ENUM(3, 25, 0, "SNES_DIVERGED_FUNCTION_NANORINF", )
 /*E
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
@@ -325,6 +326,7 @@ typedef enum {                       /* converged */
   SNES_DIVERGED_FUNCTION_COUNT       = -2,
   SNES_DIVERGED_LINEAR_SOLVE         = -3, /* the linear solve failed */
   SNES_DIVERGED_FUNCTION_NANORINF    = -4,
+  SNES_DIVERGED_FNORM_NAN_DEPRECATED = -4,
   SNES_DIVERGED_MAX_IT               = -5,
   SNES_DIVERGED_LINE_SEARCH          = -6,  /* the line search failed */
   SNES_DIVERGED_INNER                = -7,  /* inner solve failed */
