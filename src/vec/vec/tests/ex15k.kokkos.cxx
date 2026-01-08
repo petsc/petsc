@@ -1,7 +1,7 @@
 static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel vectors\n";
 /*
   Usage:
-   mpirun -n <np> ./ex1k -vec_type <device vector type>
+   mpirun -n <np> ./ex15k -vec_type <device vector type>
      -n  <n>  # number of data points of vector sizes from 128, 256, 512 and up. Maxima and default is 23.
      -m  <m>  # run each VecAXPY() m times to get the average time, default is 1000.
 
@@ -9,7 +9,7 @@ static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel v
 
   Running on Crusher at OLCF:
   # run with 1 mpi rank (-n1), 32 CPUs (-c32), and map the process to CPU 0 and GPU 0
-  $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex1k -vec_type kokkos
+  $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex15k -vec_type kokkos
 */
 
 #include <petscvec.h>
