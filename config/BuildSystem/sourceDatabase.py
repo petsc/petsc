@@ -7,7 +7,7 @@
     Relative or absolute pathnames may be used as keys, but absolute pathnames
     must fall under the database root. The value format is a tuple of the following:
 
-      Checksum:     The md5 checksum of the file
+      Checksum:     The checksum of the file
       Mod Time:     The time the file was last modified
       Timestamp:    The time theentry was last modified
       Dependencies: A tuple of files upon which this entry depends
@@ -33,7 +33,7 @@ import re
 import time
 
 import pickle
-from hashlib import md5 as new_md5
+from hashlib import sha256 as checksum_algo
 
 class SourceDB (dict, logger.Logger):
   '''A SourceDB is a dictionary of file data used during the build process.'''
@@ -140,13 +140,13 @@ class SourceDB (dict, logger.Logger):
     return
 
   def getChecksum(source, chunkSize = 1024*1024):
-    '''Return the md5 checksum for a given file, which may also be specified by its filename
+    '''Return the checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
     if hasattr(source, 'close'):
       f = source
     else:
       f = open(source)
-    m = new_md5()
+    m = checksum_algo()
     size = chunkSize
     buf  = f.read(size)
     while buf:

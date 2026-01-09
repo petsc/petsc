@@ -52,7 +52,7 @@ import re
 import sys
 import platform
 import pickle
-from hashlib import md5 as new_md5
+from hashlib import sha256 as checksum_algo
 
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
@@ -407,7 +407,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         dependency = depPath
       else:
         dependency = os.path.dirname(dependency.__file__)
-    self.dependencies[dependency] = new_md5(pickle.dumps(framework)).hexdigest()
+    self.dependencies[dependency] = checksum_algo( pickle.dumps(framework) ).hexdigest()
     self.logPrint('Added configure dependency from '+dependency+'('+str(self.dependencies[dependency])+')')
     for child in framework.childGraph.vertices:
       child.argDB = self.argDB
@@ -420,7 +420,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def updatePackageDependencies(self):
     for dependency, digest in self.dependencies.items():
       framework = self.loadFramework(dependency)
-      if digest == new_md5(pickle.dumps(framework)).hexdigest():
+      if digest == checksum_algo( pickle.dumps(framework) ).hexdigest():
         continue
       self.logPrint('Configure dependency from '+dependency+' has changed. Reloading...')
       for child in framework.childGraph.vertices:

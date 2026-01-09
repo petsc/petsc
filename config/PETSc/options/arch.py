@@ -136,7 +136,7 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
         raise RuntimeError('Do not set the environmental variable PETSC_ARCH and use --arch-hash')
     if 'arch-hash' in self.argDB or 'package-prefix-hash' in self.argDB:
       import hashlib
-      m = hashlib.md5()
+      m = hashlib.sha256()
       m.update(hash.encode('utf-8'))
       hprefix = m.hexdigest()
       self.logPrint('Computed hash to be used with --package-prefix-hash option: '+hprefix)
