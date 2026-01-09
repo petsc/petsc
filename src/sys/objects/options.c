@@ -1912,9 +1912,9 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options, PetscInt *N)
   Level: advanced
 
   Notes:
-  This is rarely used directly, it is called by `PetscFinalize()` in debug more or if -options_left
-  is passed otherwise to help users determine possible mistakes in their usage of options. This
-  only prints values on process zero of `PETSC_COMM_WORLD`.
+  This is rarely used directly, it is called by `PetscFinalize()` by default (unless
+  `-options_left false` is specified) to help users determine possible mistakes in their usage of
+  options. This only prints values on process zero of `PETSC_COMM_WORLD`.
 
   Other processes depending the objects
   used may have different options that are left unused.
