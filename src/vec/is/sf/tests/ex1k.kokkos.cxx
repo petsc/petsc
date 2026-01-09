@@ -176,7 +176,10 @@ int main(int argc, char **argv)
       args: -mtype {{host kokkos}}
 
     test:
-      requires: mpix_stream
+      requires: cuda mpi_gpu_aware mpix_stream
+      suffix: mpix
+      # MPICH doesn't reserve VCI, and per MPICH developers only 1 VCI is needed for GPU
+      env: MPIR_CVAR_CH4_RESERVE_VCIS=1
       args: -mtype kokkos -sf_use_stream_aware_mpi 1
 
 TEST*/
