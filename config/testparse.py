@@ -459,6 +459,12 @@ def parseTest(testStr,srcfile,verbosity):
 
   if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
 
+  # add in error check: if 'requires' is added to subtests, make sure 'suffix' is also added.
+  if 'subtests' in subdict:
+    for stest in subdict['subtests']:
+      if 'requires' in  subdict[stest] and not 'suffix' in subdict[stest]:
+        raise Exception("\n\nError in test harness parsing file: "+srcfile+"\nA test in a testset with 'requires' directive should also have a 'suffix' directive!")
+
   # A test block can create multiple tests.  This does that logic
   testnames,subdicts=splitTests(testname,subdict)
   return testnames,subdicts
