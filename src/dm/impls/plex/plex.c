@@ -9692,30 +9692,33 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   PetscMPIInt    rank;
   DMPolytopeType ct;
   PetscInt       dim, cStart, cEnd, c;
-  PetscBool      simplex;
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(ranks, 2);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMClone(dm, &rdm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)rdm, "PETSc___rank_"));
   PetscCall(DMGetDimension(rdm, &dim));
   PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "PETSc___rank_", -1, &fe));
+  if (cEnd > cStart) PetscCall(DMPlexGetCellType(rdm, cStart, &ct));
+  else ct = DM_POLYTOPE_SEGMENT;
+  PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, 1, ct, 0, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "rank"));
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(rdm));
+  PetscCall(DMViewFromOptions(rdm, NULL, "-dm_view"));
   PetscCall(DMCreateGlobalVector(rdm, ranks));
   PetscCall(PetscObjectSetName((PetscObject)*ranks, "partition"));
   PetscCall(VecGetArray(*ranks, &r));
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *lr;
+  if (r) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscScalar *lr;
 
-    PetscCall(DMPlexPointGlobalRef(rdm, c, r, &lr));
-    if (lr) *lr = rank;
+      PetscCall(DMPlexPointGlobalRef(rdm, c, r, &lr));
+      if (lr) *lr = rank;
+    }
   }
   PetscCall(VecRestoreArray(*ranks, &r));
   PetscCall(DMDestroy(&rdm));
