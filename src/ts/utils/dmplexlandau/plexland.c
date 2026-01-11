@@ -1994,6 +1994,54 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
 }
 
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
+
+static void LandauSphereMapping(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscReal u_max = 0, u_norm = 0, scale;
+  PetscInt  d;
+
+  for (d = 0; d < dim; ++d) {
+    PetscReal val = PetscAbsReal(PetscRealPart(u[d]));
+    if (val > u_max) u_max = val;
+    u_norm += PetscRealPart(u[d]) * PetscRealPart(u[d]);
+  }
+  u_norm = PetscSqrtReal(u_norm);
+
+  if (u_norm < 1e-10) {
+    for (d = 0; d < dim; ++d) f[d] = u[d];
+    return;
+  }
+
+  /*
+    u_1 is the intersection of the ray with the cube face.
+    The cube has corners at |u| = R_max.
+    So the face is at L = R_max / sqrt(3).
+    u_1 = u * (L / u_max).
+    |u_1| = u_norm * (L / u_max).
+    We want to map u to f such that |f| = |u| * (R_max / |u_1|).
+    f = u * (R_max / |u_1|) = u * (R_max / (u_norm * L / u_max))
+      = u * (R_max / L) * (u_max / u_norm)
+      = u * sqrt(3) * (u_max / u_norm).
+  */
+  scale = PetscSqrtReal((PetscReal)dim) * u_max / u_norm;
+  for (d = 0; d < dim; ++d) f[d] = u[d] * scale;
+}
+
+static PetscErrorCode LandauSphereMesh(DM dm, PetscReal radius)
+{
+  DM          cdm;
+  PetscDS     cds;
+  PetscScalar consts[1];
+
+  PetscFunctionBegin;
+  consts[0] = radius;
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetDS(cdm, &cds));
+  PetscCall(PetscDSSetConstants(cds, 1, consts));
+  PetscCall(DMPlexRemapGeometry(dm, 0.0, LandauSphereMapping));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   DMPlexLandauCreateVelocitySpace - Create a `DMPLEX` velocity space mesh
 
@@ -2052,6 +2100,13 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
       PetscCall(DMConvert(ctx->plex[grid], DMPLEX, &plex));
       PetscCall(DMDestroy(&ctx->plex[grid]));
       ctx->plex[grid] = plex;
+    } else if (ctx->sphere && dim == 3) {
+      PetscCall(LandauSphereMesh(ctx->plex[grid], ctx->radius[grid]));
+      PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, 0, 1, ctx));
+      if (grid == 0) {
+        PetscCall(DMViewFromOptions(ctx->plex[grid], NULL, "-dm_landau_amr_dm_view")); // need to differentiate - todo
+        PetscCall(VecViewFromOptions(Xsub[grid], NULL, "-dm_landau_amr_vec_view"));
+      }
     }
 #if !defined(LANDAU_SPECIES_MAJOR)
     PetscCall(DMCompositeAddDM(*pack, ctx->plex[grid]));
