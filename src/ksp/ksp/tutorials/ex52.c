@@ -494,12 +494,10 @@ int main(int argc, char **args)
 
       test:
         suffix: mumps_ooc
-        requires: !defined(PETSCTEST_VALGRIND)
         args: -mat_mumps_icntl_22 1 -mat_mumps_ooc_tmpdir /tmp
 
       test:
         suffix: mumps_ooc_api
-        requires: !defined(PETSCTEST_VALGRIND)
         args: -mat_mumps_icntl_22 1 -test_mumps_ooc_api
         filter: grep -v "OOC_TMPDIR"
 
