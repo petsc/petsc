@@ -184,7 +184,7 @@ int main(int argc, char **args)
 /*TEST
   build:
     requires: cuda kokkos_kernels
-    depends: ex18cu.cu ex18kok.kokkos.cxx
+    depends: ex18cu.cu ex18k.kokkos.cxx
 
   testset:
     filter: grep -v "type"

@@ -2,22 +2,22 @@ static char help[] = "Benchmarking device kernel launch time\n";
 /*
   Running example on Summit at OLCF:
   # run with total 1 resource set (RS) (-n1), 1 RS per node (-r1), 1 MPI rank (-a1), 7 cores (-c7) and 1 GPU (-g1) per RS
-  $ jsrun -n1 -a1 -c7 -g1 -r1  ./ex1kok
+  $ jsrun -n1 -a1 -c7 -g1 -r1  ./ex1k
   Average asynchronous device kernel launch time = 4.86 microseconds
   Average synchronous device kernel launch time  = 12.83 microseconds
 
   Frontier@OLCF
-  $ srun -n1 -c32 --cpu-bind=threads --gpus-per-node=8 --gpu-bind=closest ./ex1kok
+  $ srun -n1 -c32 --cpu-bind=threads --gpus-per-node=8 --gpu-bind=closest ./ex1k
   Average asynchronous device kernel launch time = 1.88 microseconds
   Average synchronous device kernel launch time  = 7.78 microseconds
 
   Aurora@ALCF
-  $ mpirun -n 1 ./ex1kok
+  $ mpirun -n 1 ./ex1k
   Average asynchronous device kernel launch time = 3.34 microseconds
   Average synchronous device kernel launch time  = 6.24 microseconds
 
   Perlmutter@NERSC
-  $ srun -n 1 --gpus-per-task=1 ./ex1kok
+  $ srun -n 1 --gpus-per-task=1 ./ex1k
   Average asynchronous device kernel launch time = 2.31 microseconds
   Average synchronous device kernel launch time  = 7.13 microseconds
 */
