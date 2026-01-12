@@ -278,16 +278,17 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
-        if bopt == 'g':
+        if bopt == '':
+          flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
+        elif bopt == 'g':
           flags.extend(['-O0','-g'])
         elif bopt == 'O':
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp:logicals') # enforce Fortran logical to be compatible with C
         if bopt == '':
+          flags.append('-fpscomp:logicals') # enforce Fortran logical to be compatible with C
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])
           else:
