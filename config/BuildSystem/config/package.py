@@ -256,7 +256,7 @@ class Package(config.base.Configure):
 
   def getSharedFlag(self,cflags):
     for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic', '-fpic']:
-      if cflags.find(flag) >=0: return flag
+      if cflags.find(flag) >= 0: return flag
     return ''
 
   def getPointerSizeFlag(self,cflags):

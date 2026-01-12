@@ -25,20 +25,21 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-unknown-pragmas'])
         if config.setCompilers.Configure.isClang(compiler, self.log):
           # gcc does not support -Wno-implicit-float-conversion so -Wconversion is always noisy
-          flags.extend(['-Wconversion', '-Wno-sign-conversion', '-Wno-float-conversion', '-Wno-implicit-float-conversion'])
-        if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
-          flags.extend(['-Wno-stringop-overflow'])
+          flags.extend(['-Wconversion', '-Wno-sign-conversion', '-Wno-float-conversion', '-Wno-implicit-float-conversion', '-Qunused-arguments'])
+          if config.setCompilers.Configure.isDarwinCatalina(self.log):
+            flags.extend(['-fno-stack-check'])
+        else:
+          flags.extend(['-Wno-lto-type-mismatch'])
+          if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
+            flags.extend(['-Wno-stringop-overflow'])
+          if config.setCompilers.Configure.isARM(self.log):
+            flags.extend(['-mfp16-format=ieee']) #  ARM for utilizing 16 bit storage of floating point
         # skip -fstack-protector for brew gcc - as this gives SEGV
         if not ((config.setCompilers.Configure.isDarwin(self.log) or config.setCompilers.Configure.isMINGW(compiler, self.log)) and config.setCompilers.Configure.isGNU(compiler, self.log)):
           flags.extend(['-fstack-protector'])
-        if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(compiler, self.log):
-          flags.extend(['-fno-stack-check'])
-        flags.extend(['-mfp16-format=ieee']) #  ARM for utilizing 16 bit storage of floating point
-        if config.setCompilers.Configure.isClang(compiler, self.log):
-          flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
         if language == 'CUDA':
@@ -139,9 +140,9 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas'])
         if config.setCompilers.Configure.isGNU(compiler, self.log):
-          flags.extend(['-Wno-psabi'])
+          flags.extend(['-Wno-psabi', '-Wno-lto-type-mismatch'])
         if not any([
             # skip -fstack-protector for brew gcc - as this gives SEGV
             (config.setCompilers.Configure.isDarwin(self.log) or config.setCompilers.Configure.isMINGW(compiler, self.log)) and config.setCompilers.Configure.isGNU(compiler, self.log),
@@ -277,16 +278,17 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
-        if bopt == 'g':
+        if bopt == '':
+          flags.append('-fpscomp logicals') # enforce Fortran logical to be compatible with C
+        elif bopt == 'g':
           flags.extend(['-O0','-g'])
         elif bopt == 'O':
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
       elif re_win32fe_ifort.search(compiler):
-        flags.append('-fpscomp:logicals') # enforce Fortran logical to be compatible with C
         if bopt == '':
+          flags.append('-fpscomp:logicals') # enforce Fortran logical to be compatible with C
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])
           else:

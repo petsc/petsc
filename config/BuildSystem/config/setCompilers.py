@@ -744,8 +744,8 @@ class Configure(config.base.Configure):
     '''Returns true if system is processor-type is ARM'''
     global isARM_value
     if isARM_value == -1:
-       (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
-       if not status and (output.lower().strip() == 'arm'):
+       (output, error, status) = config.base.Configure.executeShellCommand('uname -m', log = log)
+       if not status and (output.lower().strip().startswith('arm') or output.lower().strip().startswith('aarch')):
          if log: log.write('Detected ARM processor\n\n')
          isARM_value = True
        else:
@@ -2114,7 +2114,7 @@ class Configure(config.base.Configure):
       yield '-Xcompiler -fPIC'
       yield '-fPIC'
       return
-    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log) or config.setCompilers.Configure.isClang(self.getCompiler(), self.log) or config.setCompilers.Configure.isIntel(self.getCompiler(), self.log):
       PICFlags = ['-fPIC']
     elif config.setCompilers.Configure.isIBM(self.getCompiler(), self.log):
       PICFlags = ['-qPIC']
@@ -2413,12 +2413,14 @@ class Configure(config.base.Configure):
       yield (self.CC, ['-dynamiclib', '-undefined dynamic_lookup', '-no_compact_unwind'], 'dylib')
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
-      yield (self.CXX, ['-qmkshrobj'], 'so')
+      if config.setCompilers.Configure.isIBM(self.CXX, self.log):
+        yield (self.CXX, ['-qmkshrobj'], 'so')
       yield (self.CXX, ['-shared'], 'so')
       yield (self.CXX, ['-dynamic'], 'so')
       yield (self.CC, ['-shared'], 'dll')
     # C compiler default
-    yield (self.CC, ['-qmkshrobj'], 'so')
+      if config.setCompilers.Configure.isIBM(self.CC, self.log):
+        yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'so')
     yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-shared'], 'dll')
