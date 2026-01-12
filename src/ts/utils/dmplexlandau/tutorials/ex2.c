@@ -774,6 +774,6 @@ int main(int argc, char **argv)
     suffix: sphere_3d
     nsize: 1
     args: -dim 3 -dm_landau_thermal_temps 2 -ts_type beuler -ts_time_step .1 -ts_max_steps 1 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -snes_rtol 1.e-14 -snes_stol 1.e-14 -snes_converged_reason \
-     -dm_landau_sphere -dm_landau_domain_radius 10.4 -ex2_grid_view_idx 0 -ex2_dm_view -dm_landau_sphere_inner_radius_45degree_scale .3 -petscspace_degree 4 -dm_refine 0 # -ex2_dm_view hdf5:my.hdf5:hdf5_viz -ex2_vec_view hdf5:my.hdf5:hdf5_viz:append
+     -dm_landau_sphere -dm_landau_domain_radius 6 -ex2_grid_view_idx 0 -ex2_dm_view -dm_landau_sphere_inner_radius_90degree_scale .35 -petscspace_degree 4 -dm_refine 0 # -ex2_dm_view hdf5:my.hdf5:hdf5_viz -ex2_vec_view hdf5:my.hdf5:hdf5_viz:append
 
 TEST*/
