@@ -37,7 +37,7 @@ typedef PetscInt LandauIdx;
   #if defined(PETSC_USE_DMLANDAU_2D)
     #define LANDAU_MAX_Q 6
   #else
-    #define LANDAU_MAX_Q 5
+    #define LANDAU_MAX_Q 6
   #endif
 #else
   #undef LANDAU_MAX_NQND
