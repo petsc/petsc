@@ -141,7 +141,7 @@ PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, PetscCtx ctx)
 {
   UserContext *user = (UserContext *)ctx;
   PetscInt     matis, matie, i;

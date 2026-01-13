@@ -11,7 +11,7 @@
   #define dmkspsetcomputeoperators_    dmkspsetcomputeoperators
 #endif
 
-static PetscErrorCode ourkspcomputerhs(KSP ksp, Vec b, void *ctx)
+static PetscErrorCode ourkspcomputerhs(KSP ksp, Vec b, PetscCtx ctx)
 {
   DM    dm;
   DMKSP kdm;
@@ -21,7 +21,7 @@ static PetscErrorCode ourkspcomputerhs(KSP ksp, Vec b, void *ctx)
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourkspcomputeinitialguess(KSP ksp, Vec b, void *ctx)
+static PetscErrorCode ourkspcomputeinitialguess(KSP ksp, Vec b, PetscCtx ctx)
 {
   DM    dm;
   DMKSP kdm;
@@ -31,7 +31,7 @@ static PetscErrorCode ourkspcomputeinitialguess(KSP ksp, Vec b, void *ctx)
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourkspcomputeoperators(KSP ksp, Mat A, Mat B, void *ctx)
+static PetscErrorCode ourkspcomputeoperators(KSP ksp, Mat A, Mat B, PetscCtx ctx)
 {
   DM    dm;
   DMKSP kdm;
@@ -46,7 +46,7 @@ static PetscErrorCode ourkspcomputeoperators(KSP ksp, Mat A, Mat B, void *ctx)
  * function pointers need an overhaul.
  */
 
-PETSC_EXTERN void dmkspsetcomputerhs_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmkspsetcomputerhs_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);
@@ -56,7 +56,7 @@ PETSC_EXTERN void dmkspsetcomputerhs_(DM *dm, void (*func)(KSP *, Vec *, void *,
   }
 }
 
-PETSC_EXTERN void dmkspsetcomputeinitialguess_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmkspsetcomputeinitialguess_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);
@@ -67,7 +67,7 @@ PETSC_EXTERN void dmkspsetcomputeinitialguess_(DM *dm, void (*func)(KSP *, Vec *
   }
 }
 
-PETSC_EXTERN void dmkspsetcomputeoperators_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmkspsetcomputeoperators_(DM *dm, void (*func)(KSP *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);

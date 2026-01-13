@@ -88,7 +88,7 @@ static PetscErrorCode MatCreate_Dummy(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PFCreate_Dummy(PF pf, void *ctx)
+static PetscErrorCode PFCreate_Dummy(PF pf, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);

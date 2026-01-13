@@ -99,7 +99,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
+PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscCtx ctx)
 {
   PetscReal norm;
   MPI_Comm  comm;
@@ -139,7 +139,7 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   DM                 da;

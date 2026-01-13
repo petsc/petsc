@@ -84,13 +84,13 @@ static PetscErrorCode TSBDF_RestoreVecs(TS ts, DM dm, Vec *Xdot, Vec *Ydot)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMCoarsenHook_TSBDF(DM fine, DM coarse, void *ctx)
+static PetscErrorCode DMCoarsenHook_TSBDF(DM fine, DM coarse, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRestrictHook_TSBDF(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+static PetscErrorCode DMRestrictHook_TSBDF(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, PetscCtx ctx)
 {
   TS  ts = (TS)ctx;
   Vec Ydot, Ydot_c;

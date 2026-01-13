@@ -53,7 +53,7 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes, Vec x, Vec y, MatF
    NOTE: FORTRAN USER CANNOT PUT IN A NEW J OR B currently.
 */
 
-PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *, double *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *, double *, Vec *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (PetscFortranCallbackFn *)f;
   (*fd)->ftn_func_cntx    = ctx;
@@ -61,7 +61,7 @@ PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *,
   *ierr = MatFDColoringSetFunction(*fd, (MatFDColoringFn *)(PetscVoidFn *)ourmatfdcoloringfunctionts, *fd);
 }
 
-PETSC_EXTERN void matfdcoloringsetfunction_(MatFDColoring *fd, void (*f)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void matfdcoloringsetfunction_(MatFDColoring *fd, void (*f)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (PetscFortranCallbackFn *)f;
   (*fd)->ftn_func_cntx    = ctx;

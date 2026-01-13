@@ -26,7 +26,7 @@ typedef struct {
   PetscReal   print_time;
 } AppCtx;
 
-PetscErrorCode MyMonitor(TS ts, PetscInt stepnum, PetscReal time, Vec U, void *ctx)
+PetscErrorCode MyMonitor(TS ts, PetscInt stepnum, PetscReal time, Vec U, PetscCtx ctx)
 {
   AppCtx      *actx = (AppCtx *)ctx;
   Mat          sp;
@@ -47,7 +47,7 @@ PetscErrorCode MyMonitor(TS ts, PetscInt stepnum, PetscReal time, Vec U, void *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, PetscCtx ctx)
 {
   AppCtx            *actx = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -120,7 +120,7 @@ PetscErrorCode ShiftGradients(TS ts, Vec U, AppCtx *actx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec U, PetscBool forwardsolve, PetscCtx ctx)
 {
   AppCtx *actx = (AppCtx *)ctx;
 
@@ -140,7 +140,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   AppCtx            *actx = (AppCtx *)ctx;
   PetscScalar       *f;
@@ -169,7 +169,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   AppCtx            *actx     = (AppCtx *)ctx;
   PetscInt           rowcol[] = {0, 1};
@@ -206,7 +206,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
 }
 
 /* Matrix JacobianP is constant so that it only needs to be evaluated once */
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat Ap, void *ctx)
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat Ap, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -308,7 +308,7 @@ static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, Pe
     if (!_in) PetscFunctionReturn(PETSC_SUCCESS); \
   } while (0)
 
-static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot, *f;
@@ -376,7 +376,7 @@ static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot;
@@ -624,7 +624,7 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
 /*
  Finite element version
 */
-static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot, *f;
@@ -710,7 +710,7 @@ static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot;

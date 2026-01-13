@@ -104,10 +104,10 @@ PETSC_EXTERN PetscErrorCode DMGetFineDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMSetFineDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMRefineHierarchy(DM, PetscInt, DM[]);
 PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy(DM, PetscInt, DM[]);
-PETSC_EXTERN PetscErrorCode DMCoarsenHookAdd(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, Mat, Vec, Mat, DM, void *), void *);
-PETSC_EXTERN PetscErrorCode DMCoarsenHookRemove(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, Mat, Vec, Mat, DM, void *), void *);
-PETSC_EXTERN PetscErrorCode DMRefineHookAdd(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, Mat, DM, void *), void *);
-PETSC_EXTERN PetscErrorCode DMRefineHookRemove(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, Mat, DM, void *), void *);
+PETSC_EXTERN PetscErrorCode DMCoarsenHookAdd(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, Mat, Vec, Mat, DM, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMCoarsenHookRemove(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, Mat, Vec, Mat, DM, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMRefineHookAdd(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, Mat, DM, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMRefineHookRemove(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, Mat, DM, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode DMRestrict(DM, Mat, Vec, Mat, DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM, Mat, DM);
 PETSC_EXTERN PetscErrorCode DMInterpolateSolution(DM, DM, Mat, Vec, Vec);
@@ -128,8 +128,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DMLabel, DM *);
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM, DM, Mat, Vec *);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "DMDACreateAggregates()", ) PetscErrorCode DMCreateAggregates(DM, DM, Mat *);
-PETSC_EXTERN PetscErrorCode DMGlobalToLocalHookAdd(DM, PetscErrorCode (*)(DM, Vec, InsertMode, Vec, void *), PetscErrorCode (*)(DM, Vec, InsertMode, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMLocalToGlobalHookAdd(DM, PetscErrorCode (*)(DM, Vec, InsertMode, Vec, void *), PetscErrorCode (*)(DM, Vec, InsertMode, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode DMGlobalToLocalHookAdd(DM, PetscErrorCode (*)(DM, Vec, InsertMode, Vec, PetscCtx), PetscErrorCode (*)(DM, Vec, InsertMode, Vec, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMLocalToGlobalHookAdd(DM, PetscErrorCode (*)(DM, Vec, InsertMode, Vec, PetscCtx), PetscErrorCode (*)(DM, Vec, InsertMode, Vec, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocal(DM, Vec, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM, Vec, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM, Vec, InsertMode, Vec);
@@ -193,8 +193,8 @@ PETSC_EXTERN PetscErrorCode DMGetSparseLocalize(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetSparseLocalize(DM, PetscBool);
 
 /* block hook interface */
-PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, VecScatter, VecScatter, DM, void *), void *);
-PETSC_EXTERN PetscErrorCode DMSubDomainHookRemove(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, VecScatter, VecScatter, DM, void *), void *);
+PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, VecScatter, VecScatter, DM, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMSubDomainHookRemove(DM, PetscErrorCode (*)(DM, DM, PetscCtx), PetscErrorCode (*)(DM, VecScatter, VecScatter, DM, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode DMSubDomainRestrict(DM, VecScatter, VecScatter, DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM, const char[]);
@@ -206,9 +206,9 @@ PETSC_EXTERN PetscErrorCode DMSetMatType(DM, MatType);
 PETSC_EXTERN PetscErrorCode DMGetMatType(DM, MatType *);
 PETSC_EXTERN PetscErrorCode DMSetISColoringType(DM, ISColoringType);
 PETSC_EXTERN PetscErrorCode DMGetISColoringType(DM, ISColoringType *);
-PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM, void *);
+PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM, PetscCtxDestroyFn *);
-PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM, void *);
+PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMSetVariableBounds(DM, PetscErrorCode (*)(DM, Vec, Vec));
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasColoring(DM, PetscBool *);
@@ -460,9 +460,9 @@ PETSC_EXTERN PetscErrorCode DMCopyTransform(DM, DM);
 
 PETSC_EXTERN PetscErrorCode DMGetCompatibility(DM, DM, PetscBool *, PetscBool *);
 
-PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, void *), void *, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, PetscCtx), PetscCtx, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
-PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
+PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, PetscCtx), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
 static inline PetscBool DMPolytopeTypeIsHybrid(DMPolytopeType ct)

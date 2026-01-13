@@ -95,7 +95,7 @@ static const char *const SAMethods[] = {"TRACK", "GLOBAL", "SAMethod", "SA_", 0}
 
 /* ----------------------- Explicit form of the ODE  -------------------- */
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   PetscScalar       *f;
@@ -119,7 +119,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, PetscCtx ctx)
 {
   AppCtx            *user     = (AppCtx *)ctx;
   PetscInt           rowcol[] = {0, 1};
@@ -149,7 +149,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
 
 /* ------------------ Jacobian wrt parameters for tracking method ------------------ */
 
-PetscErrorCode RHSJacobianP_track(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+PetscErrorCode RHSJacobianP_track(TS ts, PetscReal t, Vec U, Mat A, PetscCtx ctx)
 {
   PetscInt           row[] = {0, 1}, col[] = {0, 1};
   PetscScalar        J[2][2];
@@ -170,7 +170,7 @@ PetscErrorCode RHSJacobianP_track(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
 
 /* ------------------ Jacobian wrt parameters for global method ------------------ */
 
-PetscErrorCode RHSJacobianP_global(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+PetscErrorCode RHSJacobianP_global(TS ts, PetscReal t, Vec U, Mat A, PetscCtx ctx)
 {
   PetscInt           row[] = {0, 1}, col[] = {0, 1};
   PetscScalar        J[2][2];
@@ -194,7 +194,7 @@ PetscErrorCode RHSJacobianP_global(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
 }
 
 /* Dump solution to console if called */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n Solution at time %e is \n", (double)t));
@@ -205,7 +205,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
 /* Customized adjoint monitor to keep track of local
    sensitivities by storing them in a global sensitivity array.
    Note : This routine is only used for the tracking method. */
-PetscErrorCode AdjointMonitor(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *ctx)
+PetscErrorCode AdjointMonitor(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   PetscInt           curr_step;

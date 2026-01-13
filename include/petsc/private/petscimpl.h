@@ -144,8 +144,8 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*python_destroy)(void *);
 
   PetscInt noptionhandler;
-  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems, void *);
-  PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, void *);
+  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems, PetscCtx);
+  PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscCtxRt);
   void *optionctx[PETSC_MAX_OPTIONS_HANDLER];
 #if defined(PETSC_HAVE_SAWS)
   PetscBool amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
@@ -395,7 +395,7 @@ PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObjec
 PETSC_INTERN PetscErrorCode                PetscHeaderDestroy_Private_Unlogged(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
 PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
-PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscFortranCallbackFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscFortranCallbackFn *, PetscCtx ctx);
 PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, PetscFortranCallbackFn **, void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);

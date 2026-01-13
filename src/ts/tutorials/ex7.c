@@ -229,7 +229,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
+PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscCtx ctx)
 {
   PetscReal norm;
   MPI_Comm  comm;

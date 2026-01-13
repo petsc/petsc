@@ -24,7 +24,7 @@ typedef struct {
     in one particular set of coordinates. It is a callback
     called from PetscDrawZoom()
 */
-static PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw, void *ctx)
+static PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw, PetscCtx ctx)
 {
   ZoomCtx           *zctx = (ZoomCtx *)ctx;
   PetscInt           m, n, i, j, k, dof, id;

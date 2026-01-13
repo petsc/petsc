@@ -424,7 +424,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(Tao tao, void *ctx)
+PetscErrorCode Monitor(Tao tao, PetscCtx ctx)
 {
   PetscInt           its;
   PetscReal          f, gnorm, cnorm, xdiff;
@@ -436,7 +436,7 @@ PetscErrorCode Monitor(Tao tao, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
+PetscErrorCode ConvergenceTest(Tao tao, PetscCtx ctx)
 {
   PetscInt           its;
   PetscReal          f, gnorm, cnorm, xdiff;

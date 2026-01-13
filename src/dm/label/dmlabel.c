@@ -2109,7 +2109,7 @@ static PetscErrorCode DMLabelPropagateInit_Internal(DMLabel label, PetscSF point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMLabelPropagateFini_Internal(DMLabel label, PetscSF pointSF, PetscInt valArray[], PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
+static PetscErrorCode DMLabelPropagateFini_Internal(DMLabel label, PetscSF pointSF, PetscInt valArray[], PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), PetscCtx ctx)
 {
   const PetscInt *degree;
   const PetscInt *points;
@@ -2223,7 +2223,7 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 
 .seealso: `DMLabel`, `DM`, `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
 @*/
-PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel label, PetscInt p, PetscInt val, void *ctx), void *ctx)
+PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel label, PetscInt p, PetscInt val, PetscCtx ctx), PetscCtx ctx)
 {
   PetscInt   *valArray = label->propArray, Nr;
   PetscMPIInt size;

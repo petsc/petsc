@@ -1923,9 +1923,9 @@ PetscErrorCode PetscCheckAllreduceSameLineAndCount_Private(MPI_Comm comm, const 
 .seealso: `PetscObject`, `PetscCtxDestroyFn`, `PetscObjectDestroy()`, `DMSetApplicationContextDestroy()`,  `PetscContainerSetDestroy()`,
            `PetscObjectContainterCreate()`
 @*/
-PETSC_EXTERN PetscErrorCode PetscCtxDestroyDefault(void **ctx)
+PETSC_EXTERN PetscErrorCode PetscCtxDestroyDefault(PetscCtxRt ctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*ctx));
+  PetscCall(PetscFree(*(void **)ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

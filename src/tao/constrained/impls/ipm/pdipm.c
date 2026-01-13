@@ -271,7 +271,7 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
    J - Hessian matrix
    Jpre - matrix to build the preconditioner from
 */
-static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, void *ctx)
+static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, PetscCtx ctx)
 {
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
@@ -442,7 +442,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, v
    Output Parameter:
    F - Updated Lagrangian vector
 */
-static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx)
+static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
@@ -547,7 +547,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx)
   Evaluate F(X); then update tao->gnorm0, tao->step = mu,
   tao->residual = norm2(F_x,F_z) and tao->cnorm = norm2(F_ce,F_ci).
 */
-static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, void *ctx)
+static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
@@ -703,7 +703,7 @@ static PetscErrorCode PCPostSetUp_PDIPM(PC pc)
    are updated as Lambdai = Lambdai + alpha_p*dLambdai. The barrier parameter mu
    is also updated as mu = mu + z'lambdai/Nci
 */
-static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
+static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, PetscCtx ctx)
 {
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;

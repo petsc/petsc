@@ -106,7 +106,7 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
 
 .seealso: [](ch_ts), `TS`, `TSRHSFunctionFn`, `IS`, `TSRHSSplitSetIS()`
 @*/
-PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunctionFn *rhsfunc, void *ctx)
+PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunctionFn *rhsfunc, PetscCtx ctx)
 {
   TS_RHSSplitLink isplit;
   DM              dmc;
@@ -159,7 +159,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
 .seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEX`, `TSARKIMEXSetFastSlowSplit()`
 @*/
-PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIFunctionFn *ifunc, void *ctx)
+PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIFunctionFn *ifunc, PetscCtx ctx)
 {
   TS_RHSSplitLink isplit;
   DM              dmc;
@@ -213,7 +213,7 @@ PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIF
 
 .seealso: [](ch_ts), `TS`, `TSRHSSplitSetIFunction`, `TSIJacobianFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEXSetFastSlowSplit()`
 @*/
-PetscErrorCode TSRHSSplitSetIJacobian(TS ts, const char splitname[], Mat Amat, Mat Pmat, TSIJacobianFn *ijac, void *ctx)
+PetscErrorCode TSRHSSplitSetIJacobian(TS ts, const char splitname[], Mat Amat, Mat Pmat, TSIJacobianFn *ijac, PetscCtx ctx)
 {
   TS_RHSSplitLink isplit;
   DM              dmc;

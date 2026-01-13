@@ -10972,8 +10972,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   DMPlexMonitorThroughput - Report the cell throughput of FE integration
 
   Input Parameters:
-+ dm    - The `DM`
-- dummy - unused argument
++ dm     - The `DM`
+- unused - unused argument
 
   Options Database Key:
 . -dm_plex_monitor_throughput - Activate the monitor
@@ -10982,7 +10982,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
+PetscErrorCode DMPlexMonitorThroughput(DM dm, void *unused)
 {
   PetscLogHandler default_handler;
 

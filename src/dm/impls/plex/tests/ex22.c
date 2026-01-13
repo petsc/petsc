@@ -97,7 +97,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt i;
 
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
             PetscFE    fe;
             Vec        localCoords;
             PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {identityEmbedding};
-            void *ctxs[1]                                                                                       = {NULL};
+            PetscCtx ctxs[1]                                                                                    = {NULL};
 
             PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, dim, isSimplex ? PETSC_TRUE : PETSC_FALSE, isSimplex ? NULL : "tensor_", PETSC_DEFAULT, &fe));
             PetscCall(PetscFEGetBasisSpace(fe, &sp));

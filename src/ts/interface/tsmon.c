@@ -85,7 +85,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
 
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
-    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscCtx))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -121,7 +121,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
           `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`,  `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, void *ctx), void *mctx, PetscCtxDestroyFn *mdestroy)
+PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, PetscCtx ctx), PetscCtx mctx, PetscCtxDestroyFn *mdestroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -435,7 +435,7 @@ PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm comm, const char host[], const char
 
 .seealso: [](ch_ts), `TS`, `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGCtxDestroy()`
 @*/
-PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx)
+PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscCtx monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
   PetscReal      x   = ptime, y;
@@ -477,7 +477,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
 PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {
   PetscFunctionBegin;
-  if ((*ctx)->transformdestroy) PetscCall(((*ctx)->transformdestroy)((void **)&(*ctx)->transformctx));
+  if ((*ctx)->transformdestroy) PetscCall(((*ctx)->transformdestroy)(&(*ctx)->transformctx));
   PetscCall(PetscDrawLGDestroy(&(*ctx)->lg));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->names));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->displaynames));
@@ -561,7 +561,7 @@ PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 . step  - current time-step
 . ptime - current time
 . u     - the solution at the current time
-- dummy - either a viewer or `NULL`
+- ctx   - either a viewer or `NULL`
 
   Options Database Keys:
 + -ts_monitor_draw_solution         - draw the solution at each time-step
@@ -578,9 +578,9 @@ PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawCtxCreate()`, `TSMonitorDrawCtxDestroy()`
 @*/
-PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy)
+PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx ctx)
 {
-  TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
+  TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)ctx;
   PetscDraw        draw;
 
   PetscFunctionBegin;
@@ -625,7 +625,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 . step  - current time-step
 . ptime - current time
 . u     - the solution at the current time
-- dummy - either a viewer or `NULL`
+- ctx   - either a viewer or `NULL`
 
   Level: intermediate
 
@@ -635,9 +635,9 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy)
+PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx ctx)
 {
-  TSMonitorDrawCtx   ictx = (TSMonitorDrawCtx)dummy;
+  TSMonitorDrawCtx   ictx = (TSMonitorDrawCtx)ctx;
   PetscDraw          draw;
   PetscDrawAxis      axis;
   PetscInt           n;
@@ -758,7 +758,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
 . step  - current time-step
 . ptime - current time
 . u     - solution at current time
-- dummy - either a viewer or `NULL`
+- Ctx   - either a viewer or `NULL`
 
   Options Database Key:
 . -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -771,9 +771,9 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy)
+PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx Ctx)
 {
-  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
+  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)Ctx;
   PetscViewer      viewer = ctx->viewer;
   Vec              work;
 
@@ -797,7 +797,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
 . step  - current time-step
 . ptime - current time
 . u     - solution at current time
-- dummy - either a viewer or `NULL`
+- Ctx   - either a viewer or `NULL`
 
   Options Database Key:
 . -ts_monitor_draw_error - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -810,9 +810,9 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy)
+PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx Ctx)
 {
-  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
+  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)Ctx;
   PetscViewer      viewer = ctx->viewer;
   Vec              work;
 
@@ -1276,7 +1276,7 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
 
 .seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGCtxSetTransform()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscCtxDestroyFn *destroy, void *tctx)
+PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(PetscCtx, Vec, Vec *), PetscCtxDestroyFn *destroy, PetscCtx tctx)
 {
   PetscInt i;
 
@@ -1302,7 +1302,7 @@ PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGSetTransform()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscCtxDestroyFn *destroy, void *tctx)
+PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*transform)(PetscCtx, Vec, Vec *), PetscCtxDestroyFn *destroy, PetscCtx tctx)
 {
   PetscFunctionBegin;
   ctx->transform        = transform;
@@ -1322,7 +1322,7 @@ PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*t
 . step  - current time-step
 . ptime - current time
 . u     - current solution
-- dummy - `TSMonitorLGCtx` object created with `TSMonitorLGCtxCreate()`
+- Ctx   - `TSMonitorLGCtx` object created with `TSMonitorLGCtxCreate()`
 
   Options Database Key:
 . -ts_monitor_lg_error - create a graphical monitor of error history
@@ -1339,9 +1339,9 @@ PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*t
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dummy)
+PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx Ctx)
 {
-  TSMonitorLGCtx     ctx = (TSMonitorLGCtx)dummy;
+  TSMonitorLGCtx     ctx = (TSMonitorLGCtx)Ctx;
   const PetscScalar *yy;
   Vec                y;
 
@@ -1405,7 +1405,7 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, vo
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `DMSWARM`, `TSMonitorSPCtxCreate()`
 @*/
-PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx dctx)
 {
   TSMonitorSPCtx     ctx = (TSMonitorSPCtx)dctx;
   PetscDraw          draw;
@@ -1498,7 +1498,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 
 .seealso: `TSMonitorSet()`
 @*/
-PetscErrorCode TSMonitorHGSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+PetscErrorCode TSMonitorHGSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx dctx)
 {
   TSMonitorHGCtx     ctx = (TSMonitorHGCtx)dctx;
   PetscDraw          draw;
@@ -1605,7 +1605,7 @@ PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pets
     if (flg) PetscCall(VecView(y, vf->viewer));
     PetscCall(VecDestroy(&y));
   } else {
-    PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+    PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
     void    **ctxs;
     Vec       v;
     PetscReal ferrors[1];
@@ -1635,7 +1635,7 @@ PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, void *monctx)
+PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, PetscCtx monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
   PetscReal      x   = ptime, y;
@@ -1661,7 +1661,7 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, void *monctx)
+PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, PetscCtx monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
   PetscReal      x   = ptime, y;
@@ -1734,7 +1734,7 @@ PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx)
 
 .seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxCreate()`
 @*/
-PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx dctx)
 {
   TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)dctx;
 

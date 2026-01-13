@@ -222,7 +222,7 @@ PetscScalar exact(PetscScalar z, PetscReal t)
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, PetscCtx ctx)
 {
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     i, m = appctx->m;
@@ -538,7 +538,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
       to the problem ydot=f(y,t)=inv(A)*(By+g)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, PetscCtx ctx)
 {
   AppCtx            *obj = (AppCtx *)ctx;
   PetscScalar        soln[num_z];

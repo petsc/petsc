@@ -972,7 +972,7 @@ PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagGetData(PetscBag bag, PeCtx data)
+PetscErrorCode PetscBagGetData(PetscBag bag, PetscCtxRt data)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);

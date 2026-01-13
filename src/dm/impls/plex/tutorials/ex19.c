@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     if (!modelObj) PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "EGADSlite Model", (PetscObject *)&modelObj));
 
     // Get attached EGADS model (pointer)
-    PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+    PetscCall(PetscContainerGetPointer(modelObj, &model));
 
     // Look to see if DM has Container for Geometry Control Point Data
     //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Control Point Hash Table", (PetscObject *)&cpHashTableObj));
@@ -170,16 +170,16 @@ int main(int argc, char *argv[])
     //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Maximum Number Control Point Equivalency", (PetscObject *)&maxNumRelateObj));
 
     // Get attached EGADS model Control Point and Weights Hash Tables and Data Arrays (pointer)
-    //PetscCall(PetscContainerGetPointer(cpHashTableObj, (void **)&cpHashTable));
-    //PetscCall(PetscContainerGetPointer(cpCoordDataObj, (void **)&cpCoordData));
-    //PetscCall(PetscContainerGetPointer(cpCoordDataLengthObj, (void **)&cpCoordDataLengthPtr));
-    //PetscCall(PetscContainerGetPointer(wHashTableObj, (void **)&wHashTable));
-    //PetscCall(PetscContainerGetPointer(wDataObj, (void **)&wData));
-    //PetscCall(PetscContainerGetPointer(wDataLengthObj, (void **)&wDataLengthPtr));
-    ////PetscCall(PetscContainerGetPointer(gradSACPObj, (void **)&gradSACP));
-    ////PetscCall(PetscContainerGetPointer(gradSAWObj, (void **)&gradSAW));
-    //PetscCall(PetscContainerGetPointer(cpEquivObj, (void **)&cpEquiv));
-    //PetscCall(PetscContainerGetPointer(maxNumRelateObj, (void **)&maxNumRelatePtr));
+    //PetscCall(PetscContainerGetPointer(cpHashTableObj, &cpHashTable));
+    //PetscCall(PetscContainerGetPointer(cpCoordDataObj, &cpCoordData));
+    //PetscCall(PetscContainerGetPointer(cpCoordDataLengthObj, &cpCoordDataLengthPtr));
+    //PetscCall(PetscContainerGetPointer(wHashTableObj, &wHashTable));
+    //PetscCall(PetscContainerGetPointer(wDataObj, &wData));
+    //PetscCall(PetscContainerGetPointer(wDataLengthObj, &wDataLengthPtr));
+    ////PetscCall(PetscContainerGetPointer(gradSACPObj, &gradSACP));
+    ////PetscCall(PetscContainerGetPointer(gradSAWObj, &gradSAW));
+    //PetscCall(PetscContainerGetPointer(cpEquivObj, &cpEquiv));
+    //PetscCall(PetscContainerGetPointer(maxNumRelateObj, &maxNumRelatePtr));
 
     // Trying out new Function
     PetscInt     cpArraySize, wArraySize;
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 
     // Get attached EGADS model (pointer)
     PetscGeom newmodel;
-    PetscCall(PetscContainerGetPointer(modelObj, (void **)&newmodel));
+    PetscCall(PetscContainerGetPointer(modelObj, &newmodel));
 
     // Get the number of bodies and body objects in the model
     PetscCall(DMPlexGetGeomModelBodies(dmNozzle, &bodies, &Nb));

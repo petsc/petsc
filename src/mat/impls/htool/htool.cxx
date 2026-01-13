@@ -264,7 +264,7 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUseRecompression_C", nullptr));
   PetscCall(PetscObjectQuery((PetscObject)A, "KernelTranspose", (PetscObject *)&container));
   if (container) { /* created in MatTranspose_Htool() */
-    PetscCall(PetscContainerGetPointer(container, (void **)&kernelt));
+    PetscCall(PetscContainerGetPointer(container, &kernelt));
     PetscCall(MatDestroy(&kernelt->A));
     PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", nullptr));
   }
@@ -801,7 +801,7 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode GenEntriesTranspose(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr, void *ctx)
+static PetscErrorCode GenEntriesTranspose(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr, PetscCtx ctx)
 {
   MatHtoolKernelTranspose *generator = (MatHtoolKernelTranspose *)ctx;
   PetscScalar             *tmp;
@@ -843,7 +843,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
     C = *B;
     PetscCall(PetscObjectQuery((PetscObject)C, "KernelTranspose", (PetscObject *)&container));
     PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatTranspose() with MAT_INITIAL_MATRIX first");
-    PetscCall(PetscContainerGetPointer(container, (void **)&kernelt));
+    PetscCall(PetscContainerGetPointer(container, &kernelt));
   }
   PetscCall(MatShellGetContext(C, &c));
   c->dim = a->dim;
@@ -888,7 +888,7 @@ static PetscErrorCode MatDestroy_Factor(Mat F)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)F, "HMatrix", (PetscObject *)&container));
   if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **)&A));
+    PetscCall(PetscContainerGetPointer(container, &A));
     delete A;
     PetscCall(PetscObjectCompose((PetscObject)F, "HMatrix", nullptr));
   }
@@ -913,7 +913,7 @@ static inline PetscErrorCode MatSolve_Private(Mat A, htool::Matrix<PetscScalar> 
   PetscCheck(A->factortype == MAT_FACTOR_LU || A->factortype == MAT_FACTOR_CHOLESKY, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_UNKNOWN_TYPE, "Only MAT_LU_FACTOR and MAT_CHOLESKY_FACTOR are supported");
   PetscCall(PetscObjectQuery((PetscObject)A, "HMatrix", (PetscObject *)&container));
   PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call Mat%sFactorNumeric() before Mat%sSolve%s()", A->factortype == MAT_FACTOR_LU ? "LU" : "Cholesky", X.nb_cols() == 1 ? "" : "Mat", trans == 'N' ? "" : "Transpose");
-  PetscCall(PetscContainerGetPointer(container, (void **)&B));
+  PetscCall(PetscContainerGetPointer(container, &B));
   if (A->factortype == MAT_FACTOR_LU) htool::lu_solve(trans, *B, X);
   else htool::cholesky_solve('L', *B, X);
   PetscFunctionReturn(PETSC_SUCCESS);

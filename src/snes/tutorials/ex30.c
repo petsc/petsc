@@ -1226,7 +1226,7 @@ static inline PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
   =====================================================================*/
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, PetscCtx ctx)
 /* ------------------------------------------------------------------- */
 {
   AppCtx    *user  = (AppCtx *)ctx;
@@ -1264,7 +1264,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
 
 /* ------------------------------------------------------------------- */
 #include <signal.h>
-PetscErrorCode InteractiveHandler(int signum, void *ctx)
+PetscErrorCode InteractiveHandler(int signum, PetscCtx ctx)
 /* ------------------------------------------------------------------- */
 {
   AppCtx    *user  = (AppCtx *)ctx;

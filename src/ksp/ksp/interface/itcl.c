@@ -211,7 +211,7 @@ PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, PetscCtx ctx, PetscViewerAndFormat **vf)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
@@ -240,7 +240,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
-PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char name[], void *ctx)
+PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char name[], PetscCtx ctx)
 {
   PetscErrorCode (*mfunc)(KSP, PetscInt, PetscReal, void *);
   PetscErrorCode (*cfunc)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
@@ -607,7 +607,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   */
   PetscCall(PetscOptionsBool("-ksp_monitor_saws", "Publish KSP progress using SAWs", "KSPMonitorSet", PETSC_FALSE, &flg, &set));
   if (set && flg) {
-    void *ctx;
+    PetscCtx ctx;
     PetscCall(KSPMonitorSAWsCreate(ksp, &ctx));
     PetscCall(KSPMonitorSet(ksp, KSPMonitorSAWs, ctx, KSPMonitorSAWsDestroy));
     PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));

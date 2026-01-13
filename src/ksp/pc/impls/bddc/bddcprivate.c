@@ -1813,7 +1813,7 @@ PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC pc, IS primalv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode func_coords_private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *out, void *ctx)
+static PetscErrorCode func_coords_private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *out, PetscCtx ctx)
 {
   PetscInt f, *comp = (PetscInt *)ctx;
 
@@ -1888,7 +1888,7 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
         PetscCall(PetscObjectQuery((PetscObject)pc->pmat, "_convert_nest_lfields", (PetscObject *)&c));
         if (c) {
           MatISLocalFields lf;
-          PetscCall(PetscContainerGetPointer(c, (void **)&lf));
+          PetscCall(PetscContainerGetPointer(c, &lf));
           PetscCall(PCBDDCSetDofsSplittingLocal(pc, lf->nr, lf->rf));
         } else { /* fallback, create the default fields if bs > 1 */
           PetscInt i, n = matis->A->rmap->n;

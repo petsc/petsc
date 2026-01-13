@@ -95,7 +95,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   Wash               wash = (Wash)ctx;
   DM                 networkdm;

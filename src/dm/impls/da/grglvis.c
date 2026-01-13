@@ -7,10 +7,10 @@ typedef struct {
   PetscBool ll;
 } DMDAGhostedGLVisViewerCtx;
 
-static PetscErrorCode DMDAGhostedDestroyGLVisViewerCtx_Private(void **vctx)
+static PetscErrorCode DMDAGhostedDestroyGLVisViewerCtx_Private(PetscCtxRt vctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*vctx));
+  PetscCall(PetscFree(*(void **)vctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -18,7 +18,7 @@ typedef struct {
   Vec xlocal;
 } DMDAFieldGLVisViewerCtx;
 
-static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(void **vctx)
+static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(PetscCtxRt vctx)
 {
   DMDAFieldGLVisViewerCtx *ctx = *(DMDAFieldGLVisViewerCtx **)vctx;
 
@@ -359,7 +359,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCheck(glvis_container, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing GLVis container");
   {
     PetscViewerGLVisInfo glvis_info;
-    PetscCall(PetscContainerGetPointer(glvis_container, (void **)&glvis_info));
+    PetscCall(PetscContainerGetPointer(glvis_container, &glvis_info));
     enabled = glvis_info->enabled;
     fmt     = glvis_info->fmt;
   }

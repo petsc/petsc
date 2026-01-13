@@ -49,7 +49,7 @@ typedef struct {
   /* Problem definition */
   BCType    bcType;
   CoeffType variableCoefficient;
-  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx);
   PetscBool fieldBC;
   void (**exactFields)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
   PetscBool bdIntegral; /* Compute the integral of the solution on the boundary */
@@ -63,13 +63,13 @@ typedef struct {
   PetscBool checkksp; /* Whether to check the KSPSolve for runType == RUN_TEST */
 } AppCtx;
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[0];
   return PETSC_SUCCESS;
@@ -100,7 +100,7 @@ static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
     \int^1_0 x^2 dx + \int^1_0 (1 + y^2) dy + \int^1_0 (x^2 + 1) dx + \int^1_0 y^2 dy = 1/3 + 4/3 + 4/3 + 1/3 = 3 1/3
 */
-static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = x[0] * x[0] + x[1] * x[1];
   return PETSC_SUCCESS;
@@ -111,7 +111,7 @@ static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
   uexact[0] = a[0];
 }
 
-static PetscErrorCode ball_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode ball_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal alpha   = 500.;
   const PetscReal radius2 = PetscSqr(0.15);
@@ -122,7 +122,7 @@ static PetscErrorCode ball_u_2d(PetscInt dim, PetscReal time, const PetscReal x[
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal alpha = 50 * 4;
   const PetscReal xy    = (x[0] - 0.5) * (x[1] - 0.5);
@@ -191,7 +191,7 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 
     -\Delta u + f = 4 pi^2 sin(2 pi x) - 4 pi^2 sin(2 pi x) = 0
 */
-static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = PetscSinReal(2.0 * PETSC_PI * x[0]);
   return PETSC_SUCCESS;
@@ -212,7 +212,7 @@ static void f0_xtrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
 
     -\Delta u + f = 4 pi^2 sin(2 pi x) sin(2 pi y) + 4 pi^2 sin(2 pi x) sin(2 pi y) - 8 pi^2 sin(2 pi x) = 0
 */
-static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = PetscSinReal(2.0 * PETSC_PI * x[0]) * PetscSinReal(2.0 * PETSC_PI * x[1]);
   return PETSC_SUCCESS;
@@ -234,13 +234,13 @@ static void f0_xytrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = x[0] + x[1];
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode checkerboardCoeff(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode checkerboardCoeff(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt div  = user->div;
@@ -359,13 +359,13 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = 2.0 * (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) / 3.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ball_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode ball_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal alpha   = 500.;
   const PetscReal radius2 = PetscSqr(0.15);
@@ -381,7 +381,7 @@ static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
   uexact[0] = a[0];
 }
 
-static PetscErrorCode cross_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode cross_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal alpha = 50 * 4;
   const PetscReal xyz   = (x[0] - 0.5) * (x[1] - 0.5) * (x[2] - 0.5);
@@ -662,9 +662,9 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 
 static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {nu_2d};
-  void *ctx[1];
-  Vec   nu;
+  PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx) = {nu_2d};
+  PetscCtx ctx[1];
+  Vec      nu;
 
   PetscFunctionBegin;
   ctx[0] = user;
@@ -679,7 +679,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 
 static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
+  PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx);
   Vec      uexact;
   PetscInt dim;
 
@@ -843,7 +843,7 @@ int main(int argc, char **argv)
     PetscCall(DMRestoreLocalVector(dm, &lv));
   }
   if (user.runType == RUN_FULL || user.runType == RUN_EXACT) {
-    PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {zero};
+    PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx) = {zero};
 
     if (user.nonzInit) initialGuess[0] = ecks;
     if (user.runType == RUN_FULL) PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));

@@ -270,7 +270,7 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, PetscCtx ctx)
 {
   const PetscScalar *u;
   PetscSection       coordSection;
@@ -348,7 +348,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -379,7 +379,7 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -411,7 +411,7 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;

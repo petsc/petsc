@@ -743,7 +743,7 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   DM                 networkdm;
   Vec                localX, localF;

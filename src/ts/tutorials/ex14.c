@@ -891,7 +891,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   THI             thi = (THI)ctx;
   DM              pack, da3, da2;
@@ -1268,7 +1268,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   THI             thi = (THI)ctx;
   DM              pack, da3, da2;
@@ -1470,7 +1470,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, PetscCtx ctx)
 {
   THI  thi = (THI)ctx;
   DM   pack;

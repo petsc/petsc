@@ -1461,7 +1461,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkAddComponent()`, `DMNetworkGetNumComponents()`
 @*/
-PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PeOp PetscInt *compkey, PeCtx component, PeOp PetscInt *nvar)
+PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PeOp PetscInt *compkey, PetscCtxRt component, PeOp PetscInt *nvar)
 {
   DM_Network              *network = (DM_Network *)dm->data;
   PetscInt                 offset  = 0;

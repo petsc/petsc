@@ -25,7 +25,7 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 . pfield    - The field number for pressure
 . nullspace - The pressure nullspace
 . u         - The solution vector
-- ctx       - An optional user context
+- ctx       - An optional application context
 
   Output Parameter:
 . u         - The solution with a continuum pressure integral of zero
@@ -37,7 +37,7 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 
 .seealso: [](ch_snes), `SNESConvergedCorrectPressure()`
 */
-static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pfield, MatNullSpace nullspace, Vec u, void *ctx)
+static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pfield, MatNullSpace nullspace, Vec u, PetscCtx ctx)
 {
   DM          dm;
   PetscDS     ds;
@@ -82,7 +82,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
 . xnorm - 2-norm of current iterate
 . gnorm - 2-norm of current step
 . f     - 2-norm of function at current iterate
-- ctx   - Optional user context
+- ctx   - Optional application context
 
   Output Parameter:
 . reason - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FUNCTION_NANORINF`
@@ -104,7 +104,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
 
 .seealso: [](ch_snes), `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`
 @*/
-PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, PetscCtx ctx)
 {
   PetscBool monitorIntegral = PETSC_FALSE;
 
@@ -231,9 +231,9 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   DMPlexSNESComputeObjectiveFEM - Sums the local objectives from the local input X using pointwise functions specified by the user
 
   Input Parameters:
-+ dm   - The mesh
-. X    - Local solution
-- user - The user context
++ dm  - The mesh
+. X   - Local solution
+- ctx - The application context
 
   Output Parameter:
 . obj - Local objective value
@@ -242,7 +242,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 
 .seealso: `DM`, `DMPlexSNESComputeResidualFEM()`
 @*/
-PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, void *user)
+PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, PetscCtx ctx)
 {
   PetscInt     Nf, cellHeight, cStart, cEnd;
   PetscScalar *cintegral;
@@ -253,7 +253,7 @@ PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, void 
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   PetscCall(PetscCalloc1((cEnd - cStart) * Nf, &cintegral));
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
-  PetscCall(DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user));
+  PetscCall(DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, ctx));
   /* Sum up values */
   *obj = 0;
   for (PetscInt c = cStart; c < cEnd; ++c)
@@ -267,9 +267,9 @@ PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, void 
   DMPlexSNESComputeResidualFEM - Sums the local residual into vector `F` from the local input `X` using pointwise functions specified by the user
 
   Input Parameters:
-+ dm   - The mesh
-. X    - Local solution
-- user - The user context
++ dm  - The mesh
+. X   - Local solution
+- ctx - The application context
 
   Output Parameter:
 . F - Local output vector
@@ -281,7 +281,7 @@ PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, void 
 
 .seealso: [](ch_snes), `DM`, `DMPLEX`, `DMSNESComputeJacobianAction()`
 @*/
-PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
+PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -311,7 +311,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, ctx));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -323,9 +323,9 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   DMPlexSNESComputeResidualDS - Sums the local residual into vector `F` from the local input `X` using all pointwise functions with unique keys in the `PetscDS`
 
   Input Parameters:
-+ dm   - The mesh
-. X    - Local solution
-- user - The user context
++ dm  - The mesh
+. X   - Local solution
+- ctx - The application context
 
   Output Parameter:
 . F - Local output vector
@@ -337,7 +337,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
 .seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
 @*/
-PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
+PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -392,7 +392,7 @@ PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
           PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
           PetscCall(ISDestroy(&pointIS));
         }
-        PetscCall(DMPlexComputeResidualByKey(plex, reskeys[k], cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
+        PetscCall(DMPlexComputeResidualByKey(plex, reskeys[k], cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, ctx));
         PetscCall(ISDestroy(&cellIS));
       }
       PetscCall(PetscFree(reskeys));
@@ -407,8 +407,8 @@ PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
   DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input `X`
 
   Input Parameters:
-+ dm   - The mesh
-- user - The user context
++ dm  - The mesh
+- ctx - The application context
 
   Output Parameter:
 . X - Local solution
@@ -417,7 +417,7 @@ PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
 
 .seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
 @*/
-PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
+PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, PetscCtx ctx)
 {
   DM plex;
 
@@ -432,10 +432,10 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
   DMSNESComputeJacobianAction - Compute the action of the Jacobian J(`X`) on `Y`
 
   Input Parameters:
-+ dm   - The `DM`
-. X    - Local solution vector
-. Y    - Local input vector
-- user - The user context
++ dm  - The `DM`
+. X   - Local solution vector
+. Y   - Local input vector
+- ctx - The application context
 
   Output Parameter:
 . F - local output vector
@@ -452,7 +452,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 
 .seealso: [](ch_snes), `DM`, `DMSNESCreateJacobianMF()`, `DMPlexSNESComputeResidualFEM()`
 @*/
-PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *user)
+PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -507,7 +507,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
           PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
           PetscCall(ISDestroy(&pointIS));
         }
-        PetscCall(DMPlexComputeJacobianActionByKey(plex, jackeys[k], cellIS, 0.0, 0.0, X, NULL, Y, F, user));
+        PetscCall(DMPlexComputeJacobianActionByKey(plex, jackeys[k], cellIS, 0.0, 0.0, X, NULL, Y, F, ctx));
         PetscCall(ISDestroy(&cellIS));
       }
       PetscCall(PetscFree(jackeys));
@@ -522,9 +522,9 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
   DMPlexSNESComputeJacobianFEM - Form the local portion of the Jacobian matrix `Jac` at the local solution `X` using pointwise functions specified by the user.
 
   Input Parameters:
-+ dm   - The `DM`
-. X    - Local input vector
-- user - The user context
++ dm  - The `DM`
+. X   - Local input vector
+- ctx - The application context
 
   Output Parameters:
 + Jac  - Jacobian matrix
@@ -538,7 +538,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
 
 .seealso: [](ch_snes), `DMPLEX`, `Mat`
 @*/
-PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void *user)
+PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, PetscCtx ctx)
 {
   DM        plex;
   IS        allcellIS;
@@ -575,7 +575,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, voi
       if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
       PetscCall(MatZeroEntries(JacP));
     }
-    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, user));
+    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, ctx));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -584,9 +584,9 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, voi
 }
 
 struct _DMSNESJacobianMFCtx {
-  DM    dm;
-  Vec   X;
-  void *ctx;
+  DM       dm;
+  Vec      X;
+  PetscCtx ctx;
 };
 
 static PetscErrorCode DMSNESJacobianMF_Destroy_Private(Mat A)
@@ -618,9 +618,9 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
   Collective
 
   Input Parameters:
-+ dm   - The `DM`
-. X    - The evaluation point for the Jacobian
-- user - A user context, or `NULL`
++ dm  - The `DM`
+. X   - The evaluation point for the Jacobian
+- ctx - An application context, or `NULL`
 
   Output Parameter:
 . J - The `Mat`
@@ -634,9 +634,9 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
 
 .seealso: [](ch_snes), `DM`, `SNES`, `DMSNESComputeJacobianAction()`
 @*/
-PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
+PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, PetscCtx ctx, Mat *J)
 {
-  struct _DMSNESJacobianMFCtx *ctx;
+  struct _DMSNESJacobianMFCtx *ictx;
   PetscInt                     n, N;
 
   PetscFunctionBegin;
@@ -647,17 +647,17 @@ PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
   PetscCall(MatSetSizes(*J, n, n, N, N));
   PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(PetscObjectReference((PetscObject)X));
-  PetscCall(PetscMalloc1(1, &ctx));
-  ctx->dm  = dm;
-  ctx->X   = X;
-  ctx->ctx = user;
-  PetscCall(MatShellSetContext(*J, ctx));
+  PetscCall(PetscMalloc1(1, &ictx));
+  ictx->dm  = dm;
+  ictx->X   = X;
+  ictx->ctx = ctx;
+  PetscCall(MatShellSetContext(*J, ictx));
   PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (PetscErrorCodeFn *)DMSNESJacobianMF_Destroy_Private));
   PetscCall(MatShellSetOperation(*J, MATOP_MULT, (PetscErrorCodeFn *)DMSNESJacobianMF_Mult_Private));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx)
+static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, PetscCtx ctx)
 {
   SNES   snes;
   Mat    pJ;
@@ -687,7 +687,7 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
   PetscCall(DMGetDMSNES(ovldm, &sdm));
   PetscCall(VecLockReadPush(X));
   {
-    void *ctx;
+    PetscCtx ctx;
     PetscErrorCode (*J)(SNES, Vec, Mat, Mat, void *);
     PetscCall(DMSNESGetJacobian(ovldm, &J, &ctx));
     PetscCallBack("SNES callback Jacobian", (*J)(snes, X, pJ, pJ, ctx));
@@ -709,13 +709,13 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
   Input Parameters:
 + dm      - The `DM` object
 . use_obj - Use the objective function callback
-- ctx     - The user context that will be passed to pointwise evaluation routines
+- ctx     - The application context that will be passed to pointwise evaluation routines
 
   Level: developer
 
 .seealso: [](ch_snes),`DMPLEX`, `SNES`, `PetscDSAddBoundary()`, `PetscDSSetObjective()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`
 @*/
-PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, void *ctx)
+PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, PetscCtx ctx)
 {
   PetscBool useCeed;
 
@@ -760,7 +760,7 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, void *ctx)
 @*/
 PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, PetscReal tol, PetscReal error[])
 {
-  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, PetscCtx ctx);
   void     **ectxs;
   PetscReal *err;
   MPI_Comm   comm;

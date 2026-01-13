@@ -327,7 +327,7 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, PetscCtx ctx)
 {
   AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscReal en2, en2s, enmax;
@@ -404,7 +404,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
    Output Parameter:
    global_out - vector containing the newly evaluated function
 */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, PetscCtx ctx)
 {
   AppCtx            *appctx    = (AppCtx *)ctx;     /* user-defined application context */
   DM                 da        = appctx->da;        /* distributed array */
@@ -517,7 +517,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, vo
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat BB, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat BB, PetscCtx ctx)
 {
   AppCtx            *appctx   = (AppCtx *)ctx;   /* user-defined application context */
   Vec                local_in = appctx->u_local; /* local ghosted input vector */

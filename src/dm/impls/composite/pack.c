@@ -1291,7 +1291,7 @@ typedef struct {
   Vec         *vecs;
 } GLVisViewerCtx;
 
-static PetscErrorCode DestroyGLVisViewerCtx_Private(void **vctx)
+static PetscErrorCode DestroyGLVisViewerCtx_Private(PetscCtxRt vctx)
 {
   GLVisViewerCtx *ctx = *(GLVisViewerCtx **)vctx;
   PetscInt        i, n;

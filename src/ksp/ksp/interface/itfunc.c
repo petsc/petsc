@@ -509,9 +509,8 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   Input Parameters:
 + ksp               - the `KSP` context
 . f                 - the `ksp` converged reason view function, see `KSPConvergedReasonViewFn`
-. vctx              - [optional] user-defined context for private data for the
-                      `KSPConvergedReason` view routine (use `NULL` if no context is desired)
-- reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
+. ctx               - [optional] context for private data for the `KSPConvergedReason` view routine (use `NULL` if context is not needed)
+- reasonviewdestroy - [optional] routine that frees `ctx` (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Options Database Keys:
 + -ksp_converged_reason             - sets a default `KSPConvergedReasonView()`
@@ -530,20 +529,20 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewFn`, `KSPConvergedReasonViewCancel()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, KSPConvergedReasonViewFn *f, void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
+PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, KSPConvergedReasonViewFn *f, PetscCtx ctx, PetscCtxDestroyFn *reasonviewdestroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   for (PetscInt i = 0; i < ksp->numberreasonviews; i++) {
     PetscBool identical;
 
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)f, vctx, reasonviewdestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)ksp->reasonview[i], ksp->reasonviewcontext[i], ksp->reasonviewdestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)f, ctx, reasonviewdestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)ksp->reasonview[i], ksp->reasonviewcontext[i], ksp->reasonviewdestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ksp->numberreasonviews < MAXKSPREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many KSP reasonview set");
   ksp->reasonview[ksp->numberreasonviews]          = f;
   ksp->reasonviewdestroy[ksp->numberreasonviews]   = reasonviewdestroy;
-  ksp->reasonviewcontext[ksp->numberreasonviews++] = vctx;
+  ksp->reasonviewcontext[ksp->numberreasonviews++] = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -770,7 +769,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt n, void *ctx[])
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt n, PetscCtx ctx[])
 {
   PetscFunctionBegin;
   for (PetscInt i = 0; i < n; ++i) {
@@ -2346,7 +2345,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 
 .seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorRegister()`, `KSPMonitorCancel()`, `KSP`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPMonitorSet(KSP ksp, KSPMonitorFn *monitor, void *ctx, PetscCtxDestroyFn *monitordestroy)
+PetscErrorCode KSPMonitorSet(KSP ksp, KSPMonitorFn *monitor, PetscCtx ctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2404,9 +2403,15 @@ PetscErrorCode KSPMonitorCancel(KSP ksp)
 
   Level: intermediate
 
+  Fortran Notes:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSP`
 @*/
-PetscErrorCode KSPGetMonitorContext(KSP ksp, void *ctx)
+PetscErrorCode KSPGetMonitorContext(KSP ksp, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2686,7 +2691,7 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergenceTestFn`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPGetConvergenceTest()`, `KSPGetAndClearConvergenceTest()`
 @*/
-PetscErrorCode KSPSetConvergenceTest(KSP ksp, KSPConvergenceTestFn *converge, void *ctx, PetscCtxDestroyFn *destroy)
+PetscErrorCode KSPSetConvergenceTest(KSP ksp, KSPConvergenceTestFn *converge, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2714,13 +2719,13 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, KSPConvergenceTestFn *converge, vo
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPSetConvergenceTest()`, `KSPGetAndClearConvergenceTest()`
 @*/
-PetscErrorCode KSPGetConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, void **ctx, PetscCtxDestroyFn **destroy)
+PetscErrorCode KSPGetConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, PetscCtxRt ctx, PetscCtxDestroyFn **destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (converge) *converge = ksp->converged;
   if (destroy) *destroy = ksp->convergeddestroy;
-  if (ctx) *ctx = ksp->cnvP;
+  if (ctx) *(void **)ctx = ksp->cnvP;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2747,13 +2752,13 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, v
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPSetConvergenceTest()`, `KSPGetConvergenceTest()`
 @*/
-PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, void **ctx, PetscCtxDestroyFn **destroy)
+PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, PetscCtxRt ctx, PetscCtxDestroyFn **destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *converge             = ksp->converged;
   *destroy              = ksp->convergeddestroy;
-  *ctx                  = ksp->cnvP;
+  *(void **)ctx         = ksp->cnvP;
   ksp->converged        = NULL;
   ksp->cnvP             = NULL;
   ksp->convergeddestroy = NULL;
@@ -2773,9 +2778,15 @@ PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, KSPConvergenceTestFn **con
 
   Level: advanced
 
+  Fortran Note:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSPGetConvergenceTest()`
 @*/
-PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
+PetscErrorCode KSPGetConvergenceContext(KSP ksp, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -3016,7 +3027,7 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void *ctx)
+PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, PetscCtx ctx)
 {
   DM dm;
 
@@ -3045,7 +3056,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void
 
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`, `KSPComputeRHSFn`
 @*/
-PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, void *ctx)
+PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, PetscCtx ctx)
 {
   DM dm;
 
@@ -3075,7 +3086,7 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, void *ctx)
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`,
           `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func, void *ctx)
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func, PetscCtx ctx)
 {
   DM dm;
 

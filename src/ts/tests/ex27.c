@@ -328,7 +328,7 @@ static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   PetscInt           dbg  = 0;

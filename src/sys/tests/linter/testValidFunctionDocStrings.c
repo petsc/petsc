@@ -512,7 +512,7 @@ PetscErrorCode testInvalidInOutParams(int *foo)
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
 @*/
-PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, PetscCtx ctx), PetscCtx ctx)
 {
   return PETSC_SUCCESS;
 }
@@ -542,7 +542,7 @@ PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*f
 
 .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
 @*/
-PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)
+PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, PetscCtx ctx), PetscCtx ctx)
 {
   return PETSC_SUCCESS;
 }

@@ -76,8 +76,8 @@ is shown below.
 TaoCreate(MPI_Comm comm, Tao *tao);
 TaoSetType(Tao tao, TaoType type);
 TaoSetSolution(Tao tao, Vec x);
-TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*FormFGradient)(Tao, Vec, PetscReal*, Vec, void*), void *user);
-TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*FormHessian)(Tao, Vec, Mat, Mat, void*), void *user);
+TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*FormFGradient)(Tao, Vec, PetscReal*, Vec, PetscCtx), PetscCtx ctx);
+TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*FormHessian)(Tao, Vec, Mat, Mat, PetscCtx), PetscCtx ctx);
 TaoSolve(Tao tao);
 TaoDestroy(Tao tao);
 ```
@@ -243,7 +243,7 @@ object and must follow a strict calling sequence.
 Routines should follow the form
 
 ```
-PetscErrorCode EvaluateObjective(Tao, Vec, PetscReal*, void*);
+PetscErrorCode EvaluateObjective(Tao, Vec, PetscReal*, PetscCtx);
 ```
 
 in order to evaluate an objective function
@@ -258,7 +258,7 @@ This routine, and the application context, should be passed to the
 application object by using the
 
 ```
-TaoSetObjective(Tao, PetscErrorCode(*)(Tao,Vec,PetscReal*,void*), void*);
+TaoSetObjective(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, PetscCtx), PetscCtx);
 ```
 
 routine. The first argument in this routine is the TAO solver object,
@@ -276,7 +276,7 @@ The gradient of the objective function is specified in a similar manner.
 Routines that evaluate the gradient should have the calling sequence
 
 ```
-PetscErrorCode EvaluateGradient(Tao, Vec, Vec, void*);
+PetscErrorCode EvaluateGradient(Tao, Vec, Vec, PetscCtx);
 ```
 
 where the first argument is the TAO solver object, the second argument
@@ -290,7 +290,7 @@ the end of the routine. This routine, and the user-defined pointer, can
 be passed to the application object by using the
 
 ```
-TaoSetGradient(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+TaoSetGradient(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, PetscCtx), PetscCtx);
 ```
 
 routine. In this routine, the first argument is the Tao object, the second
@@ -305,7 +305,7 @@ when both function and gradient information can be computed in the same
 routine. These routines should follow the form
 
 ```
-PetscErrorCode EvaluateFunctionAndGradient(Tao, Vec, PetscReal*, Vec, void*);
+PetscErrorCode EvaluateFunctionAndGradient(Tao, Vec, PetscReal*, Vec, PetscCtx);
 ```
 
 where the first argument is the TAO solver and the second argument
@@ -316,7 +316,7 @@ a pointer to a user-defined context. This context and the name of the
 routine should be set with the call
 
 ```
-TaoSetObjectiveAndGradient(Tao, Vec PetscErrorCode (*)(Tao,Vec,PetscReal*,Vec,void*), void*);
+TaoSetObjectiveAndGradient(Tao, Vec PetscErrorCode (*)(Tao, Vec, PetscReal*, Vec, PetscCtx), PetscCtx);
 ```
 
 where the arguments are the TAO application, the optional vector to be
@@ -337,7 +337,7 @@ Some optimization routines also require a Hessian matrix from the user.
 The routine that evaluates the Hessian should have the form
 
 ```
-PetscErrorCode EvaluateHessian(Tao, Vec, Mat, Mat, void*);
+PetscErrorCode EvaluateHessian(Tao, Vec, Mat, Mat, PetscCtx);
 ```
 
 where the first argument of this routine is a TAO solver object. The
@@ -354,7 +354,7 @@ set the Hessian matrix and linear solver in the routine
 One can set the Hessian evaluation routine by calling the
 
 ```
-TaoSetHessian(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
+TaoSetHessian(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, PetscCtx), PetscCtx);
 ```
 
 routine. The first argument is the TAO Solver object. The second and
@@ -372,13 +372,13 @@ solve considerably and are recommended primarily for checking the
 accuracy of hand-coded gradients and Hessians. These routines are
 
 ```
-TaoDefaultComputeGradient(Tao, Vec, Vec, void*);
+TaoDefaultComputeGradient(Tao, Vec, Vec, PetscCtx);
 ```
 
 and
 
 ```
-TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*,void*);
+TaoDefaultComputeHessian(Tao, Vec, Mat, Mat, PetscCtx);
 ```
 
 respectively. They can be set by using `TaoSetGradient()` and
@@ -392,7 +392,7 @@ finite-difference approximation by setting the Hessian evaluation
 routine to
 
 ```
-TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*, void*);
+TaoDefaultComputeHessianColor(Tao, Vec, Mat, Mat, PetscCtx);
 ```
 
 and using the `MatFDColoring` object as the last (`void *`) argument
@@ -467,7 +467,7 @@ routine for evaluating $c_e(x)$ at a given vector of optimization
 variables,
 
 ```
-PetscErrorCode EvaluateEqualityConstraints(Tao, Vec, Vec, void*);
+PetscErrorCode EvaluateEqualityConstraints(Tao, Vec, Vec, PetscCtx);
 ```
 
 As in the previous call-back routines, the first argument is the TAO solver
@@ -480,7 +480,7 @@ Generally constrained TAO algorithms also require a second user call-back
 function to compute the constraint Jacobian matrix $\nabla_x c_e(x)$,
 
 ```
-PetscErrorCode EvaluateEqualityJacobian(Tao, Vec, Mat, Mat, void*);
+PetscErrorCode EvaluateEqualityJacobian(Tao, Vec, Mat, Mat, PetscCtx);
 ```
 
 where the first and last arguments are the TAO solver object and the application
@@ -494,13 +494,13 @@ These call-back functions are then given to the TAO solver using the
 interface functions
 
 ```
-TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, PetscCtx), PetscCtx);
 ```
 
 and
 
 ```
-TaoSetJacobianEqualityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
+TaoSetJacobianEqualityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, PetscCtx, PetscCtx);
 ```
 
 Inequality constraints are assumed to be formulated as $c_i(x) \geq 0$
@@ -511,7 +511,7 @@ interfaces.
 Some TAO algorithms may adopt an alternative double-sided
 $c_l \leq c_i(x) \leq c_u$ formulation and require the lower and upper
 bounds $c_l$ and $c_u$ to be set using the
-`TaoSetInequalityBounds(Tao,Vec,Vec)` interface. Please refer to the
+`TaoSetInequalityBounds(Tao, Vec, Vec)` interface. Please refer to the
 documentation for each TAO algorithm for further details.
 
 ### Solving
@@ -663,7 +663,7 @@ $g(x)$. The routine that evaluates the constraint equations
 should have the form
 
 ```
-PetscErrorCode EvaluateConstraints(Tao, Vec, Vec, void*);
+PetscErrorCode EvaluateConstraints(Tao, Vec, Vec, PetscCtx);
 ```
 
 The first argument of this routine is a TAO solver object. The second
@@ -674,7 +674,7 @@ context. This routine and the user-defined context should be set in the
 TAO solver with the
 
 ```
-TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, PetscCtx), PetscCtx);
 ```
 
 command. In this function, the first argument is the TAO solver object,
@@ -690,8 +690,8 @@ evaluation of the Jacobian of $g$ should be performed by calling
 the
 
 ```
-PetscErrorCode JacobianState(Tao, Vec, Mat, Mat, Mat, void*);
-PetscErrorCode JacobianDesign(Tao, Vec, Mat*, void*);
+PetscErrorCode JacobianState(Tao, Vec, Mat, Mat, Mat, PetscCtx);
+PetscErrorCode JacobianDesign(Tao, Vec, Mat*, PetscCtx);
 ```
 
 routines. In these functions, The first argument is the TAO solver
@@ -707,11 +707,11 @@ routines should be registered with TAO by using the
 
 ```
 TaoSetJacobianStateRoutine(Tao, Mat, Mat, Mat,
-                        PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*),
-                        void*);
+                        PetscErrorCode (*)(Tao, Vec, Mat, Mat, PetscCtx),
+                        PetscCtx);
 TaoSetJacobianDesignRoutine(Tao, Mat,
-                        PetscErrorCode (*)(Tao,Vec,Mat*,void*),
-                        void*);
+                        PetscErrorCode (*)(Tao, Vec, Mat*, PetscCtx),
+                        PetscCtx);
 ```
 
 routines. The first argument is the TAO solver object, and the second
@@ -741,13 +741,13 @@ For these problems, the objective function value should be computed as a
 vector of residuals, $r(x)$, computed with a function of the form
 
 ```
-PetscErrorCode EvaluateResidual(Tao, Vec, Vec, void*);
+PetscErrorCode EvaluateResidual(Tao, Vec, Vec, PetscCtx);
 ```
 
 and set with the
 
 ```
-TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao, Vec, Vec, PetscCtx), PetscCtx);
 ```
 
 routine. If required by the algorithm, the Jacobian of the residual,
@@ -755,13 +755,13 @@ $J = \partial r(x) / \partial x$, should be computed with a
 function of the form
 
 ```
-PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, void*);
+PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, PetscCtx;
 ```
 
 and set with the
 
 ```
-TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Mat,void*), void *);
+TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao, Vec, Mat, PetscCtx), PetscCtx);
 ```
 
 routine.
@@ -776,7 +776,7 @@ $C: \mathbb R^n \to \mathbb R^m$. These constraints should be
 specified in a routine written by the user with the form
 
 ```
-PetscErrorCode EqualityConstraints(Tao, Vec, Vec, void*);
+PetscErrorCode EqualityConstraints(Tao, Vec, Vec, PetscCtx);
 ```
 
 that evaluates $C(X)$. The first argument of this routine is a TAO
@@ -789,7 +789,7 @@ This routine and the user-defined context must be registered with TAO by
 using the
 
 ```
-TaoSetConstraintRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+TaoSetConstraintRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, PetscCtx), PetscCtx);
 ```
 
 command. In this command, the first argument is TAO Solver object, the
@@ -805,7 +805,7 @@ evaluation of the Jacobian of $C$ should be performed in a routine
 of the form
 
 ```
-PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void*);
+PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, PetscCtx);
 ```
 
 In this function, the first argument is the TAO Solver object and the
@@ -822,7 +822,7 @@ in the routine `KSPSetOperators()`.
 This routine should be specified to TAO by using the
 
 ```
-TaoSetJacobianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
+TaoSetJacobianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, PetscCtx), PetscCtx);
 ```
 
 command. The first argument is the TAO Solver object; the second and

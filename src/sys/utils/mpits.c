@@ -286,7 +286,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Data
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), PetscCtx ctx)
 {
   PetscMPIInt  i, *tag;
   MPI_Aint     lb, unitbytes;
@@ -325,7 +325,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscM
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
 
-static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), PetscCtx ctx)
 {
   PetscMPIInt    nrecvs, tag, *tags, done, i;
   MPI_Aint       lb, unitbytes;
@@ -437,7 +437,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedFReq()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), PetscCtx ctx)
 {
   MPI_Request *toreqs, *fromreqs;
 
@@ -484,9 +484,9 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedF()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), PetscCtx ctx)
 {
-  PetscErrorCode (*f)(MPI_Comm, PetscMPIInt, MPI_Datatype, PetscMPIInt, const PetscMPIInt[], const void *, PetscMPIInt *, PetscMPIInt **, void *, PetscMPIInt, MPI_Request **, MPI_Request **, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx);
+  PetscErrorCode (*f)(MPI_Comm, PetscMPIInt, MPI_Datatype, PetscMPIInt, const PetscMPIInt[], const void *, PetscMPIInt *, PetscMPIInt **, void *, PetscMPIInt, MPI_Request **, MPI_Request **, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), PetscCtx ctx);
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
   PetscMPIInt            i, size;
 

@@ -180,7 +180,7 @@ static void f0_u_x4(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
   }
 }
 
-PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt Ncomp = dim;
   PetscInt       comp;

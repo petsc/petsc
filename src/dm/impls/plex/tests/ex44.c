@@ -13,7 +13,7 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode pyramidNormal(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
 
 /* The pyramid apex is at (0.5, 0.5, -1) */
-PetscErrorCode pyramidNormal(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
+PetscErrorCode pyramidNormal(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], PetscCtx ctx)
 {
   PetscReal apex[3] = {0.5, 0.5, -1.0};
   PetscInt  d;

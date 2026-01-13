@@ -4,7 +4,7 @@
 
 jmp_buf PetscXIOErrorHandlerJumpBuf;
 
-void PetscXIOErrorHandlerJump(PETSC_UNUSED void *ctx)
+void PetscXIOErrorHandlerJump(PETSC_UNUSED PetscCtx ctx)
 {
   longjmp(PetscXIOErrorHandlerJumpBuf, 1);
 }

@@ -162,7 +162,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPMonitorRegisterFn(KSP ksp, PetscI
 
 .seealso: [](ch_snes), `KSPMonitorRegisterFn`, `KSP`, `KSPMonitorSet()`, `KSPMonitorRegister()`, `KSPMonitorFn`, `KSPMonitorRegisterDestroyFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPMonitorRegisterCreateFn(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **result);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPMonitorRegisterCreateFn(PetscViewer viewer, PetscViewerFormat format, PetscCtx ctx, PetscViewerAndFormat **result);
 
 /*S
   KSPMonitorRegisterDestroyFn - A function prototype for functions that do the after use destruction when provided to `KSPMonitorRegister()`
@@ -217,10 +217,10 @@ PETSC_DEPRECATED_FUNCTION(3, 6, 0, "KSPCreateVecs()", ) static inline PetscError
 
 .seealso: [](ch_snes), `KSP`, `KSPSetPreSolve()`, `KSPSetPostSolve()`, `PCShellPSolveFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPPSolveFn(KSP ksp, Vec rhs, Vec x, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPPSolveFn(KSP ksp, Vec rhs, Vec x, PetscCtx ctx);
 
-PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP, KSPPSolveFn *, void *);
-PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP, KSPPSolveFn *, void *);
+PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP, KSPPSolveFn *, PetscCtx);
+PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP, KSPPSolveFn *, PetscCtx);
 
 PETSC_EXTERN PetscErrorCode KSPSetPC(KSP, PC);
 PETSC_EXTERN PetscErrorCode KSPGetPC(KSP, PC *);
@@ -240,12 +240,12 @@ PETSC_EXTERN PetscErrorCode KSPGetNestLevel(KSP, PetscInt *);
 
 .seealso: [](ch_snes), `KSP`, `KSPMonitorSet()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPMonitorFn(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPMonitorFn(KSP ksp, PetscInt it, PetscReal rnorm, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPMonitor(KSP, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, KSPMonitorFn *, void *, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, KSPMonitorFn *, PetscCtx, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode KSPMonitorCancel(KSP);
-PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP, void *);
+PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP, const PetscReal *[], PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP, PetscReal[], PetscCount, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetErrorHistory(KSP, const PetscReal *[], PetscInt *);
@@ -382,10 +382,10 @@ PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP, PetscBool *);
 
 .seealso: [](ch_ksp), `KSP`, `KSPFlexibleSetModifyPC()`, `KSPPIPEGCRSetModifyPC()`, `KSPGCRSetModifyPC()`, `KSPFGMRESSetModifyPC()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPFlexibleModifyPCFn(KSP ksp, PetscInt total_its, PetscInt local_its, PetscReal res_norm, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPFlexibleModifyPCFn(KSP ksp, PetscInt total_its, PetscInt local_its, PetscReal res_norm, PetscCtx ctx);
 
-PETSC_EXTERN PetscErrorCode KSPFlexibleSetModifyPC(KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *);
-PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode KSPFlexibleSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt *);
@@ -405,7 +405,7 @@ PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
 
 PETSC_EXTERN PetscErrorCode KSPMINRESSetRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPMINRESGetUseQLP(KSP, PetscBool *);
@@ -538,7 +538,7 @@ PETSC_EXTERN PetscErrorCode KSPGMRESGetCGSRefinementType(KSP, KSPGMRESCGSRefinem
 
 PETSC_EXTERN KSPFlexibleModifyPCFn KSPFGMRESModifyPCNoChange;
 PETSC_EXTERN KSPFlexibleModifyPCFn KSPFGMRESModifyPCKSP;
-PETSC_EXTERN PetscErrorCode        KSPFGMRESSetModifyPC(KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode        KSPFGMRESSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
 
 PETSC_EXTERN PetscErrorCode KSPQCGSetTrustRegionRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPQCGGetQuadratic(KSP, PetscReal *);
@@ -552,7 +552,7 @@ PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPResetFromOptions(KSP);
 
-PETSC_EXTERN PetscErrorCode       KSPMonitorSetFromOptions(KSP, const char[], const char[], void *);
+PETSC_EXTERN PetscErrorCode       KSPMonitorSetFromOptions(KSP, const char[], const char[], PetscCtx);
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorResidual;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorResidualView;
 PETSC_DEPRECATED_FUNCTION(3, 23, 0, "KSPMonitorResidualDraw()", ) static inline PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
@@ -560,7 +560,7 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "KSPMonitorResidualDraw()", ) static inline 
   return KSPMonitorResidualView(ksp, n, rnorm, vf);
 }
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorResidualDrawLG;
-PETSC_EXTERN PetscErrorCode       KSPMonitorResidualDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode       KSPMonitorResidualDrawLGCreate(PetscViewer, PetscViewerFormat, PetscCtx, PetscViewerAndFormat **);
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorResidualShort;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorResidualRange;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorTrueResidual;
@@ -570,18 +570,18 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "KSPMonitorTrueResidualDraw()", ) static inl
   return KSPMonitorTrueResidualView(ksp, n, rnorm, vf);
 }
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorTrueResidualDrawLG;
-PETSC_EXTERN PetscErrorCode       KSPMonitorTrueResidualDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode       KSPMonitorTrueResidualDrawLGCreate(PetscViewer, PetscViewerFormat, PetscCtx, PetscViewerAndFormat **);
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorTrueResidualMax;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorError;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorErrorDraw;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorErrorDrawLG;
-PETSC_EXTERN PetscErrorCode       KSPMonitorErrorDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode       KSPMonitorErrorDrawLGCreate(PetscViewer, PetscViewerFormat, PetscCtx, PetscViewerAndFormat **);
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorSolution;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorSolutionDraw;
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorSolutionDrawLG;
-PETSC_EXTERN PetscErrorCode       KSPMonitorSolutionDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode       KSPMonitorSolutionDrawLGCreate(PetscViewer, PetscViewerFormat, PetscCtx, PetscViewerAndFormat **);
 PETSC_EXTERN KSPMonitorRegisterFn KSPMonitorSingularValue;
-PETSC_EXTERN PetscErrorCode       KSPMonitorSingularValueCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode       KSPMonitorSingularValueCreate(PetscViewer, PetscViewerFormat, PetscCtx, PetscViewerAndFormat **);
 PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPMonitorResidual()", ) static inline PetscErrorCode KSPMonitorDefault(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   return KSPMonitorResidual(ksp, n, rnorm, vf);
@@ -596,13 +596,13 @@ PETSC_DEPRECATED_FUNCTION(3, 15, 0, "KSPMonitorTrueResidualMax()", ) static inli
 }
 
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP, PetscInt, PetscReal, void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP, PetscInt, PetscReal, void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP, PetscInt, PetscReal, PetscCtx);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(PetscCtxRt);
 PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceCreate(void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(void *, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPMonitorSAWs(KSP, PetscInt, PetscReal, void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSAWsCreate(KSP, void **);
-PETSC_EXTERN PetscErrorCode KSPMonitorSAWsDestroy(void **);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWsDestroy(PetscCtxRt);
 
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP, Vec, Vec);
 PETSC_EXTERN PetscErrorCode KSPInitialResidual(KSP, Vec, Vec, Vec, Vec, Vec);
@@ -630,7 +630,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP, PetscBool *);
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedReasonView()`, `KSPConvergedReasonViewSet()`, `KSPConvergedReasonViewFromOptions()`, `KSPView()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPConvergedReasonViewFn(KSP ksp, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPConvergedReasonViewFn(KSP ksp, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP, PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP, PetscViewer);
@@ -955,12 +955,12 @@ M*/
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPGetConvergenceTest()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPConvergenceTestFn(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPConvergenceTestFn(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode       KSPSetConvergenceTest(KSP, KSPConvergenceTestFn *, void *, PetscCtxDestroyFn *);
-PETSC_EXTERN PetscErrorCode       KSPGetConvergenceTest(KSP, KSPConvergenceTestFn **, void **, PetscCtxDestroyFn **);
-PETSC_EXTERN PetscErrorCode       KSPGetAndClearConvergenceTest(KSP, KSPConvergenceTestFn **, void **, PetscCtxDestroyFn **);
-PETSC_EXTERN PetscErrorCode       KSPGetConvergenceContext(KSP, void *);
+PETSC_EXTERN PetscErrorCode       KSPGetConvergenceTest(KSP, KSPConvergenceTestFn **, PetscCtxRt, PetscCtxDestroyFn **);
+PETSC_EXTERN PetscErrorCode       KSPGetAndClearConvergenceTest(KSP, KSPConvergenceTestFn **, PetscCtxRt, PetscCtxDestroyFn **);
+PETSC_EXTERN PetscErrorCode       KSPGetConvergenceContext(KSP, PetscCtxRt);
 PETSC_EXTERN KSPConvergenceTestFn KSPConvergedDefault;
 PETSC_EXTERN KSPConvergenceTestFn KSPLSQRConvergedDefault;
 PETSC_EXTERN PetscCtxDestroyFn    KSPConvergedDefaultDestroy;
@@ -1255,8 +1255,8 @@ PETSC_EXTERN PetscErrorCode MatLMVMDenseSetType(Mat, MatLMVMDenseType);
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP, DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP, DM *);
-PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, void *);
-PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
+PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, PetscCtx);
+PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, PetscCtxRt);
 
 /*S
   KSPComputeRHSFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeRHS()`
@@ -1270,7 +1270,7 @@ PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeInitialGuessFn`, `KSPComputeOperatorsFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeRHSFn(KSP ksp, Vec b, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeRHSFn(KSP ksp, Vec b, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHSFn *, void *);
 
@@ -1287,7 +1287,7 @@ PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHSFn *, void *);
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeInitialGuessFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeOperatorsFn(KSP ksp, Mat A, Mat P, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeOperatorsFn(KSP ksp, Mat A, Mat P, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperatorsFn, void *);
 
@@ -1303,7 +1303,7 @@ PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperatorsFn, v
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetComputeInitialGuess()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeOperatorsFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeInitialGuessFn(KSP ksp, Vec x, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPComputeInitialGuessFn(KSP ksp, Vec x, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, KSPComputeInitialGuessFn *, void *);
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, KSPComputeOperatorsFn *, void *);

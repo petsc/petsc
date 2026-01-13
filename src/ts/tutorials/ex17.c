@@ -211,7 +211,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, PetscCtx ctx)
 {
   PetscInt    i, rstart, rend, Mx;
   PetscReal   hx, sx;

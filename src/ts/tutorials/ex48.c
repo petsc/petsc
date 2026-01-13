@@ -46,7 +46,7 @@ typedef struct {
   PetscBool plotting;
   PetscInt  dim;                          /* The topological mesh dimension */
   char      filename[PETSC_MAX_PATH_LEN]; /* The optional ExodusII file */
-  PetscErrorCode (**initialFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**initialFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   PetscReal mu, eta;
   PetscReal perturb;
   TestType  testType;
@@ -418,7 +418,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
@@ -448,13 +448,13 @@ static PetscErrorCode initialSolution_Psi(PetscInt dim, PetscReal time, const Pe
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialSolution_Phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialSolution_Phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialSolution_Jz(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialSolution_Jz(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;

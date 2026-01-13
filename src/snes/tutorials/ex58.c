@@ -45,8 +45,8 @@ typedef struct {
 
 /* -------- User-defined Routines --------- */
 
-extern PetscErrorCode FormBoundaryConditions(SNES, void **);
-extern PetscErrorCode DestroyBoundaryConditions(void **);
+extern PetscErrorCode FormBoundaryConditions(SNES, PetscCtxRt);
+extern PetscErrorCode DestroyBoundaryConditions(PetscCtxRt);
 extern PetscErrorCode ComputeInitialGuess(SNES, Vec, void *);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFunction(snes, r, FormGradient, NULL));
   PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
 
-  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode (*)(SNES, void **))FormBoundaryConditions, (PetscCtxDestroyFn *)DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes, FormBoundaryConditions, DestroyBoundaryConditions));
 
   PetscCall(SNESSetComputeInitialGuess(snes, ComputeInitialGuess, NULL));
 
@@ -133,16 +133,16 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
 /*  FormGradient - Evaluates gradient of f.
 
     Input Parameters:
-.   snes  - the SNES context
-.   X     - input vector
-.   ptr   - optional user-defined context, as set by SNESSetFunction()
+.   snes   - the SNES context
+.   X      - input vector
+.   unused - optional user-defined context, as set by SNESSetFunction()
 
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
+PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *unused)
 {
-  AppCtx       *user;
+  AppCtx       *ctx;
   PetscInt      i, j;
   PetscInt      mx, my;
   PetscScalar   hx, hy, hydhx, hxdhy;
@@ -155,7 +155,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
-  PetscCall(SNESGetApplicationContext(snes, &user));
+  PetscCall(SNESGetApplicationContext(snes, &ctx));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   hx    = 1.0 / (mx + 1);
   hy    = 1.0 / (my + 1);
@@ -181,23 +181,23 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       xlt = xrb = xl = xr = xb = xt = xc;
 
       if (i == 0) { /* left side */
-        xl  = user->left[j + 1];
-        xlt = user->left[j + 2];
+        xl  = ctx->left[j + 1];
+        xlt = ctx->left[j + 2];
       } else xl = x[j][i - 1];
 
       if (j == 0) { /* bottom side */
-        xb  = user->bottom[i + 1];
-        xrb = user->bottom[i + 2];
+        xb  = ctx->bottom[i + 1];
+        xrb = ctx->bottom[i + 2];
       } else xb = x[j - 1][i];
 
       if (i + 1 == mx) { /* right side */
-        xr  = user->right[j + 1];
-        xrb = user->right[j];
+        xr  = ctx->right[j + 1];
+        xrb = ctx->right[j];
       } else xr = x[j][i + 1];
 
       if (j + 1 == 0 + my) { /* top side */
-        xt  = user->top[i + 1];
-        xlt = user->top[i];
+        xt  = ctx->top[i + 1];
+        xlt = ctx->top[i];
       } else xt = x[j + 1][i];
 
       if (i > 0 && j + 1 < my) xlt = x[j + 1][i - 1]; /* left top side */
@@ -259,17 +259,17 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
    FormJacobian - Evaluates Jacobian matrix.
 
    Input Parameters:
-.  snes - SNES context
-.  X    - input vector
-.  ptr  - optional user-defined context, as set by SNESSetJacobian()
+.  snes   - SNES context
+.  X      - input vector
+.  unused - optional user-defined context, as set by SNESSetJacobian()
 
    Output Parameters:
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *unused)
 {
-  AppCtx       *user;
+  AppCtx       *ctx;
   PetscInt      i, j, k;
   PetscInt      mx, my;
   MatStencil    row, col[7];
@@ -284,7 +284,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
-  PetscCall(SNESGetApplicationContext(snes, &user));
+  PetscCall(SNESGetApplicationContext(snes, &ctx));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   hx    = 1.0 / (mx + 1);
   hy    = 1.0 / (my + 1);
@@ -313,26 +313,26 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 
       /* Left */
       if (i == 0) {
-        xl  = user->left[j + 1];
-        xlt = user->left[j + 2];
+        xl  = ctx->left[j + 1];
+        xlt = ctx->left[j + 2];
       } else xl = x[j][i - 1];
 
       /* Bottom */
       if (j == 0) {
-        xb  = user->bottom[i + 1];
-        xrb = user->bottom[i + 2];
+        xb  = ctx->bottom[i + 1];
+        xrb = ctx->bottom[i + 2];
       } else xb = x[j - 1][i];
 
       /* Right */
       if (i + 1 == mx) {
-        xr  = user->right[j + 1];
-        xrb = user->right[j];
+        xr  = ctx->right[j + 1];
+        xrb = ctx->right[j];
       } else xr = x[j][i + 1];
 
       /* Top */
       if (j + 1 == my) {
-        xt  = user->top[i + 1];
-        xlt = user->top[i];
+        xt  = ctx->top[i + 1];
+        xlt = ctx->top[i];
       } else xt = x[j + 1][i];
 
       /* Top left */
@@ -457,7 +457,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
    Output Parameter:
 .  user - user-defined application context
 */
-PetscErrorCode FormBoundaryConditions(SNES snes, void **inctx)
+PetscErrorCode FormBoundaryConditions(SNES snes, PetscCtxRt Ctx)
 {
   PetscInt     i, j, k, limit = 0, maxits = 5;
   PetscInt     mx, my;
@@ -468,29 +468,29 @@ PetscErrorCode FormBoundaryConditions(SNES snes, void **inctx)
   PetscScalar  u1, u2, nf1, nf2, njac11, njac12, njac21, njac22;
   PetscScalar  b = -0.5, t = 0.5, l = -0.5, r = 0.5;
   PetscScalar *boundary;
-  AppCtx      *user, **ouser = (AppCtx **)inctx;
+  AppCtx      *ctx;
   DM           da;
 
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
-  PetscCall(PetscNew(&user));
-  *ouser   = user;
-  user->lb = .05;
-  user->ub = PETSC_INFINITY;
+  PetscCall(PetscNew(&ctx));
+  *(void **)Ctx = ctx;
+  ctx->lb       = .05;
+  ctx->ub       = PETSC_INFINITY;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
   /* Check if lower and upper bounds are set */
-  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-lb", &user->lb, 0));
-  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ub", &user->ub, 0));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-lb", &ctx->lb, 0));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ub", &ctx->ub, 0));
   bsize = mx + 2;
   lsize = my + 2;
   rsize = my + 2;
   tsize = mx + 2;
 
-  PetscCall(PetscMalloc1(bsize, &user->bottom));
-  PetscCall(PetscMalloc1(tsize, &user->top));
-  PetscCall(PetscMalloc1(lsize, &user->left));
-  PetscCall(PetscMalloc1(rsize, &user->right));
+  PetscCall(PetscMalloc1(bsize, &ctx->bottom));
+  PetscCall(PetscMalloc1(tsize, &ctx->top));
+  PetscCall(PetscMalloc1(lsize, &ctx->left));
+  PetscCall(PetscMalloc1(rsize, &ctx->right));
 
   hx = (r - l) / (mx + 1.0);
   hy = (t - b) / (my + 1.0);
@@ -500,22 +500,22 @@ PetscErrorCode FormBoundaryConditions(SNES snes, void **inctx)
       yt       = b;
       xt       = l;
       limit    = bsize;
-      boundary = user->bottom;
+      boundary = ctx->bottom;
     } else if (j == 1) {
       yt       = t;
       xt       = l;
       limit    = tsize;
-      boundary = user->top;
+      boundary = ctx->top;
     } else if (j == 2) {
       yt       = b;
       xt       = l;
       limit    = lsize;
-      boundary = user->left;
+      boundary = ctx->left;
     } else { /* if  (j==3) */
       yt       = b;
       xt       = r;
       limit    = rsize;
-      boundary = user->right;
+      boundary = ctx->right;
     }
 
     for (i = 0; i < limit; i++) {
@@ -543,16 +543,16 @@ PetscErrorCode FormBoundaryConditions(SNES snes, void **inctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DestroyBoundaryConditions(void **ouser)
+PetscErrorCode DestroyBoundaryConditions(PetscCtxRt Ctx)
 {
-  AppCtx *user = (AppCtx *)*ouser;
+  AppCtx *ctx = *(AppCtx **)Ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscFree(user->bottom));
-  PetscCall(PetscFree(user->top));
-  PetscCall(PetscFree(user->left));
-  PetscCall(PetscFree(user->right));
-  PetscCall(PetscFree(*ouser));
+  PetscCall(PetscFree(ctx->bottom));
+  PetscCall(PetscFree(ctx->top));
+  PetscCall(PetscFree(ctx->left));
+  PetscCall(PetscFree(ctx->right));
+  PetscCall(PetscFree(ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -561,23 +561,23 @@ PetscErrorCode DestroyBoundaryConditions(void **ouser)
    ComputeInitialGuess - Calculates the initial guess
 
    Input Parameters:
-.  user - user-defined application context
-.  X - vector for initial guess
+.  unused - user-defined application context
+.  X      - vector for initial guess
 
    Output Parameters:
 .  X - newly computed initial guess
 */
-PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy)
+PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *unused)
 {
   PetscInt      i, j, mx, my;
   DM            da;
-  AppCtx       *user;
+  AppCtx       *ctx;
   PetscScalar **x;
   PetscInt      xs, xm, ys, ym;
 
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
-  PetscCall(SNESGetApplicationContext(snes, &user));
+  PetscCall(SNESGetApplicationContext(snes, &ctx));
 
   PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
@@ -586,7 +586,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy)
   PetscCall(DMDAVecGetArray(da, X, &x));
   /* Perform local computations */
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) x[j][i] = (((j + 1.0) * user->bottom[i + 1] + (my - j + 1.0) * user->top[i + 1]) / (my + 2.0) + ((i + 1.0) * user->left[j + 1] + (mx - i + 1.0) * user->right[j + 1]) / (mx + 2.0)) / 2.0;
+    for (i = xs; i < xs + xm; i++) x[j][i] = (((j + 1.0) * ctx->bottom[i + 1] + (my - j + 1.0) * ctx->top[i + 1]) / (my + 2.0) + ((i + 1.0) * ctx->left[j + 1] + (mx - i + 1.0) * ctx->right[j + 1]) / (mx + 2.0)) / 2.0;
   }
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(da, X, &x));

@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+static PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   PetscInt    mx, idx[2];
   PetscScalar h, v[2];
@@ -89,7 +89,7 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   AppCtx     *user = (AppCtx *)ctx;
   PetscInt    i, mx, xm, xs;

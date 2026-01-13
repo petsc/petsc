@@ -217,7 +217,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       /* Get Attached EGADS Model from Original DMPlex */
       PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
-        PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+        PetscCall(PetscContainerGetPointer(modelObj, &model));
         PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
         PetscCall(PetscObjectCompose((PetscObject)*dm, "EGADS Model", (PetscObject)modelObj));
@@ -492,7 +492,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       /* Get Attached EGADS Model from Original DMPlex */
       PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
-        PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+        PetscCall(PetscContainerGetPointer(modelObj, &model));
         PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
         PetscCall(PetscObjectCompose((PetscObject)*dmRefined, "EGADS Model", (PetscObject)modelObj));

@@ -193,7 +193,7 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 
 .seealso: [](sec_errors), `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 @*/
-PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx)
+PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), PetscCtx ctx)
 {
   struct SH *newsh;
 

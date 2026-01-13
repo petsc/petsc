@@ -5321,7 +5321,7 @@ static PetscErrorCode MatTranspose_Private(Mat mat, MatReuse reuse, Mat *B, Pets
   if (reuse == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*B, "MatTransposeParent", (PetscObject *)&rB));
     PetscCheck(rB, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_WRONG, "Reuse matrix used was not generated from call to MatTranspose(). Suggest MatTransposeSetPrecursor().");
-    PetscCall(PetscContainerGetPointer(rB, (void **)&rb));
+    PetscCall(PetscContainerGetPointer(rB, &rb));
     PetscCheck(rb->id == ((PetscObject)mat)->id, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_WRONG, "Reuse matrix used was not generated from input matrix");
     if (rb->state == ((PetscObject)mat)->state) PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -5343,7 +5343,7 @@ static PetscErrorCode MatTranspose_Private(Mat mat, MatReuse reuse, Mat *B, Pets
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatTransposeSetPrecursor(mat, *B));
   if (reuse != MAT_INPLACE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*B, "MatTransposeParent", (PetscObject *)&rB));
-    PetscCall(PetscContainerGetPointer(rB, (void **)&rb));
+    PetscCall(PetscContainerGetPointer(rB, &rb));
     rb->state        = ((PetscObject)mat)->state;
     rb->nonzerostate = mat->nonzerostate;
   }
@@ -5435,7 +5435,7 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
   PetscCheck(!A->factortype, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCall(PetscObjectQuery((PetscObject)B, "MatTransposeParent", (PetscObject *)&rB));
   PetscCheck(rB, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Reuse matrix used was not generated from call to MatTranspose()");
-  PetscCall(PetscContainerGetPointer(rB, (void **)&rb));
+  PetscCall(PetscContainerGetPointer(rB, &rb));
   PetscCheck(rb->id == ((PetscObject)A)->id, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Reuse matrix used was not generated from input matrix");
   PetscCheck(rb->nonzerostate == A->nonzerostate, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Reuse matrix has changed nonzero structure");
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -7668,9 +7668,9 @@ typedef struct {
   Mat              C;
 } EnvelopeData;
 
-static PetscErrorCode EnvelopeDataDestroy(void **ptr)
+static PetscErrorCode EnvelopeDataDestroy(PetscCtxRt ptr)
 {
-  EnvelopeData *edata = (EnvelopeData *)*ptr;
+  EnvelopeData *edata = *(EnvelopeData **)ptr;
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < edata->n; i++) PetscCall(ISDestroy(&edata->is[i]));
@@ -7869,7 +7869,7 @@ PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
     PetscCall(MatComputeVariableBlockEnvelope(A));
     PetscCall(PetscObjectQuery((PetscObject)A, "EnvelopeData", (PetscObject *)&container));
   }
-  PetscCall(PetscContainerGetPointer(container, (void **)&edata));
+  PetscCall(PetscContainerGetPointer(container, &edata));
   PetscCall(MatGetNonzeroState(A, &nonzerostate));
   PetscCheck(nonzerostate <= edata->nonzerostate, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot handle changes to matrix nonzero structure");
   PetscCheck(reuse != MAT_REUSE_MATRIX || *C == edata->C, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "C matrix must be the same as previously output");

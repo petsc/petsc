@@ -89,7 +89,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, PetscCtx ctx)
 {
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;
@@ -299,7 +299,7 @@ PetscErrorCode IFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, void *ctx)
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, PetscCtx ctx)
 {
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;

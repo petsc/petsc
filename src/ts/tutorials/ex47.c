@@ -55,7 +55,7 @@ typedef struct {
   phi_t + u . grad phi = -3 + <1, 1, 1> . <1, 1, 1> = 0
 */
 
-static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -64,7 +64,7 @@ static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 1.0;
@@ -221,7 +221,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
+static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, PetscCtx ctx)
 {
   DM                  dm;
   PetscDS             ds;
@@ -253,7 +253,7 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, PetscCtx ctx)
 {
   DM                  dm;
   PetscDS             ds;

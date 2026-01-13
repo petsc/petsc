@@ -6,7 +6,7 @@
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
 typedef struct {
-  void *ctx; /* user provided contexts for preconditioner */
+  PetscCtx ctx; /* user provided contexts for preconditioner */
 
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*setup)(PC);
@@ -41,13 +41,15 @@ typedef struct {
   Note:
   This routine is intended for use within the various user-provided routines set with, for example, `PCShellSetApply()`
 
-  Fortran Note:
-  To use this from Fortran you must write a Fortran interface definition for this
-  function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
+  Fortran Notes:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Define `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
 
 .seealso: [](ch_ksp), `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
-PetscErrorCode PCShellGetContext(PC pc, void *ctx)
+PetscErrorCode PCShellGetContext(PC pc, PetscCtxRt ctx)
 {
   PetscBool flg;
 
@@ -82,7 +84,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 
 .seealso: [](ch_ksp), `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
-PetscErrorCode PCShellSetContext(PC pc, void *ctx)
+PetscErrorCode PCShellSetContext(PC pc, PetscCtx ctx)
 {
   PC_Shell *shell = (PC_Shell *)pc->data;
   PetscBool flg;

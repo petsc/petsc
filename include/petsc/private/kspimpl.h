@@ -141,7 +141,7 @@ struct _p_KSP {
   PetscCtxDestroyFn    *convergeddestroy;
   void                 *cnvP;
 
-  void *ctx; /* optional user-defined context */
+  PetscCtx ctx; /* optional user-defined context */
 
   PC pc;
 

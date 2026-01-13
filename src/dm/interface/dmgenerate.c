@@ -185,7 +185,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   }
   PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
-    void *ctx;
+    PetscCtx ctx;
 
     (*dmAdapt)->prealloc_only = dm->prealloc_only; /* maybe this should go .... */
     PetscCall(PetscFree((*dmAdapt)->vectype));

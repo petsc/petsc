@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx)
+PetscErrorCode FormInitialGuess(SNES snes, Vec X, PetscCtx ctx)
 {
   AppCtx       *user;
   PetscInt      i, j, xs, ys, xm, ym;

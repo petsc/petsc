@@ -159,7 +159,7 @@ int main(int argc, char **argv)
    Output Parameter:
 .  f - function vector
  */
-PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   const PetscScalar *xx;
   PetscScalar       *ff;

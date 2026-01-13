@@ -273,7 +273,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
   if (!cab_dense) {
     PetscCall(PetscMalloc1(B->cmap->N, &ab_dense));
     PetscCall(PetscObjectContainerCompose((PetscObject)C, "__PETSc__ab_dense", ab_dense, PetscCtxDestroyDefault));
-  } else PetscCall(PetscContainerGetPointer(cab_dense, (void **)&ab_dense));
+  } else PetscCall(PetscContainerGetPointer(cab_dense, &ab_dense));
   PetscCall(PetscArrayzero(ab_dense, B->cmap->N));
 
   /* clean old values in C */
@@ -1198,7 +1198,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, PetscReal f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatMatMultTrans(void **data)
+static PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatMatMultTrans(PetscCtxRt data)
 {
   MatProductCtx_MatMatTransMult *abt = *(MatProductCtx_MatMatTransMult **)data;
 
@@ -1371,7 +1371,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatTransMatMult(void **data)
+PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatTransMatMult(PetscCtxRt data)
 {
   MatProductCtx_MatTransMatMult *atb = *(MatProductCtx_MatTransMatMult **)data;
 

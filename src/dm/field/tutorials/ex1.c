@@ -143,7 +143,7 @@ static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   PetscInt  i;
   PetscReal r2 = 0.;
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
       PetscCall(DMCreateLocalVector(dm, &fieldvec));
       {
         PetscErrorCode (*func[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
-        void *ctxs[1];
+        PetscCtx ctxs[1];
 
         func[0] = radiusSquared;
         ctxs[0] = NULL;

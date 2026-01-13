@@ -4539,9 +4539,9 @@ PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat A, PetscInt *nz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_SeqAIJ(void **data)
+static PetscErrorCode MatCOOStructDestroy_SeqAIJ(PetscCtxRt data)
 {
-  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)*data;
+  MatCOOStruct_SeqAIJ *coo = *(MatCOOStruct_SeqAIJ **)data;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(coo->perm));
@@ -4748,7 +4748,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJ(Mat A, const PetscScalar v[], Inser
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
   PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
-  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  PetscCall(PetscContainerGetPointer(container, &coo));
   perm = coo->perm;
   jmap = coo->jmap;
   PetscCall(MatSeqAIJGetArray(A, &Aa));

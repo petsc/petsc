@@ -171,7 +171,7 @@ struct MatProductCtx_MPIAIJKokkos {
   }
 };
 
-static PetscErrorCode MatProductCtxDestroy_MPIAIJKokkos(void **data)
+static PetscErrorCode MatProductCtxDestroy_MPIAIJKokkos(PetscCtxRt data)
 {
   PetscFunctionBegin;
   PetscCallCXX(delete *reinterpret_cast<MatProductCtx_MPIAIJKokkos **>(data));
@@ -1540,10 +1540,10 @@ struct MatCOOStruct_MPIAIJKokkos {
   ~MatCOOStruct_MPIAIJKokkos() { PetscCallVoid(PetscSFDestroy(&sf)); }
 };
 
-static PetscErrorCode MatCOOStructDestroy_MPIAIJKokkos(void **data)
+static PetscErrorCode MatCOOStructDestroy_MPIAIJKokkos(PetscCtxRt data)
 {
   PetscFunctionBegin;
-  PetscCallCXX(delete static_cast<MatCOOStruct_MPIAIJKokkos *>(*data));
+  PetscCallCXX(delete *static_cast<MatCOOStruct_MPIAIJKokkos **>(data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1562,7 +1562,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount co
 
   // Copy the COO struct to device
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container_h));
-  PetscCall(PetscContainerGetPointer(container_h, (void **)&coo_h));
+  PetscCall(PetscContainerGetPointer(container_h, &coo_h));
   PetscCallCXX(coo_d = new MatCOOStruct_MPIAIJKokkos(coo_h));
 
   // Put the COO struct in a container and then attach that to the matrix
@@ -1587,7 +1587,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
-  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  PetscCall(PetscContainerGetPointer(container, &coo));
 
   const auto &n      = coo->n;
   const auto &Annz   = coo->Annz;

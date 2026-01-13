@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
   /* Create an empty bag */
   PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &bag));
-  PetscCall(PetscBagGetData(bag, (void **)&params));
+  PetscCall(PetscBagGetData(bag, &params));
 
   /* fill bag: register variables, defaults, names, help strings */
   PetscCall(PetscBagSetName(bag, "ParameterBag", "contains problem parameters"));

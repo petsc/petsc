@@ -125,7 +125,7 @@ PetscErrorCode VecCheckGhosted(Vec X, PetscBool test_rev)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscScalar       *ff;
   const PetscScalar *xx;
@@ -156,7 +156,7 @@ PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
+PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
 {
   const PetscScalar *xx;
   PetscScalar        A[4];

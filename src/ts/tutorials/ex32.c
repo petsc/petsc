@@ -64,7 +64,7 @@ PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, PetscCtx ctx)
 {
   AppCtx            *app = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -78,7 +78,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, PetscCtx ctx)
 {
   AppCtx  *app = (AppCtx *)ctx;
   PetscInt i, idx;
@@ -94,7 +94,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_z
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   AppCtx            *app = (AppCtx *)ctx;
   PetscScalar       *f;
@@ -140,7 +140,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   AppCtx     *app = (AppCtx *)ctx;
   DM          da;

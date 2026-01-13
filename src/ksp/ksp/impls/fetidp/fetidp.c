@@ -227,7 +227,7 @@ static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp, Vec v, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPMonitor_FETIDP(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
+static PetscErrorCode KSPMonitor_FETIDP(KSP ksp, PetscInt it, PetscReal rnorm, PetscCtx ctx)
 {
   KSP_FETIDPMon *monctx = (KSP_FETIDPMon *)ctx;
 
@@ -565,7 +565,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     } else if (c) {
       MatISLocalFields lf;
 
-      PetscCall(PetscContainerGetPointer(c, (void **)&lf));
+      PetscCall(PetscContainerGetPointer(c, &lf));
       PetscCall(PCBDDCSetDofsSplittingLocal(fetidp->innerbddc, lf->nr, lf->rf));
     }
   }

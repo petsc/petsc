@@ -32,7 +32,7 @@ struct _n_User {
 /*
    User-defined routines
 */
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   User               user = (User)ctx;
   const PetscScalar *x, *xdot;
@@ -50,7 +50,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, PetscCtx ctx)
 {
   User               user     = (User)ctx;
   PetscInt           rowcol[] = {0, 1};
@@ -75,7 +75,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx)
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, PetscCtx ctx)
 {
   User               user  = (User)ctx;
   PetscInt           row[] = {0, 1}, col[] = {0};
@@ -96,7 +96,7 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx)
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, PetscCtx ctx)
 {
   const PetscScalar *x;
   PetscReal          tfinal, dt;

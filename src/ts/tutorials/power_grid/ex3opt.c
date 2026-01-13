@@ -234,7 +234,7 @@ int main(int argc, char **argv)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx0)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCtx ctx0)
 {
   AppCtx      *ctx = (AppCtx *)ctx0;
   PetscInt     nadj;

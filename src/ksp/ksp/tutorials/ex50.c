@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   UserContext  *user = (UserContext *)ctx;
   PetscInt      i, j, M, N, xm, ym, xs, ys;
@@ -99,7 +99,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx)
+PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   PetscInt     i, j, M, N, xm, ym, xs, ys, num, numi, numj;
   PetscScalar  v[5], Hx, Hy, HydHx, HxdHy;

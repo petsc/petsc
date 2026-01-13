@@ -253,7 +253,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, PetscCtx ctx)
 {
   Mat         A      = AA;            /* Jacobian matrix */
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */

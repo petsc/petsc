@@ -508,7 +508,7 @@ PetscErrorCode PetscAttachDebugger(void)
 .seealso: `PetscSetDebuggerFromString()`, `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
 @*/
-PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx)
+PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, PetscCtx ctx)
 {
   (void)comm;
   (void)num;

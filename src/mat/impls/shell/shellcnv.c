@@ -135,7 +135,7 @@ typedef struct {
   Mat            Dwork;
 } MatProductCtx_MatMatCF;
 
-static PetscErrorCode MatProductDestroy_CF(void **data)
+static PetscErrorCode MatProductDestroy_CF(PetscCtxRt data)
 {
   MatProductCtx_MatMatCF *mmcfdata = *(MatProductCtx_MatMatCF **)data;
 

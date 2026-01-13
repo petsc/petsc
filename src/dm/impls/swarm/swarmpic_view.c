@@ -54,7 +54,7 @@ static PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
 
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
   if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
+    PetscCall(PetscContainerGetPointer(container, &bytes));
     PetscCall(PetscFree(bytes));
     PetscCall(PetscContainerDestroy(&container));
   }
@@ -98,7 +98,7 @@ static PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Valid to find attached data XDMFViewerContext");
-  PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
+  PetscCall(PetscContainerGetPointer(container, &bytes));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMSWARM, &isswarm));
   PetscCheck(isswarm, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only valid for DMSwarm");
@@ -205,7 +205,7 @@ static PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unable to find attached data XDMFViewerContext");
-  PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
+  PetscCall(PetscContainerGetPointer(container, &bytes));
   PetscCall(PetscViewerFileGetName(viewer, &viewername));
   PetscCall(private_CreateDataFileNameXDMF(viewername, datafile));
 
@@ -269,7 +269,7 @@ static PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unable to find attached data XDMFViewerContext");
-  PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
+  PetscCall(PetscContainerGetPointer(container, &bytes));
   PetscCall(PetscViewerFileGetName(viewer, &viewername));
   PetscCall(private_CreateDataFileNameXDMF(viewername, datafile));
 

@@ -917,7 +917,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscInt       *orients;
     PetscReal     **orientPoints;
     PetscReal      *cellPoints;
-    PetscReal      *dummyWeights;
+    PetscReal      *unusedWeights;
     PetscQuadrature cellQuad = NULL;
 
     PetscCall(DMFieldDSGetHeightDisc(field, 1, dsfield->disc, &faceDisc));
@@ -933,9 +933,9 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(DMPlexGetCone(K, 0, &coneK));
     PetscCall(PetscMalloc2(numFaces, &co, coneSize, &counts));
     PetscCall(PetscMalloc1(dE * Nq, &cellPoints));
-    PetscCall(PetscMalloc1(Nq, &dummyWeights));
+    PetscCall(PetscMalloc1(Nq, &unusedWeights));
     PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &cellQuad));
-    PetscCall(PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, dummyWeights));
+    PetscCall(PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, unusedWeights));
     minOrient = PETSC_INT_MAX;
     maxOrient = PETSC_INT_MIN;
     for (p = 0; p < numFaces; p++) { /* record the orientation of the facet wrt the support cells */

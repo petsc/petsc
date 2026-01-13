@@ -389,7 +389,7 @@ PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y)
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
 
-PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, PetscCtx ctx)
 {
   static PetscInt fail = 0;
 

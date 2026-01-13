@@ -1158,7 +1158,7 @@ typedef struct {
   DMPlexPointQueue queue;
 } PointDivision;
 
-static PetscErrorCode divideCell(DMLabel label, PetscInt p, PetscInt val, void *ctx)
+static PetscErrorCode divideCell(DMLabel label, PetscInt p, PetscInt val, PetscCtx ctx)
 {
   PointDivision  *div  = (PointDivision *)ctx;
   PetscInt        cval = val < 0 ? val - 1 : val + 1;

@@ -4,7 +4,7 @@ typedef struct _n_TaoShell Tao_Shell;
 
 struct _n_TaoShell {
   PetscErrorCode (*solve)(Tao);
-  void *ctx;
+  PetscCtx ctx;
 };
 
 /*@C
@@ -49,9 +49,15 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
   Note:
   This routine is intended for use within various shell routines
 
+  Fortran Note:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Define `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: `Tao`, `TAOSHELL`, `TaoShellSetContext()`
 @*/
-PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
+PetscErrorCode TaoShellGetContext(Tao tao, PetscCtxRt ctx)
 {
   PetscBool flg;
 
@@ -77,7 +83,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 
 .seealso: `Tao`, `TAOSHELL`, `TaoShellGetContext()`
 @*/
-PetscErrorCode TaoShellSetContext(Tao tao, void *ctx)
+PetscErrorCode TaoShellSetContext(Tao tao, PetscCtx ctx)
 {
   Tao_Shell *shell = (Tao_Shell *)tao->data;
   PetscBool  flg;

@@ -2618,7 +2618,7 @@ struct MatProductCtx_MatMatCusparse {
 #endif
 };
 
-static PetscErrorCode MatProductCtxDestroy_MatMatCusparse(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatCusparse(PetscCtxRt data)
 {
   MatProductCtx_MatMatCusparse *mmdata = *(MatProductCtx_MatMatCusparse **)data;
 
@@ -2638,7 +2638,7 @@ static PetscErrorCode MatProductCtxDestroy_MatMatCusparse(void **data)
   if (mmdata->mmBuffer2) PetscCallCUDA(cudaFree(mmdata->mmBuffer2));
 #endif
   PetscCall(MatDestroy(&mmdata->X));
-  PetscCall(PetscFree(*data));
+  PetscCall(PetscFree(mmdata));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4358,9 +4358,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool dest
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_SeqAIJCUSPARSE(void **data)
+static PetscErrorCode MatCOOStructDestroy_SeqAIJCUSPARSE(PetscCtxRt ctx)
 {
-  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)*data;
+  MatCOOStruct_SeqAIJ *coo = *(MatCOOStruct_SeqAIJ **)ctx;
 
   PetscFunctionBegin;
   PetscCallCUDA(cudaFree(coo->perm));
@@ -4397,7 +4397,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount 
 
   // Copy the COO struct to device
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container_h));
-  PetscCall(PetscContainerGetPointer(container_h, (void **)&coo_h));
+  PetscCall(PetscContainerGetPointer(container_h, &coo_h));
   PetscCall(PetscMalloc1(1, &coo_d));
   *coo_d = *coo_h; // do a shallow copy and then amend some fields that need to be different
   PetscCallCUDA(cudaMalloc((void **)&coo_d->jmap, (coo_h->nz + 1) * sizeof(PetscCount)));
@@ -4436,7 +4436,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[
   if (!dev->mat) PetscCall(MatSeqAIJCUSPARSECopyToGPU(A));
 
   PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
-  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  PetscCall(PetscContainerGetPointer(container, &coo));
 
   PetscCall(PetscGetMemType(v, &memtype));
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */

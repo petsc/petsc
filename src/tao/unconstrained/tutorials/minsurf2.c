@@ -844,7 +844,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
 }
 
 /*-----------------------------------------------------------------------*/
-PetscErrorCode My_Monitor(Tao tao, void *ctx)
+PetscErrorCode My_Monitor(Tao tao, PetscCtx ctx)
 {
   Vec X;
 

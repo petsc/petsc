@@ -5,9 +5,9 @@
 #include <petsc/private/pcbddcgraphhashmap.h>
 #include <petscsf.h>
 
-PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void **ctx)
+PetscErrorCode PCBDDCDestroyGraphCandidatesIS(PetscCtxRt ctx)
 {
-  PCBDDCGraphCandidates cand = (PCBDDCGraphCandidates)*ctx;
+  PCBDDCGraphCandidates cand = *(PCBDDCGraphCandidates *)ctx;
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < cand->nfc; i++) PetscCall(ISDestroy(&cand->Faces[i]));
@@ -199,7 +199,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   if (gcand) {
     PCBDDCGraphCandidates cand;
 
-    PetscCall(PetscContainerGetPointer(gcand, (void **)&cand));
+    PetscCall(PetscContainerGetPointer(gcand, &cand));
     if (n_faces) *n_faces = cand->nfc;
     if (FacesIS) *FacesIS = cand->Faces;
     if (n_edges) *n_edges = cand->nec;

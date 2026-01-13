@@ -385,7 +385,7 @@ int main(int argc, char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode RHSJacobianShell(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSJacobianShell(TS ts, PetscReal t, Vec U, Mat A, Mat BB, PetscCtx ctx)
 {
   MCtx *mctx;
 
@@ -395,7 +395,7 @@ PetscErrorCode RHSJacobianShell(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IJacobianShell(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, void *ctx)
+PetscErrorCode IJacobianShell(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, PetscCtx ctx)
 {
   MCtx *mctx;
 

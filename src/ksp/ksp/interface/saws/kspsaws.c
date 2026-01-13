@@ -47,13 +47,13 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`
 @*/
-PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
+PetscErrorCode KSPMonitorSAWsDestroy(PetscCtxRt ctx)
 {
-  KSPMonitor_SAWs *mon = (KSPMonitor_SAWs *)*ctx;
+  KSPMonitor_SAWs *mon = *(KSPMonitor_SAWs **)ctx;
 
   PetscFunctionBegin;
   PetscCall(PetscFree2(mon->eigr, mon->eigi));
-  PetscCall(PetscFree(*ctx));
+  PetscCall(PetscFree(*(void **)ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -75,7 +75,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`, `KSPMonitorSAWsDestroy()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
 @*/
-PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
+PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, PetscCtx ctx)
 {
   KSPMonitor_SAWs *mon = (KSPMonitor_SAWs *)ctx;
   PetscReal        emax, emin;

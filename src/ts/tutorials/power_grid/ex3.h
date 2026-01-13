@@ -20,7 +20,7 @@ typedef struct {
 } AppCtx;
 
 /* Event check */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
 
@@ -32,7 +32,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
 
@@ -151,7 +151,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
+PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, PetscCtx ctx0)
 {
   PetscInt     row[] = {0, 1}, col[] = {0};
   PetscScalar *x, J[2][1];
@@ -200,7 +200,7 @@ PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, void *ctx)
+PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(DRDP));

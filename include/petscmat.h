@@ -460,7 +460,7 @@ PETSC_EXTERN PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat, PetscInt, const 
 PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat, PetscInt, const PetscInt[], const PetscInt[], const PetscInt[], const PetscInt[]);
 
-PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, void *, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscCtx, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateCentering(MPI_Comm, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateNormalHermitian(Mat, Mat *);
@@ -1366,7 +1366,7 @@ M*/
 #define MatPreallocateFinalize(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "MatPreallocateEnd()", ) MatPreallocateEnd(__VA_ARGS__)
 
 /* Routines unique to particular data structures */
-PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat, void *);
+PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat, PetscCtxRt);
 
 PETSC_EXTERN PetscErrorCode MatInodeAdjustForInodes(Mat, IS *, IS *);
 PETSC_EXTERN PetscErrorCode MatInodeGetInodeSizes(Mat, PetscInt *, PetscInt *[], PetscInt *);
@@ -2051,7 +2051,7 @@ PETSC_DEPRECATED_FUNCTION(3, 14, 0, "MatProductClear()", ) static inline PetscEr
 }
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat, MatOperation, PetscErrorCodeFn *);
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat, MatOperation, PetscErrorCodeFn **);
-PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat, void *);
+PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat, PetscCtx);
 PETSC_EXTERN PetscErrorCode MatShellSetContextDestroy(Mat, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode MatShellSetVecType(Mat, VecType);
 PETSC_EXTERN PetscErrorCode MatShellTestMult(Mat, PetscErrorCode (*)(void *, Vec, Vec), Vec, void *, PetscBool *);
@@ -2105,7 +2105,7 @@ typedef struct _p_MatNullSpace *MatNullSpace;
 
 .seealso: [](ch_matrices), `Mat`, `MatNullSpaceCreate()`, `MatNullSpaceSetFunction()`, `MatGetNullSpace()`, `MatSetNullSpace()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatNullSpaceRemoveFn(MatNullSpace nsp, Vec x, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatNullSpaceRemoveFn(MatNullSpace nsp, Vec x, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreate(MPI_Comm, PetscBool, PetscInt, const Vec[], MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, MatNullSpaceRemoveFn *, void *);
@@ -2176,7 +2176,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDFinalizePackage(void);
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDFn(void *ctx, Vec x, Vec y);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDFn(PetscCtx ctx, Vec x, Vec y);
 
 /*S
   MatMFFDiFn - Function provided to `MatMFFDSetFunctioni()` that computes the function being differenced at a single point
@@ -2191,7 +2191,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDFn(void *ctx, Vec x, Vec y);
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDFn`, `MatMFFDiBaseFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiFn(void *ctx, PetscInt i, Vec x, PetscScalar *result);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiFn(PetscCtx ctx, PetscInt i, Vec x, PetscScalar *result);
 
 /*S
   MatMFFDiBaseFn - Function provided to `MatMFFDSetFunctioniBase()` that computes the base of the function evaluations
@@ -2205,7 +2205,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiFn(void *ctx, PetscInt i, Ve
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctioniBase()`, `MatMFFDFn`, `MatMFFDiFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiBaseFn(void *ctx, Vec x);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiBaseFn(PetscCtx ctx, Vec x);
 
 /*S
   MatMFFDCheckhFn - Function provided to `MatMFFDSetCheckh()` that checks and possibly adjusts the value of `h` to ensure some property.
@@ -2224,7 +2224,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiBaseFn(void *ctx, Vec x);
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`,  `MatMFFDSetCheckh()`, `MatMFFDCheckPositivity()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDCheckhFn(void *ctx, Vec x, Vec y, PetscScalar *h);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDCheckhFn(PetscCtx ctx, Vec x, Vec y, PetscScalar *h);
 
 PETSC_EXTERN PetscErrorCode MatCreateMFFD(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat, Vec, Vec);

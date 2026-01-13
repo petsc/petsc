@@ -21,7 +21,7 @@ struct _n_TaoMonitorDrawCtx {
   PetscInt    howoften; /* when > 0 uses iteration % howoften, when negative only final solution plotted */
 };
 
-static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, void *ctx)
+static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, PetscCtx ctx)
 {
   Tao  tao          = (Tao)ctx;
   SNES snes_ewdummy = tao->snes_ewdummy;
@@ -38,7 +38,7 @@ static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, void *ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPPostSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, void *ctx)
+static PetscErrorCode KSPPostSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, PetscCtx ctx)
 {
   Tao  tao          = (Tao)ctx;
   SNES snes_ewdummy = tao->snes_ewdummy;
@@ -1455,7 +1455,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`
 @*/
-PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it, void *ctx), void *ctx)
+PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it, PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -1488,7 +1488,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergedReason()`, `TaoGetSolutionStatus()`, `TaoGetTolerances()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *), void *ctx)
+PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -1528,7 +1528,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoView()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscCtxDestroyFn *dest)
+PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), PetscCtx ctx, PetscCtxDestroyFn *dest)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -1599,7 +1599,7 @@ PetscErrorCode TaoMonitorCancel(Tao tao)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorDefault(Tao tao, PetscCtx ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm;
@@ -1649,7 +1649,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorGlobalization(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGlobalization(Tao tao, PetscCtx ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm, stp, tr;
@@ -1704,7 +1704,7 @@ PetscErrorCode TaoMonitorGlobalization(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorDefaultShort(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorDefaultShort(Tao tao, PetscCtx ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm;
@@ -1750,7 +1750,7 @@ PetscErrorCode TaoMonitorDefaultShort(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorConstraintNorm(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorConstraintNorm(Tao tao, PetscCtx ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm;
@@ -1788,7 +1788,7 @@ PetscErrorCode TaoMonitorConstraintNorm(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorSolution(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorSolution(Tao tao, PetscCtx ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1815,7 +1815,7 @@ PetscErrorCode TaoMonitorSolution(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorGradient(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGradient(Tao tao, PetscCtx ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1842,7 +1842,7 @@ PetscErrorCode TaoMonitorGradient(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorStep(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorStep(Tao tao, PetscCtx ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1874,7 +1874,7 @@ PetscErrorCode TaoMonitorStep(Tao tao, void *ctx)
 .seealso: [](ch_tao), `Tao`, `TaoMonitorSolution()`, `TaoMonitorSet()`, `TaoMonitorGradientDraw()`, `TaoMonitorDrawCtxCreate()`,
           `TaoMonitorDrawCtxDestroy()`
 @*/
-PetscErrorCode TaoMonitorSolutionDraw(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorSolutionDraw(Tao tao, PetscCtx ctx)
 {
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
@@ -1901,7 +1901,7 @@ PetscErrorCode TaoMonitorSolutionDraw(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorGradient()`, `TaoMonitorSet()`, `TaoMonitorSolutionDraw()`
 @*/
-PetscErrorCode TaoMonitorGradientDraw(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGradientDraw(Tao tao, PetscCtx ctx)
 {
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
@@ -1928,7 +1928,7 @@ PetscErrorCode TaoMonitorGradientDraw(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `TaoMonitorSolutionDraw`
 @*/
-PetscErrorCode TaoMonitorStepDraw(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorStepDraw(Tao tao, PetscCtx ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1955,7 +1955,7 @@ PetscErrorCode TaoMonitorStepDraw(Tao tao, void *ctx)
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoMonitorResidual(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorResidual(Tao tao, PetscCtx ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -2641,7 +2641,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
 
 .seealso: [](ch_tao), `Tao`, `TaoGetApplicationContext()`
 @*/
-PetscErrorCode TaoSetApplicationContext(Tao tao, void *ctx)
+PetscErrorCode TaoSetApplicationContext(Tao tao, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -2662,29 +2662,15 @@ PetscErrorCode TaoSetApplicationContext(Tao tao, void *ctx)
 
   Level: intermediate
 
-  Fortran Notes:
-  This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
-  function that tells the Fortran compiler the derived data type that is returned as the `ctx` argument. For example,
-.vb
-  Interface TaoGetApplicationContext
-    Subroutine TaoGetApplicationContext(tao,ctx,ierr)
-  #include <petsc/finclude/petsctao.h>
-      use petsctao
-      Tao tao
-      type(tUsertype), pointer :: ctx
-      PetscErrorCode ierr
-    End Subroutine
-  End Interface TaoGetApplicationContext
-.ve
-
-  The prototype for `ctx` must be
+  Fortran Note:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Define `ctx` with
 .vb
   type(tUsertype), pointer :: ctx
 .ve
 
 .seealso: [](ch_tao), `Tao`, `TaoSetApplicationContext()`
 @*/
-PetscErrorCode TaoGetApplicationContext(Tao tao, PeCtx ctx)
+PetscErrorCode TaoGetApplicationContext(Tao tao, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);

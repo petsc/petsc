@@ -658,7 +658,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPCFn *function, void *ctx, PetscCtxDestroyFn *destroy)
+static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
@@ -685,10 +685,10 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPC
 
 .seealso: [](ch_ksp), `KSPFlexibleSetModifyPC()`, `KSPFlexibleModifyPCFn`, `KSPPIPEGCR`
  @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, void *ctx, PetscCtxDestroyFn *destroy)
+PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, void *ctx, PetscCtxDestroyFn *), (ksp, function, ctx, destroy));
+  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, PetscCtx ctx, PetscCtxDestroyFn *), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

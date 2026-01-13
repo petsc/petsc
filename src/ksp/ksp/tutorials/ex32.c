@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   UserContext  *user = (UserContext *)ctx;
   PetscInt      i, j, mx, my, xm, ym, xs, ys;
@@ -114,7 +114,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   UserContext *user = (UserContext *)ctx;
   PetscInt     i, j, mx, my, xm, ym, xs, ys, num, numi, numj;

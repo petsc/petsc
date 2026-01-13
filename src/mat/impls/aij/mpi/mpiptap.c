@@ -39,7 +39,7 @@ static PetscErrorCode MatView_MPIAIJ_PtAP(Mat A, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatProductCtxDestroy_MPIAIJ_PtAP(void **data)
+PetscErrorCode MatProductCtxDestroy_MPIAIJ_PtAP(PetscCtxRt data)
 {
   MatProductCtx_APMPI *ptap = *(MatProductCtx_APMPI **)data;
   MatMergeSeqsToMPI   *merge;

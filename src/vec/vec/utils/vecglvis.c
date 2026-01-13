@@ -1,9 +1,9 @@
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
 
-static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void **ptr)
+static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(PetscCtxRt ptr)
 {
-  PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo)*ptr;
+  PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo) * (void **)ptr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscFree(info->fec_type));
@@ -19,7 +19,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
   const char           **fec_type;
   PetscViewerGLVisStatus sockstatus;
   PetscViewerGLVisType   socktype;
-  void                  *userctx;
+  void                  *ctx;
   PetscInt               i, nfields, *spacedim;
   PetscBool              pause = PETSC_FALSE;
 
@@ -35,7 +35,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     PetscCheck(dm, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "You need to provide a DM or use PetscViewerGLVisSetFields()");
     PetscCall(PetscViewerGLVisSetDM_Internal(viewer, dm));
   }
-  PetscCall(PetscViewerGLVisGetFields_Internal(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &userctx));
+  PetscCall(PetscViewerGLVisGetFields_Internal(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &ctx));
   if (!nfields) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGLVisGetType_Internal(viewer, &socktype));
@@ -67,7 +67,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
 
   /* user-provided sampling */
   if (g2lfields) {
-    PetscCall((*g2lfields)((PetscObject)U, nfields, (PetscObject *)Ufield, userctx));
+    PetscCall((*g2lfields)((PetscObject)U, nfields, (PetscObject *)Ufield, ctx));
   } else {
     PetscCheck(nfields <= 1, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "Don't know how to sample %" PetscInt_FMT " fields", nfields);
     PetscCall(VecCopy(U, Ufield[0]));

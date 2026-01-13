@@ -16,7 +16,7 @@ Test 2:
   solution: u_1 = b_3, u_2 = b_2, u_3 = b_1 - b_3
 */
 
-PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   Mat A = (Mat)ctx;
 
@@ -25,7 +25,7 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
+PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -554,7 +554,7 @@ typedef struct {
   PetscReal r;
 } SingleSourceCtx;
 
-static PetscErrorCode gaussian(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode gaussian(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   SingleSourceCtx *s  = (SingleSourceCtx *)ctx;
   const PetscReal *x0 = s->x0;
@@ -569,7 +569,7 @@ static PetscErrorCode gaussian(PetscInt dim, PetscReal time, const PetscReal x[]
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode source(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode source(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   MultiSourceCtx *s = (MultiSourceCtx *)ctx;
 
@@ -704,7 +704,7 @@ static void jacobian_fail(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 }
 
 /* initial conditions for C: eq. 16 */
-static PetscErrorCode initial_conditions_C_0(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode initial_conditions_C_0(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   if (dim == 2) {
     u[0] = 1;
@@ -722,7 +722,7 @@ static PetscErrorCode initial_conditions_C_0(PetscInt dim, PetscReal time, const
 }
 
 /* initial conditions for C: eq. 17 */
-static PetscErrorCode initial_conditions_C_1(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode initial_conditions_C_1(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal x = xx[0];
   const PetscReal y = xx[1];
@@ -735,7 +735,7 @@ static PetscErrorCode initial_conditions_C_1(PetscInt dim, PetscReal time, const
 }
 
 /* initial conditions for C: eq. 18 */
-static PetscErrorCode initial_conditions_C_2(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode initial_conditions_C_2(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0;
   u[1] = 0;
@@ -749,7 +749,7 @@ static PetscErrorCode initial_conditions_C_2(PetscInt dim, PetscReal time, const
 }
 
 /* random initial conditions for the diagonal of C */
-static PetscErrorCode initial_conditions_C_random(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode initial_conditions_C_random(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscScalar vals[3];
   PetscRandom r = (PetscRandom)ctx;
@@ -855,14 +855,14 @@ static void eigsc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 }
 
 /* functions to be sampled: zero function */
-static PetscErrorCode zerof(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zerof(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   for (PetscInt d = 0; d < Nc; ++d) u[d] = 0.0;
   return PETSC_SUCCESS;
 }
 
 /* functions to be sampled: constant function */
-static PetscErrorCode constantf(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode constantf(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   for (PetscInt d = 0; d < Nc; ++d) u[d] = 1.0;
   return PETSC_SUCCESS;

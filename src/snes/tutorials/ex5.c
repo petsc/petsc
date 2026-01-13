@@ -512,7 +512,7 @@ static PetscErrorCode FormFunctionMatlab(SNES snes, Vec X, Vec F, void *ptr)
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+static PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
 {
   PetscInt      i, j, k, Mx, My, xs, ys, xm, ym, its, tot_its, sweeps, l;
   PetscReal     lambda, hx, hy, hxdhy, hydhx, sc;

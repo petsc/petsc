@@ -11,9 +11,9 @@
 static PetscFortranCallbackId riemannsolver;
 
 // We can't use PetscObjectUseFortranCallback() because this function returns void
-static void ourriemannsolver(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx)
+static void ourriemannsolver(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], PetscCtx ctx)
 {
-  void (*func)(PetscInt *dim, PetscInt *Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], const PetscInt *numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx);
+  void (*func)(PetscInt *dim, PetscInt *Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], const PetscInt *numConstants, const PetscScalar constants[], PetscScalar flux[], PetscCtx ctx);
   void *_ctx;
   PetscCallAbort(PETSC_COMM_SELF, PetscObjectGetFortranCallback((PetscObject)ctx, PETSC_FORTRAN_CALLBACK_CLASS, riemannsolver, (PetscFortranCallbackFn **)&func, &_ctx));
   if (func) (*func)(&dim, &Nf, x, n, uL, uR, &numConstants, constants, flux, _ctx);

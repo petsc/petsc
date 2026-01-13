@@ -206,12 +206,12 @@ static PetscErrorCode MatShellShiftAndScale(Mat A, Vec X, Vec Y, PetscBool conju
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
+static PetscErrorCode MatShellGetContext_Shell(Mat mat, PetscCtxRt ctx)
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
 
   PetscFunctionBegin;
-  if (shell->ctxcontainer) PetscCall(PetscContainerGetPointer(shell->ctxcontainer, (void **)ctx));
+  if (shell->ctxcontainer) PetscCall(PetscContainerGetPointer(shell->ctxcontainer, ctx));
   else *(void **)ctx = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -230,12 +230,14 @@ static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
   Level: advanced
 
   Fortran Notes:
-  You must write a Fortran interface definition for this
-  function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellSetOperation()`, `MatShellSetContext()`
 @*/
-PetscErrorCode MatShellGetContext(Mat mat, void *ctx)
+PetscErrorCode MatShellGetContext(Mat mat, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -482,18 +484,18 @@ static PetscErrorCode MatDestroy_Shell(Mat mat)
 typedef struct {
   PetscErrorCode (*numeric)(Mat, Mat, Mat, void *);
   PetscCtxDestroyFn *destroy;
-  void              *userdata;
+  void              *ctx;
   Mat                B;
   Mat                Bt;
   Mat                axpy;
 } MatProductCtx_MatMatShell;
 
-static PetscErrorCode MatProductCtxDestroy_MatMatShell(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatShell(PetscCtxRt data)
 {
   MatProductCtx_MatMatShell *mmdata = *(MatProductCtx_MatMatShell **)data;
 
   PetscFunctionBegin;
-  if (mmdata->destroy) PetscCall((*mmdata->destroy)(&mmdata->userdata));
+  if (mmdata->destroy) PetscCall((*mmdata->destroy)(&mmdata->ctx));
   PetscCall(MatDestroy(&mmdata->B));
   PetscCall(MatDestroy(&mmdata->Bt));
   PetscCall(MatDestroy(&mmdata->axpy));
@@ -571,7 +573,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
   D->ops->productsymbolic = NULL;
   D->ops->productnumeric  = NULL;
 
-  PetscCall((*mdata->numeric)(A, useBmdata ? mdata->B : B, D, mdata->userdata));
+  PetscCall((*mdata->numeric)(A, useBmdata ? mdata->B : B, D, mdata->ctx));
 
   /* clear any leftover user data and restore D pointers */
   PetscCall(MatProductClear(D));
@@ -728,7 +730,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   mdata->numeric = matmat->numeric;
   mdata->destroy = matmat->destroy;
   if (matmat->symbolic) {
-    PetscCall((*matmat->symbolic)(A, B, D, &mdata->userdata));
+    PetscCall((*matmat->symbolic)(A, B, D, &mdata->ctx));
   } else { /* call general setup if symbolic operation not provided */
     PetscCall(MatSetUp(D));
   }
@@ -1504,7 +1506,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL};
 
-static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)
+static PetscErrorCode MatShellSetContext_Shell(Mat mat, PetscCtx ctx)
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
 
@@ -1532,7 +1534,7 @@ static PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscCtxDestroyFn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShellSetContext_Immutable(Mat mat, void *ctx)
+PetscErrorCode MatShellSetContext_Immutable(Mat mat, PetscCtx ctx)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContext() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
@@ -1869,7 +1871,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatShellSetOperation()`, `MatHasOperation()`, `MatShellGetContext()`, `MatShellSetContext()`, `MatShellSetManageScalingShifts()`, `MatShellSetMatProductOperation()`
 @*/
-PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, void *ctx, Mat *A)
+PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscCtx ctx, Mat *A)
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
@@ -1901,7 +1903,7 @@ PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
 @*/
-PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
+PetscErrorCode MatShellSetContext(Mat mat, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -2035,7 +2037,7 @@ PetscErrorCode MatShellGetScalingShifts(Mat A, PetscScalar *vshift, PetscScalar 
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`
 @*/
-PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), Vec base, void *ctx, PetscBool *flg)
+PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), Vec base, PetscCtx ctx, PetscBool *flg)
 {
   PetscInt  m, n;
   Mat       mf, Dmf, Dmat, Ddiff;
@@ -2097,7 +2099,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMult()`
 @*/
-PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), Vec base, void *ctx, PetscBool *flg)
+PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), Vec base, PetscCtx ctx, PetscBool *flg)
 {
   Vec       x, y, z;
   PetscInt  m, n, M, N;

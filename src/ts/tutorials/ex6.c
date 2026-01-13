@@ -342,7 +342,7 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal crtime, Vec u, PetscCtx ctx)
 {
   AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscReal norm_2, norm_max, dt, dttol;
@@ -422,7 +422,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, PetscCtx ctx)
 {
   Mat         A      = AA;            /* Jacobian matrix */
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
@@ -489,7 +489,7 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
    f - function
    ctx - optional user-defined context, as set by TSetBCFunction()
  */
-PetscErrorCode MyBCRoutine(TS ts, PetscReal t, Vec f, void *ctx)
+PetscErrorCode MyBCRoutine(TS ts, PetscReal t, Vec f, PetscCtx ctx)
 {
   AppCtx      *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscInt     m      = appctx->m;

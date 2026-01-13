@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
   if (!modelObj) PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
 
   // Get attached EGADS model (pointer)
-  PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+  PetscCall(PetscContainerGetPointer(modelObj, &model));
 
   // Look to see if DM has Container for Geometry Control Point Data
   PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Hash Table", (PetscObject *)&cpHashTableObj));
@@ -109,12 +109,12 @@ int main(int argc, char *argv[])
   PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Weight Data Length", (PetscObject *)&wDataLengthObj));
 
   // Get attached EGADS model Control Point and Weights Hash Tables and Data Arrays (pointer)
-  PetscCall(PetscContainerGetPointer(cpHashTableObj, (void **)&cpHashTable));
+  PetscCall(PetscContainerGetPointer(cpHashTableObj, &cpHashTable));
   PetscCall(VecGetArrayWrite(cntrlPtCoordsVec, &cpCoordData));
-  PetscCall(PetscContainerGetPointer(cpCoordDataLengthObj, (void **)&cpCoordDataLengthPtr));
-  PetscCall(PetscContainerGetPointer(wHashTableObj, (void **)&wHashTable));
+  PetscCall(PetscContainerGetPointer(cpCoordDataLengthObj, &cpCoordDataLengthPtr));
+  PetscCall(PetscContainerGetPointer(wHashTableObj, &wHashTable));
   PetscCall(VecGetArrayWrite(cntrlPtWeightsVec, &wData));
-  PetscCall(PetscContainerGetPointer(wDataLengthObj, (void **)&wDataLengthPtr));
+  PetscCall(PetscContainerGetPointer(wDataLengthObj, &wDataLengthPtr));
 
   cpCoordDataLength = *cpCoordDataLengthPtr;
   wDataLength       = *wDataLengthPtr;

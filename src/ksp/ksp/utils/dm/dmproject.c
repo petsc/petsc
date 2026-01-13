@@ -36,7 +36,7 @@ static PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   PetscInt f;
 
@@ -108,7 +108,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
     PetscCall(DMHasNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &hasMask));
     if (!hasMask) {
-      PetscErrorCode (**func)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+      PetscErrorCode (**func)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
       void   **ctx;
       PetscInt Nf, f;
 

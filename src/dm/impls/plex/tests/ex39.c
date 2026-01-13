@@ -21,7 +21,7 @@ const char help[] = "A test of H-div conforming discretizations on different cel
   the divergence of a function in H(div) should be exactly representable in L_2
   by definition.
 */
-static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0;
@@ -31,13 +31,13 @@ static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[
    \vec{u} = \vec{x};
    p = dim;
    */
-static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = x[c];
   return PETSC_SUCCESS;
 }
-static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = dim;
   return PETSC_SUCCESS;
@@ -48,13 +48,13 @@ static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[]
  * p = \Sum_{i=1}^{dim} 2*\pi*cos{2*\pi*x_i}
  * */
 
-static PetscErrorCode sinusoid_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode sinusoid_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(2 * PETSC_PI * x[c]);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode sinusoid_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode sinusoid_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   u[0] = 0;

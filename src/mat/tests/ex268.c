@@ -2,7 +2,7 @@ static char help[] = "Tests MATFACTORHTOOL\n\n";
 
 #include <petscmat.h>
 
-static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, void *ctx)
+static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, PetscCtx ctx)
 {
   PetscInt  d, j, k;
   PetscReal diff = 0.0, *coords = (PetscReal *)(ctx);

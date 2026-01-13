@@ -270,7 +270,6 @@ static PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat, MatAssemblyType mode)
 
   PetscFunctionBegin;
   PetscCallHYPRE(HYPRE_StructMatrixAssemble(ex->hmat));
-  /* PetscCallHYPRE(HYPRE_StructMatrixPrint("dummy",ex->hmat,0)); */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -14,7 +14,7 @@ const char ChacoPartitionerCitation[] = "@inproceedings{Chaco95,\n"
                                         "}\n";
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt unused;
 } PetscPartitioner_Chaco;
 
 static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)

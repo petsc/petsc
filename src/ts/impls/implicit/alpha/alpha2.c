@@ -62,7 +62,7 @@ typedef struct {
 
 .seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2PredictorFn`
 @*/
-PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2PredictorFn *predictor, void *ctx)
+PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2PredictorFn *predictor, PetscCtx ctx)
 {
   TS_Alpha *th = (TS_Alpha *)ts->data;
 

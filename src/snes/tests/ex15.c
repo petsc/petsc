@@ -45,26 +45,26 @@ typedef struct {
 } AppCtx;
 
 /* SOLUTION CONST: \phi = 1, q = 0, f = 0 */
-static PetscErrorCode const_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode const_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = 1.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode const_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode const_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   for (PetscInt d = 0; d < dim; ++d) u[d] = 0.0;
   return PETSC_SUCCESS;
 }
 
 /* SOLUTION LINEAR: \phi = 2y, q = <0, 2>, f = 0 */
-static PetscErrorCode linear_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 2. * x[1];
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.;
   u[1] = 2.;
@@ -72,20 +72,20 @@ static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[]
 }
 
 /* SOLUTION QUADRATIC: \phi = x (2\pi - x) + (1 + y) (1 - y), q = <2\pi - 2 x, - 2 y> = <2\pi, 0> - 2 x, f = -4 */
-static PetscErrorCode quadratic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[0] * (6.283185307179586 - x[0]) + (1. + x[1]) * (1. - x[1]);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 6.283185307179586 - 2. * x[0];
   u[1] = -2. * x[1];
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode quadratic_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[1] > 0. ? -2. * x[1] : 2. * x[1];
   return PETSC_SUCCESS;
@@ -97,20 +97,20 @@ static void f0_quadratic_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 }
 
 /* SOLUTION TRIG: \phi = sin(x) + (1/3 - y^2), q = <cos(x), -2 y>, f = sin(x) + 2 */
-static PetscErrorCode trig_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscSinReal(x[0]) + (1. / 3. - x[1] * x[1]);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trig_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscCosReal(x[0]);
   u[1] = -2. * x[1];
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trig_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[1] > 0. ? -2. * x[1] : 2. * x[1];
   return PETSC_SUCCESS;
@@ -122,20 +122,20 @@ static void f0_trig_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 }
 
 /* SOLUTION TRIGX: \phi = sin(x), q = <cos(x), 0>, f = sin(x) */
-static PetscErrorCode trigx_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trigx_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscSinReal(x[0]);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trigx_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trigx_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscCosReal(x[0]);
   u[1] = 0.;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trigx_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trigx_q_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[1] > 0. ? -2. * x[1] : 2. * x[1];
   return PETSC_SUCCESS;
@@ -183,13 +183,13 @@ static void g1_phiq(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 }
 
 /* SOLUTION PARTICLES: \phi = sigma, q = <cos(x), 0>, f = sin(x) */
-static PetscErrorCode particles_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode particles_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0795775;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode particles_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode particles_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.;
   u[1] = 0.;
@@ -369,7 +369,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
 
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
-  PetscCall(PetscBagGetData(ctx->bag, (void **)&p));
+  PetscCall(PetscBagGetData(ctx->bag, &p));
   PetscCall(PetscBagSetName(ctx->bag, "par", "Parameters"));
   bag = ctx->bag;
   PetscCall(PetscBagRegisterScalar(bag, &p->sigma, 1.0, "sigma", "Charge per unit area, C/m^3"));
@@ -410,7 +410,7 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
     Parameter *param;
     PetscReal  Area;
 
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
     switch (dim) {
     case 1:
       Area = (gmax[0] - gmin[0]);
@@ -433,7 +433,7 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
   {
     PetscDS    ds;
     Parameter *param;
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
     PetscScalar constants[NUM_CONSTANTS];
     constants[SIGMA] = param->sigma;
     PetscCall(DMGetDS(dm, &ds));

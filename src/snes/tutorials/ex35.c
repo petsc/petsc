@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx)
+PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, PetscCtx ctx)
 {
   Mat J;
   DM  dm;
@@ -153,7 +153,7 @@ PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx)
+PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, PetscCtx ctx)
 {
   DM dm;
 

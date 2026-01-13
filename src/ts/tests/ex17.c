@@ -43,7 +43,7 @@ PetscErrorCode CreateMat(PetscInt lsize, Mat *out)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt *order = (PetscInt *)ctx;
 
@@ -52,7 +52,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(MatZeroEntries(B));
@@ -60,7 +60,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx)
+PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], PetscCtx ctx)
 {
   PetscInt n, nnew;
 
@@ -83,7 +83,7 @@ PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, PetscBool *resize, void *ctx)
+PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, PetscBool *resize, PetscCtx ctx)
 {
   PetscBool *alreadydone = (PetscBool *)ctx;
 
@@ -93,7 +93,7 @@ PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, PetscCtx ctx)
 {
   const PetscScalar *a;
   PetscScalar       *store = (PetscScalar *)ctx;

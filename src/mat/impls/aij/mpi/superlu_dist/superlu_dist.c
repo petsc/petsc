@@ -445,7 +445,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
   Mat                Aloc;
   const PetscScalar *av;
   const PetscInt    *ai = NULL, *aj = NULL;
-  PetscInt           nz, dummy;
+  PetscInt           nz, unused;
   int                sinfo; /* SuperLU_Dist info flag is always an int even with long long indices */
   SuperLUStat_t      stat;
   PetscReal         *berr = 0;
@@ -464,7 +464,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
     Aloc = A;
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);
 
-  PetscCall(MatGetRowIJ(Aloc, 0, PETSC_FALSE, PETSC_FALSE, &dummy, &ai, &aj, &flg));
+  PetscCall(MatGetRowIJ(Aloc, 0, PETSC_FALSE, PETSC_FALSE, &unused, &ai, &aj, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "GetRowIJ failed");
   PetscCall(MatSeqAIJGetArrayRead(Aloc, &av));
   nz = ai[Aloc->rmap->n];
@@ -526,7 +526,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
   else
 #endif
     PetscCall(PetscArraycpy(lu->val, av, nz));
-  PetscCall(MatRestoreRowIJ(Aloc, 0, PETSC_FALSE, PETSC_FALSE, &dummy, &ai, &aj, &flg));
+  PetscCall(MatRestoreRowIJ(Aloc, 0, PETSC_FALSE, PETSC_FALSE, &unused, &ai, &aj, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "RestoreRowIJ failed");
   PetscCall(MatSeqAIJRestoreArrayRead(Aloc, &av));
   PetscCall(MatDestroy(&Aloc));

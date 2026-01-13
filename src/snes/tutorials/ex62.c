@@ -132,7 +132,7 @@ static void g0_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
      div mu e(u) - \nabla p + f = mu <8, 4, 4> - <1, 1, 1> + <1 - 8 mu, 1 - 4 mu, 1 - 4 mu> = 0
      \nabla \cdot u             = 4x - 2x - 2x = 0
 */
-static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
 
@@ -144,7 +144,7 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode quadratic_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -193,7 +193,7 @@ static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
      div mu e(u) - \nabla p + f = mu <-2pi^2 sin(pi x) - pi^2 sin(pi y) - pi^2 sin(pi z), pi^3 cos(pi x) y, pi^3 cos(pi x) z> - <2pi cos(2 pi x), 2pi cos(2 pi y), 2pi cos(2 pi z)> + <f_x, f_y, f_z> = 0
      \nabla \cdot u             = 2 pi cos(pi x) - pi cos(pi x) - pi cos(pi x) = 0
 */
-static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
 
@@ -205,7 +205,7 @@ static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], 
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trig_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -256,7 +256,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
   PetscCall(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx->bag));
-  PetscCall(PetscBagGetData(ctx->bag, (void **)&p));
+  PetscCall(PetscBagGetData(ctx->bag, &p));
   PetscCall(PetscBagSetName(ctx->bag, "par", "Stokes Parameters"));
   PetscCall(PetscBagRegisterScalar(ctx->bag, &p->mu, 1.0, "mu", "Dynamic Shear Viscosity, Pa s"));
   PetscCall(PetscBagSetFromOptions(ctx->bag));
@@ -318,20 +318,20 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
     Parameter  *param;
     PetscScalar constants[1];
 
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
     constants[0] = param->mu; /* dynamic shear viscosity, Pa s */
     PetscCall(PetscDSSetConstants(ds, 1, constants));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
   return PETSC_SUCCESS;
 }
-static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 1.0;
@@ -341,7 +341,7 @@ static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
   Vec vec;
-  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {zero, one};
+  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx) = {zero, one};
 
   PetscFunctionBeginUser;
   PetscCheck(origField == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Field %" PetscInt_FMT " should be 1 for pressure", origField);

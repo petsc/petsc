@@ -25,7 +25,7 @@ static PetscErrorCode sourlj(DM dm, Vec X, Mat J, Mat P, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmsnessetjacobianlocal_(DM *dm, void (*jac)(DM *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmsnessetjacobianlocal_(DM *dm, void (*jac)(DM *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 
@@ -48,7 +48,7 @@ static PetscErrorCode sourlf(DM dm, Vec X, Vec F, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmsnessetfunctionlocal_(DM *dm, void (*func)(DM *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmsnessetfunctionlocal_(DM *dm, void (*func)(DM *, Vec *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 

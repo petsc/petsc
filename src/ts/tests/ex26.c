@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, PetscCtx ctx)
 {
   PetscBool usingimex = *(PetscBool *)ctx;
 
@@ -69,7 +69,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx)
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecCopy(xdot, f));
@@ -77,7 +77,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, Mat A, Mat B, void *ctx)
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, Mat A, Mat B, PetscCtx ctx)
 {
   PetscScalar j;
 

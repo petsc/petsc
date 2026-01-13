@@ -164,7 +164,7 @@ static PetscErrorCode MatMult_AAt(Mat A, Vec x, Vec y)
   AAtCtx *aat;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A, (void *)&aat));
+  PetscCall(MatShellGetContext(A, &aat));
   /* PetscCall(MatMultTranspose(aat->M,x,aat->w)); */
   PetscCall(MatMultTranspose(aat->A, x, aat->w));
   PetscCall(MatMult(aat->A, aat->w, y));
@@ -257,7 +257,7 @@ static PetscErrorCode MatMultKernel_MAmI(Mat M, Vec x, Vec y, PetscBool t)
   PetscBool  sideleft = PETSC_TRUE;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(M, (void *)&pc));
+  PetscCall(MatShellGetContext(M, &pc));
   pch2opus = (PC_H2OPUS *)pc->data;
   if (!pch2opus->w) PetscCall(MatCreateVecs(pch2opus->M, &pch2opus->w, NULL));
   A = pch2opus->A;
@@ -311,7 +311,7 @@ static PetscErrorCode MatMultKernel_Hyper(Mat M, Vec x, Vec y, PetscBool t)
   PC_H2OPUS *pch2opus;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(M, (void *)&pc));
+  PetscCall(MatShellGetContext(M, &pc));
   pch2opus = (PC_H2OPUS *)pc->data;
   A        = pch2opus->A;
   PetscCall(MatCreateVecs(pch2opus->M, pch2opus->wns[0] ? NULL : &pch2opus->wns[0], pch2opus->wns[1] ? NULL : &pch2opus->wns[1]));
@@ -365,7 +365,7 @@ static PetscErrorCode MatMatMultKernel_Hyper(Mat M, Mat X, Mat Y, PetscBool t)
   PetscInt   i;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(M, (void *)&pc));
+  PetscCall(MatShellGetContext(M, &pc));
   pch2opus = (PC_H2OPUS *)pc->data;
   A        = pch2opus->A;
   if (pch2opus->wnsmat[0] && pch2opus->wnsmat[0]->cmap->N != X->cmap->N) {
@@ -406,7 +406,7 @@ static PetscErrorCode MatMatMultKernel_Hyper(Mat M, Mat X, Mat Y, PetscBool t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMatMultNumeric_Hyper(Mat M, Mat X, Mat Y, void *ctx)
+static PetscErrorCode MatMatMultNumeric_Hyper(Mat M, Mat X, Mat Y, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultKernel_Hyper(M, X, Y, PETSC_FALSE));
@@ -421,7 +421,7 @@ static PetscErrorCode MatMultKernel_NS(Mat M, Vec x, Vec y, PetscBool t)
   PC_H2OPUS *pch2opus;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(M, (void *)&pc));
+  PetscCall(MatShellGetContext(M, &pc));
   pch2opus = (PC_H2OPUS *)pc->data;
   A        = pch2opus->A;
   PetscCall(MatCreateVecs(pch2opus->M, pch2opus->wns[0] ? NULL : &pch2opus->wns[0], pch2opus->wns[1] ? NULL : &pch2opus->wns[1]));
@@ -463,7 +463,7 @@ static PetscErrorCode MatMatMultKernel_NS(Mat M, Mat X, Mat Y, PetscBool t)
   PC_H2OPUS *pch2opus;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(M, (void *)&pc));
+  PetscCall(MatShellGetContext(M, &pc));
   pch2opus = (PC_H2OPUS *)pc->data;
   A        = pch2opus->A;
   if (pch2opus->wnsmat[0] && pch2opus->wnsmat[0]->cmap->N != X->cmap->N) {
@@ -490,7 +490,7 @@ static PetscErrorCode MatMatMultKernel_NS(Mat M, Mat X, Mat Y, PetscBool t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMatMultNumeric_NS(Mat M, Mat X, Mat Y, void *ctx)
+static PetscErrorCode MatMatMultNumeric_NS(Mat M, Mat X, Mat Y, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultKernel_NS(M, X, Y, PETSC_FALSE));

@@ -98,7 +98,7 @@ static PetscErrorCode PrintVertex(DM dm, PetscInt v)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(PetscObjectQuery((PetscObject)dm, "_extent", (PetscObject *)&c));
-  PetscCall(PetscContainerGetPointer(c, (void **)&extent));
+  PetscCall(PetscContainerGetPointer(c, &extent));
   sum = 1;
   PetscCall(PetscPrintf(comm, "Vertex %" PetscInt_FMT ":", v));
   for (PetscInt d = 0; d < dim; ++d) {
@@ -436,7 +436,7 @@ static PetscErrorCode TestFreeField(DM dm)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(PetscObjectQuery((PetscObject)dm, "_extent", (PetscObject *)&c));
-  PetscCall(PetscContainerGetPointer(c, (void **)&extent));
+  PetscCall(PetscContainerGetPointer(c, &extent));
   PetscCall(MatCreateFFT(PetscObjectComm((PetscObject)dm), dim, extent, MATFFTW, &FT));
 
   PetscCall(PetscMalloc1(dim, &coef));

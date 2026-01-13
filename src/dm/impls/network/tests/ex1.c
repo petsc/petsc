@@ -66,7 +66,7 @@ PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscIn
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) PetscCall(CreateStarGraphEdgeList(k, directin, &ne, &edgelist));
   PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
-  PetscCall(DMNetworkRegisterComponent(dm, "dummy", sizeof(PetscInt), &compkey));
+  PetscCall(DMNetworkRegisterComponent(dm, "unused", sizeof(PetscInt), &compkey));
   PetscCall(DMNetworkLayoutSetUp(dm));
   PetscCall(PetscFree(edgelist));
   PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
@@ -116,8 +116,8 @@ int main(int argc, char **argv)
     PetscCheck(ndofsprev == ndofs, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Cloning changed the Original, ndofs (previous) : %" PetscInt_FMT " ndofs (now) : %" PetscInt_FMT, ndofsprev, ndofs);
   }
 
-  /* register new components to the clone and add a dummy component to every point */
-  PetscCall(DMNetworkRegisterComponent(dmclone, "dummyclone", sizeof(PetscInt), &compkey));
+  /* register new components to the clone and add a unused component to every point */
+  PetscCall(DMNetworkRegisterComponent(dmclone, "unusedclone", sizeof(PetscInt), &compkey));
   PetscCall(DMNetworkGetEdgeRange(dmclone, &eStart, &eEnd));
   PetscCall(PetscMalloc1(eEnd - eStart, &comp));
   for (e = eStart; e < eEnd; e++) {

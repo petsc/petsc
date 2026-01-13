@@ -489,7 +489,7 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], PetscCtx ctx)
 {
   PetscReal   B  = 100.0;
   PetscReal   kn = 100 * M_PI;
@@ -501,7 +501,7 @@ PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], PetscCtx ctx)
 {
   PetscReal   B  = 100.0;
   PetscReal   kn = 100 * M_PI;

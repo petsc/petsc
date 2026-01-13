@@ -17,10 +17,14 @@
 
 module ex22f_mfmodule
   use petscts
+  type AppCtx
+    PetscReal a(2), k(2), s(2)
+  end type AppCtx
+
   PetscScalar::PETSC_SHIFT
   TS::tscontext
   Mat::Jmat
-  PetscReal::MFuser(6)
+  type(AppCtx) MFctx
 end module ex22f_mfmodule
 
 program main
@@ -34,10 +38,6 @@ program main
   !     FormFunction(). We use a double precision array with six
   !     entries, two for each problem parameter a, k, s.
   !
-  PetscReal user(6)
-  integer user_a, user_k, user_s
-  parameter(user_a=0, user_k=2, user_s=4)
-
   TS ts
   Vec X
   Mat J
@@ -53,6 +53,7 @@ program main
   PetscInt xs, xe, gxs, gxe, dof, gdof
   PetscScalar shell_shift
   Mat A
+  type(AppCtx) ctx
 
   im11 = 11
   i2 = 2
@@ -75,18 +76,18 @@ program main
 
   ! Initialize user application context
   ! Use zero-based indexing for command line parameters to match ex22.c
-  user(user_a + 1) = 1.0
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-a0', user(user_a + 1), flg, ierr))
-  user(user_a + 2) = 0.0
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-a1', user(user_a + 2), flg, ierr))
-  user(user_k + 1) = 1000000.0
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-k0', user(user_k + 1), flg, ierr))
-  user(user_k + 2) = 2*user(user_k + 1)
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-k1', user(user_k + 2), flg, ierr))
-  user(user_s + 1) = 0.0
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s0', user(user_s + 1), flg, ierr))
-  user(user_s + 2) = 1.0
-  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s1', user(user_s + 2), flg, ierr))
+  ctx%a(1) = 1.0
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-a0', ctx%a(1), flg, ierr))
+  ctx%a(2) = 0.0
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-a1', ctx%a(2), flg, ierr))
+  ctx%k(1) = 1000000.0
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-k0', ctx%k(1), flg, ierr))
+  ctx%k(2) = 2*ctx%k(1)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-k1', ctx%k(2), flg, ierr))
+  ctx%s(1) = 0.0
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s0', ctx%s(1), flg, ierr))
+  ctx%s(2) = 1.0
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-s1', ctx%s(2), flg, ierr))
 
   OptionSaveToDisk = .false.
   PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-sdisk', OptionSaveToDisk, flg, ierr))
@@ -97,7 +98,7 @@ program main
   tscontext = ts
   PetscCallA(TSSetDM(ts, da, ierr))
   PetscCallA(TSSetType(ts, TSARKIMEX, ierr))
-  PetscCallA(TSSetRHSFunction(ts, PETSC_NULL_VEC, FormRHSFunction, user, ierr))
+  PetscCallA(TSSetRHSFunction(ts, PETSC_NULL_VEC, FormRHSFunction, ctx, ierr))
 
   ! - - - - - - - - -- - - - -
   !   Matrix free setup
@@ -109,14 +110,14 @@ program main
   PetscCallA(MatShellSetOperation(A, MATOP_MULT, MyMult, ierr))
   ! - - - - - - - - - - - -
 
-  PetscCallA(TSSetIFunction(ts, PETSC_NULL_VEC, FormIFunction, user, ierr))
+  PetscCallA(TSSetIFunction(ts, PETSC_NULL_VEC, FormIFunction, ctx, ierr))
   PetscCallA(DMSetMatType(da, MATAIJ, ierr))
   PetscCallA(DMCreateMatrix(da, J, ierr))
 
   Jmat = J
 
-  PetscCallA(TSSetIJacobian(ts, J, J, FormIJacobian, user, ierr))
-  PetscCallA(TSSetIJacobian(ts, A, A, FormIJacobianMF, user, ierr))
+  PetscCallA(TSSetIJacobian(ts, J, J, FormIJacobian, ctx, ierr))
+  PetscCallA(TSSetIJacobian(ts, A, A, FormIJacobianMF, ctx, ierr))
 
   ftime = 1.0
   PetscCallA(TSSetMaxTime(ts, ftime, ierr))
@@ -125,11 +126,11 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Set initial conditions
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  PetscCallA(FormInitialSolution(ts, X, user, ierr))
+  PetscCallA(FormInitialSolution(ts, X, ctx, ierr))
   PetscCallA(TSSetSolution(ts, X, ierr))
   PetscCallA(VecGetSize(X, mx, ierr))
-  !  Advective CFL, I don't know why it needs so much safety factor.
-  dt = pone*max(user(user_a + 1), user(user_a + 2))/mx
+!  Advective CFL, I don't know why it needs so much safety factor.
+  dt = pone*max(ctx%a(1), ctx%a(2))/mx
   PetscCallA(TSSetTimeStep(ts, dt, ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,18 +194,16 @@ contains
     end do
   end subroutine FormIFunctionLocal
 
-  subroutine FormIFunction(ts, t, X, Xdot, F, user, ierr)
+  subroutine FormIFunction(ts, t, X, Xdot, F, ctx, ierr)
     use petscdm
-    use petscts
+    use ex22f_mfmodule
     implicit none
 
     TS ts
     PetscReal t
     Vec X, Xdot, F
-    PetscReal user(6)
     PetscErrorCode ierr
-    integer user_a, user_k, user_s
-    parameter(user_a=1, user_k=3, user_s=5)
+    type(AppCtx) ctx
 
     DM da
     PetscInt mx, xs, xe, gxs, gxe
@@ -218,7 +217,7 @@ contains
     PetscCall(VecGetArrayRead(Xdot, xxdot, ierr))
     PetscCall(VecGetArray(F, ff, ierr))
 
-    PetscCall(FormIFunctionLocal(mx, xs, xe, gxs, gxe, xx, xxdot, ff, user(user_a), user(user_k), user(user_s), ierr))
+    PetscCall(FormIFunctionLocal(mx, xs, xe, gxs, gxe, xx, xxdot, ff, ctx%a, ctx%k, ctx%s, ierr))
 
     PetscCall(VecRestoreArrayRead(X, xx, ierr))
     PetscCall(VecRestoreArrayRead(Xdot, xxdot, ierr))
@@ -277,18 +276,15 @@ contains
 
   end subroutine FormRHSFunctionLocal
 
-  subroutine FormRHSFunction(ts, t, X, F, user, ierr)
-    use petscts
-    use petscdm
+  subroutine FormRHSFunction(ts, t, X, F, ctx, ierr)
+    use ex22f_mfmodule
     implicit none
 
     TS ts
     PetscReal t
     Vec X, F
-    PetscReal user(6)
+    type(AppCtx) ctx
     PetscErrorCode ierr
-    integer user_a, user_k, user_s
-    parameter(user_a=1, user_k=3, user_s=5)
     DM da
     Vec Xloc
     PetscInt mx, xs, xe, gxs, gxe
@@ -309,7 +305,7 @@ contains
     PetscCall(VecGetArrayRead(Xloc, xx, ierr))
     PetscCall(VecGetArray(F, ff, ierr))
 
-    PetscCall(FormRHSFunctionLocal(mx, xs, xe, gxs, gxe, t, xx, ff, user(user_a), user(user_k), user(user_s), ierr))
+    PetscCall(FormRHSFunctionLocal(mx, xs, xe, gxs, gxe, t, xx, ff, ctx%a, ctx%k, ctx%s, ierr))
 
     PetscCall(VecRestoreArrayRead(Xloc, xx, ierr))
     PetscCall(VecRestoreArray(F, ff, ierr))
@@ -320,8 +316,8 @@ contains
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-  subroutine FormIJacobian(ts, t, X, Xdot, shift, J, Jpre, user, ierr)
-    use petscts
+  subroutine FormIJacobian(ts, t, X, Xdot, shift, J, Jpre, ctx, ierr)
+    use ex22f_mfmodule
     use petscdm
     implicit none
 
@@ -329,10 +325,8 @@ contains
     PetscReal t, shift
     Vec X, Xdot
     Mat J, Jpre
-    PetscReal user(6)
+    type(AppCtx) ctx
     PetscErrorCode ierr
-    integer user_a, user_k, user_s
-    parameter(user_a=0, user_k=2, user_s=4)
 
     DM da
     PetscInt mx, xs, xe, gxs, gxe
@@ -344,8 +338,8 @@ contains
     PetscCall(GetLayout(da, mx, xs, xe, gxs, gxe, ierr))
 
     i1 = 1
-    k1 = user(user_k + 1)
-    k2 = user(user_k + 2)
+    k1 = ctx%k(1)
+    k2 = ctx%k(2)
     do i = xs, xe
       row = i - gxs
       col = i - gxs
@@ -386,17 +380,15 @@ contains
     end do
   end subroutine FormInitialSolutionLocal
 
-  subroutine FormInitialSolution(ts, X, user, ierr)
-    use petscts
+  subroutine FormInitialSolution(ts, X, ctx, ierr)
+    use ex22f_mfmodule
     use petscdm
     implicit none
 
     TS ts
     Vec X
-    PetscReal user(6)
+    type(AppCtx) ctx
     PetscErrorCode ierr
-    integer user_a, user_k, user_s
-    parameter(user_a=1, user_k=3, user_s=5)
 
     DM da
     PetscInt mx, xs, xe, gxs, gxe
@@ -408,7 +400,7 @@ contains
     ! Get access to vector data
     PetscCall(VecGetArray(X, xx, ierr))
 
-    PetscCall(FormInitialSolutionLocal(mx, xs, xe, gxs, gxe, xx, user(user_a), user(user_k), user(user_s), ierr))
+    PetscCall(FormInitialSolutionLocal(mx, xs, xe, gxs, gxe, xx, ctx%a, ctx%k, ctx%s, ierr))
 
     PetscCall(VecRestoreArray(X, xx, ierr))
   end subroutine FormInitialSolution
@@ -417,18 +409,18 @@ contains
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-  subroutine FormIJacobianMF(ts, t, X, Xdot, shift, J, Jpre, user, ierr)
+  subroutine FormIJacobianMF(ts, t, X, Xdot, shift, J, Jpre, ctx, ierr)
     use ex22f_mfmodule
     implicit none
     TS ts
     PetscReal t, shift
     Vec X, Xdot
     Mat J, Jpre
-    PetscReal user(6)
+    type(AppCtx) ctx
     PetscErrorCode ierr
 
     PETSC_SHIFT = shift
-    MFuser = user
+    MFctx = ctx
 
   end subroutine FormIJacobianMF
 
@@ -451,13 +443,7 @@ contains
 
     PetscErrorCode ierr
     PetscScalar shift
-
-!  Mat J,Jpre
-
-    PetscReal user(6)
-
-    integer user_a, user_k, user_s
-    parameter(user_a=0, user_k=2, user_s=4)
+    type(AppCtx) ctx
 
     DM da
     PetscInt mx, xs, xe, gxs, gxe
@@ -466,14 +452,14 @@ contains
     PetscScalar val(4)
 
     shift = PETSC_SHIFT
-    user = MFuser
+    ctx = MFctx
 
     PetscCall(TSGetDM(tscontext, da, ierr))
     PetscCall(GetLayout(da, mx, xs, xe, gxs, gxe, ierr))
 
     i1 = 1
-    k1 = user(user_k + 1)
-    k2 = user(user_k + 2)
+    k1 = ctx%k(1)
+    k2 = ctx%k(2)
 
     do i = xs, xe
       row = i - gxs

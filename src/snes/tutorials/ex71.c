@@ -65,7 +65,7 @@ typedef struct {
 
   Note that these functions use coordinates X in the global (rotated) frame
 */
-PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   Parameter *param = (Parameter *)ctx;
   PetscReal  Delta = param->Delta;
@@ -80,7 +80,7 @@ PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal X[], Pe
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, PetscCtx ctx)
 {
   Parameter *param = (Parameter *)ctx;
   PetscReal  Delta = param->Delta;
@@ -89,7 +89,7 @@ PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal X[], Petsc
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode wall_velocity(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   Parameter *param = (Parameter *)ctx;
   PetscReal  u_0   = param->u_0;
@@ -171,7 +171,7 @@ static PetscErrorCode SetupParameters(AppCtx *user)
 
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
-  PetscCall(PetscBagGetData(user->bag, (void **)&p));
+  PetscCall(PetscBagGetData(user->bag, &p));
   PetscCall(PetscBagSetName(user->bag, "par", "Poiseuille flow parameters"));
   bag = user->bag;
   PetscCall(PetscBagRegisterReal(bag, &p->Delta, 1.0, "Delta", "Pressure drop per unit length"));
@@ -200,7 +200,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(VecGetBlockSize(coordinates, &bs));
     PetscCheck(bs == cdim, comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %" PetscInt_FMT " != embedding dimension %" PetscInt_FMT, bs, cdim);
     PetscCall(VecGetArray(coordinates, &coords));
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
     alpha = param->alpha;
     for (i = 0; i < N; i += cdim) {
       PetscScalar x = coords[i + 0];
@@ -225,7 +225,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscInt      id, bd;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscBagGetData(user->bag, (void **)&ctx));
+  PetscCall(PetscBagGetData(user->bag, &ctx));
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetResidual(ds, 0, NULL, f1_u));
   PetscCall(PetscDSSetResidual(ds, 1, f0_p, NULL));
@@ -243,7 +243,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     Parameter  *param;
     PetscScalar constants[4];
 
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
 
     constants[0] = param->Delta;
     constants[1] = param->nu;
@@ -285,7 +285,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe[1]));
   PetscCall(DMCreateDS(dm));
   PetscCall(SetupProblem(dm, user));
-  PetscCall(PetscBagGetData(user->bag, (void **)&param));
+  PetscCall(PetscBagGetData(user->bag, &param));
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMPlexCreateBasisRotation(cdm, param->alpha, 0.0, 0.0));

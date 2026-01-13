@@ -57,12 +57,12 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 
   We will need a boundary integral of u over \Gamma.
 */
-static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[0];
   return PETSC_SUCCESS;
 }
-static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = c ? 0.0 : 1.0;
@@ -91,7 +91,7 @@ static void f0_bd_linear_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
 
   We will need a boundary integral of u over \Gamma.
 */
-static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -99,7 +99,7 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
   for (d = 0; d < dim; ++d) u[0] += x[d] * x[d];
   return PETSC_SUCCESS;
 }
-static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 2.0 * x[c];
@@ -128,7 +128,7 @@ static void f0_bd_quadratic_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
 
   u|_\Gamma = 0 so that the boundary integral vanishes
 */
-static PetscErrorCode quartic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quartic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -136,7 +136,7 @@ static PetscErrorCode quartic_u(PetscInt dim, PetscReal time, const PetscReal x[
   for (d = 0; d < dim; ++d) u[0] *= x[d] * (1.0 - x[d]);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c, d;
 

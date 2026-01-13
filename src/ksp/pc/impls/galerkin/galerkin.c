@@ -135,7 +135,7 @@ static PetscErrorCode PCGalerkinSetInterpolation_Galerkin(PC pc, Mat P)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCGalerkinSetComputeSubmatrix_Galerkin(PC pc, PetscErrorCode (*computeAsub)(PC, Mat, Mat, Mat *, void *), void *ctx)
+static PetscErrorCode PCGalerkinSetComputeSubmatrix_Galerkin(PC pc, PetscErrorCode (*computeAsub)(PC, Mat, Mat, Mat *, void *), PetscCtx ctx)
 {
   PC_Galerkin *jac = (PC_Galerkin *)pc->data;
 
@@ -228,7 +228,7 @@ PetscErrorCode PCGalerkinSetInterpolation(PC pc, Mat P)
 .seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
           `PCGalerkinSetRestriction()`, `PCGalerkinSetInterpolation()`, `PCGalerkinGetKSP()`
 @*/
-PetscErrorCode PCGalerkinSetComputeSubmatrix(PC pc, PetscErrorCode (*computeAsub)(PC pc, Mat A, Mat Ap, Mat *cAp, void *ctx), void *ctx)
+PetscErrorCode PCGalerkinSetComputeSubmatrix(PC pc, PetscErrorCode (*computeAsub)(PC pc, Mat A, Mat Ap, Mat *cAp, PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);

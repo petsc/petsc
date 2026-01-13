@@ -6,7 +6,7 @@
 #include <petscdmceed.h>
 #include <petscdmplexceed.h>
 
-PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, void *user)
+PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, PetscCtx ctx)
 {
   Ceed       ceed;
   DMCeed     sd = dm->dmceed;

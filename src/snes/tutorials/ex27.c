@@ -118,7 +118,7 @@ typedef struct {
 } Parameter;
 
 /* Exact solution: u = x^2 + y^2 */
-static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -127,7 +127,7 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
   return PETSC_SUCCESS;
 }
 /* Exact solution: q = (2x, 2y) */
-static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 2.0 * x[c];
@@ -135,7 +135,7 @@ static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal 
 }
 
 /* Exact solution: u = sin( n \pi x ) * sin( n \pi y ) */
-static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal n = 5.5;
 
@@ -143,7 +143,7 @@ static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], 
   for (PetscInt d = 0; d < dim; ++d) u[0] *= PetscSinReal(n * PETSC_PI * x[d]);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode trig_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal n = 5.5;
 
@@ -159,7 +159,7 @@ Classic hyperbolic sensor function for testing multi-scale anisotropic mesh adap
 
 (mapped to have domain [0,1] x [0,1] in this case).
 */
-static PetscErrorCode sensor_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode sensor_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   const PetscReal xref = 2. * x[0] - 1.;
   const PetscReal yref = 2. * x[1] - 1.;
@@ -172,7 +172,7 @@ static PetscErrorCode sensor_u(PetscInt dim, PetscReal time, const PetscReal x[]
 }
 
 /* Flux is (cos(50xy) * 50y/100, cos(50xy) * 50x/100) if |xy| > 2\pi/50 else (cos(50xy) * 50y, cos(50xy) * 50x) */
-static PetscErrorCode sensor_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode sensor_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   const PetscReal xref = 2. * x[0] - 1.;
   const PetscReal yref = 2. * x[1] - 1.;
@@ -354,7 +354,7 @@ static PetscErrorCode SetupParameters(PetscBag bag, AppCtx *user)
   Parameter *param;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscBagGetData(bag, (void **)&param));
+  PetscCall(PetscBagGetData(bag, &param));
   PetscCall(PetscBagSetName(bag, "par", "Poisson parameters"));
   PetscCall(PetscBagRegisterReal(bag, &param->k, 1.0, "k", "Thermal conductivity"));
   PetscCall(PetscBagSetFromOptions(bag));
@@ -456,7 +456,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
   /* Setup constants */
   {
-    PetscCall(PetscBagGetData(user->param, (void **)&param));
+    PetscCall(PetscBagGetData(user->param, &param));
     PetscScalar constants[1];
 
     constants[0] = param->k;
@@ -589,7 +589,7 @@ static PetscErrorCode SetupMixedProblem(DM dm, AppCtx *user)
 
   /* Setup constants */
   {
-    PetscCall(PetscBagGetData(user->param, (void **)&param));
+    PetscCall(PetscBagGetData(user->param, &param));
     PetscScalar constants[1];
 
     constants[0] = param->k;
@@ -640,7 +640,7 @@ PetscErrorCode SetupMixed(DMAdaptor adaptor, DM mdm)
   AppCtx *ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(DMGetApplicationContext(mdm, (void **)&ctx));
+  PetscCall(DMGetApplicationContext(mdm, &ctx));
   PetscCall(SetupMixedDiscretization(mdm, ctx));
   PetscCall(SetupMixedProblem(mdm, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);

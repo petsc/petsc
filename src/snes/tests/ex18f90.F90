@@ -73,12 +73,11 @@ program ex18f90
 !
   interface
     subroutine SNESSetFunctionNoInterface(snes_base, x, TestFunction, base, ierr)
-      use ex18f90base_module
       use petscsnes
       SNES snes_base
       Vec x
       external TestFunction
-      class(base_type) :: base
+      class(*) :: base
       PetscErrorCode ierr
     end subroutine
   end interface

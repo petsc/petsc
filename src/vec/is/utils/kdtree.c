@@ -103,7 +103,7 @@ static inline int PetscKDTreeSortFunc(PetscCount left, PetscCount right, PetscKD
   return 0; // All components are the same
 }
 
-static int PetscKDTreeTimSort(const void *l, const void *r, void *ctx)
+static int PetscKDTreeTimSort(const void *l, const void *r, PetscCtx ctx)
 {
   KDTreeSortContext kd_ctx = (KDTreeSortContext)ctx;
   return PetscKDTreeSortFunc(*(PetscCount *)l, *(PetscCount *)r, kd_ctx->tree, kd_ctx->initial_axis);

@@ -434,7 +434,7 @@ static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, KSPFlexibleModifyPCFn *fcn, void *ctx, PetscCtxDestroyFn *d)
+static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);

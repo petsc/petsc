@@ -1,12 +1,12 @@
 #include <../src/tao/leastsquares/impls/pounders/pounders.h>
 
-static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
+static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
+static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, PetscCtx ctx)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)ctx;
   PetscReal     d1, d2;

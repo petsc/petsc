@@ -18,9 +18,9 @@ struct VecCUDAEquals {
   }
 };
 
-static PetscErrorCode MatCOOStructDestroy_MPIAIJCUSPARSE(void **data)
+static PetscErrorCode MatCOOStructDestroy_MPIAIJCUSPARSE(PetscCtxRt data)
 {
-  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)*data;
+  MatCOOStruct_MPIAIJ *coo = *(MatCOOStruct_MPIAIJ **)data;
 
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(&coo->sf));
@@ -81,7 +81,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount 
 
   // Copy the COO struct to device
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container_h));
-  PetscCall(PetscContainerGetPointer(container_h, (void **)&coo_h));
+  PetscCall(PetscContainerGetPointer(container_h, &coo_h));
   PetscCall(PetscMalloc1(1, &coo_d));
   *coo_d = *coo_h; // do a shallow copy and then amend fields in coo_d
 
@@ -168,7 +168,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat, const PetscScalar 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
-  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  PetscCall(PetscContainerGetPointer(container, &coo));
 
   const auto &Annz   = coo->Annz;
   const auto &Annz2  = coo->Annz2;

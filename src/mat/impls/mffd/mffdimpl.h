@@ -48,7 +48,7 @@ struct _p_MatMFFD {
   MatMFFDiFn     *funci;        /* Evaluates func_[i]() */
   MatMFFDiBaseFn *funcisetbase; /* Sets base for future evaluations of func_[i]() */
 
-  void *ctx; /* this is used by MatCreateSNESMF() to store the SNES object */
+  PetscCtx ctx; /* this is used by MatCreateSNESMF() to store the SNES object */
 #if defined(PETSC_USE_COMPLEX)
   PetscBool usecomplex; /* use the Lyness complex number trick to compute the matrix-vector product */
 #endif

@@ -450,7 +450,7 @@ static inline PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
+static inline PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xreal, PetscCtx ctx)
 {
   const PetscScalar *vertices = (const PetscScalar *)ctx;
   const PetscScalar  x0       = vertices[0];
@@ -487,7 +487,7 @@ static inline PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xreal, voi
 }
 
 #include <petsc/private/dmimpl.h>
-static inline PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
+static inline PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, PetscCtx ctx)
 {
   const PetscScalar *vertices = (const PetscScalar *)ctx;
   const PetscScalar  x0       = vertices[0];
@@ -620,7 +620,7 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
+static inline PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal, PetscCtx ctx)
 {
   const PetscScalar *vertices = (const PetscScalar *)ctx;
   const PetscScalar  x0       = vertices[0];
@@ -689,7 +689,7 @@ static inline PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal, void
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
+static inline PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, PetscCtx ctx)
 {
   const PetscScalar *vertices = (const PetscScalar *)ctx;
   const PetscScalar  x0       = vertices[0];

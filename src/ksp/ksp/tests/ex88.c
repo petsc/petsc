@@ -6,7 +6,7 @@ typedef struct {
   PetscBool converged;
 } ConvergedCtx;
 
-static PetscErrorCode TestConvergence(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
+static PetscErrorCode TestConvergence(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, PetscCtx ctx)
 {
   ConvergedCtx *user = (ConvergedCtx *)ctx;
 

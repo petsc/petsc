@@ -27,7 +27,7 @@ static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MyFunction(void *ctx, Vec x, Vec y)
+static PetscErrorCode MyFunction(PetscCtx ctx, Vec x, Vec y)
 {
   User user = (User)ctx;
 

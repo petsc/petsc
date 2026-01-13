@@ -7,7 +7,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
-static PetscErrorCode MatProductCtxDestroy_SeqAIJ_RARt(void **data)
+static PetscErrorCode MatProductCtxDestroy_SeqAIJ_RARt(PetscCtxRt data)
 {
   MatProductCtx_RARt *rart = *(MatProductCtx_RARt **)data;
 

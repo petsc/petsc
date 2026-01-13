@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
 /*
     Performs sweeps of point block nonlinear Gauss-Seidel on all the local grid points
 */
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
 {
   DMDALocalInfo info;
   Field       **x, **b;

@@ -1301,7 +1301,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     PetscCall(KSPGetOptionsPrefix(jac->ksp[0], &prefix));
     PetscCall(MatSetOptionsPrefix(mpjac->submats, prefix));
 
-    /* create dummy vectors xsub and ysub */
     PetscCall(MatGetLocalSize(mpjac->submats, &m, &n));
     PetscCall(VecCreateMPIWithArray(subcomm, 1, n, PETSC_DECIDE, NULL, &mpjac->xsub));
     PetscCall(VecCreateMPIWithArray(subcomm, 1, m, PETSC_DECIDE, NULL, &mpjac->ysub));

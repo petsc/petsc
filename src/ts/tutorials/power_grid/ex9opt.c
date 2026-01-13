@@ -95,7 +95,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, PetscCtx ctx0)
 {
   PetscInt    row[] = {0, 1}, col[] = {0};
   PetscScalar J[2][1];
@@ -339,7 +339,7 @@ int main(int argc, char **argv)
    Output Parameters:
    f   - the newly evaluated function
 */
-PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
+PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, PetscCtx ctx0)
 {
   AppCtx      *ctx = (AppCtx *)ctx0;
   TS           ts  = ctx->ts;
@@ -383,7 +383,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, void *ctx0)
+PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, PetscCtx ctx0)
 {
   AppCtx      *ctx = (AppCtx *)ctx0;
   TS           ts  = ctx->ts;

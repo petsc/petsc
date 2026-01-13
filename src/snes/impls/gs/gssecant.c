@@ -1,6 +1,6 @@
 #include <../src/snes/impls/gs/gsimpl.h>
 
-PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B, void *ctx)
+PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B, PetscCtx ctx)
 {
   SNES_NGS          *gs = (SNES_NGS *)snes->data;
   PetscInt           i, j, k, ncolors;

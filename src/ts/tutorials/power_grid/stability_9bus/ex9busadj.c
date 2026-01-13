@@ -356,7 +356,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *us
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Userctx     *user = (Userctx *)ctx;
   PetscScalar *f;
@@ -425,7 +425,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
    J = [-df_dx, -df_dy
         dg_dx, dg_dy]
 */
-PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx)
+PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
 {
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
@@ -715,7 +715,7 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx)
    J = [I, 0
         dg_dx, dg_dy]
 */
-PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, PetscCtx ctx)
 {
   Userctx *user = (Userctx *)ctx;
 

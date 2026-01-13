@@ -1960,13 +1960,13 @@ static PetscErrorCode TSGetStages_ARKIMEX(TS ts, PetscInt *ns, Vec *Y[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx)
+static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, PetscCtx ctx)
 {
   TS  ts = (TS)ctx;
   Vec Z, Z_c;
@@ -1981,13 +1981,13 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx)
+static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, PetscCtx ctx)
 {
   TS  ts = (TS)ctx;
   Vec Z, Z_c;

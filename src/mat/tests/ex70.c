@@ -48,7 +48,7 @@ typedef struct {
   Mat R;
 } proj_data;
 
-PetscErrorCode proj_destroy(void **ctx)
+PetscErrorCode proj_destroy(PetscCtxRt ctx)
 {
   proj_data *userdata = *(proj_data **)ctx;
 
@@ -116,7 +116,7 @@ PetscErrorCode MyPtShellPMultSymbolic(Mat S, Mat P, Mat PtAP, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, void *ctx)
+PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, PetscCtx ctx)
 {
   Mat        A;
   proj_data *userdata = (proj_data *)ctx;
@@ -148,7 +148,7 @@ PetscErrorCode MyRShellRtMultSymbolic(Mat S, Mat R, Mat RARt, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
+PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, PetscCtx ctx)
 {
   Mat        A;
   proj_data *userdata = (proj_data *)ctx;
@@ -169,7 +169,7 @@ PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
+PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, PetscCtx ctx)
 {
   Mat A;
 
@@ -179,7 +179,7 @@ PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
+PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, PetscCtx ctx)
 {
   Mat A;
 
@@ -189,7 +189,7 @@ PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, void *ctx)
+PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, PetscCtx ctx)
 {
   Mat A;
 

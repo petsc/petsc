@@ -37,7 +37,7 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 + dm   - The mesh
 . time - The time
 . locX - Local solution
-- user - The user context
+- ctx  - The application context
 
   Output Parameter:
 . F - Global output vector
@@ -46,7 +46,7 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 
 .seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, PetscCtx ctx)
 {
   Vec          locF;
   IS           cellIS;
@@ -61,7 +61,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
   PetscCall(DMGetLocalVector(plex, &locF));
   PetscCall(VecZeroEntries(locF));
-  PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locF, user));
+  PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locF, ctx));
   PetscCall(DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(plex, &locF));
@@ -79,13 +79,13 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 . time   - The time
 . locX   - Local solution
 . locX_t - Local solution time derivative, or `NULL`
-- user   - The user context
+- ctx    - The application context
 
   Level: developer
 
 .seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
+PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscCtx ctx)
 {
   DM       plex;
   Vec      faceGeometryFVM = NULL;
@@ -122,7 +122,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 . time   - The time
 . locX   - Local solution
 . locX_t - Local solution time derivative, or `NULL`
-- user   - The user context
+- ctx    - The application context
 
   Output Parameter:
 . locF - Local output vector
@@ -131,7 +131,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
 .seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -161,7 +161,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, locX_t, time, locF, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, locX_t, time, locF, ctx));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -178,7 +178,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 . locX     - Local solution
 . locX_t   - Local solution time derivative, or `NULL`
 . X_tShift - The multiplicative parameter for dF/du_t
-- user     - The user context
+- ctx      - The application context
 
   Output Parameters:
 + Jac  - the Jacobian
@@ -188,7 +188,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
+PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, PetscCtx ctx)
 {
   DM        plex;
   IS        allcellIS;
@@ -225,7 +225,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
       if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
       PetscCall(MatZeroEntries(JacP));
     }
-    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
+    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, ctx));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -240,7 +240,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 + dm   - The mesh
 . time - The time
 . locX - Local solution
-- user - The user context
+- ctx  - The application context
 
   Output Parameter:
 . locG - Local output vector
@@ -249,7 +249,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -279,7 +279,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locG, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locG, ctx));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));

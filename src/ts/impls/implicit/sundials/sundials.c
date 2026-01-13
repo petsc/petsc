@@ -78,7 +78,7 @@ static int TSPSolve_Sundials_Private(realtype tn, N_Vector y, N_Vector fy, N_Vec
 /*
         TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right-hand side.
 */
-static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
+static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, PetscCtx ctx)
 {
   TS             ts = (TS)ctx;
   DM             dm;

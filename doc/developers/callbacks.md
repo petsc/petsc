@@ -86,7 +86,7 @@ solver routine for setting a callback a similar routine exists at the
 `DMXXXSetY(DM,...)`.
 
 ```
-PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP, Mat, Mat, PetscCtx), PetscCtx ctx)
 {
   DM dm;
 
@@ -104,7 +104,7 @@ the `DMXXX` object via `DMGetDMXXXWrite(DM,DMXXX*)` and sets the
 function callback and its context into the `DMXXX` object.
 
 ```
-PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, Mat, PetscCtx), PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -171,7 +171,7 @@ when the object is coarsened or refined. The hooks
 `DMCoarsenHook_DMXXX()` and `DMRefineHook_DMXXX()` have the same form:
 
 ```
-static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
+static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMKSP(dm,dmc));

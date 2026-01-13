@@ -9,14 +9,14 @@
   #define matmffdsetbase_     matmffdsetbase
 #endif
 
-static PetscErrorCode ourmatmffdfunction(void *ctx, Vec x, Vec f)
+static PetscErrorCode ourmatmffdfunction(PetscCtx ctx, Vec x, Vec f)
 {
   Mat mat = (Mat)ctx;
   PetscCallFortranVoidFunction((*(void (*)(void *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[0]))((void *)(PETSC_UINTPTR_T)((PetscObject)mat)->fortran_func_pointers[1], &x, &f, &ierr));
   return PETSC_SUCCESS;
 }
 
-PETSC_EXTERN void matmffdsetfunction_(Mat *mat, void (*func)(void *, Vec *, Vec *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void matmffdsetfunction_(Mat *mat, void (*func)(void *, Vec *, Vec *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*mat, 2);
   ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)func;

@@ -344,7 +344,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    The user-defined context can contain any application-specific
    data needed for the function evaluation.
 */
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   ApplicationCtx    *user = (ApplicationCtx *)ctx;
   DM                 da   = user->da;
@@ -426,7 +426,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
 .  B - optionally different matrix used to construct the preconditioner
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
 {
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   PetscScalar    *xx, d, A[3];
@@ -515,7 +515,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
+PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, PetscCtx ctx)
 {
   MonitorCtx *monP = (MonitorCtx *)ctx;
   Vec         x;
@@ -541,7 +541,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
    y         - proposed step (search direction and length) (possibly changed)
    changed_y - tells if the step has changed or not
  */
-PetscErrorCode PreCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, PetscBool *changed_y, void *ctx)
+PetscErrorCode PreCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, PetscBool *changed_y, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   *changed_y = PETSC_FALSE;
@@ -566,7 +566,7 @@ PetscErrorCode PreCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, PetscBoo
    x    - current iterate (possibly modified)
 
  */
-PetscErrorCode PostCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, PetscBool *changed_y, PetscBool *changed_x, void *ctx)
+PetscErrorCode PostCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, PetscBool *changed_y, PetscBool *changed_x, PetscCtx ctx)
 {
   PetscInt        i, iter, xs, xm;
   StepCheckCtx   *check;
@@ -636,7 +636,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, 
    x    - current iterate (possibly modified)
 
  */
-PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, PetscBool *changed_y, PetscBool *changed_x, void *ctx)
+PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, PetscBool *changed_y, PetscBool *changed_x, PetscCtx ctx)
 {
   SetSubKSPCtx *check;
   PetscInt      iter, its, sub_its, maxit;

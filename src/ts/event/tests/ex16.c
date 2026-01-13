@@ -75,14 +75,14 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSet(f, (PetscReal)1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(MatZeroEntries(B));
@@ -90,7 +90,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
+PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   fvalue[0] = t - 1.1;
@@ -99,7 +99,7 @@ PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec x, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec x, PetscBool forwardsolve, PetscCtx ctx)
 {
   PetscInt           i;
   const PetscScalar *a;

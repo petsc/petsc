@@ -60,7 +60,7 @@ static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer viewer, 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, key, (PetscObject *)&cont));
   *v = NULL;
-  if (cont) PetscCall(PetscContainerGetPointer(cont, (void **)v));
+  if (cont) PetscCall(PetscContainerGetPointer(cont, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

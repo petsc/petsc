@@ -62,7 +62,7 @@ static PetscErrorCode FormFunctionLocal_K(User user, DMDALocalInfo *info, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
+static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   User          user = (User)ctx;
   DM            dau, dak;
@@ -195,7 +195,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user, DMDALocalInfo *info, DMDAL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat J, Mat B, void *ctx)
+static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
 {
   User          user = (User)ctx;
   DM            dau, dak;

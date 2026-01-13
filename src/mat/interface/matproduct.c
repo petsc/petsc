@@ -1184,14 +1184,14 @@ typedef struct {
   Mat ABC;
 } MatProductCtx_MatMatMatPrivate;
 
-static PetscErrorCode MatProductCtxDestroy_MatMatMatPrivate(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMatPrivate(PetscCtxRt data)
 {
   MatProductCtx_MatMatMatPrivate *mmdata = *(MatProductCtx_MatMatMatPrivate **)data;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&mmdata->BC));
   PetscCall(MatDestroy(&mmdata->ABC));
-  PetscCall(PetscFree(*data));
+  PetscCall(PetscFree(mmdata));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

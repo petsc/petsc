@@ -318,7 +318,7 @@ typedef struct {
   void              *data;
 } MatProductCtx_Transpose;
 
-static PetscErrorCode MatProductCtxDestroy_Transpose(void **ptr)
+static PetscErrorCode MatProductCtxDestroy_Transpose(PetscCtxRt ptr)
 {
   MatProductCtx_Transpose *data = *(MatProductCtx_Transpose **)ptr;
 
@@ -341,7 +341,7 @@ static PetscErrorCode MatProductNumeric_Transpose(Mat D)
   product = D->product;
   PetscCall(PetscObjectQuery((PetscObject)D, "MatProductCtx_Transpose", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatProductCtx_Transpose missing");
-  PetscCall(PetscContainerGetPointer(container, (void **)&data));
+  PetscCall(PetscContainerGetPointer(container, &data));
   data          = (MatProductCtx_Transpose *)product->data;
   product->data = data->data;
   PetscCall((*data->numeric)(D));
@@ -363,7 +363,7 @@ static PetscErrorCode MatProductSymbolic_Transpose(Mat D)
     PetscCheck(!product->data, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product data not empty");
     PetscCall(PetscObjectQuery((PetscObject)D, "MatProductCtx_Transpose", (PetscObject *)&container));
     PetscCheck(container, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatProductCtx_Transpose missing");
-    PetscCall(PetscContainerGetPointer(container, (void **)&data));
+    PetscCall(PetscContainerGetPointer(container, &data));
     PetscCall(MatProductSetFromOptions(D));
     PetscCall(MatProductSymbolic(D));
     data->numeric          = D->ops->productnumeric;
@@ -438,7 +438,7 @@ static PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
         PetscCall(PetscNew(&data));
         PetscCall(PetscContainerSetPointer(container, data));
         PetscCall(PetscObjectCompose((PetscObject)D, "MatProductCtx_Transpose", (PetscObject)container));
-      } else PetscCall(PetscContainerGetPointer(container, (void **)&data));
+      } else PetscCall(PetscContainerGetPointer(container, &data));
       data->scale     = scale;
       data->container = container;
     }

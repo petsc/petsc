@@ -43,7 +43,7 @@ Exact 3D solution:
   u = 3t + x^2 + y^2 + z^2
   F(u) = 3 - (2 + 2 + 2) + 3 = 0
 */
-static PetscErrorCode mms_quad_lin(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_quad_lin(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -52,7 +52,7 @@ static PetscErrorCode mms_quad_lin(PetscInt dim, PetscReal time, const PetscReal
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode mms_quad_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_quad_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = dim;
   return PETSC_SUCCESS;
@@ -78,7 +78,7 @@ Exact 3D solution:
   u = 3*cos(t) + x^2 + y^2 + z^2
   F(u) = -3*sin(t) - (2 + 2 + 2) + 3*sin(t) + 6 = 0
 */
-static PetscErrorCode mms_quad_trig(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_quad_trig(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -87,7 +87,7 @@ static PetscErrorCode mms_quad_trig(PetscInt dim, PetscReal time, const PetscRea
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode mms_quad_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_quad_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = -dim * PetscSinReal(time);
   return PETSC_SUCCESS;
@@ -113,7 +113,7 @@ Exact 3D solution:
   u = 3\pi^2 t + cos(\pi x) + cos(\pi y) + cos(\pi z)
   F(u) = 3\pi^2 - \pi^2 (cos(\pi x) + cos(\pi y) + cos(\pi z)) + \pi^2 (cos(\pi x) + cos(\pi y) + cos(\pi z)) - 3\pi^2 = 0
 */
-static PetscErrorCode mms_trig_lin(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_trig_lin(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -122,7 +122,7 @@ static PetscErrorCode mms_trig_lin(PetscInt dim, PetscReal time, const PetscReal
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode mms_trig_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_trig_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = dim * PetscSqr(PETSC_PI);
   return PETSC_SUCCESS;
@@ -150,7 +150,7 @@ Exact 3D solution:
   f    = pi^2 sin(t) - \pi^2 (cos(\pi x) + cos(\pi y) + cos(\pi z))
   F(u) = -\pi^2 sin(t) + \pi^2 (cos(\pi x) + cos(\pi y) + cos(\pi z)) - \pi^2 (cos(\pi x) + cos(\pi y) + cos(\pi z)) + \pi^2 sin(t) = 0
 */
-static PetscErrorCode mms_trig_trig(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_trig_trig(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -159,7 +159,7 @@ static PetscErrorCode mms_trig_trig(PetscInt dim, PetscReal time, const PetscRea
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode mms_trig_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode mms_trig_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   *u = -PetscSqr(PETSC_PI) * PetscSinReal(time);
   return PETSC_SUCCESS;

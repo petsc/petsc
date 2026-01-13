@@ -136,14 +136,14 @@ int main(int argc, char **argv)
 
 /* -------------------------------------------------------------------*/
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSet(f, (PetscReal)1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(MatZeroEntries(B));
@@ -187,7 +187,7 @@ PetscErrorCode PostStep(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, PetscCtx ctx)
 {
   const PetscScalar *a;
 
@@ -198,7 +198,7 @@ PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
+PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   fvalue[0] = t - 5;
@@ -207,7 +207,7 @@ PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec x, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec x, PetscBool forwardsolve, PetscCtx ctx)
 {
   PetscInt           i;
   const PetscScalar *a;
@@ -220,7 +220,7 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TransferSetUp(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *flg, void *ctx)
+PetscErrorCode TransferSetUp(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *flg, PetscCtx ctx)
 {
   PetscInt *nt = (PetscInt *)ctx;
 
@@ -234,7 +234,7 @@ PetscErrorCode TransferSetUp(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *ctx)
+PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], PetscCtx ctx)
 {
   PetscInt i;
 

@@ -63,7 +63,7 @@ PetscErrorCode ComputeInitialSolution(DM da, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   PetscInt    mx;
   PetscScalar h;
@@ -80,7 +80,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   PetscInt    i, mx, xm, xs;
   PetscScalar v[7], Hx;

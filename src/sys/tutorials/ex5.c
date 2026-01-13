@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 
   /* Create an empty bag */
   PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &bag));
-  PetscCall(PetscBagGetData(bag, (void **)&params));
+  PetscCall(PetscBagGetData(bag, &params));
 
   /* register variables, defaults, names, help strings */
   PetscCall(PetscBagSetName(bag, "ParameterBag", "contains parameters for simulations of top-secret, dangerous physics"));
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   PetscCall(PetscBagView(bag, PETSC_VIEWER_STDOUT_WORLD));
 
   /* reuse the parameter struct */
-  PetscCall(PetscBagGetData(bag, (void **)&params));
+  PetscCall(PetscBagGetData(bag, &params));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "The value of rho after loading is: %f\n", (double)params->rho));
 
   /* clean up and exit */

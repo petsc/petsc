@@ -37,7 +37,7 @@ struct _n_User {
   The first RHS function provides f(t,x), the residual for the generalized momentum,
   and the second one provides g(t,v), the residual for the generalized position.
 */
-static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
+static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, PetscCtx ctx)
 {
   User               user = (User)ctx;
   const PetscScalar *x;
@@ -52,7 +52,7 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
+static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, PetscCtx ctx)
 {
   const PetscScalar *v;
   PetscScalar       *xres;
@@ -66,7 +66,7 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec R, PetscCtx ctx)
 {
   User               user = (User)ctx;
   const PetscScalar *u;
@@ -83,7 +83,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   const PetscScalar *u;
   PetscReal          dt;

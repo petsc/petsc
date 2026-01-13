@@ -6,7 +6,7 @@
 /*
    For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
-static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx)
+static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, PetscCtx ctx)
 {
   Tao tao = (Tao)ctx;
 
@@ -161,7 +161,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dumm
 
 .seealso: `Tao`, `MatColoring`, `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void *ctx)
+PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, PetscCtx ctx)
 {
   MatFDColoring coloring = (MatFDColoring)ctx;
 
@@ -176,7 +176,7 @@ PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat H, Mat B, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, void *ctx)
+PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, PetscCtx ctx)
 {
   PetscInt  n, N;
   PetscBool assembled;

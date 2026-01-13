@@ -19,7 +19,7 @@ Classic hyperbolic sensor function for testing multi-scale anisotropic mesh adap
 
 (mapped to have domain [0,1] x [0,1] in this case).
 */
-static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   const PetscReal xref = 2. * x[0] - 1.;
   const PetscReal yref = 2. * x[1] - 1.;
@@ -170,7 +170,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[0] + x[1];
   return 0;

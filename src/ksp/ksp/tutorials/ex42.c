@@ -1705,7 +1705,7 @@ PetscErrorCode DAView3DPVTS(DM da, Vec x, const char NAME[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPMonitorStokesBlocks(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy)
+PetscErrorCode KSPMonitorStokesBlocks(KSP ksp, PetscInt n, PetscReal rnorm, void *unused)
 {
   PetscReal norms[4];
   Vec       Br, v, w;

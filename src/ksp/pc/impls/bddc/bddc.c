@@ -2608,7 +2608,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
           PetscCall(MatISGetLocalMat(M, &lM));
           PetscCall(MatGetSize(lM, &n, NULL));
-          PetscCall(PetscContainerGetPointer(c, (void **)&csr));
+          PetscCall(PetscContainerGetPointer(c, &csr));
           PetscCall(PCBDDCSetLocalAdjacencyGraph(bddcipc_ctx->bddc, n, csr, csr + (n + 1), PETSC_COPY_VALUES));
           PetscCall(MatISRestoreLocalMat(M, &lM));
         }

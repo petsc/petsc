@@ -1931,9 +1931,15 @@ PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, PetscPointFn *update)
 
   Level: intermediate
 
+  Fortran Notes:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Define `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: `PetscDS`, `PetscPointFn`, `PetscDSSetContext()`
 @*/
-PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
+PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -1957,7 +1963,7 @@ PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
 
 .seealso: `PetscDS`, `PetscPointFn`, `PetscDSGetContext()`
 @*/
-PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
+PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -2313,7 +2319,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscPointExact
 
 .seealso: `PetscDS`, `PetscPointExactSolutionFn`, `PetscDSGetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscPointExactSolutionFn *sol, void *ctx)
+PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscPointExactSolutionFn *sol, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -2378,7 +2384,7 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 
 .seealso: `PetscDS`, `PetscPointExactSolutionFn`, `PetscDSGetExactSolutionTimeDerivative()`, `PetscDSSetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscPointExactSolutionFn *sol, void *ctx)
+PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscPointExactSolutionFn *sol, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -2443,7 +2449,7 @@ PetscErrorCode PetscDSGetLowerBound(PetscDS ds, PetscInt f, PetscPointBoundFn **
 
 .seealso: `PetscDS`, `PetscPointBoundFn`, `PetscDSGetLowerBound()`, `PetscDSGetUpperBound()`, `PetscDSGetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetLowerBound(PetscDS ds, PetscInt f, PetscPointBoundFn *lb, void *ctx)
+PetscErrorCode PetscDSSetLowerBound(PetscDS ds, PetscInt f, PetscPointBoundFn *lb, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -2508,7 +2514,7 @@ PetscErrorCode PetscDSGetUpperBound(PetscDS ds, PetscInt f, PetscPointBoundFn **
 
 .seealso: `PetscDS`, `PetscPointBoundFn`, `PetscDSGetUpperBound()`, `PetscDSGetLowerBound()`, `PetscDSGetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetUpperBound(PetscDS ds, PetscInt f, PetscPointBoundFn *ub, void *ctx)
+PetscErrorCode PetscDSSetUpperBound(PetscDS ds, PetscInt f, PetscPointBoundFn *ub, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -3159,7 +3165,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundaryByName()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, PetscCtx ctx, PetscInt *bd)
 {
   DSBoundary  head = ds->boundary, b;
   PetscInt    n    = 0;
@@ -3289,7 +3295,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
+PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, PetscCtx ctx, PetscInt *bd)
 {
   DSBoundary head = ds->boundary, b;
   PetscInt   n    = 0;
@@ -3368,7 +3374,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSGetNumBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx)
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, PetscCtx ctx)
 {
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;

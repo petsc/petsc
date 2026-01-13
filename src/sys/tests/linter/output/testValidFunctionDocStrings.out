@@ -766,15 +766,15 @@
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:515:1: error:[0m Function 'testFunctionParmsSameName()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   513: .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
   514: @*/
-> 515: [33m[1mPetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 515: [33m[1mPetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*func)(int tao, double x, double f, PetscCtx ctx), PetscCtx ctx)[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   516: {
   517:   return PETSC_SUCCESS;
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:545:1: error:[0m Function 'testFunctionParmsSameNameInOut()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   543: .seealso: [](ch_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
   544: @*/
-> 545: [33m[1mPetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, void *ctx), void *ctx)[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 545: [33m[1mPetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCode (*func)(int tao, double x, double f, PetscCtx ctx), PetscCtx ctx)[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   546: {
   547:   return PETSC_SUCCESS;
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:594:1: error:[0m Function 'testBadDocStringIgnoreAll()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
