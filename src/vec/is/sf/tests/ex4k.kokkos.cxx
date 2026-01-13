@@ -9,16 +9,16 @@ static const char help[] = "Benchmarking PetscSF Ping-pong latency (similar to o
 
   It mimics osu_latency from the OSU microbenchmarks (https://mvapich.cse.ohio-state.edu/benchmarks/).
 
-  Usage: mpirun -n 2 ./ex1k -mtype <type>
+  Usage: mpirun -n 2 ./ex4k -mtype <type>
   Other arguments have a default value that is also used in osu_latency.
 
   Examples:
 
   On Summit at OLCF:
-    jsrun --smpiargs "-gpu" -n 2 -a 1 -c 7 -g 1 -r 2 -l GPU-GPU -d packed -b packed:7 ./ex1k  -mtype kokkos
+    jsrun --smpiargs "-gpu" -n 2 -a 1 -c 7 -g 1 -r 2 -l GPU-GPU -d packed -b packed:7 ./ex4k  -mtype kokkos
 
   On Crusher at OLCF:
-    srun -n2 -c32 --cpu-bind=map_cpu:0,1 --gpus-per-node=8 --gpu-bind=map_gpu:0,1 ./ex1k -mtype kokkos
+    srun -n2 -c32 --cpu-bind=map_cpu:0,1 --gpus-per-node=8 --gpu-bind=map_gpu:0,1 ./ex4k -mtype kokkos
 */
 #include <petscsf.h>
 #include <Kokkos_Core.hpp>

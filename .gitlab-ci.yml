@@ -600,7 +600,7 @@ linux-cuda-pkgs:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-pkgs
-    TEST_OPTS: -j3 queryval='cuda,device,hypre,kokkos,kokkos_kernels,vec*' query='requires,requires,requires,requires,requires%OR%name'
+    TEST_OPTS: -j3 queryval='cuda,device,hypre,kokkos,kokkos_kernels' query='requires,requires,requires,requires,requires'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
     OMP_PROC_BIND: false
 

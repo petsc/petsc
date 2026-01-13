@@ -2,7 +2,7 @@ static char help[] = "Benchmarking MatMult() with AIJ and its subclass matrix ty
 
 /*
 Usage:
-  mpirun -n <np> ./ex1k
+  mpirun -n <np> ./ex5k
     -f <file>        : input PETSc matrix binary file; one can convert a file from MatrixMarket using mat/tests/ex72.c
     -mat_type <type> : aij or its subclass. Default is aij.
     -n <num>         : run MatMult() this many times and report average time. Default is 500.
@@ -14,18 +14,18 @@ Examples:
   On OLCF Summit (with GPU-aware MPI)
     # 6 MPI ranks:
     # 6 resource sets (-n 6), 1 MPI rank per RS (-a 1), 7 CPU cores per RS (-c 7), and 1 GPU per RS (-g 1), 6 RSs per node (-r 6)
-    jsrun --smpiargs "-gpu" -n 6 -a 1 -c 7 -g 1 -r 6 ./ex1k -f 1138_bus.aij -mat_type aijcusparse
+    jsrun --smpiargs "-gpu" -n 6 -a 1 -c 7 -g 1 -r 6 ./ex5k -f 1138_bus.aij -mat_type aijcusparse
 
     # 1 MPI rank
-    jsrun --smpiargs "-gpu" -n 1 -a 1 -c 7 -g 1 -r 1 ./ex1k -f 1138_bus.aij -mat_type aijcusparse
+    jsrun --smpiargs "-gpu" -n 1 -a 1 -c 7 -g 1 -r 1 ./ex5k -f 1138_bus.aij -mat_type aijcusparse
 
   On OLCF Crusher:
     # 1 MPI rank
     # run with 1 node (-N1), 1 mpi rank (-n1), 2 hardware threads per rank (-c2)
-    srun -N1 -n1 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex1k -f HV15R.aij -mat_type aijkokkos
+    srun -N1 -n1 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex5k -f HV15R.aij -mat_type aijkokkos
 
     # 8 MPI ranks
-    srun -N1 -n8 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex1k -f HV15R.aij -mat_type aijkokkos
+    srun -N1 -n8 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex5k -f HV15R.aij -mat_type aijkokkos
 */
 #include <petscmat.h>
 #include <petscdevice.h>
