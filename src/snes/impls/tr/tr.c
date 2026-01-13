@@ -192,6 +192,13 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
 . func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
+  Calling sequence of `func`:
++ snes    - the nonlinear solver object
+. X       - the current solution value
+. Y       - the tentative update step
+. changed - output, flag indicating `Y` has been changed by the pre-check
+- ctx     - the optional application context
+
   Level: intermediate
 
   Note:
@@ -199,7 +206,7 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
 
 .seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
 @*/
-PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, PetscBool *, void *), PetscCtx ctx)
+PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES snes, Vec X, Vec Y, PetscBool *changed, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
   PetscBool      flg;
@@ -226,11 +233,18 @@ PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, V
 + func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
+  Calling sequence of `func`:
++ snes    - the nonlinear solver object
+. X       - the current solution value
+. Y       - the tentative update step
+. changed - output, flag indicating `Y` has been changed by the pre-check
+- ctx     - the optional application context
+
   Level: intermediate
 
 .seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRPreCheck()`
 @*/
-PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, PetscBool *, void *), PetscCtxRt ctx)
+PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES snes, Vec X, Vec Y, PetscBool *changed, PetscCtx ctx), PetscCtxRt ctx)
 {
   SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
   PetscBool      flg;
@@ -255,6 +269,15 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, 
 . func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPostCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
+  Calling sequence of `func`:
++ snes      - the nonlinear solver object
+. X         - the current solution value
+. Y         - the tentative update step
+. W         - the tentative new solution value
+. changed_Y - output, flag indicated `Y` has been changed by the post-check
+. changed_W - output, flag indicated `W` has been changed by the post-check
+- ctx       - the optional application context
+
   Level: intermediate
 
   Note:
@@ -263,7 +286,7 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, 
 
 .seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRPostCheck()`, `SNESNewtonTRGetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRGetPreCheck()`
 @*/
-PetscErrorCode SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), PetscCtx ctx)
+PetscErrorCode SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_Y, PetscBool *changed_W, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
   PetscBool      flg;
@@ -290,11 +313,20 @@ PetscErrorCode SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, 
 + func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPostCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
+  Calling sequence of `func`:
++ snes      - the nonlinear solver object
+. X         - the current solution value
+. Y         - the tentative update step
+. W         - the tentative new solution value
+. changed_Y - output, flag indicated `Y` has been changed by the post-check
+. changed_W - output, flag indicated `W` has been changed by the post-check
+- ctx       - the optional application context
+
   Level: intermediate
 
 .seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRPostCheck()`
 @*/
-PetscErrorCode SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), PetscCtxRt ctx)
+PetscErrorCode SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_Y, PetscBool *changed_W, PetscCtx ctx), PetscCtxRt ctx)
 {
   SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
   PetscBool      flg;
@@ -414,14 +446,14 @@ static PetscErrorCode SNESNewtonTRQuadraticDelta(SNES snes, Mat J, PetscBool has
    G work vector, on output G = SNESFunction(W) */
 static PetscErrorCode SNESNewtonTRObjective(SNES snes, PetscBool has_objective, Vec X, Vec Y, Vec W, Vec G, PetscReal *gnorm, PetscReal *fkp1)
 {
-  PetscBool changed_y, changed_w;
+  PetscBool changed_Y, changed_W;
 
   PetscFunctionBegin;
   /* TODO: we can add a linesearch here */
-  PetscCall(SNESNewtonTRPreCheck(snes, X, Y, &changed_y));
+  PetscCall(SNESNewtonTRPreCheck(snes, X, Y, &changed_Y));
   PetscCall(VecWAXPY(W, -1.0, Y, X)); /* Xkp1 */
-  PetscCall(SNESNewtonTRPostCheck(snes, X, Y, W, &changed_y, &changed_w));
-  if (changed_y && !changed_w) PetscCall(VecWAXPY(W, -1.0, Y, X));
+  PetscCall(SNESNewtonTRPostCheck(snes, X, Y, W, &changed_Y, &changed_W));
+  if (changed_Y && !changed_W) PetscCall(VecWAXPY(W, -1.0, Y, X));
 
   PetscCall(SNESComputeFunction(snes, W, G)); /*  F(Xkp1) = G */
   PetscCall(VecNorm(G, NORM_2, gnorm));

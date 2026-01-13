@@ -122,12 +122,19 @@ The `.clang-format` file in the PETSc root directory controls the white space an
 
 Even with the use of `clang-format` there are still many decisions about code formatting that must be constantly made. A subset of these is automatically checked for merge requests with `make checkbadSource`.
 
-01. The prototypes for functions should not include the names of the
-    variables
+01. The prototypes for functions in the include files should not include the names of the
+    function arguments. For example,
 
     ```
     PETSC_EXTERN PetscErrorCode MyFunction(PetscInt); // Correct
-    PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); // Incorrect
+    PETSC_EXTERN PetscErrorCode MyFunction(PetscInt argumentname); // Incorrect
+    ```
+
+    However the `typedef` declaration of function types must include the names of the function argument. For example,
+
+    ```
+    PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MyFunctionFn(PetscInt); // Incorrect
+    PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MyFunctionFn(PetscInt argumentname); // Correct
     ```
 
 02. All local variables of a particular type (for example, `PetscInt`) should be listed

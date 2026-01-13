@@ -16,7 +16,7 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 + ts   - `TS` context obtained from `TSCreate()`
 . Amat - JacobianP matrix
 . func - function
-- ctx  - [optional] user-defined function context
+- ctx  - [optional] function context
 
   Level: intermediate
 
@@ -52,7 +52,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, PetscC
   Output Parameters:
 + Amat - JacobianP matrix
 . func - function
-- ctx  - [optional] user-defined function context
+- ctx  - [optional] function context
 
   Level: intermediate
 
@@ -116,7 +116,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 + ts   - `TS` context obtained from `TSCreate()`
 . Amat - JacobianP matrix
 . func - function
-- ctx  - [optional] user-defined function context
+- ctx  - [optional] function context
 
   Calling sequence of `func`:
 + ts    - the `TS` context
@@ -125,7 +125,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 . Udot  - time derivative of state vector
 . shift - shift to apply, see the note in `TSSetIJacobian()`
 . A     - output matrix
-- ctx   - [optional] user-defined function context
+- ctx   - [optional] function context
 
   Level: intermediate
 
@@ -161,7 +161,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   Output Parameters:
 + Amat - JacobianP matrix
 . func - the function that computes the JacobianP
-- ctx  - [optional] user-defined function context
+- ctx  - [optional] function context
 
   Calling sequence of `func`:
 + ts    - the `TS` context
@@ -170,7 +170,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
 . Udot  - time derivative of state vector
 . shift - shift to apply, see the note in `TSSetIJacobian()`
 . A     - output matrix
-- ctx   - [optional] user-defined function context
+- ctx   - [optional] function context
 
   Level: intermediate
 
@@ -256,31 +256,31 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 . numcost      - number of gradients to be computed, this is the number of cost functions
 . costintegral - vector that stores the integral values
 . rf           - routine for evaluating the integrand function
-. drduf        - function that computes the gradients of the r with respect to u
-. drdpf        - function that computes the gradients of the r with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
+. drduf        - function that computes the gradients of the `r` with respect to `u`
+. drdpf        - function that computes the gradients of the `r` with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
 . fwd          - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
-- ctx          - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+- ctx          - [optional] application context for private data for the function evaluation routine (may be `NULL`)
 
   Calling sequence of `rf`:
 + ts  - the integrator
 . t   - the time
 . U   - the solution
 . F   - the computed value of the function
-- ctx - the user context
+- ctx - the application context
 
   Calling sequence of `drduf`:
 + ts   - the integrator
 . t    - the time
 . U    - the solution
-. dRdU - the computed gradients of the r with respect to u
-- ctx  - the user context
+. dRdU - the computed gradients of the `r` with respect to `u`
+- ctx  - the application context
 
   Calling sequence of `drdpf`:
 + ts   - the integrator
 . t    - the time
 . U    - the solution
-. dRdP - the computed gradients of the r with respect to p
-- ctx  - the user context
+. dRdP - the computed gradients of the `r` with respect to `p`
+- ctx  - the application context
 
   Level: deprecated
 
@@ -424,49 +424,50 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
-  TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of F (IFunction) w.r.t. the state variable.
+  TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of `F` (IFunction) w.r.t. the state variable.
 
   Logically Collective
 
   Input Parameters:
-+ ts   - `TS` context obtained from `TSCreate()`
-. ihp1 - an array of vectors storing the result of vector-Hessian-vector product for F_UU
-. hessianproductfunc1 - vector-Hessian-vector product function for F_UU
-. ihp2 - an array of vectors storing the result of vector-Hessian-vector product for F_UP
-. hessianproductfunc2 - vector-Hessian-vector product function for F_UP
-. ihp3 - an array of vectors storing the result of vector-Hessian-vector product for F_PU
-. hessianproductfunc3 - vector-Hessian-vector product function for F_PU
-. ihp4 - an array of vectors storing the result of vector-Hessian-vector product for F_PP
-- hessianproductfunc4 - vector-Hessian-vector product function for F_PP
++ ts                   - `TS` context obtained from `TSCreate()`
+. ihp1                 - an array of vectors storing the result of vector-Hessian-vector product for $F_{UU}$
+. ihessianproductfunc1 - vector-Hessian-vector product function for $F_{UU}$
+. ihp2                 - an array of vectors storing the result of vector-Hessian-vector product for $F_{UP}$
+. ihessianproductfunc2 - vector-Hessian-vector product function for $F_{UP}$
+. ihp3                 - an array of vectors storing the result of vector-Hessian-vector product for $F_{PU}$
+. ihessianproductfunc3 - vector-Hessian-vector product function for $F_{PU}$
+. ihp4                 - an array of vectors storing the result of vector-Hessian-vector product for $F_{PP}$
+. ihessianproductfunc4 - vector-Hessian-vector product function for $F_{PP}$
+- ctx                  - [optional] function context
 
   Calling sequence of `ihessianproductfunc1`:
 + ts  - the `TS` context
-+ t   - current timestep
+. t   - current timestep
 . U   - input vector (current ODE solution)
 . Vl  - an array of input vectors to be left-multiplied with the Hessian
 . Vr  - input vector to be right-multiplied with the Hessian
 . VHV - an array of output vectors for vector-Hessian-vector product
-- ctx - [optional] user-defined function context
+- ctx - [optional] function context
 
   Level: intermediate
 
   Notes:
-  All other functions have the same calling sequence as `rhhessianproductfunc1`, so their
+  All other functions have the same calling sequence as `ihessianproductfunc1`, so their
   descriptions are omitted for brevity.
 
   The first Hessian function and the working array are required.
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
-  $ Vl_n^T*F_UP*Vr
-  where the vector Vl_n (n-th element in the array Vl) and Vr are of size N and M respectively, and the Hessian F_UP is of size N x N x M.
-  Each entry of F_UP corresponds to the derivative
-  $ F_UP[i][j][k] = \frac{\partial^2 F[i]}{\partial U[j] \partial P[k]}.
-  The result of the vector-Hessian-vector product for Vl_n needs to be stored in vector VHV_n with the j-th entry being
-  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * F_UP[i][j][k] * Vr[k]}
-  If the cost function is a scalar, there will be only one vector in Vl and VHV.
+  $Vl_n^T*F_UP*Vr$
+  where the vector $Vl_n$ (n-th element in the array `Vl`) and `Vr` are of size `N` and `M` respectively, and the Hessian $F_{UP}$ is of size $N x N x M.$
+  Each entry of $F_{UP}$ corresponds to the derivative
+  $ F_UP[i][j][k] = \frac{\partial^2 F[i]}{\partial U[j] \partial P[k]}.$
+  The result of the vector-Hessian-vector product for $Vl_n$ needs to be stored in vector $VHV_n$ with the j-th entry being
+  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * F_UP[i][j][k] * Vr[k]}$
+  If the cost function is a scalar, there will be only one vector in `Vl` and `VHV`.
 
 .seealso: [](ch_ts), `TS`
 @*/
-PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx), Vec *ihp2, PetscErrorCode (*ihessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp3, PetscErrorCode (*ihessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *ihp4, PetscErrorCode (*ihessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), PetscCtx ctx)
+PetscErrorCode TSSetIHessianProduct(TS ts, Vec ihp1[], PetscErrorCode (*ihessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec ihp2[], PetscErrorCode (*ihessianproductfunc2)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec ihp3[], PetscErrorCode (*ihessianproductfunc3)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec ihp4[], PetscErrorCode (*ihessianproductfunc4)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -652,22 +653,22 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@C
   TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector
-  product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state
+  product. The Hessian is the second-order derivative of `G` (RHSFunction) w.r.t. the state
   variable.
 
   Logically Collective
 
   Input Parameters:
-+ ts     - `TS` context obtained from `TSCreate()`
-. rhshp1 - an array of vectors storing the result of vector-Hessian-vector product for G_UU
-. hessianproductfunc1 - vector-Hessian-vector product function for G_UU
-. rhshp2 - an array of vectors storing the result of vector-Hessian-vector product for G_UP
-. hessianproductfunc2 - vector-Hessian-vector product function for G_UP
-. rhshp3 - an array of vectors storing the result of vector-Hessian-vector product for G_PU
-. hessianproductfunc3 - vector-Hessian-vector product function for G_PU
-. rhshp4 - an array of vectors storing the result of vector-Hessian-vector product for G_PP
-. hessianproductfunc4 - vector-Hessian-vector product function for G_PP
-- ctx    - [optional] user-defined function context
++ ts                     - `TS` context obtained from `TSCreate()`
+. rhshp1                 - an array of vectors storing the result of vector-Hessian-vector product for $G_{UU}$
+. rhshessianproductfunc1 - vector-Hessian-vector product function for $G_{UU}$
+. rhshp2                 - an array of vectors storing the result of vector-Hessian-vector product for $G_{UP}$
+. rhshessianproductfunc2 - vector-Hessian-vector product function for $G_{UP}$
+. rhshp3                 - an array of vectors storing the result of vector-Hessian-vector product for $G_{PU}$
+. rhshessianproductfunc3 - vector-Hessian-vector product function for $G_{PU}$
+. rhshp4                 - an array of vectors storing the result of vector-Hessian-vector product for $G_{PP}$
+. rhshessianproductfunc4 - vector-Hessian-vector product function for $G_{PP}$
+- ctx                    - [optional] function context
 
   Calling sequence of `rhshessianproductfunc1`:
 + ts  - the `TS` context
@@ -676,28 +677,28 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 . Vl  - an array of input vectors to be left-multiplied with the Hessian
 . Vr  - input vector to be right-multiplied with the Hessian
 . VHV - an array of output vectors for vector-Hessian-vector product
-- ctx - [optional] user-defined function context
+- ctx - [optional] function context
 
   Level: intermediate
 
   Notes:
-  All other functions have the same calling sequence as `rhhessianproductfunc1`, so their
+  All other functions have the same calling sequence as `rhshessianproductfunc1`, so their
   descriptions are omitted for brevity.
 
   The first Hessian function and the working array are required.
 
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
-  $ Vl_n^T*G_UP*Vr
-  where the vector Vl_n (n-th element in the array Vl) and Vr are of size N and M respectively, and the Hessian G_UP is of size N x N x M.
-  Each entry of G_UP corresponds to the derivative
-  $ G_UP[i][j][k] = \frac{\partial^2 G[i]}{\partial U[j] \partial P[k]}.
-  The result of the vector-Hessian-vector product for Vl_n needs to be stored in vector VHV_n with j-th entry being
-  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * G_UP[i][j][k] * Vr[k]}
-  If the cost function is a scalar, there will be only one vector in Vl and VHV.
+  $ Vl_n^T*G_UP*Vr$
+  where the vector $Vl_n$ (n-th element in the array $Vl$) and $Vr$ are of size $N$ and $M$ respectively, and the Hessian $G_{UP}$ is of size $N x N x M$.
+  Each entry of $G_{UP}$ corresponds to the derivative
+  $ G_UP[i][j][k] = \frac{\partial^2 G[i]}{\partial U[j] \partial P[k]}.$
+  The result of the vector-Hessian-vector product for $Vl_n$ needs to be stored in vector $VHV_n$ with j-th entry being
+  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * G_UP[i][j][k] * Vr[k]}$
+  If the cost function is a scalar, there will be only one vector in $Vl$ and $VHV$.
 
 .seealso: `TS`, `TSAdjoint`
 @*/
-PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec rhshp1[], PetscErrorCode (*rhshessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx), Vec rhshp2[], PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec rhshp3[], PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec rhshp4[], PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), PetscCtx ctx)
+PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec rhshp1[], PetscErrorCode (*rhshessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec rhshp2[], PetscErrorCode (*rhshessianproductfunc2)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec rhshp3[], PetscErrorCode (*rhshessianproductfunc3)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), Vec rhshp4[], PetscErrorCode (*rhshessianproductfunc4)(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -716,7 +717,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec rhshp1[], PetscErrorCode (*rhsh
 }
 
 /*@
-  TSComputeRHSHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Guu.
+  TSComputeRHSHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for $G_{uu}$.
 
   Collective
 
@@ -750,7 +751,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
 }
 
 /*@
-  TSComputeRHSHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Gup.
+  TSComputeRHSHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for $G_{up}$.
 
   Collective
 
@@ -784,7 +785,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
 }
 
 /*@
-  TSComputeRHSHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Gpu.
+  TSComputeRHSHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for $G_{pu}.$
 
   Collective
 
@@ -818,7 +819,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
 }
 
 /*@
-  TSComputeRHSHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Gpp.
+  TSComputeRHSHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for $G_{pp}$.
 
   Collective
 
@@ -1259,6 +1260,21 @@ static PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptim
 . monitor      - the monitor function, its context must be a `PetscViewerAndFormat`
 - monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `TS` or `PetscViewer` objects
 
+  Calling sequence of `monitor`:
++ ts      - the `TS` context
+. step    - iteration number (after the final time step the monitor routine is called with
+                a step of -1, this is at the final time which may have been interpolated to)
+. time    - current time
+. u       - current iterate
+. numcost - number of cost functions
+. lambda  - sensitivities to initial conditions
+. mu      - sensitivities to parameters
+- vf      - the `PetscViewer` and format the monitor is using
+
+  Calling sequence of `monitorsetup`:
++ ts - the `TS` object being monitored
+- vf - the `PetscViewer` and format the monitor is using
+
   Level: developer
 
 .seealso: [](ch_ts), `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
@@ -1269,7 +1285,7 @@ static PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptim
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscViewerAndFormat`
 @*/
-PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *), PetscErrorCode (*monitorsetup)(TS, PetscViewerAndFormat *))
+PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(TS ts, PetscInt step, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf), PetscErrorCode (*monitorsetup)(TS ts, PetscViewerAndFormat *vf))
 {
   PetscViewer       viewer;
   PetscViewerFormat format;
@@ -1296,8 +1312,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
   Input Parameters:
 + ts              - the `TS` context obtained from `TSCreate()`
 . adjointmonitor  - monitoring routine
-. adjointmctx     - [optional] user-defined context for private data for the monitor routine
-                    (use `NULL` if no context is desired)
+. adjointmctx     - [optional] context for private data for the monitor routine (use `NULL` if no context is desired)
 - adjointmdestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for its calling sequence
 
   Calling sequence of `adjointmonitor`:
@@ -1306,7 +1321,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
                 a step of -1, this is at the final time which may have been interpolated to)
 . time        - current time
 . u           - current iterate
-. numcost     - number of cost functionos
+. numcost     - number of cost functions
 . lambda      - sensitivities to initial conditions
 . mu          - sensitivities to parameters
 - adjointmctx - [optional] adjoint monitoring context
@@ -1376,7 +1391,7 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts)
 step of -1, this is at the final time which may have been interpolated to)
 . time    - current time
 . v       - current iterate
-. numcost - number of cost functionos
+. numcost - number of cost functions
 . lambda  - sensitivities to initial conditions
 . mu      - sensitivities to parameters
 - vf      - the viewer and format

@@ -8,13 +8,17 @@
   Input Parameters:
 + draw - the window where the graph will be made.
 . func - users function that draws the graphic
-- ctx  - pointer to any user required data
+- ctx  - pointer to any application required data
+
+  Calling sequence of func:
++ draw - the `PetscDraw` object to zoom on
+- ctx  - the context for the zooming operation
 
   Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), PetscCtx ctx)
+PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw draw, PetscCtx ctx), PetscCtx ctx)
 {
   PetscDrawButton button;
   PetscReal       dpause, xc, yc, scale = 1.0, w, h, xr, xl, yr, yl, xmin, xmax, ymin, ymax;

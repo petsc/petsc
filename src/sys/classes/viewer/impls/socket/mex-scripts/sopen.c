@@ -100,7 +100,7 @@ static int SOCKConnect_Private(int portnumber)
   return t;
 }
 #define MAXHOSTNAME 100
-int establish(u_short portnum)
+static int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME + 1];
   int                s;

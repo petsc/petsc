@@ -610,7 +610,7 @@ typedef struct _n_PetscTabulation *PetscTabulation;
 
 .seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `PetscPDFMaxwellBoltzmann1D()`
 S*/
-typedef PetscErrorCode PetscProbFn(const PetscReal x[], const PetscReal scale[], PetscReal result[]);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscProbFn(const PetscReal x[], const PetscReal scale[], PetscReal result[]);
 
 PETSC_EXTERN_TYPEDEF typedef PetscProbFn *PetscProbFunc PETSC_DEPRECATED_TYPEDEF(3, 24, 0, "PetscProbFn*", );
 

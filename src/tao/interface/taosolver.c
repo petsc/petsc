@@ -1481,8 +1481,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it
   Input Parameters:
 + tao  - the `Tao` object
 . conv - the routine to test for convergence
-- ctx  - [optional] context for private data for the convergence routine
-        (may be `NULL`)
+- ctx  - [optional] context for private data for the convergence routine (may be `NULL`)
 
   Calling sequence of `conv`:
 + tao - the `Tao` object
@@ -1495,7 +1494,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergedReason()`, `TaoGetSolutionStatus()`, `TaoGetTolerances()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *), PetscCtx ctx)
+PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao tao, PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -1535,7 +1534,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoView()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, PetscCtx), PetscCtx ctx, PetscCtxDestroyFn *dest)
+PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao tao, PetscCtx ctx), PetscCtx ctx, PetscCtxDestroyFn *dest)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -2205,7 +2204,10 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 
   Input Parameters:
 + sname - name of a new user-defined solver
-- func  - routine to Create method context
+- func  - routine to create `TaoType` specific method context
+
+  Calling sequence of `func`:
+. tao - the `Tao` object to be created
 
   Example Usage:
 .vb
@@ -2228,7 +2230,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 
 .seealso: [](ch_tao), `Tao`, `TaoSetType()`, `TaoRegisterAll()`, `TaoRegisterDestroy()`
 @*/
-PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
+PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao tao))
 {
   PetscFunctionBegin;
   PetscCall(TaoInitializePackage());
