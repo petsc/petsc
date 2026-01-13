@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.8.1'
+    self.version          = '5.8.2'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
@@ -119,7 +119,7 @@ class Configure(config.package.Package):
     if self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
-      orderingsc += ' -Dscotch  -Dptscotch'
+      orderingsc += ' -Dscotch -Dptscotch'
       orderingsf += ' '+self.fortran.FortranDefineCompilerOption+'scotch '+self.fortran.FortranDefineCompilerOption+'ptscotch'
 
     g.write('ORDERINGSC = '+orderingsc+'\n')
