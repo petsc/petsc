@@ -107,7 +107,7 @@ PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
 - comm - the communicator for the new `DM` (this communicator is currently ignored, but is present so that `DMForestTemplate()` can be used within `DMCoarsen()`)
 
   Output Parameter:
-. tdm - the new `DM` object
+. tedm - the new `DM` object
 
   Level: intermediate
 
@@ -119,7 +119,7 @@ PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
 
 .seealso: `DM`, `DMFOREST`, `DMForestSetAdaptivityForest()`
 @*/
-PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
+PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tedm)
 {
   DM_Forest                 *forest = (DM_Forest *)dm->data;
   DMType                     type;
@@ -134,40 +134,40 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), tdm));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), tedm));
   PetscCall(DMGetType(dm, &type));
-  PetscCall(DMSetType(*tdm, type));
+  PetscCall(DMSetType(*tedm, type));
   PetscCall(DMForestGetBaseDM(dm, &base));
-  PetscCall(DMForestSetBaseDM(*tdm, base));
+  PetscCall(DMForestSetBaseDM(*tedm, base));
   PetscCall(DMForestGetTopology(dm, &topology));
-  PetscCall(DMForestSetTopology(*tdm, topology));
+  PetscCall(DMForestSetTopology(*tedm, topology));
   PetscCall(DMForestGetAdjacencyDimension(dm, &dim));
-  PetscCall(DMForestSetAdjacencyDimension(*tdm, dim));
+  PetscCall(DMForestSetAdjacencyDimension(*tedm, dim));
   PetscCall(DMForestGetPartitionOverlap(dm, &overlap));
-  PetscCall(DMForestSetPartitionOverlap(*tdm, overlap));
+  PetscCall(DMForestSetPartitionOverlap(*tedm, overlap));
   PetscCall(DMForestGetMinimumRefinement(dm, &ref));
-  PetscCall(DMForestSetMinimumRefinement(*tdm, ref));
+  PetscCall(DMForestSetMinimumRefinement(*tedm, ref));
   PetscCall(DMForestGetMaximumRefinement(dm, &ref));
-  PetscCall(DMForestSetMaximumRefinement(*tdm, ref));
+  PetscCall(DMForestSetMaximumRefinement(*tedm, ref));
   PetscCall(DMForestGetAdaptivityStrategy(dm, &strat));
-  PetscCall(DMForestSetAdaptivityStrategy(*tdm, strat));
+  PetscCall(DMForestSetAdaptivityStrategy(*tedm, strat));
   PetscCall(DMForestGetGradeFactor(dm, &factor));
-  PetscCall(DMForestSetGradeFactor(*tdm, factor));
+  PetscCall(DMForestSetGradeFactor(*tedm, factor));
   PetscCall(DMForestGetBaseCoordinateMapping(dm, &map, &mapCtx));
-  PetscCall(DMForestSetBaseCoordinateMapping(*tdm, map, mapCtx));
-  if (forest->ftemplate) PetscCall((*forest->ftemplate)(dm, *tdm));
-  PetscCall(DMForestSetAdaptivityForest(*tdm, dm));
-  PetscCall(DMCopyDisc(dm, *tdm));
+  PetscCall(DMForestSetBaseCoordinateMapping(*tedm, map, mapCtx));
+  if (forest->ftemplate) PetscCall((*forest->ftemplate)(dm, *tedm));
+  PetscCall(DMForestSetAdaptivityForest(*tedm, dm));
+  PetscCall(DMCopyDisc(dm, *tedm));
   PetscCall(DMGetApplicationContext(dm, &ctx));
-  PetscCall(DMSetApplicationContext(*tdm, &ctx));
+  PetscCall(DMSetApplicationContext(*tedm, &ctx));
   {
     const PetscReal *maxCell, *L, *Lstart;
 
     PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
-    PetscCall(DMSetPeriodicity(*tdm, maxCell, Lstart, L));
+    PetscCall(DMSetPeriodicity(*tedm, maxCell, Lstart, L));
   }
   PetscCall(DMGetMatType(dm, &mtype));
-  PetscCall(DMSetMatType(*tdm, mtype));
+  PetscCall(DMSetMatType(*tedm, mtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

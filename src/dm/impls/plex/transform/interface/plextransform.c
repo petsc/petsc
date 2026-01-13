@@ -868,16 +868,16 @@ PetscErrorCode DMPlexTransformSetDimensions_Internal(DMPlexTransform tr, DM dm, 
 - dm - The original `DM`
 
   Output Parameter:
-. tdm - The transformed `DM`
+. trdm - The transformed `DM`
 
   Level: advanced
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
+PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM trdm)
 {
   PetscFunctionBegin;
-  PetscUseTypeMethod(tr, setdimensions, dm, tdm);
+  PetscUseTypeMethod(tr, setdimensions, dm, trdm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2402,7 +2402,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
 - dm - The original `DM`
 
   Output Parameter:
-. tdm - The transformed `DM`
+. trdm - The transformed `DM`
 
   Level: intermediate
 
@@ -2413,7 +2413,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
 
 .seealso: [](plex_transform_table), [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformCreate()`, `DMPlexTransformSetDM()`
 @*/
-PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
+PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *trdm)
 {
   DM                     rdm;
   DMPlexInterpolatedFlag interp;
@@ -2422,7 +2422,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscAssertPointer(tdm, 3);
+  PetscAssertPointer(trdm, 3);
   PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_Apply, tr, dm, 0, 0));
   PetscCall(DMPlexTransformSetDM(tr, dm));
 
@@ -2451,7 +2451,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   // If the original DM was configured from options, the transformed DM should be as well
   rdm->setfromoptionscalled = dm->setfromoptionscalled;
   PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_Apply, tr, dm, 0, 0));
-  *tdm = rdm;
+  *trdm = rdm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -93,18 +93,18 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
+PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *ctx)
 {
-  DMSwarmSort ctx;
+  DMSwarmSort ictx;
 
   PetscFunctionBegin;
-  if (!_ctx) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!*_ctx) PetscFunctionReturn(PETSC_SUCCESS);
-  ctx = *_ctx;
-  if (ctx->list) PetscCall(PetscFree(ctx->list));
-  if (ctx->pcell_offsets) PetscCall(PetscFree(ctx->pcell_offsets));
-  PetscCall(PetscFree(ctx));
-  *_ctx = NULL;
+  if (!ctx) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*ctx) PetscFunctionReturn(PETSC_SUCCESS);
+  ictx = *ctx;
+  if (ictx->list) PetscCall(PetscFree(ictx->list));
+  if (ictx->pcell_offsets) PetscCall(PetscFree(ictx->pcell_offsets));
+  PetscCall(PetscFree(ictx));
+  *ctx = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

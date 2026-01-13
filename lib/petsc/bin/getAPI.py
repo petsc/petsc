@@ -4,7 +4,7 @@
 #  the PETSc enums, structs, functions, and classes
 #
 #  Calling sequence:
-#      getAPI(directory)
+#      getAPI(directory, pkgname = 'petsc', verbose = False)
 #
 #  Notes:
 #    const char *fill_array_of_strings[]              + fills up an array of strings; the array already exists in the calling routine
@@ -23,9 +23,7 @@ def mansecpath(mansec):
   '''Given a manual section, returns the path where it is located (it differs in some SLEPc classes)'''
   return os.path.join('sys','classes',mansec) if mansec in ['bv','ds','fn','rg','st'] else mansec
 
-verbose = False
-
-def verbosePrint(text):
+def verbosePrint(verbose, text):
   '''Prints the text if run with verbose option'''
   if verbose: print(text)
 
@@ -575,6 +573,7 @@ def getFunctions(mansec, functiontoinclude, filename):
               if args.find(i) > -1:
                 fun.opaque = True
             args = args.split(",")
+            argnames = []
             for i in args:
               arg = Argument()
               if i.find('**') > -1 and not i.strip().startswith('void'): fun.opaque = True
@@ -591,8 +590,14 @@ def getFunctions(mansec, functiontoinclude, filename):
               if i.find('*') > -1: arg.stars = 1
               if i.find('**') > -1: arg.stars = 2
               argname = re.findall(r' [*]*([a-zA-Z0-9_]*)[\[\]]*',i)
-              if argname: arg.name = argname[0]
-              else: arg.name = 'noname'
+              if argname and argname[0]:
+                arg.name = argname[0]
+                if arg.name.lower() in argnames:
+                  arg.name = 'M_' + arg.name
+                argnames.append(arg.name.lower())
+              else:
+                arg.name   = 'noname'
+                fun.opaque = True
               i =  regblank.sub('',reg.sub(r'\1\2 ',i).strip()).replace('*','').replace('[]','')
               arg.typename = i
               # fix input character arrays that are written as *variable name
@@ -631,32 +636,32 @@ def getFunctions(mansec, functiontoinclude, filename):
 
 ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
 
-def getAPI(directory,pkgname = 'petsc'):
+def getAPI(directory,pkgname = 'petsc',verbose = False):
   global typedefs
   args = [os.path.join('include',i) for i in os.listdir(os.path.join(directory,'include')) if i.endswith('.h') and not i.endswith('deprecated.h')]
   for i in args:
     getIncludeFiles(i,pkgname)
-  verbosePrint('Include files -------------------------------------')
+  verbosePrint(verbose, 'Include files -------------------------------------')
   for i in includefiles.keys():
-    verbosePrint(includefiles[i])
+    verbosePrint(verbose, includefiles[i])
 
   for i in args:
     getEnums(i)
-  verbosePrint('Enums ---------------------------------------------')
+  verbosePrint(verbose, 'Enums ---------------------------------------------')
   for i in enums.keys():
-    verbosePrint(enums[i])
+    verbosePrint(verbose, enums[i])
 
   for i in args:
     getSenums(i)
-  verbosePrint('String enums ---------------------------------------------')
+  verbosePrint(verbose, 'String enums ---------------------------------------------')
   for i in senums.keys():
-    verbosePrint(senums[i])
+    verbosePrint(verbose, senums[i])
 
   for i in args:
     getStructs(i)
-  verbosePrint('Structs ---------------------------------------------')
+  verbosePrint(verbose, 'Structs ---------------------------------------------')
   for i in structs.keys():
-    verbosePrint(structs[i])
+    verbosePrint(verbose, structs[i])
 
   for i in args:
     getTypedefs(i)
@@ -664,9 +669,9 @@ def getAPI(directory,pkgname = 'petsc'):
   for i in typedefs.keys():
     if typedefs[i].name: cp[i] = typedefs[i] # delete ones marked as having multiple definitions
   typedefs = cp
-  verbosePrint('Typedefs ---------------------------------------------')
+  verbosePrint(verbose, 'Typedefs ---------------------------------------------')
   for i in typedefs.keys():
-    verbosePrint(typedefs[i])
+    verbosePrint(verbose, typedefs[i])
 
   for i in args:
     getClasses(i)
@@ -833,13 +838,13 @@ def getAPI(directory,pkgname = 'petsc'):
                                                   Argument('n',             'PetscInt',    stars = 1),
                                                   Argument('set',           'PetscBool',   stars = 1)]
 
-  verbosePrint('Classes  ---------------------------------------------')
+  verbosePrint(verbose, 'Classes  ---------------------------------------------')
   for i in classes.keys():
-    verbosePrint(classes[i])
+    verbosePrint(verbose, classes[i])
 
-  verbosePrint('Standalone functions  --------------------------------')
+  verbosePrint(verbose, 'Standalone functions  --------------------------------')
   for i in funcs.keys():
-    verbosePrint(funcs[i])
+    verbosePrint(verbose, funcs[i])
 
   #file = open('classes.data','wb')
   #pickle.dump(enums,file)
@@ -853,4 +858,12 @@ def getAPI(directory,pkgname = 'petsc'):
 
 #
 if __name__ ==  '__main__':
-  getAPI(sys.argv[1])
+  import argparse
+
+  parser = argparse.ArgumentParser(description='Generate PETSc/SLEPc API', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--verbose', action='store_true', required=False, help='show generated API')
+  parser.add_argument('--package', metavar='petsc/slepc', required=False, help='package name', default='petsc')
+  parser.add_argument('directory', help='root directory, either PETSC_DIR or SLEPC_DIR')
+  args = parser.parse_args()
+
+  getAPI(args.directory, args.package, args.verbose)
