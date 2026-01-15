@@ -54,7 +54,7 @@ StreamType = make_enum_class(
 )
 
 DeviceJoinMode = make_enum_class(
-  "DeviceJoinMode",
+  "JoinMode",
   """The type of join to perform.
 
   See Also
@@ -445,7 +445,7 @@ cdef class DeviceContext(Object):
             CHKERR(PetscFree(csubctxs))
         return subctxs
 
-    def join(self, join_mode: DeviceJoinMode | str, py_sub_ctxs: list[DeviceContext]) -> None:
+    def join(self, join_mode: JoinMode | str, py_sub_ctxs: list[DeviceContext]) -> None:
         """Join a set of device contexts on this one.
 
         Not collective.
