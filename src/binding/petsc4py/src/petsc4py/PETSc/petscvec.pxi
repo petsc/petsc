@@ -596,7 +596,7 @@ cdef class _Vec_LocalForm:
     cdef Vec gvec
     cdef Vec lvec
 
-    def __init__(self, Vec gvec):
+    def __cinit__(self, Vec gvec):
         self.gvec = gvec
         self.lvec = Vec()
 
