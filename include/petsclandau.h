@@ -127,6 +127,7 @@ typedef struct {
   PetscReal vperp0_radius1; /* RE: radius of refinement along v_perp=0 */
   PetscReal vperp0_radius2; /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
   PetscBool sphere;
+  PetscBool map_sphere;
   PetscReal sphere_inner_radius_90degree[LANDAU_MAX_GRIDS];
   PetscReal sphere_inner_radius_45degree[LANDAU_MAX_GRIDS];
   PetscInt  cells0[3];
