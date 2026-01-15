@@ -51,7 +51,7 @@ uninstall:
 
 # ----
 
-.PHONY: lint ruff-lint cython-lint check-docs
+.PHONY: lint ruff-lint cython-lint check-docs stubtest
 CYTHONLINT_SRC = src demo
 CYTHONLINT_OPTS =
 RUFF_SRC = .
@@ -78,6 +78,23 @@ check-docs:
 	. petsc4py-docs-env/bin/activate && CFLAGS=-O0 python -m pip install .
 	. petsc4py-docs-env/bin/activate && ${MAKE} sphinx-html SPHINXOPTS=-Wj1
 
+stubgen:
+	python -m pip install .
+	python conf/stubgen.py
+
+stubcheck:
+	python -m mypy.stubtest petsc4py --ignore-missing-stub --allowlist conf/stubtest-allowlist --ignore-disjoint-bases
+
+stubdiff:
+	git diff --quiet -- src/petsc4py/PETSc.pyi
+
+stubtest:
+	${RM} -r petsc4py-stubtest-env
+	${PYTHON} -m venv petsc4py-stubtest-env
+	. petsc4py-stubtest-env/bin/activate && python -m pip install -r conf/requirements-stubtest.txt
+	. petsc4py-stubtest-env/bin/activate && ${MAKE} stubgen
+	. petsc4py-stubtest-env/bin/activate && ${MAKE} stubcheck
+	. petsc4py-stubtest-env/bin/activate && ${MAKE} stubdiff
 # ----
 
 .PHONY: docs docs-html docs-pdf docs-misc

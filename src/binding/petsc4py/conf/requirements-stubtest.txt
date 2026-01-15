@@ -1,0 +1,3 @@
+mypy == 1.19.1
+mpi4py
+pyvista
