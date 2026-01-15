@@ -1,7 +1,9 @@
 # --------------------------------------------------------------------
 
+from pathlib import Path
 import re
 import os
+import subprocess
 import sys
 import glob
 import copy
@@ -661,10 +663,43 @@ class build_ext(_build_ext):
     def run(self):
         self.build_sources()
         _build_ext.run(self)
+        self.build_stubs()
 
     def build_sources(self):
         if 'build_src' in self.distribution.cmdclass:
             self.run_command('build_src')
+
+    def build_stubs(self):
+        pkgname = self.distribution.get_name()
+        modname = self.extensions[0].name.split(".")[-1]
+        srcdir = Path(__file__).parent.parent / 'src' / pkgname
+        blddir = Path(self.build_lib) / pkgname
+
+        alldeps = glob.glob(str(blddir / 'lib' / '*' / f'{modname}.*'))
+        target =  srcdir / f'{modname}.pyi'
+        if not (self.force or modified.newer_group(alldeps, target)):
+            log.debug(f"skipping '{modname}.*.so' -> '{target}' (up-to-date)")
+            return
+
+        env = os.environ.copy()
+        python_path = env.get('PYTHONPATH', "")
+        if python_path != "":
+            python_path += ":"
+        python_path += self.build_lib
+        env['PYTHONPATH'] = python_path
+        env.pop('PETSC_ARCH', None)
+
+        stubgen = Path(__file__).parent / 'stubgen.py'
+        rc = subprocess.call([sys.executable, stubgen], env=env) # noqa S603
+        if rc != 0:
+            log.warn("Stubs could not be generated.")
+            return
+
+        self.copy_file(
+            srcdir / f'{modname}.pyi',
+            blddir / f'{modname}.pyi',
+            level=self.verbose,
+        )
 
     def build_extensions(self, *args, **kargs):
         self.PETSC_ARCH_LIST = []
@@ -751,6 +786,10 @@ class build_ext(_build_ext):
             else:
                 outfile = os.path.join(self.build_lib, filename)
                 outputs.append(outfile)
+
+        pkgname = self.distribution.get_name()
+        modname = self.extensions[0].name.split(".")[-1]
+        outputs.append(os.path.join(self.build_lib, pkgname, f"{modname}.pyi"))
         return list(set(outputs))
 
     def get_source_files(self):
