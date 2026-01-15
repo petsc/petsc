@@ -1,0 +1,98 @@
+iter =   0, Function value 1., Residual: 2.
+iter =   0, Function value 0.779958, Residual: 5.22808
+iter =   1, Function value 0.565415, Residual: 2.80018
+iter =   2, Function value 0.441854, Residual: 5.27327
+iter =   3, Function value 0.346303, Residual: 1.03178
+iter =   4, Function value 0.314993, Residual: 4.72612
+iter =   5, Function value 0.28595, Residual: 0.138193
+iter =   6, Function value 0.282119, Residual: 0.845851
+iter =   7, Function value 0.281458, Residual: 0.00269577
+iter =   8, Function value 0.281456, Residual: 0.000535238
+iter =   9, Function value 0.281456, Residual: < 1.0e-6
+Tao Object: 1 MPI process
+  type: nls
+    Newton steps: 9
+    BFGS steps: 0
+    Gradient steps: 0
+    nls ksp atol: 2
+    nls ksp rtol: 7
+    nls ksp ctol: 0
+    nls ksp negc: 0
+    nls ksp dtol: 0
+    nls ksp iter: 0
+    nls ksp othr: 0
+  Objective function:
+    Scale (tao_objective_scale): 1.
+    Function:
+      TaoTerm Object: 1 MPI process
+        type: sum
+        solution vector space: N = 2 [VecType seq (tao_term_solution_vec_type)]
+        parameter vector space: (optional) K = 2 [VecType nest (tao_term_parameters_vec_type)]
+        Hessian MatType (tao_term_hessian_mat_type): aij
+        Sum of 2 terms:
+          Summand 0:
+            Scale (tao_term_sum_callbacks_scale): 1.
+            Term:
+              TaoTerm Object: (callbacks_) 1 MPI process
+                type: callbacks
+                solution vector space: N = 2 [VecType seq (tao_term_solution_vec_type)]
+                parameter vector space: (none)
+                Hessian MatType (tao_term_hessian_mat_type): seqbaij
+                attached to Tao [name omitted]
+            Map: unmapped
+          Summand 1:
+            Scale (tao_term_sum_reg_scale): 0.3
+            Term:
+              TaoTerm Object: (reg_) 1 MPI process
+                type: l1
+                solution vector space: N = 2 [VecType seq (tao_term_solution_vec_type)]
+                parameter vector space: (optional) K = 2 [VecType seq (tao_term_parameters_vec_type)]
+                Hessian MatType (tao_term_hessian_mat_type): diagonal
+                epsilon (tao_term_l1_epsilon): 0.4
+            Map: unmapped
+    Map: unmapped
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: SUCCESS
+  KSP Object: (tao_nls_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_nls_) 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix:
+          Mat Object: (tao_nls_) 1 MPI process
+            type: seqaij
+            rows=2, cols=2
+            package used to perform factorization: petsc
+            total: nonzeros=4, allocated nonzeros=4
+              using I-node routines: found 1 nodes, limit used is 5
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=2, cols=2
+      total: nonzeros=4, allocated nonzeros=4
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 1 nodes, limit used is 5
+  total KSP iterations: 9
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.24289e-09
+  Objective value=0.281456
+  total number of iterations=9,                          (max: 50)
+  total number of function evaluations=5,                  (max: unlimited)
+  total number of gradient evaluations=1,                  (max: unlimited)
+  total number of function/gradient evaluations=10,      (max: unlimited)
+  total number of Hessian evaluations=10
+  Solution converged:    ||g(X)|| <= gatol

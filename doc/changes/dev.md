@@ -35,6 +35,7 @@
 
 - Add two approaches for GPU energy monitoring:  `-log_view_gpu_energy` and `-log_view_gpu_energy_meter`
 - Add API `PetscLogGpuEnergy()`, `PetscLogGpuEnergyMeter()`, `PetscLogGpuEnergyMeterBegin()` and `PetscLogGpuEnergyMeterEnd()` for GPU energy monitoring
+- Remove `TAO_ObjectiveEval`, `TAO_GradientEval`, `TAO_ObjGradEval`, `TAO_HessianEval` log events; objective, gradient, objective-and-gradient, and Hessian evaluations are now logged as `TAOTERM_ObjectiveEval`, `TAOTERM_GradientEval`, `TAOTERM_ObjGradEval`, `TAOTERM_HessianEval` under `TAOTERM_CLASSID`. These log events reflect the actual user callback invoked, not the `TaoCompute*()` function called by the solver; for example, calling `TaoComputeGradient()` when only an objective-and-gradient callback is provided logs `TAOTERM_ObjGradEval`
 
 ```{rubric} PetscViewer:
 ```
@@ -124,6 +125,21 @@
 
 ```{rubric} TAO:
 ```
+
+- Add `TaoTerm` object to allow easily constructing and using objective functions, and their derivatives that are the sum of two or more terms. This will allow the easy implementation of Tao solvers that utilize the sum structure
+- Add `TaoGetTerm()` and `TaoAddTerm()` for manipulating the objective, gradient, and Hessian evaluation of a `Tao` using `TaoTerm`
+- Add `TaoGetHessianMatrices()` to get the Hessian and preconditioner matrices from a `Tao`
+- Fix `TAOBRGN` such that `TAOBRGN` subsolver properly appends `TAOBRGN`'s prefix
+
+```{rubric} TaoTerm:
+```
+
+- Add `TAOTERMCALLBACKS` implementation of `TaoTerm` constructed from the function callbacks passed to a `Tao` object
+- Add `TAOTERMSHELL` implementation of `TaoTerm` for user-defined objective routines
+- Add `TAOTERMSUM` implementation of `TaoTerm` for scaled, mapped sums of terms
+- Add `TAOTERMHALFL2SQUARED` implementation of `TaoTerm` for a squared-norm penalty function
+- Add `TAOTERML1` implementation of `TaoTerm` for a 1-norm penalty function
+- Add `TAOTERMQUADRATIC` implementation of `TaoTerm` for a quadratic penalty function
 
 ```{rubric} PetscRegressor:
 ```

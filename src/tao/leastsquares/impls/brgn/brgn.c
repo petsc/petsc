@@ -744,7 +744,8 @@ static PetscErrorCode TaoBRGNSetRegularizerHessianRoutine_BRGN(Tao tao, Mat Hreg
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
 {
-  TAO_BRGN *gn;
+  TAO_BRGN   *gn;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&gn));
@@ -765,9 +766,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   gn->uphill_lambda_change   = 1.5;
   gn->parent                 = tao;
 
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)tao, &prefix));
   PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao), &gn->subsolver));
   PetscCall(TaoSetType(gn->subsolver, TAOBNLS));
-  PetscCall(TaoSetOptionsPrefix(gn->subsolver, "tao_brgn_subsolver_"));
+  PetscCall(TaoSetOptionsPrefix(gn->subsolver, prefix));
+  PetscCall(TaoAppendOptionsPrefix(gn->subsolver, "tao_brgn_subsolver_"));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoBRGNGetRegularizationType_C", TaoBRGNGetRegularizationType_BRGN));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoBRGNSetRegularizationType_C", TaoBRGNSetRegularizationType_BRGN));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoBRGNGetDampingVector_C", TaoBRGNGetDampingVector_BRGN));

@@ -1,0 +1,73 @@
+Tao Object: 1 MPI process
+  type: nls
+    Newton steps: 13
+    BFGS steps: 0
+    Gradient steps: 0
+    nls ksp atol: 0
+    nls ksp rtol: 13
+    nls ksp ctol: 0
+    nls ksp negc: 0
+    nls ksp dtol: 0
+    nls ksp iter: 0
+    nls ksp othr: 0
+  Objective function:
+    Scale (tao_objective_scale): 1.
+    Function:
+      TaoTerm Object: (callbacks_) 1 MPI process
+        type: callbacks
+        solution vector space: N = 10 [VecType seq (tao_term_solution_vec_type)]
+        parameter vector space: (none)
+        Hessian MatType (tao_term_hessian_mat_type): (undefined)
+        attached to Tao [name omitted]
+    Map: unmapped
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: SUCCESS
+  KSP Object: (tao_nls_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_nls_) 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix:
+          Mat Object: (tao_nls_) 1 MPI process
+            type: seqbaij
+            rows=10, cols=10
+            package used to perform factorization: petsc
+            total: nonzeros=10, allocated nonzeros=10
+                block size is 1
+    linear system matrix, followed by the matrix used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: seqbaij
+      rows=10, cols=10, bs=2
+      total: nonzeros=20, allocated nonzeros=20
+      total number of mallocs used during MatSetValues calls=0
+          block size is 2
+    Mat Object: 1 MPI process
+      type: seqbaij
+      rows=10, cols=10
+      total: nonzeros=10, allocated nonzeros=10
+      total number of mallocs used during MatSetValues calls=0
+          block size is 1
+  total KSP iterations: 26
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=5.41582e-13
+  Objective value=1.72502e-28
+  total number of iterations=13,                          (max: 50)
+  total number of function evaluations=5,                  (max: unlimited)
+  total number of gradient evaluations=1,                  (max: unlimited)
+  total number of function/gradient evaluations=15,      (max: unlimited)
+  total number of Hessian evaluations=14
+  Solution converged:    ||g(X)|| <= gatol

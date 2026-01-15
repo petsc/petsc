@@ -87,9 +87,10 @@ Tao Object: 1 MPI process
   total KSP iterations: 79
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   grtol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.00321e-09
+  Residual in Function/Gradient:=9.00397e-09
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
-  total number of function/gradient evaluations=89,      (max: unlimited)
+  total number of gradient evaluations=83,                  (max: unlimited)
+  total number of function/gradient evaluations=6,      (max: unlimited)
   total number of Hessian evaluations=4
   Solution converged:    ||g(X)|| <= gatol

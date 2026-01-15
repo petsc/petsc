@@ -227,6 +227,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BLMVM;
   tao->ops->destroy        = TaoDestroy_BLMVM;
   tao->ops->computedual    = TaoComputeDual_BLMVM;
+  tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(PetscNew(&blmP));
   blmP->H0      = NULL;

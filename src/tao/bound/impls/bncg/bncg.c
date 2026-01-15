@@ -344,6 +344,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   tao->ops->view           = TaoView_BNCG;
   tao->ops->setfromoptions = TaoSetFromOptions_BNCG;
   tao->ops->destroy        = TaoDestroy_BNCG;
+  tao->uses_gradient       = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));

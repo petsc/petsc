@@ -524,12 +524,14 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   PetscFunctionBegin;
   PetscCall(PetscNew(&qp));
 
-  tao->ops->setup          = TaoSetup_BQPIP;
-  tao->ops->solve          = TaoSolve_BQPIP;
-  tao->ops->view           = TaoView_BQPIP;
-  tao->ops->setfromoptions = TaoSetFromOptions_BQPIP;
-  tao->ops->destroy        = TaoDestroy_BQPIP;
-  tao->ops->computedual    = TaoComputeDual_BQPIP;
+  tao->ops->setup            = TaoSetup_BQPIP;
+  tao->ops->solve            = TaoSolve_BQPIP;
+  tao->ops->view             = TaoView_BQPIP;
+  tao->ops->setfromoptions   = TaoSetFromOptions_BQPIP;
+  tao->ops->destroy          = TaoDestroy_BQPIP;
+  tao->ops->computedual      = TaoComputeDual_BQPIP;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));

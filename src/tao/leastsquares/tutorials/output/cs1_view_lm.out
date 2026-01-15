@@ -86,8 +86,8 @@ Tao Object: 1 MPI process
       Residual in Function/Gradient:=9.07258e-09
       Objective value=1.28415e-16
       total number of iterations=2,                              (max: 10000)
-      total number of function evaluations=5,                      (max: unlimited)
-      total number of function/gradient evaluations=5,          (max: unlimited)
+      total number of function evaluations=7,                      (max: unlimited)
+      total number of function/gradient evaluations=3,          (max: unlimited)
       total number of Hessian evaluations=2
       total number of Jacobian evaluations=7
       Solution converged:        ||g(X)|| <= gatol
@@ -95,7 +95,7 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=0.
   Objective value=1.71859e-08
   total number of iterations=2,                          (max: 10000)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of function/gradient evaluations=5,      (max: unlimited)
+  total number of function evaluations=7,                  (max: unlimited)
+  total number of function/gradient evaluations=3,      (max: unlimited)
   total number of Hessian evaluations=2
   Solution converged:    ||g(X)|| <= gatol

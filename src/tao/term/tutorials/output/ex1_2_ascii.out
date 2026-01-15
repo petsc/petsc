@@ -1,0 +1,16 @@
+TaoTerm Object: example TaoTerm 1 MPI process
+  type: sum
+  solution vector space: N = 10
+  parameter vector space: (optional) K = 20
+  Sum of 2 terms: 0.5 f_{term_0_}(x; [p_0]) + f_{term_1_}(x; [p_1])
+  f_{term_0_}:
+    TaoTerm Object: (term_0_) 1 MPI process
+      type: halfl2squared
+      solution vector space: N = 10
+      parameter vector space: (optional) K = 10
+  f_{term_1_}:
+    TaoTerm Object: (term_1_) 1 MPI process
+      type: l1
+      solution vector space: N = 10
+      parameter vector space: (optional) K = 10
+      epsilon (tao_term_l1_epsilon): 0.

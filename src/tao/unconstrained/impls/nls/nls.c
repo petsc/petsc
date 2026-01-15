@@ -876,11 +876,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   PetscFunctionBegin;
   PetscCall(PetscNew(&nlsP));
 
-  tao->ops->setup          = TaoSetUp_NLS;
-  tao->ops->solve          = TaoSolve_NLS;
-  tao->ops->view           = TaoView_NLS;
-  tao->ops->setfromoptions = TaoSetFromOptions_NLS;
-  tao->ops->destroy        = TaoDestroy_NLS;
+  tao->ops->setup            = TaoSetUp_NLS;
+  tao->ops->solve            = TaoSolve_NLS;
+  tao->ops->view             = TaoView_NLS;
+  tao->ops->setfromoptions   = TaoSetFromOptions_NLS;
+  tao->ops->destroy          = TaoDestroy_NLS;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));

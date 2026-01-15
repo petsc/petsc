@@ -1,0 +1,13 @@
+Tao Object: 1 MPI process
+  type: nm
+    expansions: 0
+    reflections: 0
+    inside contractions: 0
+    outside contractionss: 0
+    Shrink steps: 0
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=11.9596
+  Objective value=2.36851
+  total number of iterations=1,                          (max: 2000)
+  total number of function evaluations=17,                  (max: 10)
+  Solver failed:    Maximum Function Evaluations

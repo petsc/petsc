@@ -176,7 +176,7 @@ int main(int argc, char **args)
 
    test:
       suffix: prefix_tao
-      args: -sys1_sys2_regressor_view -test_prefix
+      args: -sys1_sys2_regressor_view ::ascii_info_detail -test_prefix
 
    test:
       suffix: prefix_ksp

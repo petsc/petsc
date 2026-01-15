@@ -18,7 +18,7 @@ architectures. Methods are available for
 
 ## Getting Started: A Simple TAO Example
 
-To help the user start using TAO immediately, we introduce here a simple
+To help start using TAO immediately, we introduce a simple
 uniprocessor example. Please read {any}`sec_tao_solvers`
 for a more in-depth discussion on using the TAO solvers. The code
 presented {any}`below <tao_example1>` minimizes the
@@ -30,8 +30,8 @@ f(x) = \sum_{i=0}^{m-1} \left( \alpha(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 \right
 $$
 
 where $n = 2m$ is the number of variables. Note that while we use
-the C language to introduce the TAO software, the package is fully
-usable from C++ and Fortran.
+the C language to introduce the TAO software, the package is
+usable from C++, Fortran, and Python.
 {any}`ch_fortran` discusses additional
 issues concerning Fortran usage.
 
@@ -50,11 +50,16 @@ The following sections annotate the lines of code in
 (tao_example1)=
 
 :::{admonition} Listing: `src/tao/unconstrained/tutorials/rosenbrock1.c`
-```{literalinclude} /../src/tao/unconstrained/tutorials/rosenbrock1.c
-:append: return ierr;}
-:end-at: PetscFinalize
+```{literalinclude} /../src/tao/unconstrained/tutorials/rosenbrock1.h
 :prepend: '#include <petsctao.h>'
 :start-at: typedef struct
+:end-at: static PetscErrorCode AppCtxCreateHessianMatrices
+```
+
+```{literalinclude} /../src/tao/unconstrained/tutorials/rosenbrock1.c
+:start-at: static PetscErrorCode FormFunctionGradient
+:end-at: PetscFinalize
+:append: return 0;}
 ```
 :::
 
@@ -64,9 +69,9 @@ The following sections annotate the lines of code in
 
 Many TAO applications will follow an ordered set of procedures for
 solving an optimization problem: The user creates a `Tao` context and
-selects a default algorithm. Call-back routines as well as vector
+selects a default algorithm. Callback routines as well as vector
 (`Vec`) and matrix (`Mat`) data structures are then set. These
-call-back routines will be used for evaluating the objective function,
+callback routines will be used for evaluating the objective function,
 gradient, and perhaps the Hessian matrix. The user then invokes TAO to
 solve the optimization problem and finally destroys the `Tao` context.
 A list of the necessary functions for performing these steps using TAO
@@ -81,6 +86,15 @@ TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*FormHessian)(Tao, Vec, 
 TaoSolve(Tao tao);
 TaoDestroy(Tao tao);
 ```
+TAO supports constructing an objective function by summing several distinct functions (called terms) via the `TaoTerm` object.
+With `TaoTerm`, the user can define one or more objective function ‘terms’. For an example, consider
+a data‑misfit term and a regularization term, each providing objective, gradient, and optional Hessian routines.
+TAO automatically composes (sums) the terms to form the overall objective and its derivatives at runtime.
+This approach promotes code reuse, makes it easy to modify scaling parameters,
+and simplifies complex problems that are naturally expressed as sums of contributions.
+In addition, it allows the easy implementation of efficient optimization algorithms
+that utilize the sum structure of the objective function.
+See {any}`sec_tao_term` for more information on the `TaoTerm` objects.
 
 Note that the solver algorithm selected through the function
 `TaoSetType()` can be overridden at runtime by using an options
@@ -198,11 +212,17 @@ TaoGetSolution(Tao, Vec*);
 routine. This routine takes the address of a `Vec` in the second
 argument and sets it to the solution vector used in the application.
 
-### User Defined Call-back Routines
+(sec_tao_callbacks)=
 
-Users of TAO are required to provide routines that perform function
-evaluations. Depending on the solver chosen, they may also have to write
-routines that evaluate the gradient vector and Hessian matrix.
+### User Defined Callback Routines
+
+A `Tao` must be able to evaluate a function in order to optimize it;
+depending on the solver chosen, it may also need to evaluate the
+gradient vector and Hessian matrix.  TAO gives users two ways to specify
+this information: with callback functions for the evaluation operations
+(described in this section) provided directly to the `Tao` object, or with `TaoTerm` objects that
+encapsulate the functions and derivatives (see
+{any}`sec_tao_term`).
 
 #### Application Context
 
@@ -325,15 +345,15 @@ pointer to a user-defined context.
 
 The TAO example problems demonstrate the use of these application
 contexts as well as specific instances of function, gradient, and
-Hessian evaluation routines. All these routines should return the
-integer $0$ after successful completion and a nonzero integer if
+Hessian evaluation routines. All these routines should return `PETSC_SUCCESS`
+after successful completion and a nonzero integer if
 the function is undefined at that point or an error occurred.
 
 (sec_tao_matrixfree)=
 
 #### Hessian Evaluation
 
-Some optimization routines also require a Hessian matrix from the user.
+Some optimization algorithms also require a Hessian matrix from the user.
 The routine that evaluates the Hessian should have the form
 
 ```
@@ -406,7 +426,7 @@ or `-tao_test_hessian`.
 
 ##### Matrix-Free Methods
 
-TAO fully supports matrix-free methods. The matrices specified in the
+TAO also supports matrix-free methods. The matrices specified in the
 Hessian evaluation routine need not be conventional matrices; instead,
 they can point to the data required to implement a particular
 matrix-free method. The matrix-free variant is allowed *only* when the
@@ -429,7 +449,7 @@ Tao use of PETSc and callbacks
 
 Some optimization problems also impose constraints on the variables or
 intermediate application states. The user defines these constraints through
-the appropriate TAO interface functions and call-back routines where necessary.
+the appropriate TAO interface functions and callback routines where necessary.
 
 ##### Variable Bounds
 
@@ -462,7 +482,7 @@ between linear and nonlinear constraints, and implements them through the
 same software interfaces.
 
 In the equality constrained case, TAO assumes that the constraints are
-formulated as $c_e(x) = 0$ and requires the user to implement a call-back
+formulated as $c_e(x) = 0$ and requires the user to implement a callback
 routine for evaluating $c_e(x)$ at a given vector of optimization
 variables,
 
@@ -470,13 +490,13 @@ variables,
 PetscErrorCode EvaluateEqualityConstraints(Tao, Vec, Vec, PetscCtx);
 ```
 
-As in the previous call-back routines, the first argument is the TAO solver
+As in the previous callback routines, the first argument is the TAO solver
 object. The second and third arguments are the vector of optimization variables
 (input) and vector of equality constraints (output), respectively. The final
 argument is a pointer to the user-defined application context, cast into
 `(void*)`.
 
-Generally constrained TAO algorithms also require a second user call-back
+Generally constrained TAO algorithms also require a second user callback
 function to compute the constraint Jacobian matrix $\nabla_x c_e(x)$,
 
 ```
@@ -490,7 +510,7 @@ are the constraint Jacobian and its pseudo-inverse (optional), respectively. The
 pseudoinverse is optional, and if not available, the user can simply set it
 to the constraint Jacobian itself.
 
-These call-back functions are then given to the TAO solver using the
+These callback functions are then given to the TAO solver using the
 interface functions
 
 ```
@@ -514,9 +534,192 @@ bounds $c_l$ and $c_u$ to be set using the
 `TaoSetInequalityBounds(Tao, Vec, Vec)` interface. Please refer to the
 documentation for each TAO algorithm for further details.
 
+(sec_tao_term)=
+
+### TaoTerm: composable objective function terms
+
+The objective function optimized by `Tao` may be a sum of one or more terms,
+where each term provides various evaluation routines, such as the objective value,
+gradient, or Hessian for the term. Here, we define `term` as the basic additive unit
+used to form an objective function, equipped with appropriate evaluation routines
+(objective, gradient, and/or Hessian).
+
+For an example, Tikhonov regularization (also known as
+Ridge Regression), can be formulated as $f(x) + \beta ||x||_2^2$.
+This can be viewed as the summation of two terms, $f(x) $ and
+$ \beta ||x||_2^2$.
+
+Each `TaoTerm` encapsulates the routines needed to
+evaluate its own contribution; `Tao` automatically manages aggregating (summing) the value, gradient,
+and/or Hessian across all `TaoTerm` objects in the `Tao` object. This lets users modify
+terms without changing their base $f(x)$ function code; for example, to add regularization.
+
+Each `TaoTerm` represents a parametric real-valued function $f(x; p)$ for
+solution variable $x$ and parameters $p$.  The interface includes methods for
+evaluating $f(x; p)$ (`TaoTermComputeObjective()`),
+$\nabla_x f(x; p)$ (`TaoTermComputeGradient()` and
+`TaoTermComputeObjectiveAndGradient()`), and $\nabla_x^2 f(x; p)$
+(`TaoTermComputeHessian()`).
+
+When a `TaoTerm` is added to a `Tao` object using `TaoAddTerm()`, a scaling
+coefficient $\alpha$ is specified. If the current objective function is
+$f(x)$, then after calling `TaoAddTerm()` with scale $\alpha$ and term $g$,
+the objective becomes
+
+$$
+f(x) + \alpha g(Ax; p).
+$$
+
+TAO automatically applies the scaling to the objective value, gradient, and
+Hessian contributed by the term
+
+When a mapping matrix $A$ is also provided, the full
+contribution of the term to the objective is $\alpha g(Ax; p)$, and the
+scaling is applied after the chain-rule transformation of the gradient and
+Hessian.
+
+#### Mapping matrix in TaoTerm
+
+When a `TaoTerm` is added to a `Tao` object using `TaoAddTerm()`, a mapping matrix $A$ can be optionally provided.
+This allows the term to evaluate the function $f(Ax; p)$ instead of $f(x; p)$.
+
+For a mapped term $f(Ax; p)$, TAO automatically handles the transformation of gradients and Hessians:
+
+* Mapped gradients: When computing the gradient with respect to $x$, TAO applies the chain rule to obtain $A^T \nabla f(x; p)$
+
+* Mapped Hessians: Similarly, the Hessian with respect to $x$ is computed as $A^T \nabla^2 f(x; p) A$
+
+For an example of using mapping matrices with `TaoTerm`, see {any}`the elastic net regularization example <tao_example2>`, which demonstrates the use of `TAOTERMHALFL2SQUARED` with a mapping matrix to represent a data misfit term.
+
+#### Built-in TaoTerm implementations
+
+TAO comes with several built-in implementations for `TaoTerm`:
+
+* `TAOTERMCALLBACKS`: wraps the callback functions set via `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, and `TaoSetHessian()`. This type is automatically created internally when needed. It does not accept parameters and always has `TAOTERM_PARAMETERS_NONE`.
+* `TAOTERMHALFL2SQUARED`: $f(x;p) = \tfrac{1}{2} \|x - p\|_2^2$ (See `TaoTermCreateHalfL2Squared()`.)
+* `TAOTERML1`: $f(x;p) = \|x - p\|_1$ (See `TaoTermCreateL1()`.)
+* `TAOTERMQUADRATIC`: $f(x;p) = \tfrac{1}{2}(x - p)^T A (x - p)$ for matrix $A$ (See `TaoTermCreateQuadratic()`.)
+* `TAOTERMSUM`: a sum of other terms implemented by `TaoTerm`, $f(x;p) = \sum_i \alpha_i f(A_i x; p_i)$.
+* `TAOTERMSHELL`: an interface for user-defined terms, see {any}`sec_tao_term_shell`.
+
+#### Specifying TaoTerm Parameters
+
+The parameters $p$ of the parametric function $f(x;p)$
+implemented by a `TaoTerm` are passed as arguments in the evaluation
+routines.  For some terms, however, omitting the parameters results in a
+default value of $p$ being used.  For `TAOTERMHALFL2SQUARED`,
+`TAOTERML1`, and `TAOTERMQUADRATIC` the default is $p = 0$.  In general,
+the parametric behavior of a `TaoTerm` is determined by `TaoTermSetParametersMode()`:
+
+* `TAOTERM_PARAMETERS_OPTIONAL`: default parameters are used if `NULL` is passed for the parameters argument
+* `TAOTERM_PARAMETERS_NONE`: the term is not parametric, `NULL` is the only valid parameters argument
+* `TAOTERM_PARAMETERS_REQUIRED`: parameters are required, it is an error to pass `NULL` for the parameters argument
+
+#### Using a TaoTerm in a Tao solver
+
+A `TaoTerm` can be set to an empty `Tao` object or added to an existing
+`Tao` using `TaoAddTerm()`. The entire objective function of a `Tao` object can be retrieved as a single `TaoTerm` using `TaoGetTerm()`, which returns the term along with its scale, parameters, and mapping matrix (if any).
+
+For example: if you have specified an objective function $f(x)$ using
+`TaoSetObjectiveAndGradient()`, and a regularizer $g(x;p)$ is specified by a `TaoTerm`,
+you can create the objective function $f(x) + \alpha g(Ax; p)$ using:
+
+```
+PetscErrorCode (*f_obj_grad)(Tao, Vec, PetscReal *, Vec, void *);
+void            *f_ctx;
+PetscReal        alpha;
+Mat              A;
+TaoTerm          g;
+Vec              gradient, p;
+Tao              tao;
+
+TaoSetObjectiveAndGradient(tao, gradient, f_obj_grad, f_ctx); // f(x)
+TaoAddTerm(tao, "regularizer_", alpha, g, p, A);     // + alpha * g(A x ; p)
+```
+
+The example
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/tao/unconstrained/tutorials/elastic_net_regularization.c.html">\$TAO_DIR/src/unconstrained/tutorials/elastic_net_regularization.c</a>
+uses this interface to define the optimization problem $\min_x \tfrac{1}{2} \|Ax - b\|_W^2 + \lambda_2 \tfrac{1}{2}\|x\|_2^2 + \lambda_1 \|D x - y\|_1$:
+
+(tao_example2)=
+
+:::{admonition} Listing: `src/tao/unconstrained/tutorials/elastic_net_regularization.c`
+```{literalinclude} /../src/tao/unconstrained/tutorials/elastic_net_regularization.c
+:start-at: // the model term
+:end-at: TaoSolve
+```
+:::
+
+Regularization terms can also be added to the objective function of a `Tao` solver
+from the command line.  For instance, the elastic net regularizer
+$\frac{0.4}{2} \|x\|_2^2 + 0.7 \|x\|_1$ can be added with the following options:
+
+```
+-tao_add_terms ridge_,lasso_
+-ridge_tao_term_type halfl2squared
+-lasso_tao_term_type l1
+-tao_term_sum_ridge_scale 0.4
+-tao_term_sum_lasso_scale 0.7
+```
+
+In the above, `ridge_`, and `lasso_` are PETSc option prefixes and could be any unique strings for each term to be added.
+
+When more than one `TaoTerm` object is set to `Tao` (or both `TaoSetObjective()` and `TaoAddTerm()` are used),
+a `TaoTerm` with type `TAOTERMSUM` gets created internally, and all the subsequently added `TaoTerm` objects get stored in it.
+With this structure in mind, users can gradually control each term, with the following command line options:
+
+```
+// If you want to control how callbacks behave
+-callbacks_tao_term_{hessian_mat_type, ...}
+
+// If you want to control regularizers
+-ridge_tao_term_{hessian_mat_type, ...}
+-lasso_tao_term_{hessian_mat_type, ...}
+
+// If you want to control scaling of each part
+-tao_term_sum_{callbacks, ridge, lasso}_scale {number}
+```
+
+(sec_tao_term_shell)=
+
+#### User-defined TaoTerm implementations
+
+A user-defined `TaoTerm` can be defined from function callbacks using the
+`TAOTERMSHELL` type.  This interface is very similar to `TAOSHELL`:
+there is a single user context that is set with `TaoTermShellSetContext()` and obtained with `TaoTermShellGetContext()`,
+and the evaluation routines are set by passing function callbacks with the same signature as routines they implement
+(see for example `TaoTermShellSetObjectiveAndGradient()`).
+As an example,
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/tao/unconstrained/tutorials/rosenbrock1_taoterm.c.html">\$TAO_DIR/src/unconstrained/tutorials/rosenbrock1_taoterm.c</a>
+in {any}`the example below <tao_example3>` demonstrates the same Rosenbrock example as {any}`the first example <tao_example1>`.
+
+(tao_example3)=
+
+:::{admonition} Listing: ``src/tao/unconstrained/tutorials/rosenbrock1_taoterm.c``
+```{literalinclude} /../src/tao/unconstrained/tutorials/rosenbrock1_taoterm.c
+:start-at: static PetscErrorCode FormFunctionGradient
+:end-at: PetscFinalize
+:append: return 0;}
+```
+:::
+
+#### Masking TaoTerm evaluations
+
+In some cases, for a given `TAOTERMSUM`, the user may only want some evaluation of a
+specific `TaoTerm` (instead of computing all of them and summing the results).
+For an example, in a case where `TAOTERMSUM` is composed of `TAOTERMHALFL2SQUARED` and `TAOTERML1`,
+ but the user only wants the objective function evaluation of `TAOTERML1`, and not its gradient and Hessian evaluations.
+In this case, user can `mask` desired evaluation operations via `TaoTermSumSetTermMask()`.
+Masking can also be done from the command line. For instance, for the elastic net regularization example above,
+the user can mask gradient and Hessian evaluation of `TAOTERML1` with the following options:
+
+```
+-tao_term_sum_lasso_mask gradient,hessian
+```
+
 ### Solving
 
-Once the application and solver have been set up, the solver can be
+Once the application and solver have been set up, the solve takes place with a call to the
 
 ```
 TaoSolve(Tao);

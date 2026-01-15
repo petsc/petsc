@@ -128,7 +128,7 @@ static PetscErrorCode ConfigureContext(UserCtx ctx)
   ctx->soft     = PETSC_FALSE;
   ctx->taylor   = PETSC_TRUE;
   ctx->use_admm = PETSC_FALSE;
-  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Configure separable objection example", "ex4.c");
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Configure separable objective example", "ex4.c");
   PetscCall(PetscOptionsInt("-m", "The row dimension of matrix F", "ex4.c", ctx->m, &ctx->m, NULL));
   PetscCall(PetscOptionsInt("-n", "The column dimension of matrix F", "ex4.c", ctx->n, &ctx->n, NULL));
   PetscCall(PetscOptionsInt("-matrix_format", "Decide format of F matrix. 0 for stencil, 1 for random", "ex4.c", ctx->matops, &ctx->matops, NULL));
@@ -706,5 +706,9 @@ int main(int argc, char **argv)
     suffix: soft
     args: -taylor 0 -soft 1
     output_file: output/empty.out
+
+  test:
+    suffix: soft_view_10
+    args: -taylor 0 -soft 1 -tao_view -tao_max_funcs 10
 
 TEST*/

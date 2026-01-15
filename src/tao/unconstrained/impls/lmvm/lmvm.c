@@ -249,6 +249,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   tao->ops->view           = TaoView_LMVM;
   tao->ops->setfromoptions = TaoSetFromOptions_LMVM;
   tao->ops->destroy        = TaoDestroy_LMVM;
+  tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(PetscNew(&lmP));
   lmP->D       = NULL;

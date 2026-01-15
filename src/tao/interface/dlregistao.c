@@ -14,6 +14,7 @@ PetscErrorCode TaoFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TaoList));
+  PetscCall(PetscFunctionListDestroy(&TaoTermList));
   TaoPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -41,28 +42,35 @@ PetscErrorCode TaoInitializePackage(void)
   TaoPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Tao", &TAO_CLASSID));
+  PetscCall(PetscClassIdRegister("TaoTerm", &TAOTERM_CLASSID));
   /* Register Constructors */
   PetscCall(TaoRegisterAll());
+  PetscCall(TaoTermRegisterAll());
   /* Register Events */
   PetscCall(PetscLogEventRegister("TaoSolve", TAO_CLASSID, &TAO_Solve));
-  PetscCall(PetscLogEventRegister("TaoObjectiveEval", TAO_CLASSID, &TAO_ObjectiveEval));
-  PetscCall(PetscLogEventRegister("TaoGradientEval", TAO_CLASSID, &TAO_GradientEval));
-  PetscCall(PetscLogEventRegister("TaoObjGradEval", TAO_CLASSID, &TAO_ObjGradEval));
-  PetscCall(PetscLogEventRegister("TaoHessianEval", TAO_CLASSID, &TAO_HessianEval));
+  PetscCall(PetscLogEventRegister("TaoTermObjEval", TAOTERM_CLASSID, &TAOTERM_ObjectiveEval));
+  PetscCall(PetscLogEventRegister("TaoTermGradEval", TAOTERM_CLASSID, &TAOTERM_GradientEval));
+  PetscCall(PetscLogEventRegister("TaoTermObjGrad", TAOTERM_CLASSID, &TAOTERM_ObjGradEval));
+  PetscCall(PetscLogEventRegister("TaoTermHessEval", TAOTERM_CLASSID, &TAOTERM_HessianEval));
+  PetscCall(PetscLogEventRegister("TaoResidualEval", TAO_CLASSID, &TAO_ResidualEval));
   PetscCall(PetscLogEventRegister("TaoConstrEval", TAO_CLASSID, &TAO_ConstraintsEval));
   PetscCall(PetscLogEventRegister("TaoJacobianEval", TAO_CLASSID, &TAO_JacobianEval));
   /* Process Info */
   {
-    PetscClassId classids[1];
+    PetscClassId classids[2];
 
     classids[0] = TAO_CLASSID;
+    classids[1] = TAOTERM_CLASSID;
     PetscCall(PetscInfoProcessClass("tao", 1, classids));
+    PetscCall(PetscInfoProcessClass("taoterm", 1, &classids[1]));
   }
   /* Process summary exclusions */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
   if (opt) {
     PetscCall(PetscStrInList("tao", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(TAO_CLASSID));
+    PetscCall(PetscStrInList("taoterm", logList, ',', &pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(TAOTERM_CLASSID));
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(TaoFinalizePackage));

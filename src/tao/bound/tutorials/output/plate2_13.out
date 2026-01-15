@@ -51,6 +51,11 @@ Tao Object: 1 MPI process
             Rescale history: 1
             Rescale params: alpha=1., beta=0.5, rho=1.
             Rescale convex factor: theta=0.
+      Objective function:
+        TaoTerm Object: (callbacks_) 1 MPI process
+          type: callbacks
+          solution vector space: N = 48
+          attached to Tao [name omitted]
       TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
         type: more-thuente
         maximum function evaluations=30

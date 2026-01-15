@@ -1,0 +1,6 @@
+TaoTerm Object: example TaoTerm 1 MPI process
+  type: callbacks
+  solution vector space: N = 10 [VecType standard (tao_term_solution_vec_type)]
+  parameter vector space: (none)
+  Hessian MatType (tao_term_hessian_mat_type): (undefined)
+  not attached to a Tao

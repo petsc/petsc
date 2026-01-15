@@ -286,12 +286,14 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   TAO_GPCG *gpcg;
 
   PetscFunctionBegin;
-  tao->ops->setup          = TaoSetup_GPCG;
-  tao->ops->solve          = TaoSolve_GPCG;
-  tao->ops->view           = TaoView_GPCG;
-  tao->ops->setfromoptions = TaoSetFromOptions_GPCG;
-  tao->ops->destroy        = TaoDestroy_GPCG;
-  tao->ops->computedual    = TaoComputeDual_GPCG;
+  tao->ops->setup            = TaoSetup_GPCG;
+  tao->ops->solve            = TaoSolve_GPCG;
+  tao->ops->view             = TaoView_GPCG;
+  tao->ops->setfromoptions   = TaoSetFromOptions_GPCG;
+  tao->ops->destroy          = TaoDestroy_GPCG;
+  tao->ops->computedual      = TaoComputeDual_GPCG;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   PetscCall(PetscNew(&gpcg));
   tao->data = (void *)gpcg;

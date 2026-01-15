@@ -60,7 +60,6 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &tron->X_New));
   PetscCall(VecDuplicate(tao->solution, &tron->G_New));
   PetscCall(VecDuplicate(tao->solution, &tron->Work));
-  PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -309,12 +308,14 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   const char *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  tao->ops->setup          = TaoSetup_TRON;
-  tao->ops->solve          = TaoSolve_TRON;
-  tao->ops->view           = TaoView_TRON;
-  tao->ops->setfromoptions = TaoSetFromOptions_TRON;
-  tao->ops->destroy        = TaoDestroy_TRON;
-  tao->ops->computedual    = TaoComputeDual_TRON;
+  tao->ops->setup            = TaoSetup_TRON;
+  tao->ops->solve            = TaoSolve_TRON;
+  tao->ops->view             = TaoView_TRON;
+  tao->ops->setfromoptions   = TaoSetFromOptions_TRON;
+  tao->ops->destroy          = TaoDestroy_TRON;
+  tao->ops->computedual      = TaoComputeDual_TRON;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   PetscCall(PetscNew(&tron));
   tao->data = (void *)tron;

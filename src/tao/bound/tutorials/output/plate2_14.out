@@ -41,6 +41,11 @@ Tao Object: 1 MPI process
             Rescale history: 1
             Rescale params: alpha=1., beta=0.5, rho=1.
             Rescale convex factor: theta=0.
+      Objective function:
+        TaoTerm Object: (callbacks_) 1 MPI process
+          type: callbacks
+          solution vector space: N = 48
+          attached to Tao [name omitted]
       TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
         type: more-thuente
         maximum function evaluations=30
@@ -119,6 +124,8 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=1.26759e-06
   Objective value=1.50566
   total number of iterations=2,                          (max: 50)
-  total number of function/gradient evaluations=25,      (max: unlimited)
+  total number of function evaluations=7,                  (max: unlimited)
+  total number of gradient evaluations=3,                  (max: unlimited)
+  total number of function/gradient evaluations=15,      (max: unlimited)
   total number of Hessian evaluations=3
   Solution converged:    ||g(X)|| <= gatol
