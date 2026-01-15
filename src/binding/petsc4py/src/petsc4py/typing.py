@@ -7,10 +7,12 @@ from typing import (  # novermin
     Callable,
     Sequence,
     Literal,
+    TypeAlias,
 )
 from numpy.typing import (
     NDArray,
 )
+import numpy as np
 from .PETSc import (
     InsertMode,
     ScatterMode,
@@ -56,6 +58,15 @@ __all__ = [
     'KSPMonitorFunction',
     'KSPPreSolveFunction',
     'KSPPostSolveFunction',
+    'SNESMonitorFunction',
+    'SNESObjFunction',
+    'SNESFunction',
+    'SNESJacobianFunction',
+    'SNESGuessFunction',
+    'SNESUpdateFunction',
+    'SNESLSPreFunction',
+    'SNESNGSFunction',
+    'SNESConvergedFunction',
     'TSRHSFunction',
     'TSRHSJacobian',
     'TSRHSJacobianP',
@@ -100,19 +111,19 @@ PETSc was configured (``./configure --with-scalar-type=real|complex``).
 
 """
 
-ArrayBool = NDArray[bool]
+ArrayBool = NDArray[np.bool]
 """Array of `bool`."""
 
-ArrayInt = NDArray[int]
+ArrayInt = NDArray[np.integer]
 """Array of `int`."""
 
-ArrayReal = NDArray[float]
+ArrayReal = NDArray[np.floating]
 """Array of `float`."""
 
-ArrayComplex = NDArray[complex]
+ArrayComplex = NDArray[np.complexfloating]
 """Array of `complex`."""
 
-ArrayScalar = NDArray[Scalar]
+ArrayScalar = NDArray[np.floating | np.complexfloating]
 """Array of `Scalar` numbers."""
 
 DimsSpec = tuple[int, ...]
@@ -133,7 +144,7 @@ AccessModeSpec = Literal['rw', 'r', 'w'] | None
 
 """
 
-InsertModeSpec = InsertMode | bool | None
+InsertModeSpec: TypeAlias = InsertMode | bool | None
 """Insertion mode specification.
 
    Possible values are:
@@ -149,7 +160,7 @@ InsertModeSpec = InsertMode | bool | None
 
 """
 
-ScatterModeSpec = ScatterMode | bool | str | None
+ScatterModeSpec: TypeAlias = ScatterMode | bool | str | None
 """Scatter mode specification.
 
    Possible values are:
@@ -167,7 +178,7 @@ ScatterModeSpec = ScatterMode | bool | str | None
 
 """
 
-LayoutSizeSpec = int | tuple[int, int]
+LayoutSizeSpec: TypeAlias = int | tuple[int, int]
 """`int` or 2-`tuple` of `int` describing the layout sizes.
 
    A single `int` indicates global size.
@@ -179,7 +190,7 @@ LayoutSizeSpec = int | tuple[int, int]
 
 """
 
-NormTypeSpec = NormType | None
+NormTypeSpec: TypeAlias = NormType | None
 """Norm type specification.
 
     Possible values include:
@@ -199,12 +210,12 @@ NormTypeSpec = NormType | None
 
 # --- PetscObject ---
 
-PetscOptionsHandlerFunction = Callable[[Object], None]
+PetscOptionsHandlerFunction: TypeAlias = Callable[[Object], None]
 """Callback for processing extra options."""
 
 # --- Mat ---
 
-MatAssemblySpec = Mat.AssemblyType | bool | None
+MatAssemblySpec: TypeAlias = Mat.AssemblyType | bool | None
 """Matrix assembly specification.
 
    Possible values are:
@@ -220,7 +231,7 @@ MatAssemblySpec = Mat.AssemblyType | bool | None
 
 """
 
-MatSizeSpec = int | tuple[int, int] | tuple[tuple[int, int], tuple[int, int]]
+MatSizeSpec: TypeAlias = int | tuple[int, int] | tuple[tuple[int, int], tuple[int, int]]
 """`int` or (nested) `tuple` of `int` describing the matrix sizes.
 
    If `int` then rows = columns.
@@ -233,28 +244,28 @@ MatSizeSpec = int | tuple[int, int] | tuple[tuple[int, int], tuple[int, int]]
 
 """
 
-MatBlockSizeSpec = int | tuple[int, int]
+MatBlockSizeSpec: TypeAlias = int | tuple[int, int]
 """The row and column block sizes.
 
    If a single `int` is provided then rows and columns share the same block size.
 
 """
 
-CSRIndicesSpec = tuple[Sequence[int], Sequence[int]]
+CSRIndicesSpec: TypeAlias = tuple[Sequence[int], Sequence[int]]
 """CSR indices format specification.
 
    A 2-tuple carrying the ``(row_start, col_indices)`` information.
 
 """
 
-CSRSpec = tuple[Sequence[int], Sequence[int], Sequence[Scalar]]
+CSRSpec: TypeAlias = tuple[Sequence[int], Sequence[int], Sequence[Scalar]]
 """CSR format specification.
 
    A 3-tuple carrying the ``(row_start, col_indices, values)`` information.
 
 """
 
-NNZSpec = int | Sequence[int] | tuple[Sequence[int], Sequence[int]]
+NNZSpec: TypeAlias = int | Sequence[int] | tuple[Sequence[int], Sequence[int]]
 """Nonzero pattern specification.
 
    A single `int` corresponds to fixed number of non-zeros per row.
@@ -370,10 +381,10 @@ TSPreStepFunction = Callable[[TS], None]
 TSPostStepFunction = Callable[[TS], None]
 """`TS` post-step callback."""
 
-TSIndicatorFunction = Callable[[TS, float, Vec, NDArray[float]], None]
+TSIndicatorFunction = Callable[[TS, float, Vec, NDArray[np.floating]], None]
 """`TS` event indicator callback."""
 
-TSPostEventFunction = Callable[[TS, NDArray[int], float, Vec, bool], None]
+TSPostEventFunction = Callable[[TS, NDArray[np.integer], float, Vec, bool], None]
 """`TS` post-event callback."""
 
 # --- TAO ---
