@@ -1,4 +1,4 @@
-static char help[] = "Landau collision operator with amnisotropic thermalization verification test as per Hager et al.\n 'A fully non-linear multi-species Fokker-Planck-Landau collision operator for simulation of fusion plasma', and "
+static char help[] = "Landau collision operator with anisotropic thermalization verification test as per Hager et al.\n 'A fully non-linear multi-species Fokker-Planck-Landau collision operator for simulation of fusion plasma', and "
                      "published as 'A performance portable, fully implicit Landau collision operator with batched linear solvers' https://arxiv.org/abs/2209.03228\n\n";
 
 #include <petscts.h>
