@@ -109,7 +109,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCall(PetscNew(&f));
-  tr->data = f;
+  tr->redFactor = 1.0;
+  tr->data      = f;
 
   PetscCall(DMPlexTransformInitialize_Filter(tr));
   PetscFunctionReturn(PETSC_SUCCESS);

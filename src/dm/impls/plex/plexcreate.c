@@ -1925,8 +1925,8 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   }
   PetscCall(DMPlexCreateCubeMesh_Internal(dm, lower, upper, fac, bdt[0], bdt[1], bdt[2]));
   if (periodicity[0] == DM_BOUNDARY_PERIODIC || periodicity[0] == DM_BOUNDARY_TWIST || periodicity[1] == DM_BOUNDARY_PERIODIC || periodicity[1] == DM_BOUNDARY_TWIST || (dim > 2 && (periodicity[2] == DM_BOUNDARY_PERIODIC || periodicity[2] == DM_BOUNDARY_TWIST))) {
-    PetscReal L[3]       = {-1., -1., 0.};
-    PetscReal maxCell[3] = {-1., -1., 0.};
+    PetscReal L[3]       = {-1., -1., -1.};
+    PetscReal maxCell[3] = {-1., -1., -1.};
 
     for (d = 0; d < dim; ++d) {
       if (periodicity[d] != DM_BOUNDARY_NONE) {
@@ -5573,6 +5573,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     PetscCall(DMPlexReplace_Internal(dm, &gdm));
   }
   /* Handle 1D order */
+  PetscCall(DMGetDimension(dm, &dim));
   if (reorder != DM_REORDER_DEFAULT_FALSE && dim == 1) {
     DM           cdm, rdm;
     PetscDS      cds;
