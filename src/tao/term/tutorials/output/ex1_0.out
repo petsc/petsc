@@ -3,5 +3,5 @@ TaoTerm Object: example TaoTerm 1 MPI process
   solution vector space: N = 10 [VecType standard (tao_term_solution_vec_type)]
   parameter vector space: (optional) K = 7 [VecType standard (tao_term_parameters_vec_type)]
   Hessian MatType (tao_term_hessian_mat_type): (undefined)
-  No user context has been set
+  No context has been set
   The following methods have been set: (none)

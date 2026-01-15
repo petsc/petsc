@@ -27,7 +27,7 @@ Tao Object: 1 MPI process
                 solution vector space: N = 2 [VecType seq (tao_term_solution_vec_type)]
                 parameter vector space: (none)
                 default Hessian MatType (tao_term_hessian_mat_type): baij
-                User context has been set
+                Context has been set
                 The following methods have been set: objectiveandgradient, hessian,
             Map: unmapped
           Summand 1:

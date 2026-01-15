@@ -29,7 +29,7 @@ Tao Object: 1 MPI process
     TaoTerm Object: 1 MPI process
       type: shell
       solution vector space: N = 2
-      User context has been set
+      Context has been set
       The following methods have been set: objectiveandgradient, hessian,
   TaoLineSearch Object: 1 MPI process
     type: more-thuente

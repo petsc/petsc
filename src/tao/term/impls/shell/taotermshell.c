@@ -124,8 +124,8 @@ static PetscErrorCode TaoTermView_Shell(TaoTerm term, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscBool any;
-    if (shell->ctxcontainer) PetscCall(PetscViewerASCIIPrintf(viewer, "User context has been set\n"));
-    else PetscCall(PetscViewerASCIIPrintf(viewer, "No user context has been set\n"));
+    if (shell->ctxcontainer) PetscCall(PetscViewerASCIIPrintf(viewer, "Context has been set\n"));
+    else PetscCall(PetscViewerASCIIPrintf(viewer, "No context has been set\n"));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "The following methods have been set:"));
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
