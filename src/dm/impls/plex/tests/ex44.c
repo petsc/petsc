@@ -126,6 +126,11 @@ int main(int argc, char **argv)
       args: -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0
 
     test:
+      suffix: seg_periodic_1
+      args: -dm_plex_dim 1 -dm_plex_box_faces 4 -dm_plex_box_bd periodic \
+            -dm_plex_transform_extrude_layers 3 -dm_plex_transform_extrude_use_tensor 0
+
+    test:
       suffix: tri_tensor_0
       requires: triangle
       args: -dm_plex_transform_extrude_use_tensor {{0 1}separate output}

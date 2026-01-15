@@ -186,4 +186,11 @@ int main(int argc, char **argv)
           -dm_plex_option_phases conv_ -conv_dm_refine 1 -conv_dm_plex_transform_type refine_tobox
     output_file: output/empty.out
 
+  # Extrude a periodic mesh, here the circle
+  test:
+    suffix: 20
+    args: -dm_plex_dim 1 -dm_plex_box_faces 8 -dm_plex_box_bd periodic \
+          -dm_refine 1 -dm_plex_transform_type extrude -dm_plex_transform_extrude_layers 2 \
+          -dm_view
+
 TEST*/
