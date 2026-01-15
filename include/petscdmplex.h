@@ -619,3 +619,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscV
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm, const char[], DM *, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM, PetscBool);
+
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_EXTERN PetscErrorCode DMPlexGetLETKFLocalizationMatrix(DM, PetscInt, PetscInt, Mat, Mat *);
+#endif

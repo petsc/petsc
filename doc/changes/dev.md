@@ -122,6 +122,7 @@
 
 - Add `DMPlexVecGetClosureAtDepth()`
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
+- Add `DMPlexGetLETKFLocalizationMatrix` to compute localization weight matrix for LETKF
 
 ```{rubric} FE/FV:
 ```
