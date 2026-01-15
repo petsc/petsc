@@ -6,6 +6,17 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.25.0
+==============
+
+- Add support for ``TaoTerm``.
+- Add ``TAOTerm.create()``, and ``TAOTerm.destroy()``.
+- Add ``TAOTerm.view()``.
+- Add ``TAOTerm.setType()``, ``TAOTerm.getType()``, and ``TAOTerm.Type()``.
+- Add ``TAOTerm.setFromOptions()``, and ``TAOTerm.setUp()``.
+- Add ``TAOTerm.setSolutionTemplate()``
+- Add ``TAO.getTerm()``, and ``TAO.addTerm()``.
+
 Release 3.24.0
 ==============
 

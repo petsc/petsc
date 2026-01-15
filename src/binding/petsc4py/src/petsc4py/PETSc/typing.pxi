@@ -104,6 +104,10 @@ cdef TAOConstraintsFunction
 cdef TAOLSObjectiveFunction
 cdef TAOLSGradientFunction
 cdef TAOLSObjectiveGradientFunction
+cdef TAOTermObjectiveFunction
+cdef TAOTermGradientFunction
+cdef TAOTermObjectiveGradientFunction
+cdef TAOTermHessianFunction
 
 # --- MPI ---
 
