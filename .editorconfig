@@ -1,0 +1,16 @@
+# EditorConfig file: https://editorconfig.org
+
+root = true
+
+[*.{c,h,hpp,cpp,cxx,cu,h90,F90,py,yaml,yml,json,tex,md}]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+indent_size = 2
+
+[*.{c,h,hpp,cpp,cxx,cu,h90,F90,py,yaml,yml,json,tex}]
+trim_trailing_whitespace = true
+
+[*.{md}]
+trim_trailing_whitespace = false

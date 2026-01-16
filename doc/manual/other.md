@@ -861,6 +861,8 @@ additional option `--with-x=0`
 
 # Developer Environments
 
+Coding styles for most editors or integrated development environments are defined with [EditorConfig](https://editorconfig.org') in `.editorconfig`.
+
 ## Emacs Users
 
 Many PETSc developers use Emacs, which can be used as a "simple" text editor or a comprehensive development environment.
