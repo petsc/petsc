@@ -82,7 +82,7 @@ checkbadFileChange:
 
 vermin:
 	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
-	@vermin --violations -t=3.6- ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
+	@vermin --violations -t=3.6- --exclude-regex '\.pyi$$' ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
 
 # Check that source code does not violate basic PETSc coding standards
 checkbadsource: checkbadSource
