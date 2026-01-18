@@ -8,7 +8,7 @@ program main
 
   PetscErrorCode ierr
   PetscMPIInt rank
-  character*(80) arch
+  character(len=80) arch
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))

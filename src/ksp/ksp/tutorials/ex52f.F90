@@ -13,11 +13,13 @@ program main
   Vec x, b, u
   Mat A
   KSP ksp
-  PetscScalar v, one, neg_one
-  PetscReal norm, tol
+  PetscScalar, parameter :: one = 1.0, neg_one = -1.0
+  PetscScalar v
+  PetscReal norm
+  PetscReal, parameter :: tol = 1.e-7
   PetscErrorCode ierr
-  PetscInt i, j, II, JJ, Istart
-  PetscInt Iend, m, n, i1, its, five
+  PetscInt i, j, II, JJ, Istart, Iend
+  PetscInt m, n, its
   PetscMPIInt rank
   PetscBool flg
 #if defined(PETSC_HAVE_MUMPS)
@@ -31,13 +33,9 @@ program main
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   PetscCallA(PetscInitialize(ierr))
-  one = 1.0
-  neg_one = -1.0
-  i1 = 1
   m = 8
-  n = 7
-  five = 5
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 7
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
@@ -49,8 +47,8 @@ program main
   PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*n, m*n, ierr))
   PetscCallA(MatSetType(A, MATAIJ, ierr))
   PetscCallA(MatSetFromOptions(A, ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A, five, PETSC_NULL_INTEGER_ARRAY, five, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A, five, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
 
   PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
 
@@ -67,22 +65,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, i1, [II], i1, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, i1, [II], i1, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, i1, [II], i1, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, i1, [II], i1, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, i1, [II], i1, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -90,7 +88,7 @@ program main
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  Create parallel vectors.
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, PETSC_DECIDE, m*n, u, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, m*n, u, ierr))
   PetscCallA(VecDuplicate(u, b, ierr))
   PetscCallA(VecDuplicate(b, x, ierr))
 
@@ -103,7 +101,6 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
   PetscCallA(KSPSetOperators(ksp, A, A, ierr))
-  tol = 1.e-7
   PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_INTEGER, ierr))
 
 !  Test MUMPS

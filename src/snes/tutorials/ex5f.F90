@@ -41,6 +41,7 @@ module ex5fmodule
   PetscInt mx, my
   PetscMPIInt rank, size
   PetscReal lambda
+  PetscScalar, parameter :: two = 2.0, one = 1.0
 contains
 ! ---------------------------------------------------------------------
 !
@@ -64,11 +65,9 @@ contains
 
 !  Input/output variables:
     Vec X
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 !  Declarations for use with local arrays:
     PetscScalar, pointer :: lx_v(:)
-
-    ierr = 0
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -112,19 +111,16 @@ contains
 
 !  Input/output variables:
     PetscScalar x(xs:xe, ys:ye)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
 !  Local variables:
     PetscInt i, j
-    PetscReal temp1, temp, one, hx, hy
-
-!  Set parameters
+    PetscReal temp1, temp, hx, hy
 
     ierr = 0
-    one = 1.0
-    hx = one/((real(mx) - 1))
-    hy = one/((real(my) - 1))
-    temp1 = lambda/(lambda + one)
+    hx = 1.0_PETSC_REAL_KIND/((real(mx) - 1))
+    hy = 1.0_PETSC_REAL_KIND/((real(my) - 1))
+    temp1 = lambda/(lambda + 1.0_PETSC_REAL_KIND)
 
     do j = ys, ye
       temp = (real(min(j - 1, my - j)))*hy
@@ -163,10 +159,10 @@ contains
     DMDALocalInfo info
     PetscScalar x(gxs:gxe, gys:gye)
     PetscScalar f(xs:xe, ys:ye)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
 !  Local variables:
-    PetscScalar two, one, hx, hy
+    PetscScalar hx, hy
     PetscScalar hxdhy, hydhx, sc
     PetscScalar u, uxx, uyy
     PetscInt i, j
@@ -178,8 +174,6 @@ contains
     mx = info%MX
     my = info%MY
 
-    one = 1.0
-    two = 2.0
     hx = one/(real(mx) - 1)
     hy = one/(real(my) - 1)
     sc = hx*hy*lambda
@@ -249,20 +243,15 @@ contains
 !  Input/output variables:
     PetscScalar x(gxs:gxe, gys:gye)
     Mat A, jac
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     DMDALocalInfo info
 
 !  Local variables:
-    PetscInt row, col(5), i, j, i1, i5
-    PetscScalar two, one, hx, hy, v(5)
+    PetscInt row, col(5), i, j
+    PetscScalar hx, hy, v(5)
     PetscScalar hxdhy, hydhx, sc
 
 !  Set parameters
-
-    i1 = 1
-    i5 = 5
-    one = 1.0
-    two = 2.0
     hx = one/(real(mx) - 1)
     hy = one/(real(my) - 1)
     sc = hx*hy
@@ -293,7 +282,7 @@ contains
 !       Some f90 compilers need 4th arg to be of same type in both calls
           col(1) = row
           v(1) = one
-          call MatSetValuesLocal(jac, i1, [row], i1, [col], [v], INSERT_VALUES, ierr)
+          call MatSetValuesLocal(jac, 1_PETSC_INT_KIND, [row], 1_PETSC_INT_KIND, [col], [v], INSERT_VALUES, ierr)
           CHKERRQ(ierr)
 !           interior grid points
         else
@@ -307,7 +296,7 @@ contains
           col(3) = row
           col(4) = row + 1
           col(5) = row + gxm
-          call MatSetValuesLocal(jac, i1, [row], i5, [col], [v], INSERT_VALUES, ierr)
+          call MatSetValuesLocal(jac, 1_PETSC_INT_KIND, [row], 5_PETSC_INT_KIND, [col], [v], INSERT_VALUES, ierr)
           CHKERRQ(ierr)
         end if
       end do
@@ -334,7 +323,7 @@ contains
     PetscReal xnorm, snorm, fnorm, nrm
     SNESConvergedReason reason
     Vec f
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
     call SNESGetFunction(snes, f, PETSC_NULL_FUNCTION, dummy, ierr)
     CHKERRQ(ierr)
@@ -363,9 +352,9 @@ program main
 !
   SNES snes
   Vec x, r
-  PetscInt its, i1, i4
+  PetscInt its
   PetscErrorCode ierr
-  PetscReal lambda_max, lambda_min
+  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
   PetscBool flg
   DM da
 
@@ -381,10 +370,6 @@ program main
   CHKERRMPIA(ierr)
 !  Initialize problem parameters
 
-  i1 = 1
-  i4 = 4
-  lambda_max = 6.81
-  lambda_min = 0.0
   lambda = 6.0
   call PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-par', lambda, PETSC_NULL_BOOL, ierr)
   CHKERRA(ierr)
@@ -419,8 +404,8 @@ program main
 
 !     This really needs only the star-type stencil, but we use the box stencil
 
-  call DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, i4, i4, PETSC_DECIDE, PETSC_DECIDE, &
-                    i1, i1, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr)
+  call DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4_PETSC_INT_KIND, 4_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, &
+                    1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr)
   CHKERRA(ierr)
   call DMSetFromOptions(da, ierr)
   CHKERRA(ierr)

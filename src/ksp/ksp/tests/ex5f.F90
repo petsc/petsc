@@ -11,7 +11,7 @@ contains
 
     Mat A
     Vec x, y
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
     PetscCallA(VecCopy(x, y, ierr))
 
@@ -23,20 +23,16 @@ program main
   use ex5fmodule
   implicit none
 !
-!      Solves a linear system matrix-free
+!  Solves a linear system matrix-free
 !
-
   Mat A
   Vec x, y
-  PetscInt m
+  PetscInt, parameter :: m = 10
   PetscErrorCode ierr
   KSP ksp
-  PetscScalar one
-
-  m = 10
+  PetscScalar, parameter :: one = 1.0
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1.0
   PetscCallA(KSPCreate(PETSC_COMM_SELF, ksp, ierr))
 
   PetscCallA(MatCreateShell(PETSC_COMM_SELF, m, m, m, m, 0, A, ierr))

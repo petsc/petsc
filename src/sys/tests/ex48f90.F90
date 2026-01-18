@@ -3,10 +3,10 @@ program ex10f90
   use petsc
   implicit none
 
-  PetscErrorCode                            :: ierr
-  character(len=256)                        :: filename
-  PetscBool                                 :: flg
-  PetscInt                                  :: n
+  PetscErrorCode     :: ierr
+  character(len=256) :: filename
+  PetscBool          :: flg
+  PetscInt           :: n
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-f', filename, flg, ierr))

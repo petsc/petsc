@@ -13,13 +13,8 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-  allocate (dnnz(0:m - 1))
-  allocate (onnz(0:m - 1))
-
-  do i = 0, m - 1
-    dnnz(i) = 1
-    onnz(i) = 1
-  end do
+  allocate (dnnz(0:m - 1), source=1_PETSC_INT_KIND)
+  allocate (onnz(0:m - 1), source=1_PETSC_INT_KIND)
 
   PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, m, n, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DECIDE, dnnz, PETSC_DECIDE, onnz, A, ierr))
   PetscCallA(MatSetFromOptions(A, ierr))

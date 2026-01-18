@@ -20,20 +20,18 @@ program main
   Vec x, u, b
   Mat A, A2
   KSP ksp
-  PetscInt i, j, II, JJ, m, n
-  PetscInt Istart, Iend
-  PetscInt nsteps, one
+  PetscInt i, j, II, JJ, Istart, Iend
+  PetscInt m, n, nsteps
   PetscErrorCode ierr
   PetscBool flg
   PetscScalar v
 
   PetscCallA(PetscInitialize(ierr))
   m = 3
-  n = 3
-  nsteps = 2
-  one = 1
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
+  nsteps = 2
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-nsteps', nsteps, flg, ierr))
 
 !  Create parallel matrix, specifying only its global dimensions.
@@ -63,22 +61,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -142,7 +140,7 @@ subroutine solve1(ksp, A, x, b, u, count, nsteps, A2, ierr)
 !
   PetscScalar v, val
   PetscInt II, Istart, Iend
-  PetscInt count, nsteps, one
+  PetscInt count, nsteps
   PetscErrorCode ierr
   Mat A
   KSP ksp
@@ -154,7 +152,6 @@ subroutine solve1(ksp, A, x, b, u, count, nsteps, A2, ierr)
   PetscBool pflag
   common/my_data/rank, pflag
 
-  one = 1
 ! First time thorough: Create new matrix to define the linear system
   if (count == 1) then
     PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
@@ -174,7 +171,7 @@ subroutine solve1(ksp, A, x, b, u, count, nsteps, A2, ierr)
   PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
   do II = Istart, Iend - 1
     v = 2.0
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   if (pflag) then

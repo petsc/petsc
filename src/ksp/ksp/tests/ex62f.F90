@@ -82,9 +82,8 @@ contains
     PC pc
     Vec x, y
     PetscErrorCode ierr
-    PetscScalar one
+    PetscScalar, parameter :: one = 1.0
 
-    one = 1.0
     PetscCallA(PCApply(jacobi, x, y, ierr))
     PetscCallA(PCApply(sor, x, work, ierr))
     PetscCallA(VecAXPY(y, one, work, ierr))
@@ -113,10 +112,12 @@ program main
   Mat A
   PC pc
   KSP ksp
-  PetscScalar v, one, neg_one
-  PetscReal norm, tol
-  PetscInt i, j, II, JJ, Istart
-  PetscInt Iend, m, n, its, ione
+  PetscScalar v
+  PetscScalar, parameter :: one = 1.0, neg_one = -1.0
+  PetscReal, parameter :: tol = 1e-7
+  PetscReal norm
+  PetscInt i, j, II, JJ, Istart, Iend, its
+  PetscInt m, n
   PetscMPIInt rank
   PetscBool flg
   PetscErrorCode ierr
@@ -126,12 +127,9 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1.0
-  neg_one = -1.0
   m = 8
-  n = 7
-  ione = 1
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 7
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
@@ -170,22 +168,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, ione, [II], ione, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -206,7 +204,7 @@ program main
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, PETSC_DECIDE, m*n, u, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, m*n, u, ierr))
   PetscCallA(VecDuplicate(u, b, ierr))
   PetscCallA(VecDuplicate(b, x, ierr))
 
@@ -234,28 +232,27 @@ program main
 !     to set various options.
 
   PetscCallA(KSPGetPC(ksp, pc, ierr))
-  tol = 1.e-7
   PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_INTEGER, ierr))
 
 !
 !  Set a user-defined shell preconditioner
 !
 
-!  (Required) Indicate to PETSc that we are using a shell preconditioner
+! (Required) Indicate to PETSc that we are using a shell preconditioner
   PetscCallA(PCSetType(pc, PCSHELL, ierr))
 
-!  (Required) Set the user-defined routine for applying the preconditioner
+! (Required) Set the user-defined routine for applying the preconditioner
   PetscCallA(PCShellSetApply(pc, SampleShellPCApply, ierr))
 
-!  (Optional) Do any setup required for the preconditioner
-!     Note: if you use PCShellSetSetUp, this will be done for your
+! (Optional) Do any setup required for the preconditioner
+!    Note: if you use PCShellSetSetUp, this will be done for your
   PetscCallA(SampleShellPCSetUp(pc, x, ierr))
 
-!  Set runtime options, e.g.,
-!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-!  These options will override those specified above as long as
-!  KSPSetFromOptions() is called _after_ any other customization
-!  routines.
+! Set runtime options, e.g.,
+!     -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+! These options will override those specified above as long as
+! KSPSetFromOptions() is called _after_ any other customization
+! routines.
 
   PetscCallA(KSPSetFromOptions(ksp, ierr))
 
@@ -269,8 +266,7 @@ program main
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Check the error
-
+! Check the error
   PetscCallA(VecAXPY(x, neg_one, u, ierr))
   PetscCallA(VecNorm(x, NORM_2, norm, ierr))
   PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
@@ -285,9 +281,8 @@ program main
 100 format('Norm of error ', 1pe11.4, ' iterations ', i5)
 110 format('Norm of error < 1.e-12,iterations ', i5)
 
-!  Free work space.  All PETSc objects should be destroyed when they
-!  are no longer needed.
-
+! Free work space.  All PETSc objects should be destroyed when they
+! are no longer needed.
   PetscCallA(KSPDestroy(ksp, ierr))
   PetscCallA(VecDestroy(u, ierr))
   PetscCallA(VecDestroy(x, ierr))
@@ -299,8 +294,7 @@ program main
   PetscCallA(PCDestroy(jacobi, ierr))
   PetscCallA(VecDestroy(work, ierr))
 
-!  Always call PetscFinalize() before exiting a program.
-
+! Always call PetscFinalize() before exiting a program.
   PetscCallA(PetscFinalize(ierr))
 end
 

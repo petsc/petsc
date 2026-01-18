@@ -14,20 +14,15 @@ module ex40module
   implicit none
 contains
   subroutine FormFunctionLocal(in, x, f, dummy, ierr)
-    PetscInt i, j, k, dummy
+    PetscInt, intent(in) :: dummy
     DMDALocalInfo in
-    PetscScalar x(in%DOF, in%GXS + 1:in%GXS + in%GXM, in%GYS + 1:in%GYS + in%GYM)
-    PetscScalar f(in%DOF, in%XS + 1:in%XS + in%XM, in%YS + 1:in%YS + in%YM)
-    PetscErrorCode ierr
+    PetscScalar, intent(in) :: x(in%DOF, in%GXS + 1:in%GXS + in%GXM, in%GYS + 1:in%GYS + in%GYM)
+    PetscScalar, intent(out) :: f(in%DOF, in%XS + 1:in%XS + in%XM, in%YS + 1:in%YS + in%YM)
+    PetscErrorCode, intent(out) :: ierr
 
-    do i = in%XS + 1, in%XS + in%XM
-      do j = in%YS + 1, in%YS + in%YM
-        do k = 1, in%DOF
-          f(k, i, j) = x(k, i, j)*x(k, i, j) - 2.0
-        end do
-      end do
-    end do
+    f = x**2 - 2.0
 
+    ierr = 0
   end
 end module ex40module
 
@@ -40,17 +35,12 @@ program ex40f90
   SNES snes
   PetscErrorCode ierr
   DM da
-  PetscInt ten, two, one
-  PetscScalar sone
+  PetscScalar, parameter :: one = 1.0
   Vec x
 
   PetscCallA(PetscInitialize(ierr))
-  ten = 10
-  one = 1
-  two = 2
-  sone = 1.0
 
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, ten, ten, PETSC_DECIDE, PETSC_DECIDE, two, one, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 10_PETSC_INT_KIND, 10_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, 2_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
   PetscCallA(DMSetUp(da, ierr))
 
@@ -65,7 +55,7 @@ program ex40f90
 !      Solve the nonlinear system
 !
   PetscCallA(DMCreateGlobalVector(da, x, ierr))
-  PetscCallA(VecSet(x, sone, ierr))
+  PetscCallA(VecSet(x, one, ierr))
   PetscCallA(SNESSolve(snes, PETSC_NULL_VEC, x, ierr))
 
   PetscCallA(VecDestroy(x, ierr))

@@ -33,9 +33,7 @@ program main
   allocate (rows(nz), cols(nz), a(nz))
 
   PetscCallA(VecGetArray(rhs, b, ierr))
-  do i = 1, n
-    b(i) = 1.0
-  end do
+  b(1:n) = 1.0
   PetscCallA(VecRestoreArray(rhs, b, ierr))
 
   rows(1) = 0; cols(1) = 0
@@ -64,7 +62,7 @@ program main
 
   PetscCallA(KSPSolve(ksp, rhs, solution, ierr))
 
-!     Keep the same size and nonzero structure of the matrix but change its numerical entries
+! Keep the same size and nonzero structure of the matrix but change its numerical entries
   do i = 2, n - 1
     a(2 + 3*(i - 2) + 1) = 4.0
   end do

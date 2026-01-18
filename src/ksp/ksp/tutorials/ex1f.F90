@@ -12,9 +12,8 @@ module ex1fmodule
 
 contains
   subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
-
     KSP ksp
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt n
     integer(8) defaultctx
     KSPConvergedReason flag
@@ -50,10 +49,11 @@ program main
   PC pc
   PetscReal norm, tol
   PetscErrorCode ierr
-  PetscInt i, n, col(3), its, i1, i2, i3
+  PetscInt i, n, col(3), its
   PetscBool flg
   PetscMPIInt size
-  PetscScalar none, one, value(3)
+  PetscScalar, parameter :: none = -1.0, one = 1.0
+  PetscScalar value(3)
   PetscLogStage stages(2)
   PetscFortranAddr defaultctx
 
@@ -64,12 +64,7 @@ program main
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
   PetscCheckA(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only')
-  none = -1.0
-  one = 1.0
   n = 10
-  i1 = 1
-  i2 = 2
-  i3 = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
 
   PetscCallA(PetscLogStageRegister('MatVec Assembly', stages(1), ierr))
@@ -92,25 +87,23 @@ program main
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array "col").
 
-  value(1) = -1.0
-  value(2) = 2.0
-  value(3) = -1.0
+  value = [-1.0, 2.0, -1.0]
   do i = 1, n - 2
     col(1) = i - 1
     col(2) = i
     col(3) = i + 1
-    PetscCallA(MatSetValues(A, i1, [i], i3, col, value, INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [i], 3_PETSC_INT_KIND, col, value, INSERT_VALUES, ierr))
   end do
   i = n - 1
   col(1) = n - 2
   col(2) = n - 1
-  PetscCallA(MatSetValues(A, i1, [i], i2, col, value, INSERT_VALUES, ierr))
+  PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [i], 2_PETSC_INT_KIND, col, value, INSERT_VALUES, ierr))
   i = 0
   col(1) = 0
   col(2) = 1
   value(1) = 2.0
   value(2) = -1.0
-  PetscCallA(MatSetValues(A, i1, [i], i2, col, value, INSERT_VALUES, ierr))
+  PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [i], 2_PETSC_INT_KIND, col, value, INSERT_VALUES, ierr))
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 

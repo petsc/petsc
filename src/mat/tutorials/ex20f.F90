@@ -50,7 +50,7 @@ program main
   PetscInt             :: n = 128
 
   PetscCallA(PetscInitialize(ierr))
-  ctxF%lambda = 3.14d0
+  ctxF%lambda = 3.14_PETSC_REAL_KIND
   PetscCallA(MatCreateShell(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, ctxF, F, ierr))
   PetscCallA(MatShellSetOperation(F, MATOP_DUPLICATE, MatDuplicate_F, ierr))
   print *, 'ctxF%lambda = ', ctxF%lambda

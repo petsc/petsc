@@ -5,23 +5,21 @@ program ex9f
   use petscsys
   implicit none
 
-  PetscReal, parameter                       :: PReal = 1.0
-  integer, parameter                         :: Pr = Selected_Real_Kind(precision(PReal))
-  PetscInt, parameter                        :: PInt = 1
-  integer, parameter                         :: Pi = kind(PInt)
+  integer, parameter :: Pr = PETSC_REAL_KIND
+  integer, parameter :: Pi = PETSC_INT_KIND
 
   PetscErrorCode                            :: ierr
   PetscBool                                 :: flg
   PetscInt                                  :: nopt = 3_Pi
   PetscBool                                 :: bvalue, bdefault = PETSC_TRUE
-  PetscBool, dimension(:), pointer            :: barray
+  PetscBool, dimension(:), pointer          :: barray
   PetscEnum                                 :: evalue, edefault = 2
   PetscInt                                  :: ivalue, idefault = 2_Pi
-  PetscInt, dimension(:), pointer             :: iarray
+  PetscInt, dimension(:), pointer           :: iarray
   PetscReal                                 :: rvalue, rdefault = 1.23_Pr
-  PetscReal, dimension(:), pointer            :: rarray
+  PetscReal, dimension(:), pointer          :: rarray
   PetscScalar                               :: svalue, sdefault = -4.56_Pr
-  PetscScalar, dimension(:), pointer          :: sarray
+  PetscScalar, dimension(:), pointer        :: sarray
   character(len=256)                        :: IOBuffer
   character(len=256)                        :: stvalue, stdefault
   character(len=256)                        :: list(6)

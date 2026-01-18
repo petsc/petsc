@@ -18,7 +18,7 @@ module chwirut1fmodule
 
   PetscReal t(0:213)
   PetscReal y(0:213)
-  PetscInt m, n
+  PetscInt, parameter :: m = 214, n = 3
 
 contains
 
@@ -36,7 +36,7 @@ contains
 
     Tao ta
     Vec x, f
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
     PetscInt i
@@ -44,16 +44,16 @@ contains
 
     ierr = 0
 
-!     Get pointers to vector data
+!   Get pointers to vector data
     PetscCall(VecGetArray(x, x_v, ierr))
     PetscCall(VecGetArray(f, f_v, ierr))
 
-!     Compute F(X)
+!   Compute F(X)
     do i = 0, m - 1
       f_v(i + 1) = y(i) - exp(-x_v(1)*t(i))/(x_v(2) + x_v(3)*t(i))
     end do
 
-!     Restore vectors
+!   Restore vectors
     PetscCall(VecRestoreArray(X, x_v, ierr))
     PetscCall(VecRestoreArray(F, f_v, ierr))
 
@@ -288,7 +288,6 @@ contains
     y(i) = 10.0500; t(i) = 3.7500; i = i + 1
     y(i) = 28.9000; t(i) = 1.7500; i = i + 1
     y(i) = 28.9500; t(i) = 1.7500; i = i + 1
-
   end
 end module chwirut1fmodule
 
@@ -311,7 +310,6 @@ program main
   PetscReal resid(100)! residual history
   PetscReal cnorm(100)! cnorm history
   PetscInt lits(100)   ! #ksp history
-  PetscInt oh
   TaoConvergedReason reason
 
 !  Initialize TAO and PETSc
@@ -321,33 +319,28 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only')
 
-!  Initialize problem parameters
-  m = 214
-  n = 3
-
-!  Allocate vectors for the solution and gradient
+! Allocate vectors for the solution and gradient
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, x, ierr))
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, m, f, ierr))
 
 !  The TAO code begins here
 
-!  Create TAO solver
+! Create TAO solver
   PetscCallA(TaoCreate(PETSC_COMM_SELF, ta, ierr))
   PetscCallA(TaoSetType(ta, TAOPOUNDERS, ierr))
-!  Set routines for function, gradient, and hessian evaluation
 
+! Set routines for function, gradient, and hessian evaluation
   PetscCallA(TaoSetResidualRoutine(ta, f, FormFunction, 0, ierr))
 
-!  Optional: Set initial guess
+! Optional: Set initial guess
   call InitializeData()
   call FormStartingPoint(x)
   PetscCallA(TaoSetSolution(ta, x, ierr))
 
-!  Check for TAO command line options
+! Check for TAO command line options
   PetscCallA(TaoSetFromOptions(ta, ierr))
-  oh = 100
-  PetscCallA(TaoSetConvergenceHistory(ta, hist, resid, cnorm, lits, oh, PETSC_TRUE, ierr))
-!  SOLVE THE APPLICATION
+  PetscCallA(TaoSetConvergenceHistory(ta, hist, resid, cnorm, lits, 100_PETSC_INT_KIND, PETSC_TRUE, ierr))
+! SOLVE THE APPLICATION
   PetscCallA(TaoSolve(ta, ierr))
   PetscCallA(TaoGetConvergenceHistory(ta, nhist, ierr))
   PetscCallA(TaoGetConvergedReason(ta, reason, ierr))

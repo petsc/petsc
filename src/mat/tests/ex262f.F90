@@ -6,7 +6,7 @@ program main
   Mat A, B
   PetscErrorCode ierr
   PetscScalar, pointer :: km(:, :)
-  PetscInt three, one
+  PetscInt, parameter :: three = 3, one = 1
   PetscInt idxm(1), idxmj(1), i, j
   PetscMPIInt rank, size
 
@@ -16,12 +16,10 @@ program main
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
-  three = 3
   PetscCallA(MatSetSizes(A, three, three, PETSC_DECIDE, PETSC_DECIDE, ierr))
   PetscCallA(MatSetBlockSize(A, three, ierr))
   PetscCallA(MatSetUp(A, ierr))
   PetscCallA(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, B, ierr))
-  one = 1
   idxm(1) = 0
   allocate (km(three, three))
   do i = 1, 3
@@ -29,7 +27,7 @@ program main
       km(1, 1) = i + j
       idxm(1) = i - 1 + 3*rank
       idxmj(1) = j - 1 + 3*rank
-      PetscCallA(MatSetValues(B, one, idxm, one, idxmj, reshape(km, [three*three]), ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(B, one, idxm, one, idxmj, reshape(km, [three**2]), ADD_VALUES, ierr))
     end do
   end do
 

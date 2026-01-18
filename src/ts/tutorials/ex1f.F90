@@ -20,6 +20,7 @@
 module ex1fmodule
   use petscts
   implicit none
+  PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
 contains
 !
 !  --------------------  Evaluate Function F(x) ---------------------
@@ -30,16 +31,13 @@ contains
     PetscReal t
     Vec X, F
     PetscReal user(3)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt i, j, row, mx, my
-    PetscReal two, lambda
+    PetscReal lambda
     PetscReal hx, hy, hxdhy, hydhx
     PetscScalar ut, ub, ul, ur, u
     PetscScalar uxx, uyy, sc
     PetscScalar, pointer :: xx(:), ff(:)
-    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
-
-    two = 2.0
 
     mx = int(user(lmx))
     my = int(user(lmy))
@@ -64,8 +62,8 @@ contains
           ul = xx(row - 1)
           ut = xx(row + mx)
           ur = xx(row + 1)
-          uxx = (-ur + two*u - ul)*hydhx
-          uyy = (-ut + two*u - ub)*hxdhy
+          uxx = (-ur + 2.0_PETSC_REAL_KIND*u - ul)*hydhx
+          uyy = (-ut + 2.0_PETSC_REAL_KIND*u - ub)*hxdhy
           ff(row) = -uxx - uyy + sc*lambda*exp(u)
         end if
       end do
@@ -83,22 +81,16 @@ contains
     Vec X
     Mat JJ, B
     PetscReal user(3), ctime
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     Mat jac
     PetscInt i, j, row(1), mx, my
-    PetscInt col(5), i1, i5
-    PetscScalar two, one, lambda
+    PetscInt col(5)
+    PetscScalar lambda
     PetscScalar v(5), sc
     PetscScalar, pointer :: xx(:)
     PetscReal hx, hy, hxdhy, hydhx
 
-    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
-
-    i1 = 1
-    i5 = 5
     jac = B
-    two = 2.0
-    one = 1.0
 
     mx = int(user(lmx))
     my = int(user(lmy))
@@ -118,19 +110,19 @@ contains
 !
         row(1) = i - 1 + (j - 1)*mx
         if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-          PetscCall(MatSetValues(jac, i1, [row], i1, [row], [one], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [row], 1_PETSC_INT_KIND, [row], [1.0_PETSC_REAL_KIND], INSERT_VALUES, ierr))
         else
           v(1) = hxdhy
           col(1) = row(1) - mx
           v(2) = hydhx
           col(2) = row(1) - 1
-          v(3) = -two*(hydhx + hxdhy) + sc*lambda*exp(xx(row(1)))
+          v(3) = -2.0_PETSC_REAL_KIND*(hydhx + hxdhy) + sc*lambda*exp(xx(row(1)))
           col(3) = row(1)
           v(4) = hydhx
           col(4) = row(1) + 1
           v(5) = hxdhy
           col(5) = row(1) + mx
-          PetscCall(MatSetValues(jac, i1, [row], i5, col, v, INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [row], 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         end if
       end do
     end do
@@ -146,23 +138,20 @@ contains
     Vec X
     PetscReal user(3)
     PetscInt i, j, row, mx, my
-    PetscErrorCode ierr
-    PetscReal one, lambda
+    PetscErrorCode, intent(out) :: ierr
+    PetscReal lambda
     PetscReal temp1, temp, hx, hy
     PetscScalar, pointer :: xx(:)
-    PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
-
-    one = 1.0
 
     mx = int(user(lmx))
     my = int(user(lmy))
     lambda = user(param)
 
-    hy = one/(my - 1)
-    hx = one/(mx - 1)
+    hy = 1._PETSC_REAL_KIND/(my - 1)
+    hx = 1._PETSC_REAL_KIND/(mx - 1)
 
     PetscCall(VecGetArray(X, xx, ierr))
-    temp1 = lambda/(lambda + one)
+    temp1 = lambda/(lambda + 1._PETSC_REAL_KIND)
     do j = 1, my
       temp = min(j - 1, my - j)*hy
       do i = 1, mx
@@ -177,6 +166,7 @@ contains
     PetscCall(VecRestoreArray(X, xx, ierr))
   end
 end module ex1fmodule
+
 program main
   use petscts
   use ex1fmodule
@@ -188,33 +178,26 @@ program main
 !  entries indexed by param, lmx, lmy.
 !
   PetscReal user(3)
-  PetscInt i5
-  PetscInt, parameter :: param = 1, lmx = 2, lmy = 3
 !
-!   Data for problem
+! Data for problem
 !
   TS ts
   Vec x, r
   Mat J
-  PetscInt its, N, i1000, itmp
+  PetscInt its, N, itmp
   PetscBool flg
   PetscErrorCode ierr
-  PetscReal param_max, param_min, dt
-  PetscReal tmax
-  PetscReal ftime
+  PetscReal, parameter :: param_min = 0.0, param_max = 6.81, tmax = 1.e12
+  PetscReal dt, ftime
   TSConvergedReason reason
 
-  i5 = 5
-  param_max = 6.81
-  param_min = 0
-
   PetscCallA(PetscInitialize(ierr))
-  user(lmx) = 4
-  user(lmy) = 4
+  user(lmx) = 4.0
+  user(lmy) = 4.0
   user(param) = 6.0
 
 !
-!     Allow user to set the grid dimensions and nonlinearity parameter at run-time
+! Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mx', user(lmx), flg, ierr))
   itmp = 4
@@ -232,93 +215,58 @@ program main
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-dt', dt, flg, ierr))
   N = int(user(lmx)*user(lmy))
 
-!
-!      Create vectors to hold the solution and function value
-!
+! Create vectors to hold the solution and function value
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, N, x, ierr))
   PetscCallA(VecDuplicate(x, r, ierr))
 
-!
-!    Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
-!    in the sparse matrix. Note that this is not the optimal strategy see
-!    the Performance chapter of the users manual for information on
-!    preallocating memory in sparse matrices.
-!
-  i5 = 5
-  PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, i5, PETSC_NULL_INTEGER_ARRAY, J, ierr))
+! Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
+! in the sparse matrix. Note that this is not the optimal strategy see
+! the Performance chapter of the users manual for information on
+! preallocating memory in sparse matrices.
+  PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, J, ierr))
 
-!
-!     Create timestepper context
-!
-
+! Create timestepper context
   PetscCallA(TSCreate(PETSC_COMM_WORLD, ts, ierr))
   PetscCallA(TSSetProblemType(ts, TS_NONLINEAR, ierr))
 
-!
-!     Tell the timestepper context where to compute solutions
-!
-
+! Tell the timestepper context where to compute solutions
   PetscCallA(TSSetSolution(ts, x, ierr))
 
-!
-!    Provide the call-back for the nonlinear function we are
-!    evaluating. Thus whenever the timestepping routines need the
-!    function they will call this routine. Note the final argument
-!    is the application context used by the call-back functions.
-!
-
+! Provide the call-back for the nonlinear function we are
+! evaluating. Thus whenever the timestepping routines need the
+! function they will call this routine. Note the final argument
+! is the application context used by the call-back functions.
   PetscCallA(TSSetRHSFunction(ts, PETSC_NULL_VEC, FormFunction, user, ierr))
 
-!
-!     Set the Jacobian matrix and the function used to compute
-!     Jacobians.
-!
-
+! Set the Jacobian matrix and the function used to compute
+! Jacobians.
   PetscCallA(TSSetRHSJacobian(ts, J, J, FormJacobian, user, ierr))
 
-!
-!       For the initial guess for the problem
-!
-
+! For the initial guess for the problem
   PetscCallA(FormInitialGuess(x, user, ierr))
 
-!
-!       This indicates that we are using pseudo timestepping to
-!     find a steady state solution to the nonlinear problem.
-!
-
+! This indicates that we are using pseudo timestepping to
+! find a steady state solution to the nonlinear problem.
   PetscCallA(TSSetType(ts, TSPSEUDO, ierr))
 
-!
-!       Set the initial time to start at (this is arbitrary for
-!     steady state problems and the initial timestep given above
-!
-
+! Set the initial time to start at (this is arbitrary for
+! steady state problems and the initial timestep given above
   PetscCallA(TSSetTimeStep(ts, dt, ierr))
 
-!
-!      Set a large number of timesteps and final duration time
-!     to insure convergence to steady state.
-!
-  i1000 = 1000
-  tmax = 1.e12
-  PetscCallA(TSSetMaxSteps(ts, i1000, ierr))
+! Set a large number of timesteps and final duration time
+! to insure convergence to steady state.
+  PetscCallA(TSSetMaxSteps(ts, 1000_PETSC_INT_KIND, ierr))
   PetscCallA(TSSetMaxTime(ts, tmax, ierr))
   PetscCallA(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER, ierr))
 
-!
-!      Set any additional options from the options database. This
-!     includes all options for the nonlinear and linear solvers used
-!     internally the timestepping routines.
-!
-
+! Set any additional options from the options database. This
+! includes all options for the nonlinear and linear solvers used
+! internally the timestepping routines.
   PetscCallA(TSSetFromOptions(ts, ierr))
 
   PetscCallA(TSSetUp(ts, ierr))
 
-!
-!      Perform the solve. This is where the timestepping takes place.
-!
+! Perform the solve. This is where the timestepping takes place.
   PetscCallA(TSSolve(ts, x, ierr))
   PetscCallA(TSGetSolveTime(ts, ftime, ierr))
   PetscCallA(TSGetStepNumber(ts, its, ierr))
@@ -328,9 +276,8 @@ program main
 100 format('Number of pseudo time-steps ', i5, ' final time ', 1pe9.2, ' reason ', i3)
 
 !
-!     Free the data structures constructed above
+! Free the data structures constructed above
 !
-
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(VecDestroy(r, ierr))
   PetscCallA(MatDestroy(J, ierr))

@@ -6,7 +6,7 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt nlocal, row, i1
+  PetscInt nlocal, row
   PetscScalar num
   PetscMPIInt rank
   Vec v1, v2
@@ -14,13 +14,12 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
-
-  nlocal = 1
-  i1 = 1
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, nlocal, PETSC_DECIDE, v1, ierr))
-
   row = rank
   num = rank
+
+  nlocal = 1
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, nlocal, PETSC_DECIDE, v1, ierr))
+
   PetscCallA(VecSetValue(v1, row, num, INSERT_VALUES, ierr))
   PetscCallA(VecAssemblyBegin(v1, ierr))
   PetscCallA(VecAssemblyEnd(v1, ierr))

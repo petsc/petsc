@@ -96,8 +96,8 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(ierr))
-  n = 30
 
+  n = 30
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallA(VecCreate(PETSC_COMM_WORLD, x, ierr))
   PetscCallA(VecSetSizes(x, PETSC_DECIDE, n, ierr))

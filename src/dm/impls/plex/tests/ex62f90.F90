@@ -4,26 +4,22 @@ program ex62f90
   implicit none
 #include "exodusII.inc"
 
-  ! Get the Fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
-  PetscInt                           :: dummyPetscInt
-  PetscReal                          :: dummyPetscreal
-  integer, parameter                  :: kPI = kind(dummyPetscInt)
-  integer, parameter                  :: kPR = kind(dummyPetscReal)
+  ! Shortcuts for Fortran kinds (used to specify literals)
+  integer, parameter                 :: kPI = PETSC_INT_KIND
+  integer, parameter                 :: kPR = PETSC_REAL_KIND
 
   type(tDM)                          :: dm, dmU, dmA, dmS, dmUA, dmUA2, pDM
   type(tDM), dimension(:), pointer     :: dmList
   type(tVec)                         :: X, U, A, S, UA, UA2
   type(tIS)                          :: isU, isA, isS, isUA
   type(tPetscSection)                :: section, rootSection, leafSection
-  PetscInt                           :: fieldU = 0
-  PetscInt                           :: fieldA = 2
-  PetscInt                           :: fieldS = 1
-  PetscInt, dimension(2)              :: fieldUA = [0, 2]
+  PetscInt, parameter                :: fieldU = 0, fieldS = 1, fieldA = 2
+  PetscInt, dimension(2)             :: fieldUA = [0, 2]
   character(len=PETSC_MAX_PATH_LEN)  :: ifilename, ofilename, IOBuffer
   integer                            :: exoid = -1
   type(tIS)                          :: csIS
-  PetscInt, dimension(:), pointer      :: csID
-  PetscInt, dimension(:), pointer      :: pStartDepth, pEndDepth
+  PetscInt, dimension(:), pointer    :: csID
+  PetscInt, dimension(:), pointer    :: pStartDepth, pEndDepth
   PetscInt                           :: order = 1
   PetscInt                           :: sdim, d, pStart, pEnd, p, numCS, set, i, j
   PetscMPIInt                        :: rank, numProc
@@ -40,9 +36,9 @@ program ex62f90
   logical, dimension(:, :), pointer     :: truthtable
 
   type(tIS)                          :: cellIS
-  PetscInt, dimension(:), pointer      :: cellID
+  PetscInt, dimension(:), pointer    :: cellID
   PetscInt                           :: numCells, cell, closureSize
-  PetscInt, dimension(:), pointer      :: closureA, closure
+  PetscInt, dimension(:), pointer    :: closureA, closure
 
   type(tPetscSection)                :: sectionUA, coordSection
   type(tVec)                         :: UALoc, coord
@@ -50,32 +46,32 @@ program ex62f90
   PetscInt                           :: dofUA, offUA, c
 
   ! dof layout ordered by increasing height in the DAG: cell, face, edge, vertex
-  PetscInt, dimension(3), target        :: dofS2D = [0, 0, 3]
-  PetscInt, dimension(3), target        :: dofUP1Tri = [2, 0, 0]
-  PetscInt, dimension(3), target        :: dofAP1Tri = [1, 0, 0]
-  PetscInt, dimension(3), target        :: dofUP2Tri = [2, 2, 0]
-  PetscInt, dimension(3), target        :: dofAP2Tri = [1, 1, 0]
-  PetscInt, dimension(3), target        :: dofUP1Quad = [2, 0, 0]
-  PetscInt, dimension(3), target        :: dofAP1Quad = [1, 0, 0]
-  PetscInt, dimension(3), target        :: dofUP2Quad = [2, 2, 2]
-  PetscInt, dimension(3), target        :: dofAP2Quad = [1, 1, 1]
-  PetscInt, dimension(4), target        :: dofS3D = [0, 0, 0, 6]
-  PetscInt, dimension(4), target        :: dofUP1Tet = [3, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP1Tet = [1, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP2Tet = [3, 3, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP2Tet = [1, 1, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP1Hex = [3, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP1Hex = [1, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP2Hex = [3, 3, 3, 3]
-  PetscInt, dimension(4), target        :: dofAP2Hex = [1, 1, 1, 1]
-  PetscInt, dimension(:), pointer       :: dofU, dofA, dofS
+  PetscInt, dimension(3), target     :: dofS2D = [0, 0, 3]
+  PetscInt, dimension(3), target     :: dofUP1Tri = [2, 0, 0]
+  PetscInt, dimension(3), target     :: dofAP1Tri = [1, 0, 0]
+  PetscInt, dimension(3), target     :: dofUP2Tri = [2, 2, 0]
+  PetscInt, dimension(3), target     :: dofAP2Tri = [1, 1, 0]
+  PetscInt, dimension(3), target     :: dofUP1Quad = [2, 0, 0]
+  PetscInt, dimension(3), target     :: dofAP1Quad = [1, 0, 0]
+  PetscInt, dimension(3), target     :: dofUP2Quad = [2, 2, 2]
+  PetscInt, dimension(3), target     :: dofAP2Quad = [1, 1, 1]
+  PetscInt, dimension(4), target     :: dofS3D = [0, 0, 0, 6]
+  PetscInt, dimension(4), target     :: dofUP1Tet = [3, 0, 0, 0]
+  PetscInt, dimension(4), target     :: dofAP1Tet = [1, 0, 0, 0]
+  PetscInt, dimension(4), target     :: dofUP2Tet = [3, 3, 0, 0]
+  PetscInt, dimension(4), target     :: dofAP2Tet = [1, 1, 0, 0]
+  PetscInt, dimension(4), target     :: dofUP1Hex = [3, 0, 0, 0]
+  PetscInt, dimension(4), target     :: dofAP1Hex = [1, 0, 0, 0]
+  PetscInt, dimension(4), target     :: dofUP2Hex = [3, 3, 3, 3]
+  PetscInt, dimension(4), target     :: dofAP2Hex = [1, 1, 1, 1]
+  PetscInt, dimension(:), pointer    :: dofU, dofA, dofS
 
   type(tPetscSF)                      :: migrationSF, natSF, natPointSF, natPointSFInv
   PetscPartitioner                    :: part
 
   type(tVec)                          :: tmpVec
   PetscReal                           :: norm
-  PetscReal                           :: time = 1.234_kPR
+  PetscReal, parameter                :: time = 1.234_kPR
   PetscInt, pointer                   :: remoteOffsets(:)
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))

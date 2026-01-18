@@ -5,10 +5,7 @@ program main
 
   PetscErrorCode ::ierr
   PetscMPIInt ::   rank, size
-  PetscInt :: i
-  PetscInt, parameter :: one = 1
-  PetscInt :: m = 10
-  PetscInt :: low, high, ldim, iglobal
+  PetscInt :: i, m, low, high, ldim, iglobal
   PetscScalar :: v
   Vec ::         u
   PetscViewer :: viewer
@@ -26,6 +23,7 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))  !gives number of processes in the group of comm (integer)
+  m = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr)) !gives the integer value for a particular option in the database.
 
   ! PART 1:  Generate vector, then write it in binary format */
@@ -43,7 +41,7 @@ program main
   do i = 0, ldim - 1
     iglobal = i + low
     v = real(i + 100*rank)
-    PetscCallA(VecSetValues(u, one, [iglobal], [v], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(u, 1_PETSC_INT_KIND, [iglobal], [v], INSERT_VALUES, ierr))
   end do
   PetscCallA(VecAssemblyBegin(u, ierr))
   PetscCallA(VecAssemblyEnd(u, ierr))

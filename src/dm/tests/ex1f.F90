@@ -4,7 +4,7 @@
 !
 ! Contributed-by:       Fabian Jakub  <Fabian.Jakub@physik.uni-muenchen.de>
 #include "petsc/finclude/petscdmda.h"
-program main
+program ex1f
   use petscvec
   use petscdm
   use petscdmda
@@ -18,7 +18,7 @@ program main
   PetscMPIInt, pointer :: nb(:)
 
   type(tDM) :: da
-  type(tVec) :: gVec!, naturalVec
+  type(tVec) :: gVec
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
   PetscCallA(mpi_comm_rank(PETSC_COMM_WORLD, myid, ierr))
@@ -44,7 +44,7 @@ program main
   PetscCallA(VecDestroy(gVec, ierr))
   PetscCallA(DMDestroy(da, ierr))
   PetscCallA(PetscFinalize(ierr))
-end program
+end program ex1f
 
 !/*TEST
 !

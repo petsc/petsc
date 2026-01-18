@@ -8,7 +8,7 @@ program main
   Mat                   :: mesh, dual
   MatPartitioning       :: part
   IS                    :: is
-  PetscInt, parameter    :: Nvertices = 6, ncells = 2, two = 2
+  PetscInt, parameter   :: Nvertices = 6, ncells = 2
   PetscInt              :: ii(3), jj(6)
   PetscMPIInt           :: sz, rnk
   PetscErrorCode        :: ierr
@@ -18,27 +18,15 @@ program main
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, sz, ierr))
   PetscCheckA(sz == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, 'This example is for exactly two processes')
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rnk, ierr))
-  ii(1) = 0
-  ii(2) = 3
-  ii(3) = 6
+  ii = [0, 3, 6]
   if (rnk == 0) then
-    jj(1) = 0
-    jj(2) = 1
-    jj(3) = 2
-    jj(4) = 1
-    jj(5) = 2
-    jj(6) = 3
+    jj = [0, 1, 2, 1, 2, 3]
   else
-    jj(1) = 1
-    jj(2) = 4
-    jj(3) = 5
-    jj(4) = 1
-    jj(5) = 3
-    jj(6) = 5
+    jj = [1, 4, 5, 1, 3, 5]
   end if
 
   PetscCallA(MatCreateMPIAdj(PETSC_COMM_WORLD, ncells, Nvertices, ii, jj, PETSC_NULL_INTEGER_ARRAY, mesh, ierr))
-  PetscCallA(MatMeshToCellGraph(mesh, two, dual, ierr))
+  PetscCallA(MatMeshToCellGraph(mesh, 2_PETSC_INT_KIND, dual, ierr))
   PetscCallA(MatView(dual, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
   PetscCallA(MatPartitioningCreate(PETSC_COMM_WORLD, part, ierr))

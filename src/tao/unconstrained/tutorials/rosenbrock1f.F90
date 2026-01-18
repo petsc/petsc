@@ -33,7 +33,7 @@ contains
     type(tTao) ta
     type(tVec) X, G
     PetscReal f
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
     PetscReal ff, t1, t2
@@ -43,15 +43,14 @@ contains
     PetscInt n
     common/params/alpha, n
 
-    ierr = 0
     nn = n/2
     ff = 0
 
-!     Get pointers to vector data
+!   Get pointers to vector data
     PetscCall(VecGetArrayRead(X, x_v, ierr))
     PetscCall(VecGetArray(G, g_v, ierr))
 
-!     Compute G(X)
+!   Compute G(X)
     do i = 0, nn - 1
       t1 = x_v(1 + 2*i + 1) - x_v(1 + 2*i)*x_v(1 + 2*i)
       t2 = 1.0 - x_v(1 + 2*i)
@@ -89,12 +88,11 @@ contains
 !  require this matrix.
 
   subroutine FormHessian(ta, X, H, PrecH, dummy, ierr)
-
 !  Input/output variables:
     type(tTao) ta
     type(tVec) X
     type(tMat) H, PrecH
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
     PetscReal v(0:1, 0:1)
@@ -106,14 +104,12 @@ contains
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
     PetscReal, pointer :: x_v(:)
-    PetscInt i, nn, ind(0:1), i2
+    PetscInt i, nn, ind(0:1)
     PetscReal alpha
     PetscInt n
     common/params/alpha, n
 
-    ierr = 0
     nn = n/2
-    i2 = 2
 
 !  Zero existing matrix entries
     PetscCall(MatAssembled(H, assembled, ierr))
@@ -132,7 +128,7 @@ contains
       v(0, 1) = v(1, 0)
       ind(0) = 2*i
       ind(1) = 2*i + 1
-      PetscCall(MatSetValues(H, i2, ind, i2, ind, reshape(v, [i2*i2]), INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(H, 2_PETSC_INT_KIND, ind, 2_PETSC_INT_KIND, ind, reshape(v, [2_PETSC_INT_KIND**2]), INSERT_VALUES, ierr))
     end do
 
 !  Restore vector
@@ -165,16 +161,10 @@ program rosenbrock1f
   type(tMat) H       ! hessian matrix
   type(tTao) ta     ! TAO_SOVER context
   PetscBool flg
-  PetscInt i2, i1
   PetscMPIInt size
-  PetscReal zero
   PetscReal alpha
   PetscInt n
   common/params/alpha, n
-
-  zero = 0.0d0
-  i2 = 2
-  i1 = 1
 
 !  Initialize TAO and PETSc
   PetscCallA(PetscInitialize(ierr))
@@ -182,40 +172,39 @@ program rosenbrock1f
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
   PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only')
 
-!  Initialize problem parameters
+! Initialize problem parameters and
+! check for command line arguments to override defaults
   n = 2
-  alpha = 99.0d0
-
-! Check for command line arguments to override defaults
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
+  alpha = 99.0d0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-alpha', alpha, flg, ierr))
 
-!  Allocate vectors for the solution and gradient
+! Allocate vectors for the solution and gradient
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, x, ierr))
 
-!  Allocate storage space for Hessian
-  PetscCallA(MatCreateSeqBAIJ(PETSC_COMM_SELF, i2, n, n, i1, PETSC_NULL_INTEGER_ARRAY, H, ierr))
+! Allocate storage space for Hessian
+  PetscCallA(MatCreateSeqBAIJ(PETSC_COMM_SELF, 2_PETSC_INT_KIND, n, n, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, H, ierr))
 
   PetscCallA(MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE, ierr))
 
 !  The TAO code begins here
 
-!  Create TAO solver
+! Create TAO solver
   PetscCallA(TaoCreate(PETSC_COMM_SELF, ta, ierr))
   PetscCallA(TaoSetType(ta, TAOLMVM, ierr))
 
-!  Set routines for function, gradient, and hessian evaluation
+! Set routines for function, gradient, and hessian evaluation
   PetscCallA(TaoSetObjectiveAndGradient(ta, PETSC_NULL_VEC, FormFunctionGradient, 0, ierr))
   PetscCallA(TaoSetHessian(ta, H, H, FormHessian, 0, ierr))
 
-!  Optional: Set initial guess
-  PetscCallA(VecSet(x, zero, ierr))
+! Optional: Set initial guess
+  PetscCallA(VecSet(x, 0.0_PETSC_REAL_KIND, ierr))
   PetscCallA(TaoSetSolution(ta, x, ierr))
 
-!  Check for TAO command line options
+! Check for TAO command line options
   PetscCallA(TaoSetFromOptions(ta, ierr))
 
-!  SOLVE THE APPLICATION
+! SOLVE THE APPLICATION
   PetscCallA(TaoSolve(ta, ierr))
 
 !  TaoView() prints ierr about the TAO solver; the option
@@ -223,10 +212,10 @@ program rosenbrock1f
 !  can alternatively be used to activate this at runtime.
 !      PetscCallA(TaoView(ta,PETSC_VIEWER_STDOUT_SELF,ierr))
 
-!  Free TAO data structures
+! Free TAO data structures
   PetscCallA(TaoDestroy(ta, ierr))
 
-!  Free PETSc data structures
+! Free PETSc data structures
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(MatDestroy(H, ierr))
 

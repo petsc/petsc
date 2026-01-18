@@ -25,10 +25,10 @@ program main
   type(MatCtx) :: ctxF
   type(MatCtx), pointer :: ctxF_pt
   PetscErrorCode :: ierr
-  PetscInt :: n = 128
+  PetscInt, parameter :: n = 128
 
   PetscCallA(PetscInitialize(ierr))
-  ctxF%lambda = 3.14d0
+  ctxF%lambda = 3.14_PETSC_REAL_KIND
   PetscCallA(MatCreateShell(PETSC_COMM_WORLD, n, n, n, n, ctxF, F, ierr))
   PetscCallA(MatShellSetContext(F, ctxF, ierr))
   print *, 'ctxF%lambda = ', ctxF%lambda

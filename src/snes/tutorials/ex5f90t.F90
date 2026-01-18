@@ -43,6 +43,7 @@ module ex5f90tmodule
     PetscMPIInt rank
     PetscReal lambda
   end type AppCtx
+  PetscScalar, parameter :: one = 1.0, two = 2.0
 
 contains
 ! ---------------------------------------------------------------------
@@ -132,12 +133,11 @@ contains
     type(tSNES) mysnes
     type(AppCtx), pointer:: pctx
     type(tVec) X
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
 !  Declarations for use with local arrays:
     PetscScalar, pointer :: lx_v(:)
 
-    ierr = 0
     PetscCallA(SNESGetApplicationContext(mysnes, pctx, ierr))
 !  Get a pointer to vector data.
 !    - VecGetArray90() returns a pointer to the data array.
@@ -151,8 +151,6 @@ contains
 
 !  Restore vector
     PetscCallA(VecRestoreArray(X, lx_v, ierr))
-
-!  Insert values into global vector
 
   end
 
@@ -172,20 +170,15 @@ contains
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
   subroutine InitialGuessLocal(ctx, x, ierr)
-!  Input/output variables:
-    type(AppCtx) ctx
-    PetscScalar x(ctx%xs:ctx%xe, ctx%ys:ctx%ye)
-    PetscErrorCode ierr
-
+    type(AppCtx), intent(in) :: ctx
+    PetscScalar, intent(out) :: x(ctx%xs:ctx%xe, ctx%ys:ctx%ye)
+    PetscErrorCode, intent(out) :: ierr
 !  Local variables:
     PetscInt i, j
     PetscScalar temp1, temp, hx, hy
-    PetscScalar one
 
 !  Set parameters
 
-    ierr = 0
-    one = 1.0
     hx = one/(PetscIntToReal(ctx%mx - 1))
     hy = one/(PetscIntToReal(ctx%my - 1))
     temp1 = ctx%lambda/(ctx%lambda + one)
@@ -200,7 +193,7 @@ contains
         end if
       end do
     end do
-
+    ierr = 0
   end
 
 ! ---------------------------------------------------------------------
@@ -219,19 +212,13 @@ contains
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
   subroutine FormFunctionLocal(x, f, ctx, ierr)
-!  Input/output variables:
-    type(AppCtx) ctx
-    PetscScalar x(ctx%gxs:ctx%gxe, ctx%gys:ctx%gye)
-    PetscScalar f(ctx%xs:ctx%xe, ctx%ys:ctx%ye)
-    PetscErrorCode ierr
-
-!  Local variables:
-    PetscScalar two, one, hx, hy, hxdhy, hydhx, sc
-    PetscScalar u, uxx, uyy
+    type(AppCtx), intent(in) :: ctx
+    PetscScalar, intent(in) :: x(ctx%gxs:ctx%gxe, ctx%gys:ctx%gye)
+    PetscScalar, intent(out) :: f(ctx%xs:ctx%xe, ctx%ys:ctx%ye)
+    PetscErrorCode, intent(out) :: ierr
+    PetscScalar hx, hy, hxdhy, hydhx, sc, u, uxx, uyy
     PetscInt i, j
 
-    one = 1.0
-    two = 2.0
     hx = one/PetscIntToReal(ctx%mx - 1)
     hy = one/PetscIntToReal(ctx%my - 1)
     sc = hx*hy*ctx%lambda
@@ -385,22 +372,16 @@ contains
 !
   subroutine FormJacobianLocal(x, jac_prec, ctx, ierr)
 !  Input/output variables:
-    type(AppCtx) ctx
-    PetscScalar x(ctx%gxs:ctx%gxe, ctx%gys:ctx%gye)
+    type(AppCtx), intent(in) :: ctx
+    PetscScalar, intent(in) :: x(ctx%gxs:ctx%gxe, ctx%gys:ctx%gye)
     type(tMat) jac_prec
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
 !  Local variables:
     PetscInt row, col(5), i, j
-    PetscInt ione, ifive
-    PetscScalar two, one, hx, hy, hxdhy
-    PetscScalar hydhx, sc, v(5)
+    PetscScalar hx, hy, hxdhy, hydhx, sc, v(5)
 
 !  Set parameters
-    ione = 1
-    ifive = 5
-    one = 1.0
-    two = 2.0
     hx = one/PetscIntToReal(ctx%mx - 1)
     hy = one/PetscIntToReal(ctx%my - 1)
     sc = hx*hy
@@ -427,7 +408,7 @@ contains
         if (i == 1 .or. j == 1 .or. i == ctx%mx .or. j == ctx%my) then
           col(1) = row
           v(1) = one
-          PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ione, col, v, INSERT_VALUES, ierr))
+          PetscCallA(MatSetValuesLocal(jac_prec, 1_PETSC_INT_KIND, [row], 1_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
 !           interior grid points
         else
           v(1) = -hxdhy
@@ -440,10 +421,11 @@ contains
           col(3) = row
           col(4) = row + 1
           col(5) = row + ctx%gxm
-          PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ifive, col, v, INSERT_VALUES, ierr))
+          PetscCallA(MatSetValuesLocal(jac_prec, 1_PETSC_INT_KIND, [row], 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         end if
       end do
     end do
+    ierr = 0
   end
 
 end module
@@ -471,8 +453,7 @@ program main
   PetscErrorCode ierr
   PetscInt its
   PetscBool flg, matrix_free
-  PetscInt ione, nfour
-  PetscReal lambda_max, lambda_min
+  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
   type(AppCtx) ctx
   type(tPetscOptions) :: options
 
@@ -484,11 +465,7 @@ program main
 
 !  Initialize problem parameters
   options%v = 0
-  lambda_max = 6.81
-  lambda_min = 0.0
   ctx%lambda = 6.0
-  ione = 1
-  nfour = 4
   PetscCallA(PetscOptionsGetReal(options, PETSC_NULL_CHARACTER, '-par', ctx%lambda, flg, ierr))
   PetscCheckA(ctx%lambda < lambda_max .and. ctx%lambda > lambda_min, PETSC_COMM_SELF, PETSC_ERR_USER, 'Lambda provided with -par is out of range')
 
@@ -505,7 +482,7 @@ program main
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nfour, nfour, PETSC_DECIDE, PETSC_DECIDE, ione, ione, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, ctx%da, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 4_PETSC_INT_KIND, 4_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, ctx%da, ierr))
   PetscCallA(DMSetFromOptions(ctx%da, ierr))
   PetscCallA(DMSetUp(ctx%da, ierr))
   PetscCallA(DMDAGetInfo(ctx%da, PETSC_NULL_INTEGER, ctx%mx, ctx%my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))

@@ -6,33 +6,21 @@ program main
 !
   DM dm
   PetscInt, dimension(4) :: EC
-  PetscInt, pointer :: pEC(:)
-  PetscInt, pointer :: pES(:)
-  PetscInt c, firstCell, numCells
-  PetscInt v, numVertices, numPoints
-  PetscInt i0, i4
+  PetscInt, pointer :: pEC(:), pES(:)
+  PetscInt, parameter :: firstCell = 0, numCells = 2, numVertices = 6, numPoints = numCells + numVertices
+  PetscInt c, v
   PetscErrorCode ierr
-
-  i0 = 0
-  i4 = 4
 
   PetscCallA(PetscInitialize(ierr))
 
   PetscCallA(DMPlexCreate(PETSC_COMM_WORLD, dm, ierr))
-  firstCell = 0
-  numCells = 2
-  numVertices = 6
-  numPoints = numCells + numVertices
-  PetscCallA(DMPlexSetChart(dm, i0, numPoints, ierr))
+  PetscCallA(DMPlexSetChart(dm, 0_PETSC_INT_KIND, numPoints, ierr))
   do c = firstCell, numCells - 1
-    PetscCallA(DMPlexSetConeSize(dm, c, i4, ierr))
+    PetscCallA(DMPlexSetConeSize(dm, c, 4_PETSC_INT_KIND, ierr))
   end do
   PetscCallA(DMSetUp(dm, ierr))
 
-  EC(1) = 2
-  EC(2) = 3
-  EC(3) = 4
-  EC(4) = 5
+  EC = [2, 3, 4, 5]
   c = 0
   write (*, 1000) 'cell EC 0', c, EC
 1000 format(a, i4, 50i4)
@@ -40,10 +28,7 @@ program main
   PetscCallA(DMPlexGetCone(dm, c, pEC, ierr))
   write (*, 1000) 'cell pEC 0', c, pEC
   PetscCallA(DMPlexRestoreCone(dm, c, pEC, ierr))
-  EC(1) = 4
-  EC(2) = 5
-  EC(3) = 6
-  EC(4) = 7
+  EC = [4, 5, 6, 7]
   c = 1
   write (*, 1000) 'cell EC 1', c, EC
   PetscCallA(DMPlexSetCone(dm, c, EC, ierr))

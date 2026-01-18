@@ -6,16 +6,17 @@ program main
   use petscsys
   implicit none
   PetscReal2d, pointer :: dbleptr(:)
+  PetscInt, parameter :: n = 10
   PetscInt i
   PetscErrorCode ierr
 
   PetscCallA(PetscInitialize(ierr))
 
-  allocate (dbleptr(10))
-  do i = 1, 10
+  allocate (dbleptr(n))
+  do i = 1, n
     allocate (dbleptr(i)%ptr(20))
   end do
-  do i = 1, 10
+  do i = 1, n
     deallocate (dbleptr(i)%ptr)
   end do
   deallocate (dbleptr)

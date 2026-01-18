@@ -8,21 +8,21 @@ program main
   MatPartitioning :: part
   IS              :: is
   PetscInt        :: r, myStart, myEnd
-  PetscInt        :: N = 10
+  PetscInt        :: N
   PetscErrorCode  :: ierr
   PetscScalar, pointer, dimension(:) :: vals
   PetscInt, pointer, dimension(:) :: cols
   PetscBool :: flg
-  PetscInt, parameter :: one = 1, two = 2, three = 3
 
   PetscCallA(PetscInitialize(ierr))
 
+  N = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-N', N, flg, ierr))
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
   PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N, ierr))
   PetscCallA(MatSetFromOptions(A, ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
 
   !/* Create a linear mesh */
   PetscCallA(MatGetOwnershipRange(A, myStart, myEnd, ierr))
@@ -32,21 +32,21 @@ program main
       allocate (vals(2))
       vals = 1.0
       allocate (cols(2), source=[r, r + 1])
-      PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [r], 2_PETSC_INT_KIND, cols, vals, INSERT_VALUES, ierr))
       deallocate (cols)
       deallocate (vals)
     else if (r == N - 1) then
       allocate (vals(2))
       vals = 1.0
       allocate (cols(2), source=[r - 1, r])
-      PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [r], 2_PETSC_INT_KIND, cols, vals, INSERT_VALUES, ierr))
       deallocate (cols)
       deallocate (vals)
     else
       allocate (vals(3))
       vals = 1.0
       allocate (cols(3), source=[r - 1, r, r + 1])
-      PetscCallA(MatSetValues(A, one, [r], three, cols, vals, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [r], 3_PETSC_INT_KIND, cols, vals, INSERT_VALUES, ierr))
       deallocate (cols)
       deallocate (vals)
     end if

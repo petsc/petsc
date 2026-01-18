@@ -10,12 +10,9 @@ program main              !   Solves the linear system  J x = f
   DM da
   KSP ksp
   PetscErrorCode ierr
-  PetscInt eight, one
 
-  eight = 8
-  one = 1
   PetscCallA(PetscInitialize(ierr))
-  PetscCallA(DMDACreate1d(MPI_COMM_WORLD, DM_BOUNDARY_NONE, eight, one, one, PETSC_NULL_INTEGER_ARRAY, da, ierr))
+  PetscCallA(DMDACreate1d(MPI_COMM_WORLD, DM_BOUNDARY_NONE, 8_PETSC_INT_KIND, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
   PetscCallA(DMSetUp(da, ierr))
   PetscCallA(DMCreateGlobalVector(da, x, ierr))
@@ -40,12 +37,9 @@ program main              !   Solves the linear system  J x = f
 
 contains
   subroutine ComputeRHS(da, x, ierr)
-    use petscdmda
-    implicit none
-
     DM da
     Vec x
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt xs, xm, i, mx
     PetscScalar hx
     PetscScalar, pointer :: xx(:)
@@ -60,17 +54,13 @@ contains
   end
 
   subroutine ComputeMatrix(da, J, ierr)
-    use petscdmda
-    use petscmat
-    implicit none
-
     Mat J
     DM da
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt xs, xm, i, mx
-    PetscScalar hx, one
+    PetscScalar hx
+    PetscScalar, parameter :: one = 1.0
 
-    one = 1.0
     PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
     PetscCall(DMDAGetCorners(da, xs, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, xm, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, ierr))
     hx = 1.0_PETSC_REAL_KIND/(mx - 1)

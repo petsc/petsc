@@ -10,13 +10,13 @@ program SchoolDay
   implicit none
 
   ! Settings:
-  integer, parameter        :: verbose = 0               ! 0: silent, >=1 : increasing amount of debugging output
-  integer4, parameter       :: msgLen = 30             ! number of reals which is sent with MPI_Isend
-  PetscReal, parameter      :: second = 0.1             ! time is sped up by a factor 10
+  integer, parameter   :: verbose = 0             ! 0: silent, >=1 : increasing amount of debugging output
+  integer4, parameter  :: msgLen = 30             ! number of reals which is sent with MPI_Isend
+  PetscReal, parameter :: second = 0.1            ! time is sped up by a factor 10
 
   ! Codes
-  integer, parameter        :: BOY = 1, GIRL = 2, TEACHER = 0
-  PetscMPIInt, parameter    :: tagMsg = 1200
+  integer, parameter     :: BOY = 1, GIRL = 2, TEACHER = 0
+  PetscMPIInt, parameter :: tagMsg = 1200
 
   ! Timers
   PetscLogEvent :: Morning, Afternoon

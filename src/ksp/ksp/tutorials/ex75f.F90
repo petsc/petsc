@@ -14,8 +14,8 @@ program main
   KSP ksp
   PetscInt i, j, nmat
   PetscViewer viewer
-  character*(PETSC_MAX_PATH_LEN) dir, name
-  character*(8) fmt
+  character(PETSC_MAX_PATH_LEN) dir, name
+  character(8) fmt
   character(3) cmat
   PetscBool flg, reset
   PetscErrorCode ierr

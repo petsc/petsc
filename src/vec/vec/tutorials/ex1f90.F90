@@ -15,11 +15,11 @@ program main
   Vec, pointer :: z(:)
   PetscInt, pointer :: ranges(:)
   PetscReal norm, v, v1, v2
-  PetscInt n, ithree
+  PetscInt n
   PetscErrorCode ierr
   PetscMPIInt rank
   PetscBool flg
-  PetscScalar one, two, three
+  PetscScalar, parameter :: one = 1.0, two = 2.0, three = 3.0
   PetscScalar dots(3), dot
   PetscReal nfloat
 
@@ -28,14 +28,10 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1.0
-  two = 2.0
-  three = 3.0
-  n = 20
-  ithree = 3
 
+  n = 20
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
-  nfloat = n
+  nfloat = real(n, PETSC_REAL_KIND)
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
 !  Create a vector, specifying only its global dimension.
@@ -59,7 +55,7 @@ program main
 !  an array of vectors, which is often more convenient than
 !  duplicating individual ones.
 
-  PetscCallA(VecDuplicateVecs(x, ithree, z, ierr))
+  PetscCallA(VecDuplicateVecs(x, 3_PETSC_INT_KIND, z, ierr))
 
 !  Set the vectors to entries to a constant value.
 
@@ -72,7 +68,7 @@ program main
 !  Demonstrate various basic vector routines.
 
   PetscCallA(VecDot(x, x, dot, ierr))
-  PetscCallA(VecMDot(x, ithree, z, dots, ierr))
+  PetscCallA(VecMDot(x, 3_PETSC_INT_KIND, z, dots, ierr))
 
 !  Note: If using a complex numbers version of PETSc, then
 !  PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
@@ -158,7 +154,7 @@ program main
   dots(2) = three
   dots(3) = two
   PetscCallA(VecSet(x, one, ierr))
-  PetscCallA(VecMAXPY(x, ithree, dots, z, ierr))
+  PetscCallA(VecMAXPY(x, 3_PETSC_INT_KIND, dots, z, ierr))
   PetscCallA(VecNorm(z(1), NORM_2, norm, ierr))
   v = abs(norm - sqrt(nfloat))
   if (v > -1.d-10 .and. v < 1.d-10) v = 0.0
@@ -180,7 +176,7 @@ program main
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(VecDestroy(y, ierr))
   PetscCallA(VecDestroy(w, ierr))
-  PetscCallA(VecDestroyVecs(ithree, z, ierr))
+  PetscCallA(VecDestroyVecs(3_PETSC_INT_KIND, z, ierr))
   PetscCallA(PetscFinalize(ierr))
 end
 

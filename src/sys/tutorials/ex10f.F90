@@ -6,12 +6,11 @@ program main
   implicit none
   PetscErrorCode :: ierr
   PetscViewer    :: viewer
-  integer :: unit
+  integer, parameter :: unit = 6
 
   ! Every PETSc program should begin with the PetscInitialize() routine.
   PetscCallA(PetscInitialize(ierr))
 
-  unit = 6
   PetscCallA(PetscViewerASCIIOpenWithFileUnit(PETSC_COMM_WORLD, unit, viewer, ierr))
   PetscCallA(PetscOptionsView(PETSC_NULL_OPTIONS, viewer, ierr))
   PetscCallA(PetscViewerDestroy(viewer, ierr))

@@ -14,32 +14,33 @@ contains
     SNES snes
     Vec x, f
     type(userctx) user
-    PetscErrorCode ierr
-    PetscInt i, n
+    PetscErrorCode, intent(out) :: ierr
+    PetscInt n
     PetscScalar, pointer :: xx(:), ff(:)
 
     PetscCallA(MatMult(user%A, x, f, ierr))
     PetscCallA(VecGetArray(f, ff, ierr))
     PetscCallA(VecGetArrayRead(x, xx, ierr))
     PetscCallA(VecGetLocalSize(x, n, ierr))
-    do i = 1, n
-      ff(i) = ff(i) - xx(i)*xx(i)*xx(i)*xx(i) + 1.0
-    end do
+    ff(1:n) = ff(1:n) - xx(1:n)**4 + 1.0
     PetscCallA(VecRestoreArray(f, ff, ierr))
     PetscCallA(VecRestoreArrayRead(x, xx, ierr))
   end subroutine
 
-!      The matrix is constant so no need to recompute it
+! The matrix is constant so no need to recompute it
   subroutine FormJacobian(snes, x, jac, jacb, user, ierr)
     SNES snes
     Vec x
     type(userctx) user
     Mat jac, jacb
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
+
+    ierr = 0
   end subroutine
 end module ex21fmodule
 
 program main
+  use petscsnes
   use ex21fmodule
   implicit none
   SNES snes
@@ -47,18 +48,18 @@ program main
   Vec res, x
   type(userctx) user
   PetscScalar val
-  PetscInt one, zero, two
 
   PetscCallA(PetscInitialize(ierr))
 
-  one = 1
-  zero = 0
-  two = 2
-  PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF, two, two, two, PETSC_NULL_INTEGER_ARRAY, user%A, ierr))
-  val = 2.0; PetscCallA(MatSetValues(user%A, one, [zero], one, [zero], [val], INSERT_VALUES, ierr))
-  val = -1.0; PetscCallA(MatSetValues(user%A, one, [zero], one, [one], [val], INSERT_VALUES, ierr))
-  val = -1.0; PetscCallA(MatSetValues(user%A, one, [one], one, [zero], [val], INSERT_VALUES, ierr))
-  val = 1.0; PetscCallA(MatSetValues(user%A, one, [one], one, [one], [val], INSERT_VALUES, ierr))
+  PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF, 2_PETSC_INT_KIND, 2_PETSC_INT_KIND, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, user%A, ierr))
+  val = 2.0
+  PetscCallA(MatSetValues(user%A, 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], [val], INSERT_VALUES, ierr))
+  val = -1.0
+  PetscCallA(MatSetValues(user%A, 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], 1_PETSC_INT_KIND, [1_PETSC_INT_KIND], [val], INSERT_VALUES, ierr))
+  val = -1.0
+  PetscCallA(MatSetValues(user%A, 1_PETSC_INT_KIND, [1_PETSC_INT_KIND], 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], [val], INSERT_VALUES, ierr))
+  val = 1.0
+  PetscCallA(MatSetValues(user%A, 1_PETSC_INT_KIND, [1_PETSC_INT_KIND], 1_PETSC_INT_KIND, [1_PETSC_INT_KIND], [val], INSERT_VALUES, ierr))
   PetscCallA(MatAssemblyBegin(user%A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(user%A, MAT_FINAL_ASSEMBLY, ierr))
 

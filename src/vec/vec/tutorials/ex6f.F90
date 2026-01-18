@@ -5,11 +5,10 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscMPIInt ::   size
-  integer4     ::      fd
-  PetscInt    ::   i, sz
-  PetscInt, parameter   ::   m = 10
-  PetscInt, parameter   ::   one = 1
+  PetscMPIInt :: size
+  integer4    :: fd
+  PetscInt    :: i, sz
+  PetscInt :: m
   PetscInt, allocatable, dimension(:) :: t
   PetscScalar, pointer, dimension(:) :: avec
   PetscScalar, pointer, dimension(:) :: array
@@ -23,6 +22,7 @@ program main
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
   PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only!')
 
+  m = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
 
   ! ----------------------------------------------------------------------
@@ -32,18 +32,14 @@ program main
   ! Allocate array and set values
 
   allocate (array(0:m - 1))
-  do i = 0, m - 1
-    array(i) = real(i)*10.0
-  end do
-
-  allocate (t(1))
-  t(1) = m
+  array = [(real(i)*10.0, i=1, m)]
+  allocate (t(1), source=m)
   ! Open viewer for binary output
   PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF, 'input.dat', FILE_MODE_WRITE, view_out, ierr))
   PetscCallA(PetscViewerBinaryGetDescriptor(view_out, fd, ierr))
 
   ! Write binary output
-  PetscCallA(PetscBinaryWrite(fd, t, one, PETSC_INT, ierr))
+  PetscCallA(PetscBinaryWrite(fd, t, 1_PETSC_INT_KIND, PETSC_INT, ierr))
   PetscCallA(PetscBinaryWrite(fd, array, m, PETSC_SCALAR, ierr))
 
   ! Destroy the output viewer and work array
@@ -67,7 +63,7 @@ program main
   PetscCallA(VecGetArray(vec, avec, ierr))
 
   ! Read data into vector
-  PetscCallA(PetscBinaryRead(fd, t, one, PETSC_NULL_INTEGER, PETSC_INT, ierr))
+  PetscCallA(PetscBinaryRead(fd, t, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER, PETSC_INT, ierr))
   sz = t(1)
 
   PetscCheckA(sz >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, 'Error: Must have array length > 0')

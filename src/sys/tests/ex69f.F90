@@ -46,7 +46,7 @@ program ex69F90
   wtime_start = omp_get_wtime()
   call cpu_time(cputime_start)
 !$OMP PARALLEL DO
-  do i = 1, 100
+  do i = 1, size(x)
     x(i) = exp(3.0d0*i)
   end do
   call cpu_time(cputime_end)
@@ -62,7 +62,7 @@ program ex69F90
   call system_clock(systime_start, systime_rate)
   wtime_start = omp_get_wtime()
   call cpu_time(cputime_start)
-  do i = 1, 100
+  do i = 1, size(x)
     x(i) = exp(3.0d0*i)
   end do
   call cpu_time(cputime_end)

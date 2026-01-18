@@ -52,6 +52,7 @@ module ex14fmodule
   PetscInt mx, my
   Mat B
   DM da
+  PetscScalar, parameter :: two = 2.0, one = 1.0, mone = -1.0, lambda = 6.0
 contains
 ! -------------------------------------------------------------------
 !
@@ -86,19 +87,17 @@ contains
 !
   subroutine FormInitialGuess(X, ierr)
 
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     Vec X
     PetscInt i, j, row
     PetscInt xs, ys, xm
     PetscInt ym
-    PetscReal one, lambda, temp1, temp, hx, hy
+    PetscReal temp1, temp, hx, hy
     PetscScalar, pointer ::xx(:)
 
-    one = 1.0
-    lambda = 6.0
-    hx = one/(mx - 1)
-    hy = one/(my - 1)
-    temp1 = lambda/(lambda + one)
+    hx = real(one, PETSC_REAL_KIND)/(mx - 1)
+    hy = real(one, PETSC_REAL_KIND)/(my - 1)
+    temp1 = real(lambda/(lambda + one), PETSC_REAL_KIND)
 
 !  Get a pointer to vector data.
 !    - VecGetArray() returns a pointer to the data array.
@@ -126,7 +125,7 @@ contains
       end do
     end do
 
-!     Restore vector
+!   Restore vector
 
     PetscCall(VecRestoreArray(X, xx, ierr))
   end
@@ -145,21 +144,16 @@ contains
 
     Vec X, F
     PetscInt gys, gxm, gym
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt i, j, row, xs, ys, xm, ym, gxs
     PetscInt rowf
-    PetscReal two, one, lambda, hx
-    PetscReal hy, hxdhy, hydhx, sc
+    PetscReal hx, hy, hxdhy, hydhx, sc
     PetscScalar u, uxx, uyy
     PetscScalar, pointer ::xx(:), ff(:)
 
-    two = 2.0
-    one = 1.0
-    lambda = 6.0
-
-    hx = one/(mx - 1)
-    hy = one/(my - 1)
-    sc = hx*hy*lambda
+    hx = real(one, PETSC_REAL_KIND)/(mx - 1)
+    hy = real(one, PETSC_REAL_KIND)/(my - 1)
+    sc = hx*hy*real(lambda, PETSC_REAL_KIND)
     hxdhy = hx/hy
     hydhx = hy/hx
 
@@ -228,29 +222,23 @@ contains
 
     Vec X
     Mat jac
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt xs, ys, xm, ym
     PetscInt gxs, gys, gxm, gym
     PetscInt grow(1), i, j
-    PetscInt row, ione
-    PetscInt col(5), ifive
-    PetscScalar two, one, lambda
+    PetscInt row
+    PetscInt col(5)
     PetscScalar v(5), hx, hy, hxdhy
     PetscScalar hydhx, sc
     ISLocalToGlobalMapping ltogm
     PetscScalar, pointer ::xx(:)
     PetscInt, pointer ::ltog(:)
 
-    ione = 1
-    ifive = 5
-    one = 1.0
-    two = 2.0
     hx = one/(mx - 1)
     hy = one/(my - 1)
     sc = hx*hy
     hxdhy = hx/hy
     hydhx = hy/hx
-    lambda = 6.0
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -291,7 +279,7 @@ contains
         row = row + 1
         grow(1) = ltog(row)
         if (i == 0 .or. j == 0 .or. i == (mx - 1) .or. j == (my - 1)) then
-          PetscCall(MatSetValues(jac, ione, grow, ione, grow, [one], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, grow, 1_PETSC_INT_KIND, grow, [one], INSERT_VALUES, ierr))
           cycle
         end if
         v(1) = -hxdhy
@@ -304,7 +292,7 @@ contains
         col(4) = ltog(row + 1)
         v(5) = -hxdhy
         col(5) = ltog(row + gxm)
-        PetscCall(MatSetValues(jac, ione, grow, ifive, col, v, INSERT_VALUES, ierr))
+        PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, grow, 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
       end do
     end do
 
@@ -330,24 +318,16 @@ program main
   Mat J
   KSP ksp
 
-  PetscInt Nx, Ny, N, ifive, ithree
+  PetscInt Nx, Ny, N
   PetscBool flg, nooutput, usemf
 
 !     --------------- Data to define nonlinear solver --------------
-  PetscReal rtol, ttol
-  PetscReal fnorm, ynorm, xnorm
-  PetscInt max_nonlin_its, one
+  PetscReal, parameter :: rtol = 1.e-8
+  PetscReal fnorm, ynorm, xnorm, ttol
+  PetscInt, parameter :: max_nonlin_its = 10
   PetscInt lin_its
   PetscInt i, m
-  PetscScalar mone
   PetscErrorCode ierr
-
-  mone = -1.0
-  rtol = 1.e-8
-  max_nonlin_its = 10
-  one = 1
-  ifive = 5
-  ithree = 3
 
   PetscCallA(PetscInitialize(ierr))
   comm = PETSC_COMM_WORLD
@@ -356,8 +336,8 @@ program main
 
 !
   mx = 4
-  my = 4
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mx', mx, flg, ierr))
+  my = 4
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-my', my, flg, ierr))
   N = mx*my
 
@@ -381,7 +361,7 @@ program main
   Ny = PETSC_DECIDE
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-Nx', Nx, flg, ierr))
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-Ny', Ny, flg, ierr))
-  PetscCallA(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, mx, my, Nx, Ny, one, one, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
+  PetscCallA(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, mx, my, Nx, Ny, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
   PetscCallA(DMSetUp(da, ierr))
 !
@@ -408,7 +388,7 @@ program main
 !     for preallocating matrix memory.
 !
   PetscCallA(VecGetLocalSize(X, m, ierr))
-  PetscCallA(MatCreateFromOptions(comm, PETSC_NULL_CHARACTER, one, m, m, N, N, B, ierr))
+  PetscCallA(MatCreateFromOptions(comm, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, m, m, N, N, B, ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     if usemf is on then matrix-vector product is done via matrix-free
@@ -445,9 +425,7 @@ program main
   PetscCallA(ComputeFunction(X, F, ierr))
   PetscCallA(VecNorm(F, NORM_2, fnorm, ierr))
   ttol = fnorm*rtol
-  if (.not. nooutput) then
-    print *, 'Initial function norm ', fnorm
-  end if
+  if (.not. nooutput) print *, 'Initial function norm ', fnorm
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Solve nonlinear system with a user-defined method
@@ -479,31 +457,25 @@ program main
     PetscCallA(KSPSetOperators(ksp, J, B, ierr))
     PetscCallA(KSPSolve(ksp, F, Y, ierr))
 
-!  Compute updated iterate
+!   Compute updated iterate
 
     PetscCallA(VecNorm(Y, NORM_2, ynorm, ierr))
     PetscCallA(VecAYPX(Y, mone, X, ierr))
     PetscCallA(VecCopy(Y, X, ierr))
     PetscCallA(VecNorm(X, NORM_2, xnorm, ierr))
     PetscCallA(KSPGetIterationNumber(ksp, lin_its, ierr))
-    if (.not. nooutput) then
-      print *, 'linear solve iterations = ', lin_its, ' xnorm = ', xnorm, ' ynorm = ', ynorm
-    end if
+    if (.not. nooutput) print *, 'linear solve iterations = ', lin_its, ' xnorm = ', xnorm, ' ynorm = ', ynorm
 
-!  Evaluate nonlinear function at new location
+!    Evaluate nonlinear function at new location
 
     PetscCallA(ComputeFunction(X, F, ierr))
     PetscCallA(VecNorm(F, NORM_2, fnorm, ierr))
-    if (.not. nooutput) then
-      print *, 'Iteration ', i + 1, ' function norm', fnorm
-    end if
+    if (.not. nooutput) print *, 'Iteration ', i + 1, ' function norm', fnorm
 
-!  Test for convergence
+!   Test for convergence
 
     if (fnorm <= ttol) then
-      if (.not. nooutput) then
-        print *, 'Converged: function norm ', fnorm, ' tolerance ', ttol
-      end if
+      if (.not. nooutput) print *, 'Converged: function norm ', fnorm, ' tolerance ', ttol
       exit
     end if
   end do
@@ -511,18 +483,16 @@ program main
   write (6, 100) i + 1
 100 format('Number of SNES iterations =', I2)
 
-!     Check if mymult() produces a linear operator
+! Check if mymult() produces a linear operator
   if (usemf) then
     N = 5
     PetscCallA(MatIsLinear(J, N, flg, ierr))
-    if (.not. flg) then
-      print *, 'IsLinear', flg
-    end if
+    if (.not. flg) print *, 'IsLinear', flg
   end if
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!     Free work space.  All PETSc objects should be destroyed when they
-!     are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(MatDestroy(B, ierr))

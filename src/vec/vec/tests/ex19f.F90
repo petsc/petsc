@@ -11,18 +11,15 @@ program main
   PetscInt n
   PetscErrorCode ierr
   PetscBool flg
-  PetscScalar one, two, three, dot
+  PetscScalar dot
+  PetscScalar, parameter :: one = 1.0, two = 2.0, three = 3.0
   PetscReal norm, rdot
   Vec x, y, w
   PetscOptions options
 
-  n = 20
-  one = 1.0
-  two = 2.0
-  three = 3.0
-
   PetscCallA(PetscInitialize(ierr))
   PetscCallA(PetscOptionsCreate(options, ierr))
+  n = 20
   PetscCallA(PetscOptionsGetInt(options, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallA(PetscOptionsDestroy(options, ierr))
 

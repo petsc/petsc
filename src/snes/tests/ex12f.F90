@@ -25,13 +25,13 @@ contains
     SNES snes
     Vec x, f
     type(User) ctx
-    PetscMPIInt rank, size, zero
+    PetscMPIInt, parameter :: zero = 0
+    PetscMPIInt rank, size
     PetscInt i, s, n
     PetscErrorCode ierr
     PetscScalar h, d
     PetscScalar, pointer :: vf2(:), vxx(:), vff(:)
 
-    zero = 0
     PetscCallMPI(MPI_Comm_rank(ctx%comm, rank, ierr))
     PetscCallMPI(MPI_Comm_size(ctx%comm, size, ierr))
     h = 1.0/(real(ctx%N) - 1.0)
@@ -48,7 +48,7 @@ contains
     PetscCall(VecGetArray(f, vff, ierr))
     PetscCall(VecGetArray(ctx%F, vF2, ierr))
 
-    d = h*h
+    d = h**2
 
 !
 !  Note that the array vxx() was obtained from a ghosted local vector
@@ -141,15 +141,14 @@ contains
     Mat jac, B
     type(User) ctx
     PetscInt ii, istart, iend
-    PetscInt i, j, n, end, start, i1
-    PetscErrorCode ierr
+    PetscInt i, j, n, end, start
+    PetscErrorCode, intent(out) :: ierr
     PetscMPIInt rank, size
     PetscScalar d, A, h
     PetscScalar, pointer :: vxx(:)
 
-    i1 = 1
     h = 1.0/(real(ctx%N) - 1.0)
-    d = h*h
+    d = h**2
     PetscCallMPI(MPI_Comm_rank(ctx%comm, rank, ierr))
     PetscCallMPI(MPI_Comm_size(ctx%comm, size, ierr))
 
@@ -159,7 +158,7 @@ contains
 
     if (rank == 0) then
       A = 1.0
-      PetscCall(MatSetValues(jac, i1, [start], i1, [start], [A], INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [start], 1_PETSC_INT_KIND, [start], [A], INSERT_VALUES, ierr))
       istart = 1
     else
       istart = 0
@@ -167,7 +166,7 @@ contains
     if (rank == size - 1) then
       i = INT(ctx%N - 1)
       A = 1.0
-      PetscCall(MatSetValues(jac, i1, [i], i1, [i], [A], INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [i], 1_PETSC_INT_KIND, [i], [A], INSERT_VALUES, ierr))
       iend = n - 1
     else
       iend = n
@@ -175,11 +174,11 @@ contains
     do i = istart, iend - 1
       ii = i + start
       j = start + i - 1
-      PetscCall(MatSetValues(jac, i1, [ii], i1, [j], [d], INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [ii], 1_PETSC_INT_KIND, [j], [d], INSERT_VALUES, ierr))
       j = start + i + 1
-      PetscCall(MatSetValues(jac, i1, [ii], i1, [j], [d], INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [ii], 1_PETSC_INT_KIND, [j], [d], INSERT_VALUES, ierr))
       A = -2.0*d + 2.0*vxx(i + 1)
-      PetscCall(MatSetValues(jac, i1, [ii], i1, [ii], [A], INSERT_VALUES, ierr))
+      PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, [ii], 1_PETSC_INT_KIND, [ii], [A], INSERT_VALUES, ierr))
     end do
     PetscCall(VecRestoreArrayRead(x, vxx, ierr))
     PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
@@ -195,19 +194,16 @@ program main
   PetscMPIInt rank, size
   PetscErrorCode ierr
   PetscInt N, start, end, nn, i
-  PetscInt ii, its, i1, i0, i3
+  PetscInt ii, its
   PetscBool flg
   SNES snes
   Mat J
   Vec x, r, u
   PetscScalar xp, FF, UU, h
-  character*(10) matrixname
+  character(len=10) matrixname
   type(monctx) :: snesm
 
   PetscCallA(PetscInitialize(ierr))
-  i1 = 1
-  i0 = 0
-  i3 = 3
   N = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', N, flg, ierr))
   h = 1.0/real(N - 1)
@@ -218,7 +214,7 @@ program main
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
 ! Set up data structures
-  PetscCallA(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, N, i1, i1, PETSC_NULL_INTEGER_ARRAY, ctx%da, ierr))
+  PetscCallA(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, N, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ctx%da, ierr))
   PetscCallA(DMSetFromOptions(ctx%da, ierr))
   PetscCallA(DMSetUp(ctx%da, ierr))
   PetscCallA(DMCreateGlobalVector(ctx%da, x, ierr))
@@ -230,7 +226,7 @@ program main
   PetscCallA(VecDuplicate(x, U, ierr))
   PetscCallA(PetscObjectSetName(U, 'Exact Solution', ierr))
 
-  PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, N, N, i3, PETSC_NULL_INTEGER_ARRAY, i0, PETSC_NULL_INTEGER_ARRAY, J, ierr))
+  PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, N, N, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 0_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, J, ierr))
   PetscCallA(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE, ierr))
   PetscCallA(MatGetType(J, matrixname, ierr))
 
@@ -242,8 +238,8 @@ program main
   do i = 0, nn - 1
     FF = 6.0*xp + (xp + 1.e-12)**6.e0
     UU = xp*xp*xp
-    PetscCallA(VecSetValues(ctx%F, i1, [ii], [FF], INSERT_VALUES, ierr))
-    PetscCallA(VecSetValues(U, i1, [ii], [UU], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(ctx%F, 1_PETSC_INT_KIND, [ii], [FF], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(U, 1_PETSC_INT_KIND, [ii], [UU], INSERT_VALUES, ierr))
     xp = xp + h
     ii = ii + 1
   end do

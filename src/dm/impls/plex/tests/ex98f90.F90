@@ -3,11 +3,9 @@ program ex98f90
   use petsc
   implicit none
 
-  ! Get the fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
-  PetscInt                           :: dummyPetscInt
-  PetscReal                          :: dummyPetscreal
-  integer, parameter                  :: kPI = kind(dummyPetscInt)
-  integer, parameter                  :: kPR = kind(dummyPetscReal)
+  ! Shortcuts for Fortran kinds (used to specify literals)
+  integer, parameter                 :: kPI = PETSC_INT_KIND
+  integer, parameter                 :: kPR = PETSC_REAL_KIND
 
   type(tDM)                          :: dm, pdm
   type(tPetscSection)                :: section

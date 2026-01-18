@@ -9,12 +9,11 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt n, bs
+  PetscInt, parameter :: n = 0, bs = 2
   PetscInt, pointer :: indices(:) => NULL()
   PetscInt, pointer :: idx(:) => NULL()
   IS is
 
-  n = 0
   allocate (indices(n), source=n)
 
   PetscCallA(PetscInitialize(ierr))
@@ -24,7 +23,6 @@ program main
   PetscCallA(ISRestoreIndices(is, idx, ierr))
   PetscCallA(ISDestroy(is, ierr))
 
-  bs = 2
   PetscCallA(ISCreateBlock(PETSC_COMM_SELF, bs, n, indices, PETSC_USE_POINTER, is, ierr))
   PetscCallA(ISGetIndices(is, idx, ierr))
   PetscCallA(ISRestoreIndices(is, idx, ierr))

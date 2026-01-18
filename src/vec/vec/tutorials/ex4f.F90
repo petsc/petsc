@@ -13,25 +13,22 @@ program main
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  PetscScalar xwork(6)
+  PetscInt, parameter :: n = 6
+  PetscScalar xwork(n)
   PetscScalar, pointer :: xx_v(:), yy_v(:)
-  PetscInt i, n, loc(6), isix
+  PetscInt i, loc(n)
   PetscErrorCode ierr
   Vec x, y
 
   PetscCallA(PetscInitialize(ierr))
-  n = 6
-  isix = 6
 
-!  Create initial vector and duplicate it
-
+! Create initial vector and duplicate it
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, x, ierr))
   PetscCallA(VecDuplicate(x, y, ierr))
 
 !  Fill work arrays with vector entries and locations.  Note that
 !  the vector indices are 0-based in PETSc (for both Fortran and
 !  C vectors)
-
   do i = 1, n
     loc(i) = i - 1
     xwork(i) = 10.0*real(i)
@@ -41,15 +38,13 @@ program main
 !  Of course, usually one would create a work array that is the
 !  natural size for a particular problem (not one that is as long
 !  as the full vector).
+  PetscCallA(VecSetValues(x, n, loc, xwork, INSERT_VALUES, ierr))
 
-  PetscCallA(VecSetValues(x, isix, loc, xwork, INSERT_VALUES, ierr))
-
-!  Assemble vector
-
+! Assemble vector
   PetscCallA(VecAssemblyBegin(x, ierr))
   PetscCallA(VecAssemblyEnd(x, ierr))
 
-!  View vector
+! View vector
   PetscCallA(PetscObjectSetName(x, 'initial vector:', ierr))
   PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_SELF, ierr))
   PetscCallA(VecCopy(x, y, ierr))
@@ -61,32 +56,28 @@ program main
 !      the array.
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
-
   PetscCallA(VecGetArray(x, xx_v, ierr))
   PetscCallA(VecGetArray(y, yy_v, ierr))
 
-!  Modify vector data
-
+! Modify vector data
   do i = 1, n
     xx_v(i) = 100.0*real(i)
     yy_v(i) = 1000.0*real(i)
   end do
 
-!  Restore vectors
-
+! Restore vectors
   PetscCallA(VecRestoreArray(x, xx_v, ierr))
   PetscCallA(VecRestoreArray(y, yy_v, ierr))
 
-!  View vectors
+! View vectors
   PetscCallA(PetscObjectSetName(x, 'new vector 1:', ierr))
   PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_SELF, ierr))
 
   PetscCallA(PetscObjectSetName(y, 'new vector 2:', ierr))
   PetscCallA(VecView(y, PETSC_VIEWER_STDOUT_SELF, ierr))
 
-!  Free work space.  All PETSc objects should be destroyed when they
-!  are no longer needed.
-
+! Free work space.  All PETSc objects should be destroyed when they
+! are no longer needed.
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(VecDestroy(y, ierr))
   PetscCallA(PetscFinalize(ierr))

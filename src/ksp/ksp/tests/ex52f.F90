@@ -8,11 +8,12 @@ program main
 !
 
   PetscErrorCode ierr
-  PetscInt m, n, one, row, col
+  PetscInt, parameter :: m = 2, n = 2
+  PetscInt row, col
   Vec x, b
   Mat A, F
   KSP ksp
-  PetscScalar two, zero
+  PetscScalar, parameter :: two = 2.0, zero = 0.0
   KSPConvergedReason reason
   PCFailedReason pcreason
   PC pc
@@ -20,21 +21,16 @@ program main
   PetscReal pivot
 
   PetscCallA(PetscInitialize(ierr))
-  m = 2
-  n = 2
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
   PetscCallA(MatSetSizes(A, m, n, m, n, ierr))
   PetscCallA(MatSetType(A, MATSEQAIJ, ierr))
   PetscCallA(MatSetUp(A, ierr))
   row = 0
   col = 0
-  two = 2.0
-  one = 1
-  PetscCallA(MatSetValues(A, one, [row], one, [col], [two], INSERT_VALUES, ierr))
+  PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [row], 1_PETSC_INT_KIND, [col], [two], INSERT_VALUES, ierr))
   row = 1
   col = 1
-  zero = 0.0
-  PetscCallA(MatSetValues(A, one, [row], one, [col], [zero], INSERT_VALUES, ierr))
+  PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [row], 1_PETSC_INT_KIND, [col], [zero], INSERT_VALUES, ierr))
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 

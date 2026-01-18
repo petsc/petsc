@@ -15,13 +15,13 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   Vec x
-  PetscInt N, i, ione
+  PetscInt N, i
   PetscErrorCode ierr
   PetscMPIInt rank
-  PetscScalar one, value(1)
+  PetscScalar, parameter :: one = 1.0
+  PetscScalar value(1)
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1.0
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
 !  Create a parallel vector.
@@ -32,8 +32,7 @@ program main
 !     to put nearly an equal number of elements on each processor.
 
   N = rank + 1
-  ione = 1
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, N, PETSC_DECIDE, x, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, N, PETSC_DECIDE, x, ierr))
   PetscCallA(VecGetSize(x, N, ierr))
   PetscCallA(VecSet(x, one, ierr))
 
@@ -48,9 +47,8 @@ program main
 !   - In this example, the flag ADD_VALUES indicates that all
 !     contributions will be added together.
 
-  ione = 1
   do i = 0, N - rank - 1
-    PetscCallA(VecSetValues(x, ione, [i], [one], ADD_VALUES, ierr))
+    PetscCallA(VecSetValues(x, 1_PETSC_INT_KIND, [i], [one], ADD_VALUES, ierr))
   end do
 
 !  Assemble vector, using the 2-step process:
@@ -63,8 +61,7 @@ program main
 
 !     Test VecGetValues() with scalar entries
   if (rank == 0) then
-    ione = 0
-    PetscCallA(VecGetValues(x, ione, [i], value, ierr))
+    PetscCallA(VecGetValues(x, 0_PETSC_INT_KIND, [i], value, ierr))
   end if
 
 !  View the vector; then destroy it.

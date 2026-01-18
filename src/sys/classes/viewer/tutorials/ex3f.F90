@@ -2,12 +2,11 @@
 program ex1f90
   use petscsys
   implicit none
-  integer4 unit
+  integer4, parameter :: unit = 22
 
   PetscErrorCode ierr
   PetscCallA(PetscInitialize(ierr))
 
-  unit = 22
   call PetscViewerASCIIStdoutSetFileUnit(unit, ierr)
   PetscCallA(PetscFinalize(ierr))
 end

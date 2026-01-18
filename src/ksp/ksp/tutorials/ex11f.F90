@@ -40,10 +40,10 @@ program main
   Vec x, b, u
   PetscRandom rctx
   PetscReal norm, h2, sigma1
-  PetscScalar none, sigma2, v, pfive, czero
-  PetscScalar cone
-  PetscInt dim, its, n, Istart
-  PetscInt Iend, i, j, II, JJ, one
+  PetscScalar, parameter :: czero = 0.0, none = -1.0, pfive = .5
+  PetscScalar sigma2, v
+  PetscInt dim, its, n, Istart, Iend
+  PetscInt i, j, II, JJ
   PetscErrorCode ierr
   PetscMPIInt rank
   PetscBool flg
@@ -54,13 +54,10 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(ierr))
-  none = -1.0
-  n = 6
-  sigma1 = 100.0
-  czero = 0.0
-  cone = PETSC_i
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+  sigma1 = 100.0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-sigma1', sigma1, flg, ierr))
+  n = 6
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   dim = n*n
 
@@ -99,34 +96,33 @@ program main
     use_random = .true.
     PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD, rctx, ierr))
     PetscCallA(PetscRandomSetFromOptions(rctx, ierr))
-    PetscCallA(PetscRandomSetInterval(rctx, czero, cone, ierr))
+    PetscCallA(PetscRandomSetInterval(rctx, czero, PETSC_i, ierr))
   end if
   h2 = 1.0/real((n + 1)*(n + 1))
 
-  one = 1
   do II = Istart, Iend - 1
     v = -1.0
     i = II/n
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < n - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (use_random) PetscCallA(PetscRandomGetValue(rctx, sigma2, ierr))
     v = 4.0 - sigma1*h2 + sigma2*h2
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
   if (use_random) PetscCallA(PetscRandomDestroy(rctx, ierr))
 
@@ -157,7 +153,6 @@ program main
     PetscCallA(PetscRandomSetFromOptions(rctx, ierr))
     PetscCallA(VecSetRandom(u, rctx, ierr))
   else
-    pfive = 0.5
     PetscCallA(VecSet(u, pfive, ierr))
   end if
   PetscCallA(MatMult(A, u, b, ierr))

@@ -63,10 +63,10 @@ contains
   subroutine MyKSPConverged(ksp, n, rnorm, flag, unused, ierr)
 
     KSP ksp
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt n, unused
-    KSPConvergedReason flag
-    PetscReal rnorm
+    KSPConvergedReason, intent(out) :: flag
+    PetscReal, intent(in) :: rnorm
 
     if (rnorm <= .05) then
       flag = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS
@@ -106,11 +106,12 @@ program main
 !
   PetscReal norm
   PetscInt i, j, II, JJ, m, n, its
-  PetscInt Istart, Iend, izero, ione, itwo, ithree, col(3)
+  PetscInt Istart, Iend, col(3)
   PetscErrorCode ierr
   PetscMPIInt rank, size
   PetscBool flg
-  PetscScalar v, one, neg_one, val(3)
+  PetscScalar, parameter :: one = 1.0, neg_one = -1.0
+  PetscScalar v, val(3)
   Vec x, b, u, xx, bb, uu
   Mat A, AA
   KSP ksp, kksp
@@ -129,19 +130,13 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
-  m = 3
-  n = 3
-  one = 1.0
-  neg_one = -1.0
-  izero = 0
-  ione = 1
-  itwo = 2
-  ithree = 3
 
   PetscCallA(PetscLogNestedBegin(ierr))
   PetscCallA(PetscLogEventRegister("myFirstEvent", classid, petscEventNo, ierr))
 
+  m = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
@@ -186,22 +181,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, ione, [II], ione, [II], [v], INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], INSERT_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -222,7 +217,7 @@ program main
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, PETSC_DECIDE, m*n, u, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, m*n, u, ierr))
   PetscCallA(VecSetFromOptions(u, ierr))
   PetscCallA(VecDuplicate(u, b, ierr))
   PetscCallA(VecDuplicate(b, x, ierr))
@@ -324,12 +319,12 @@ program main
     PetscCallA(MatSetFromOptions(AA, ierr))
 
     val = [-1.0, 2.0, -1.0]
-    PetscCallA(MatSetValues(AA, ione, [izero], itwo, [izero, ione], val(2:3), INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(AA, 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], 2_PETSC_INT_KIND, [0_PETSC_INT_KIND, 1_PETSC_INT_KIND], val(2:3), INSERT_VALUES, ierr))
     do i = 1, m - 2
       col = [i - 1, i, i + 1]
-      PetscCallA(MatSetValues(AA, ione, [i], itwo, col, val, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(AA, 1_PETSC_INT_KIND, [i], 2_PETSC_INT_KIND, col, val, INSERT_VALUES, ierr))
     end do
-    PetscCallA(MatSetValues(AA, ione, [m - 1], itwo, [m - 2, m - 1], val(1:2), INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(AA, 1_PETSC_INT_KIND, [m - 1], 2_PETSC_INT_KIND, [m - 2, m - 1], val(1:2), INSERT_VALUES, ierr))
     PetscCallA(MatAssemblyBegin(AA, MAT_FINAL_ASSEMBLY, ierr))
     PetscCallA(MatAssemblyEnd(AA, MAT_FINAL_ASSEMBLY, ierr))
 

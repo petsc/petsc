@@ -12,7 +12,6 @@ program main
   PetscBool flg
   PetscErrorCode ierr
   PetscScalar, pointer :: b(:)
-  PetscInt :: zero
 
   PetscInt, pointer :: rowptr(:)
   PetscInt, pointer :: colind(:)
@@ -24,21 +23,18 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-  zero = 0
   n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   nz = 3*n - 4
 
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, rhs, ierr))
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, solution, ierr))
-  PetscCallA(PetscShmgetAllocateArrayInt(zero, n + 1, rowptr, ierr))
-  PetscCallA(PetscShmgetAllocateArrayInt(zero, nz, colind, ierr))
-  PetscCallA(PetscShmgetAllocateArrayScalar(zero, nz, a, ierr))
+  PetscCallA(PetscShmgetAllocateArrayInt(0_PETSC_INT_KIND, n + 1, rowptr, ierr))
+  PetscCallA(PetscShmgetAllocateArrayInt(0_PETSC_INT_KIND, nz, colind, ierr))
+  PetscCallA(PetscShmgetAllocateArrayScalar(0_PETSC_INT_KIND, nz, a, ierr))
 
   PetscCallA(VecGetArray(rhs, b, ierr))
-  do i = 1, n
-    b(i) = 1.0
-  end do
+  b(1:n) = 1.0
   PetscCallA(VecRestoreArray(rhs, b, ierr))
 
   rowptr(0) = 0
@@ -71,7 +67,7 @@ program main
 
   PetscCallA(KSPSolve(ksp, rhs, solution, ierr))
 
-!     Keep the same size and nonzero structure of the matrix but change its numerical entries
+! Keep the same size and nonzero structure of the matrix but change its numerical entries
   do i = 2, n - 1
     a(2 + 3*(i - 2)) = 4.0
   end do

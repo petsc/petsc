@@ -16,23 +16,20 @@ program main
 
   n = 4
   bs = 3
-  inputindices(1) = 0
-  inputindices(2) = 1
-  inputindices(3) = 3
-  inputindices(4) = 4
+  inputindices = [0, 1, 3, 4]
 
   PetscCallA(PetscInitialize(ierr))
 !
-!    Create a block index set. The index set has 4 blocks each of size 3.
-!    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
-!    Note each processor is generating its own index set
-!    (in this case they are all identical)
+! Create a block index set. The index set has 4 blocks each of size 3.
+! The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
+! Note each processor is generating its own index set
+! (in this case they are all identical)
 !
   PetscCallA(ISCreateBlock(PETSC_COMM_SELF, bs, n, inputindices, PETSC_COPY_VALUES, set, ierr))
   PetscCallA(ISView(set, PETSC_VIEWER_STDOUT_SELF, ierr))
 
 !
-!    Extract indices from set.
+! Extract indices from set.
 !
   PetscCallA(ISGetLocalSize(set, issize, ierr))
   PetscCallA(ISGetIndices(set, indices, ierr))
@@ -41,7 +38,7 @@ program main
   PetscCallA(ISRestoreIndices(set, indices, ierr))
 
 !
-!    Extract the block indices. This returns one index per block.
+! Extract the block indices. This returns one index per block.
 !
   PetscCallA(ISBlockGetIndices(set, indices, ierr))
   write (6, 200) indices
@@ -49,7 +46,7 @@ program main
   PetscCallA(ISBlockRestoreIndices(set, indices, ierr))
 
 !
-!    Check if this is really a block index set
+! Check if this is really a block index set
 !
   PetscCallA(PetscObjectTypeCompare(PetscObjectCast(set), ISBLOCK, isablock, ierr))
   if (.not. isablock) then
@@ -57,7 +54,7 @@ program main
   end if
 
 !
-!    Determine the block size of the index set
+! Determine the block size of the index set
 !
   PetscCallA(ISGetBlockSize(set, bs, ierr))
   if (bs /= 3) then
@@ -65,7 +62,7 @@ program main
   end if
 
 !
-!    Get the number of blocks
+! Get the number of blocks
 !
   PetscCallA(ISBlockGetLocalSize(set, n, ierr))
   if (n /= 4) then

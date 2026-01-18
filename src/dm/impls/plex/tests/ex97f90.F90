@@ -3,10 +3,6 @@ program ex97f90
   use petsc
   implicit none
 
-  ! Get the Fortran kind associated with PetscInt so that we can use literal constants.
-  PetscInt                           :: dummyPetscInt
-  integer, parameter                  :: kPI = kind(dummyPetscInt)
-
   type(tDM)                          :: dm
   type(tDMLabel)                     :: label
   character(len=PETSC_MAX_PATH_LEN)  :: ifilename, iobuffer
@@ -28,7 +24,7 @@ program ex97f90
 
   PetscCallA(DMGetLabel(dm, 'celltype', label, ierr))
   PetscCallA(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD, ierr))
-  PetscCallA(DMPlexGetHeightStratum(dm, 0_kPI, pStart, pEnd, ierr))
+  PetscCallA(DMPlexGetHeightStratum(dm, 0_PETSC_INT_KIND, pStart, pEnd, ierr))
   do p = pStart, pEnd - 1
     PetscCallA(DMPlexGetCellType(dm, p, cellType, ierr))
     write (IOBuffer, '("cell: ",i3," type: ",i3,"\n")') p, cellType

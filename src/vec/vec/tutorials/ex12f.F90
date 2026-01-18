@@ -5,19 +5,19 @@ program main
 
   PetscErrorCode ierr
   Vec v, s
-  PetscInt, parameter ::      n = 20
-  PetscScalar, parameter ::   sone = 1.0
+  PetscInt :: n
+  PetscScalar, parameter :: one = 1.0
   PetscBool :: flg
-  PetscInt, parameter :: zero = 0, one = 1, two = 2
 
   PetscCallA(PetscInitialize(ierr))
 
+  n = 20
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
 
   ! Create multi-component vector with 2 components
   PetscCallA(VecCreate(PETSC_COMM_WORLD, v, ierr))
   PetscCallA(VecSetSizes(v, PETSC_DECIDE, n, ierr))
-  PetscCallA(VecSetBlockSize(v, two, ierr))
+  PetscCallA(VecSetBlockSize(v, 2_PETSC_INT_KIND, ierr))
   PetscCallA(VecSetFromOptions(v, ierr))
 
   ! Create single-component vector
@@ -26,15 +26,15 @@ program main
   PetscCallA(VecSetFromOptions(s, ierr))
 
   !Set the vectors to entries to a constant value.
-  PetscCallA(VecSet(v, sone, ierr))
+  PetscCallA(VecSet(v, one, ierr))
 
   !Get the first component from the multi-component vector to the single vector
-  PetscCallA(VecStrideGather(v, zero, s, INSERT_VALUES, ierr))
+  PetscCallA(VecStrideGather(v, 0_PETSC_INT_KIND, s, INSERT_VALUES, ierr))
 
   PetscCallA(VecView(s, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
   !Put the values back into the second component
-  PetscCallA(VecStrideScatter(s, one, v, ADD_VALUES, ierr))
+  PetscCallA(VecStrideScatter(s, 1_PETSC_INT_KIND, v, ADD_VALUES, ierr))
 
   PetscCallA(VecView(v, PETSC_VIEWER_STDOUT_WORLD, ierr))
 

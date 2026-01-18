@@ -1,22 +1,40 @@
 ! test verifies DMShellSetCreateFieldDecomposition interface in Fortran
 #include "petsc/finclude/petsc.h"
-program main
+
+module ex54fmodule
   use petsc
+  implicit none
+
+contains
+  ! a simple Fortran callback for field decomposition.
+  subroutine myFieldDecomp(dm, nfields, fieldNames, isFields, subDms, ierr)
+    type(tDM), intent(in) :: dm
+    PetscInt, intent(out) :: nfields
+    character(len=30), allocatable, intent(out) :: fieldNames(:)
+    type(tIS), allocatable, intent(out) :: isFields(:)
+    type(tDM), allocatable, intent(out) :: subDms(:)
+    PetscErrorCode, intent(out) :: ierr
+    ! defining a simple decomposition with two fields
+    nfields = 2
+    allocate (fieldNames(nfields))
+    allocate (isFields(nfields))
+    allocate (subDms(nfields))
+    fieldNames(1) = 'field1'
+    fieldNames(2) = 'field2'
+    ! set the pointer arrays to NULL (using pointer assignment)
+    isFields(1:nfields) = PETSC_NULL_IS
+    subDms(1:nfields) = PETSC_NULL_DM
+    ierr = 0
+    print *, 'myFieldDecomp callback invoked.'
+  end subroutine myFieldDecomp
+end module ex54fmodule
+
+program ex54f
+  use petsc
+  use ex54fmodule
   implicit none
   type(tDM)          :: dm
   PetscErrorCode     :: ierr
-  interface
-    subroutine myFieldDecomp(dm, nfields, fieldNames, isFields, subDms, ierr)
-      use petsc
-      implicit none
-      type(tDM), intent(in) :: dm
-      PetscInt, intent(out) :: nfields
-      character(len=30), allocatable, intent(out) :: fieldNames(:)
-      type(tIS), allocatable, intent(out) :: isFields(:)
-      type(tDM), allocatable, intent(out) :: subDms(:)
-      PetscErrorCode, intent(out) :: ierr
-    end subroutine myFieldDecomp
-  end interface
   ! initializing PETSc
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
   ! creating a DMShell object
@@ -28,34 +46,8 @@ program main
   ! cleanup
   PetscCallA(DMDestroy(dm, ierr))
   PetscCallA(PetscFinalize(ierr))
-end program main
+end program ex54f
 
-! a simple Fortran callback for field decomposition.
-subroutine myFieldDecomp(dm, nfields, fieldNames, isFields, subDms, ierr)
-  use petsc
-  implicit none
-  type(tDM), intent(in) :: dm
-  PetscInt, intent(out) :: nfields
-  character(len=30), allocatable, intent(out) :: fieldNames(:)
-  type(tIS), allocatable, intent(out) :: isFields(:)
-  type(tDM), allocatable, intent(out) :: subDms(:)
-  PetscErrorCode, intent(out) :: ierr
-  PetscInt :: i
-  ! defining a simple decomposition with two fields
-  nfields = 2
-  allocate (fieldNames(nfields))
-  allocate (isFields(nfields))
-  allocate (subDms(nfields))
-  fieldNames(1) = 'field1'
-  fieldNames(2) = 'field2'
-  ! set the pointer arrays to NULL (using pointer assignment)
-  do i = 1, nfields
-    isFields(i) = PETSC_NULL_IS
-    subDms(i) = PETSC_NULL_DM
-  end do
-  ierr = 0
-  print *, 'myFieldDecomp callback invoked.'
-end subroutine myFieldDecomp
 !/*TEST
 !
 !   test:

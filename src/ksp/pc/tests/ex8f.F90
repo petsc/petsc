@@ -11,7 +11,8 @@ contains
   subroutine MyResidual(A, b, x, r, ierr)
     Mat A
     Vec b, x, r
-    integer ierr
+    integer, intent(out) :: ierr
+    ierr = 0
   end
 
 end module ex8fmodule
@@ -37,11 +38,11 @@ program main
   Mat A
   Vec x, b, u
   PC pc
-  PetscInt n, dim, istart, iend
-  PetscInt i, j, jj, ii, one, zero
+  PetscInt, parameter :: n = 6, dim = n**2
+  PetscInt i, j, jj, ii, istart, iend
   PetscErrorCode ierr
   PetscScalar v
-  PetscScalar pfive
+  PetscScalar, parameter :: pfive = .5
   KSP ksp
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,11 +50,6 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   PetscCallA(PetscInitialize(ierr))
-  pfive = .5
-  n = 6
-  dim = n*n
-  one = 1
-  zero = 0
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
@@ -88,22 +84,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < n - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -140,8 +136,8 @@ program main
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCMG, ierr))
-  PetscCallA(PCMGSetLevels(pc, one, PETSC_NULL_MPI_COMM, ierr))
-  PetscCallA(PCMGSetResidual(pc, zero, MyResidual, A, ierr))
+  PetscCallA(PCMGSetLevels(pc, 1_PETSC_INT_KIND, PETSC_NULL_MPI_COMM, ierr))
+  PetscCallA(PCMGSetResidual(pc, 0_PETSC_INT_KIND, MyResidual, A, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix used to construct the preconditioner.

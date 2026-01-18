@@ -24,7 +24,7 @@ program main
   use ex13f90auxmodule
 
   use petscdmda
-
+  implicit none
   PetscErrorCode ierr
   PetscMPIInt rank, size
   MPIU_Comm comm
@@ -32,9 +32,19 @@ program main
   DM SolScal, CoordDM
   DMBoundaryType b_x, b_y, b_z
   PetscReal, pointer :: array(:, :, :, :)
-  PetscReal :: t, tend, dt, xmin, xmax, ymin, ymax, zmin, zmax, xgmin, xgmax, ygmin, ygmax, zgmin, zgmax
+  PetscReal :: t, xmin, xmax, ymin, ymax, zmin, zmax
   PetscReal, allocatable :: f(:, :, :, :), grid(:, :, :, :)
-  PetscInt :: i, j, k, igmax, jgmax, kgmax, ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, itime, maxstep, nscreen, dof, stw, ndim
+  PetscInt :: i, j, k, ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, itime, maxstep, nscreen
+  PetscInt, parameter :: &
+    stw = 1, & ! stencil width
+    dof = 2, & ! number of variables in this DA
+    ndim = 3  ! 3D code
+  ! time stepping
+  PetscReal, parameter :: tend = 100.0, dt = 1e-3
+  ! global grid
+  PetscReal, parameter :: xgmin = 0.0, ygmin = 0.0, zgmin = 0.0
+  PetscReal, parameter :: xgmax = 1.0, ygmax = 1.0, zgmax = 1.0
+  PetscInt, parameter :: igmax = 50, jgmax = 50, kgmax = 50
 
   ! Fire up PETSc:
   PetscCallA(PetscInitialize(ierr))
@@ -47,20 +57,6 @@ program main
     write (*, *) ' '
     write (*, *) '  t     x1         x2'
   end if
-
-  ! Set up the global grid
-  igmax = 50
-  jgmax = 50
-  kgmax = 50
-  xgmin = 0.0
-  ygmin = 0.0
-  zgmin = 0.0
-  xgmax = 1.0
-  ygmax = 1.0
-  zgmax = 1.0
-  stw = 1 ! stencil width
-  dof = 2 ! number of variables in this DA
-  ndim = 3 ! 3D code
 
   ! Get the BCs and create the DMDA
   call get_boundary_cond(b_x, b_y, b_z)
@@ -112,8 +108,6 @@ program main
 
   ! Set up the time-stepping
   t = 0.0
-  tend = 100.0
-  dt = 1e-3
   maxstep = ceiling((tend - t)/dt)
   ! Write output every second (of simulation-time)
   nscreen = int(1.0/dt) + 1

@@ -5,8 +5,8 @@ program main
   implicit none
 
   Mat :: A
-  PetscInt :: M, M2, NSubx, dof, overlap, NSub, i1
-  PetscInt :: I, J
+  PetscInt, parameter :: M = 16, dof = 1, overlap = 0, NSubx = 4
+  PetscInt :: NSub, i, j
   PetscMPIInt :: size
   PetscErrorCode :: ierr
   PetscScalar :: v
@@ -16,14 +16,11 @@ program main
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
-  M = 16
-  M2 = M*M
-  i1 = 1
-  PetscCallA(MatCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, PETSC_DECIDE, PETSC_DECIDE, M2, M2, A, ierr))
-  do I = 1, M2
-    do J = 1, M2
-      v = I*J
-      PetscCallA(MatSetValue(A, I - 1, J - 1, v, INSERT_VALUES, ierr))
+  PetscCallA(MatCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, M**2, M**2, A, ierr))
+  do i = 1, M**2
+    do j = 1, M**2
+      v = i*j
+      PetscCallA(MatSetValue(A, i - 1, j - 1, v, INSERT_VALUES, ierr))
     end do
   end do
 
@@ -32,10 +29,6 @@ program main
   PetscCallA(PCCreate(PETSC_COMM_WORLD, pc, ierr))
   PetscCallA(PCSetOperators(pc, A, A, ierr))
   PetscCallA(PCSetType(pc, PCGASM, ierr))
-
-  NSubx = 4
-  dof = 1
-  overlap = 0
 
   PetscCallA(PCGASMCreateSubdomains2D(pc, M, M, NSubx, NSubx, dof, overlap, NSub, subdomains_IS, inflated_IS, ierr))
   PetscCallA(PCGASMSetSubdomains(pc, NSub, subdomains_IS, inflated_IS, ierr))

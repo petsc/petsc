@@ -10,9 +10,9 @@ program main
   PetscScalar, pointer :: x1(:), x2(:, :)
   PetscScalar, pointer :: x3(:, :, :), x4(:, :, :, :)
   PetscErrorCode ierr
-  PetscInt m, n, p, dof, s, i, j, k, xs, xl
-  PetscInt ys, yl
-  PetscInt zs, zl, sw
+  PetscInt, parameter :: m = 5, n = 6, p = 4, s = 1, sw = 1
+  PetscInt i, j, k, dof
+  PetscInt xs, xl, ys, yl, zs, zl
 
   PetscInt nen, nel
   PetscInt, pointer :: elements(:)
@@ -21,26 +21,17 @@ program main
   character(80), pointer :: namefields(:)
   IS, pointer :: isfields(:)
   DM, pointer :: dmfields(:)
-  PetscInt zero, one
 
-  m = 5
-  n = 6
-  p = 4
-  s = 1
-  dof = 1
-  sw = 1
-  zero = 0
-  one = 1
   PetscCallA(PetscInitialize(ierr))
+
+  dof = 1
   PetscCallA(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, m, dof, sw, PETSC_NULL_INTEGER_ARRAY, ada, ierr))
   PetscCallA(DMSetUp(ada, ierr))
   PetscCallA(DMGetGlobalVector(ada, g, ierr))
   PetscCallA(DMDAGetCorners(ada, xs, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, xl, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, ierr))
   PetscCallA(DMDAVecGetArray(ada, g, x1, ierr))
   do i = xs, xs + xl - 1
-!         CHKMEMQ
     x1(i) = i
-!         CHKMEMQ
   end do
   PetscCallA(DMDAVecRestoreArray(ada, g, x1, ierr))
   PetscCallA(VecView(g, PETSC_VIEWER_STDOUT_WORLD, ierr))
@@ -54,9 +45,7 @@ program main
   PetscCallA(DMDAVecGetArray(ada, g, x2, ierr))
   do i = xs, xs + xl - 1
     do j = ys, ys + yl - 1
-!           CHKMEMQ
       x2(i, j) = i + j
-!           CHKMEMQ
     end do
   end do
   PetscCallA(DMDAVecRestoreArray(ada, g, x2, ierr))
@@ -78,9 +67,7 @@ program main
   do i = xs, xs + xl - 1
     do j = ys, ys + yl - 1
       do k = zs, zs + zl - 1
-!            CHKMEMQ
         x3(i, j, k) = i + j + k
-!            CHKMEMQ
       end do
     end do
   end do
@@ -99,18 +86,16 @@ program main
   PetscCallA(DMDAGetCorners(ada, xs, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, xl, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, ierr))
   PetscCallA(DMDAVecGetArray(ada, g, x2, ierr))
   do i = xs, xs + xl - 1
-!         CHKMEMQ
     x2(0, i) = i
     x2(1, i) = -i
-!         CHKMEMQ
   end do
   PetscCallA(DMDAVecRestoreArray(ada, g, x1, ierr))
   PetscCallA(VecView(g, PETSC_VIEWER_STDOUT_WORLD, ierr))
   PetscCallA(DMRestoreGlobalVector(ada, g, ierr))
 
   ! some testing unrelated to the example
-  PetscCallA(DMDASetFieldName(ada, zero, 'Field 0', ierr))
-  PetscCallA(DMDASetFieldName(ada, one, 'Field 1', ierr))
+  PetscCallA(DMDASetFieldName(ada, 0_PETSC_INT_KIND, 'Field 0', ierr))
+  PetscCallA(DMDASetFieldName(ada, 1_PETSC_INT_KIND, 'Field 1', ierr))
   PetscCallA(DMCreateFieldDecomposition(ada, nfields, namefields, PETSC_NULL_IS_POINTER, PETSC_NULL_DM_POINTER, ierr))
   ! print*,nfields,trim(namefields(1)),trim(namefields(2))
   PetscCallA(DMDestroyFieldDecomposition(ada, nfields, namefields, PETSC_NULL_IS_POINTER, PETSC_NULL_DM_POINTER, ierr))
@@ -119,7 +104,6 @@ program main
 
   PetscCallA(DMDestroy(ada, ierr))
 
-  dof = 2
   PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, m, n, PETSC_DECIDE, PETSC_DECIDE, dof, s, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, ada, ierr))
   PetscCallA(DMSetUp(ada, ierr))
   PetscCallA(DMGetGlobalVector(ada, g, ierr))
@@ -127,10 +111,8 @@ program main
   PetscCallA(DMDAVecGetArray(ada, g, x3, ierr))
   do i = xs, xs + xl - 1
     do j = ys, ys + yl - 1
-!           CHKMEMQ
       x3(0, i, j) = i + j
       x3(1, i, j) = -(i + j)
-!           CHKMEMQ
     end do
   end do
   PetscCallA(DMDAVecRestoreArray(ada, g, x3, ierr))
@@ -147,11 +129,9 @@ program main
   do i = xs, xs + xl - 1
     do j = ys, ys + yl - 1
       do k = zs, zs + zl - 1
-!            CHKMEMQ
         x4(0, i, j, k) = i + j + k
         x4(1, i, j, k) = -(i + j + k)
         x4(2, i, j, k) = i + j + k
-!            CHKMEMQ
       end do
     end do
   end do

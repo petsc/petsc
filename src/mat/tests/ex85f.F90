@@ -7,23 +7,19 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt i, one, twelve
+  PetscInt, parameter :: one = 1, twelve = 12
   Vec v
   Mat m
-  PetscScalar value
+  PetscScalar, parameter :: value = 3.0
 
   PetscCallA(PetscInitialize(ierr))
 
-  twelve = 12
   PetscCallA(MatCreate(PETSC_COMM_SELF, m, ierr))
   PetscCallA(MatSetSizes(m, twelve, twelve, twelve, twelve, ierr))
   PetscCallA(MatSetFromOptions(m, ierr))
   PetscCallA(MatSetUp(m, ierr))
 
-  value = 3.0
-  i = 4
-  one = 1
-  PetscCallA(MatSetValues(m, one, [i], one, [i], [value], INSERT_VALUES, ierr))
+  PetscCallA(MatSetValues(m, one, [4_PETSC_INT_KIND], one, [4_PETSC_INT_KIND], [value], INSERT_VALUES, ierr))
   PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
 

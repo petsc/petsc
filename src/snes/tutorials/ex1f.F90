@@ -26,7 +26,7 @@ contains
   subroutine FormFunction(snes, x, f, dummy, ierr)
     SNES snes
     Vec x, f
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     integer dummy(*)
 
 !  Declarations for use with local arrays
@@ -71,8 +71,8 @@ contains
     Vec X
     Mat jac, B
     PetscScalar A(4)
-    PetscErrorCode ierr
-    PetscInt idx(2), i2
+    PetscErrorCode, intent(out) :: ierr
+    PetscInt idx(2)
     integer dummy(*)
 
 !  Declarations for use with local arrays
@@ -81,7 +81,6 @@ contains
 
 !  Get pointer to vector data
 
-    i2 = 2
     PetscCall(VecGetArrayRead(x, lx_v, ierr))
 
 !  Compute Jacobian entries and insert into matrix.
@@ -90,13 +89,9 @@ contains
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array idx).
 
-    idx(1) = 0
-    idx(2) = 1
-    A(1) = 2.0*lx_v(1) + lx_v(2)
-    A(2) = lx_v(1)
-    A(3) = lx_v(2)
-    A(4) = lx_v(1) + 2.0*lx_v(2)
-    PetscCall(MatSetValues(B, i2, idx, i2, idx, A, INSERT_VALUES, ierr))
+    idx = [0, 1]
+    A = [2.0*lx_v(1) + lx_v(2), lx_v(1), lx_v(2), lx_v(1) + 2.0*lx_v(2)]
+    PetscCall(MatSetValues(B, 2_PETSC_INT_KIND, idx, 2_PETSC_INT_KIND, idx, A, INSERT_VALUES, ierr))
 
 !  Restore vector
 
@@ -120,11 +115,10 @@ contains
     integer lctx
     Vec x, f, g, y, w
     PetscReal ynorm, gnorm, xnorm
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
-    PetscScalar mone
+    PetscScalar, parameter :: mone = -1.0
 
-    mone = -1.0
     PetscCall(SNESLineSearchGetSNES(linesearch, snes, ierr))
     PetscCall(SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr))
     PetscCall(VecNorm(y, NORM_2, ynorm, ierr))
@@ -162,10 +156,10 @@ program main
   Mat J
   SNESLineSearch linesearch
   PetscErrorCode ierr
-  PetscInt its, i2, i20
+  PetscInt its
   PetscMPIInt size, rank
-  PetscScalar pfive
-  PetscReal tol
+  PetscScalar, parameter :: pfive = 0.5
+  PetscReal, parameter :: tol = 1.e-4
   PetscBool setls
   PetscReal, pointer :: rhistory(:)
   PetscInt, pointer :: itshistory(:)
@@ -187,8 +181,6 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'Uniprocessor example')
 
-  i2 = 2
-  i20 = 20
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,13 +195,13 @@ program main
 
 !  Create vectors for solution and nonlinear function
 
-  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i2, x, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, 2_PETSC_INT_KIND, x, ierr))
   PetscCallA(VecDuplicate(x, r, ierr))
 
 !  Create Jacobian matrix data structure
 
   PetscCallA(MatCreate(PETSC_COMM_SELF, J, ierr))
-  PetscCallA(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, i2, i2, ierr))
+  PetscCallA(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, 2_PETSC_INT_KIND, 2_PETSC_INT_KIND, ierr))
   PetscCallA(MatSetFromOptions(J, ierr))
   PetscCallA(MatSetUp(J, ierr))
 
@@ -232,8 +224,7 @@ program main
   PetscCallA(SNESGetKSP(snes, ksp, ierr))
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCNONE, ierr))
-  tol = 1.e-4
-  PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, i20, ierr))
+  PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, 20_PETSC_INT_KIND, ierr))
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -260,7 +251,6 @@ program main
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-  pfive = 0.5
   PetscCallA(VecSet(x, pfive, ierr))
   PetscCallA(SNESSolve(snes, PETSC_NULL_VEC, x, ierr))
 

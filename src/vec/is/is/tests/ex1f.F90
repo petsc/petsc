@@ -18,18 +18,17 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
-!     Test IS of size 0
-
+! Test IS of size 0
   n = 0
   PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, n, indices, PETSC_COPY_VALUES, is, ierr))
   PetscCallA(ISGetLocalSize(is, n, ierr))
   PetscCheckA(n == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Error getting size of zero IS')
   PetscCallA(ISDestroy(is, ierr))
 
-!     Create large IS and test ISGetIndices(,ierr))
-!     fortran indices start from 1 - but IS indices start from 0
+! Create large IS and test ISGetIndices(,ierr))
+! fortran indices start from 1 - but IS indices start from 0
   n = 1000 + rank
-  do i = 1, n
+  do i = 1, n ! MarDiehl: will fail for rank > 4
     indices(i) = rank + i - 1
   end do
   PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, n, indices, PETSC_COPY_VALUES, is, ierr))
@@ -39,7 +38,7 @@ program main
   end do
   PetscCallA(ISRestoreIndices(is, ii, ierr))
 
-!     Check identity and permutation
+! Check identity and permutation
 
   compute = PETSC_TRUE
   permanent = PETSC_FALSE
