@@ -2026,6 +2026,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PeOp PetscSF *sf, DM *d
       sfMigration = naturalPointSF;
     }
   }
+  PetscCall(DMPlexCopyFlags(dm, *dmParallel));
   /* Cleanup */
   if (sf) {
     *sf = sfMigration;
@@ -2121,6 +2122,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmOverlap));
   /* TODO: labels stored inside the DS for regions should be handled here */
   PetscCall(DMCopyDisc(dm, *dmOverlap));
+  PetscCall(DMPlexCopyFlags(dm, *dmOverlap));
   /* Cleanup overlap partition */
   PetscCall(DMLabelDestroy(&lblOverlap));
   if (sf) *sf = sfOverlap;

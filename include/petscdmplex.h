@@ -176,6 +176,7 @@ PETSC_EXTERN const char *const DMPlexTPSTypes[];
 /* Mesh Generation */
 PETSC_EXTERN PetscErrorCode DMPlexGenerate(DM, const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
+PETSC_EXTERN PetscErrorCode DMPlexCopyFlags(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCoordinateSpace(DM, PetscInt, PetscBool, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, PetscBool, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, PetscInt, PetscBool, DM *);
@@ -320,6 +321,8 @@ PETSC_EXTERN PetscErrorCode DMGetEnclosurePoint(DM, DM, DMEnclosureType, PetscIn
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCompleteStar(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscInt, PetscBool, PetscBool, DM);
+PETSC_EXTERN PetscErrorCode DMPlexCheckLabel(DM, MPI_Op, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexReconcileLabel(DM, MPI_Op, PetscInt, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddFaceCells(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelClearCells(DM, DMLabel);

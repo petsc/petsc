@@ -10195,6 +10195,8 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (pointSF) PetscValidHeaderSpecific(pointSF, PETSCSF_CLASSID, 2);
   else pointSF = dm->sf;
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_plex_point_sf_view"));
+  PetscCall(PetscSFViewFromOptions(pointSF, NULL, "-dm_plex_point_sf_view"));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCheck(pointSF, comm, PETSC_ERR_ARG_WRONGSTATE, "DMPlex must have Point SF attached");
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -10257,6 +10259,49 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
         }
       }
     }
+  }
+
+  // Depths of leaves should match depths of root
+  //   Does not work for geometrically non-conforming meshes
+  if (!((DM_Plex *)dm->data)->parentSection) {
+    PetscInt   *starts, *gstarts, *depths;
+    PetscInt    depth;
+    PetscMPIInt size;
+    PetscBool   skip = PETSC_FALSE;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCall(DMPlexGetDepth(dm, &depth));
+    PetscCall(PetscMalloc3(depth + 2, &starts, size * (depth + 2), &gstarts, depth + 2, &depths));
+    depths[0] = depth;
+    depths[1] = 0;
+    for (PetscInt d = 2; d <= depth; ++d) depths[d] = depth + 1 - d;
+    depths[depth + 1] = depth + 1;
+    for (PetscInt d = 0; d <= depth; ++d) {
+      PetscCall(DMPlexGetDepthStratum(dm, d, &starts[d], NULL));
+    }
+    // This is necessary because some strata might be missing
+    PetscCall(DMPlexGetChart(dm, NULL, &starts[depth + 1]));
+    PetscCallMPI(MPI_Allgather(starts, (int)(depth + 2), MPIU_INT, gstarts, (int)(depth + 2), MPIU_INT, comm));
+    // Check is invalid with empty strata
+    for (PetscInt p = 0; p < size * (depth + 2); ++p)
+      if (gstarts[p] < 0) skip = PETSC_TRUE;
+    for (l = skip ? nleaves : 0; l < nleaves; ++l) {
+      const PetscInt point  = locals ? locals[l] : l;
+      const PetscInt rpoint = remotes[l].index;
+      const PetscInt rrank  = remotes[l].rank;
+      PetscInt       pdepth, rdepth = -1;
+
+      PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
+      for (PetscInt d = 0; d <= depth; ++d) {
+        if (gstarts[rrank * (depth + 2) + depths[d]] <= rpoint && rpoint < gstarts[rrank * (depth + 2) + depths[d + 1]]) {
+          rdepth = depths[d];
+          break;
+        }
+      }
+      PetscCheck(rdepth != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " (%" PetscInt_FMT ") was not found on remote rank %" PetscInt_FMT, point, rpoint, rrank);
+      PetscCheck(pdepth == rdepth, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " has depth %" PetscInt_FMT " but remote (%" PetscInt_FMT ", %" PetscInt_FMT ") depth is %" PetscInt_FMT, point, pdepth, rpoint, rrank, rdepth);
+    }
+    PetscCall(PetscFree3(starts, gstarts, depths));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

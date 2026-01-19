@@ -2126,6 +2126,15 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   }
   PetscCall(PetscSFSetGraph(sfNew, pEndNew - pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_CreateSF, tr, dm, 0, 0));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt overlap;
+
+    // Need to set overlap because some transforms put cells in the overlap
+    PetscCall(DMPlexGetOverlap(rdm, &overlap));
+    PetscCall(DMPlexSetOverlap(rdm, NULL, 1));
+    PetscCall(DMPlexCheckPointSF(rdm, sfNew, PETSC_FALSE));
+    PetscCall(DMPlexSetOverlap(rdm, NULL, overlap));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -72,6 +72,36 @@ static PetscErrorCode DMPlexSwapEGADSInfo_Private(DM dmA, DM dmB)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexCopyFlags - Copies internal flags, such as diagnostic printing, from one `DM` to another
+
+  Not Collective
+
+  Input Parameter:
+. dmin - The input `DMPLEX`, from which flags are copied
+
+  Output Parameter:
+. dmout - The output `DMPLEX`, to which flags are copied
+
+  Level: advanced
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexDistribute()`, `DMCLone()`
+@*/
+PetscErrorCode DMPlexCopyFlags(DM dmin, DM dmout)
+{
+  PetscFunctionBegin;
+  ((DM_Plex *)dmout->data)->useHashLocation = ((DM_Plex *)dmin->data)->useHashLocation;
+  ((DM_Plex *)dmout->data)->printSetValues  = ((DM_Plex *)dmin->data)->printSetValues;
+  ((DM_Plex *)dmout->data)->printFEM        = ((DM_Plex *)dmin->data)->printFEM;
+  ((DM_Plex *)dmout->data)->printFVM        = ((DM_Plex *)dmin->data)->printFVM;
+  ((DM_Plex *)dmout->data)->printL2         = ((DM_Plex *)dmin->data)->printL2;
+  ((DM_Plex *)dmout->data)->printLocate     = ((DM_Plex *)dmin->data)->printLocate;
+  ((DM_Plex *)dmout->data)->printProject    = ((DM_Plex *)dmin->data)->printProject;
+  ((DM_Plex *)dmout->data)->printCohesive   = ((DM_Plex *)dmin->data)->printCohesive;
+  ((DM_Plex *)dmout->data)->printTol        = ((DM_Plex *)dmin->data)->printTol;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
@@ -105,14 +135,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexSetUseCeed(dmout, useCeed));
   PetscCall(DMPlexGetPartitionBalance(dmin, &balance_partition));
   PetscCall(DMPlexSetPartitionBalance(dmout, balance_partition));
-  ((DM_Plex *)dmout->data)->useHashLocation = ((DM_Plex *)dmin->data)->useHashLocation;
-  ((DM_Plex *)dmout->data)->printSetValues  = ((DM_Plex *)dmin->data)->printSetValues;
-  ((DM_Plex *)dmout->data)->printFEM        = ((DM_Plex *)dmin->data)->printFEM;
-  ((DM_Plex *)dmout->data)->printFVM        = ((DM_Plex *)dmin->data)->printFVM;
-  ((DM_Plex *)dmout->data)->printL2         = ((DM_Plex *)dmin->data)->printL2;
-  ((DM_Plex *)dmout->data)->printLocate     = ((DM_Plex *)dmin->data)->printLocate;
-  ((DM_Plex *)dmout->data)->printProject    = ((DM_Plex *)dmin->data)->printProject;
-  ((DM_Plex *)dmout->data)->printTol        = ((DM_Plex *)dmin->data)->printTol;
+  PetscCall(DMPlexCopyFlags(dmin, dmout));
   if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   PetscCall(DMPlexCopyEGADSInfo_Internal(dmin, dmout));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5093,6 +5116,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_project", "Debug output level all projection computations", "DMPlexProject", 0, &mesh->printProject, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_cohesive", "Debug output level all cohesive computations", "DMPlexLabelCohesiveComplete", 0, &mesh->printCohesive, NULL, 0));
   PetscCall(DMMonitorSetFromOptions(dm, "-dm_plex_monitor_throughput", "Monitor the simulation throughput", "DMPlexMonitorThroughput", DMPlexMonitorThroughput, NULL, &flg));
   if (flg) PetscCall(PetscLogDefaultBegin());
   // Interpolation
