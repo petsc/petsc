@@ -3,7 +3,7 @@
 #    Frees any any shared memory allocated by PETSc with PetscShmgetAllocateArray()
 #
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-  echo "Usage: petscfreesharedmeory"
+  echo "Usage: petscfreesharedmeory.sh"
   exit
 fi
 
