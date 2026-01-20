@@ -182,7 +182,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
   map->rstart = map->range[rank];
   map->rend   = map->range[rank + 1];
   map->n      = map->rend - map->rstart;
-  map->N      = map->range[map->size];
+  map->N      = map->range[map->size] - map->range[0];
   if (PetscDefined(USE_DEBUG)) { /* just check that n, N and bs are consistent */
     PetscInt tmp;
     PetscCallMPI(MPIU_Allreduce(&map->n, &tmp, 1, MPIU_INT, MPI_SUM, map->comm));
