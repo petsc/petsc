@@ -1221,7 +1221,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     { // Get global element_type (for ranks that do not have owned elements)
       PetscInt local_element_type, global_element_type;
 
-      local_element_type = e_owned > 0 ? element_type : -1;
+      local_element_type = e_owned > 0 ? (PetscInt)element_type : -1;
       PetscCallMPI(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, comm));
       if (local_element_type != -1) PetscCheck(local_element_type == global_element_type, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different element types not supported");
       element_type = (CGNS_ENUMT(ElementType_t))global_element_type;
