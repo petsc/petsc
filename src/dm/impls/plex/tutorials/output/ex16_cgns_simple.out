@@ -9,6 +9,7 @@ ex16_plex in 3 dimensions:
 Labels:
   depth: 4 strata with value/size (0 (12), 1 (20), 2 (11), 3 (2))
   celltype: 4 strata with value/size (0 (12), 1 (20), 4 (11), 7 (2))
+  Face Sets: 4 strata with value/size (1 (2), 3 (2), 5 (1), 6 (1))
 Field FE for VecLoad:
   adjacency FEM
 Solution Name: FlowSolution0, and time 0.

@@ -175,13 +175,13 @@ int main(int argc, char **argv)
     requires: cgns
     suffix: cgns
     nsize: 3
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2x2x2_Q3_wave.cgns -dm_plex_cgns_parallel -dm_view ::ascii_info_detail -dm_plex_box_label true -dm_plex_box_label_bd periodic,periodic,periodic -petscpartitioner_type simple -test_cgns_load -num_comps 2
+    args: -dm_plex_filename ${DATAFILESPATH}/meshes/2x2x2_Q3_wave.cgns -dm_plex_cgns_parallel -dm_view ::ascii_info_detail -dm_plex_box_label true -dm_plex_box_label_bd periodic,periodic,periodic -petscpartitioner_type simple -test_cgns_load -num_comps 2
 
   test:
     requires: cgns parmetis
     suffix: cgns_parmetis
     nsize: 3
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2x2x2_Q3_wave.cgns -dm_plex_cgns_parallel -dm_plex_box_label true -dm_plex_box_label_bd periodic,periodic,periodic -petscpartitioner_type parmetis -test_cgns_load -num_comps 2
+    args: -dm_plex_filename ${DATAFILESPATH}/meshes/2x2x2_Q3_wave.cgns -dm_plex_cgns_parallel -dm_plex_box_label true -dm_plex_box_label_bd periodic,periodic,periodic -petscpartitioner_type parmetis -test_cgns_load -num_comps 2
     output_file: output/empty.out
 
 TEST*/
