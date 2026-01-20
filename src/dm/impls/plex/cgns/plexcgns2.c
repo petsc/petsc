@@ -1076,7 +1076,8 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
 
 PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
 {
-  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  MPI_Comm          comm = PetscObjectComm((PetscObject)dm);
+  PetscViewer_CGNS *cgv  = (PetscViewer_CGNS *)viewer->data;
   PetscInt          fvGhostStart;
   PetscInt          topo_dim, coord_dim, num_global_elems;
   PetscInt          cStart, cEnd, num_local_nodes, num_global_nodes, nStart, nEnd;
@@ -1094,7 +1095,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     PetscCall(DMGetOutputSequenceNumber(dm, &time_step, NULL));
     PetscCall(PetscViewerCGNSFileOpen_Internal(viewer, time_step));
   }
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMGetDimension(dm, &topo_dim));
   PetscCall(DMGetCoordinateDim(dm, &coord_dim));
   PetscCall(PetscObjectGetName((PetscObject)dm, &dm_name));
@@ -1144,7 +1145,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
         if (face_sfs) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
       }
       PetscCall(DMPlexIsSimplex(dm, &is_simplex));
-      PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
+      PetscCall(PetscFECreateLagrange(comm, topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
       PetscCall(DMSetCoordinateDisc(colloc_dm, fe, PETSC_FALSE, PETSC_TRUE));
       PetscCall(PetscFEDestroy(&fe));
     } else {
@@ -1159,7 +1160,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
   if (fvGhostStart >= 0) cEnd = fvGhostStart;
   num_global_elems = cEnd - cStart;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, comm));
   isize[0] = num_global_nodes;
   isize[1] = num_global_elems;
   isize[2] = 0;
@@ -1221,14 +1222,14 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscInt local_element_type, global_element_type;
 
       local_element_type = e_owned > 0 ? element_type : -1;
-      PetscCallMPI(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+      PetscCallMPI(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, comm));
       if (local_element_type != -1) PetscCheck(local_element_type == global_element_type, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different element types not supported");
       element_type = (CGNS_ENUMT(ElementType_t))global_element_type;
     }
-    PetscCallMPI(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, comm));
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
-    PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_CGSIZE, MPI_SUM, comm));
     PetscCallCGNSWrite(cgp_section_write(cgv->file_num, base, zone, "Elem", element_type, 1, e_global, 0, &section), dm, viewer);
     PetscCallCGNSWriteData(cgp_elements_write_data(cgv->file_num, base, zone, section, e_start + 1, e_start + e_owned, conn), dm, viewer);
     PetscCall(PetscFree(conn));
@@ -1246,7 +1247,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       int        *efield;
       int         sol, field;
       DMLabel     label;
-      PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+      PetscCallMPI(MPI_Comm_rank(comm, &rank));
       PetscCall(PetscMalloc1(e_owned, &efield));
       for (PetscInt i = 0; i < e_owned; i++) efield[i] = rank;
       PetscCallCGNSWrite(cg_sol_write(cgv->file_num, base, zone, "CellInfo", CGNS_ENUMV(CellCenter), &sol), dm, viewer);
