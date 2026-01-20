@@ -2153,6 +2153,8 @@ cdef class TAOLineSearch(Object):
     """TAO Line Search."""
 
     Type   = TAOLineSearchType
+    ConvergedReason = TAOLineSearchConvergedReason
+    # FIXME backward compatibility
     Reason = TAOLineSearchConvergedReason
 
     def __cinit__(self):

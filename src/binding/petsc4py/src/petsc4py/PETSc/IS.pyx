@@ -1097,7 +1097,7 @@ cdef class IS(Object):
 # --------------------------------------------------------------------
 
 
-class GLMapMode(object):
+class LGMapMapMode(object):
     """Enum describing mapping behavior when global indices are missing.
 
     MASK
@@ -1131,7 +1131,7 @@ cdef class LGMap(Object):
 
     """
 
-    MapMode = GLMapMode
+    MapMode = LGMapMapMode
 
     Type = LGMapType
     #
@@ -1570,7 +1570,7 @@ cdef class LGMap(Object):
     def applyInverse(
         self,
         indices: Sequence[int],
-        mode: GLMapMode | str | None = None) -> ArrayInt:
+        mode: LGMap.MapMode | str | None = None) -> ArrayInt:
         """Compute local numbering from global numbering.
 
         Not collective.
@@ -1609,7 +1609,7 @@ cdef class LGMap(Object):
     def applyBlockInverse(
         self,
         indices: Sequence[int],
-        mode: GLMapMode | str | None = None) -> ArrayInt:
+        mode: LGMap.MapMode | str | None = None) -> ArrayInt:
         """Compute blocked local numbering from blocked global numbering.
 
         Not collective.
@@ -1727,6 +1727,6 @@ cdef class LGMap(Object):
 # --------------------------------------------------------------------
 
 del ISType
-del GLMapMode
+del LGMapMapMode
 del LGMapType
 # --------------------------------------------------------------------
