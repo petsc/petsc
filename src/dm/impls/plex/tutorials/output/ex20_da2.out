@@ -1,18 +1,8 @@
-Created DMPlex in 2D with faces (7, 7, 1), global vector size 56
-DM Object: box 1 MPI process
-  type: plex
-box in 2 dimensions:
-  Number of 0-cells per rank: 56
-  Number of 1-cells per rank: 105
-  Number of 2-cells per rank: 49
-Periodic mesh (PERIODIC, NONE) coordinates localized
-Labels:
-  marker: 1 strata with value/size (1 (28))
-  Face Sets: 2 strata with value/size (1 (7), 3 (7))
-  depth: 3 strata with value/size (0 (56), 1 (105), 2 (49))
-  celltype: 3 strata with value/size (0 (56), 1 (105), 4 (49))
-Field Field_0:
-  adjacency FEM
+Created DMDA of type da in 2D with faces (7, 7, 1), global vector size 56
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 7 N 8 m 1 n 1 w 1 s 1
+X range of indices: 0 7, Y range of indices: 0 8
 Observation Operator H:
 Mat Object: H_observation_operator 1 MPI process
   type: seqaijkokkos
