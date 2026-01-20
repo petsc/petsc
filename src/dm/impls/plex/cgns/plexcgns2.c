@@ -1448,8 +1448,13 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
       PetscCall(PetscSFGetGraph(sfNatural, &nroots, &nleaves, NULL, NULL));
       PetscCall(VecGetLocalSize(V, &V_local_size));
       PetscCheck(nleaves == myownedv, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Number of locally owned vertices (% " PetscInt_FMT ") must match number of leaves in sfNatural (% " PetscInt_FMT ")", myownedv, nleaves);
-      PetscCheck(V_local_size % nroots == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Local Vec size (% " PetscInt_FMT ") not evenly divisible by number of roots in sfNatural (% " PetscInt_FMT ")", V_local_size, nroots);
-      V_numComps = V_local_size / nroots;
+      if (nroots == 0) {
+        PetscCheck(V_local_size == nroots, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Local Vec size (% " PetscInt_FMT ") must be zero if number of roots in sfNatural is zero", V_local_size);
+        V_numComps = 0;
+      } else {
+        PetscCheck(V_local_size % nroots == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Local Vec size (% " PetscInt_FMT ") not evenly divisible by number of roots in sfNatural (% " PetscInt_FMT ")", V_local_size, nroots);
+        V_numComps = V_local_size / nroots;
+      }
     }
 
     { // Read data into component-major ordering
@@ -1460,7 +1465,7 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
       PetscCallCGNSRead(cg_nsols(cgid, B, z, &numSols), V, viewer);
       PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &isol));
       PetscCallCGNSRead(cg_nfields(cgid, B, z, isol, &numComp), V, viewer);
-      PetscCheck(V_numComps == numComp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vec sized for  % " PetscInt_FMT " components per node, but file has %d components per node", V_numComps, numComp);
+      PetscCheck(V_numComps == numComp || V_numComps == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vec sized for  % " PetscInt_FMT " components per node, but file has %d components per node", V_numComps, numComp);
 
       cgsize_t range_min[3] = {mystartv + 1, 1, 1};
       cgsize_t range_max[3] = {myendv, 1, 1};
