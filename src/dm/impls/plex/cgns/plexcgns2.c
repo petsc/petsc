@@ -80,9 +80,11 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
     case 2:
       element_type_tmp = CGNS_ENUMV(BAR_2);
       *perm            = bar_2;
+      break;
     case 3:
       element_type_tmp = CGNS_ENUMV(BAR_3);
       *perm            = bar_3;
+      break;
     case 4:
       element_type_tmp = CGNS_ENUMV(BAR_4);
       *perm            = bar_4;
@@ -193,7 +195,7 @@ static inline PetscErrorCode CGNSElementTypeGetTopologyInfo(CGNS_ENUMT(ElementTy
 {
   DMPolytopeType _dmcelltype;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   switch (cellType) {
   case CGNS_ENUMV(BAR_2):
   case CGNS_ENUMV(BAR_3):
@@ -288,7 +290,7 @@ static inline PetscErrorCode CGNSElementTypeGetDiscretizationInfo(CGNS_ENUMT(Ele
 {
   PetscInt _numClosure, _pOrder;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   switch (cellType) {
   case CGNS_ENUMV(BAR_2):
     _numClosure = 2;
@@ -753,8 +755,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
   int      dim = 0, physDim = 0, coordDim = 0;
   PetscInt NVertices = 0, NCells = 0;
   int      nzones = 0, nbases;
-  int      z      = 1; // Only supports single zone files
-  int      B      = 1; // Only supports single base
+  int      zone   = 1; // Only supports single zone files
+  int      base   = 1; // Only supports single base
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -765,13 +767,13 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
   PetscCallCGNSRead(cg_nbases(cgid, &nbases), *dm, 0);
   PetscCheck(nbases <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single base, not %d", nbases);
   //  From the CGNS web page                 cell_dim  phys_dim (embedding space in PETSc) CGNS defines as length of spatial vectors/components)
-  PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim), *dm, 0);
-  PetscCallCGNSRead(cg_nzones(cgid, B, &nzones), *dm, 0);
+  PetscCallCGNSRead(cg_base_read(cgid, base, basename, &dim, &physDim), *dm, 0);
+  PetscCallCGNSRead(cg_nzones(cgid, base, &nzones), *dm, 0);
   PetscCheck(nzones == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Parallel reader limited to one zone, not %d", nzones);
   {
     cgsize_t sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
 
-    PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
+    PetscCallCGNSRead(cg_zone_read(cgid, base, zone, buffer, sizes), *dm, 0);
     NVertices = sizes[0];
     NCells    = sizes[1];
   }
@@ -802,21 +804,21 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
     const int *perm;
     cgsize_t   start, end; // Throwaway
 
-    cg_nsections(cgid, B, z, &nsections);
+    cg_nsections(cgid, base, zone, &nsections);
     // Read element connectivity
     for (int index_sect = 1; index_sect <= nsections; index_sect++) {
       int      nbndry, parentFlag;
       PetscInt cell_dim;
       CGNS_ENUMT(ElementType_t) cellType;
 
-      PetscCallCGNSRead(cg_section_read(cgid, B, z, index_sect, buffer, &cellType, &start, &end, &nbndry, &parentFlag), *dm, 0);
+      PetscCallCGNSRead(cg_section_read(cgid, base, zone, index_sect, buffer, &cellType, &start, &end, &nbndry, &parentFlag), *dm, 0);
 
       PetscCall(CGNSElementTypeGetTopologyInfo(cellType, &dm_cell_type, &numCorners, &cell_dim));
       // Skip over element that are not max dimension (ie. boundary elements)
       if (cell_dim != dim) continue;
       PetscCall(CGNSElementTypeGetDiscretizationInfo(cellType, &numClosure, &pOrder));
       PetscCall(PetscMalloc1(myownede * numClosure, &elements));
-      PetscCallCGNSReadData(cgp_elements_read_data(cgid, B, z, index_sect, mystarte + 1, myende, elements), *dm, 0);
+      PetscCallCGNSReadData(cgp_elements_read_data(cgid, base, zone, index_sect, mystarte + 1, myende, elements), *dm, 0);
       for (PetscInt v = 0; v < myownede * numClosure; ++v) elements[v] -= 1; // 0 based
       break;
     }
@@ -918,7 +920,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
     { // Determine if coords are written in single or double precision
       CGNS_ENUMT(DataType_t) datatype;
 
-      PetscCallCGNSRead(cg_coord_info(cgid, B, z, 1, &datatype, buffer), *dm, 0);
+      PetscCallCGNSRead(cg_coord_info(cgid, base, zone, 1, &datatype, buffer), *dm, 0);
       read_with_double = datatype == CGNS_ENUMV(RealDouble) ? PETSC_TRUE : PETSC_FALSE;
     }
 
@@ -932,13 +934,13 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
       cgsize_t range_max[3] = {myendv, 1, 1};
       int      ngrids, ncoords;
 
-      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
-      PetscCallCGNSRead(cg_ngrids(cgid, B, z, &ngrids), *dm, 0);
+      PetscCallCGNSRead(cg_zone_read(cgid, base, zone, buffer, sizes), *dm, 0);
+      PetscCallCGNSRead(cg_ngrids(cgid, base, zone, &ngrids), *dm, 0);
       PetscCheck(ngrids <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single grid, not %d", ngrids);
-      PetscCallCGNSRead(cg_ncoords(cgid, B, z, &ncoords), *dm, 0);
+      PetscCallCGNSRead(cg_ncoords(cgid, base, zone, &ncoords), *dm, 0);
       PetscCheck(ncoords == coordDim, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a coordinate array for each dimension, not %d", ncoords);
       if (read_with_double) {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, B, z, (d + 1), range_min, range_max, xd[d]), *dm, 0);
+        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, base, zone, (d + 1), range_min, range_max, xd[d]), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = xd[0][v];
         }
@@ -949,7 +951,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 2] = xd[2][v];
         }
       } else {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, 1, z, (d + 1), range_min, range_max, x[d]), *dm, 0);
+        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, 1, zone, (d + 1), range_min, range_max, x[d]), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = x[0][v];
         }
@@ -1406,7 +1408,7 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
   int               numComp;
   PetscInt          V_numComps, mystartv, myendv, myownedv;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)V, &comm));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_cgns_parallel", &use_parallel_viewer, NULL));
