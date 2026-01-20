@@ -1,12 +1,12 @@
 # -*- mode: makefile-gmake -*-
 -include petscdir.mk
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx .raja.cxx .hip.cpp .sycl.cxx
+.SUFFIXES: .F .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx .raja.cxx .hip.cpp .sycl.cxx
 
 CONFIGDIR := $(PETSC_DIR)/config
 
 # TESTSRCDIR is always relative to gmakefile.test
-#  This must be before includes
+# This must be before includes
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 TESTSRCDIR ?= $(dir $(mkfile_path))src
 
@@ -27,7 +27,7 @@ generatedtest  := $(TESTDIR)/testfiles
 
 .SECONDEXPANSION: # to expand $$(@D)/.DIR
 
-TESTFLAGS :=             # Initialize as simple variable
+TESTFLAGS :=  # Initialize as simple variable
 
 #workaround old cygwin versions
 ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
@@ -56,49 +56,49 @@ else      # Show the full command line
 endif
 
 ifeq ($(FORCE),1)
-  TESTFLAGS += -f    # force test execution
+  TESTFLAGS += -f # force test execution
 endif
 ifeq ($(CUDAMEMCHECK),1)
-  TESTFLAGS += -U    # Add cuda-memcheck option to the flags
+  TESTFLAGS += -U # Add cuda-memcheck option to the flags
 endif
 ifeq ($(VALGRIND),1)
-  TESTFLAGS += -V    # Add valgrind option to the flags
+  TESTFLAGS += -V # Add valgrind option to the flags
 endif
 ifeq ($(DEBUG),1)
-  TESTFLAGS += -d    # Launch test in debugger
+  TESTFLAGS += -d  Launch test in debugger
 endif
 ifeq ($(REPLACE),1)
-  TESTFLAGS += -m    # Replace results by passing -m to petscdiff
+  TESTFLAGS += -m # Replace results by passing -m to petscdiff
 endif
 ifeq ($(OUTPUT),1)
-  TESTFLAGS += -o 'err_only'    # Show only the errors on stdout
+  TESTFLAGS += -o 'err_only' # Show only the errors on stdout
 endif
 ifeq ($(ALT),1)
-  TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
+  TESTFLAGS += -M # Replace alt files by passing -M to petscdiff
 endif
 PRINTONLY ?= 0
 ifeq ($(PRINTONLY),1)
-  TESTFLAGS += -p    # Pass -p to petscdiff to print only command
+  TESTFLAGS += -p  # Pass -p to petscdiff to print only command
 endif
 ifeq ($(DIFF_NUMBERS),1)
-  TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
+  TESTFLAGS += -j # Pass -j to petscdiff to diff the actual numbers
 endif
 ifdef OPTIONS
-  TESTFLAGS += -a '$(OPTIONS)'   # override arguments
+  TESTFLAGS += -a '$(OPTIONS)' # override arguments
 endif
 ifdef EXTRA_OPTIONS_INITIAL
-  TESTFLAGS += -e '$(EXTRA_OPTIONS_INITIAL)'  # add initial arguments
+  TESTFLAGS += -e '$(EXTRA_OPTIONS_INITIAL)' # add initial arguments
 endif
 ifdef EXTRA_OPTIONS
-  TESTFLAGS += -E '$(EXTRA_OPTIONS)'  # add final arguments
+  TESTFLAGS += -E '$(EXTRA_OPTIONS)' # add final arguments
 endif
 ifdef NP
-  TESTFLAGS += -n $(NP)  # set number of processes
+  TESTFLAGS += -n $(NP) # set number of processes
 endif
 # Override the default timeout that may be found at the top of config/petsc_harness.sh
 # This must be an integer.  It is given in seconds.
 ifdef TIMEOUT
-  TESTFLAGS += -t $(TIMEOUT)  # Override the default timeout
+  TESTFLAGS += -t $(TIMEOUT) # Override the default timeout
 endif
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
@@ -150,13 +150,13 @@ PETSC_COMPILE.kokkos.cxx = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -
 KOKKOS_LINKER = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(CLINKER))))
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
-  PETSC_COMPILE.raja.cxx  = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
+  PETSC_COMPILE.raja.cxx = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
 else
   PETSC_COMPILE.raja.cxx = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 endif
 
 testlangs := c cu cxx F F90 kokkos.cxx hip.cpp sycl.cxx raja.cxx
-$(foreach lang, $(testlangs), $(eval \
+$(foreach lang, $(testlangs), $(eval\
   testexe.$(lang) = $(foreach pkg, $(pkgs), $(testsrcs-$(pkg).$(lang):%.$(lang)=$(TESTDIR)/%))))
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
@@ -217,9 +217,9 @@ endif
 #   This is a hack to fix a broken gfortran.
 define GFORTRAN_DEP_CLEANUP
   if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | grep -F -q -v : ; then\
-    echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
-    tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
-    mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+    echo "$(@): \\" > $(@:%.o=%.dtemp) ;\
+    tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ;\
+    mv $(@:%.o=%.dtemp) $(@:%.o=%.d);\
   fi
 endef
 
@@ -252,8 +252,8 @@ FW := /usr/libexec/ApplicationFirewall/socketfilterfw
 realpath-py = $(shell $(PYTHON) -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' $(1))
 #
 define macos-firewall-register
-  @APP=$(call realpath-py, $(1)); \
-    if ! sudo -n true 2>/dev/null; then printf "Asking for sudo password to add new firewall rule for\n  $$APP\n"; fi; \
+  @APP=$(call realpath-py, $(1));\
+    if ! sudo -n true 2>/dev/null; then printf "Asking for sudo password to add new firewall rule for\n $$APP\n"; fi;\
     sudo $(FW) --remove $$APP --add $$APP --blockapp $$APP
 endef
 endif
@@ -269,7 +269,7 @@ $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 ifneq (,$(findstring emcc,$(CC)))
 $(testexe.c) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	-@$(call quiet,CLINKER) -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
-	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null  $$0.js $$*  | grep -v "Heap resize call from"'  > $@
+	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null $$0.js $$* | grep -v "Heap resize call from"' > $@
 	-@chmod u+x $@
 else
 $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
@@ -331,8 +331,8 @@ $(TESTDIR)/counts/%.counts :
 
 # Targets to run tests and remove executables, by package-lang pairs.
 # Run the tests in each batch using recursive invocation of make because
-# we need all of them to complete before removing the executables.  Make
-# doesn't guarantee an exploration order for the graph.  Only recursive
+# we need all of them to complete before removing the executables. Make
+# doesn't guarantee an exploration order for the graph. Only recursive
 # if there is something to be done.
 alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
 $(alltest-rm) : test-rm-% : test-%
@@ -354,7 +354,7 @@ $(testsrcs.o) : $(petscvariables)
 .PRECIOUS: %/.DIR
 
 .SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.DELETE_ON_ERROR: # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean cleantest all
 
@@ -364,7 +364,7 @@ cleantest:
 clean: cleantest
 
 alltest.d := $(testsrcs.o:%.o=%.d)
-# Tell make that alltest.d are all up to date.  Without this, the include
+# Tell make that alltest.d are all up to date. Without this, the include
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
 $(alltest.d) : ;
@@ -402,10 +402,10 @@ else ifdef query
   TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(query)' '$(queryval)')
 else ifdef q
   TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(q)' '$(qv)')
-else                            # No filter - run them all, but delete the executables as we go
+else # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
   ifneq ($(PRINTONLY),1)
-    showreport = "-s"  # Only show full report when all tests are run
+    showreport = "-s" # Only show full report when all tests are run
   endif
 endif
 
@@ -427,11 +427,11 @@ starttime: pre-clean $(libpetscall) macos-firewall-register-mpiexec
 
 report_tests: starttime $(TESTTARGETS)
 	@$(eval ENDTIME := $(shell date +%s))
-	-@ elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
+	-@ elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) &&\
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time} $(showreport)
 
 check_output:
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)  --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)" --check-output
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)" --check-output
 
 # If users make is a gnumake then these messages are provided even if the user does not do make -f gmakefile.test
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
@@ -511,11 +511,11 @@ help-test:
 	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
 	-@echo "  TESTBASE='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"
-	-@echo "  EXTRA_OPTIONS_INITIAL='<args>'  Add initial options to scripts (-e to test scripts)"
-	-@echo "  EXTRA_OPTIONS='<args>'  Add final options to scripts (-E to test scripts)"
+	-@echo "  EXTRA_OPTIONS_INITIAL='<args>' Add initial options to scripts (-e to test scripts)"
+	-@echo "  EXTRA_OPTIONS='<args>' Add final options to scripts (-E to test scripts)"
 	-@echo
 	-@echo "Special options for macOS:"
-	-@echo "  MACOS_FIREWALL=1  Add each built test to the macOS firewall list to prevent popups. Configure --with-macos-firewall-rules to make this default"
+	-@echo "  MACOS_FIREWALL=1 Add each built test to the macOS firewall list to prevent popups. Configure --with-macos-firewall-rules to make this default"
 	-@echo
 	-@echo "Tests can be generated by searching with multiple methods"
 	-@echo "  For general searching (using config/query_tests.py):"

@@ -686,6 +686,14 @@ where noted, add a newline after the section headings.
 
 [^footnote-1]: Type also refers to the string name of the subclass.
 
+### Makefile formatting
+
+1. The line continuation character `"\"` should not have any spaces to its left or right
+
+2. Avoid double spaces in makefile rules. For example `"cat file | tr ..."` not `"cat  file   |  tr ..."`
+
+3. Single space after `";"` but not before it. For example `"make ex1; make ex2"` not `"make ex1 ;make ex2"`
+
 ### Spelling and Capitalization
 
 1. Proper nouns, including Unix, Linux, X Windows, and Microsoft Windows, should be fully written and capitalized. This includes all operating systems.
