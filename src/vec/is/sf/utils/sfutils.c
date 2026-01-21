@@ -36,6 +36,9 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscAssertPointer(layout, 2);
+  if (nleaves > 0 && ilocal) PetscAssertPointer(ilocal, 4);
+  if (nleaves > 0) PetscAssertPointer(gremote, 6);
   PetscCall(PetscLayoutSetUp(layout));
   PetscCall(PetscLayoutGetLocalSize(layout, &nroots));
   PetscCall(PetscLayoutGetRanges(layout, &range));
@@ -87,6 +90,11 @@ PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *
   PetscLayout        lt;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  if (layout) PetscAssertPointer(layout, 2);
+  if (nleaves) PetscAssertPointer(nleaves, 3);
+  if (ilocal) PetscAssertPointer(ilocal, 4);
+  if (gremote) PetscAssertPointer(gremote, 5);
   PetscCall(PetscSFGetGraph(sf, &nr, &nl, ilocal, &ir));
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sf), nr, PETSC_DECIDE, 1, &lt));
   if (gremote) {
@@ -234,6 +242,10 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscBool      *sub, hasc;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(rootSection, PETSC_SECTION_CLASSID, 2);
+  if (remoteOffsets) PetscAssertPointer(remoteOffsets, 3);
+  PetscValidHeaderSpecific(leafSection, PETSC_SECTION_CLASSID, 4);
   PetscCall(PetscLogEventBegin(PETSCSF_DistSect, sf, 0, 0, 0));
   PetscCall(PetscSectionGetNumFields(rootSection, &numFields));
   if (numFields) {
@@ -384,6 +396,10 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscInt        numRoots, rpStart = 0, rpEnd = 0, lpStart = 0, lpEnd = 0;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(rootSection, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(leafSection, PETSC_SECTION_CLASSID, 3);
+  PetscAssertPointer(remoteOffsets, 4);
   *remoteOffsets = NULL;
   PetscCall(PetscSFGetGraph(sf, &numRoots, NULL, NULL, NULL));
   if (numRoots < 0) PetscFunctionReturn(PETSC_SUCCESS);
@@ -519,6 +535,8 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscMPIInt  flg;
 
   PetscFunctionBegin;
+  PetscAssertPointer(rmap, 1);
+  PetscAssertPointer(lmap, 2);
   PetscAssertPointer(sf, 3);
   PetscCheck(rmap->setupcalled, rcomm, PETSC_ERR_ARG_WRONGSTATE, "Root layout not setup");
   PetscCheck(lmap->setupcalled, lcomm, PETSC_ERR_ARG_WRONGSTATE, "Leaf layout not setup");
@@ -718,6 +736,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscBool flag;
 
   PetscFunctionBegin;
+  PetscAssertPointer(layout, 1);
   if (rootIndices) PetscAssertPointer(rootIndices, 3);
   if (rootLocalIndices) PetscAssertPointer(rootLocalIndices, 4);
   if (leafIndices) PetscAssertPointer(leafIndices, 7);
