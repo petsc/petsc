@@ -24,7 +24,7 @@ ______________________________________________________________________
 
 ## Linux on Microsoft Windows
 
-- Microsoft Windows Subsystem for Linux 2 ([WLS2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)). Be sure to use WSL2 for best performance.
+- Microsoft Windows Subsystem for Linux 2 ([WSL2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)). Be sure to use WSL2 for best performance.
 - [Docker](https://docs.docker.com/docker-for-windows/) for Microsoft
   Windows.
 - Linux virtual machine via [VirtualBox](https://www.virtualbox.org/) or similar. One sample
