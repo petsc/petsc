@@ -57,6 +57,7 @@ The current members of the PETSc Council are
 Mark Adams,
 Satish Balay,
 Jed Brown,
+Martin Diehl,
 Jacob Faibussowitsch,
 Toby Isaac,
 Pierre Jolivet,
