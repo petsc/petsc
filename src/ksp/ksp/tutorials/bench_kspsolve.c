@@ -405,6 +405,7 @@ int main(int argc, char **argv)
       PetscCall(PetscLogStageRegister("Step2  - KSPSolve", &stage));
       PetscCall(PetscLogStagePush(stage));
       PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+      PetscCall(KSPSetErrorIfNotConverged(ksp, PETSC_TRUE));
       PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
       PetscCall(PetscTime(&time_start));
@@ -420,6 +421,7 @@ int main(int argc, char **argv)
       PetscCall(PetscLogStageRegister("Step2a - PCSetUp", &stage));
       PetscCall(PetscLogStagePush(stage));
       PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+      PetscCall(KSPSetErrorIfNotConverged(ksp, PETSC_TRUE));
       PetscCall(KSPSetOperators(ksp, A, A));
       PetscCall(KSPSetFromOptions(ksp));
       PetscCall(KSPGetPC(ksp, &pc));
@@ -446,7 +448,6 @@ int main(int argc, char **argv)
     PetscCall(VecAXPY(x, -1.0, u));
     PetscCall(VecNorm(x, NORM_2, &norm));
     PetscCall(PetscLogStagePop());
-    PetscCheck(norm < 0.1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||x - u|| is too big, %g", (double)norm);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /*  Summary                                                            */

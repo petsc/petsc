@@ -641,7 +641,7 @@ typedef PetscReal PetscScalar;
 
    Level: beginner
 
-.seealso: `PetscInsertMode`
+.seealso: `InsertMode`
 E*/
 typedef enum {
   PETSC_COPY_VALUES,

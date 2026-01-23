@@ -54,11 +54,28 @@ typedef struct {
   PetscErrorCode (*destroy)(PetscObject *);
 } PetscOps;
 
+/*E
+   PetscFortranCallbackType  - Indicates if a Fortran callback stored in a `PetscObject` is associated with the class or the current particular type of the object
+
+  Values:
++ `PETSC_FORTRAN_CALLBACK_CLASS`   - the callback is associated with the class
+- `PETSC_FORTRAN_CALLBACK_SUBTYPE` - the callback is associated with the current particular subtype
+
+  Level: developer
+
+  Developer Note:
+  The two sets of callbacks are stored in different arrays in the `PetscObject` because the `PETSC_FORTRAN_CALLBACK_SUBTYPE` callbacks must
+  be removed whenever the type of the object is changed (because they are not appropriate for other types). The removal is done in
+  `PetscObjectChangeTypeName()`.
+
+.seealso: `PetscFortranCallbackFn`, `PetscObjectSetFortranCallback()`, `PetscObjectGetFortranCallback()`, `PetscObjectChangeTypeName()`
+E*/
 typedef enum {
   PETSC_FORTRAN_CALLBACK_CLASS,
   PETSC_FORTRAN_CALLBACK_SUBTYPE,
   PETSC_FORTRAN_CALLBACK_MAXTYPE
 } PetscFortranCallbackType;
+
 typedef size_t PetscFortranCallbackId;
 #define PETSC_SMALLEST_FORTRAN_CALLBACK ((PetscFortranCallbackId)1000)
 PETSC_EXTERN PetscErrorCode PetscFortranCallbackRegister(PetscClassId, const char *, PetscFortranCallbackId *);
