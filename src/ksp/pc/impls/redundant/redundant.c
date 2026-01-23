@@ -174,12 +174,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   }
 
   if (pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(red->ksp));
-  PetscCall(KSPSetUp(red->ksp));
-
-  /* Detect failure */
-  KSPConvergedReason redreason;
-  PetscCall(KSPGetConvergedReason(red->ksp, &redreason));
-  if (redreason) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

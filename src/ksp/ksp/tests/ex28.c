@@ -10,6 +10,7 @@ int main(int argc, char **args)
   PC          pc;      /* preconditioner context */
   PetscReal   norm;    /* norm of solution error */
   PetscInt    i, n = 10, col[3], its, rstart, rend, nlocal;
+  PetscMPIInt size, rank, subsize;
   PetscScalar one             = 1.0, value[3];
   PetscBool   TEST_PROCEDURAL = PETSC_FALSE;
 
@@ -101,22 +102,42 @@ int main(int argc, char **args)
   */
   if (TEST_PROCEDURAL) {
     /* Example of runtime options: '-pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi' */
-    PetscMPIInt size, rank, subsize;
-    Mat         A_redundant;
-    KSP         innerksp;
-    PC          innerpc;
-    MPI_Comm    subcomm;
-
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCSetType(pc, PCREDUNDANT));
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     PetscCheck(size > 2, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, "Num of processes %d must greater than 2", size);
     PetscCall(PCRedundantSetNumber(pc, size - 2));
-    PetscCall(KSPSetFromOptions(ksp));
+  }
+  PetscCall(KSPSetFromOptions(ksp));
+  if (TEST_PROCEDURAL) {
+    PetscBool flg;
+
+    PetscCall(KSPSetUp(ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCREDUNDANT, &flg));
+    if (flg) {
+      KSP innerksp;
+      PC  innerpc;
+
+      PetscCall(PCRedundantGetKSP(pc, &innerksp));
+      PetscCall(KSPSetFromOptions(innerksp));
+      PetscCall(KSPGetPC(innerksp, &innerpc));
+      PetscCall(PetscObjectTypeCompare((PetscObject)innerpc, PCILU, &flg));
+      if (flg) PetscCall(PCFactorSetLevels(innerpc, 1));
+    }
+  }
+
+  /*  Solve linear system */
+  PetscCall(KSPSolve(ksp, b, x));
+
+  if (TEST_PROCEDURAL) {
+    Mat      A_redundant;
+    KSP      innerksp;
+    PC       innerpc;
+    MPI_Comm subcomm;
 
     /* Get subcommunicator and redundant matrix */
-    PetscCall(KSPSetUp(ksp));
     PetscCall(PCRedundantGetKSP(pc, &innerksp));
     PetscCall(KSPGetPC(innerksp, &innerpc));
     PetscCall(PCGetOperators(innerpc, NULL, &A_redundant));
@@ -126,12 +147,7 @@ int main(int argc, char **args)
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "A_redundant:\n"));
       PetscCall(MatView(A_redundant, PETSC_VIEWER_STDOUT_SELF));
     }
-  } else {
-    PetscCall(KSPSetFromOptions(ksp));
   }
-
-  /*  Solve linear system */
-  PetscCall(KSPSolve(ksp, b, x));
 
   /* Check the error */
   PetscCall(VecAXPY(x, -1.0, u));
@@ -164,5 +180,12 @@ int main(int argc, char **args)
       suffix: 3
       args: -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
       nsize: 5
+
+    test:
+      suffix: 4
+      requires: defined(PETSC_USE_LOG)
+      args: -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type ilu -log_view
+      filter: grep -o "MatLUFactorNum         1"
+      nsize: 3
 
 TEST*/
