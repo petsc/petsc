@@ -13,7 +13,7 @@ extract_subroutines() {
 }
 
 for rev in $before $after; do
-  git worktree add -f "$TMPDIR/wt_$rev" $rev
+  git worktree add -f "$TMPDIR/wt_$rev" "$rev"
   (
     cd "$TMPDIR/wt_$rev"
     export PETSC_DIR="$TMPDIR/wt_$rev"

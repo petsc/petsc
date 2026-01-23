@@ -218,7 +218,7 @@ PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres) PeNS
   Sometimes when a program crashes, shared memory IDs may remain, making it impossible to rerun the program.
   Use
 .vb
-  $PETSC_DIR/lib/petsc/bin/petscfreesharedmemory
+  $PETSC_DIR/lib/petsc/bin/petscfreesharedmemory.sh
 .ve to free that memory. The Linux command `ipcrm --all` or macOS command `for i in $(ipcs -m | tail -$(expr $(ipcs -m | wc -l) - 3) | tr -s ' ' | cut -d" " -f3); do ipcrm -M $i; done`
   will also free the memory.
 

@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+#    Frees any any shared memory allocated by PETSc with PetscShmgetAllocateArray()
+#
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: petscfreesharedmeory.sh"
+  exit
+fi
+
+if [ "$(uname)" = "Linux" ]; then
+  ipcrm --all
+else
+  for i in $(ipcs -m  | grep -E -v "(KEY|Shared|IPC|0x00000000)" | tr -s ' ' | cut -d" " -f3); do ipcrm -M "$i"; done
+fi
+

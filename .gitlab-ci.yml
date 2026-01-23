@@ -261,6 +261,7 @@ checksource:
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst
     - make -C src/binding/petsc4py lint
+    - PATH=/nfs/gce/projects/petsc/soft/shellcheck-stable:$PATH make checkshellcheck SHELL=bash
   artifacts:
     name: "$CI_JOB_NAME"
     when: always

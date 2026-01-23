@@ -10,6 +10,7 @@
 ```
 
 - Change behavior of `-options_left` when set to `true`: it no longer triggers a call to `PetscOptionsView()`
+- Change $PETSC_DIR/lib/petsc/bin/petscfreesharedmemory to $PETSC_DIR/lib/petsc/bin/petscfreesharedmemory.sh
 
 ```{rubric} Configure/Build:
 ```
