@@ -4,8 +4,25 @@
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 ! Fortran translation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
 #include <petsc/finclude/petscvec.h>
+module ex18fmodule
+  use petscvec
+  implicit none
+
+contains
+
+  pure function func(a)
+    PetscScalar :: func
+    PetscScalar, intent(in) :: a
+
+    func = 2.0*a/(1.0 + a**2)
+
+  end function func
+
+end module ex18fmodule
+
 program main
   use petscvec
+  use ex18fmodule
 
   implicit none
   PetscErrorCode :: ierr
@@ -86,17 +103,6 @@ program main
   PetscCallA(VecDestroy(xend, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-
-contains
-
-  pure function func(a)
-    PetscScalar :: func
-    PetscScalar, intent(in) :: a
-
-    func = 2.0*a/(1.0 + a**2)
-
-  end function func
-
 end program
 
 !/*TEST

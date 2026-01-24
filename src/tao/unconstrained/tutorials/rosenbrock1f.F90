@@ -15,7 +15,11 @@
 #include "petsc/finclude/petsctao.h"
 module rosenbrock1fmodule
   use petsctao
+
   implicit none
+  PetscReal alpha
+  PetscInt n
+
 contains
 ! --------------------------------------------------------------------
 !  FormFunctionGradient - Evaluates the function f(X) and gradient G(X)
@@ -32,38 +36,33 @@ contains
   subroutine FormFunctionGradient(ta, X, f, G, dummy, ierr)
     type(tTao) ta
     type(tVec) X, G
-    PetscReal f
+    PetscReal, intent(out) :: f
     PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
-    PetscReal ff, t1, t2
+    PetscReal t1, t2
     PetscInt i, nn
     PetscReal, pointer :: g_v(:), x_v(:)
-    PetscReal alpha
-    PetscInt n
-    common/params/alpha, n
-
-    nn = n/2
-    ff = 0
 
 !   Get pointers to vector data
     PetscCall(VecGetArrayRead(X, x_v, ierr))
     PetscCall(VecGetArray(G, g_v, ierr))
 
+    nn = n/2
+    f = 0.0_PETSC_REAL_KIND
 !   Compute G(X)
     do i = 0, nn - 1
       t1 = x_v(1 + 2*i + 1) - x_v(1 + 2*i)*x_v(1 + 2*i)
       t2 = 1.0 - x_v(1 + 2*i)
-      ff = ff + alpha*t1*t1 + t2*t2
+      f = f + alpha*t1**2 + t2**2
       g_v(1 + 2*i) = -4*alpha*t1*x_v(1 + 2*i) - 2.0*t2
       g_v(1 + 2*i + 1) = 2.0*alpha*t1
     end do
 
-!     Restore vectors
+!   Restore vectors
     PetscCall(VecRestoreArrayRead(X, x_v, ierr))
     PetscCall(VecRestoreArray(G, g_v, ierr))
 
-    f = ff
     PetscCall(PetscLogFlops(15.0d0*nn, ierr))
 
   end
@@ -105,22 +104,16 @@ contains
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
     PetscReal, pointer :: x_v(:)
     PetscInt i, nn, ind(0:1)
-    PetscReal alpha
-    PetscInt n
-    common/params/alpha, n
 
-    nn = n/2
-
-!  Zero existing matrix entries
+!   Zero existing matrix entries
     PetscCall(MatAssembled(H, assembled, ierr))
-    if (assembled .eqv. PETSC_TRUE) PetscCall(MatZeroEntries(H, ierr))
+    if (assembled) PetscCall(MatZeroEntries(H, ierr))
 
-!  Get a pointer to vector data
-
+!   Get a pointer to vector data
     PetscCall(VecGetArrayRead(X, x_v, ierr))
 
-!  Compute Hessian entries
-
+!   Compute Hessian entries
+    nn = n/2
     do i = 0, nn - 1
       v(1, 1) = 2.0*alpha
       v(0, 0) = -4.0*alpha*(x_v(1 + 2*i + 1) - 3*x_v(1 + 2*i)*x_v(1 + 2*i)) + 2
@@ -162,9 +155,6 @@ program rosenbrock1f
   type(tTao) ta     ! TAO_SOVER context
   PetscBool flg
   PetscMPIInt size
-  PetscReal alpha
-  PetscInt n
-  common/params/alpha, n
 
 !  Initialize TAO and PETSc
   PetscCallA(PetscInitialize(ierr))

@@ -3,6 +3,7 @@ module ex13module
   use petscksp
 
   implicit none
+  PetscReal :: hx2, hy2
   type User
     Vec x
     Vec b
@@ -19,9 +20,6 @@ contains
     PetscInt, intent(in) :: m, n
     PetscErrorCode, intent(out) :: ierr
     type(User) userctx
-
-    common/param/hx2, hy2
-    PetscReal hx2, hy2
 
 !  Local variable declararions
     Mat A
@@ -73,9 +71,6 @@ contains
     PetscErrorCode, intent(out) :: ierr
     type(User) userctx
     PetscScalar rho(*), userb(*), userx(*)
-
-    common/param/hx2, hy2
-    PetscReal hx2, hy2
 
     PC pc
     KSP ksp
@@ -209,8 +204,6 @@ end module ex13module
 
 program main
   use ex13module
-  implicit none
-
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
 
@@ -227,10 +220,7 @@ program main
 !
 !   Scalar hx2,hy2  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+  implicit none
   PetscScalar hx, hy, x, y
   type(User) userctx
   PetscErrorCode ierr
@@ -244,9 +234,6 @@ program main
   PetscScalar, allocatable :: userb(:, :)
   PetscScalar, allocatable :: solution(:, :)
   PetscScalar, allocatable :: rho(:, :)
-
-  PetscReal hx2, hy2
-  common/param/hx2, hy2
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

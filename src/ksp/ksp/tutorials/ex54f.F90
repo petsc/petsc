@@ -18,7 +18,9 @@
 #include <petsc/finclude/petscksp.h>
 module ex54fmodule
   use petscksp
+
   implicit none
+  PetscReal theta
 
 contains
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,10 +28,11 @@ contains
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Compute thermal gradient and flux
 
-  subroutine thfx2d(ev, xl, shp, dd, ndm, nel, dir)
+  pure subroutine thfx2d(ev, xl, shp, dd, ndm, nel, dir)
     PetscInt, intent(in) :: nel, ndm
     PetscReal, intent(out) :: dd(2, 2)
-    PetscReal ev(2), xl(ndm, nel), shp(3, *), dir
+    PetscReal, intent(in) :: ev(2), xl(ndm, nel), shp(3, *)
+    procedure(ex54_psi) :: dir
     PetscReal xx, yy, psi, cs, sn, c2, s2
 
     xx = sum(shp(3, 1:nel)*xl(1, 1:nel))
@@ -47,14 +50,14 @@ contains
     dd(1, 2) = cs*(ev(1) - ev(2))
     dd(2, 1) = dd(1, 2)
 
-!      flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
-!      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
-  end
+!   flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
+!   flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
+  end subroutine thfx2d
 
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     shp2dquad - shape functions - compute derivatives w/r natural coords.
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  subroutine shp2dquad(s, t, xl, shp, xsj, ndm)
+  pure subroutine shp2dquad(s, t, xl, shp, xsj, ndm)
 !-----[--.----+----.----+----.-----------------------------------------]
 !      Purpose: Shape function routine for 4-node isoparametric quads
 !
@@ -71,11 +74,11 @@ contains
 !         xsj       - Jacobian determinant at point
 !-----[--.----+----.----+----.-----------------------------------------]
     PetscInt, intent(in) :: ndm
-    PetscReal, intent(out) :: shp(3, 4)
+    PetscReal, intent(out) :: shp(3, 4), xsj
     PetscReal, intent(in) :: xl(ndm, 4), s, t
     PetscReal xo, xs, xt, yo, ys, yt, xsm, xsp, xtm
     PetscReal xtp, ysm, ysp, ytm, ytp
-    PetscReal xsj, xsj1, sh, th, sp, tp, sm, tm
+    PetscReal xsj1, sh, th, sp, tp, sm, tm
 
 !   Set up interpolations
 
@@ -141,7 +144,7 @@ contains
     shp(2, 3) = -xtp + xsp
     shp(2, 4) = xtp + xsm
 
-  end
+  end subroutine shp2dquad
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! int2d
@@ -156,12 +159,14 @@ contains
 !     Outputs:
 !     sg(3,*) - Array of points and weights
 !-----[--.----+----.----+----.-----------------------------------------]
-    PetscInt l, i, lr(9), lz(9)
-    PetscReal g, third, sg(3, *)
-    data lr/-1, 1, 1, -1, 0, 1, 0, -1, 0/, lz/-1, -1, 1, 1, -1, 0, 1, 0, 0/
-    data third/0.3333333333333333/
+    PetscInt l, i
+    PetscReal g, sg(3, *)
+    PetscInt, parameter, dimension(9) :: &
+      lr = [-1, 1, 1, -1, 0, 1, 0, -1, 0], &
+      lz = [-1, -1, 1, 1, -1, 0, 1, 0, 0]
+    PetscReal, parameter :: third = 1.0_PETSC_REAL_KIND/3.0_PETSC_REAL_KIND
 
-!     2x2 integration
+!   2x2 integration
     g = sqrt(third)
     do i = 1, 4
       sg(1, i) = g*lr(i)
@@ -174,19 +179,19 @@ contains
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! ex54_psi - anisotropic material direction
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  PetscReal function ex54_psi(x, y)
-    PetscReal x, y, theta
-    common/ex54_theta/theta
+  PetscReal pure function ex54_psi(x, y)
+    PetscReal, intent(in) :: x, y
     ex54_psi = theta
     if (theta < 0.) then     ! circular
-      if (y == 0) then
+      if (y == 0.0) then
         ex54_psi = 2.0*atan(1.0)
       else
         ex54_psi = atan(-x/y)
       end if
     end if
   end
-end
+end module ex54fmodule
+
 program main
   use petscksp
   use ex54fmodule
@@ -207,11 +212,10 @@ program main
   PetscScalar :: ss(4, 4), val
   PetscReal :: shp(3, 9), sg(3, 9)
   PetscReal :: thk = 1.0              ! thickness
-  PetscReal :: theta, eps, h, x, y, xsj, a1, a2
+  PetscReal :: eps, h, x, y, xsj, a1, a2
   PetscReal :: coord(2, 4), dd(2, 2), ev(3), blb(2)
   PetscReal, parameter :: rad2deg = 57.2957795
 
-  common/ex54_theta/theta
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -234,8 +238,7 @@ program main
   ki = 2
   PetscCallA(PetscOptionsGetRealArray(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-blob_center', blb, ki, flg, ierr))
   if (.not. flg) then
-    blb(1) = 0.0
-    blb(2) = 0.0
+    blb = 0.0
   else if (ki /= 2) then
     print *, 'error: ', ki, ' arguments read for -blob_center.  Needs to be two.'
   end if
@@ -293,7 +296,7 @@ program main
           a1 = (dd(1, 1)*shp(1, kj) + dd(1, 2)*shp(2, kj))*xsj
           a2 = (dd(2, 1)*shp(1, kj) + dd(2, 2)*shp(2, kj))*xsj
 !     Compute residual
-!                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
+!         p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
 !     Compute tangent
           i1 = 1
           do ki = 1, nel
@@ -304,8 +307,7 @@ program main
         end do
       end do
 
-      idx(1) = geq; idx(2) = geq + 1; idx(3) = geq + (ne + 1) + 1
-      idx(4) = geq + (ne + 1)
+      idx = [geq, geq + 1, geq + (ne + 1) + 1, geq + (ne + 1)]
       if (qj > 0) then
         PetscCallA(MatSetValues(Amat, 4_PETSC_INT_KIND, idx, 4_PETSC_INT_KIND, idx, reshape(ss, [4_PETSC_INT_KIND**2]), ADD_VALUES, ierr))
       else                !     a BC
@@ -394,8 +396,8 @@ program main
       write (1, *) 'bb = reshape(b,mm,mm);'
       write (1, *) 'xx = reshape(x,mm,mm);'
       write (1, *) 'rr = reshape(r,mm,mm)'
-!            write (1,*) 'imagesc(bb')'
-!            write (1,*) 'title('RHS'),'
+!     write (1,*) 'imagesc(bb')'
+!     write (1,*) 'title('RHS'),'
       write (1, *) 'figure,'
       write (1, *) 'imagesc(xx'')'
       write (1, 2002) eps, theta*57.2957795

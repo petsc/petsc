@@ -1,8 +1,60 @@
 !     Contributed by Noem T
 #include <petsc/finclude/petscdmplex.h>
+module dmplexcomputecellgeometryfemmodule
+  use petscdm
+  use petscdmplex
+  implicit none
+
+contains
+! Quadrature points in a quadrilateral in [-1,+1]
+  pure function Gauss_rs(n)
+    PetscInt, intent(in) :: n
+    PetscReal :: Gauss_rs(2)
+
+    PetscReal, parameter :: p = 1.0/sqrt(3.0)
+
+    select case (n)
+    case (1)
+      Gauss_rs = [-p, -p]
+    case (2)
+      Gauss_rs = [-p, +p]
+    case (3)
+      Gauss_rs = [+p, -p]
+    case (4)
+      Gauss_rs = [+p, +p]
+    end select
+  end function Gauss_rs
+
+! Mapped quadrature points
+  pure function quad_v(rs)
+    PetscReal, intent(in) :: rs(2)
+    PetscReal :: quad_v(2)
+
+    PetscReal :: r, s
+
+    r = rs(1)
+    s = rs(2)
+    quad_v(1) = -0.5*r*(s - 5)       ! sum N_i * x_i
+    quad_v(2) = 0.5*(r + 5*s + 2)    ! sum N_i * y_i
+  end function quad_v
+
+! Jacobian
+  pure function quad_J(rs)
+    PetscReal, intent(in) :: rs(2)
+    PetscReal :: quad_J(4)
+
+    PetscReal :: r, s
+
+    r = rs(1)
+    s = rs(2)
+    quad_J = [-0.5*(s - 5), -0.5*r, .5_PETSC_REAL_KIND, 2.5_PETSC_REAL_KIND]
+  end function quad_J
+end module dmplexcomputecellgeometryfemmodule
+
 program test
   use petscdm
   use petscdmplex
+  use dmplexcomputecellgeometryfemmodule
 
   implicit none
   DM       :: dm
@@ -76,51 +128,6 @@ program test
     PetscCallA(DMDestroy(dm, ierr))
   end block quadrilateral
   PetscCallA(PetscFinalize(ierr))
-
-contains
-! Quadrature points in a quadrilateral in [-1,+1]
-  pure function Gauss_rs(n)
-    PetscInt, intent(in) :: n
-    PetscReal :: Gauss_rs(2)
-
-    PetscReal, parameter :: p = 1.0/sqrt(3.0)
-
-    select case (n)
-    case (1)
-      Gauss_rs = [-p, -p]
-    case (2)
-      Gauss_rs = [-p, +p]
-    case (3)
-      Gauss_rs = [+p, -p]
-    case (4)
-      Gauss_rs = [+p, +p]
-    end select
-  end function Gauss_rs
-
-! Mapped quadrature points
-  pure function quad_v(rs)
-    PetscReal, intent(in) :: rs(2)
-    PetscReal :: quad_v(2)
-
-    PetscReal :: r, s
-
-    r = rs(1)
-    s = rs(2)
-    quad_v(1) = -0.5*r*(s - 5)       ! sum N_i * x_i
-    quad_v(2) = 0.5*(r + 5*s + 2)      ! sum N_i * y_i
-  end function quad_v
-
-! Jacobian
-  pure function quad_J(rs)
-    PetscReal, intent(in) :: rs(2)
-    PetscReal :: quad_J(4)
-
-    PetscReal :: r, s
-
-    r = rs(1)
-    s = rs(2)
-    quad_J = [-0.5*(s - 5), -0.5*r, .5_PETSC_REAL_KIND, 2.5_PETSC_REAL_KIND]
-  end function quad_J
 
 end program test
 

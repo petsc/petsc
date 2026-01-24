@@ -1,28 +1,7 @@
 #include <petsc/finclude/petscdmlabel.h>
-program ex1f90
+module ex1f90module
   use petscdm
   implicit none
-
-  type(tDM)                         :: dm, dmDist
-  character(len=PETSC_MAX_PATH_LEN) :: filename
-  PetscBool                         :: interpolate = PETSC_FALSE
-  PetscBool                         :: flg
-  PetscErrorCode                    :: ierr
-
-  PetscCallA(PetscInitialize(ierr))
-  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-i', filename, flg, ierr))
-  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-interpolate', interpolate, flg, ierr))
-
-  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, 'ex1f90_plex', interpolate, dm, ierr))
-  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, dmDist, ierr))
-  if (.not. PetscObjectIsNull(dmDist)) then
-    PetscCallA(DMDestroy(dm, ierr))
-    dm = dmDist
-  end if
-
-  PetscCallA(ViewLabels(dm, PETSC_VIEWER_STDOUT_WORLD, ierr))
-  PetscCallA(DMDestroy(dm, ierr))
-  PetscCallA(PetscFinalize(ierr))
 
 contains
   subroutine ViewLabels(dm, viewer, ierr)
@@ -59,6 +38,33 @@ contains
     PetscCall(ISView(labelIS, viewer, ierr))
     PetscCall(ISDestroy(labelIS, ierr))
   end subroutine viewLabels
+end module ex1f90module
+
+program ex1f90
+  use petscdm
+  use ex1f90module
+
+  implicit none
+  type(tDM)                         :: dm, dmDist
+  character(len=PETSC_MAX_PATH_LEN) :: filename
+  PetscBool                         :: interpolate = PETSC_FALSE
+  PetscBool                         :: flg
+  PetscErrorCode                    :: ierr
+
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-i', filename, flg, ierr))
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-interpolate', interpolate, flg, ierr))
+
+  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, 'ex1f90_plex', interpolate, dm, ierr))
+  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, dmDist, ierr))
+  if (.not. PetscObjectIsNull(dmDist)) then
+    PetscCallA(DMDestroy(dm, ierr))
+    dm = dmDist
+  end if
+
+  PetscCallA(ViewLabels(dm, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(DMDestroy(dm, ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program ex1F90
 
 !/*TEST
