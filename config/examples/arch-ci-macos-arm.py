@@ -16,6 +16,7 @@ configure_options = [
   '--download-mpi4py=1',
   '--download-make=1',
   '--download-slepc=1',
+  '--with-slepc4py=1',
   '--download-f2cblaslapack=1',
   '--with-f2cblaslapack-fp16-bindings=1',
   #'--with-coverage',

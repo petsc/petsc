@@ -23,14 +23,6 @@ class Configure(config.package.Package):
     self.parch           = framework.require('PETSc.options.arch',self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.deps            = [self.blasLapack,self.mathlib,self.mpi,self.slepc]
-
-    # Must force --have-petsc4py into SLEPc configure arguments so it does not test PETSc before BAMG is built
-    if self.argDB['download-'+self.downloadname.lower()]:
-      if 'download-slepc-configure-arguments' in self.argDB:
-        if not '--have-petsc4py' in self.argDB['download-slepc-configure-arguments']:
-          self.argDB['download-slepc-configure-arguments'] = self.argDB['download-slepc-configure-arguments']+' --have-petsc4py'
-      else:
-        self.argDB['download-slepc-configure-arguments'] = '--have-petsc4py'
     return
 
   def Install(self):

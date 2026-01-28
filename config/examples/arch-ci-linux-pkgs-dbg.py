@@ -52,6 +52,7 @@ configure_options = [
   '--download-revolve',
   '--download-cams',
   '--download-slepc',
+  '--with-slepc4py',
   '--download-kokkos',
   '--download-kokkos-cxx-std-threads',
   '--download-kokkos-kernels',
