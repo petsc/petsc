@@ -585,33 +585,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, const PetscReal abc[], PetscReal xyz[], void *a_ctx)
-{
-  PetscReal  r = abc[0], z = abc[1];
-  LandauCtx *ctx = (LandauCtx *)a_ctx;
-
-  PetscFunctionBegin;
-  if (ctx->sphere && dim == 3) { // make sphere: works for one AMR and Q2
-    PetscInt nzero = 0, idx = 0;
-    xyz[0] = r;
-    xyz[1] = z;
-    xyz[2] = abc[2];
-    for (PetscInt i = 0; i < 3; i++) {
-      if (PetscAbs(xyz[i]) < PETSC_SQRT_MACHINE_EPSILON) nzero++;
-      else idx = i;
-    }
-    if (nzero == 2) xyz[idx] *= 1.732050807568877; // sqrt(3)
-    else if (nzero == 1) {
-      for (PetscInt i = 0; i < 3; i++) xyz[i] *= 1.224744871391589; // sqrt(3/2)
-    }
-  } else {
-    xyz[0] = r;
-    xyz[1] = z;
-    if (dim == 3) xyz[2] = abc[2];
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* create DMComposite of meshes for each species group */
 static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt dim, const char prefix[], LandauCtx *ctx, DM pack)
 {
@@ -766,7 +739,6 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
         PetscCall(DMSetOptionsPrefix(dmforest, prefix));
         PetscCall(DMIsForest(dmforest, &isForest));
         PetscCheck(isForest, ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
-        if (ctx->sphere) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
         PetscCall(DMDestroy(&ctx->plex[grid]));
         ctx->plex[grid] = dmforest; // Forest for adaptivity
       }
