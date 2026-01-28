@@ -164,7 +164,7 @@ struct _p_KSP {
   PetscBool transpose_solve; /* solve transpose system instead */
   struct {
     Mat       AT, BT;
-    PetscBool use_explicittranspose; /* transpose the system explicitly in KSPSolveTranspose */
+    PetscBool use_explicittranspose; /* transpose the system explicitly in KSP[Mat]SolveTranspose() */
     PetscBool reuse_transpose;       /* reuse the previous transposed system */
   } transpose;
 

@@ -1055,7 +1055,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 
   $A x = b $  where $b = b_p + b_t$ where $b_t$ is not in the range of $A$ (and hence by the fundamental theorem of linear algebra is in the nullspace(A'), see `MatSetNullSpace()`).
 
-  `KSP` first removes $b_t$ producing the linear system $ A x = b_p $ (which has multiple solutions) and solves this to find the $\|x\|$ minimizing solution (and hence
+  `KSP` first removes $b_t$ producing the linear system $A x = b_p$ (which has multiple solutions) and solves this to find the $\|x\|$ minimizing solution (and hence
   it finds the solution $x$ orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
   direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
 
@@ -1103,8 +1103,30 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPUseExplicitTranspose_Private(KSP ksp)
+{
+  Mat J, Jpre;
+
+  PetscFunctionBegin;
+  PetscCall(KSPGetOperators(ksp, &J, &Jpre));
+  if (!ksp->transpose.reuse_transpose) {
+    PetscCall(MatTranspose(J, MAT_INITIAL_MATRIX, &ksp->transpose.AT));
+    if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_INITIAL_MATRIX, &ksp->transpose.BT));
+    ksp->transpose.reuse_transpose = PETSC_TRUE;
+  } else {
+    PetscCall(MatTranspose(J, MAT_REUSE_MATRIX, &ksp->transpose.AT));
+    if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_REUSE_MATRIX, &ksp->transpose.BT));
+  }
+  if (J == Jpre && ksp->transpose.BT != ksp->transpose.AT) {
+    PetscCall(PetscObjectReference((PetscObject)ksp->transpose.AT));
+    ksp->transpose.BT = ksp->transpose.AT;
+  }
+  PetscCall(KSPSetOperators(ksp, ksp->transpose.AT, ksp->transpose.BT));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
-  KSPSolveTranspose - Solves a linear system with the transpose of the matrix associated with the `KSP` object, $ A^T x = b$.
+  KSPSolveTranspose - Solves a linear system with the transpose of the matrix associated with the `KSP` object, $A^T x = b$.
 
   Collective
 
@@ -1116,7 +1138,7 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
   Level: developer
 
   Note:
-  For complex numbers this solve the non-Hermitian transpose system.
+  For complex numbers, this solve the non-Hermitian transpose system.
 
   Developer Note:
   We need to implement a `KSPSolveHermitianTranspose()`
@@ -1199,7 +1221,6 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
     PetscCall(MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY));
   }
   PetscCheck(B != X, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
-  PetscCheck(!ksp->transpose_solve || !ksp->transpose.use_explicittranspose, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSPMatSolveTranspose() does not support -ksp_use_explicittranspose");
   PetscCall(KSPGetOperators(ksp, &A, &P));
   PetscCall(MatGetLocalSize(B, NULL, &n2));
   PetscCall(MatGetLocalSize(X, NULL, &n1));
@@ -1328,7 +1349,8 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 {
   PetscFunctionBegin;
-  ksp->transpose_solve = PETSC_TRUE;
+  if (ksp->transpose.use_explicittranspose) PetscCall(KSPUseExplicitTranspose_Private(ksp));
+  else ksp->transpose_solve = PETSC_TRUE;
   PetscCall(KSPMatSolve_Private(ksp, B, X));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

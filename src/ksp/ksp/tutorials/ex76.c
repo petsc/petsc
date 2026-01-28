@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscViewer     viewer;
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
-  PetscBool       flg, set, transpose = PETSC_FALSE;
+  PetscBool       flg, set, transpose = PETSC_FALSE, explicit = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -153,7 +153,11 @@ int main(int argc, char **args)
   PetscCall(VecSet(b, 1.0));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
   if (!transpose) PetscCall(KSPSolve(ksp, b, b));
-  else PetscCall(KSPSolveTranspose(ksp, b, b));
+  else {
+    PetscCall(KSPSolveTranspose(ksp, b, b));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_use_explicittranspose", &explicit, NULL));
+    if (explicit) PetscCall(KSPSetOperators(ksp, A, A)); /* -ksp_use_explicittranspose does not cache the initial Mat and will transpose the explicit transpose again if not set back to the original Mat */
+  }
   PetscCall(VecGetLocalSize(b, &m));
   PetscCall(VecDestroy(&b));
   if (N > 1) {
@@ -167,7 +171,10 @@ int main(int argc, char **args)
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
     if (!transpose) PetscCall(KSPMatSolve(ksp, B, X));
-    else PetscCall(KSPMatSolveTranspose(ksp, B, X));
+    else {
+      PetscCall(KSPMatSolveTranspose(ksp, B, X));
+      if (explicit) PetscCall(KSPSetOperators(ksp, A, A)); /* same as in the prior KSPSolveTranspose() */
+    }
     PetscCall(KSPGetType(ksp, &type));
     PetscCall(PetscStrcmp(type, KSPHPDDM, &flg));
 #if defined(PETSC_HAVE_HPDDM)
@@ -182,7 +189,10 @@ int main(int argc, char **args)
         PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &C));
         PetscCall(KSPSetMatSolveBatchSize(ksp, 1));
         if (!transpose) PetscCall(KSPMatSolve(ksp, B, C));
-        else PetscCall(KSPMatSolveTranspose(ksp, B, C));
+        else {
+          PetscCall(KSPMatSolveTranspose(ksp, B, C));
+          if (explicit) PetscCall(KSPSetOperators(ksp, A, A)); /* same as in the prior KSPMatSolveTranspose() */
+        }
         PetscCall(MatAYPX(C, -1.0, X, SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(C, NORM_INFINITY, &norm));
         PetscCall(MatDestroy(&C));
@@ -421,6 +431,11 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
+      test:
+        suffix: geneo_explicittranspose
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -ksp_use_explicittranspose -rhs 2
       test:
         requires: mumps
         suffix: geneo_share_lu
