@@ -19,6 +19,7 @@ roadmap
 governance
 meetings/meeting
 petsc_team
+bofs/bofs
 ```
 
 If you are interested in contributing to PETSc, see {doc}`/developers/contributing/index`.
