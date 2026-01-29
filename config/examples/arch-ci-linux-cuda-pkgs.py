@@ -14,6 +14,7 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O0',
     'FOPTFLAGS=-g -O0',
     'CXXOPTFLAGS=-g -O0',
+    '--with-mpiexec-tail='+os.path.realpath("lib/petsc/bin/cuda_use_first_gpu.sh"),
     '--with-coverage',
     '--download-suitesparse',
     '--download-mumps',
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     # '--download-kokkos', # Kokkos-5.0 requires c++20 and cuda-12.2 or above, which break many packages
     # '--download-kokkos-kernels',
     '--download-hwloc',
-    #'--download-umpire', #'hypre' reserves 4G VRAM for each MPI process
+    '--download-umpire',
     '--download-hypre',
     '--download-caliper',
     '--download-raja',

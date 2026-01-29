@@ -83,13 +83,29 @@ static inline PetscErrorCode PetscHYPREFinalize_Private(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscBool use_gpu_aware_mpi;
-
+PETSC_EXTERN PetscBool use_gpu_aware_mpi;
+/*
+  Options Database Keys:
+. -hypre_umpire_device_pool_size <n>  - set the Umpire device memory pool size (in MiB). HYPRE uses 4 GiB by default.
+*/
 static inline PetscErrorCode PetscHYPREInitialize()
 {
   PetscFunctionBegin;
   if (!HYPRE_Initialized()) {
     PetscCallHYPRE(HYPRE_Initialize());
+  #if defined(HYPRE_USING_UMPIRE_DEVICE)
+    PetscInt  size = 0;
+    PetscBool set  = PETSC_FALSE;
+
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-hypre_umpire_device_pool_size", &size, &set));
+    if (set) {
+      PetscCheck(size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "-hypre_umpire_device_pool_size must be non-negative");
+      PetscCallHYPRE(HYPRE_SetUmpireDevicePoolSize((size_t)(size << 20))); // converr to size in bytes
+    } else if (PetscCIEnabled) {
+      // Set smaller pool size for CI tests to avoid OOM, but keep the default for users
+      PetscCallHYPRE(HYPRE_SetUmpireDevicePoolSize((size_t)(256 << 20))); // 256 MiB
+    }
+  #endif
   // hypre-2.31.0 added HYPRE_SetGpuAwareMPI.
   // HYPRE_USING_GPU_AWARE_MPI indicates hypre is configured with --enable-gpu-aware-mpi.
   // HYPRE_SetGpuAwareMPI() controls whether to actually use GPU-aware MPI.
