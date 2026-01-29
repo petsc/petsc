@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '2025.09.0'
+    self.version          = '2025.12.0'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/LLNL/Umpire.git',
                              'https://github.com/LLNL/Umpire/archive/'+self.gitcommit+'.tar.gz']
