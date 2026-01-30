@@ -248,6 +248,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, M
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_Basic(Mat, const PetscScalar[], InsertMode);
 
+/* Scattering of dense matrices with strided PetscSF */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatDenseScatter_Private(PetscSF, Mat, Mat, InsertMode, ScatterMode);
+
 /* This can be moved to the public header after implementing some missing MatProducts */
 PETSC_INTERN PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping, Mat, PetscBool, PetscBool, MatType, Mat *);
 

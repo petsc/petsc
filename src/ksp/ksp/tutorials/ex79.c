@@ -51,6 +51,17 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
+  /* PCFIELDSPLIT: set fields */
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &flg));
+  if (flg) {
+    PetscInt rbegin, rend, rsize = m / 2;
+    IS       is;
+
+    PetscCall(MatGetOwnershipRange(A, &rbegin, &rend));
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD, rsize, rbegin, 1, &is));
+    PetscCall(PCFieldSplitSetIS(pc, NULL, is));
+    PetscCall(ISDestroy(&is));
+  }
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
   if (flg) {
@@ -235,5 +246,18 @@ int main(int argc, char **args)
          output_file: output/empty.out
          requires: cuda
          args: -mat_type aijcusparse -ksp_type preonly
+
+   testset:
+      nsize: 2
+      args: -pc_type fieldsplit -pc_fieldsplit_type {{additive multiplicative symmetric_multiplicative}shared output}
+      test:
+         suffix: 10
+         output_file: output/empty.out
+         args: -ksp_type preonly
+      test:
+         suffix: 10_hpddm
+         output_file: output/empty.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly
 
 TEST*/
