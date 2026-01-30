@@ -1,0 +1,9 @@
+masses:        e= 9.109e-31; ions in proton mass units:    0.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  0.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 1.160e+07 i= 0.000e+00  0.000e+00. Normalization grid 0: v_0= 1.326e+07 ( 4.424e-02c) n_0= 1.000e+20 t_0= 7.343e-06 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 6.000e+00 perp= 6.000e+00 (0) 
+0) FormLandau 1512 IPs, 56 cells total, Nb=27, Nq=27, dim=3, Tab: Nb=27 Nf=1 Np=27 cdim=3 N=517 nnz= 29521
+dim = 3	totalWeight = 50.463507, user->charges[species[0]] = -1.000000	totalCharge = -50.463507, Total Area = 50.265600
+sigma: 1.00394
+(x0,v0,t0,m0,q0,phi0): (1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00) - (P, V) = (1.000000e+00, 1.000000e+00)
