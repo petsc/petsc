@@ -1871,10 +1871,14 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 @*/
 PetscErrorCode KSPSetErrorIfNotConverged(KSP ksp, PetscBool flg)
 {
+  PC pc;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
   ksp->errorifnotconverged = flg;
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetErrorIfFailure(pc, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2263,6 +2267,8 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc)
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp->pc, (PetscObject)ksp, 0));
     PetscCall(PetscObjectSetOptions((PetscObject)ksp->pc, ((PetscObject)ksp)->options));
     PetscCall(PCSetKSPNestLevel(ksp->pc, ksp->nestlevel));
+    PetscCall(PCSetErrorIfFailure(ksp->pc, ksp->errorifnotconverged));
+    if (ksp->dm) PetscCall(PCSetDM(ksp->pc, ksp->dm));
   }
   PetscCall(KSPCheckPCMPI(ksp));
   *pc = ksp->pc;
