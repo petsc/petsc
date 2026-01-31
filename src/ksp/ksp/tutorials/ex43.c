@@ -1451,7 +1451,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp_S));
   PetscCall(KSPSetOptionsPrefix(ksp_S, "stokes_"));
   PetscCall(KSPSetDM(ksp_S, da_Stokes));
-  PetscCall(KSPSetDMActive(ksp_S, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp_S, KSP_DMACTIVE_ALL, PETSC_FALSE));
   PetscCall(KSPSetOperators(ksp_S, A, B));
   PetscCall(KSPSetFromOptions(ksp_S));
   {
@@ -1513,7 +1513,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
         PetscCall(DMDACreateCompatibleDMDA(da_Stokes, 2, &da_U));
 
         PetscCall(KSPSetDM(ksp_U, da_U));
-        PetscCall(KSPSetDMActive(ksp_U, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(ksp_U, KSP_DMACTIVE_ALL, PETSC_FALSE));
         PetscCall(DMDestroy(&da_U));
         if (change) {
           const char opt[] = "-stokes_fieldsplit_u_pc_factor_mat_solver_type mumps";

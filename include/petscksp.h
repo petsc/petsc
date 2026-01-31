@@ -1280,7 +1280,28 @@ PETSC_EXTERN const char *const MatLMVMDenseTypes[];
 PETSC_EXTERN PetscErrorCode MatLMVMDenseSetType(Mat, MatLMVMDenseType);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP, DM);
-PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, PetscBool);
+
+/*E
+  KSPDMActive - Indicates if the `DM` attached to the `KSP` should be used to compute the operator, the right-hand side, or the initial guess
+
+  Values:
++ `KSP_DMACTIVE_OPERATOR`      - compute the operator
+. `KSP_DMACTIVE_RHS`           - compute the right-hand side
+. `KSP_DMACTIVE_INITIAL_GUESS` - compute the initial guess
+- `KSP_DMACTIVE_ALL`           - compute all of them
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `KSP`, `KSPSetDMActive()`, `KSPSetDM()`
+E*/
+typedef enum {
+  KSP_DMACTIVE_OPERATOR      = 1,
+  KSP_DMACTIVE_RHS           = 2,
+  KSP_DMACTIVE_INITIAL_GUESS = 4,
+  KSP_DMACTIVE_ALL           = 1 + 2 + 4
+} KSPDMActive;
+PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, KSPDMActive, PetscBool);
+
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP, DM *);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, PetscCtx);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, PetscCtxRt);

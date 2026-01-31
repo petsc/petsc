@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   if (testsolver) {
     PetscCall(KSPGetSolution(ksp, &x));
     PetscCall(KSPGetRhs(ksp, &b));
-    PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+    PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
     PetscCall(KSPSolve(ksp, b, x));
     {
       PetscLogStage stage;

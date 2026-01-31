@@ -831,7 +831,7 @@ PetscErrorCode test_basic(void)
   PetscCall(KSPSetComputeOperators(ksp, ComputeMatrix_ShellDA, user));
   /*PetscCall(KSPSetOperators(ksp,A,A));*/
   PetscCall(KSPSetDM(ksp, dmF));
-  PetscCall(KSPSetDMActive(ksp, PETSC_TRUE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_TRUE));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCTelescopeSetUseCoarseDM(pc, PETSC_TRUE));
@@ -874,7 +874,7 @@ PetscErrorCode test_mg(void)
   PetscCall(KSPSetComputeOperators(ksp, ComputeMatrix_ShellDA, user));
   /*PetscCall(KSPSetOperators(ksp,A,A));*/
   PetscCall(KSPSetDM(ksp, dmF));
-  PetscCall(KSPSetDMActive(ksp, PETSC_TRUE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_TRUE));
   PetscCall(KSPSetFromOptions(ksp));
 
   PetscCall(KSPSolve(ksp, b, x));

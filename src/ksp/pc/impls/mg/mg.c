@@ -964,14 +964,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (pc->dm && !pc->setupcalled) {
     /* finest smoother also gets DM but it is not active, independent of whether galerkin==PC_MG_GALERKIN_EXTERNAL */
     PetscCall(KSPSetDM(mglevels[n - 1]->smoothd, pc->dm));
-    PetscCall(KSPSetDMActive(mglevels[n - 1]->smoothd, PETSC_FALSE));
+    PetscCall(KSPSetDMActive(mglevels[n - 1]->smoothd, KSP_DMACTIVE_ALL, PETSC_FALSE));
     if (mglevels[n - 1]->smoothd != mglevels[n - 1]->smoothu) {
       PetscCall(KSPSetDM(mglevels[n - 1]->smoothu, pc->dm));
-      PetscCall(KSPSetDMActive(mglevels[n - 1]->smoothu, PETSC_FALSE));
+      PetscCall(KSPSetDMActive(mglevels[n - 1]->smoothu, KSP_DMACTIVE_ALL, PETSC_FALSE));
     }
     if (mglevels[n - 1]->cr) {
       PetscCall(KSPSetDM(mglevels[n - 1]->cr, pc->dm));
-      PetscCall(KSPSetDMActive(mglevels[n - 1]->cr, PETSC_FALSE));
+      PetscCall(KSPSetDMActive(mglevels[n - 1]->cr, KSP_DMACTIVE_ALL, PETSC_FALSE));
     }
   }
 
@@ -998,24 +998,21 @@ PetscErrorCode PCSetUp_MG(PC pc)
       /* Separately create them so we do not get DMKSP interference between levels */
       for (i = n - 2; i > -1; i--) PetscCall(DMCoarsen(dms[i + 1], MPI_COMM_NULL, &dms[i]));
       for (i = n - 2; i > -1; i--) {
-        DMKSP     kdm;
         PetscBool dmhasrestrict, dmhasinject;
 
         PetscCall(KSPSetDM(mglevels[i]->smoothd, dms[i]));
-        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd, PETSC_FALSE));
+        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd, KSP_DMACTIVE_ALL, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(mglevels[i]->smoothd, KSP_DMACTIVE_RHS, PETSC_FALSE));
         if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
           PetscCall(KSPSetDM(mglevels[i]->smoothu, dms[i]));
-          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu, PETSC_FALSE));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu, KSP_DMACTIVE_ALL, PETSC_FALSE));
+          PetscCall(KSPSetDMActive(mglevels[i]->smoothu, KSP_DMACTIVE_RHS, PETSC_FALSE));
         }
         if (mglevels[i]->cr) {
           PetscCall(KSPSetDM(mglevels[i]->cr, dms[i]));
-          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr, PETSC_FALSE));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr, KSP_DMACTIVE_ALL, PETSC_FALSE));
+          PetscCall(KSPSetDMActive(mglevels[i]->cr, KSP_DMACTIVE_RHS, PETSC_FALSE));
         }
-        PetscCall(DMGetDMKSPWrite(dms[i], &kdm));
-        /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
-         * a bitwise OR of computing the matrix, RHS, and initial iterate. */
-        kdm->ops->computerhs = NULL;
-        kdm->rhsctx          = NULL;
         if (!mglevels[i + 1]->interpolate) {
           PetscCall(DMCreateInterpolation(dms[i], dms[i + 1], &p, &rscale));
           PetscCall(PCMGSetInterpolation(pc, i + 1, p));

@@ -475,11 +475,11 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_
       PetscCall(KSPSetDM(sred->ksp, ctx->dmrepart));
 
       if (!dmksp_func || sred->ignore_kspcomputeoperators) {
-        PetscCall(KSPSetDMActive(sred->ksp, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(sred->ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
       } else {
         /* sub ksp inherits dmksp_func and context provided by user */
         PetscCall(KSPSetComputeOperators(sred->ksp, dmksp_func, dmksp_ctx));
-        PetscCall(KSPSetDMActive(sred->ksp, PETSC_TRUE));
+        PetscCall(KSPSetDMActive(sred->ksp, KSP_DMACTIVE_ALL, PETSC_TRUE));
       }
     }
   }

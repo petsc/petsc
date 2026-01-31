@@ -5741,7 +5741,7 @@ PetscErrorCode SNESSetDM(SNES snes, DM dm)
 
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPSetDM(ksp, dm));
-  PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   if (snes->npc) {
     PetscCall(SNESSetDM(snes->npc, snes->dm));
     PetscCall(SNESSetNPCSide(snes, snes->npcside));

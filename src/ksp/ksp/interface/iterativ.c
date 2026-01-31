@@ -1952,7 +1952,7 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char *strreason[])
 
   Notes:
   If this is used then the `KSP` will attempt to use the `DM` to create the matrix and use the routine set with
-  `DMKSPSetComputeOperators()`. Use `KSPSetDMActive`(ksp,`PETSC_FALSE`) to instead use the matrix you've provided with
+  `DMKSPSetComputeOperators()`. Use `KSPSetDMActive`(ksp, `KSP_DMACTIVE_OPERATOR`, `PETSC_FALSE`) to instead use the matrix you've provided with
   `KSPSetOperators()`.
 
   A `DM` can only be used for solving one problem at a time because information about the problem is stored on the `DM`,
@@ -1978,33 +1978,35 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
   }
   ksp->dm       = dm;
   ksp->dmAuto   = PETSC_FALSE;
-  ksp->dmActive = PETSC_TRUE;
+  ksp->dmActive = KSP_DMACTIVE_ALL;
   if (ksp->pc) PetscCall(PCSetDM(ksp->pc, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right-hand side vector
+  KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix, the right-hand side vector, and the initial guess
 
   Logically Collective
 
   Input Parameters:
-+ ksp - the `KSP`
-- flg - use the `DM`
++ ksp    - the `KSP`
+. active - one of `KSP_DMACTIVE_OPERATOR`, `KSP_DMACTIVE_RHS`, or `KSP_DMACTIVE_INITIAL_GUESS`
+- flg    - use the `DM`
 
   Level: intermediate
 
   Note:
-  By default `KSPSetDM()` sets the `DM` as active, call `KSPSetDMActive`(ksp,`PETSC_FALSE`); after `KSPSetDM`(ksp,dm) to not have the `KSP` object use the `DM` to generate the matrices.
+  By default `KSPSetDM()` sets the `DM` as active.
 
 .seealso: [](ch_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDM()`, `SNESSetDM()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`
 @*/
-PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg)
+PetscErrorCode KSPSetDMActive(KSP ksp, KSPDMActive active, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(ksp, flg, 2);
-  ksp->dmActive = flg;
+  PetscValidLogicalCollectiveBool(ksp, flg, 3);
+  if (flg) ksp->dmActive = (KSPDMActive)(ksp->dmActive | active);
+  else ksp->dmActive = (KSPDMActive)(ksp->dmActive & ~active);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

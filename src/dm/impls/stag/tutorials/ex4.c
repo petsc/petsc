@@ -187,7 +187,7 @@ int main(int argc, char **argv)
   }
 
   PetscCall(KSPSetDM(ksp, dm_stokes));
-  PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
 
   /* Finish setting up solver (can override options set above) */
   PetscCall(KSPSetFromOptions(ksp));

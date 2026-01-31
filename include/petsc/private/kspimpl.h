@@ -79,9 +79,9 @@ typedef enum {
 */
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
-  DM        dm;
-  PetscBool dmAuto;   /* DM was created automatically by KSP */
-  PetscBool dmActive; /* KSP should use DM for computing operators */
+  DM          dm;
+  PetscBool   dmAuto;   /* DM was created automatically by KSP */
+  KSPDMActive dmActive; /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
   PetscObjectParameterDeclare(PetscInt, max_it); /* maximum number of iterations */
   PetscInt  min_it;                              /* minimum number of iterations */

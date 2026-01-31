@@ -86,6 +86,7 @@
 ```{rubric} KSP:
 ```
 
+- Change `KSPSetDMActive()` to take a `KSPDMActive` argument
 - Remove `KSPHPDDMPrecision` in favor of `PetscPrecision`
 - Deprecate `KSPPIPEGCRSetModifyPC()`, `KSPGCRSetModifyPC()`, and `KSPFGMRESSetModifyPC()` in favor of `KSPFlexibleSetModifyPC()`
 - Deprecate `KSPFGMRESModifyPCNoChange()` and `KSPFGMRESModifyPCKSP()` in favor of `KSPFlexibleModifyPCNoChange()` and `KSPFlexibleModifyPCKSP()`

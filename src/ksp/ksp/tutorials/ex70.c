@@ -1120,7 +1120,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOptionsPrefix(ksp, "stokes_"));
   PetscCall(KSPSetDM(ksp, dm_stokes));
-  PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   PetscCall(KSPSetOperators(ksp, A, B));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
@@ -1162,7 +1162,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
         PetscCall(DMDACreateCompatibleDMDA(dm_stokes, 2, &dm_u));
 
         PetscCall(KSPSetDM(ksp_u, dm_u));
-        PetscCall(KSPSetDMActive(ksp_u, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(ksp_u, KSP_DMACTIVE_ALL, PETSC_FALSE));
         PetscCall(DMDestroy(&dm_u));
 
         /* enforce galerkin coarse grids be used */

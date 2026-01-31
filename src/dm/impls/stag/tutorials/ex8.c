@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   PetscCall(KSPSetType(ksp, KSPFGMRES));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetDM(ksp, dm));
-  PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(VecDuplicate(b, &x));
   PetscCall(KSPSolve(ksp, b, x));

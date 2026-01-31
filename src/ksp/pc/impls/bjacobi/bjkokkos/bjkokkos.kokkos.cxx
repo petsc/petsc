@@ -31,7 +31,7 @@ static PetscErrorCode PCBJKOKKOSCreateKSP_BJKOKKOS(PC pc)
   PetscCall(PCGetDM(pc, &dm));
   if (dm) {
     PetscCall(KSPSetDM(jac->ksp, dm));
-    PetscCall(KSPSetDMActive(jac->ksp, PETSC_FALSE));
+    PetscCall(KSPSetDMActive(jac->ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   }
   jac->reason       = PETSC_FALSE;
   jac->monitor      = PETSC_FALSE;

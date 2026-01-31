@@ -24,7 +24,7 @@ static PetscErrorCode PCKSPCreateKSP_KSP(PC pc)
   PetscCall(PCGetDM(pc, &dm));
   if (dm) {
     PetscCall(KSPSetDM(jac->ksp, dm));
-    PetscCall(KSPSetDMActive(jac->ksp, PETSC_FALSE));
+    PetscCall(KSPSetDMActive(jac->ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
