@@ -431,9 +431,9 @@ PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, Pets
      ksp   - iterative context
      n     - iteration number
      rnorm - 2-norm (preconditioned) residual value (may be estimated)
-     dummy - optional user-defined monitor context (unused here)
+     unused - optional user-defined monitor context (unused here)
 */
-PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy)
+PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *unused)
 {
   Vec x;
 

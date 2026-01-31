@@ -26,27 +26,27 @@ typedef enum {
 } FunctionType;
 const char *const FunctionTypes[] = {"constant", "linear", "sin", "x2_x4", "unknown", "FunctionType", "FUNCTION_", NULL};
 
-static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 1.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   for (PetscInt d = 0; d < dim; ++d) u[0] += x[d];
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 1;
   for (PetscInt d = 0; d < dim; ++d) u[0] *= PetscSinReal(2. * PETSC_PI * x[d]);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 1;
   for (PetscInt d = 0; d < dim; ++d) u[0] *= PetscSqr(x[d]) - PetscSqr(PetscSqr(x[d]));

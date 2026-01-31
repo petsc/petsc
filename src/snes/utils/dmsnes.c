@@ -83,7 +83,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm, DMSNES *kdm)
 /* Attaches the DMSNES to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMCoarsenHook_DMSNES(DM dm, DM dmc, void *ctx)
+static PetscErrorCode DMCoarsenHook_DMSNES(DM dm, DM dmc, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMSNES(dm, dmc));
@@ -92,14 +92,14 @@ static PetscErrorCode DMCoarsenHook_DMSNES(DM dm, DM dmc, void *ctx)
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMRestrictHook_DMSNES(DM dm, Mat Restrict, Vec rscale, Mat Inject, DM dmc, void *ctx)
+static PetscErrorCode DMRestrictHook_DMSNES(DM dm, Mat Restrict, Vec rscale, Mat Inject, DM dmc, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Attaches the DMSNES to the subdomain. */
-static PetscErrorCode DMSubDomainHook_DMSNES(DM dm, DM subdm, void *ctx)
+static PetscErrorCode DMSubDomainHook_DMSNES(DM dm, DM subdm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMSNES(dm, subdm));
@@ -108,13 +108,13 @@ static PetscErrorCode DMSubDomainHook_DMSNES(DM dm, DM subdm, void *ctx)
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRefineHook_DMSNES(DM dm, DM dmf, void *ctx)
+static PetscErrorCode DMRefineHook_DMSNES(DM dm, DM dmf, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMSNES(dm, dmf));
@@ -123,7 +123,7 @@ static PetscErrorCode DMRefineHook_DMSNES(DM dm, DM dmf, void *ctx)
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMInterpolateHook_DMSNES(DM dm, Mat Interp, DM dmf, void *ctx)
+static PetscErrorCode DMInterpolateHook_DMSNES(DM dm, Mat Interp, DM dmf, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -299,7 +299,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunctionFn`
 @*/
-PetscErrorCode DMSNESSetFunction(DM dm, SNESFunctionFn *f, void *ctx)
+PetscErrorCode DMSNESSetFunction(DM dm, SNESFunctionFn *f, PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -370,7 +370,7 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESFunctionFn`
 @*/
-PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, void *ctx)
+PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -402,7 +402,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, void *ctx)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetFunction()`, `SNESSetFunction()`, `SNESFunctionFn`
 @*/
-PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, void **ctx)
+PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, PetscCtxRt ctx)
 {
   DMSNES sdm;
 
@@ -412,7 +412,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, void **ctx)
   if (f) *f = sdm->ops->computefunction;
   if (ctx) {
     if (sdm->functionctxcontainer) PetscCall(PetscContainerGetPointer(sdm->functionctxcontainer, ctx));
-    else *ctx = NULL;
+    else *(void **)ctx = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -431,7 +431,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, void **ctx)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESGetObjective()`, `DMSNESSetFunction()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, void *ctx)
+PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -463,7 +463,7 @@ PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, void *ctx)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetObjective()`, `SNESSetFunction()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, void **ctx)
+PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, PetscCtxRt ctx)
 {
   DMSNES sdm;
 
@@ -471,7 +471,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, void **ctx)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMSNES(dm, &sdm));
   if (obj) *obj = sdm->ops->computeobjective;
-  if (ctx) *ctx = sdm->objectivectx;
+  if (ctx) *(void **)ctx = sdm->objectivectx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -497,7 +497,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, void **ctx)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESGSFunction`
 @*/
-PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
+PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -533,7 +533,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESGetNGS()`, `DMSNESGetJacobian()`, `DMSNESGetFunction()`
 @*/
-PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *), void **ctx)
+PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *), PetscCtxRt ctx)
 {
   DMSNES sdm;
 
@@ -541,7 +541,7 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMSNES(dm, &sdm));
   if (f) *f = sdm->ops->computegs;
-  if (ctx) *ctx = sdm->gsctx;
+  if (ctx) *(void **)ctx = sdm->gsctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -567,7 +567,7 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESGetJacobian()`, `SNESSetJacobian()`, `SNESJacobianFn`
 @*/
-PetscErrorCode DMSNESSetJacobian(DM dm, SNESJacobianFn *J, void *ctx)
+PetscErrorCode DMSNESSetJacobian(DM dm, SNESJacobianFn *J, PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -645,7 +645,7 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESJacobianFn`
 @*/
-PetscErrorCode DMSNESGetJacobian(DM dm, SNESJacobianFn **J, void **ctx)
+PetscErrorCode DMSNESGetJacobian(DM dm, SNESJacobianFn **J, PetscCtxRt ctx)
 {
   DMSNES sdm;
 
@@ -655,7 +655,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm, SNESJacobianFn **J, void **ctx)
   if (J) *J = sdm->ops->computejacobian;
   if (ctx) {
     if (sdm->jacobianctxcontainer) PetscCall(PetscContainerGetPointer(sdm->jacobianctxcontainer, ctx));
-    else *ctx = NULL;
+    else *(void **)ctx = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -675,7 +675,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm, SNESJacobianFn **J, void **ctx)
 
 .seealso: [](ch_snes), `DMSNES`, `SNESSetPicard()`, `DMSNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunctionFn`, `SNESJacobianFn`
 @*/
-PetscErrorCode DMSNESSetPicard(DM dm, SNESFunctionFn *b, SNESJacobianFn *J, void *ctx)
+PetscErrorCode DMSNESSetPicard(DM dm, SNESFunctionFn *b, SNESJacobianFn *J, PetscCtx ctx)
 {
   DMSNES sdm;
 
@@ -705,7 +705,7 @@ PetscErrorCode DMSNESSetPicard(DM dm, SNESFunctionFn *b, SNESJacobianFn *J, void
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunctionFn`, `SNESJacobianFn`
 @*/
-PetscErrorCode DMSNESGetPicard(DM dm, SNESFunctionFn **b, SNESJacobianFn **J, void **ctx)
+PetscErrorCode DMSNESGetPicard(DM dm, SNESFunctionFn **b, SNESJacobianFn **J, PetscCtxRt ctx)
 {
   DMSNES sdm;
 
@@ -714,6 +714,6 @@ PetscErrorCode DMSNESGetPicard(DM dm, SNESFunctionFn **b, SNESJacobianFn **J, vo
   PetscCall(DMGetDMSNES(dm, &sdm));
   if (b) *b = sdm->ops->computepfunction;
   if (J) *J = sdm->ops->computepjacobian;
-  if (ctx) *ctx = sdm->pctx;
+  if (ctx) *(void **)ctx = sdm->pctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -21,7 +21,7 @@ PetscClassId MAT_NULLSPACE_CLASSID;
 
 .seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpaceCreate()`, `MatNullSpaceRemoveFn`
 @*/
-PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, MatNullSpaceRemoveFn *rem, void *ctx)
+PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, MatNullSpaceRemoveFn *rem, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);

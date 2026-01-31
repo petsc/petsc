@@ -219,7 +219,7 @@ PetscErrorCode diffuse(PetscScalar **p, PetscInt i, PetscInt j, PetscReal t, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   AppCtx       *user = (AppCtx *)ctx;
   DM            cda;
@@ -272,7 +272,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, PetscCtx ctx)
 {
   AppCtx      *user = (AppCtx *)ctx;
   DM           cda;

@@ -3690,7 +3690,7 @@ static void TPSEvaluate_SchwarzP(const PetscReal y[3], PetscReal *f, PetscReal g
 }
 
 // u[] is a tentative normal on input. Replace with the implicit function gradient in the same direction
-static PetscErrorCode TPSExtrudeNormalFunc_SchwarzP(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
+static PetscErrorCode TPSExtrudeNormalFunc_SchwarzP(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], PetscCtx ctx)
 {
   for (PetscInt i = 0; i < 3; i++) u[i] = -PETSC_PI * PetscSinReal(x[i] * PETSC_PI);
   return PETSC_SUCCESS;
@@ -3722,7 +3722,7 @@ static void TPSEvaluate_Gyroid(const PetscReal y[3], PetscReal *f, PetscReal gra
 }
 
 // u[] is a tentative normal on input. Replace with the implicit function gradient in the same direction
-static PetscErrorCode TPSExtrudeNormalFunc_Gyroid(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
+static PetscErrorCode TPSExtrudeNormalFunc_Gyroid(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], PetscCtx ctx)
 {
   PetscReal s[3] = {PetscSinReal(PETSC_PI * x[0]), PetscSinReal(PETSC_PI * (x[1] + .5)), PetscSinReal(PETSC_PI * (x[2] + .25))};
   PetscReal c[3] = {PetscCosReal(PETSC_PI * x[0]), PetscCosReal(PETSC_PI * (x[1] + .5)), PetscCosReal(PETSC_PI * (x[2] + .25))};
@@ -5381,12 +5381,12 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFE_CLASSID) {
-        PetscContainer dummy;
+        PetscContainer unused;
 
-        PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &dummy));
-        PetscCall(PetscObjectSetName((PetscObject)dummy, "coordinates"));
-        PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)dummy));
-        PetscCall(PetscContainerDestroy(&dummy));
+        PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &unused));
+        PetscCall(PetscObjectSetName((PetscObject)unused, "coordinates"));
+        PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)unused));
+        PetscCall(PetscContainerDestroy(&unused));
         PetscCall(DMClearDS(cdm));
       }
       PetscCall(DMPlexSetCoordinateMap(dm, NULL));
@@ -6936,12 +6936,12 @@ static PetscErrorCode DMPlexCreateSTLFromFile(MPI_Comm comm, const char filename
     PetscCall(PetscMalloc1(Nc * 9, &trialCoords));
     for (PetscInt c = 0; c < Nc; ++c) {
       double    normal[3];
-      short int dummy;
+      short int unused;
 
       PetscCall(PetscViewerRead(viewer, normal, 3, NULL, PETSC_FLOAT));
       PetscCall(PetscViewerRead(viewer, &trialCoords[c * 9 + 0], 9, NULL, PETSC_FLOAT));
       PetscCall(PetscByteSwap(&trialCoords[c * 9 + 0], PETSC_FLOAT, 9));
-      PetscCall(PetscViewerRead(viewer, &dummy, 1, NULL, PETSC_SHORT));
+      PetscCall(PetscViewerRead(viewer, &unused, 1, NULL, PETSC_SHORT));
     }
     PetscCall(PetscMalloc1(Nc * 3, &cells));
     // Find unique vertices

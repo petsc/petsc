@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 /*
   FormIFunction = Udot - RHSFunction
 */
-PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   AppCtx     *user = (AppCtx *)ctx;
   DM          da   = user->da;
@@ -243,7 +243,7 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *c
   FormIJacobian() - Compute IJacobian = dF/dU + a dF/dUdot
   This routine is not used with option '-use_coloring'
 */
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, PetscCtx ctx)
 {
   PetscInt    i, j, Mx, My, xs, ys, xm, ym, nc;
   AppCtx     *user = (AppCtx *)ctx;

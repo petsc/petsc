@@ -22,14 +22,14 @@ typedef struct {
   PetscBool useFV;     // Use finite volume, instead of finite element
 } AppCtx;
 
-static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   for (PetscInt c = 0; c < Nc; ++c) u[c] = c + 1.;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCheck(Nc == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %" PetscInt_FMT, Nc);
@@ -257,7 +257,7 @@ static PetscErrorCode CreateDiscretization(DM dm, PetscInt Nc, AppCtx *ctx)
 int main(int argc, char **argv)
 {
   AppCtx ctx;
-  PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   DM                  dm;
   DMInterpolationInfo interpolator;
   Vec                 lu, fieldVals;

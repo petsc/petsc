@@ -22,7 +22,7 @@ struct _SNESOps {
   PetscErrorCode (*setfromoptions)(SNES, PetscOptionItems); /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
-  PetscErrorCode (*usercompute)(SNES, void **);
+  PetscErrorCode (*ctxcompute)(SNES, PetscCtxRt);
   PetscCtxDestroyFn *ctxdestroy;
   PetscErrorCode (*computevariablebounds)(SNES, Vec, Vec); /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES, Vec, Vec, void *);
@@ -45,7 +45,7 @@ struct _p_SNES {
   PetscBool usesnpc; /* type can use a nonlinear preconditioner */
 
   /*  ------------------------ User-provided stuff -------------------------------*/
-  void *ctx; /* user-defined context */
+  PetscCtx ctx; /* user-defined context */
 
   Vec vec_rhs; /* If non-null, solve F(x) = rhs */
   Vec vec_sol; /* pointer to solution */

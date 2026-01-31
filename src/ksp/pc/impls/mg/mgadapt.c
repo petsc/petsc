@@ -1,42 +1,42 @@
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>
 
-static PetscErrorCode xfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode xfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 
   for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[0], k);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode yfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode yfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 
   for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[1], k);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode zfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zfunc(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 
   for (c = 0; c < Nc; ++c) u[c] = PetscPowRealInt(coords[2], k);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode xsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode xsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 
   for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(PETSC_PI * (k + 1) * coords[0]);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode ysin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode ysin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 
   for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(PETSC_PI * (k + 1) * coords[1]);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode zsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zsin(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt k = *((PetscInt *)ctx), c;
 

@@ -271,7 +271,7 @@ PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u, AppCtx *appctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, PetscCtx ctx)
 {
   AppCtx *appctx = (AppCtx *)ctx;
 
@@ -291,7 +291,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
       Computes Jacobian of      K u + diag(u) G u   which is given by
               K   + diag(u)G + diag(Gu)
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, PetscCtx ctx)
 {
   AppCtx *appctx = (AppCtx *)ctx;
   Vec     Gglobalin;
@@ -410,7 +410,7 @@ PetscErrorCode MatMult_Advection(Mat A, Vec x, Vec y)
    BB - optionally different matrix from which the preconditioner is built
 
 */
-PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, PetscCtx ctx)
 {
   PetscReal **temp;
   PetscReal   vv;
@@ -482,7 +482,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
    BB - optionally different matrix used to construct the preconditioner
 
 */
-PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, PetscCtx ctx)
 {
   PetscReal **temp;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */

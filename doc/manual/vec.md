@@ -399,7 +399,7 @@ should be used instead.
 ```{literalinclude} /../src/snes/tutorials/ex1.c
 :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 :name: snesex1
-:start-at: PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
+:start-at: PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, PetscCtx ctx)
 ```
 :::
 
@@ -537,7 +537,7 @@ DMDAVecRestoreArray(DM dm, Vec global, &f);
 ```{literalinclude} /../src/snes/tutorials/ex3.c
 :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 :name: snesex3
-:start-at: PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+:start-at: PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 ```
 :::
 
@@ -578,7 +578,7 @@ that act on the local portion of `DMDA` vectors.
 
 ```{literalinclude} /../src/snes/tutorials/ex3k.kokkos.cxx
 :end-at: PetscFunctionReturn(PETSC_SUCCESS);
-:start-at: PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
+:start-at: PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, PetscCtx ctx)
 ```
 :::
 

@@ -190,7 +190,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
 
  See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
  */
-PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     mstart, mend, M, i, um;
@@ -238,7 +238,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec 
 /*
  Use Lax-Wendroff method to evaluate F(u,t) = du/dt + a *  du/dx
 */
-PetscErrorCode IFunction_LaxWendroff(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+PetscErrorCode IFunction_LaxWendroff(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     mstart, mend, M, i, um;

@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   PetscInt       i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs;
   DM             dm;
@@ -107,14 +107,14 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeInitialGuess(KSP ksp, Vec b, void *ctx)
+PetscErrorCode ComputeInitialGuess(KSP ksp, Vec b, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, PetscCtx ctx)
 {
   DM          da;
   PetscInt    i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs;

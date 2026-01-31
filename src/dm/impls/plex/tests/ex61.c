@@ -2,14 +2,14 @@ const char help[] = "Test boundary condition insertion";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode set_one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx)
+static PetscErrorCode set_one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], PetscCtx ctx)
 {
   PetscFunctionBegin;
   bcval[0] = 1.;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode set_two(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx)
+static PetscErrorCode set_two(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], PetscCtx ctx)
 {
   PetscFunctionBegin;
   bcval[0] = 2.;

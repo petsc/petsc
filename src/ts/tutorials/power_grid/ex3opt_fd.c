@@ -156,7 +156,7 @@ int main(int argc, char **argv)
    Output Parameters:
    f   - the newly evaluated function
 */
-PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
+PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, PetscCtx ctx0)
 {
   AppCtx            *ctx = (AppCtx *)ctx0;
   TS                 ts, quadts;

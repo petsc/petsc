@@ -43,23 +43,23 @@ struct _TaoOps {
 
 struct _p_Tao {
   PETSCHEADER(struct _TaoOps);
-  void *ctx; /* user provided context */
-  void *user_objP;
-  void *user_objgradP;
-  void *user_gradP;
-  void *user_hessP;
-  void *user_lsresP;
-  void *user_lsjacP;
-  void *user_conP;
-  void *user_con_equalityP;
-  void *user_con_inequalityP;
-  void *user_jacP;
-  void *user_jac_equalityP;
-  void *user_jac_inequalityP;
-  void *user_jac_stateP;
-  void *user_jac_designP;
-  void *user_boundsP;
-  void *user_update;
+  PetscCtx ctx; /* user provided context */
+  void    *user_objP;
+  void    *user_objgradP;
+  void    *user_gradP;
+  void    *user_hessP;
+  void    *user_lsresP;
+  void    *user_lsjacP;
+  void    *user_conP;
+  void    *user_con_equalityP;
+  void    *user_con_inequalityP;
+  void    *user_jacP;
+  void    *user_jac_equalityP;
+  void    *user_jac_inequalityP;
+  void    *user_jac_stateP;
+  void    *user_jac_designP;
+  void    *user_boundsP;
+  void    *user_update;
 
   PetscErrorCode (*monitor[MAXTAOMONITORS])(Tao, void *);
   PetscCtxDestroyFn *monitordestroy[MAXTAOMONITORS];

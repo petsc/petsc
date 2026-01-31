@@ -19,13 +19,13 @@ typedef struct {
   PetscScalar u;
 } Field;
 
-extern PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X);
-extern PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X);
+extern PetscErrorCode FormInitialGuess(DM da, PetscCtx ctx, Vec X);
+extern PetscErrorCode FormDiffusionCoefficient(DM da, PetscCtx ctx, Vec X);
 extern PetscErrorCode FormIFunctionLocal(DMDALocalInfo *, PetscReal, Field **, Field **, Field **, void *);
 
 /* hooks */
 
-static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx)
+static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, PetscCtx ctx)
 {
   Vec c, cc, ccl;
   Mat J;
@@ -65,7 +65,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx)
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, void *ctx)
+static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, PetscCtx ctx)
 {
   Vec         c, cc;
   DM          cdm, csubdm;
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 
 /* ------------------------------------------------------------------- */
 
-PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X)
+PetscErrorCode FormInitialGuess(DM da, PetscCtx ctx, Vec X)
 {
   PetscInt  i, j, Mx, My, xs, ys, xm, ym;
   Field   **x;
@@ -188,7 +188,7 @@ PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X)
+PetscErrorCode FormDiffusionCoefficient(DM da, PetscCtx ctx, Vec X)
 {
   PetscInt  i, j, Mx, My, xs, ys, xm, ym;
   Coeff   **x;
@@ -219,7 +219,7 @@ PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, void *ctx)
+PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, PetscCtx ctx)
 {
   PetscInt    i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx, scale;

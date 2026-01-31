@@ -783,7 +783,7 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
 /* Callback invoked after target rank has initiated receive of rendezvous message.
  * Here we post the main sends.
  */
-static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], void *ctx)
+static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], PetscCtx ctx)
 {
   MatStash       *stash = (MatStash *)ctx;
   MatStashHeader *hdr   = (MatStashHeader *)sdata;
@@ -800,7 +800,7 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm, const PetscMPIInt t
     Callback invoked by target after receiving rendezvous message.
     Here we post the main recvs.
  */
-static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *rdata, MPI_Request req[], void *ctx)
+static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *rdata, MPI_Request req[], PetscCtx ctx)
 {
   MatStash       *stash = (MatStash *)ctx;
   MatStashHeader *hdr   = (MatStashHeader *)rdata;

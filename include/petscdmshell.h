@@ -5,8 +5,8 @@
 /* MANSEC = DM */
 
 PETSC_EXTERN PetscErrorCode DMShellCreate(MPI_Comm, DM *);
-PETSC_EXTERN PetscErrorCode DMShellSetContext(DM, void *);
-PETSC_EXTERN PetscErrorCode DMShellGetContext(DM, void *);
+PETSC_EXTERN PetscErrorCode DMShellSetContext(DM, PetscCtx);
+PETSC_EXTERN PetscErrorCode DMShellGetContext(DM, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMShellSetDestroyContext(DM, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMShellSetMatrix(DM, Mat);
 PETSC_EXTERN PetscErrorCode DMShellSetGlobalVector(DM, Vec);

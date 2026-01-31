@@ -8,7 +8,7 @@ typedef struct _handlerCtx {
   int signum;
 } HandlerCtx;
 
-PetscErrorCode handleSignal(int signum, void *ctx)
+PetscErrorCode handleSignal(int signum, PetscCtx ctx)
 {
   HandlerCtx *user = (HandlerCtx *)ctx;
 

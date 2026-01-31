@@ -185,7 +185,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
    Jpre - optionally different matrix used to construct the preconditioner
 
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, PetscCtx ctx)
 {
   DM            da;
   DMDALocalInfo info;

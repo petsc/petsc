@@ -39,7 +39,7 @@ typedef struct {
   PetscInt    Istart, Iend;
 } AppCtx;
 
-static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
+static PetscErrorCode PreallocateCOO(Mat A, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt n = user->n, n2 = n * n, n1 = n - 1;
@@ -112,7 +112,7 @@ static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FillCOO(Mat A, void *ctx)
+PetscErrorCode FillCOO(Mat A, PetscCtx ctx)
 {
   AppCtx      *user = (AppCtx *)ctx;
   PetscInt     Ii, x, y, z, n = user->n, n2 = n * n, n1 = n - 1;

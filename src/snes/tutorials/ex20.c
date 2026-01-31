@@ -31,7 +31,7 @@ typedef struct {
   PetscBool cr; /* Use compatible relaxation */
 } AppCtx;
 
-static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   u[0] = 0.0;

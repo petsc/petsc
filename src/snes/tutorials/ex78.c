@@ -106,7 +106,7 @@ int main(int argc, char **argv)
    The user-defined context can contain any application-specific
    data needed for the function evaluation.
 */
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   DM           da = (DM)ctx;
   PetscScalar *xx, *ff;
@@ -171,7 +171,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
 .  jac - Jacobian matrix
 .  B - optionally different matrix used to construct the preconditioner
 */
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
 {
   PetscScalar *xx, A[3];
   PetscInt     i, M, xs, xm;

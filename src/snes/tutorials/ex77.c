@@ -87,13 +87,13 @@ static inline void Cof3D(PetscReal C[], const PetscScalar A[])
   C[2 * 3 + 2] = PetscRealPart(A[0 * 3 + 0] * A[1 * 3 + 1] - A[0 * 3 + 1] * A[1 * 3 + 0]);
 }
 
-PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt Ncomp = dim;
 
@@ -102,7 +102,7 @@ PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt Ncomp = dim;
 
@@ -111,14 +111,14 @@ PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
   u[0]         = user->mu;
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
   u[0]         = user->p_wall;
@@ -336,9 +336,9 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
 
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
-  Vec   A;
-  void *ctxs[2];
+  PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx) = {elasticityMaterial, wallPressure};
+  Vec      A;
+  PetscCtx ctxs[2];
 
   PetscFunctionBegin;
   ctxs[0] = user;
@@ -466,7 +466,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFromOptions(snes));
 
   {
-    PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+    PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
     initialGuess[0] = coordinates;
     initialGuess[1] = zero_scalar;
     PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));

@@ -9,9 +9,9 @@ template <typename T>
 inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
 {
   PetscContainer contain   = nullptr;
-  const auto     finalizer = [](void **ptr) {
+  const auto     finalizer = [](PetscCtxRt ctx) {
     PetscFunctionBegin;
-    PetscCall(static_cast<T *>(*ptr)->finalize());
+    PetscCall(static_cast<T *>(*(void **)ctx)->finalize());
     PetscFunctionReturn(PETSC_SUCCESS);
   };
 

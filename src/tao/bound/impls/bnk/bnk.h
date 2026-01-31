@@ -204,7 +204,7 @@ typedef struct {
   PetscBool resetksp;
 
   /* Implementation specific context */
-  void *ctx;
+  PetscCtx ctx;
 } TAO_BNK;
 
 #define BNK_NEWTON          0

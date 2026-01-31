@@ -543,7 +543,7 @@ PetscErrorCode readinput(struct in *put)
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx)
+PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx; /* user-defined application context */
   PetscInt i, j, xs, ys, xm, ym, Mx, My;
@@ -602,7 +602,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx)
    Output Parameter:
 .  F - rhs function vector
  */
-PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx)
+PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, PetscCtx ctx)
 {
   AppCtx     *user = (AppCtx *)ctx; /* user-defined application context */
   DM          da   = user->da;
@@ -724,7 +724,7 @@ PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, PetscCtx ctx)
 {
   const PetscScalar *array;
   MonitorCtx        *user   = (MonitorCtx *)ctx;

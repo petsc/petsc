@@ -239,7 +239,7 @@ typedef void PetscBdPointJacFn(PetscInt dim, PetscInt Nf, PetscInt NfAux, const 
 
 .seealso: `PetscPointFn`, `PetscDSSetExactSolution()`, `PetscDSGetExactSolution()`, `PetscDSSetExactSolutionTimeDerivative()`, `PetscDSGetExactSolutionTimeDerivative()`
 S*/
-typedef PetscErrorCode PetscPointExactSolutionFn(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
+typedef PetscErrorCode PetscPointExactSolutionFn(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx);
 
 /*S
   PetscRiemannFn - A prototype of a pointwise function that can be passed to, for example, `PetscDSSetRiemannSolver()`
@@ -260,7 +260,7 @@ typedef PetscErrorCode PetscPointExactSolutionFn(PetscInt dim, PetscReal t, cons
 
 .seealso: `PetscPointFn`, `PetscDSSetRiemannSolver()`, `PetscDSGetRiemannSolver()`
 S*/
-typedef void PetscRiemannFn(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx);
+typedef void PetscRiemannFn(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], PetscCtx ctx);
 
 /*S
   PetscSimplePointFn - A prototype of a simple pointwise function that can be passed to, for example, `DMPlexTransformExtrudeSetNormalFunction()`
@@ -280,7 +280,7 @@ typedef void PetscRiemannFn(PetscInt dim, PetscInt Nf, const PetscReal x[], cons
 
 .seealso: `PetscPointFn`, `DMPlexTransformExtrudeSetNormalFunction()`, `DMSwarmSetCoordinateFunction()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscSimplePointFn(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscSimplePointFn(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], PetscCtx ctx);
 
 PETSC_EXTERN_TYPEDEF typedef PetscSimplePointFn *PetscSimplePointFunc PETSC_DEPRECATED_TYPEDEF(3, 24, 0, "PetscSimplePointFn*", );
 PETSC_EXTERN_TYPEDEF typedef PetscPointFn       *PetscPointFunc PETSC_DEPRECATED_TYPEDEF(3, 24, 0, "PetscPointFn*", );
@@ -304,4 +304,4 @@ PETSC_EXTERN_TYPEDEF typedef PetscRiemannFn     *PetscRiemannFunc PETSC_DEPRECAT
 
 .seealso: `PetscPointFn`, `PetscDSSetLowerBound()`, `PetscDSSetUpperBound()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscPointBoundFn(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscPointBoundFn(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx);

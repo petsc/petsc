@@ -57,23 +57,6 @@ module ex73f90tmodule
     IS::isPhi, isLambda
   end type ex73f90tmodule_type
 
-  interface
-    subroutine SNESSetApplicationContext(snesIn, ctx, ierr)
-      use petscsnes
-      import ex73f90tmodule_type
-      SNES :: snesIn
-      type(ex73f90tmodule_type) ctx
-      PetscErrorCode ierr
-    end subroutine
-    subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
-      use petscsnes
-      import ex73f90tmodule_type
-      SNES :: snesIn
-      type(ex73f90tmodule_type), pointer :: ctx
-      PetscErrorCode ierr
-    end subroutine
-  end interface
-
 contains
   subroutine MyObjective(snes, x, result, ctx, ierr)
     PetscInt ctx

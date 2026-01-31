@@ -19,7 +19,7 @@
 
 .seealso: `PetscDraw`
 @*/
-PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, int c, PetscErrorCode (*indicator)(void *, PetscReal, PetscReal, PetscBool *), void *ctx)
+PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, int c, PetscErrorCode (*indicator)(void *, PetscReal, PetscReal, PetscBool *), PetscCtx ctx)
 {
   int       i, j, xstart, ystart, xend, yend;
   PetscReal x, y;

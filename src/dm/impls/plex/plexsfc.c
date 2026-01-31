@@ -336,7 +336,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
 // This is a DMGlobalToLocalHook that applies the affine offsets. When extended for rotated periodicity, it'll need to
 // apply a rotatonal transform and similar operations will be needed for fields (e.g., to rotate a velocity vector).
 // We use this crude approach here so we don't have to write new GPU kernels yet.
-static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
+static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode mode, Vec l, PetscCtx ctx)
 {
   PetscFunctionBegin;
   // These `VecScatter`s should be merged to improve efficiency; the scatters cannot be overlapped.

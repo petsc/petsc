@@ -141,7 +141,7 @@ static const struct FieldDescription PhysicsFields_Advect[] = {
   {NULL, 0}
 };
 
-static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   Physics         phys   = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect *)phys->data;
@@ -151,7 +151,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   xG[0] = xI[0];
@@ -208,7 +208,7 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
 }
 
-static PetscErrorCode PhysicsSolution_Advect(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode PhysicsSolution_Advect(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, PetscCtx ctx)
 {
   Physics         phys   = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect *)phys->data;
@@ -247,7 +247,7 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod, PetscReal time, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsFunctional_Advect(Model mod, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
+static PetscErrorCode PhysicsFunctional_Advect(Model mod, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, PetscCtx ctx)
 {
   Physics         phys      = (Physics)ctx;
   Physics_Advect *advect    = (Physics_Advect *)phys->data;
@@ -331,7 +331,7 @@ static const struct FieldDescription PhysicsFields_SW[] = {
   {NULL,       0  }
 };
 
-static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   xG[0] = xI[0];
@@ -340,7 +340,7 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsSolution_SW(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode PhysicsSolution_SW(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal dx[2], r, sigma;
 
@@ -356,7 +356,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod, PetscReal time, const PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsFunctional_SW(Model mod, PetscReal time, const PetscReal *coord, const PetscScalar *xx, PetscReal *f, void *ctx)
+static PetscErrorCode PhysicsFunctional_SW(Model mod, PetscReal time, const PetscReal *coord, const PetscScalar *xx, PetscReal *f, PetscCtx ctx)
 {
   Physics       phys = (Physics)ctx;
   Physics_SW   *sw   = (Physics_SW *)phys->data;
@@ -470,7 +470,7 @@ static const struct FieldDescription PhysicsFields_Euler[] = {
 
 /* initial condition */
 int                   initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[], const PetscReal Lx);
-static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt       i;
   Physics        phys = (Physics)ctx;
@@ -532,7 +532,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
 }
 
 /* PetscReal* => EulerNode* conversion */
-static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *a_xI, PetscScalar *a_xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *a_xI, PetscScalar *a_xG, PetscCtx ctx)
 {
   PetscInt         i;
   const EulerNode *xI   = (const EulerNode *)a_xI;
@@ -557,7 +557,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsFunctional_Euler(Model mod, PetscReal time, const PetscReal *coord, const PetscScalar *xx, PetscReal *f, void *ctx)
+static PetscErrorCode PhysicsFunctional_Euler(Model mod, PetscReal time, const PetscReal *coord, const PetscScalar *xx, PetscReal *f, PetscCtx ctx)
 {
   Physics          phys = (Physics)ctx;
   Physics_Euler   *eu   = (Physics_Euler *)phys->data;
@@ -701,7 +701,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, PetscInt numComps, const PetscScalar u[], const PetscScalar grad[], PetscReal *error, void *ctx)
+static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, PetscInt numComps, const PetscScalar u[], const PetscScalar grad[], PetscReal *error, PetscCtx ctx)
 {
   PetscReal err = 0.;
   PetscInt  i, j;
@@ -830,7 +830,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 }
 
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
-static PetscErrorCode ModelSolutionSetDefault(Model mod, SolutionFunction func, void *ctx)
+static PetscErrorCode ModelSolutionSetDefault(Model mod, SolutionFunction func, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   mod->solution    = func;
@@ -838,7 +838,7 @@ static PetscErrorCode ModelSolutionSetDefault(Model mod, SolutionFunction func, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ModelFunctionalRegister(Model mod, const char *name, PetscInt *offset, FunctionalFunction func, void *ctx)
+static PetscErrorCode ModelFunctionalRegister(Model mod, const char *name, PetscInt *offset, FunctionalFunction func, PetscCtx ctx)
 {
   FunctionalLink link, *ptr;
   PetscInt       lastoffset = -1;
@@ -926,9 +926,9 @@ static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const Pet
 
 PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 {
-  PetscErrorCode (*func[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  void *ctx[1];
-  Model mod = user->model;
+  PetscErrorCode (*func[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
+  PetscCtx ctx[1];
+  Model    mod = user->model;
 
   PetscFunctionBeginUser;
   func[0] = SolutionFunctional;
@@ -946,7 +946,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
+static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X, PetscCtx ctx)
 {
   User        user = (User)ctx;
   DM          dm, plex;
@@ -1100,7 +1100,7 @@ typedef struct {
   PetscLimiter noneLimiter;
 } TransferCtx;
 
-static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal time, Vec sol, PetscBool *resize, void *ctx)
+static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal time, Vec sol, PetscBool *resize, PetscCtx ctx)
 {
   TransferCtx       *tctx       = (TransferCtx *)ctx;
   PetscFV            fvm        = tctx->fvm;
@@ -1200,7 +1200,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx)
+static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], PetscCtx ctx)
 {
   TransferCtx *tctx = (TransferCtx *)ctx;
   DM           dm;

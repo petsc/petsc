@@ -13,7 +13,7 @@ typedef struct {
   PetscReal D1, D2, gamma, kappa;
 } AppCtx;
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, PetscCtx ctx)
 {
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;

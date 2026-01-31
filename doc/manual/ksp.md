@@ -506,7 +506,7 @@ customized convergence-testing routines. The user can specify a
 customized routine with the command
 
 ```
-KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,PetscInt it,PetscReal rnorm, KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
+KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*test)(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, PetscCtx ctx), PetscCtx ctx, PetscErrorCode (*destroy)(PetscCtxRt ctx));
 ```
 
 The final routine argument, `ctx`, is an optional context for private
@@ -533,7 +533,7 @@ provide their own routines to perform the monitoring by using the
 command
 
 ```
-KSPMonitorSet(KSP ksp, PetscErrorCode (*mon)(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx), void *ctx, (PetscCtxDestroyFn *)mondestroy);
+KSPMonitorSet(KSP ksp, PetscErrorCode (*mon)(KSP ksp, PetscInt it, PetscReal rnorm, PetscCtx ctx), PetscCtx ctx, (PetscCtxDestroyFn *)mondestroy);
 ```
 
 The final routine argument, `ctx`, is an optional context for private
@@ -549,9 +549,9 @@ MPI communicators within PETSc.
 Many monitoring routines are supplied with PETSc, including
 
 ```
-KSPMonitorResidual(KSP,PetscInt,PetscReal, void *);
-KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
-KSPMonitorTrueResidual(KSP,PetscInt,PetscReal, void *);
+KSPMonitorResidual(KSP, PetscInt, PetscReal, PetscCtx);
+KSPMonitorSingularValue(KSP, PetscInt, PetscReal, PetscCtx);
+KSPMonitorTrueResidual(KSP, PetscInt, PetscReal, PetscCtx);
 ```
 
 The default monitor simply prints an estimate of a norm of
@@ -629,7 +629,7 @@ In addition to supporting `PCKSP`, the flexible methods support `KSPFlexibleSetM
 allow the user to provide a callback function that changes the preconditioner at each Krylov iteration. Its calling sequence is as follows.
 
 ```
-PetscErrorCode f(KSP ksp,PetscInt total_its,PetscInt its_since_restart,PetscReal res_norm,void *ctx);
+PetscErrorCode f(KSP ksp, PetscInt total_its, PetscInt its_since_restart, PetscReal res_norm, PetscCtx ctx);
 ```
 
 (sec_pipelineksp)=
@@ -1619,13 +1619,13 @@ Often a preconditioner needs access to an application-provided data
 structured. For this, one should use
 
 ```
-PCShellSetContext(PC pc,void *ctx);
+PCShellSetContext(PC pc, PetscCtx ctx);
 ```
 
 to set this data structure and
 
 ```
-PCShellGetContext(PC pc,void *ctx);
+PCShellGetContext(PC pc, PetscCtxRt ctx);
 ```
 
 to retrieve it in `apply`. The three routine arguments of `apply()`

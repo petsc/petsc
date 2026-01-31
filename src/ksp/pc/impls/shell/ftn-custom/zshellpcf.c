@@ -49,7 +49,7 @@ static PetscErrorCode ourshellapplysymmetricright(PC pc, Vec x, Vec y)
 
 static PetscErrorCode ourshellapplyctx(PC pc, Vec x, Vec y)
 {
-  void *ctx;
+  PetscCtx ctx;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCallFortranVoidFunction((*(void (*)(PC *, void *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[0]))(&pc, ctx, &x, &y, &ierr));
   return PETSC_SUCCESS;
@@ -81,7 +81,7 @@ static PetscErrorCode ourshellsetup(PC pc)
 
 static PetscErrorCode ourshellsetupctx(PC pc)
 {
-  void *ctx;
+  PetscCtx ctx;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCallFortranVoidFunction((*(void (*)(PC *, void *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc, ctx, &ierr));
   return PETSC_SUCCESS;

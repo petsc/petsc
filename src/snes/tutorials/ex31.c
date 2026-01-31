@@ -157,7 +157,7 @@ static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscR
    Output Parameter:
 .  R - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, PetscCtx ctx)
 {
   Blasius           *blasius = (Blasius *)ctx;
   const PetscScalar *Tf, *Th; /* Tf and Th are Chebyshev coefficients */

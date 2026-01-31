@@ -30,7 +30,7 @@ static PetscErrorCode TaoDestroy_SNES(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TAOSNESObj(SNES snes, Vec X, PetscReal *f, void *ctx)
+static PetscErrorCode TAOSNESObj(SNES snes, Vec X, PetscReal *f, PetscCtx ctx)
 {
   Tao tao = (Tao)ctx;
 
@@ -39,7 +39,7 @@ static PetscErrorCode TAOSNESObj(SNES snes, Vec X, PetscReal *f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TAOSNESFunc(SNES snes, Vec X, Vec F, void *ctx)
+static PetscErrorCode TAOSNESFunc(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Tao tao = (Tao)ctx;
 
@@ -48,7 +48,7 @@ static PetscErrorCode TAOSNESFunc(SNES snes, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TAOSNESJac(SNES snes, Vec X, Mat A, Mat P, void *ctx)
+static PetscErrorCode TAOSNESJac(SNES snes, Vec X, Mat A, Mat P, PetscCtx ctx)
 {
   Tao tao = (Tao)ctx;
 
@@ -57,7 +57,7 @@ static PetscErrorCode TAOSNESJac(SNES snes, Vec X, Mat A, Mat P, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TAOSNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
+static PetscErrorCode TAOSNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscCtx ctx)
 {
   Tao       tao = (Tao)ctx;
   PetscReal obj;

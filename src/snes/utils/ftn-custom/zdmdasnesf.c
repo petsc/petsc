@@ -55,7 +55,7 @@ static PetscErrorCode sourlj3d(DMDALocalInfo *info, PetscScalar ***in, Mat A, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da, void (*jac)(DMDALocalInfo *, void *, void *, void *, void *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da, void (*jac)(DMDALocalInfo *, void *, void *, void *, void *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;
@@ -117,7 +117,7 @@ static PetscErrorCode sourlf3d(DMDALocalInfo *info, PetscScalar ***in, PetscScal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da, InsertMode *mode, void (*func)(DMDALocalInfo *, void *, void *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da, InsertMode *mode, void (*func)(DMDALocalInfo *, void *, void *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;

@@ -3,7 +3,7 @@ static char help[] = "Tests MATHTOOL with a derived htool::IMatrix<PetscScalar> 
 #include <petscmat.h>
 #include <htool/hmatrix/interfaces/virtual_generator.hpp>
 
-static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, void *ctx)
+static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, PetscCtx ctx)
 {
   PetscInt  d, j, k;
   PetscReal diff = 0.0, *coords = (PetscReal *)(ctx);

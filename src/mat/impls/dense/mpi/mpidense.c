@@ -2042,7 +2042,7 @@ static PetscErrorCode MatEqual_MPIDense(Mat A, Mat B, PetscBool *flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductCtxDestroy_MatTransMatMult_MPIDense_MPIDense(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatTransMatMult_MPIDense_MPIDense(PetscCtxRt data)
 {
   MatProductCtx_TransMatMultDense *atb = *(MatProductCtx_TransMatMultDense **)data;
 
@@ -2053,7 +2053,7 @@ static PetscErrorCode MatProductCtxDestroy_MatTransMatMult_MPIDense_MPIDense(voi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductCtxDestroy_MatMatTransMult_MPIDense_MPIDense(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatTransMult_MPIDense_MPIDense(PetscCtxRt data)
 {
   MatProductCtx_MatTransMultDense *abt = *(MatProductCtx_MatTransMultDense **)data;
 
@@ -2412,7 +2412,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductCtxDestroy_MatMatMult_MPIDense_MPIDense(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMult_MPIDense_MPIDense(PetscCtxRt data)
 {
   MatProductCtx_MatMultDense *ab = *(MatProductCtx_MatMultDense **)data;
 

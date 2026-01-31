@@ -14,7 +14,7 @@ typedef struct {
   /* Topology */
   PCPatchConstructType ctype;                                           /* Algorithm for patch construction */
   PetscErrorCode (*patchconstructop)(void *, DM, PetscInt, PetscHSetI); /* patch construction */
-  PetscErrorCode (*userpatchconstructionop)(PC, PetscInt *, IS **, IS *, void *ctx);
+  PetscErrorCode (*userpatchconstructionop)(PC, PetscInt *, IS **, IS *, PetscCtx ctx);
   void        *userpatchconstructctx;
   IS          *userIS;
   PetscInt     npatch;       /* Number of patches */

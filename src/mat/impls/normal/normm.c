@@ -300,7 +300,7 @@ static PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNormal_DenseDestroy(void **ctx)
+static PetscErrorCode MatNormal_DenseDestroy(PetscCtxRt ctx)
 {
   Normal_Dense *contents = *(Normal_Dense **)ctx;
 

@@ -37,7 +37,7 @@ PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 /*
   'Passive' RHS function, used in residual evaluations during the time integration.
 */
-static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx)
 {
   User               user = (User)ctx;
   PetscScalar       *f;
@@ -57,7 +57,7 @@ static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void 
   Trace RHS to mark on tape 1 the dependence of f upon x. This tape is used in generating the
   Jacobian transform.
 */
-static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx)
 {
   User               user = (User)ctx;
   PetscReal          mu   = user->mu;
@@ -88,7 +88,7 @@ static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *
 /*
   Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver.
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, PetscCtx ctx)
 {
   User               user = (User)ctx;
   const PetscScalar *x;
@@ -103,7 +103,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void 
 /*
   Monitor timesteps and use interpolation to output at integer multiples of 0.1
 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, PetscCtx ctx)
 {
   const PetscScalar *x;
   PetscReal          tfinal, dt, tprev;
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, PetscCtx ctx)
 {
   User         user = (User)ctx;
   TS           ts;

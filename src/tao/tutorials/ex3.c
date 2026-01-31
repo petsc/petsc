@@ -162,13 +162,13 @@ void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 }
 
 /* data we seek to match */
-PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
+PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, PetscCtx ctx)
 {
   *y = 1.0 / (2 * PETSC_PI * PETSC_PI) * PetscSinReal(PETSC_PI * x[0]) * PetscSinReal(PETSC_PI * x[1]);
   /* the associated control is sin(pi*x[0])*sin(pi*x[1]) */
   return PETSC_SUCCESS;
 }
-PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   *u = 0.0;
   return PETSC_SUCCESS;
@@ -188,7 +188,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx *user)
   IS              is;
   const PetscInt *points;
   const PetscInt  dim = 2;
-  PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
 
   PetscFunctionBeginUser;
   /* make the data we seek to match */

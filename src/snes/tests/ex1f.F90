@@ -561,8 +561,6 @@ program main
 !      to compute Jacobians.
 !
     PetscCallA(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, fdcoloring, ierr))
-    PetscCallA(SNESGetJacobian(snes, J, PETSC_NULL_MAT, PETSC_NULL_FUNCTION, PETSC_NULL_INTEGER, ierr))
-    PetscCallA(SNESGetJacobian(snes, J, PETSC_NULL_MAT, PETSC_NULL_FUNCTION, fdcoloring, ierr))
     PetscCallA(ISColoringDestroy(iscoloring, ierr))
 
   else if (.not. matrix_free) then

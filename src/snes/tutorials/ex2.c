@@ -208,7 +208,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    a vector containing the right-hand side of the discretized PDE.
  */
 
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   Vec                g = (Vec)ctx;
   const PetscScalar *xx, *gg;
@@ -338,7 +338,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
+PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, PetscCtx ctx)
 {
   MonitorCtx         *monP = (MonitorCtx *)ctx;
   Vec                 x;

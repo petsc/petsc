@@ -634,7 +634,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
 .seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`, `PCPreSolve()`, `PCPostSolve()`
 @*/
-PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, void *ctx)
+PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -657,7 +657,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, void *ctx)
 
 .seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
 @*/
-PetscErrorCode KSPSetPostSolve(KSP ksp, KSPPSolveFn *postsolve, void *ctx)
+PetscErrorCode KSPSetPostSolve(KSP ksp, KSPPSolveFn *postsolve, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -736,8 +736,8 @@ PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
 @*/
 PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 {
-  KSP   ksp;
-  void *ctx;
+  KSP      ksp;
+  PetscCtx ctx;
 
   PetscFunctionBegin;
   PetscAssertPointer(inksp, 2);

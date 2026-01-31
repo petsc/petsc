@@ -318,7 +318,7 @@ typedef struct {
 
 typedef struct {
   PetscErrorCode (*func)(void *);
-  void *ctx;
+  PetscCtx ctx;
 } PetscFinalizeFunctionWithCtx;
 
 typedef enum {

@@ -22,11 +22,11 @@
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFlexibleSetModifyPC()`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 @*/
-PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, void *ctx, PetscCtxDestroyFn *destroy)
+PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscTryMethod(ksp, "KSPFGMRESSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *), (ksp, fcn, ctx, destroy));
+  PetscTryMethod(ksp, "KSPFGMRESSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *), (ksp, fcn, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -48,11 +48,11 @@ PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, void *c
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 @*/
-PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, void *ctx, PetscCtxDestroyFn *destroy)
+PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscTryMethod(ksp, "KSPFlexibleSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *), (ksp, fcn, ctx, destroy));
+  PetscTryMethod(ksp, "KSPFlexibleSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *), (ksp, fcn, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -70,7 +70,7 @@ PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, void 
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 @*/
-PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *ctx)
+PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -93,7 +93,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFGMRESSetModifyPC()`
 @*/
-PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *ctx)
+PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   PC        pc;
   PetscInt  maxits;

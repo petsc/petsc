@@ -20,12 +20,12 @@ contains
     PetscCall(VecSet(b, h, ierr))
   end subroutine
 
-  subroutine ComputeRHS(ksp, b, dummy, ierr)
+  subroutine ComputeRHS(ksp, b, unused, ierr)
 
     PetscErrorCode ierr
     KSP ksp
     Vec b
-    integer dummy(*)
+    integer unused(*)
     PetscScalar h, Hx, Hy
     PetscInt mx, my
     DM dm
@@ -39,11 +39,11 @@ contains
     PetscCall(VecSet(b, h, ierr))
   end subroutine
 
-  subroutine ComputeMatrix(ksp, A, B, dummy, ierr)
+  subroutine ComputeMatrix(ksp, A, B, unused, ierr)
     PetscErrorCode ierr
     KSP ksp
     Mat A, B
-    integer dummy(*)
+    integer unused(*)
     DM dm
 
     PetscInt i, j, mx, my, xm

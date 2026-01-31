@@ -2,7 +2,7 @@ static char help[] = "Test MATMFFD for the rectangular case\n\n";
 
 #include <petscmat.h>
 
-static PetscErrorCode myF(void *ctx, Vec x, Vec y)
+static PetscErrorCode myF(PetscCtx ctx, Vec x, Vec y)
 {
   const PetscScalar *ax;
   PetscScalar       *ay;

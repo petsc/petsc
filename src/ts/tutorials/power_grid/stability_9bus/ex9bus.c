@@ -133,7 +133,7 @@ typedef struct {
   to check the min/max limits on the state variable VR. A non windup limiter is used for
   the VR limits.
 */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, PetscCtx ctx)
 {
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
@@ -181,7 +181,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx)
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, PetscCtx ctx)
 {
   Userctx     *user = (Userctx *)ctx;
   Vec          Xgen, Xnet;
@@ -552,7 +552,7 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
 /*   f(x,y)
      g(x,y)
  */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx)
 {
   Userctx *user = (Userctx *)ctx;
 
@@ -565,7 +565,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
 /* f(x,y) - \dot{x}
      g(x,y) = 0
  */
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   PetscScalar       *f;
   const PetscScalar *xdot;
@@ -595,7 +595,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Userctx     *user = (Userctx *)ctx;
   PetscScalar *f;
@@ -683,7 +683,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
    J = [df_dx, df_dy
         dg_dx, dg_dy]
 */
-PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx)
+PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, PetscCtx ctx)
 {
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
@@ -987,7 +987,7 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx)
    J = [I, 0
         dg_dx, dg_dy]
 */
-PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, PetscCtx ctx)
 {
   Userctx *user = (Userctx *)ctx;
 
@@ -1003,7 +1003,7 @@ PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
         dg_dx, dg_dy]
 */
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, PetscCtx ctx)
 {
   Userctx *user = (Userctx *)ctx;
 

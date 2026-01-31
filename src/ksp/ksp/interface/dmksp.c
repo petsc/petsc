@@ -27,7 +27,7 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm, DMKSP *kdm)
 /* Attaches the DMKSP to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, void *ctx)
+static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMKSP(dm, dmc));
@@ -37,7 +37,7 @@ static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, void *ctx)
 /* Attaches the DMKSP to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
+static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMKSP(dm, dmc));
@@ -204,7 +204,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode DMKSPSetComputeOperators(DM dm, KSPComputeOperatorsFn *func, void *ctx)
+PetscErrorCode DMKSPSetComputeOperators(DM dm, KSPComputeOperatorsFn *func, PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -232,7 +232,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, KSPComputeOperatorsFn *func, void
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, void *ctx)
+PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -266,7 +266,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, voi
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`
 @*/
-PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
+PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -296,7 +296,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func, void *ctx)
+PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func, PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -324,7 +324,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`, `KSPComputeRHSFn`
 @*/
-PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, void *ctx)
+PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, PetscCtx ctx)
 {
   DMKSP kdm;
 
@@ -352,7 +352,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, void *ctx)
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`, `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn **func, void *ctx)
+PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn **func, PetscCtx ctx)
 {
   DMKSP kdm;
 

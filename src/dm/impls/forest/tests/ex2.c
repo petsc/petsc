@@ -35,21 +35,21 @@ static PetscErrorCode CreateAdaptivityLabel(DM forest, DMLabel *adaptLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode LinearFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode LinearFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 2.0 + 1.) + (x[1] * 20.0 + 10.) + ((dim == 3) ? (x[2] * 200.0 + 100.) : 0.);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MultiaffineFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode MultiaffineFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 1.0 + 2.0) * (x[1] * 3.0 - 4.0) * ((dim == 3) ? (x[2] * 5.0 + 6.0) : 1.);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
   PetscInt f;
 
@@ -65,7 +65,7 @@ typedef struct _bc_func_ctx {
   void    *ctx;
 } bc_func_ctx;
 
-static PetscErrorCode bc_func_fv(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode bc_func_fv(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   bc_func_ctx *bcCtx;
 

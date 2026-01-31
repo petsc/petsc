@@ -55,8 +55,7 @@ program main
   PetscMPIInt size
   PetscScalar none, one, value(3)
   PetscLogStage stages(2)
-  integer(8) defaultctx
-  external :: KSPConvergedDefaultDestroy ! has no interface (yet)
+  PetscFortranAddr defaultctx
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -143,8 +142,8 @@ program main
 !  also serves as the matrix from which the preconditioner is constructed.
 
   PetscCallA(KSPConvergedDefaultCreate(defaultctx, ierr))
-  PetscCallA(KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroy, ierr))
-
+  ! use KSPConvergedDefaultDestroyCptr() since it has that is the Fortran interface definition
+  PetscCallA(KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroyCptr, ierr))
   PetscCallA(KSPSetOperators(ksp, A, A, ierr))
 
 !  Set linear solver defaults for this problem (optional).

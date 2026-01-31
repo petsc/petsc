@@ -146,7 +146,7 @@ typedef enum {
 } InterpType;
 
 /* u = 1 */
-PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -158,7 +158,7 @@ PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], 
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -172,7 +172,7 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 }
 
 /* u = x */
-PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -184,7 +184,7 @@ PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -202,7 +202,7 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
-PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -221,7 +221,7 @@ PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[],
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -242,7 +242,7 @@ PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
-PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -261,7 +261,7 @@ PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], Pet
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -282,7 +282,7 @@ PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], 
 }
 
 /* u = x^4 or u = (x^4, x^2y^2) or u = (x^2y^2, y^2z^2, z^2x^2) */
-PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -301,7 +301,7 @@ PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], P
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -321,7 +321,7 @@ PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[]
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -333,7 +333,7 @@ PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d    = user->dir;
@@ -346,7 +346,7 @@ PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[],
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt m = user->m, d = user->dir;
@@ -358,7 +358,7 @@ PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], Pets
   }
   return PETSC_SUCCESS;
 }
-PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
+PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt m = user->m, d = user->dir;
@@ -462,8 +462,8 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
 
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
-  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   void     *exactCtxs[3];
   MPI_Comm  comm;
   PetscReal error, errorDer, tol = PETSC_SMALL;
@@ -489,8 +489,8 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 /* Compare approximation to exact in L_2 */
 static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt order, PetscInt dir, const char *testname, Vec fu, AppCtx *user)
 {
-  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   PetscReal n[3] = {1.0, 1.0, 1.0};
   void     *exactCtxs[3];
   MPI_Comm  comm;
@@ -518,8 +518,8 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
 
 static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, AppCtx *user)
 {
-  PetscErrorCode (*exactFuncs[1])(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncDers[1])(PetscInt, PetscReal, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[1])(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, PetscCtx ctx);
+  PetscErrorCode (*exactFuncDers[1])(PetscInt, PetscReal, const PetscReal x[], const PetscReal n[], PetscInt, PetscScalar *u, PetscCtx ctx);
   void       *exactCtxs[3];
   DM          rdm = NULL, idm = NULL, fdm = NULL;
   Mat         Interp, InterpAdapt = NULL;

@@ -192,7 +192,7 @@ PetscReal f_ini(PetscReal x, PetscReal y)
   return f;
 }
 
-PetscErrorCode Initial(Vec global, void *ctx)
+PetscErrorCode Initial(Vec global, PetscCtx ctx)
 {
   Data        *data = (Data *)ctx;
   PetscInt     m, row, col;
@@ -225,7 +225,7 @@ PetscErrorCode Initial(Vec global, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, PetscCtx ctx)
 {
   VecScatter         scatter;
   IS                 from, to;
@@ -398,7 +398,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr)
 }
 
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, PetscCtx ctx)
 {
   Data              *data = (Data *)ctx;
   PetscInt           m, n, mn;

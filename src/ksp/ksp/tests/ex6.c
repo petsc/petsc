@@ -5,7 +5,7 @@ Input arguments are:\n\
 #include <petscksp.h>
 #include <petsclog.h>
 
-static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, void *ctx)
+static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, PetscCtx ctx)
 {
   Vec      *t, *v;
   PetscReal err;

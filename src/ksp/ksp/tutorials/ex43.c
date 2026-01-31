@@ -80,7 +80,7 @@ typedef struct {
   PetscScalar p_dof;
 } StokesDOF;
 
-static PetscErrorCode glvis_extract_eta(PetscObject oV, PetscInt nf, PetscObject oVf[], void *ctx)
+static PetscErrorCode glvis_extract_eta(PetscObject oV, PetscInt nf, PetscObject oVf[], PetscCtx ctx)
 {
   DM                       properties_da = (DM)ctx, stokes_da;
   Vec                      V = (Vec)oV, *Vf = (Vec *)oVf;

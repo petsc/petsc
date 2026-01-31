@@ -996,7 +996,7 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatMFFDCheckhFn`, `MatMFFDCheckPositivity()`
 @*/
-PetscErrorCode MatMFFDSetCheckh(Mat J, MatMFFDCheckhFn *fun, void *ctx)
+PetscErrorCode MatMFFDSetCheckh(Mat J, MatMFFDCheckhFn *fun, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);

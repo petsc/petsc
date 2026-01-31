@@ -5,7 +5,7 @@ static char help[] = "Verify isoperiodic cone corrections";
 #define EX "ex101.c"
 
 // Creates periodic solution on a [0,1] x D domain for D dimension
-static PetscErrorCode project_function(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode project_function(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal x_tot = 0;
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   PetscBool test_cgns_load = PETSC_FALSE;
   PetscInt  num_comps      = 1;
 
-  PetscErrorCode (*funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) = {project_function};
+  PetscErrorCode (*funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx) = {project_function};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
 
     { // Force isoperiodic point SF to be created to update sfNatural.
       // Needs to be done before removing the field corresponding to sfNatural
-      PetscSection dummy_section;
-      PetscCall(DMGetGlobalSection(dm_read, &dummy_section));
+      PetscSection unused_section;
+      PetscCall(DMGetGlobalSection(dm_read, &unused_section));
     }
     PetscCall(CreateFEField(dm_read, PETSC_TRUE, num_comps));
 

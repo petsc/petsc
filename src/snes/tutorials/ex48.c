@@ -620,7 +620,7 @@ static PetscErrorCode THISetUpDM(THI thi, DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMCoarsenHook_THI(DM dmf, DM dmc, void *ctx)
+static PetscErrorCode DMCoarsenHook_THI(DM dmf, DM dmc, PetscCtx ctx)
 {
   THI      thi = (THI)ctx;
   PetscInt rlevel, clevel;
@@ -634,7 +634,7 @@ static PetscErrorCode DMCoarsenHook_THI(DM dmf, DM dmc, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRefineHook_THI(DM dmc, DM dmf, void *ctx)
+static PetscErrorCode DMRefineHook_THI(DM dmc, DM dmf, PetscCtx ctx)
 {
   THI thi = (THI)ctx;
 
@@ -675,7 +675,7 @@ static PetscErrorCode THIDARestorePrm(DM da, PrmNode ***prm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode THIInitial(SNES snes, Vec X, void *ctx)
+static PetscErrorCode THIInitial(SNES snes, Vec X, PetscCtx ctx)
 {
   THI       thi;
   PetscInt  i, j, k, xs, xm, ys, ym, zs, zm, mx, my;

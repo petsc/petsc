@@ -1,74 +1,4 @@
 interface
-  subroutine DMDASNESSetFunctionLocal(dm, imode, func, ctx, ierr)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tDM, eInsertMode
-    DM, intent(in) :: dm
-    InsertMode, intent(in) :: imode
-    external :: func
-    type(*) :: ctx
-    PetscErrorCode, intent(out) :: ierr
-  end subroutine
-
-  subroutine DMSNESSetFunctionLocal(dm, func, ctx, ierr)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tDM
-    DM, intent(in) :: dm
-    external :: func
-    type(*)  :: ctx
-    PetscErrorCode, intent(out) :: ierr
-  end subroutine
-
-  subroutine SNESSetFunction(a, b, c, d, z)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tVec
-    SNES a
-    Vec b
-    external c
-    type(*) d
-    PetscErrorCode z
-  end subroutine
-
-  subroutine SNESSetJacobian(a, b, c, d, e, z)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tMat
-    SNES a
-    Mat b
-    Mat c
-    external d
-    type(*) e
-    PetscErrorCode z
-  end subroutine
-
-  subroutine SNESGetJacobian(a, b, c, d, e, z)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tMat
-    SNES a
-    Mat b
-    Mat c
-    external d
-    type(*) e
-    PetscErrorCode z
-  end subroutine
-
-  subroutine DMSNESSetJacobianLocal(dm, func, ctx, ierr)
-    use, intrinsic :: ISO_C_binding
-    import tSNES, tDM
-    DM, intent(in) :: dm
-    external :: func
-    type(*)  :: ctx
-    PetscErrorCode, intent(out) :: ierr
-  end subroutine
-
-  subroutine SNESSetConvergenceTest(snes, func, cctx, destroy, ierr)
-    use, intrinsic :: ISO_C_binding
-    import tSNES
-    SNES :: snes
-    external :: func
-    type(*) :: cctx
-    external :: destroy
-    PetscErrorCode, intent(out) :: ierr
-  end subroutine
-
   subroutine SNESRestoreConvergenceHistory(snes, r, its, na, ierr)
     use, intrinsic :: ISO_C_binding
     import tSNES
@@ -81,12 +11,5 @@ interface
 end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::DMDASNESSetFunctionLocal
-!DEC$ ATTRIBUTES DLLEXPORT::DMSNESSetFunctionLocal
-!DEC$ ATTRIBUTES DLLEXPORT::SNESSetFunction
-!DEC$ ATTRIBUTES DLLEXPORT::SNESSetJacobian
-!DEC$ ATTRIBUTES DLLEXPORT::SNESGetJacobian
-!DEC$ ATTRIBUTES DLLEXPORT::DMSNESSetJacobianLocal
-!DEC$ ATTRIBUTES DLLEXPORT::SNESSetConvergenceTest
 !DEC$ ATTRIBUTES DLLEXPORT::SNESRestoreConvergenceHistory
 #endif

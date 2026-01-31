@@ -9,7 +9,7 @@ static char help[] = "Demonstrates various vector routines for DMDA.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode myfunction(void *ctx, PetscInt n, const PetscScalar *xy, PetscScalar *u)
+PetscErrorCode myfunction(PetscCtx ctx, PetscInt n, const PetscScalar *xy, PetscScalar *u)
 {
   PetscInt i;
 

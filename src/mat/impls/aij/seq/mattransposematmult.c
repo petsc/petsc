@@ -7,7 +7,7 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-static PetscErrorCode MatProductCtxDestroy_SeqDense_MatTransMatMult(void **data)
+static PetscErrorCode MatProductCtxDestroy_SeqDense_MatTransMatMult(PetscCtxRt data)
 {
   MatProductCtx_MatTransMatMult *atb = *(MatProductCtx_MatTransMatMult **)data;
 

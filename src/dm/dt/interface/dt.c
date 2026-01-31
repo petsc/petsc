@@ -2404,7 +2404,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   const PetscInt  p     = 16;           /* Digits of precision in the evaluation */
   const PetscReal alpha = (b - a) / 2.; /* Half-width of the integration interval */
@@ -2469,7 +2469,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
 }
 
 #if defined(PETSC_HAVE_MPFR)
-PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   const PetscInt safetyFactor = 2; /* Calculate abscissa until 2*p digits */
   PetscInt       l            = 0; /* Level of refinement, h = 2^{-l} */
@@ -2587,7 +2587,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
 }
 #else
 
-PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
 }

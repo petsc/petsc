@@ -270,7 +270,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
 {
   User          user = (User)ctx;
   DM            da;

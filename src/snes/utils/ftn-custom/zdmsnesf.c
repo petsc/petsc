@@ -27,7 +27,7 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmsnessetjacobian_(DM *dm, void (*jac)(DM *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmsnessetjacobian_(DM *dm, void (*jac)(DM *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 
@@ -52,7 +52,7 @@ static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmsnessetfunction_(DM *dm, void (*func)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void dmsnessetfunction_(DM *dm, void (*func)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 

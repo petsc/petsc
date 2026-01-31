@@ -95,7 +95,7 @@ PetscErrorCode SNESNewtonALSetCorrectionType(SNES snes, SNESNewtonALCorrectionTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESNewtonALSetFunction_NEWTONAL(SNES snes, SNESFunctionFn *func, void *ctx)
+static PetscErrorCode SNESNewtonALSetFunction_NEWTONAL(SNES snes, SNESFunctionFn *func, PetscCtx ctx)
 {
   SNES_NEWTONAL *al = (SNES_NEWTONAL *)snes->data;
 
@@ -126,7 +126,7 @@ static PetscErrorCode SNESNewtonALSetFunction_NEWTONAL(SNES snes, SNESFunctionFn
 
 .seealso: [](ch_snes), `SNES`, `SNESNEWTONAL`, `SNESNewtonALGetFunction()`, `SNESNewtonALGetLoadParameter()`
 @*/
-PetscErrorCode SNESNewtonALSetFunction(SNES snes, SNESFunctionFn *func, void *ctx)
+PetscErrorCode SNESNewtonALSetFunction(SNES snes, SNESFunctionFn *func, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -134,13 +134,13 @@ PetscErrorCode SNESNewtonALSetFunction(SNES snes, SNESFunctionFn *func, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESNewtonALGetFunction_NEWTONAL(SNES snes, SNESFunctionFn **func, void **ctx)
+static PetscErrorCode SNESNewtonALGetFunction_NEWTONAL(SNES snes, SNESFunctionFn **func, PetscCtxRt ctx)
 {
   SNES_NEWTONAL *al = (SNES_NEWTONAL *)snes->data;
 
   PetscFunctionBegin;
   if (func) *func = al->computealfunction;
-  if (ctx) *ctx = al->alctx;
+  if (ctx) *(void **)ctx = al->alctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -158,11 +158,11 @@ static PetscErrorCode SNESNewtonALGetFunction_NEWTONAL(SNES snes, SNESFunctionFn
 
 .seealso: [](ch_snes), `SNES`, `SNESNEWTONAL`, `SNESNewtonALSetFunction()`
 @*/
-PetscErrorCode SNESNewtonALGetFunction(SNES snes, SNESFunctionFn **func, void **ctx)
+PetscErrorCode SNESNewtonALGetFunction(SNES snes, SNESFunctionFn **func, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscUseMethod(snes, "SNESNewtonALGetFunction_C", (SNES, SNESFunctionFn **, void **), (snes, func, ctx));
+  PetscUseMethod(snes, "SNESNewtonALGetFunction_C", (SNES, SNESFunctionFn **, PetscCtxRt), (snes, func, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

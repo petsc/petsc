@@ -9,8 +9,8 @@
 typedef struct _EH *EH;
 struct _EH {
   PetscErrorCode (*handler)(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *);
-  void *ctx;
-  EH    previous;
+  PetscCtx ctx;
+  EH       previous;
 };
 
 /* This is here to allow the traceback error handler (or potentially other error handlers)
@@ -53,7 +53,7 @@ static EH eh = NULL;
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`,
           `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
  @*/
-PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, PetscCtx ctx)
 {
   PetscErrorCode ierr;
   char           command[PETSC_MAX_PATH_LEN];
@@ -120,7 +120,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 .seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`,
           `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
 @*/
-PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx), void *ctx)
+PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, PetscCtx ctx), PetscCtx ctx)
 {
   EH neweh;
 
@@ -184,7 +184,7 @@ PetscErrorCode PetscPopErrorHandler(void)
           `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`,
           `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
  @*/
-PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, PetscCtx ctx)
 {
   (void)comm;
   (void)line;

@@ -144,7 +144,7 @@ typedef struct {
    DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeGetAccess()).
 
 */
-PetscErrorCode ComputeFunction(SNES snes, Vec U, Vec FU, void *ctx)
+PetscErrorCode ComputeFunction(SNES snes, Vec U, Vec FU, PetscCtx ctx)
 {
   PetscInt    xs, xm, i, N;
   ULambda    *u_lambda, *fu_lambda;
@@ -291,7 +291,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeJacobian_MF(SNES snes, Vec x, Mat A, Mat B, void *ctx)
+PetscErrorCode ComputeJacobian_MF(SNES snes, Vec x, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(MatMFFDSetFunction(A, (PetscErrorCode (*)(void *, Vec, Vec))SNESComputeFunction, snes));

@@ -948,7 +948,7 @@ use the following command to create a `Mat` structure
 without ever actually generating the matrix:
 
 ```
-MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *mat);
+MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscCtx ctx, Mat *mat);
 ```
 
 Here `M` and `N` are the global matrix dimensions (rows and

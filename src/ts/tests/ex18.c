@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   const PetscScalar *xdot, *x;
   PetscScalar       *f;
@@ -75,7 +75,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat A, Mat B, void *ctx)
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat A, Mat B, PetscCtx ctx)
 {
   const PetscScalar *xdot, *x;
   PetscBool          dae = *(PetscBool *)(ctx);

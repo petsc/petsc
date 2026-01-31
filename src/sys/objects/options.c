@@ -2060,7 +2060,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
 
 .seealso: `PetscOptionsMonitorSet()`
 @*/
-PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[], PetscOptionSource source, void *ctx)
+PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[], PetscOptionSource source, PetscCtx ctx)
 {
   PetscFunctionBegin;
   if (PetscCIOption(name)) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2125,7 +2125,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 
 .seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, void *mctx), void *mctx, PetscCtxDestroyFn *monitordestroy)
+PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, PetscCtx mctx), PetscCtx mctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscOptions options = defaultoptions;
 

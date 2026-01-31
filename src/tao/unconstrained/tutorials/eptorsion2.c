@@ -323,7 +323,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void *ctx)
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, PetscCtx ctx)
 {
   AppCtx   *user = (AppCtx *)ctx;
   PetscInt  i, j, k;

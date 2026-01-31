@@ -378,7 +378,7 @@ static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
 {
   PetscScalar **x, *xc;
   struct {

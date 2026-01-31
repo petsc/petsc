@@ -124,8 +124,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscErrorCode (*ifunc)(DM, PetscReal, Vec, Vec, Vec, void *);
   PetscErrorCode (*ijac)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
   PetscErrorCode (*rhsfunc)(DM, PetscReal, Vec, Vec, void *);
-  void *fctx, *jctx, *rctx;
-  void *ctx;
+  PetscCtx fctx, jctx, rctx, ctx;
 
   PetscFunctionBegin;
   PetscCheck(ce->r == 2.0, PetscObjectComm((PetscObject)ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double)ce->r);

@@ -297,6 +297,8 @@ Indexing into Fortran arrays, for example obtained with `VecGetArray()`, uses th
 convention and generally begin with 1 except for special routines such as `DMDAVecGetArray()` which uses the ranges
 provided by `DMDAGetCorners()`.
 
+(sec_fortran_context)=
+
 ### Setting Routines and Contexts
 
 Some PETSc functions take as arguments user-functions and contexts for the function. For example
@@ -320,13 +322,13 @@ PetscErrorCode ierr
 
 and `ctx` can be almost anything (represented as `void *` in C).
 
-It can be a Fortran derived type as in
+In Fortran, it has to be a derived type as in
 
 ```fortran
 subroutine func(snes, x, f, ctx, ierr)
 SNES snes
 Vec x,f
-type (userctx)   ctx
+type (AppCtx)   ctx
 PetscErrorCode ierr
 ...
 
@@ -335,7 +337,7 @@ SNESSetFunction(snes, r, func, ctx, ierr)
 SNES snes
 Vec r
 PetscErrorCode ierr
-type (userctx)   ctx
+type (AppCtx)   ctx
 ```
 
 or a PETSc object
@@ -372,6 +374,34 @@ SNES snes
 Vec r
 PetscErrorCode ierr
 ```
+
+Certain PETSc functions return a context in an argument, for example, `SNESGetApplicationContext()`. In C, they are handled as a `void *` pointer so one can write code
+such as
+
+```c
+AppCtx *ctx;
+SNESGetApplicationContext(snes, &ctx);
+```
+
+In Fortran, they must be declared as a pointer with, for example,
+```fortran
+type(AppCtx), pointer :: ctx
+call SNESGetApplicationContext(snes, ctx)
+```
+
+But sadly, this alone will not work. One must also specifically tell the Fortran compiler in an interface definition
+that `SNESGetApplicationContext()` expects the `ctx` argument to be a pointer to `type(AppCtx)` since
+Fortran forbids pointers to unknown types. PETSc provides macros to provide this information easily using, for example,
+
+```fortran
+Interface_SNESGetApplicationContext(AppCtx)
+end interface
+```
+
+One must insert these lines into the Fortran source code where one inserts interface definitions, see, for example,
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html">src/snes/tests/ex590.F90</a>. For those interested,
+the source code of these macros may be found in the generated Fortran include files located at `$PETSC_DIR/$PETSC_ARCH/include/petsc/finclude/*.h`.
+
 
 When a function pointer (declared as external in Fortran) is passed as an argument to a PETSc function,
 it is assumed that this

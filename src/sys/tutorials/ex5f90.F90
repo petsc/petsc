@@ -25,21 +25,8 @@ module ex5module
   end type bag_data_type
 end module ex5module
 
-module ex5f90Bag_interface_module
-  use ex5module
-
-  interface PetscBagGetData
-    subroutine PetscBagGetData(bag, data, ierr)
-      use ex5module
-      PetscBag bag
-      type(bag_data_type), pointer :: data
-      PetscErrorCode ierr
-    end subroutine PetscBagGetData
-  end interface
-end module ex5f90Bag_interface_module
-
 program ex5f90
-  use ex5f90Bag_interface_module
+  use ex5module
   use petsc
   implicit none
 

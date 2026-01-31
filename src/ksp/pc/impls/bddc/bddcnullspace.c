@@ -3,7 +3,7 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 
 /* E + small_solve */
-static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *ctx)
+static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, PetscCtx ctx)
 {
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
   Mat                     K;
@@ -26,7 +26,7 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *c
 }
 
 /* E^t + small */
-static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *ctx)
+static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, PetscCtx ctx)
 {
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
   Mat                     K;
@@ -50,9 +50,9 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void **ctx)
+static PetscErrorCode PCBDDCNullSpaceCorrDestroy(PetscCtxRt ctx)
 {
-  NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)*ctx;
+  NullSpaceCorrection_ctx corr_ctx = *(NullSpaceCorrection_ctx *)ctx;
 
   PetscFunctionBegin;
   PetscCall(VecDestroyVecs(3, &corr_ctx->sw));

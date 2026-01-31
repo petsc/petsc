@@ -14,7 +14,7 @@ static void Exact(PetscReal t, PetscReal a0, PetscReal u0, PetscReal v0, PetscSc
   if (vt) *vt = v0 + a0 * t;
 }
 
-PetscErrorCode Residual(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *ctx)
+PetscErrorCode Residual(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, PetscCtx ctx)
 {
   UserParams        *user = (UserParams *)ctx;
   const PetscScalar *a;
@@ -31,7 +31,7 @@ PetscErrorCode Residual(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Tangent(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, void *ctx)
+PetscErrorCode Tangent(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, PetscCtx ctx)
 {
   PetscReal T = 0;
 

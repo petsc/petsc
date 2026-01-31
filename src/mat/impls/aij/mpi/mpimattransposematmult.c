@@ -7,7 +7,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-static PetscErrorCode MatProductCtxDestroy_MPIDense_MatTransMatMult(void **data)
+static PetscErrorCode MatProductCtxDestroy_MPIDense_MatTransMatMult(PetscCtxRt data)
 {
   MatProductCtx_MatTransMatMult *atb = *(MatProductCtx_MatTransMatMult **)data;
 

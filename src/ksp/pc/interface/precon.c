@@ -1187,7 +1187,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 
 .seealso: [](ch_ksp), `PC`, `PCModifySubMatricesFn`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc, PCModifySubMatricesFn *func, void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc, PCModifySubMatricesFn *func, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1225,7 +1225,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PCModifySubMatricesFn *func, void *
 
 .seealso: [](ch_ksp), `PC`, `PCModifySubMatricesFn`, `PCSetModifySubMatrices()`
 @*/
-PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx)
+PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);

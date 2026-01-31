@@ -381,7 +381,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   UserContext              *user = (UserContext *)ctx;
   DM                        dm;

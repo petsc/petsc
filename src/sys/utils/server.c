@@ -60,9 +60,9 @@ PetscErrorCode PetscShmgetAddressesFinalize(void)
 }
 
 /* takes a void so can work bsan safe with PetscObjectContainerCompose() */
-PetscErrorCode PCMPIServerAddressesDestroy(void **ctx)
+PetscErrorCode PCMPIServerAddressesDestroy(PetscCtxRt ctx)
 {
-  PCMPIServerAddresses *addresses = (PCMPIServerAddresses *)*ctx;
+  PCMPIServerAddresses *addresses = *(PCMPIServerAddresses **)ctx;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_SHMGET)

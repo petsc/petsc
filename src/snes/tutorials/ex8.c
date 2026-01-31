@@ -48,7 +48,7 @@ static void hessian_11_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 }
 
 /* The boundary conditions we impose */
-static PetscErrorCode sins_2d(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode sins_2d(PetscInt dim, PetscReal time, const PetscReal xx[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   const PetscReal pi2 = PETSC_PI * 2;

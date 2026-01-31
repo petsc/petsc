@@ -282,7 +282,7 @@ static PetscErrorCode MatMult_Solve(Mat A, Vec x, Vec y)
   Mat B;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A, (void *)&B));
+  PetscCall(MatShellGetContext(A, &B));
   PetscCall(MatSolve(B, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -292,7 +292,7 @@ static PetscErrorCode MatMult_J0Solve(Mat A, Vec x, Vec y)
   Mat B;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A, (void *)&B));
+  PetscCall(MatShellGetContext(A, &B));
   PetscCall(MatLMVMApplyJ0Inv(B, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -40,8 +40,8 @@ typedef struct {
   PetscInt    dir0;             // desired zero-crossing direction
 } AppCtx;
 
-PetscErrorCode     EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *ctx);
-PetscErrorCode     Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscReal t, Vec U, PetscBool fwd, void *ctx);
+PetscErrorCode     EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], PetscCtx ctx);
+PetscErrorCode     Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscReal t, Vec U, PetscBool fwd, PetscCtx ctx);
 static inline void SetVtols(PetscMPIInt rank, PetscMPIInt size, PetscReal tol0, PetscReal tolsin, PetscReal *vtol); // helper function to fill vtol[]
 
 int main(int argc, char **argv)
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 /*
   User callback for defining the event-functions
 */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], PetscCtx ctx)
 {
   PetscInt  n   = 0;
   AppCtx   *Ctx = (AppCtx *)ctx;
@@ -205,7 +205,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *
 /*
   User callback for the post-event stuff
 */
-PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscReal t, Vec U, PetscBool fwd, void *ctx)
+PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscReal t, Vec U, PetscBool fwd, PetscCtx ctx)
 {
   AppCtx *Ctx = (AppCtx *)ctx;
 

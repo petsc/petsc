@@ -12,14 +12,6 @@ module petscts
 #include <../src/ts/ftn-mod/petscts.h90>
 #include <../ftn/ts/petscts.h90>
 
-!
-!  Some PETSc Fortran functions that the user might pass as arguments
-!
-  external TSCOMPUTERHSFUNCTIONLINEAR
-  external TSCOMPUTERHSJACOBIANCONSTANT
-  external TSCOMPUTEIFUNCTIONLINEAR
-  external TSCOMPUTEIJACOBIANCONSTANT
-
 contains
 
 #include <../ftn/ts/petscts.hf90>
@@ -29,8 +21,7 @@ end module petscts
 !     ----------------------------------------------
 
 module petsccharacteristic
-  use petscvecdef
-  use petscsys
+  use petscdm
 #include <petsc/finclude/petsccharacteristic.h>
 #include <../ftn/ts/petsccharacteristic.h>
 #include <../ftn/ts/petsccharacteristic.h90>

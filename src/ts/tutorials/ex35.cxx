@@ -285,7 +285,7 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ctx)
 {
   UserCtx            user = (UserCtx)ctx;
   DM                 dm;
@@ -347,7 +347,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
 {
   UserCtx               user = (UserCtx)ctx;
   PetscReal             vpos[3];

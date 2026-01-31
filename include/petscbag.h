@@ -23,7 +23,7 @@
       MyParameters *params;
 
       PetscCall(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
-      PetscCall(PetscBagGetData(bag,(void **)&params));
+      PetscCall(PetscBagGetData(bag,&params));
       PetscCall(PetscBagSetName(bag,"MyParameters"));
       PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
 .ve
@@ -39,7 +39,7 @@ typedef struct _n_PetscBagItem *PetscBagItem;
 
 PETSC_EXTERN PetscErrorCode PetscBagCreate(MPI_Comm, size_t, PetscBag *);
 PETSC_EXTERN PetscErrorCode PetscBagDestroy(PetscBag *);
-PETSC_EXTERN PetscErrorCode PetscBagGetData(PetscBag, void *);
+PETSC_EXTERN PetscErrorCode PetscBagGetData(PetscBag, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterReal(PetscBag, void *, PetscReal, const char *, const char *);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterRealArray(PetscBag, void *, PetscInt, const char *, const char *);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterString(PetscBag, void *, PetscInt, const char *, const char *, const char *);

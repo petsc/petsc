@@ -73,7 +73,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
   SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Mat Product Algorithm is not supported");
 }
 
-PetscErrorCode MatProductCtxDestroy_MPIAIJ_MatMatMult(void **data)
+PetscErrorCode MatProductCtxDestroy_MPIAIJ_MatMatMult(PetscCtxRt data)
 {
   MatProductCtx_APMPI *ptap = *(MatProductCtx_APMPI **)data;
 
@@ -395,7 +395,7 @@ typedef struct {
   PetscInt      blda;
 } MPIAIJ_MPIDense;
 
-static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void **ctx)
+static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
 {
   MPIAIJ_MPIDense *contents = *(MPIAIJ_MPIDense **)ctx;
   PetscInt         i;

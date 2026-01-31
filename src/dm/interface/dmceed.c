@@ -88,7 +88,7 @@ PetscErrorCode VecRestoreCeedVectorRead(Vec X, CeedVector *cx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-CEED_QFUNCTION(Geometry2D)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+CEED_QFUNCTION(Geometry2D)(PetscCtx ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
 {
   const CeedScalar *x = in[0], *Jac = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
@@ -112,7 +112,7 @@ CEED_QFUNCTION(Geometry2D)(void *ctx, const CeedInt Q, const CeedScalar *const *
   return CEED_ERROR_SUCCESS;
 }
 
-CEED_QFUNCTION(Geometry3D)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+CEED_QFUNCTION(Geometry3D)(PetscCtx ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
 {
   const CeedScalar *Jac = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
@@ -187,7 +187,7 @@ static PetscErrorCode DMCeedCreateGeometry(DM dm, IS cellIS, PetscInt *Nqdata, C
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMRefineHook_Ceed(DM coarse, DM fine, void *ctx)
+PetscErrorCode DMRefineHook_Ceed(DM coarse, DM fine, PetscCtx ctx)
 {
   PetscFunctionBegin;
   if (coarse->dmceed) PetscCall(DMCeedCreate(fine, coarse->dmceed->geom ? PETSC_TRUE : PETSC_FALSE, coarse->dmceed->func, coarse->dmceed->funcSource));

@@ -345,7 +345,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
+PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   UserContext              *user = (UserContext *)ctx;
   DM                        dm;

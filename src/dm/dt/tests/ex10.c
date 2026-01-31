@@ -14,7 +14,7 @@ static char help[] = "Tests implementation of PetscSpace_Sum by solving the Pois
    \vec{u} = \vec{x};
    p = -0.5*(\vec{x} \cdot \vec{x});
    */
-static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt c;
 
@@ -22,7 +22,7 @@ static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[]
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 
@@ -31,7 +31,7 @@ static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[]
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode linear_divu(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear_divu(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = dim;
   return PETSC_SUCCESS;
@@ -102,21 +102,21 @@ static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 
 typedef struct {
   PetscInt dummy;
-} UserCtx;
+} AppCtx;
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh)
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *mesh)
 {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
   PetscCall(DMSetFromOptions(*mesh));
-  PetscCall(DMSetApplicationContext(*mesh, user));
+  PetscCall(DMSetApplicationContext(*mesh, ctx));
   PetscCall(DMViewFromOptions(*mesh, NULL, "-dm_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Setup the system of equations that we wish to solve */
-static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
   PetscDS        ds;
   DMLabel        label;
@@ -134,7 +134,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
   PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_qu, NULL, NULL));
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(PetscDSAddBoundary(ds, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (PetscFortranCallbackFn *)NULL, NULL, user, &bd));
+  PetscCall(PetscDSAddBoundary(ds, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (PetscFortranCallbackFn *)NULL, NULL, ctx, &bd));
   PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL));
 
@@ -144,7 +144,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
 }
 
 /* Create the finite element spaces we will use for this system */
-static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user)
+static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *ctx)
 {
   DM        cdm = mesh, cdm_sum = mesh_sum;
   PetscDS   ds;
@@ -182,12 +182,12 @@ static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (
   PetscCall(DMSetField(mesh, 0, NULL, (PetscObject)u));
   PetscCall(DMSetField(mesh, 1, NULL, (PetscObject)divu));
   PetscCall(DMCreateDS(mesh));
-  PetscCall((*setup)(mesh, user));
+  PetscCall((*setup)(mesh, ctx));
 
   PetscCall(DMSetField(mesh_sum, 0, NULL, (PetscObject)u_sum));
   PetscCall(DMSetField(mesh_sum, 1, NULL, (PetscObject)divu_sum));
   PetscCall(DMCreateDS(mesh_sum));
-  PetscCall((*setup)(mesh_sum, user));
+  PetscCall((*setup)(mesh_sum, ctx));
 
   while (cdm) {
     PetscCall(DMCopyDisc(mesh, cdm));
@@ -212,7 +212,7 @@ static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (
 
 int main(int argc, char **argv)
 {
-  UserCtx         user;
+  AppCtx          ctx;
   DM              dm, dm_sum;
   SNES            snes, snes_sum;
   Vec             u, u_sum;
@@ -224,20 +224,20 @@ int main(int argc, char **argv)
 
   /* Set up a snes for the standard approach, one space with 2 components */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
-  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   PetscCall(SNESSetDM(snes, dm));
 
   /* Set up a snes for the sum space approach, where each subspace of the sum space represents one component */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes_sum));
-  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm_sum));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm_sum));
   PetscCall(SNESSetDM(snes_sum, dm_sum));
-  PetscCall(SetupDiscretization(dm, dm_sum, SetupProblem, &user));
+  PetscCall(SetupDiscretization(dm, dm_sum, SetupProblem, &ctx));
 
   /* Set up and solve the system using standard approach. */
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "solution"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &ctx));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(SNESSolve(snes, NULL, u));
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm_sum, &u_sum));
   PetscCall(VecSet(u_sum, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u_sum, "solution_sum"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm_sum, PETSC_FALSE, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm_sum, PETSC_FALSE, &ctx));
   PetscCall(SNESSetFromOptions(snes_sum));
   PetscCall(DMSNESCheckFromOptions(snes_sum, u_sum));
   PetscCall(SNESSolve(snes_sum, NULL, u_sum));

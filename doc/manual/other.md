@@ -486,7 +486,7 @@ screen. This can also be set with the command
 It is also possible to trap signals by using the command
 
 ```
-PetscPushSignalHandler(PetscErrorCode (*Handler)(int, void *), void *ctx);
+PetscPushSignalHandler(PetscErrorCode (*Handler)(int, PetscCtx), PetscCtx ctx);
 ```
 
 The default handler `PetscSignalHandlerDefault()` calls

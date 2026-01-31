@@ -10,7 +10,7 @@ typedef struct {
   void              *data;
 } MatProductCtx_HT;
 
-static PetscErrorCode MatProductCtxDestroy_HT(void **ptr)
+static PetscErrorCode MatProductCtxDestroy_HT(PetscCtxRt ptr)
 {
   MatProductCtx_HT *data = *(MatProductCtx_HT **)ptr;
 
@@ -35,7 +35,7 @@ static PetscErrorCode MatProductNumeric_HT(Mat D)
   product = D->product;
   PetscCall(PetscObjectQuery((PetscObject)D, "MatProductCtx_HT", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatProductCtx_HT missing");
-  PetscCall(PetscContainerGetPointer(container, (void **)&data));
+  PetscCall(PetscContainerGetPointer(container, &data));
   B    = product->B;
   data = (MatProductCtx_HT *)product->data;
   if (data->conjugate) {
@@ -69,7 +69,7 @@ static PetscErrorCode MatProductSymbolic_HT(Mat D)
     PetscCheck(!product->data, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product data not empty");
     PetscCall(PetscObjectQuery((PetscObject)D, "MatProductCtx_HT", (PetscObject *)&container));
     PetscCheck(container, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatProductCtx_HT missing");
-    PetscCall(PetscContainerGetPointer(container, (void **)&data));
+    PetscCall(PetscContainerGetPointer(container, &data));
     PetscCall(MatProductSetFromOptions(D));
     if (data->conjugate) {
       PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &data->B));
@@ -151,7 +151,7 @@ static PetscErrorCode MatProductSetFromOptions_HT(Mat D)
         PetscCall(PetscNew(&data));
         PetscCall(PetscContainerSetPointer(container, data));
         PetscCall(PetscObjectCompose((PetscObject)D, "MatProductCtx_HT", (PetscObject)container));
-      } else PetscCall(PetscContainerGetPointer(container, (void **)&data));
+      } else PetscCall(PetscContainerGetPointer(container, &data));
       data->scale     = scale;
       data->conjugate = (PetscBool)Atrans;
       data->container = container;

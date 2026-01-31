@@ -19,7 +19,7 @@ contains
 !    ksp   - iterative context
 !    n     - iteration number
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
-!    dummy - optional user-defined monitor context (unused here)
+!    unused - optional user-defined monitor context (unused here)
 !
   subroutine MyKSPMonitor(ksp, n, rnorm, vf, ierr)
 
@@ -58,13 +58,13 @@ contains
 !    ksp   - iterative context
 !    n     - iteration number
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
-!    dummy - optional user-defined monitor context (unused here)
+!    unused - optional user-defined monitor context (unused here)
 !
-  subroutine MyKSPConverged(ksp, n, rnorm, flag, dummy, ierr)
+  subroutine MyKSPConverged(ksp, n, rnorm, flag, unused, ierr)
 
     KSP ksp
     PetscErrorCode ierr
-    PetscInt n, dummy
+    PetscInt n, unused
     KSPConvergedReason flag
     PetscReal rnorm
 

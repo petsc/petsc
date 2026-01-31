@@ -8,7 +8,7 @@
 
 /* declare some private DMMoab specific overrides */
 static PetscErrorCode DMCreateVector_Moab_Private(DM, moab::Tag, const moab::Range *, PetscBool, PetscBool, Vec *);
-static PetscErrorCode DMVecCtxDestroy_Moab(void **);
+static PetscErrorCode DMVecCtxDestroy_Moab(PetscCtxRt);
 static PetscErrorCode DMVecDuplicate_Moab(Vec, Vec *);
 #ifdef MOAB_HAVE_MPI
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *, moab::ParallelComm *, char **);
@@ -67,7 +67,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
 
   /* Get the MOAB private data */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   *tag = vmoab->tag;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -96,8 +96,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 
   /* Get the MOAB private data handle */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
-
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
   *range = *vmoab->tag_range;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -137,7 +136,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar **>(array);
@@ -150,7 +149,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
 
     /* Get the Vec_MOAB struct for the original vector */
     PetscCall(PetscObjectQuery((PetscObject)vmoab->local, "MOABData", (PetscObject *)&moabdata));
-    PetscCall(PetscContainerGetPointer(moabdata, (void **)&xmoab));
+    PetscCall(PetscContainerGetPointer(moabdata, &xmoab));
 
     /* get the local representation of the arrays from Vectors */
     PetscCall(VecGhostGetLocalForm(vmoab->local, &xmoab->local));
@@ -217,7 +216,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar **>(array);
@@ -225,7 +224,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
   if (vmoab->is_native_vec) {
     /* Get the Vec_MOAB struct for the original vector */
     PetscCall(PetscObjectQuery((PetscObject)vmoab->local, "MOABData", (PetscObject *)&moabdata));
-    PetscCall(PetscContainerGetPointer(moabdata, (void **)&xmoab));
+    PetscCall(PetscContainerGetPointer(moabdata, &xmoab));
 
     /* get the local representation of the arrays from Vectors */
     PetscCall(VecRestoreArray(xmoab->local, varray));
@@ -298,7 +297,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar **>(array);
@@ -311,7 +310,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
 
     /* Get the Vec_MOAB struct for the original vector */
     PetscCall(PetscObjectQuery((PetscObject)vmoab->local, "MOABData", (PetscObject *)&moabdata));
-    PetscCall(PetscContainerGetPointer(moabdata, (void **)&xmoab));
+    PetscCall(PetscContainerGetPointer(moabdata, &xmoab));
 
     /* get the local representation of the arrays from Vectors */
     PetscCall(VecGhostGetLocalForm(vmoab->local, &xmoab->local));
@@ -370,7 +369,7 @@ PetscErrorCode DMMoabVecRestoreArrayRead(DM dm, Vec vec, void *array)
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)vec, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar **>(array);
@@ -378,7 +377,7 @@ PetscErrorCode DMMoabVecRestoreArrayRead(DM dm, Vec vec, void *array)
   if (vmoab->is_native_vec) {
     /* Get the Vec_MOAB struct for the original vector */
     PetscCall(PetscObjectQuery((PetscObject)vmoab->local, "MOABData", (PetscObject *)&moabdata));
-    PetscCall(PetscContainerGetPointer(moabdata, (void **)&xmoab));
+    PetscCall(PetscContainerGetPointer(moabdata, &xmoab));
 
     /* restore the local representation of the arrays from Vectors */
     PetscCall(VecRestoreArray(xmoab->local, varray));
@@ -608,7 +607,7 @@ static PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
 
   /* Get the Vec_MOAB struct for the original vector */
   PetscCall(PetscObjectQuery((PetscObject)x, "MOABData", (PetscObject *)&moabdata));
-  PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
+  PetscCall(PetscContainerGetPointer(moabdata, &vmoab));
 
   PetscCall(VecGetDM(x, &dm));
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -618,9 +617,9 @@ static PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMVecCtxDestroy_Moab(void **user)
+static PetscErrorCode DMVecCtxDestroy_Moab(PetscCtxRt ctx)
 {
-  Vec_MOAB       *vmoab = (Vec_MOAB *)*user;
+  Vec_MOAB       *vmoab = *(Vec_MOAB **)ctx;
   moab::ErrorCode merr;
 
   PetscFunctionBegin;

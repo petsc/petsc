@@ -655,7 +655,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
 /*
   Compare the direction of the current and previous step, modify the current step accordingly
 */
-PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool *changed, void *ctx)
+PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool *changed, PetscCtx ctx)
 {
   PreCheck    precheck;
   Vec         Ylast;
@@ -723,7 +723,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm, PreCheck *precheck)
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
 {
   PetscInt      i, j, k, xs, ys, xm, ym, its, tot_its, sweeps, l, m;
   PetscReal     hx, hy, hxdhy, hydhx, dhx, dhy, sc;

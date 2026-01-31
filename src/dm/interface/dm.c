@@ -2423,7 +2423,7 @@ PetscErrorCode DMRefine(DM dm, MPI_Comm comm, DM *dmf)
 
 .seealso: [](ch_dmbase), `DM`, `DMCoarsenHookAdd()`, `DMInterpolate()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM coarse, DM fine, void *ctx), PetscErrorCode (*interphook)(DM coarse, Mat interp, DM fine, void *ctx), void *ctx)
+PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM coarse, DM fine, PetscCtx ctx), PetscErrorCode (*interphook)(DM coarse, Mat interp, DM fine, PetscCtx ctx), PetscCtx ctx)
 {
   DMRefineHookLink link, *p;
 
@@ -2460,7 +2460,7 @@ PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM coarse
 
 .seealso: [](ch_dmbase), `DM`, `DMRefineHookAdd()`, `DMCoarsenHookRemove()`, `DMInterpolate()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMRefineHookRemove(DM coarse, PetscErrorCode (*refinehook)(DM, DM, void *), PetscErrorCode (*interphook)(DM, Mat, DM, void *), void *ctx)
+PetscErrorCode DMRefineHookRemove(DM coarse, PetscErrorCode (*refinehook)(DM, DM, void *), PetscErrorCode (*interphook)(DM, Mat, DM, void *), PetscCtx ctx)
 {
   DMRefineHookLink link, *p;
 
@@ -2775,7 +2775,7 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 
 .seealso: [](ch_dmbase), `DM`, `DMGlobalToLocal()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMGlobalToLocalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM dm, Vec g, InsertMode mode, Vec l, void *ctx), PetscErrorCode (*endhook)(DM dm, Vec g, InsertMode mode, Vec l, void *ctx), void *ctx)
+PetscErrorCode DMGlobalToLocalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM dm, Vec g, InsertMode mode, Vec l, PetscCtx ctx), PetscErrorCode (*endhook)(DM dm, Vec g, InsertMode mode, Vec l, PetscCtx ctx), PetscCtx ctx)
 {
   DMGlobalToLocalHookLink link, *p;
 
@@ -2791,7 +2791,7 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM dm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
+static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode mode, Vec l, PetscCtx ctx)
 {
   Mat          cMat;
   Vec          cVec, cBias;
@@ -2988,7 +2988,7 @@ PetscErrorCode DMGlobalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
 
 .seealso: [](ch_dmbase), `DM`, `DMLocalToGlobal()`, `DMRefineHookAdd()`, `DMGlobalToLocalHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM global, Vec l, InsertMode mode, Vec g, void *ctx), PetscErrorCode (*endhook)(DM global, Vec l, InsertMode mode, Vec g, void *ctx), void *ctx)
+PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM global, Vec l, InsertMode mode, Vec g, PetscCtx ctx), PetscErrorCode (*endhook)(DM global, Vec l, InsertMode mode, Vec g, PetscCtx ctx), PetscCtx ctx)
 {
   DMLocalToGlobalHookLink link, *p;
 
@@ -3004,7 +3004,7 @@ PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM glob
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode mode, Vec g, void *ctx)
+static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode mode, Vec g, PetscCtx ctx)
 {
   PetscFunctionBegin;
   (void)g;
@@ -3424,7 +3424,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
 .seealso: [](ch_dmbase), `DM`, `DMCoarsenHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM fine, DM coarse, void *ctx), PetscErrorCode (*restricthook)(DM fine, Mat mrestrict, Vec rscale, Mat inject, DM coarse, void *ctx), void *ctx)
+PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM fine, DM coarse, PetscCtx ctx), PetscErrorCode (*restricthook)(DM fine, Mat mrestrict, Vec rscale, Mat inject, DM coarse, PetscCtx ctx), PetscCtx ctx)
 {
   DMCoarsenHookLink link, *p;
 
@@ -3462,7 +3462,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM fine, 
 
 .seealso: [](ch_dmbase), `DM`, `DMCoarsenHookAdd()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`
 @*/
-PetscErrorCode DMCoarsenHookRemove(DM fine, PetscErrorCode (*coarsenhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, Mat, Vec, Mat, DM, void *), void *ctx)
+PetscErrorCode DMCoarsenHookRemove(DM fine, PetscErrorCode (*coarsenhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, Mat, Vec, Mat, DM, void *), PetscCtx ctx)
 {
   DMCoarsenHookLink link, *p;
 
@@ -3547,7 +3547,7 @@ PetscErrorCode DMRestrict(DM fine, Mat restrct, Vec rscale, Mat inject, DM coars
 
 .seealso: [](ch_dmbase), `DM`, `DMSubDomainHookRemove()`, `DMRefineHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`, `DMCreateDomainDecomposition()`
 @*/
-PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM global, DM block, void *ctx), PetscErrorCode (*restricthook)(DM global, VecScatter out, VecScatter in, DM block, void *ctx), void *ctx)
+PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM global, DM block, PetscCtx ctx), PetscErrorCode (*restricthook)(DM global, VecScatter out, VecScatter in, DM block, PetscCtx ctx), PetscCtx ctx)
 {
   DMSubDomainHookLink link, *p;
 
@@ -3584,7 +3584,7 @@ PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM global,
 .seealso: [](ch_dmbase), `DM`, `DMSubDomainHookAdd()`, `SNESFASGetInterpolation()`, `SNESFASGetInjection()`, `PetscObjectCompose()`, `PetscContainerCreate()`,
           `DMCreateDomainDecomposition()`
 @*/
-PetscErrorCode DMSubDomainHookRemove(DM global, PetscErrorCode (*ddhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, VecScatter, VecScatter, DM, void *), void *ctx)
+PetscErrorCode DMSubDomainHookRemove(DM global, PetscErrorCode (*ddhook)(DM, DM, void *), PetscErrorCode (*restricthook)(DM, VecScatter, VecScatter, DM, void *), PetscCtx ctx)
 {
   DMSubDomainHookLink link, *p;
 
@@ -3777,14 +3777,15 @@ PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscCtxDestroyFn *destroy)
   In a multilevel solver, the user context is shared by all the `DM` in the hierarchy; it is thus not advisable
   to store objects that represent discretized quantities inside the context.
 
-  Fortran Note:
-  This only works when `ctx` is a Fortran derived type (it cannot be a `PetscObject`), we recommend writing a Fortran interface definition for this
-  function that tells the Fortran compiler the derived data type that is passed in as the `ctx` argument. See `DMGetApplicationContext()` for
-  an example.
+  Fortran Notes:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
 
 .seealso: [](ch_dmbase), `DM`, `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
 @*/
-PetscErrorCode DMSetApplicationContext(DM dm, void *ctx)
+PetscErrorCode DMSetApplicationContext(DM dm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3830,7 +3831,7 @@ PetscErrorCode DMSetApplicationContext(DM dm, void *ctx)
 
 .seealso: [](ch_dmbase), `DM`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
 @*/
-PetscErrorCode DMGetApplicationContext(DM dm, PeCtx ctx)
+PetscErrorCode DMGetApplicationContext(DM dm, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -6251,7 +6252,7 @@ PetscErrorCode DMUseTensorOrder(DM dm, PetscBool tensor)
 @*/
 PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
 {
-  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, PetscCtx ctx);
   void   **ectxs;
   Vec      locu, locu_t;
   PetscInt Nf, Nds, s;
@@ -8076,7 +8077,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 .seealso: [](ch_dmbase), `DM`, `DSGetBoundary()`, `PetscDSAddBoundary()`
 @*/
-PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, PetscCtx ctx, PetscInt *bd)
 {
   PetscDS ds;
 
@@ -8256,7 +8257,7 @@ PetscErrorCode DMHasBound(DM dm, PetscBool *hasBound)
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx), void **ctxs, InsertMode mode, Vec X)
 {
   Vec localX;
 
@@ -8305,7 +8306,7 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8351,7 +8352,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx), void **ctxs, InsertMode mode, Vec X)
 {
   Vec localX;
 
@@ -8403,7 +8404,7 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
 
 .seealso: [](ch_dmbase), `DM`, `DMProjectFunction()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabel()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

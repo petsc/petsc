@@ -203,11 +203,11 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C)
   /* trigger CPU copies if needed and flag CPU mask for C */
 #if defined(PETSC_HAVE_DEVICE)
   {
-    const PetscScalar *dummy;
-    PetscCall(MatSeqAIJGetArrayRead(A, &dummy));
-    PetscCall(MatSeqAIJRestoreArrayRead(A, &dummy));
-    PetscCall(MatSeqAIJGetArrayRead(P, &dummy));
-    PetscCall(MatSeqAIJRestoreArrayRead(P, &dummy));
+    const PetscScalar *unused;
+    PetscCall(MatSeqAIJGetArrayRead(A, &unused));
+    PetscCall(MatSeqAIJRestoreArrayRead(A, &unused));
+    PetscCall(MatSeqAIJGetArrayRead(P, &unused));
+    PetscCall(MatSeqAIJRestoreArrayRead(P, &unused));
     if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
   }
 #endif

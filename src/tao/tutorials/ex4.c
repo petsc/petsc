@@ -428,7 +428,7 @@ static PetscErrorCode HessianRegularizationADMM(Tao tao, Vec x, Mat H, Mat Hpre,
 
 /* NORM_2 Case : (1/2) * ||F x - d||^2 + 0.5 * || x ||_p
 *  NORM_1 Case : (1/2) * ||F x - d||^2 + || x ||_p */
-static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, void *ctx)
+static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, PetscCtx ctx)
 {
   PetscReal Jm, Jr;
 
@@ -441,7 +441,7 @@ static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, void *ctx)
 
 /* NORM_2 Case: FTFx - FTd + x
  * NORM_1 Case: FTFx - FTd + x/(|x| + eps) */
-static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx)
+static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, PetscCtx ctx)
 {
   UserCtx cntx = (UserCtx)ctx;
 
@@ -454,7 +454,7 @@ static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx)
 
 /* NORM_2 Case: diag(mu) + FTF
  * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps))) + FTF  */
-static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, PetscCtx ctx)
 {
   Mat tempH;
 

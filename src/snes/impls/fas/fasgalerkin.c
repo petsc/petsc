@@ -75,7 +75,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 
 .seealso: [](ch_snes), `SNES`, `SNESFAS`, `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/
-PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   SNES      fassnes;
   SNES_FAS *fas;

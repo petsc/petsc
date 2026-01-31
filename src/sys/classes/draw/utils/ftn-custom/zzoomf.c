@@ -9,7 +9,7 @@
 
 typedef void (*FCN)(PetscDraw *, void *, PetscErrorCode *); /* force argument to next function to not be extern C*/
 
-static PetscErrorCode ourdrawzoom(PetscDraw draw, void *ctx)
+static PetscErrorCode ourdrawzoom(PetscDraw draw, PetscCtx ctx)
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
 
@@ -17,7 +17,7 @@ static PetscErrorCode ourdrawzoom(PetscDraw draw, void *ctx)
   return ierr;
 }
 
-PETSC_EXTERN void petscdrawzoom_(PetscDraw *draw, FCN f, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscdrawzoom_(PetscDraw *draw, FCN f, PetscCtx ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*draw, 1);
   ((PetscObject)*draw)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)f;

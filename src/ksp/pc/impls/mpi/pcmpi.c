@@ -348,7 +348,7 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   } else {
     PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
     PCMPIServerAddresses *addresses;
-    PetscCall(PetscObjectContainerQuery((PetscObject)A, "PCMPIServerAddresses", (void **)&addresses));
+    PetscCall(PetscObjectContainerQuery((PetscObject)A, "PCMPIServerAddresses", &addresses));
     ia = rstart + (PetscInt *)addresses->addr[0];
     a  = ia[0] + (PetscScalar *)addresses->addr[2];
   }

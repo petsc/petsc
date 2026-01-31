@@ -22,8 +22,8 @@ static char help[] = "Solves 1D constant coefficient Laplacian using DMSHELL and
 #include <petscdmshell.h>
 #include <petscksp.h>
 
-static PetscErrorCode    ComputeMatrix(KSP, Mat, Mat, void *);
-static PetscErrorCode    ComputeRHS(KSP, Vec, void *);
+static PetscErrorCode    ComputeMatrix(KSP, Mat, Mat, PetscCtx);
+static PetscErrorCode    ComputeRHS(KSP, Vec, PetscCtx);
 static PetscErrorCode    CreateMatrix(DM, Mat *);
 static PetscErrorCode    CreateGlobalVector(DM, Vec *);
 static PetscErrorCode    CreateLocalVector(DM, Vec *);
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-static PetscErrorCode DestroyCtx(void **ctx)
+static PetscErrorCode DestroyCtx(PetscCtxRt ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(DMDestroy((DM *)ctx));
@@ -164,7 +164,7 @@ static PetscErrorCode Coarsen(DM shell, MPI_Comm comm, DM *dmnew)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+static PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 {
   PetscInt    mx, idx[2];
   PetscScalar h, v[2];
@@ -185,7 +185,7 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 {
   PetscInt    i, mx, xm, xs;
   PetscScalar v[3], h;

@@ -56,9 +56,9 @@ PETSC_EXTERN PetscErrorCode DMFieldCreateDA(DM, PetscInt, const PetscScalar *, D
 PETSC_EXTERN PetscErrorCode DMFieldCreateDS(DM, PetscInt, Vec, DMField *);
 PETSC_EXTERN PetscErrorCode DMFieldCreateDSWithDG(DM, DM, PetscInt, Vec, Vec, DMField *);
 
-PETSC_EXTERN PetscErrorCode DMFieldCreateShell(DM, PetscInt, DMFieldContinuity, void *, DMField *);
+PETSC_EXTERN PetscErrorCode DMFieldCreateShell(DM, PetscInt, DMFieldContinuity, PetscCtx, DMField *);
 PETSC_EXTERN PetscErrorCode DMFieldShellSetDestroy(DMField, PetscErrorCode (*)(DMField));
-PETSC_EXTERN PetscErrorCode DMFieldShellGetContext(DMField, void *);
+PETSC_EXTERN PetscErrorCode DMFieldShellGetContext(DMField, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMFieldShellSetEvaluate(DMField, PetscErrorCode (*)(DMField, Vec, PetscDataType, void *, void *, void *));
 PETSC_EXTERN PetscErrorCode DMFieldShellSetEvaluateFE(DMField, PetscErrorCode (*)(DMField, IS, PetscQuadrature, PetscDataType, void *, void *, void *));
 PETSC_EXTERN PetscErrorCode DMFieldShellEvaluateFEDefault(DMField, IS, PetscQuadrature, PetscDataType, void *, void *, void *);

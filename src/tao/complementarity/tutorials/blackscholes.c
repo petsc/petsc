@@ -255,7 +255,7 @@ int main(int argc, char **argv)
 }
 
 /* -------------------------------------------------------------------- */
-PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
+PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, PetscCtx ctx)
 {
   AppCtx   *user = (AppCtx *)ctx;
   PetscInt  i;

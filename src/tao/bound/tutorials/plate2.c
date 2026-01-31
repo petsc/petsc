@@ -719,7 +719,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
    Output Parameter:
 .  user - user-defined application context
 */
-static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx)
+static PetscErrorCode MSA_Plate(Vec XL, Vec XU, PetscCtx ctx)
 {
   AppCtx    *user = (AppCtx *)ctx;
   PetscInt   i, j, row;

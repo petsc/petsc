@@ -59,7 +59,7 @@ struct _n_Functional {
 typedef struct {
   /* Problem definition */
   PetscBool useFV; /* Use a finite volume scheme for advection */
-  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   VelocityDistribution velocityDist;
   PorosityDistribution porosityDist;
   PetscReal            inflowState;
@@ -142,7 +142,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFn func, void *ctx)
+static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFn func, PetscCtx ctx)
 {
   Functional *ptr, f;
   PetscInt    lastoffset = -1;
@@ -283,7 +283,7 @@ void g1_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[],
   for (d = 0; d < dim; ++d) g1[d * dim + d] = u[dim];
 }
 
-static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, void *ctx)
+static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, PetscCtx ctx)
 {
   PetscReal wind[3] = {0.0, 1.0, 0.0};
   PetscReal wn      = DMPlex_DotRealD_Internal(PetscMin(dim, 3), wind, n);
@@ -291,7 +291,7 @@ static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
   flux[0] = (wn > 0 ? uL[dim] : uR[dim]) * wn;
 }
 
-static void riemann_coupled_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, void *ctx)
+static void riemann_coupled_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, PetscCtx ctx)
 {
   PetscReal wn = DMPlex_DotD_Internal(dim, uL, n);
 
@@ -304,14 +304,14 @@ static void riemann_coupled_advection(PetscInt dim, PetscInt Nf, const PetscReal
 #endif
 }
 
-static PetscErrorCode zero_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   u[1] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode constant_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode constant_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   u[1] = 1.0;
@@ -319,7 +319,7 @@ static PetscErrorCode constant_u_2d(PetscInt dim, PetscReal time, const PetscRea
 }
 
 /* Coordinates of the point which was at x at t = 0 */
-static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal t = *((PetscReal *)ctx);
   u[0]              = x[0];
@@ -361,7 +361,7 @@ Also try h((x + ut)^2 + (y + vt)^2), so that
   = 0
 
 */
-static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[0] * x[0] + x[1] * x[1];
   u[1] = 2.0 * x[0] * x[0] - 2.0 * x[0] * x[1];
@@ -385,7 +385,7 @@ We will conserve phi since
 
     \nabla \cdot u = cos(2pi x)/2pi - cos(2pi x)/2pi = 0
 */
-static PetscErrorCode periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]) / PetscSqr(2.0 * PETSC_PI);
   u[1] = -x[1] * PetscCosReal(2.0 * PETSC_PI * x[0]) / (2.0 * PETSC_PI);
@@ -409,40 +409,40 @@ We will conserve phi since
 
     \nabla \cdot u = cos(2pi x) cos(2pi y)/2pi - cos(2pi y) cos(2pi x)/2pi = 0
 */
-static PetscErrorCode doubly_periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode doubly_periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]) * PetscCosReal(2.0 * PETSC_PI * x[1]) / PetscSqr(2.0 * PETSC_PI);
   u[1] = -PetscSinReal(2.0 * PETSC_PI * x[1]) * PetscCosReal(2.0 * PETSC_PI * x[0]) / PetscSqr(2.0 * PETSC_PI);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode shear_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode shear_bc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = x[1] - 0.5;
   u[1] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode zero_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode constant_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode constant_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 1.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode delta_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode delta_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal   x0[2];
   PetscScalar xn[2];
@@ -473,7 +473,7 @@ Check: constant v(t) = {v0, w0}, x(t) = {x0 + v0 t, y0 + w0 t}
 
   v0 f_x + w0 f_y = v . f
 */
-static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscReal x0[2] = {0.5, 0.5};
   const PetscReal sigma = 1.0 / 6.0;
@@ -492,7 +492,7 @@ static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscR
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode tilted_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode tilted_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal       x0[3];
   const PetscReal wind[3] = {0.0, 1.0, 0.0};
@@ -504,7 +504,7 @@ static PetscErrorCode tilted_phi_2d(PetscInt dim, PetscReal time, const PetscRea
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode tilted_phi_coupled_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode tilted_phi_coupled_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal       ur[3];
   PetscReal       x0[3];
@@ -519,7 +519,7 @@ static PetscErrorCode tilted_phi_coupled_2d(PetscInt dim, PetscReal time, const 
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
 
@@ -528,7 +528,7 @@ static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   //xG[0] = xI[dim];
@@ -536,7 +536,7 @@ static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt dim;
@@ -560,7 +560,7 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
+static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, PetscCtx ctx)
 {
   AppCtx     *user      = (AppCtx *)ctx;
   PetscScalar yexact[3] = {0, 0, 0};
@@ -583,7 +583,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupBC(DM dm, AppCtx *user)
 {
-  PetscErrorCode (*exactFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   PetscDS        prob;
   DMLabel        label;
@@ -814,7 +814,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx)
+static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), PetscCtx ctx)
 {
   PetscDS            prob;
   DM                 dmCell;
@@ -845,7 +845,7 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
+static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, PetscCtx ctx)
 {
   AppCtx            *user   = (AppCtx *)ctx;
   char              *ftable = NULL;

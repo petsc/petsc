@@ -21,7 +21,7 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec, PetscScalar[], Aircraft);
 PetscErrorCode MatrixFreeObjHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode MyMatMult(Mat, Vec, Vec);
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   const PetscScalar *u, *v, *w;
@@ -43,7 +43,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   const PetscScalar *u, *v, *w;
@@ -75,25 +75,25 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode RHSHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode RHSHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode RHSHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   const PetscScalar *v, *w, *vl, *vr, *u;
@@ -131,7 +131,7 @@ static PetscErrorCode RHSHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Ve
 }
 
 /* Vl in NULL,updates to VHV must be added */
-static PetscErrorCode IntegrandHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode IntegrandHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   const PetscScalar *v, *w, *vr, *u;
@@ -160,25 +160,25 @@ static PetscErrorCode IntegrandHessianProductUU(TS ts, PetscReal t, Vec U, Vec *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IntegrandHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode IntegrandHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IntegrandHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode IntegrandHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IntegrandHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+static PetscErrorCode IntegrandHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   PetscScalar       *r;
@@ -196,7 +196,7 @@ static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, void *ctx)
+static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   PetscScalar        drdu[2][1];
@@ -217,7 +217,7 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, void *ctx)
+static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(DRDP));
@@ -432,7 +432,7 @@ int main(int argc, char **argv)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormObjFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx)
+PetscErrorCode FormObjFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   TS                 ts   = actx->ts;
@@ -484,7 +484,7 @@ PetscErrorCode FormObjFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx)
+PetscErrorCode FormObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   const PetscScalar *p;
@@ -531,7 +531,7 @@ PetscErrorCode FormObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatrixFreeObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx)
+PetscErrorCode MatrixFreeObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, PetscCtx ctx)
 {
   Aircraft           actx = (Aircraft)ctx;
   PetscScalar       *v, *w;

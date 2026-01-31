@@ -40,7 +40,7 @@ typedef enum {
 } VarMode;
 static const char *const VarModes[] = {"CONSERVATIVE", "NONCONSERVATIVE", "TRANSIENTVAR", "VarMode", "VAR_", NULL};
 
-static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   const PetscScalar *u, *udot;
   PetscScalar       *f;
@@ -59,7 +59,7 @@ static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   const PetscScalar *u, *udot;
   PetscScalar       *f;
@@ -78,7 +78,7 @@ static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec U
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot, Vec F, void *ctx)
+static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot, Vec F, PetscCtx ctx)
 {
   const PetscScalar *u, *cdot;
   PetscScalar       *f;
@@ -97,7 +97,7 @@ static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TransientVar(TS ts, Vec U, Vec C, void *ctx)
+static PetscErrorCode TransientVar(TS ts, Vec U, Vec C, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecCopy(U, C));

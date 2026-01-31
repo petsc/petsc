@@ -1043,12 +1043,12 @@ Sample lifetime of a PETSc object
 The user may wish to override or provide custom functionality in many situations. This is handled via callbacks, which the library will call at the appropriate time. The most general way to apply a callback has this form:
 
 ```
-ObjectCallbackSetter(obj, callbackfunction(), void *ctx, contextdestroy(void *ctx));
+ObjectCallbackSetter(obj, callbackfunction(), PetscCtx ctx, contextdestroy(PetscCtx ctx));
 ```
 
 where `ObjectCallbackSetter()` is a callback setter such as `SNESSetFunction()`. `callbackfunction()` is what will be called
 by the library, `ctx` is an optional data structure (array, struct, PETSc object) that is used by `callbackfunction()`
-and `contextdestroy(void *ctx)` is an optional function that will be called when `obj` is destroyed to free
+and `contextdestroy(PetscCtx ctx)` is an optional function that will be called when `obj` is destroyed to free
 anything in `ctx`. The use of the `contextdestroy()` allows users to "set and forget"
 data structures that will not be needed elsewhere but still need to be deleted when no longer needed. Here is an example of the use of a full-fledged callback
 
@@ -1066,9 +1066,9 @@ Occasionally, routines to set callback functions take additional data objects th
 ```
 SNES obj;
 Vec  r;
-void *ctx;
+PetscCtx ctx;
 
-SNESSetFunction(snes, r, UserApplyFunction(SNES,Vec,Vec,void *ctx), ctx);
+SNESSetFunction(snes, r, UserApplyFunction(SNES, Vec, Vec, PetscCtx ctx), ctx);
 ```
 
 The `r` vector is an optional argument provided by the user, which will be used as work-space by `SNES`. Note that this callback does not provide a way for the user

@@ -482,10 +482,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ ksp    - the `KSP` context
-. its    - iteration number
-. fgnorm - 2-norm of residual (or gradient)
-- dummy  - a collection of viewers created with `PetscViewersCreate()`
++ ksp     - the `KSP` context
+. its     - iteration number
+. fgnorm  - 2-norm of residual (or gradient)
+- Viewers - a collection of viewers created with `PetscViewersCreate()`
 
   Options Database Key:
 . -ksp_gmres_krylov_monitor <bool> - Plot the Krylov directions
@@ -497,9 +497,9 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
-PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy)
+PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *Viewers)
 {
-  PetscViewers viewers = (PetscViewers)dummy;
+  PetscViewers viewers = (PetscViewers)Viewers;
   KSP_GMRES   *gmres   = (KSP_GMRES *)ksp->data;
   Vec          x;
   PetscViewer  viewer;

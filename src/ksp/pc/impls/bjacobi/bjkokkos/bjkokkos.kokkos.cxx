@@ -563,7 +563,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
     PetscCall(PetscObjectQuery((PetscObject)A, "plex_batch_is", (PetscObject *)&container));
     if (container) {
       PetscCall(VecDuplicate(bin, &bvec));
-      PetscCall(PetscContainerGetPointer(container, (void **)&plex_batch));
+      PetscCall(PetscContainerGetPointer(container, &plex_batch));
       PetscCall(VecScatterBegin(plex_batch, bin, bvec, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(plex_batch, bin, bvec, INSERT_VALUES, SCATTER_FORWARD));
       SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No plex_batch_is -- require NO field major ordering for now");
@@ -583,7 +583,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
     PetscCall(PetscObjectQuery((PetscObject)A, "batch size", (PetscObject *)&container));
     if (container) {
       PetscInt *pNf = NULL;
-      PetscCall(PetscContainerGetPointer(container, (void **)&pNf));
+      PetscCall(PetscContainerGetPointer(container, &pNf));
       batch_sz = *pNf; // number of times to repeat the DMs
     } else batch_sz = 1;
     PetscCheck(nBlk % batch_sz == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "batch_sz = %" PetscInt_FMT ", nBlk = %" PetscInt_FMT, batch_sz, nBlk);

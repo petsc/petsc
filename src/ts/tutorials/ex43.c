@@ -36,7 +36,7 @@ static void Exact(PetscReal t, PetscReal omega, PetscReal xi, PetscReal u0, Pets
   if (vt) *vt = v;
 }
 
-PetscErrorCode Solution(TS ts, PetscReal t, Vec X, void *ctx)
+PetscErrorCode Solution(TS ts, PetscReal t, Vec X, PetscCtx ctx)
 {
   UserParams  *user = (UserParams *)ctx;
   PetscReal    u, v;
@@ -50,7 +50,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec X, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Predictor(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, void *ctx)
+PetscErrorCode Predictor(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, PetscCtx ctx)
 {
   PetscReal dt, accel_fac;
 
@@ -64,7 +64,7 @@ PetscErrorCode Predictor(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Residual1(TS ts, PetscReal t, Vec U, Vec A, Vec R, void *ctx)
+PetscErrorCode Residual1(TS ts, PetscReal t, Vec U, Vec A, Vec R, PetscCtx ctx)
 {
   UserParams        *user  = (UserParams *)ctx;
   PetscReal          Omega = user->Omega;
@@ -86,7 +86,7 @@ PetscErrorCode Residual1(TS ts, PetscReal t, Vec U, Vec A, Vec R, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat J, Mat P, void *ctx)
+PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat J, Mat P, PetscCtx ctx)
 {
   UserParams *user  = (UserParams *)ctx;
   PetscReal   Omega = user->Omega;
@@ -105,7 +105,7 @@ PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Residual2(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *ctx)
+PetscErrorCode Residual2(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, PetscCtx ctx)
 {
   UserParams        *user  = (UserParams *)ctx;
   PetscReal          Omega = user->Omega, Xi = user->Xi;
@@ -129,7 +129,7 @@ PetscErrorCode Residual2(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Tangent2(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, void *ctx)
+PetscErrorCode Tangent2(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, PetscCtx ctx)
 {
   UserParams *user  = (UserParams *)ctx;
   PetscReal   Omega = user->Omega, Xi = user->Xi;

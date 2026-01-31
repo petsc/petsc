@@ -18,13 +18,13 @@
   #define matfindnonzerorows_      matfindnonzerorows
 #endif
 
-static PetscErrorCode ournullfunction(MatNullSpace sp, Vec x, void *ctx)
+static PetscErrorCode ournullfunction(MatNullSpace sp, Vec x, PetscCtx ctx)
 {
   PetscCallFortranVoidFunction((*(void (*)(MatNullSpace *, Vec *, void *, PetscErrorCode *))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp, &x, ctx, &ierr));
   return PETSC_SUCCESS;
 }
 
-PETSC_EXTERN void matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace, Vec, void *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace, Vec, void *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*sp, 1);
   ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)rem;

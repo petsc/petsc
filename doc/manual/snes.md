@@ -132,7 +132,7 @@ When solving a system of nonlinear equations, the user must provide a
 a residual function {math:numref}`fx0`, which is set using
 
 ```
-SNESSetFunction(SNES snes, Vec f, PetscErrorCode (*FormFunction)(SNES snes, Vec x, Vec f, void *ctx), void *ctx);
+SNESSetFunction(SNES snes, Vec f, PetscErrorCode (*FormFunction)(SNES snes, Vec x, Vec f, PetscCtx ctx), PetscCtx ctx);
 ```
 
 The argument `f` is an optional vector for storing the solution; pass `NULL` to have the `SNES` allocate it for you.
@@ -158,7 +158,7 @@ Jacobian matrix, `A`, at the current iterate, `x`, as is typically
 done with
 
 ```
-SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, PetscErrorCode (*FormJacobian)(SNES snes, Vec x, Mat A, Mat B, void *ctx), void *ctx);
+SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, PetscErrorCode (*FormJacobian)(SNES snes, Vec x, Mat A, Mat B, PetscCtx ctx), PetscCtx ctx);
 ```
 
 The arguments of the routine `FormJacobian()` are the current iterate,
@@ -846,7 +846,7 @@ Users can set their own customized convergence tests in `SNES` by
 using the command
 
 ```
-SNESSetConvergenceTest(SNES snes, PetscErrorCode (*test)(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason reason, void *cctx), void *cctx, PetscCtxDestroyFn *destroy);
+SNESSetConvergenceTest(SNES snes, PetscErrorCode (*test)(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason reason, PetscCtx cctx), PetscCtx cctx, PetscCtxDestroyFn *destroy);
 ```
 
 The final argument of the convergence test routine, `cctx`, denotes an
@@ -866,7 +866,7 @@ information about the iterations. The user can initiate monitoring with
 the command
 
 ```
-SNESMonitorSet(SNES snes, PetscErrorCode (*mon)(SNES snes, PetscInt its, PetscReal norm, void* mctx), void *mctx, (PetscCtxDestroyFn *)*monitordestroy);
+SNESMonitorSet(SNES snes, PetscErrorCode (*mon)(SNES snes, PetscInt its, PetscReal norm, PetscCtx mctx), PetscCtx mctx, (PetscCtxDestroyFn *)*monitordestroy);
 ```
 
 The routine, `mon`, indicates a user-defined monitoring routine, where
@@ -899,7 +899,7 @@ The routines
 
 ```
 SNESGetSolution(SNES snes, Vec *x);
-SNESGetFunction(SNES snes, Vec *r, void *ctx, int(**func)(SNES, Vec, Vec, void*));
+SNESGetFunction(SNES snes, Vec *r, PetscCtxRt ctx, int(**func)(SNES, Vec, Vec, PetscCtx));
 ```
 
 return the solution vector and function vector from a `SNES` context.

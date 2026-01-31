@@ -292,13 +292,13 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes, Vec X, Mat A, Mat B, T
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine, DM coarse, void *ctx)
+static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine, DM coarse, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, PetscCtx ctx)
 {
   TS  ts = (TS)ctx;
   Vec Z, Z_c;

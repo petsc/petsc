@@ -269,6 +269,7 @@ end module petscsysdef
 module petscsys
   use, intrinsic :: ISO_C_binding
   use petscsysdef
+  type(c_ptr) :: petscFtnCtx  ! used by automatically generated XXXGetContext() macros
 
 #include <../src/sys/ftn-mod/petscsys.h90>
 #include <../src/sys/ftn-mod/petscviewer.h90>

@@ -9,7 +9,7 @@ typedef struct {
   VecScatter         gtol;
   VecScatter         ltog;
   VecScatter         ltol;
-  void              *ctx;
+  PetscCtx           ctx;
   PetscCtxDestroyFn *destroyctx;
 } DM_Shell;
 
@@ -272,7 +272,7 @@ PetscErrorCode DMShellSetDestroyContext(DM dm, PetscCtxDestroyFn *destroyctx)
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetContext(DM dm, void *ctx)
+PetscErrorCode DMShellSetContext(DM dm, PetscCtx ctx)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
@@ -298,9 +298,15 @@ PetscErrorCode DMShellSetContext(DM dm, void *ctx)
 
   Level: advanced
 
+  Fortran Notes:
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellSetContext()`
 @*/
-PetscErrorCode DMShellGetContext(DM dm, void *ctx)
+PetscErrorCode DMShellGetContext(DM dm, PetscCtxRt ctx)
 {
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;

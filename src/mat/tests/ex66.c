@@ -3,7 +3,7 @@ static char help[] = "Tests MATH2OPUS\n\n";
 #include <petscmat.h>
 #include <petscsf.h>
 
-static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], PetscCtx ctx)
 {
   PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
@@ -14,7 +14,7 @@ static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], vo
   return PetscExpReal(-dist / clength);
 }
 
-static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], PetscCtx ctx)
 {
   PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;

@@ -93,7 +93,7 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
+static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, PetscCtx ctx)
 {
   DMPlexPointQueue queue = (DMPlexPointQueue)ctx;
 

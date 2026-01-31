@@ -225,7 +225,7 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
 }
 
 #ifdef PETSC_HAVE_LIBCEED
-CEED_QFUNCTION(PhysicsRiemann_SW_Rusanov_CEED)(void *ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
+CEED_QFUNCTION(PhysicsRiemann_SW_Rusanov_CEED)(PetscCtx ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
 {
   const CeedScalar *xL = in[0], *xR = in[1], *geom = in[2];
   CeedScalar       *cL = out[0], *cR = out[1];
@@ -837,7 +837,7 @@ static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscR
 }
 
 #ifdef PETSC_HAVE_LIBCEED
-CEED_QFUNCTION(PhysicsRiemann_Euler_Godunov_CEED)(void *ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
+CEED_QFUNCTION(PhysicsRiemann_Euler_Godunov_CEED)(PetscCtx ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
 {
   const CeedScalar    *xL = in[0], *xR = in[1], *geom = in[2];
   CeedScalar          *cL = out[0], *cR = out[1];

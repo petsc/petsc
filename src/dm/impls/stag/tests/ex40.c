@@ -14,7 +14,7 @@ static char help[] = "Test coloring for finite difference Jacobians with DMStag\
 */
 
 /* A "diagonal" objective function which only couples dof living at the same "point" */
-PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt start, n, n_extra, N, dof[2];
   Vec      x_local;
@@ -60,7 +60,7 @@ PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   PetscInt start, n, n_extra, N, dof[2];
   Vec      x_local;
@@ -109,7 +109,7 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
 }
 
 /* Objective functions which use the DM's stencil width. */
-PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   Vec               x_local;
   PetscInt          dim, stencil_width, start, n, n_extra, N, dof[2];
@@ -226,7 +226,7 @@ PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   Vec      x_local;
   PetscInt dim, stencil_width, start, n, n_extra, N, dof[2];
@@ -341,7 +341,7 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
@@ -419,7 +419,7 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
@@ -499,7 +499,7 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
@@ -663,7 +663,7 @@ PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
@@ -825,7 +825,7 @@ PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
@@ -969,7 +969,7 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
@@ -1114,7 +1114,7 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
@@ -1384,7 +1384,7 @@ PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobian3D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+PetscErrorCode FormJacobian3D(SNES snes, Vec x, Mat Amat, Mat Pmat, PetscCtx ctx)
 {
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;

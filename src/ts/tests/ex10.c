@@ -27,7 +27,7 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm, TSDAESimple *tsdae)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCode (*f)(PetscReal, Vec, Vec, Vec, void *), void *ctx)
+PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCode (*f)(PetscReal, Vec, Vec, Vec, void *), PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   tsdae->f = f;
@@ -37,7 +37,7 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae, Vec U, PetscErrorCod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae, Vec V, PetscErrorCode (*F)(PetscReal, Vec, Vec, Vec, void *), void *ctx)
+PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae, Vec V, PetscErrorCode (*F)(PetscReal, Vec, Vec, Vec, void *), PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   tsdae->F = F;
@@ -320,7 +320,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
    Simple example:   f(U,V) = U + V
 
 */
-PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, void *ctx)
+PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, 1.0, U, V));
@@ -331,7 +331,7 @@ PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F, void *ctx)
    Simple example: F(U,V) = U - V
 
 */
-PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F, void *ctx)
+PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, -1.0, V, U));

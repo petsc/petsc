@@ -251,7 +251,7 @@ PetscErrorCode DestroyProblem(AppCtx *user)
    f(x) = (x0 - 2)^2 + (x1 - 2)^2 - 2*(x0 + x1)
    G = grad f = [2*(x0 - 2) - 2, 2*(x1 - 2) - 2] = 2*X - 6
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, PetscCtx ctx)
 {
   const PetscScalar *x;
   MPI_Comm           comm;
@@ -290,7 +290,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
            = [ 2*(1+de[0]-di[0]+di[1]), 0;
                           0,            2]
 */
-PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   Vec                DE, DI;
@@ -348,7 +348,7 @@ PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
    h = [ x0^2 - x1;
          1 -(x0^2 - x1)]
 */
-PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
+PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, PetscCtx ctx)
 {
   const PetscScalar *x;
   PetscScalar        ci;
@@ -381,7 +381,7 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
 /* Evaluate
    g = [ x0^2 + x1 - 2]
 */
-PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx)
+PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, PetscCtx ctx)
 {
   const PetscScalar *x;
   PetscScalar        ce;
@@ -413,7 +413,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx)
   grad h = [  2*x0, -1;
              -2*x0,  1]
 */
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *ctx)
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, PetscCtx ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   PetscInt           zero = 0, one = 1, cols[2];
@@ -450,7 +450,7 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *c
 /*
   grad g = [2*x0, 1.0]
 */
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx)
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, PetscCtx ctx)
 {
   PetscInt           zero = 0, cols[2];
   PetscScalar        vals[2];

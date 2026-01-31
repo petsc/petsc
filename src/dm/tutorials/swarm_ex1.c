@@ -293,7 +293,7 @@ typedef struct {
   PetscReal radius;
 } CollectZoneCtx;
 
-PetscErrorCode collect_zone(DM dm, void *ctx, PetscInt *nfound, PetscInt **foundlist)
+PetscErrorCode collect_zone(DM dm, PetscCtx ctx, PetscInt *nfound, PetscInt **foundlist)
 {
   CollectZoneCtx *zone = (CollectZoneCtx *)ctx;
   PetscInt        p, npoints;

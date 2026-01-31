@@ -47,7 +47,7 @@ struct FCtx {
   PetscSegBuffer seg;
 };
 
-static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt tonum, PetscMPIInt rank, void *todata, MPI_Request req[], void *ctx)
+static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt tonum, PetscMPIInt rank, void *todata, MPI_Request req[], PetscCtx ctx)
 {
   struct FCtx *fctx = (struct FCtx *)ctx;
 
@@ -59,7 +59,7 @@ static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *fromdata, MPI_Request req[], void *ctx)
+static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *fromdata, MPI_Request req[], PetscCtx ctx)
 {
   struct FCtx *fctx = (struct FCtx *)ctx;
   Unit        *buf;

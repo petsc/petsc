@@ -2,7 +2,7 @@ static char help[] = "Test metric utils in the uniform, isotropic case.\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
 

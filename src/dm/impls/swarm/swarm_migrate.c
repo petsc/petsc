@@ -582,7 +582,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
    collect(swarm,context,n,list)
  }
 */
-PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*collect)(DM, void *, PetscInt *, PetscInt **), size_t ctx_size, void *ctx, PetscInt *globalsize)
+PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*collect)(DM, void *, PetscInt *, PetscInt **), size_t ctx_size, PetscCtx ctx, PetscInt *globalsize)
 {
   DM_Swarm     *swarm = (DM_Swarm *)dm->data;
   DMSwarmDataEx de;

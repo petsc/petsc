@@ -45,7 +45,7 @@ typedef struct {
 .seealso: [](ch_snes), `SNESLineSearchShellGetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
           `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn *func, void *ctx)
+PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn *func, PetscCtx ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -77,7 +77,7 @@ PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSe
 .seealso: [](ch_snes), `SNESLineSearchShellSetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
           `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn **func, void **ctx)
+PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn **func, PetscCtxRt ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -89,7 +89,7 @@ PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSe
   PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, SNESLINESEARCHSHELL, &flg));
   if (flg) {
     if (func) *func = shell->func;
-    if (ctx) *ctx = shell->ctx;
+    if (ctx) *(void **)ctx = shell->ctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

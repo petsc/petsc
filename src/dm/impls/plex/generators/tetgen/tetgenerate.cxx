@@ -235,12 +235,12 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       // Get Attached EGADS Model from Original DMPlex
       PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
-        PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+        PetscCall(PetscContainerGetPointer(modelObj, &model));
         PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
       } else {
         PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADSlite Model", (PetscObject *)&modelObj));
         if (modelObj) {
-          PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+          PetscCall(PetscContainerGetPointer(modelObj, &model));
           PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
           islite = PETSC_TRUE;
         }
@@ -514,12 +514,12 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       /* Get Attached EGADS Model from Original DMPlex */
       PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
-        PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+        PetscCall(PetscContainerGetPointer(modelObj, &model));
         PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
       } else {
         PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
         if (modelObj) {
-          PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+          PetscCall(PetscContainerGetPointer(modelObj, &model));
           PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
           islite = PETSC_TRUE;
         }

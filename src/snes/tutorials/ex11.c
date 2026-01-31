@@ -100,14 +100,14 @@ typedef enum {
 static const char *const rhsTypes[] = {"CONSTANT", "ANALYTICAL", "rhsType", "RHS_", 0};
 
 /* the constant case */
-static PetscErrorCode rhs_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *g, void *ctx)
+static PetscErrorCode rhs_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *g, PetscCtx ctx)
 {
   *g = 1.0;
   return PETSC_SUCCESS;
 }
 
 /* the analytical case */
-static PetscErrorCode rhs_analytical(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *g, void *ctx)
+static PetscErrorCode rhs_analytical(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *g, PetscCtx ctx)
 {
   PetscScalar v = 1.0;
   for (PetscInt d = 0; d < dim; d++) v *= PetscSinReal(2.0 * PETSC_PI * x[d]);
@@ -131,14 +131,14 @@ typedef enum {
 static const char *const coeffTypes[] = {"CONSTANT", "CHECKERBOARD", "ANALYTICAL", "coeffType", "COEFF_", 0};
 
 /* the constant coefficient case */
-static PetscErrorCode coefficient_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, void *ctx)
+static PetscErrorCode coefficient_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, PetscCtx ctx)
 {
   for (PetscInt d = 0; d < dim; d++) K[d * dim + d] = 1.0;
   return PETSC_SUCCESS;
 }
 
 /* the checkerboard coefficient case: 10^2 in odd ranks, 10^-2 in even ranks */
-static PetscErrorCode coefficient_checkerboard(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, void *ctx)
+static PetscErrorCode coefficient_checkerboard(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, PetscCtx ctx)
 {
   PetscScalar exponent = PetscGlobalRank % 2 ? 2.0 : -2.0;
   for (PetscInt d = 0; d < dim; d++) K[d * dim + d] = PetscPowScalar(10.0, exponent);
@@ -146,7 +146,7 @@ static PetscErrorCode coefficient_checkerboard(PetscInt dim, PetscReal time, con
 }
 
 /* the analytical case (channels in diagonal with 4 order of magnitude in jumps) */
-static PetscErrorCode coefficient_analytical(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, void *ctx)
+static PetscErrorCode coefficient_analytical(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, PetscCtx ctx)
 {
   for (PetscInt d = 0; d < dim; d++) {
     const PetscReal v = PetscPowReal(10.0, 4.0 * PetscSinReal(4.0 * PETSC_PI * x[d]) * PetscCosReal(4.0 * PETSC_PI * x[d]));
@@ -247,8 +247,8 @@ static PetscErrorCode SetupProblem(DM dm, DM fdm, AppCtx *user)
   DMPolytopeType ct;
   PetscInt       dim, cdim, cStart;
   PetscFE        fe, fe_rhs, fe_K;
-  PetscErrorCode (*auxFuncs[])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {NULL, NULL};
-  void *auxCtxs[]                                                                                                          = {NULL, NULL};
+  PetscErrorCode (*auxFuncs[])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx) = {NULL, NULL};
+  void *auxCtxs[]                                                                                                             = {NULL, NULL};
 
   PetscFunctionBeginUser;
   /* Create the Finite Element for the solution and pass it to the problem DM */

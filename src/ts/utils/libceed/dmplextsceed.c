@@ -4,7 +4,7 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM dm, PetscReal time, Vec locX, Vec F, void *user)
+PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM dm, PetscReal time, Vec locX, Vec F, PetscCtx ctx)
 {
   PetscFV    fv;
   Vec        locF;

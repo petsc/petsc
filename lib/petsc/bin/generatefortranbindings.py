@@ -61,23 +61,55 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
       # these function typedef are soon to be eliminated and so can this check
       fun.opaque = True
       return
-    if (ktypename == 'void' and not k.isfunction) or ktypename == 'PeCtx':
+    if ktypename == 'void' and not k.isfunction:
       return
 
   mansec = fun.mansec
   if not mansec: mansec = fun.submansec
   file = fun.includefile + '90'
   if not file.startswith(pkgname): file = pkgname + file
-  with open(os.path.join(petscarch,'ftn', getAPI.mansecpath(mansec),file),"a") as fd:
+  ofile = os.path.join(petscarch,'ftn', getAPI.mansecpath(mansec),file)
+
+  # Do we need to generate instead an Interface_Funname() macro?
+  PetscCtxRt = False
+  NL    = '\n'
+  for k in fun.arguments:
+    if k.typename == 'PetscCtxRt':
+      PetscCtxRt = True
+
+  if PetscCtxRt:
+    with open(os.path.join(petscarch, 'include', pkgname, 'finclude', file.replace('.h90', '.h')),'a') as fd:
+      fd.write('#define ' + funname + '(')
+      cnt = 0
+      for k in fun.arguments:
+        if cnt > 0: fd.write(', ')
+        fd.write(k.name)
+        cnt = cnt + 1
+      fd.write(', ierr) ' + funname + 'Cptr(')
+      cnt = 0
+      for k in fun.arguments:
+        if cnt > 0: fd.write(', ')
+        if k.typename == 'PetscCtxRt':
+          name = k.name
+          fd.write('petscFtnCtx')
+        else:
+          fd.write(k.name)
+        cnt = cnt + 1
+      fd.write(', ierr); call c_f_pointer(petscFtnCtx, ' + name + ')\n')
+
+  with open(ofile,"a") as fd:
     if funname in ['PetscObjectQuery', 'PetscObjectCompose']:
       # for macro polymorphism the objects are passed directly as obj%d
       fun.arguments[0].typename = 'PetscFortranAddr'
       fun.arguments[2].typename = 'PetscFortranAddr'
       funname = funname + 'Raw'
-    if funname.startswith('PetscObject') or funname == 'PetscBarrier': fd.write('  interface ' + funname + '\n')
-    else: fd.write('  interface\n')
+
+
+    if funname.startswith('PetscObject') or funname == 'PetscBarrier': fd.write('  interface ' + funname + NL)
+    else: fd.write('  interface' + NL)
     fi = fun
     func = ''
+    if PetscCtxRt: func = 'cptr';
     dims = ['']
     # if ((funname).startswith('MatDenseGetArray') or (funname).startswith('MatDenseRestoreArray')) and fi[-1].endswith('[]'): dims = ['1d','2d']
     for dim in dims:
@@ -106,9 +138,9 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
         simportset.add(ktypename)
         cnt = cnt + 1
       if cnt: fd.write(', ')
-      fd.write('ierr)\n')
-      fd.write('  use, intrinsic :: ISO_C_binding\n')
-      if simport: fd.write('  import ' + simport + '\n')
+      fd.write('ierr)' + NL)
+      fd.write('  use, intrinsic :: ISO_C_binding' + NL)
+      if simport: fd.write('  import ' + simport + NL)
 
       cnt = 0
       for k in fun.arguments:
@@ -118,26 +150,31 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
           ktypename =CToFortranTypes[ktypename]
         if ktypename == 'char':
           if getattr(k, 'char_type', None) == 'single':
-            fd.write('  character :: ' + k.name + '\n')
+            fd.write('  character :: ' + k.name + NL)
           else:
-            fd.write('  character(*) :: ' + k.name + '\n')
+            fd.write('  character(*) :: ' + k.name + NL)
         elif ktypename in senums:
-          fd.write('  character(*) :: ' + k.name + '\n')
+          fd.write('  character(*) :: ' + k.name + NL)
         elif k.array and k.stars:
-          if not dim or dim == '1d': fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:)\n')
-          else: fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:,:)\n')
+          if not dim or dim == '1d': fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:)' + NL)
+          else: fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:,:)' + NL)
         elif k.array:
-          fd.write('  ' + ktypename + ' :: ' +  k.name  + '(*)\n')
+          fd.write('  ' + ktypename + ' :: ' +  k.name  + '(*)' + NL)
         elif k.isfunction:
-          fd.write('  ' + 'external ' + k.name  + '\n')
+          fd.write('  ' + 'external ' + k.name  + NL)
+        elif ktypename == 'PetscCtx':
+          fd.write('  type(*) :: ' + k.name + NL)
+        elif ktypename == 'PetscCtxRt':
+          fd.write('  type(c_ptr) :: ' + k.name + NL)
         else:
-          fd.write('  ' + ktypename + ' :: ' + k.name + '\n')
+          fd.write('  ' + ktypename + ' :: ' + k.name + NL)
         cnt = cnt + 1
-      fd.write('  PetscErrorCode :: ierr\n')
+      fd.write('  PetscErrorCode :: ierr' + NL)
+      # some Fortran compilers require the end to be on its own line
       fd.write('  end subroutine\n')
-    fd.write('  end interface\n')
+      fd.write('  end interface\n')
     fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
-    fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + funname + func + dim  + '\n')
+    fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + funname + func + dim  + NL)
     fd.write('#endif\n')
 
     if fun.name in ['PetscObjectQuery', 'PetscObjectCompose']:
@@ -212,6 +249,11 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
     if funname in ['PetscObjectQuery', 'PetscObjectCompose']:
       suffix = 'raw'
 
+    for k in fun.arguments:
+      if k.typename == 'PetscCtxRt':
+        suffix  = 'cptr'
+        break
+
     fd.write('#if defined(PETSC_HAVE_FORTRAN_CAPS)\n')
     fd.write('  #define ' + (funname + suffix).lower() + '_ ' + (funname + suffix).upper() + '\n')
     fd.write('#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)\n')
@@ -240,7 +282,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
           fd.write(' ')
       if k.typename in structs.keys() and structs[k.typename].opaque:
         fd.write('*')
-      if not (k.typename == 'char' or k.typename in senums or k.array or k.typename == 'PeCtx'):
+      if not (k.typename == 'char' or k.typename in senums or k.array or k.typename == 'PetscCtxRt' or k.typename == 'PetscCtx'):
         fd.write('*')
       fd.write(k.name)
       if (k.typename == 'char' and getattr(k, 'char_type', None) != 'single') or (not k.stars and k.array): fd.write('[]')
@@ -341,7 +383,7 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
           fd.write('c_')
         elif k.typename == 'MPI_Fint':
           fd.write('MPI_Comm_f2c(*(')
-        elif not k.stars and not k.array and not k.stringlen and not k.typename == 'PetscViewer' and not k.typename == 'PeCtx':
+        elif not k.stars and not k.array and not k.stringlen and not k.typename == 'PetscViewer' and not k.typename == 'PetscCtxRt' and not k.typename == 'PetscCtx':
           fd.write('*')
 #        if k.typename == 'void' and k.stars == 2:
 #          fd.write('&')
@@ -425,6 +467,8 @@ def generateFortranStub(senums, funname, fun, fd, opts):
         fd.write('  ' + ktypename + ', pointer :: ' +  k.name + '(:)\n')
       elif k.array:
         fd.write('  ' + ktypename + ' :: '+ k.name + '(*)\n')
+      elif ktypename == 'PetscCtx':
+        fd.write('  type(*) :: ' + k.name + '\n')
       else:
         fd.write('  '+ ktypename + ' :: ' + k.name + '\n')
       cnt = cnt + 1
@@ -698,7 +742,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
         # cannot print Fortran interface definition if any arguments are void * or void **
         opaque = False
         for k in fi.arguments:
-          if k.typename == 'void' or k.typename == 'PeCtx': opaque = True
+          if k.typename == 'void' or k.typename == 'PetscCtxRt': opaque = True
         if opaque: continue
 
         if funname.startswith('PetscObjectSAWs') or funname == 'PetscObjectViewSAWs':
@@ -767,10 +811,10 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
           fi = petscobjectfunctions[funname]
           if not fi.arguments or not fi.arguments[0].typename == 'PetscObject': continue
 
-          # cannot generate Fortran functions if any argument is void or PeCtx
+          # cannot generate Fortran functions if any argument is void or PetscCtxRt
           opaque = False
           for k in fi.arguments:
-            if k.typename == 'void' or k.typename == 'PeCtx': opaque = True
+            if k.typename == 'void' or k.typename == 'PetscCtxRt': opaque = True
           if opaque: continue
 
           # write the PetscObject class function for the specific object that calls the base function
@@ -802,6 +846,8 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
               fd.write('  ' + ktypename + ', pointer :: ' +  k.name  + '(:)\n')
             elif k.array:
               fd.write('  ' + ktypename + ' :: ' +  k.name  + '(*)\n')
+            elif ktypename == 'PetscCtx':
+              fd.write('  type(*) :: ' + k.name + '\n')
             else:
               fd.write('  ' + ktypename + ' :: ' + k.name + '\n')
             cnt = cnt + 1

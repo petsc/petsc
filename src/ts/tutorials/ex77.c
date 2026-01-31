@@ -72,14 +72,14 @@ typedef struct {
   AppCtx *ctx; /* Context for exact solution */
 } AdvCtx;
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   for (d = 0; d < Nc; ++d) u[d] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscInt d;
   for (d = 0; d < Nc; ++d) u[d] = 1.0;
@@ -113,7 +113,7 @@ static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[]
     = 1 + <u, v> . <1, 1> - \alpha 0
     = 1 + u + v
 */
-static PetscErrorCode trig_trig_x(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *x, void *ctx)
+static PetscErrorCode trig_trig_x(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *x, PetscCtx ctx)
 {
   const PetscReal x0     = X[0];
   const PetscReal y0     = X[1];
@@ -125,7 +125,7 @@ static PetscErrorCode trig_trig_x(PetscInt dim, PetscReal time, const PetscReal 
   x[1] = R0 * PetscSinReal(p->omega * time + theta0);
   return PETSC_SUCCESS;
 }
-static PetscErrorCode trig_trig_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_trig_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   Parameter *p = (Parameter *)ctx;
 
@@ -133,25 +133,25 @@ static PetscErrorCode trig_trig_u(PetscInt dim, PetscReal time, const PetscReal 
   u[1] = p->omega * X[0];
   return PETSC_SUCCESS;
 }
-static PetscErrorCode trig_trig_u_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_trig_u_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   u[1] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trig_trig_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+static PetscErrorCode trig_trig_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, PetscCtx ctx)
 {
   p[0] = X[0] + X[1] - 1.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode trig_trig_T(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+static PetscErrorCode trig_trig_T(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, PetscCtx ctx)
 {
   T[0] = time + X[0] + X[1];
   return PETSC_SUCCESS;
 }
-static PetscErrorCode trig_trig_T_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+static PetscErrorCode trig_trig_T_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, PetscCtx ctx)
 {
   T[0] = 1.0;
   return PETSC_SUCCESS;
@@ -322,7 +322,7 @@ static PetscErrorCode SetupParameters(AppCtx *user)
 
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
-  PetscCall(PetscBagGetData(user->bag, (void **)&p));
+  PetscCall(PetscBagGetData(user->bag, &p));
   PetscCall(PetscBagSetName(user->bag, "par", "Low Mach flow parameters"));
   bag = user->bag;
   PetscCall(PetscBagRegisterReal(bag, &p->nu, 1.0, "nu", "Kinematic viscosity"));
@@ -344,8 +344,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscErrorCode (*exactFuncs_t[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
+  PetscErrorCode (*exactFuncs_t[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   PetscDS    prob;
   DMLabel    label;
   Parameter *ctx;
@@ -382,7 +382,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     Parameter  *param;
     PetscScalar constants[4];
 
-    PetscCall(PetscBagGetData(user->bag, (void **)&param));
+    PetscCall(PetscBagGetData(user->bag, &param));
 
     constants[0] = param->nu;
     constants[1] = param->alpha;
@@ -391,7 +391,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetConstants(prob, 4, constants));
   }
   /* Setup Boundary Conditions */
-  PetscCall(PetscBagGetData(user->bag, (void **)&ctx));
+  PetscCall(PetscBagGetData(user->bag, &ctx));
   id = 3;
   PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall velocity", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], (PetscVoidFn *)exactFuncs_t[0], ctx, NULL));
   id = 1;
@@ -425,7 +425,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
    t_n to t_{n+1}. If we use both of these fields, we could use Crank-Nicholson or
    the method of characteristics.
 */
-static PetscErrorCode FreeStreaming(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+static PetscErrorCode FreeStreaming(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx)
 {
   AdvCtx             *adv = (AdvCtx *)ctx;
   Vec                 u   = adv->ui;
@@ -577,7 +577,7 @@ static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
   PetscCall(DMSetField(dm, 2, NULL, (PetscObject)fe[2]));
   PetscCall(DMCreateDS(dm));
   PetscCall(SetupProblem(dm, user));
-  PetscCall(PetscBagGetData(user->bag, (void **)&param));
+  PetscCall(PetscBagGetData(user->bag, &param));
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
@@ -723,9 +723,9 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, PetscCtx ctx)
 {
-  PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
   void     *ctxs[3];
   DM        dm;
   PetscDS   ds;
@@ -771,7 +771,7 @@ static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
   PetscFunctionBeginUser;
   PetscCall(TSGetTime(ts, &time));
   PetscCall(TSGetApplicationContext(ts, &adv));
-  PetscCall(PetscBagGetData(adv->ctx->bag, (void **)&param));
+  PetscCall(PetscBagGetData(adv->ctx->bag, &param));
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(TSGetDM(ts, &sdm));
   PetscCall(DMGetDimension(sdm, &dim));
@@ -794,7 +794,7 @@ static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time, Vec u, PetscCtx ctx)
 {
   AdvCtx            *adv = (AdvCtx *)ctx;
   DM                 sdm;
@@ -805,7 +805,7 @@ static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time,
   MPI_Comm           comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscBagGetData(adv->ctx->bag, (void **)&param));
+  PetscCall(PetscBagGetData(adv->ctx->bag, &param));
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(TSGetDM(ts, &sdm));
   PetscCall(DMGetDimension(sdm, &dim));
@@ -844,7 +844,7 @@ static PetscErrorCode AdvectParticles(TS ts)
   PetscFunctionBeginUser;
   PetscCall(PetscObjectQuery((PetscObject)ts, "_SwarmTS", (PetscObject *)&sts));
   PetscCall(TSGetDM(sts, &sdm));
-  PetscCall(TSGetRHSFunction(sts, NULL, NULL, (void **)&adv));
+  PetscCall(TSGetRHSFunction(sts, NULL, NULL, &adv));
   PetscCall(DMGetDimension(sdm, &dim));
   PetscCall(DMSwarmGetSize(sdm, &N));
   PetscCall(DMSwarmGetLocalSize(sdm, &n));

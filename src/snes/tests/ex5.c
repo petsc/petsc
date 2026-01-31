@@ -210,7 +210,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    a vector containing the right-hand side of the discretized PDE.
  */
 
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   Vec                g = (Vec)ctx;
   const PetscScalar *xx, *gg;

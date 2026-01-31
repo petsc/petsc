@@ -4619,9 +4619,9 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm, Mat inmat,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMergeSeqsToMPIDestroy(void **data)
+static PetscErrorCode MatMergeSeqsToMPIDestroy(PetscCtxRt data)
 {
-  MatMergeSeqsToMPI *merge = (MatMergeSeqsToMPI *)*data;
+  MatMergeSeqsToMPI *merge = *(MatMergeSeqsToMPI **)data;
 
   PetscFunctionBegin;
   if (!merge) PetscFunctionReturn(PETSC_SUCCESS);
@@ -4671,7 +4671,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
 
   PetscCall(PetscObjectQuery((PetscObject)mpimat, "MatMergeSeqsToMPI", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)mpimat), PETSC_ERR_PLIB, "Mat not created from MatCreateMPIAIJSumSeqAIJSymbolic");
-  PetscCall(PetscContainerGetPointer(container, (void **)&merge));
+  PetscCall(PetscContainerGetPointer(container, &merge));
   PetscCall(MatSeqAIJGetArrayRead(seqmat, &a_a));
   aa = a_a;
 
@@ -6314,9 +6314,9 @@ static PetscErrorCode ExpandJmap_Internal(PetscCount nnz1, PetscCount nnz, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_MPIAIJ(void **data)
+static PetscErrorCode MatCOOStructDestroy_MPIAIJ(PetscCtxRt data)
 {
-  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)*data;
+  MatCOOStruct_MPIAIJ *coo = *(MatCOOStruct_MPIAIJ **)data;
 
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(&coo->sf));
@@ -6718,7 +6718,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat, const PetscScalar v[], Ins
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
   PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
-  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  PetscCall(PetscContainerGetPointer(container, &coo));
   sendbuf = coo->sendbuf;
   recvbuf = coo->recvbuf;
   Ajmap1  = coo->Ajmap1;
@@ -6974,7 +6974,7 @@ typedef struct {
   PetscBool P_oth_bind;
 } MatMatMPIAIJBACKEND;
 
-static PetscErrorCode MatProductCtxDestroy_MatMatMPIAIJBACKEND(void **data)
+static PetscErrorCode MatProductCtxDestroy_MatMatMPIAIJBACKEND(PetscCtxRt data)
 {
   MatMatMPIAIJBACKEND *mmdata = *(MatMatMPIAIJBACKEND **)data;
   PetscInt             i;

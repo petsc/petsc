@@ -3,7 +3,7 @@
 #include <petscdmplex.h> /* For DMCreateAffineCoordinates_Internal() */
 #include <petscsf.h>     /* For DMLocatePoints() */
 
-PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
+PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, PetscCtx ctx)
 {
   DM  dm_coord, dmc_coord;
   Vec coords, ccoords;
@@ -26,7 +26,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
+static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, PetscCtx ctx)
 {
   DM          dm_coord, subdm_coord;
   Vec         coords, ccoords, clcoords;

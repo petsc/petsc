@@ -22,9 +22,9 @@
   #include <omp.h>
 #endif
 
-static PetscErrorCode LandauGPUMapsDestroy(void **ptr)
+static PetscErrorCode LandauGPUMapsDestroy(PetscCtxRt ptr)
 {
-  P4estVertexMaps *maps = (P4estVertexMaps *)*ptr;
+  P4estVertexMaps *maps = *(P4estVertexMaps **)ptr;
 
   PetscFunctionBegin;
   // free device data
@@ -107,7 +107,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscCall(PetscObjectQuery((PetscObject)JacP, "assembly_maps", (PetscObject *)&container));
   if (container) {
     PetscCheck(ctx->gpu_assembly, ctx->comm, PETSC_ERR_ARG_WRONG, "maps but no GPU assembly");
-    PetscCall(PetscContainerGetPointer(container, (void **)&maps));
+    PetscCall(PetscContainerGetPointer(container, &maps));
     PetscCheck(maps, ctx->comm, PETSC_ERR_ARG_WRONG, "empty GPU matrix container");
     for (PetscInt i = 0; i < ctx->num_grids * ctx->batch_sz; i++) subJ[i] = NULL;
   } else {

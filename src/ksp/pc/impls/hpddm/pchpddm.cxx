@@ -243,7 +243,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 
 .seealso: [](ch_ksp), `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
-PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx), void *ctx)
+PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -875,7 +875,7 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscB
   PetscCall(MatGetSize(Y, nullptr, &N));
   PetscCall(PetscObjectQuery((PetscObject)A, "_HPDDM_MatProduct", (PetscObject *)&container));
   if (container) { /* MatProduct container already attached */
-    PetscCall(PetscContainerGetPointer(container, (void **)&ptr));
+    PetscCall(PetscContainerGetPointer(container, &ptr));
     if (ptr[1] != ctx->V[2]) /* Mat has changed or may have been set first in KSPHPDDM */
       for (m = 0; m < 2; ++m) {
         PetscCall(MatDestroy(ctx->V + m + 1));
@@ -2122,7 +2122,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
             PetscFunctionReturn(PETSC_SUCCESS);
           } else { /* second call to PCSetUp() on the PC associated to the Schur complement, retrieve previously set context */
-            PetscCall(PetscContainerGetPointer(container, (void **)&ctx));
+            PetscCall(PetscContainerGetPointer(container, &ctx));
           }
         }
       }

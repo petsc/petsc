@@ -33,7 +33,7 @@ static PetscErrorCode CeedDataDestroy(CeedData *data)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+CEED_QFUNCTION(Mass)(PetscCtx ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
 {
   const CeedScalar *u = in[0], *qdata = in[1];
   CeedScalar       *v = out[0];
@@ -67,7 +67,7 @@ CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, Ce
 //
 // Qdata: w * det(dx_i/dX_j)
 */
-CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+CEED_QFUNCTION(SetupMassGeoCube)(PetscCtx ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
 {
   const CeedScalar *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
@@ -129,7 +129,7 @@ CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *c
 //
 // Qdata: modJ * w
 */
-CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+CEED_QFUNCTION(SetupMassGeoSphere)(PetscCtx ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
 {
   const CeedScalar *X = in[0], *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];

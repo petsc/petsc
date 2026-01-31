@@ -55,7 +55,7 @@ static PetscErrorCode DMCreateGlobalVector_SNESVI(DM dm, Vec *vec)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)dm, "VI", (PetscObject *)&isnes));
   PetscCheck(isnes, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Composed SNES is missing");
-  PetscCall(PetscContainerGetPointer(isnes, (void **)&dmsnesvi));
+  PetscCall(PetscContainerGetPointer(isnes, &dmsnesvi));
   PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)dm), dmsnesvi->n, PETSC_DETERMINE, vec));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -73,10 +73,10 @@ static PetscErrorCode DMCreateInterpolation_SNESVI(DM dm1, DM dm2, Mat *mat, Vec
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)dm1, "VI", (PetscObject *)&isnes));
   PetscCheck(isnes, PetscObjectComm((PetscObject)dm1), PETSC_ERR_PLIB, "Composed VI data structure is missing");
-  PetscCall(PetscContainerGetPointer(isnes, (void **)&dmsnesvi1));
+  PetscCall(PetscContainerGetPointer(isnes, &dmsnesvi1));
   PetscCall(PetscObjectQuery((PetscObject)dm2, "VI", (PetscObject *)&isnes));
   PetscCheck(isnes, PetscObjectComm((PetscObject)dm2), PETSC_ERR_PLIB, "Composed VI data structure is missing");
-  PetscCall(PetscContainerGetPointer(isnes, (void **)&dmsnesvi2));
+  PetscCall(PetscContainerGetPointer(isnes, &dmsnesvi2));
 
   PetscCall((*dmsnesvi1->createinterpolation)(dm1, dm2, &interp, NULL));
   PetscCall(MatCreateSubMatrix(interp, dmsnesvi2->inactive, dmsnesvi1->inactive, MAT_INITIAL_MATRIX, mat));
@@ -102,7 +102,7 @@ static PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)dm1, "VI", (PetscObject *)&isnes));
   PetscCheck(isnes, PetscObjectComm((PetscObject)dm1), PETSC_ERR_PLIB, "Composed VI data structure is missing");
-  PetscCall(PetscContainerGetPointer(isnes, (void **)&dmsnesvi1));
+  PetscCall(PetscContainerGetPointer(isnes, &dmsnesvi1));
 
   /* get the original coarsen */
   PetscCall((*dmsnesvi1->coarsen)(dm1, comm, dm2));
@@ -162,9 +162,9 @@ static PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMDestroy_SNESVI(void **ctx)
+static PetscErrorCode DMDestroy_SNESVI(PetscCtxRt ctx)
 {
-  DM_SNESVI *dmsnesvi = (DM_SNESVI *)*ctx;
+  DM_SNESVI *dmsnesvi = *(DM_SNESVI **)ctx;
 
   PetscFunctionBegin;
   /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
@@ -222,7 +222,7 @@ PetscErrorCode DMSetVI(DM dm, IS inactive)
     dmsnesvi->hascreateinjection  = dm->ops->hascreateinjection;
     dm->ops->hascreateinjection   = NULL;
   } else {
-    PetscCall(PetscContainerGetPointer(isnes, (void **)&dmsnesvi));
+    PetscCall(PetscContainerGetPointer(isnes, &dmsnesvi));
     PetscCall(ISDestroy(&dmsnesvi->inactive));
   }
   PetscCall(DMClearGlobalVectors(dm));
@@ -604,7 +604,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
  @*/
-PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES, IS, IS *, void *), void *ctx)
+PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES, IS, IS *, void *), PetscCtx ctx)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS *)snes->data;
 
@@ -623,7 +623,7 @@ typedef struct {
   mxArray *ctx;
 } SNESMatlabContext;
 
-PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes, IS is_act, IS *is_redact, void *ctx)
+PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes, IS is_act, IS *is_redact, PetscCtx ctx)
 {
   SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
   int                nlhs = 1, nrhs = 5;

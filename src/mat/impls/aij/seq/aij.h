@@ -406,7 +406,7 @@ PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat, Mat, Mat
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat, Mat, Mat);
-PETSC_INTERN PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatTransMatMult(void **);
+PETSC_INTERN PetscErrorCode MatProductCtxDestroy_SeqAIJ_MatTransMatMult(PetscCtxRt);
 
 PETSC_INTERN PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat, Mat, Mat);

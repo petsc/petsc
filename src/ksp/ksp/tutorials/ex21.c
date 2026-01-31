@@ -8,7 +8,7 @@ typedef struct {
   PetscReal  lambda;
 } RBFCtx;
 
-static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], PetscCtx ctx)
 {
   RBFCtx    *rbfctx = (RBFCtx *)ctx;
   PetscInt   d;

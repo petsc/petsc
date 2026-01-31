@@ -2,64 +2,64 @@ static char help[] = "Tests quadrature.\n\n";
 
 #include <petscdt.h>
 
-static void func1(const PetscReal a[], void *dummy, PetscReal *val)
+static void func1(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   *val              = x * PetscLogReal(1 + x);
 }
 
-static void func2(const PetscReal a[], void *dummy, PetscReal *val)
+static void func2(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   *val              = x * x * PetscAtanReal(x);
 }
 
-static void func3(const PetscReal a[], void *dummy, PetscReal *val)
+static void func3(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   *val              = PetscExpReal(x) * PetscCosReal(x);
 }
 
-static void func4(const PetscReal a[], void *dummy, PetscReal *val)
+static void func4(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   const PetscReal u = PetscSqrtReal(2.0 + x * x);
   *val              = PetscAtanReal(u) / ((1.0 + x * x) * u);
 }
 
-static void func5(const PetscReal a[], void *dummy, PetscReal *val)
+static void func5(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = 0.0;
   else *val = PetscSqrtReal(x) * PetscLogReal(x);
 }
 
-static void func6(const PetscReal a[], void *dummy, PetscReal *val)
+static void func6(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   *val              = PetscSqrtReal(1 - x * x);
 }
 
-static void func7(const PetscReal a[], void *dummy, PetscReal *val)
+static void func7(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 1.0) *val = PETSC_INFINITY;
   else *val = PetscSqrtReal(x) / PetscSqrtReal(1 - x * x);
 }
 
-static void func8(const PetscReal a[], void *dummy, PetscReal *val)
+static void func8(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = PETSC_INFINITY;
   else *val = PetscLogReal(x) * PetscLogReal(x);
 }
 
-static void func9(const PetscReal x[], void *dummy, PetscReal *val)
+static void func9(const PetscReal x[], void *unused, PetscReal *val)
 {
   *val = PetscLogReal(PetscCosReal(x[0]));
 }
 
-static void func10(const PetscReal a[], void *dummy, PetscReal *val)
+static void func10(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = 0.0;
@@ -67,13 +67,13 @@ static void func10(const PetscReal a[], void *dummy, PetscReal *val)
   *val = PetscSqrtReal(PetscTanReal(x));
 }
 
-static void func11(const PetscReal a[], void *dummy, PetscReal *val)
+static void func11(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   *val              = 1 / (1 - 2 * x + 2 * x * x);
 }
 
-static void func12(const PetscReal a[], void *dummy, PetscReal *val)
+static void func12(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = 0.0;
@@ -81,7 +81,7 @@ static void func12(const PetscReal a[], void *dummy, PetscReal *val)
   else *val = PetscExpReal(1 - 1 / x) / PetscSqrtReal(x * x * x - x * x * x * x);
 }
 
-static void func13(const PetscReal a[], void *dummy, PetscReal *val)
+static void func13(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = 0.0;
@@ -89,7 +89,7 @@ static void func13(const PetscReal a[], void *dummy, PetscReal *val)
   else *val = PetscExpReal(-(1 / x - 1) * (1 / x - 1) / 2) / (x * x);
 }
 
-static void func14(const PetscReal a[], void *dummy, PetscReal *val)
+static void func14(const PetscReal a[], void *unused, PetscReal *val)
 {
   const PetscReal x = a[0];
   if (x == 0.0) *val = 0.0;

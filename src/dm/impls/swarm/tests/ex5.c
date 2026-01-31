@@ -90,7 +90,7 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, PetscCtx ctx)
 {
   DM                 sw;
   const PetscReal   *coords, *vel;
@@ -128,7 +128,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
    J_p = (  0   1)
          (-w^2  0)
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void *ctx)
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, PetscCtx ctx)
 {
   DM               sw;
   const PetscReal *coords, *vel;
@@ -160,7 +160,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
+static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, PetscCtx ctx)
 {
   DM                 sw;
   const PetscScalar *v;
@@ -181,7 +181,7 @@ static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
+static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, PetscCtx ctx)
 {
   DM                 sw;
   const PetscScalar *x;
@@ -239,7 +239,7 @@ static PetscErrorCode SetProblem(TS ts)
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &sw));
-  PetscCall(DMGetApplicationContext(sw, (void **)&user));
+  PetscCall(DMGetApplicationContext(sw, &user));
   // Define unified system for (X, V)
   {
     Mat      J;
@@ -322,14 +322,14 @@ static PetscErrorCode DMSwarmTSRedistribute(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
+PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal unused[], PetscInt p, PetscScalar x[], PetscCtx ctx)
 {
   x[0] = p + 1.;
   x[1] = 0.;
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx)
+PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal unused[], PetscInt p, PetscScalar v[], PetscCtx ctx)
 {
   v[0] = 0.;
   v[1] = PetscSqrtReal(1000. / (p + 1.));
@@ -337,7 +337,7 @@ PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal dummy
 }
 
 /* Put 5 particles into each circle */
-PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
+PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal unused[], PetscInt p, PetscScalar x[], PetscCtx ctx)
 {
   const PetscInt  n   = 5;
   const PetscReal r0  = (p / n) + 1.;
@@ -349,7 +349,7 @@ PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dum
 }
 
 /* Put 5 particles into each circle */
-PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx)
+PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal unused[], PetscInt p, PetscScalar v[], PetscCtx ctx)
 {
   const PetscInt  n     = 5;
   const PetscReal r0    = (p / n) + 1.;
@@ -473,7 +473,7 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, PetscCtx ctx)
 {
   const PetscInt     ostep = ((AppCtx *)ctx)->ostep;
   DM                 sw;

@@ -44,7 +44,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    The user-defined context can contain any application-specific
    data needed for the function evaluation.
 */
-PetscErrorCode CpuFunction(SNES snes, Vec x, Vec r, void *ctx)
+PetscErrorCode CpuFunction(SNES snes, Vec x, Vec r, PetscCtx ctx)
 {
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   DM              da   = user->da;
@@ -86,7 +86,7 @@ using DefaultMemorySpace               = Kokkos::DefaultExecutionSpace::memory_s
 using PetscScalarKokkosOffsetView      = Kokkos::Experimental::OffsetView<PetscScalar *, DefaultMemorySpace>;
 using ConstPetscScalarKokkosOffsetView = Kokkos::Experimental::OffsetView<const PetscScalar *, DefaultMemorySpace>;
 
-PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
+PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, PetscCtx ctx)
 {
   ApplicationCtx                  *user = (ApplicationCtx *)ctx;
   DM                               da   = user->da;
@@ -117,7 +117,7 @@ PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx)
+PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, PetscCtx ctx)
 {
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   DM              da   = user->da;
@@ -148,7 +148,7 @@ PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx)
 .  B - optionally different matrix used to construct the preconditioner
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
 {
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   PetscScalar    *xx, d, A[3];

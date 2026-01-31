@@ -38,7 +38,7 @@ c:33 [x_a,x_b] = 11.519200000000000,11.868266666666667 -> cell weight = 0.352226
 c:34 [x_a,x_b] = 11.868266666666667,12.217333333333332 -> cell weight = 0.352434126539055
 c:35 [x_a,x_b] = 12.217333333333332,12.566400000000000 -> cell weight = 0.352539642722659
 particle weight sum = 12.5324735758 cell weight sum = 12.5664002939
-dim = 1	totalWeight = 12.532474, user->charges[species[0]] = -1.000000	totalCharge = -12.532474, Total Area = 12.566400
+dim = 1	totalWeight = 12.532474, ctx->charges[species[0]] = -1.000000	totalCharge = -12.532474, Total Area = 12.566400
 sigma: 0.9973
 (x0,v0,t0,m0,q0,phi0): (1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 0.000000e+00) - (P, V) = (1.000000e+00, 1.000000e+00)
 Global Np = 360

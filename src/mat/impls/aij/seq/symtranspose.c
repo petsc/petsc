@@ -69,7 +69,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
   if (reuse == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*B, "MatTransposeParent", (PetscObject *)&rB));
     PetscCheck(rB, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_WRONG, "Reuse matrix used was not generated from call to MatTranspose()");
-    PetscCall(PetscContainerGetPointer(rB, (void **)&rb));
+    PetscCall(PetscContainerGetPointer(rB, &rb));
     if (rb->nonzerostate != A->nonzerostate) nonzerochange = PETSC_TRUE;
   }
 

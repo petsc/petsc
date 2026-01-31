@@ -12,7 +12,7 @@ typedef struct AppCtx {
   PetscScalar h[3];
 } AppCtx;
 
-PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
+PetscErrorCode FormInitial(PetscReal t, Vec X, PetscCtx ctx)
 {
   PetscScalar    *x;
   AppCtx         *app = (AppCtx*) ctx;
@@ -26,7 +26,7 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx)
+PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, PetscCtx ctx)
 {
   const PetscScalar *x;
   const PetscScalar    *xdot;

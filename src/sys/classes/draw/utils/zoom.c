@@ -14,7 +14,7 @@
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), void *ctx)
+PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), PetscCtx ctx)
 {
   PetscDrawButton button;
   PetscReal       dpause, xc, yc, scale = 1.0, w, h, xr, xl, yr, yl, xmin, xmax, ymin, ymax;

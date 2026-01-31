@@ -341,7 +341,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(TSMonitorSolutionVTKCtxCreate(monfilename, &ctx));
     PetscCall(PetscOptionsInt("-ts_monitor_solution_vtk_interval", "Save every interval time step (-1 for last step only)", NULL, ctx->interval, &ctx->interval, NULL));
-    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorSolutionVTK, ctx, (PetscCtxDestroyFn *)TSMonitorSolutionVTKDestroy));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscCtx))TSMonitorSolutionVTK, ctx, (PetscCtxDestroyFn *)TSMonitorSolutionVTKDestroy));
   }
 
   PetscCall(PetscOptionsString("-ts_monitor_dmda_ray", "Display a ray of the solution", "None", "y=0", dir, sizeof(dir), &flg));
@@ -1018,7 +1018,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 
 .seealso: [](ch_ts), `TS`, `TSRHSFunctionFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunctionFn *f, void *ctx)
+PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunctionFn *f, PetscCtx ctx)
 {
   SNES snes;
   Vec  ralloc = NULL;
@@ -1066,7 +1066,7 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunctionFn *f, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSolutionFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
 @*/
-PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFn *f, void *ctx)
+PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFn *f, PetscCtx ctx)
 {
   DM dm;
 
@@ -1105,7 +1105,7 @@ PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFn *f, void *ctx)
 .seealso: [](ch_ts), `TS`, `TSForcingFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`,
 `TSComputeSolutionFunction()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFn *func, void *ctx)
+PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFn *func, PetscCtx ctx)
 {
   DM dm;
 
@@ -1140,7 +1140,7 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFn *func, void *ctx)
 .seealso: [](ch_ts), `TS`, `TSRHSJacobianFn`, `SNESComputeJacobianDefaultColor()`,
 `TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`, `TSRHSFunctionFn`, `TSIFunctionFn`
 @*/
-PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobianFn *f, void *ctx)
+PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobianFn *f, PetscCtx ctx)
 {
   SNES           snes;
   DM             dm;
@@ -1190,7 +1190,7 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobianFn *f, v
 .seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `TSSetRHSJacobian()`, `TSSetRHSFunction()`,
 `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunctionFn *f, void *ctx)
+PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunctionFn *f, PetscCtx ctx)
 {
   SNES snes;
   Vec  ralloc = NULL;
@@ -1230,7 +1230,7 @@ PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunctionFn *f, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, void **ctx)
+PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, PetscCtxRt ctx)
 {
   SNES snes;
   DM   dm;
@@ -1261,7 +1261,7 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, void **ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, void **ctx)
+PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, PetscCtxRt ctx)
 {
   SNES snes;
   DM   dm;
@@ -1314,7 +1314,7 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, void **ct
 .seealso: [](ch_ts), `TS`, `TSIJacobianFn`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
 `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobianFn *f, void *ctx)
+PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobianFn *f, PetscCtx ctx)
 {
   SNES snes;
   DM   dm;
@@ -1376,7 +1376,7 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 .seealso: [](ch_ts), `TS`, `TSI2FunctionFn`, `TSSetI2Jacobian()`, `TSSetIFunction()`,
 `TSCreate()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2FunctionFn *fun, void *ctx)
+PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2FunctionFn *fun, PetscCtx ctx)
 {
   DM dm;
 
@@ -1406,7 +1406,7 @@ PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2FunctionFn *fun, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `SNESGetFunction()`, `TSCreate()`
 @*/
-PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2FunctionFn **fun, void **ctx)
+PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2FunctionFn **fun, PetscCtxRt ctx)
 {
   SNES snes;
   DM   dm;
@@ -1445,7 +1445,7 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2FunctionFn **fun, void **ctx)
 
 .seealso: [](ch_ts), `TS`, `TSI2JacobianFn`, `TSSetI2Function()`, `TSGetI2Jacobian()`
 @*/
-PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2JacobianFn *jac, void *ctx)
+PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2JacobianFn *jac, PetscCtx ctx)
 {
   DM dm;
 
@@ -1480,7 +1480,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2JacobianFn *jac, void *c
 
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`, `TSSetI2Jacobian()`, `TSGetI2Function()`, `TSCreate()`
 @*/
-PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2JacobianFn **jac, void **ctx)
+PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2JacobianFn **jac, PetscCtxRt ctx)
 {
   SNES snes;
   DM   dm;
@@ -1651,7 +1651,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
 
 .seealso: [](ch_ts), `TS`, `TSBDF`, `TSTransientVariableFn`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariableFn *tvar, void *ctx)
+PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariableFn *tvar, PetscCtx ctx)
 {
   DM dm;
 
@@ -2038,7 +2038,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
 .seealso: [](ch_ts), `TS`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetApplicationContext(TS ts, PeCtx ctx)
+PetscErrorCode TSSetApplicationContext(TS ts, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -2061,28 +2061,14 @@ PetscErrorCode TSSetApplicationContext(TS ts, PeCtx ctx)
   Level: intermediate
 
   Fortran Notes:
-  This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
-  function that tells the Fortran compiler the derived data type that is returned as the `ctx` argument. For example,
-.vb
-  Interface TSGetApplicationContext
-    Subroutine TSGetApplicationContext(ts,ctx,ierr)
-  #include <petsc/finclude/petscts.h>
-      use petscts
-      TS ts
-      type(tUsertype), pointer :: ctx
-      PetscErrorCode ierr
-    End Subroutine
-  End Interface TSGetApplicationContext
-.ve
-
-  The prototype for `ctx` must be
+  This only works when the context is a Fortran derived type or a `PetscObject`. Declare `ctx` with
 .vb
   type(tUsertype), pointer :: ctx
 .ve
 
 .seealso: [](ch_ts), `TS`, `TSSetApplicationContext()`
 @*/
-PetscErrorCode TSGetApplicationContext(TS ts, void *ctx)
+PetscErrorCode TSGetApplicationContext(TS ts, PetscCtxRt ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3827,7 +3813,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
 .seealso: [](ch_ts), `TS`, `TSSetDM()`, `TSSetIJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode TSSetResize(TS ts, PetscBool rollback, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
+PetscErrorCode TSSetResize(TS ts, PetscBool rollback, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, PetscCtx ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -4439,7 +4425,7 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 
 @*/
-PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **func, void **ctx)
+PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **func, PetscCtxRt ctx)
 {
   DM dm;
 
@@ -4476,7 +4462,7 @@ PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **f
 
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetRHSJacobian()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 @*/
-PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobianFn **f, void **ctx)
+PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobianFn **f, PetscCtxRt ctx)
 {
   DM dm;
 
@@ -4584,7 +4570,7 @@ PetscErrorCode TSGetDM(TS ts, DM *dm)
 
 .seealso: [](ch_ts), `SNESSetFunction()`, `MatFDColoringSetFunction()`
 @*/
-PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
+PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, PetscCtx ctx)
 {
   TS ts = (TS)ctx;
 
@@ -4619,7 +4605,7 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
 
 .seealso: [](ch_ts), `SNESSetJacobian()`
 @*/
-PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
+PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, PetscCtx ctx)
 {
   TS ts = (TS)ctx;
 
@@ -4656,7 +4642,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`
 @*/
-PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, PetscCtx ctx)
 {
   Mat Arhs, Brhs;
 
@@ -4691,7 +4677,7 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSFunctionLinear()`
 @*/
-PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
+PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4724,7 +4710,7 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Ma
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `TSSetIJacobian()`, `TSComputeIJacobianConstant()`, `TSComputeRHSFunctionLinear()`
 @*/
-PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, PetscCtx ctx)
 {
   Mat A, B;
 
@@ -4776,7 +4762,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 
 .seealso: [](ch_ts), `TS`, `TSROSW`, `TSARKIMEX`, `TSSetIFunction()`, `TSSetIJacobian()`, `TSComputeIFunctionLinear()`
 @*/
-PetscErrorCode TSComputeIJacobianConstant(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, void *ctx)
+PetscErrorCode TSComputeIJacobianConstant(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatScale(A, shift / ts->ijacobian.shift));
@@ -5582,7 +5568,7 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
 
 .seealso: [](ch_ts), `TS`, `TSSetIJacobian()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
-PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat J, Mat B, void *ctx)
+PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat J, Mat B, PetscCtx ctx)
 {
   SNES          snes;
   MatFDColoring color;
@@ -5800,7 +5786,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec y)
+static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(PetscCtx ctx, Vec x, Vec y)
 {
   TS ts = (TS)ctx;
 

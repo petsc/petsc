@@ -1,7 +1,7 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt unused;
 } PetscPartitioner_Gather;
 
 static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)

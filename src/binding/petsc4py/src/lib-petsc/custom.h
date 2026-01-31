@@ -368,9 +368,9 @@ PetscErrorCode KSPConvergedNative_Private(KSP ksp, PetscInt n, PetscReal rnorm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPConvergedNative_Destroy(void **cctx)
+static PetscErrorCode KSPConvergedNative_Destroy(PetscCtxRt cctx)
 {
-  KSPConvergedNativeCtx *ctx = (KSPConvergedNativeCtx *)*cctx;
+  KSPConvergedNativeCtx *ctx = *(KSPConvergedNativeCtx **)cctx;
 
   PetscFunctionBegin;
   PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing context");

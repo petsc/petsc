@@ -82,7 +82,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 }
 
 /* The exact solution is the negative of the f0 contribution */
-static PetscErrorCode exactSolution(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode exactSolution(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   AppCtx  *user    = (AppCtx *)ctx;
   PetscInt uOff[2] = {0, Nc};

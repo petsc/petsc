@@ -105,7 +105,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, PetscCtx ctx0)
 {
   PetscInt    row[] = {0, 1}, col[] = {0};
   PetscScalar J[2][1];

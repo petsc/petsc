@@ -17,12 +17,7 @@ module petscsnes
 
 !  Some PETSc Fortran functions that the user might pass as arguments
 !
-  external SNESCOMPUTEJACOBIANDEFAULT
   external MATMFFDCOMPUTEJACOBIAN
-  external SNESCOMPUTEJACOBIANDEFAULTCOLOR
-
-  external SNESCONVERGEDDEFAULT
-  external SNESCONVERGEDSKIP
 
 contains
 

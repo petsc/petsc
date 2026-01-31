@@ -54,7 +54,7 @@ static PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 static PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 static PetscErrorCode FormInitialGuess(AppCtx *, Vec);
 static PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-static PetscErrorCode ConvergenceDestroy(void **);
+static PetscErrorCode ConvergenceDestroy(PetscCtxRt);
 static PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
 static PetscErrorCode monitor_change_deltamax(SNES, PetscInt, PetscReal, void *);
 
@@ -495,7 +495,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx)
+PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   *reason = KSP_CONVERGED_ITERATING;
@@ -506,15 +506,15 @@ PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConverged
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ConvergenceDestroy(void **ctx)
+PetscErrorCode ConvergenceDestroy(PetscCtxRt ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscInfo(NULL, "User provided convergence destroy called\n"));
-  PetscCall(PetscFree(*ctx));
+  PetscCall(PetscFree(*(void **)ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx)
+PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, PetscCtx ctx)
 {
   PetscReal norm;
   Vec       tmp;
@@ -528,7 +528,7 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, void *ctx)
+PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   if (it == 0) PetscCall(SNESNewtonTRSetTolerances(snes, PETSC_CURRENT, 0.01, PETSC_CURRENT));

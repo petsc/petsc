@@ -123,7 +123,7 @@ PetscErrorCode MyMatMult(Mat S, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Initial(Vec global, void *ctx)
+PetscErrorCode Initial(Vec global, PetscCtx ctx)
 {
   PetscScalar *localptr;
 
@@ -136,7 +136,7 @@ PetscErrorCode Initial(Vec global, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, PetscCtx ctx)
 {
   const PetscScalar *tmp;
   PetscScalar        exact[] = {solx(time), soly(time), solz(time)};
@@ -149,7 +149,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, PetscCtx ctx)
 {
   PetscScalar       *outptr;
   const PetscScalar *inptr;
@@ -170,7 +170,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, PetscCtx ctx)
 {
   PetscScalar v[3];
   PetscInt    idx[3], rst;

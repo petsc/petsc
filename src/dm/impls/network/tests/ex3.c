@@ -66,7 +66,7 @@ PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numd
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) PetscCall(StarGraphCreateEdgeList(k, directin, &ne, &edgelist));
   PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
-  PetscCall(DMNetworkRegisterComponent(dm, "dummy", sizeof(PetscInt), &compkey));
+  PetscCall(DMNetworkRegisterComponent(dm, "unused", sizeof(PetscInt), &compkey));
   PetscCall(DMNetworkLayoutSetUp(dm));
   PetscCall(PetscFree(edgelist));
   PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));

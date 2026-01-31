@@ -130,17 +130,17 @@ void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], con
 
     -\Delta u + a = -4 + 4 = 0
 */
-PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   *u = x[0] * x[0] + x[1] * x[1];
   return PETSC_SUCCESS;
 }
-PetscErrorCode constant_a_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
+PetscErrorCode constant_a_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *a, PetscCtx ctx)
 {
   *a = 4;
   return PETSC_SUCCESS;
 }
-PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *l, PetscCtx ctx)
 {
   *l = 0.0;
   return PETSC_SUCCESS;
@@ -229,8 +229,8 @@ int main(int argc, char **argv)
   PetscCall(DMSNESCheckFromOptions(snes, u));
   if (user.runType == RUN_FULL) {
     PetscDS ds;
-    PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-    PetscErrorCode (*initialGuess[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+    PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx);
+    PetscErrorCode (*initialGuess[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx);
     PetscReal error;
 
     PetscCall(DMGetDS(dm, &ds));

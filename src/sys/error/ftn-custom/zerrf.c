@@ -27,7 +27,7 @@
 static void (*f2)(MPI_Comm *comm, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3);
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, PetscCtx ctx)
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
   size_t         len1, len2, len3;
@@ -45,32 +45,32 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, 
         These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
 */
-PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
 {
   *ierr = PetscTraceBackErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
 {
   *ierr = PetscAbortErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
 {
   *ierr = PetscAttachDebuggerErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
 {
   *ierr = PetscEmacsClientErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
 {
   *ierr = PetscIgnoreErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3), PetscCtx ctx, PetscErrorCode *ierr)
 {
   if ((PetscFortranCallbackFn *)handler == (PetscFortranCallbackFn *)petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler, NULL);
   else {

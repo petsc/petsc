@@ -44,10 +44,10 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx)
 
 .seealso: [](ch_snes), `SNESMonitorSAWsCreate()`
 @*/
-PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
+PetscErrorCode SNESMonitorSAWsDestroy(PetscCtxRt ctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*ctx));
+  PetscCall(PetscFree(*(void **)ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -66,7 +66,7 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 
 .seealso: [](ch_snes), `PetscViewerSAWsOpen()`, `SNESMonitorSAWsDestroy()`, `SNESMonitorSAWsCreate()`
 @*/
-PetscErrorCode SNESMonitorSAWs(SNES snes, PetscInt n, PetscReal rnorm, void *ctx)
+PetscErrorCode SNESMonitorSAWs(SNES snes, PetscInt n, PetscReal rnorm, PetscCtx ctx)
 {
   PetscMPIInt rank;
 

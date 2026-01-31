@@ -15,7 +15,7 @@ typedef struct {
   PetscBool divFree; // True if the solution is divergence-free
 } AppCtx;
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
@@ -35,7 +35,7 @@ static void solenoidal_3d(PetscInt n, const PetscReal x[], PetscScalar u[])
   u[2] = PetscPowRealInt(x[0], n - 1) * PetscPowRealInt(x[1], n - 1) * PetscPowRealInt(x[2], n);
 }
 
-static PetscErrorCode solenoidal_totaldeg_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode solenoidal_totaldeg_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt deg = *(PetscInt *)ctx;
   const PetscInt n   = deg / 2 + deg % 2;
@@ -44,7 +44,7 @@ static PetscErrorCode solenoidal_totaldeg_2d(PetscInt dim, PetscReal time, const
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode solenoidal_totaldeg_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode solenoidal_totaldeg_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt deg = *(PetscInt *)ctx;
   const PetscInt n   = deg / 3 + (deg % 3 ? 1 : 0);
@@ -54,7 +54,7 @@ static PetscErrorCode solenoidal_totaldeg_3d(PetscInt dim, PetscReal time, const
 }
 
 // This is in P_n^{-}
-static PetscErrorCode source_totaldeg(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode source_totaldeg(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt n = *(PetscInt *)ctx;
 

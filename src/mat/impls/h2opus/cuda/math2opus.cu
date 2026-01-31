@@ -106,7 +106,7 @@ private:
   void              *ctx;
 
 public:
-  PetscFunctionGenerator(MatH2OpusKernelFn *k, int dim, void *ctx)
+  PetscFunctionGenerator(MatH2OpusKernelFn *k, int dim, PetscCtx ctx)
   {
     this->k   = k;
     this->dim = dim;

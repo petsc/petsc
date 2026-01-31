@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 
-PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   const PetscScalar *x;
   PetscScalar       *f;

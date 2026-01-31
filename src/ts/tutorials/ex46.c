@@ -42,14 +42,14 @@ typedef struct {
 
     <u, v> . <<u_x, v_x>, <u_y, v_y>> = <u u_x + v u_y, u v_x + v v_y>
 */
-PetscErrorCode mms1_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode mms1_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = time + x[0] * x[0] + x[1] * x[1];
   u[1] = time + 2.0 * x[0] * x[0] - 2.0 * x[0] * x[1];
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode mms1_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
+PetscErrorCode mms1_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, PetscCtx ctx)
 {
   *p = x[0] + x[1] - 1.0;
   return PETSC_SUCCESS;
@@ -57,14 +57,14 @@ PetscErrorCode mms1_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], Pets
 
 /* MMS 2*/
 
-static PetscErrorCode mms2_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode mms2_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   u[0] = PetscSinReal(time + x[0]) * PetscSinReal(time + x[1]);
   u[1] = PetscCosReal(time + x[0]) * PetscCosReal(time + x[1]);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode mms2_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
+static PetscErrorCode mms2_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, PetscCtx ctx)
 {
   *p = PetscSinReal(time + x[0] - x[1]);
   return PETSC_SUCCESS;
@@ -293,7 +293,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, PetscCtx ctx)
 {
   PetscSimplePointFn *funcs[2];
   void               *ctxs[2];

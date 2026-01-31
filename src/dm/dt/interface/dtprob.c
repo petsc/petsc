@@ -12,8 +12,8 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -22,7 +22,7 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
 
 .seealso: `PetscCDFMaxwellBoltzmann1D()`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return PETSC_SUCCESS;
@@ -34,8 +34,8 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -44,7 +44,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann1D()`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2);
   return PETSC_SUCCESS;
@@ -56,8 +56,8 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -66,7 +66,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscCDFMaxwellBoltzmann2D()`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return PETSC_SUCCESS;
@@ -78,8 +78,8 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -88,7 +88,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann2D()`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = 1. - PetscExpReal(-0.5 * PetscSqr(x[0]));
   return PETSC_SUCCESS;
@@ -100,8 +100,8 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -110,7 +110,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscCDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscSqr(x[0]) * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return PETSC_SUCCESS;
@@ -122,8 +122,8 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in $[0, \infty]$
-- dummy - Unused
++ x      - Speed in $[0, \infty]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -132,7 +132,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
 .seealso: `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2) - PetscSqrtReal(2. / PETSC_PI) * x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
   return PETSC_SUCCESS;
@@ -174,8 +174,8 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on $[0, 1]$
-- dummy - ignored
++ p      - A uniform variable on $[0, 1]$
+- unused - ignored
 
   Output Parameter:
 . x - Coordinate in $[-\infty, \infty]$
@@ -188,7 +188,7 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
 
 .seealso: `PetscPDFGaussian2D()`
 @*/
-PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
   const PetscReal q       = 2 * p[0] - 1.;
   const PetscInt  maxIter = 100;
@@ -221,8 +221,8 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-\infty, \infty]^2$
-- dummy - ignored
++ x      - Coordinate in $[-\infty, \infty]^2$
+- unused - ignored
 
   Output Parameter:
 . p - The probability density at `x`
@@ -231,7 +231,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscPDFSampleGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = (1. / PETSC_PI) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1])));
   return PETSC_SUCCESS;
@@ -244,8 +244,8 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on $[0, 1]^2$
-- dummy - ignored
++ p      - A uniform variable on $[0, 1]^2$
+- unused - ignored
 
   Output Parameter:
 . x - Coordinate in $[-\infty, \infty]^2 $
@@ -254,7 +254,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
   const PetscReal mag = PetscSqrtReal(-2.0 * PetscLogReal(p[0]));
   x[0]                = mag * PetscCosReal(2.0 * PETSC_PI * p[1]);
@@ -268,8 +268,8 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-\infty, \infty]^3$
-- dummy - ignored
++ x      - Coordinate in $[-\infty, \infty]^3$
+- unused - ignored
 
   Output Parameter:
 . p - The probability density at `x`
@@ -278,7 +278,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscPDFSampleGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = (1. / PETSC_PI * PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
   return PETSC_SUCCESS;
@@ -291,8 +291,8 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on $[0, 1]^3$
-- dummy - ignored
++ p      - A uniform variable on $[0, 1]^3$
+- unused - ignored
 
   Output Parameter:
 . x - Coordinate in $[-\infty, \infty]^3$
@@ -301,10 +301,10 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
-PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
-  PetscCall(PetscPDFSampleGaussian1D(p, dummy, x));
-  PetscCall(PetscPDFSampleGaussian2D(&p[1], dummy, &x[1]));
+  PetscCall(PetscPDFSampleGaussian1D(p, unused, x));
+  PetscCall(PetscPDFSampleGaussian2D(&p[1], unused, &x[1]));
   return PETSC_SUCCESS;
 }
 
@@ -314,8 +314,8 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -324,7 +324,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscPDFConstant2D()`, `PetscPDFConstant3D()`
 @*/
-PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. ? 0.5 : 0.;
   return PETSC_SUCCESS;
@@ -336,8 +336,8 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]$
+- unused - Unused
 
   Output Parameter:
 . p - The cumulative probability at `x`
@@ -346,7 +346,7 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscCDFConstant2D()`, `PetscCDFConstant3D()`
 @*/
-PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.));
   return PETSC_SUCCESS;
@@ -358,8 +358,8 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on $[0, 1]$
-- dummy - Unused
++ p      - A uniform variable on $[0, 1]$
+- unused - Unused
 
   Output Parameter:
 . x - Coordinate in $[-1, 1]$
@@ -368,7 +368,7 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant1D()`, `PetscCDFConstant1D()`, `PetscPDFSampleConstant2D()`, `PetscPDFSampleConstant3D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
   x[0] = 2. * p[0] - 1.;
   return PETSC_SUCCESS;
@@ -380,8 +380,8 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]^2$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]^2$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -390,7 +390,7 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscPDFConstant1D()`, `PetscPDFConstant3D()`
 @*/
-PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. ? 0.25 : 0.;
   return PETSC_SUCCESS;
@@ -402,8 +402,8 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]^2$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]^2$
+- unused - Unused
 
   Output Parameter:
 . p - The cumulative probability at `x`
@@ -412,7 +412,7 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscCDFConstant1D()`, `PetscCDFConstant3D()`
 @*/
-PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] <= -1. || x[1] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.));
   return PETSC_SUCCESS;
@@ -424,8 +424,8 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - Two uniform variables on $[0, 1]$
-- dummy - Unused
++ p      - Two uniform variables on $[0, 1]$
+- unused - Unused
 
   Output Parameter:
 . x - Coordinate in $[-1, 1]^2$
@@ -434,7 +434,7 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant2D()`, `PetscCDFConstant2D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant3D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
   x[0] = 2. * p[0] - 1.;
   x[1] = 2. * p[1] - 1.;
@@ -447,8 +447,8 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]^3$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]^3$
+- unused - Unused
 
   Output Parameter:
 . p - The probability density at `x`
@@ -457,7 +457,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 
 .seealso: `PetscCDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
-PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. && x[2] > -1. && x[2] <= 1. ? 0.125 : 0.;
   return PETSC_SUCCESS;
@@ -469,8 +469,8 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in $[-1, 1]^3$
-- dummy - Unused
++ x      - Coordinate in $[-1, 1]^3$
+- unused - Unused
 
   Output Parameter:
 . p - The cumulative probability at `x`
@@ -479,7 +479,7 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscCDFConstant1D()`, `PetscCDFConstant2D()`
 @*/
-PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
   p[0] = x[0] <= -1. || x[1] <= -1. || x[2] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.)) * (x[2] > 1. ? 1. : 0.5 * (x[2] + 1.));
   return PETSC_SUCCESS;
@@ -491,8 +491,8 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - Three uniform variables on $[0, 1]$
-- dummy - Unused
++ p      - Three uniform variables on $[0, 1]$
+- unused - Unused
 
   Output Parameter:
 . x - Coordinate in $[-1, 1]^3$
@@ -501,7 +501,7 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
 .seealso: `PetscPDFConstant3D()`, `PetscCDFConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
-PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal unused[], PetscReal x[])
 {
   x[0] = 2. * p[0] - 1.;
   x[1] = 2. * p[1] - 1.;

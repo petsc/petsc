@@ -2,7 +2,7 @@ const char help[] = "Simple example to get equally space points in high-order el
 
 #include <petscfe.h>
 #include <petscdmplex.h>
-static PetscErrorCode x(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
+static PetscErrorCode x(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_unused, PetscScalar *u, void *actx)
 {
   PetscFunctionBegin;
   u[0] = x[0];

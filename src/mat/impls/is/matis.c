@@ -42,9 +42,9 @@ static PetscErrorCode MatSetValuesLocal_IS(Mat, PetscInt, const PetscInt *, Pets
 static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat, PetscInt, const PetscInt *, PetscInt, const PetscInt *, const PetscScalar *, InsertMode);
 static PetscErrorCode MatISSetUpScatters_Private(Mat);
 
-static PetscErrorCode MatISContainerDestroyPtAP_Private(void **ptr)
+static PetscErrorCode MatISContainerDestroyPtAP_Private(PetscCtxRt ptr)
 {
-  MatISPtAP ptap = (MatISPtAP)*ptr;
+  MatISPtAP ptap = *(MatISPtAP *)ptr;
 
   PetscFunctionBegin;
   PetscCall(MatDestroySubMatrices(ptap->ris1 ? 2 : 1, &ptap->lP));
@@ -69,7 +69,7 @@ static PetscErrorCode MatPtAPNumeric_IS_XAIJ(Mat A, Mat P, Mat C)
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)C, "_MatIS_PtAP", (PetscObject *)&c));
   PetscCheck(c, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Missing PtAP information");
-  PetscCall(PetscContainerGetPointer(c, (void **)&ptap));
+  PetscCall(PetscContainerGetPointer(c, &ptap));
   ris[0] = ptap->ris0;
   ris[1] = ptap->ris1;
   cis[0] = ptap->cis0;
@@ -293,9 +293,9 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatISContainerDestroyFields_Private(void **ptr)
+static PetscErrorCode MatISContainerDestroyFields_Private(PetscCtxRt ptr)
 {
-  MatISLocalFields lf = (MatISLocalFields)*ptr;
+  MatISLocalFields lf = *(MatISLocalFields *)ptr;
   PetscInt         i;
 
   PetscFunctionBegin;

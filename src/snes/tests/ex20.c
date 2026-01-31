@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx)
+PetscErrorCode FormInitialGuess(SNES snes, Vec X, PetscCtx ctx)
 {
   AppCtx        *user;
   PetscInt       i, j, k, xs, ys, xm, ym, zs, zm;
@@ -1638,7 +1638,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TestConvergence(SNES snes, PETSC_UNUSED PetscInt it, PETSC_UNUSED PetscReal xnorm, PETSC_UNUSED PetscReal snorm, PETSC_UNUSED PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode TestConvergence(SNES snes, PETSC_UNUSED PetscInt it, PETSC_UNUSED PetscReal xnorm, PETSC_UNUSED PetscReal snorm, PETSC_UNUSED PetscReal fnorm, SNESConvergedReason *reason, PetscCtx ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
 

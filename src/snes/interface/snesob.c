@@ -22,7 +22,7 @@
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`,
           `SNESObjectiveFn`, `SNESSetObjectiveDomainError()`
 @*/
-PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
+PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, PetscCtx ctx)
 {
   DM dm;
 
@@ -49,7 +49,7 @@ PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
 
 .seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESGetSolution()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESGetObjective(SNES snes, SNESObjectiveFn **obj, void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes, SNESObjectiveFn **obj, PetscCtxRt ctx)
 {
   DM dm;
 
@@ -137,7 +137,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 
 .seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, void *ctx)
+PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, PetscCtx ctx)
 {
   Vec         Xh;
   PetscInt    i, N, start, end;

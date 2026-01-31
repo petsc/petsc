@@ -425,7 +425,7 @@ static PetscErrorCode TSAdaptCreate_TSPseudo(TSAdapt adapt)
 
 .seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoVerifyTimeStepDefault()`, `TSPseudoVerifyTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, Vec update, void *ctx, PetscReal *newdt, PetscBool *flag), void *ctx)
+PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, Vec update, PetscCtx ctx, PetscReal *newdt, PetscBool *flag), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -535,7 +535,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
 
 .seealso: [](ch_ts), `TSPSEUDO`, `TSPseudoTimeStepDefault()`, `TSPseudoComputeTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal *newdt, void *ctx), void *ctx)
+PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal *newdt, PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -544,7 +544,7 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal 
 }
 
 typedef PetscErrorCode (*FCN1)(TS, Vec, void *, PetscReal *, PetscBool *); /* force argument to next function to not be extern C*/
-static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx)
+static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, PetscCtx ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
@@ -582,7 +582,7 @@ static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 }
 
 typedef PetscErrorCode (*FCN2)(TS, PetscReal *, void *); /* force argument to next function to not be extern C*/
-static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
+static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, PetscCtx ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 

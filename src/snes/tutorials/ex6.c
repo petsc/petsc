@@ -181,7 +181,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    a vector containing the right-hand side of the discretized PDE.
  */
 
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   Vec                g = (Vec)ctx;
   const PetscScalar *xx, *gg;
@@ -296,7 +296,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MySNESConvergedReasonView(SNES snes, void *ctx)
+PetscErrorCode MySNESConvergedReasonView(SNES snes, PetscCtx ctx)
 {
   ReasonViewCtx      *monP   = (ReasonViewCtx *)ctx;
   PetscViewer         viewer = monP->viewer;
@@ -317,7 +317,7 @@ PetscErrorCode MySNESConvergedReasonView(SNES snes, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MyKSPConvergedReasonView(KSP ksp, void *ctx)
+PetscErrorCode MyKSPConvergedReasonView(KSP ksp, PetscCtx ctx)
 {
   ReasonViewCtx     *monP   = (ReasonViewCtx *)ctx;
   PetscViewer        viewer = monP->viewer;
