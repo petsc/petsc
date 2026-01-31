@@ -473,7 +473,7 @@ mswin-opt-impi:
     - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage3
+    - mswin-11
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
     TEST_OPTS: search='ksp_ksp_tests*'
@@ -1057,17 +1057,19 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage3
+    - mswin-11
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
     TIMEOUT: 150
+    MAKE_CFLAGS: -Wno-string-compare -Wno-deprecated-declarations
+    MAKE_CXXFLAGS: -Wno-string-compare -Wno-deprecated-declarations -Wno-unused-command-line-argument
 
 mswin-uni:
   extends:
     - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage3
+    - mswin-11
   variables:
     EXTRA_OPTIONS_INITIAL: -check_pointer_intensity 0 -error_output_stdout
     TEST_ARCH: arch-ci-mswin-uni
@@ -1077,7 +1079,7 @@ mswin-gnu:
     - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage3
+    - mswin-11
   variables:
     TEST_ARCH: arch-ci-mswin-gnu
     MAKE_CFLAGS: -Werror
