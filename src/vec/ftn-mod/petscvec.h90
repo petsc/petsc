@@ -59,11 +59,11 @@ interface
     PetscErrorCode :: ierr
   end subroutine PetscSFReduceEnd
 
-  subroutine VecRestoreOwnershipRanges(v, ptr, ierr)
+  subroutine VecRestoreOwnershipRanges(x, ranges, ierr)
     use, intrinsic :: ISO_C_binding
     import tVec
-    Vec :: v
-    PetscInt, pointer :: ptr(:)
+    Vec :: x
+    PetscInt, pointer :: ranges(:)
     PetscErrorCode, intent(out) :: ierr
   end subroutine VecRestoreOwnershipRanges
 
@@ -77,14 +77,14 @@ interface
     PetscErrorCode :: ierr
   end subroutine PetscSFRestoreGraph
 
-  subroutine VecRestoreValuesSection(v, s, p, va, ierr)
+  subroutine VecRestoreValuesSection(v, s, point, values, ierr)
     use, intrinsic :: ISO_C_binding
     import tVec, tPetscSection
-    PetscScalar, pointer :: va(:)
-    PetscErrorCode ierr
+    PetscScalar, pointer :: values(:)
+    PetscErrorCode, intent(out) :: ierr
     Vec v
     PetscSection s
-    PetscInt p
+    PetscInt point
   end subroutine VecRestoreValuesSection
 end interface
 

@@ -8,52 +8,49 @@ interface
     PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PCBJacobiRestoreSubKSP(a, b, c, d, z)
+  subroutine PCBJacobiRestoreSubKSP(pc, n_local, first_local, ksp, ierr)
     use, intrinsic :: ISO_C_binding
     import tPC, tKSP
-    PC :: a
-    PetscInt :: b
-    PetscInt :: c
-    KSP, pointer :: d(:)
-    PetscErrorCode z
+    PC :: pc
+    PetscInt :: n_local, first_local
+    KSP, pointer :: ksp(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PCASMRestoreSubKSP(a, b, c, d, z)
+  subroutine PCASMRestoreSubKSP(pc, n_local, first_local, ksp, ierr)
     use, intrinsic :: ISO_C_binding
     import tPC, tKSP
-    PC :: a
-    PetscInt :: b
-    PetscInt :: c
-    KSP, pointer :: d(:)
-    PetscErrorCode z
+    PC :: pc
+    PetscInt :: n_local, first_local
+    KSP, pointer :: ksp(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PCGASMRestoreSubKSP(a, b, c, d, z)
+  subroutine PCGASMRestoreSubKSP(pc, n_local, first_local, ksp, ierr)
     use, intrinsic :: ISO_C_binding
     import tPC, tKSP
-    PC :: a
-    PetscInt :: b
-    PetscInt :: c
-    KSP, pointer :: d(:)
-    PetscErrorCode z
+    PC :: pc
+    PetscInt :: n_local, first_local
+    KSP, pointer :: ksp(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PCFieldsplitRestoreSubKSP(a, b, d, z)
+  subroutine PCFieldsplitRestoreSubKSP(pc, n, subksp, ierr)
     use, intrinsic :: ISO_C_binding
     import tPC, tKSP
-    PC :: a
-    PetscInt :: b
-    KSP, pointer :: d(:)
-    PetscErrorCode z
+    PC :: pc
+    PetscInt :: n
+    KSP, pointer :: subksp(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PCFieldSplitSchurRestoreSubKSP(a, b, d, z)
+  subroutine PCFieldSplitSchurRestoreSubKSP(pc, n, subksp, ierr)
     use, intrinsic :: ISO_C_binding
     import tPC, tKSP
-    PC :: a
-    PetscInt :: b
-    KSP, pointer :: d(:)
-    PetscErrorCode z
+    PC :: pc
+    PetscInt :: n
+    KSP, pointer :: subksp(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 

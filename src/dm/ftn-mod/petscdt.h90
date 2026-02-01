@@ -5,7 +5,7 @@ interface
     PetscInt dim, nc, np
     PetscReal, pointer :: p(:)
     PetscReal, pointer :: w(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscQuadrature q
   end subroutine
 end interface

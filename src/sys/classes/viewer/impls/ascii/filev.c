@@ -499,11 +499,11 @@ PETSC_EXTERN void petscviewerasciistdoutsetfileunit_(int *unit, PetscErrorCode *
 
   Synopsis:
   #include <petscviewer.h>
-  void PetscViewerASCIISetFileUnit(PetscViewer lab, PetscInt unit, PetscErrorCode ierr)
+  void PetscViewerASCIISetFileUnit(PetscViewer viewer, PetscInt unit, PetscErrorCode ierr)
 
   Input Parameters:
-+ lab  - the viewer
-- unit - the unit number
++ viewer - the viewer
+- unit   - the unit number
 
   Output Parameter:
 . ierr - the error code
@@ -518,12 +518,12 @@ PETSC_EXTERN void petscviewerasciistdoutsetfileunit_(int *unit, PetscErrorCode *
 
 .seealso: `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFileUnit()`, `PetscViewerASCIIStdoutSetFileUnit()`
 M*/
-PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, int *unit, PetscErrorCode *ierr)
+PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *viewer, int *unit, PetscErrorCode *ierr)
 {
   PetscViewer_ASCII *vascii;
   PetscViewer        v;
 
-  PetscPatchDefaultViewers_Fortran(lab, v);
+  PetscPatchDefaultViewers_Fortran(viewer, v);
   vascii = (PetscViewer_ASCII *)v->data;
   if (vascii->mode == FILE_MODE_READ) {
     *ierr = PETSC_ERR_ARG_WRONGSTATE;
@@ -545,8 +545,8 @@ PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, int *unit, Pets
 - unit - the unit number
 
   Output Parameters:
-+ lab  - the viewer
-- ierr - the error code
++ viewer - the viewer
+- ierr   - the error code
 
   Level: intermediate
 
@@ -558,15 +558,15 @@ PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, int *unit, Pets
 
 .seealso: `PetscViewerASCIISetFileUnit()`, `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFILE()`
 M*/
-PETSC_EXTERN void petscviewerasciiopenwithfileunit_(MPI_Fint *comm, int *unit, PetscViewer *lab, PetscErrorCode *ierr)
+PETSC_EXTERN void petscviewerasciiopenwithfileunit_(MPI_Fint *comm, int *unit, PetscViewer *viewer, PetscErrorCode *ierr)
 {
-  *ierr = PetscViewerCreate(MPI_Comm_f2c(*(MPI_Fint *)&*comm), lab);
+  *ierr = PetscViewerCreate(MPI_Comm_f2c(*(MPI_Fint *)&*comm), viewer);
   if (*ierr) return;
-  *ierr = PetscViewerSetType(*lab, PETSCVIEWERASCII);
+  *ierr = PetscViewerSetType(*viewer, PETSCVIEWERASCII);
   if (*ierr) return;
-  *ierr = PetscViewerFileSetMode(*lab, FILE_MODE_WRITE);
+  *ierr = PetscViewerFileSetMode(*viewer, FILE_MODE_WRITE);
   if (*ierr) return;
-  petscviewerasciisetfileunit_(lab, unit, ierr);
+  petscviewerasciisetfileunit_(viewer, unit, ierr);
 }
 
 static PetscErrorCode PetscVFPrintfFortran(int unit, const char format[], va_list Argp)

@@ -4,7 +4,7 @@ interface
     import tDM, tIS
     DM dm
     IS, pointer :: iss(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine DMCompositeRestoreLocalISs(dm, iss, ierr)
@@ -12,7 +12,7 @@ interface
     import tDM, tIS
     DM dm
     IS, pointer :: iss(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 
@@ -22,33 +22,32 @@ end interface
 #endif
 
 interface DMCompositeGetEntries
-  subroutine DMCompositeGetEntries1(dm1, d1, ierr)
+  subroutine DMCompositeGetEntries1(dm, d1, ierr)
     use, intrinsic :: ISO_C_binding
     import tDM
-    DM dm1
+    DM dm
     DM d1
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
-  subroutine DMCompositeGetEntries2(dm1, d1, d2, ierr)
+  subroutine DMCompositeGetEntries2(dm, d1, d2, ierr)
     use, intrinsic :: ISO_C_binding
     import tDM
-    DM dm1
+    DM dm
     DM d1, d2
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
-  subroutine DMCompositeGetEntries3(dm1, d1, d2, d3, ierr)
+  subroutine DMCompositeGetEntries3(dm, d1, d2, d3, ierr)
     use, intrinsic :: ISO_C_binding
     import tDM
-    DM dm1
+    DM dm
     DM d1, d2, d3
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
-  subroutine DMCompositeGetEntries4(dm1, d1, d2, d3, d4, ierr)
+  subroutine DMCompositeGetEntries4(dm, d1, d2, d3, d4, ierr)
     use, intrinsic :: ISO_C_binding
     import tDM
-    DM dm1
-    PetscInt d2, d4
-    DM d1, d3
-    PetscErrorCode ierr
+    DM dm
+    DM d1, d2, d4, d3
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface DMCompositeGetEntries

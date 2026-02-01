@@ -40,10 +40,10 @@ interface
     PetscErrorCode, intent(in) ::  ierr
   end subroutine
 
-  subroutine PetscViewerASCIIStdoutSetFileUnit(unit, z)
+  subroutine PetscViewerASCIIStdoutSetFileUnit(unit, ierr)
     use, intrinsic :: ISO_C_binding
     integer4 unit
-    PetscErrorCode, intent(out) :: z
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine PetscLogEventBegin(event, ierr)
@@ -68,26 +68,26 @@ interface
     use, intrinsic :: ISO_C_binding
     PetscInt :: start, len
     PetscScalar, pointer :: d1(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine PetscShmgetDeallocateArrayScalar(d1, ierr)
     use, intrinsic :: ISO_C_binding
     PetscScalar, pointer :: d1(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine PetscShmgetAllocateArrayInt(start, len, d1, ierr)
     use, intrinsic :: ISO_C_binding
     PetscInt :: start, len
     PetscInt, pointer :: d1(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine PetscShmgetDeallocateArrayInt(d1, ierr)
     use, intrinsic :: ISO_C_binding
     PetscInt, pointer :: d1(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 
