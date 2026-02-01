@@ -169,7 +169,7 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
         else:
           fd.write('  ' + ktypename + ' :: ' + k.name + NL)
         cnt = cnt + 1
-      fd.write('  PetscErrorCode :: ierr' + NL)
+      fd.write('  PetscErrorCode, intent(out) :: ierr' + NL)
       # some Fortran compilers require the end to be on its own line
       fd.write('  end subroutine\n')
       fd.write('  end interface\n')
