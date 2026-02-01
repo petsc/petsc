@@ -953,6 +953,8 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   maxl += 1;
   if (ldl == PETSC_DECIDE) ldl = maxl;
   if (ldr == PETSC_DECIDE) ldr = nr;
+  ldl /= PetscMax(1, sf->vscat.bs); // SFs created from VecScatterCreate() may have a nonzero block size. If not 0, we need to scale ldl and ldr
+  ldr /= PetscMax(1, sf->vscat.bs);
   PetscCheck(ldr >= nr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be smaller than number of roots %" PetscInt_FMT, ldr, nr);
   PetscCheck(ldl >= maxl, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be larger than leaf range %" PetscInt_FMT, ldl, maxl - 1);
   vnr = nr * bs;
@@ -989,6 +991,12 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   }
   PetscCall(PetscFree(ldrs));
   PetscCall(PetscSFCreate(comm, vsf));
+  if (sf->vscat.bs > 1) {
+    (*vsf)->vscat.bs = sf->vscat.bs;
+    PetscCallMPI(MPI_Type_dup(sf->vscat.unit, &(*vsf)->vscat.unit));
+    (*vsf)->vscat.to_n   = bs * sf->vscat.to_n;
+    (*vsf)->vscat.from_n = bs * sf->vscat.from_n;
+  }
   PetscCall(PetscSFGetType(sf, &sftype));
   PetscCall(PetscSFSetType(*vsf, sftype));
   PetscCall(PetscSFSetGraph(*vsf, vnr, vnl, vilocal, PETSC_OWN_POINTER, viremote, PETSC_OWN_POINTER));
