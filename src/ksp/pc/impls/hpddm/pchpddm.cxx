@@ -1,4 +1,4 @@
-#include <petscsf.h>
+#include <petsc/private/sfimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
@@ -761,35 +761,46 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
 template <bool transpose = false, class Type = Mat, typename std::enable_if<std::is_same<Type, Mat>::value>::type * = nullptr>
 static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
 {
-  PC_HPDDM_Level *ctx;
-  Vec             vX, vY, vC;
-  PetscScalar    *out;
-  PetscInt        N;
+  PC_HPDDM_Level    *ctx;
+  PetscSF            strided;
+  const PetscScalar *in;
+  PetscScalar       *out, *tmp;
+  PetscInt           N, ld[2];
+  PetscMemType       type[2];
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCall(MatGetSize(X, nullptr, &N));
+  PetscCall(PetscObjectQuery((PetscObject)ctx->scatter, "_HPDDM_StridedSF", (PetscObject *)&strided));
+  PetscCall(MatDenseGetLDA(X, ld));
+  PetscCall(MatDenseGetLDA(Y, ld + 1));
+  PetscCheck(ld[0] == ld[1], PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Leading dimension of input Mat different than the one of output Mat");
+  PetscCall(MatDenseGetLDA(ctx->V[0], ld + 1));
+  if (strided) {
+    PetscInt nroots[2], nleafs[2];
+
+    PetscCall(PetscSFGetGraph(ctx->scatter, nroots, nleafs, nullptr, nullptr));
+    PetscCall(PetscSFGetGraph(strided, nroots + 1, nleafs + 1, nullptr, nullptr));
+    if (N * nroots[0] != nroots[1] || N * nleafs[0] != nleafs[1]) PetscCall(PetscSFDestroy(&strided));
+  }
+  if (!strided) {
+    PetscCall(PetscSFCreateStridedSF(ctx->scatter, N, ld[0], ld[1], &strided));
+    PetscCall(PetscObjectCompose((PetscObject)ctx->scatter, "_HPDDM_StridedSF", (PetscObject)strided));
+    PetscCall(PetscObjectDereference((PetscObject)strided));
+  }
+  PetscCall(MatDenseGetArrayReadAndMemType(X, &in, type));
+  PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &tmp, type + 1));
   /* going from PETSc to HPDDM numbering */
-  for (PetscInt i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecRead(X, i, &vX));
-    PetscCall(MatDenseGetColumnVecWrite(ctx->V[0], i, &vC));
-    PetscCall(VecScatterBegin(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(MatDenseRestoreColumnVecWrite(ctx->V[0], i, &vC));
-    PetscCall(MatDenseRestoreColumnVecRead(X, i, &vX));
-  }
-  PetscCall(MatDenseGetArrayWrite(ctx->V[0], &out));
-  PetscCallCXX(ctx->P->deflation<false, transpose>(nullptr, out, N)); /* Y = Q X */
-  PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &out));
+  PetscCall(PetscSFBcastWithMemTypeBegin(strided, strided->vscat.unit, type[0], in, type[1], tmp, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(strided, strided->vscat.unit, in, tmp, MPI_REPLACE));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(X, &in));
+  PetscCallCXX(ctx->P->deflation<false, transpose>(nullptr, tmp, N)); /* Y = Q X */
+  PetscCall(MatDenseGetArrayWriteAndMemType(Y, &out, type + 1));
   /* going from HPDDM to PETSc numbering */
-  for (PetscInt i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecRead(ctx->V[0], i, &vC));
-    PetscCall(MatDenseGetColumnVecWrite(Y, i, &vY));
-    PetscCall(VecScatterBegin(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE));
-    PetscCall(VecScatterEnd(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE));
-    PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &vY));
-    PetscCall(MatDenseRestoreColumnVecRead(ctx->V[0], i, &vC));
-  }
+  PetscCall(PetscSFReduceWithMemTypeBegin(strided, strided->vscat.unit, type[0], tmp, type[1], out, MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(strided, strided->vscat.unit, tmp, out, MPI_REPLACE));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(Y, &out));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(ctx->V[0], &tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1107,6 +1118,7 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(MatDestroy(ctx->V + 1));
   PetscCall(MatDestroy(ctx->V + 2));
   PetscCall(VecDestroy(&ctx->D));
+  PetscCall(PetscObjectCompose((PetscObject)ctx->scatter, "_HPDDM_StridedSF", nullptr));
   PetscCall(PetscSFDestroy(&ctx->scatter));
   PetscCall(PCDestroy(&ctx->pc));
   PetscFunctionReturn(PETSC_SUCCESS);
