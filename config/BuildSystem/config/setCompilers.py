@@ -1255,6 +1255,7 @@ class Configure(config.base.Configure):
           if useFlag:
             # needs compilerOnly = True as we need to keep the flag out of the linker flags
             self.addCompilerFlag(flag,includes=dlct.includes,body=dlct.body,compilerOnly=True)
+            if language == 'SYCL': self.insertPreprocessorFlag(flag) # Workaround for a build error on Aurora. We should add Cxx dialect to preprocessor flags to all languages
           elif not self.checkCompile(includes=dlct.includes,body=dlct.body):
             raise RuntimeError # to mimic addCompilerFlag
         except RuntimeError:
@@ -2061,7 +2062,7 @@ class Configure(config.base.Configure):
     if not flag: return
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
     setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
-    self.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
+    self.log.write('Added to '+self.language[-1]+' compiler flag '+flagsArg+': '+flag+'\n')
     return
 
   def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
@@ -2070,6 +2071,14 @@ class Configure(config.base.Configure):
       self.insertCompilerFlag(flag, compilerOnly)
       return
     raise RuntimeError('Bad compiler flag: '+flag)
+
+  def insertPreprocessorFlag(self, flag):
+    '''DANGEROUS: Put in the preprocessor flag without checking'''
+    if not flag: return
+    flagsArg = self.getPreprocessorFlagsArg()
+    setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
+    self.log.write('Added to '+self.language[-1]+' preprocessor flag '+flagsArg+': '+flag+'\n')
+    return
 
   @contextlib.contextmanager
   def extraCompilerFlags(self, extraFlags, lang = None, **kwargs):
