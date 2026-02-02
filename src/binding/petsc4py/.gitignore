@@ -15,5 +15,6 @@ docs/html
 src/petsc4py/PETSc.c
 src/petsc4py/PETSc.h
 src/petsc4py/PETSc_api.h
+src/petsc4py/PETSc.pyi
 src/petsc4py/lib/*/PETSc.*.so
 src/petsc4py.egg-info/
