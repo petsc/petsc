@@ -1000,7 +1000,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 
   Level: developer
 
-.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeFieldIS()`, `DMPlexDistributeData()`
+.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeFieldIS()`, `DMPlexDistributeData()`, `PetscSectionMigrateData()`
 @*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
@@ -1046,28 +1046,20 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 
   Level: developer
 
-.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexDistributeData()`
+.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexDistributeData()`, `PetscSectionMigrateData()`
 @*/
 PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection originalSection, IS originalIS, PetscSection newSection, IS *newIS)
 {
-  PetscSF         fieldSF;
-  PetscInt       *newValues, *remoteOffsets, fieldSize;
+  PetscInt       *newValues, fieldSize;
   const PetscInt *originalValues;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_DistributeField, dm, 0, 0, 0));
-  PetscCall(PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection));
+  PetscCall(ISGetIndices(originalIS, &originalValues));
+  PetscCall(PetscSectionMigrateData(pointSF, MPIU_INT, originalSection, originalValues, newSection, (void **)&newValues, NULL));
+  PetscCall(ISRestoreIndices(originalIS, &originalValues));
 
   PetscCall(PetscSectionGetStorageSize(newSection, &fieldSize));
-  PetscCall(PetscMalloc1(fieldSize, &newValues));
-
-  PetscCall(ISGetIndices(originalIS, &originalValues));
-  PetscCall(PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF));
-  PetscCall(PetscFree(remoteOffsets));
-  PetscCall(PetscSFBcastBegin(fieldSF, MPIU_INT, (PetscInt *)originalValues, newValues, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(fieldSF, MPIU_INT, (PetscInt *)originalValues, newValues, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&fieldSF));
-  PetscCall(ISRestoreIndices(originalIS, &originalValues));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pointSF), fieldSize, newValues, PETSC_OWN_POINTER, newIS));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeField, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1091,27 +1083,16 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
   Level: developer
 
-.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeField()`
+  Note:
+  This is simply a wrapper around `PetscSectionMigrateData()`, but includes DM-specific logging.
+
+.seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `PetscSectionMigrateData()`
 @*/
 PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
 {
-  PetscSF     fieldSF;
-  PetscInt   *remoteOffsets, fieldSize;
-  PetscMPIInt dataSize;
-
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_DistributeData, dm, 0, 0, 0));
-  PetscCall(PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection));
-
-  PetscCall(PetscSectionGetStorageSize(newSection, &fieldSize));
-  PetscCallMPI(MPI_Type_size(datatype, &dataSize));
-  PetscCall(PetscMalloc(fieldSize * dataSize, newData));
-
-  PetscCall(PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF));
-  PetscCall(PetscFree(remoteOffsets));
-  PetscCall(PetscSFBcastBegin(fieldSF, datatype, originalData, *newData, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(fieldSF, datatype, originalData, *newData, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&fieldSF));
+  PetscCall(PetscSectionMigrateData(pointSF, datatype, originalSection, originalData, newSection, newData, NULL));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeData, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

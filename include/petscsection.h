@@ -81,6 +81,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetField(PetscSection, PetscInt, PetscSe
 PETSC_EXTERN PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection, MPI_Datatype, const void *, IS, PetscSection *, void *[]) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2);
+PETSC_EXTERN PetscErrorCode PetscSectionMigrateData(PetscSF, MPI_Datatype, PetscSection, const void *, PetscSection, void *[], PetscSF *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2);
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetClosureIndex(PetscSection, PetscObject, PetscSection, IS);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosureIndex(PetscSection, PetscObject, PetscSection *, IS *);

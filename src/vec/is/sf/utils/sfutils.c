@@ -228,10 +228,12 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   Note:
   Caller must `PetscFree()` `remoteOffsets` if it was requested
 
+  To distribute data from the `rootSection` to the `leafSection`, see  `PetscSFCreateSectionSF()` or `PetscSectionMigrateData()`.
+
   Fortran Note:
   Use `PetscSFDestroyRemoteOffsets()` when `remoteOffsets` is no longer needed.
 
-.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`, `PetscSFCreateSectionSF()`
 @*/
 PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt *remoteOffsets[], PetscSection leafSection)
 {
@@ -436,9 +438,9 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   Level: advanced
 
   Notes:
-  `remoteOffsets` can be `NULL` if `sf` does not reference any points in leafSection
+  `remoteOffsets` can be `NULL` if `sf` does not reference any points in `leafSection`
 
-.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFCreate()`, `PetscSFDistributeSection()`
 @*/
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
 {
@@ -726,14 +728,11 @@ would build the following PetscSF
 PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt rootIndices[], const PetscInt rootLocalIndices[], PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt leafIndices[], const PetscInt leafLocalIndices[], PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf)
 {
   MPI_Comm     comm = layout->comm;
-  PetscMPIInt  size, rank;
+  PetscMPIInt  rank;
   PetscSF      sf1;
   PetscSFNode *owners, *buffer, *iremote;
   PetscInt    *ilocal, nleaves, N, n, i;
-#if defined(PETSC_USE_DEBUG)
-  PetscInt N1;
-#endif
-  PetscBool flag;
+  PetscBool    areIndicesSame;
 
   PetscFunctionBegin;
   PetscAssertPointer(layout, 1);
@@ -745,28 +744,28 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscAssertPointer(sf, 11);
   PetscCheck(numRootIndices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
   PetscCheck(numLeafIndices >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
-  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscLayoutSetUp(layout));
   PetscCall(PetscLayoutGetSize(layout, &N));
   PetscCall(PetscLayoutGetLocalSize(layout, &n));
-  flag = (PetscBool)(leafIndices == rootIndices);
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPI_C_BOOL, MPI_LAND, comm));
-  PetscCheck(!flag || numLeafIndices == numRootIndices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
-#if defined(PETSC_USE_DEBUG)
-  N1 = PETSC_INT_MIN;
-  for (i = 0; i < numRootIndices; i++)
-    if (rootIndices[i] > N1) N1 = rootIndices[i];
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
-  if (!flag) {
-    N1 = PETSC_INT_MIN;
-    for (i = 0; i < numLeafIndices; i++)
-      if (leafIndices[i] > N1) N1 = leafIndices[i];
+  areIndicesSame = (PetscBool)(leafIndices == rootIndices);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &areIndicesSame, 1, MPI_C_BOOL, MPI_LAND, comm));
+  PetscCheck(!areIndicesSame || numLeafIndices == numRootIndices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt N1 = PETSC_INT_MIN;
+    for (i = 0; i < numRootIndices; i++)
+      if (rootIndices[i] > N1) N1 = rootIndices[i];
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
-    PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
+    PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
+    if (!areIndicesSame) {
+      N1 = PETSC_INT_MIN;
+      for (i = 0; i < numLeafIndices; i++)
+        if (leafIndices[i] > N1) N1 = leafIndices[i];
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
+      PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
+    }
   }
-#endif
+
   /* Reduce: owners -> buffer */
   PetscCall(PetscMalloc1(n, &buffer));
   PetscCall(PetscSFCreate(comm, &sf1));
@@ -784,8 +783,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscSFReduceBegin(sf1, MPIU_SF_NODE, owners, buffer, MPI_MAXLOC));
   PetscCall(PetscSFReduceEnd(sf1, MPIU_SF_NODE, owners, buffer, MPI_MAXLOC));
   /* Bcast: buffer -> owners */
-  if (!flag) {
-    /* leafIndices is different from rootIndices */
+  if (!areIndicesSame) {
     PetscCall(PetscFree(owners));
     PetscCall(PetscSFSetGraphLayout(sf1, layout, numLeafIndices, NULL, PETSC_OWN_POINTER, leafIndices));
     PetscCall(PetscMalloc1(numLeafIndices, &owners));
@@ -798,7 +796,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
     *sfA = sf1;
   } else PetscCall(PetscSFDestroy(&sf1));
   /* Create sf */
-  if (flag && rootLocalIndices == leafLocalIndices && leafLocalOffset == rootLocalOffset) {
+  if (areIndicesSame && rootLocalIndices == leafLocalIndices && leafLocalOffset == rootLocalOffset) {
     /* leaf space == root space */
     for (i = 0, nleaves = 0; i < numLeafIndices; ++i)
       if (owners[i].rank != rank) ++nleaves;
