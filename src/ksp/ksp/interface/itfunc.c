@@ -1368,7 +1368,7 @@ PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
   Note:
   Using a larger block size can improve the efficiency of the solver.
 
-.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPGetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matmatmult_Bbn`
+.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPGetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
 @*/
 PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 {
@@ -1390,7 +1390,7 @@ PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPSetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matmatmult_Bbn`
+.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPSetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
 @*/
 PetscErrorCode KSPGetMatSolveBatchSize(KSP ksp, PetscInt *bs)
 {
