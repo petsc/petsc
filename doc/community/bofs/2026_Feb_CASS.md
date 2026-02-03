@@ -21,12 +21,12 @@ orphan: true
 | :---- | :---- | :---- | :---- |
 | 10:00 AM | Barry Smith | Argonne National Laboratory | Welcome and introduction |
 | 10:05 AM | Vincent Robert | CEA Paris-Saclay and Sorbonne Université | [Solving saddle-point systems from contact mechanics in HPC context using PETSc](#talk-vincent-robert) |
-| 10:12 AM | Bahaâ Sidi | EDF R\&D, ENPC, and Sorbonne Université | [Scalable domain decomposition solvers for Hybrid High-Order methods in PETSc](#talk-bahaa-sidi) |
-| 10:19 AM | Barry Smith, Richard Tran Mills, Hansol Suh, Junchao Zhang | Argonne National Laboratory | [PETSc new feature update](#talk-petsc-anl) |
+| 10:12 AM | Bahaâ Sidi | EDF R\&D, ENPC, and Sorbonne Université | [Scalable domain decomposition solvers for hybrid high-order methods in PETSc](#talk-bahaa-sidi) |
+| 10:19 AM | Barry Smith, Richard Tran Mills, Hansol Suh, Junchao Zhang | Argonne National Laboratory | [PETSc new features update](#talk-petsc-anl) |
 | 10:42 AM | Xiaodong Liu | Remcom Inc | [A PETSc-based vector finite element method code for solving the frequency-domain Maxwell equations](#talk-xiaodong-liu) |
-| 10:49 AM | Jeremy L Thompson | University of Colorado Boulder | [Ratel \- Using MI300A APUs with libCEED and PETSc](#talk-jeremy-thompson) |
+| 10:49 AM | Jeremy L Thompson | University of Colorado Boulder | [Ratel \- using MI300A APUs with libCEED and PETSc](#talk-jeremy-thompson) |
 | 10:56 AM | Darsh Nathawani | Louisiana State University | [PETSc in Proteus](#talk-darsh-nathawani) |
-| 11:03 AM | All participants |  | Users take this chance to give feedbacks and make feature requests |
+| 11:03 AM | All participants |  | Users take this opportunity to provide feedback and make feature requests |
 | 11:08 AM | Barry Smith | Argonne National Laboratory | Open the PETSc/AI discussion |
 | 11:10 AM | Mark Adams | Lawrence Berkeley National Laboratory | [Using AI code assistants for large projects with PETSc](#talk-mark-adams) |
 | 11:17 AM | All participants |  | Open discussion about PETSc in the era of AI and large language models |
@@ -50,19 +50,19 @@ orphan: true
 
 (talk-bahaa-sidi)=
 
-:::{topic} **Scalable domain decomposition solvers for Hybrid High-Order methods in PETSc**
+:::{topic} **Scalable domain decomposition solvers for hybrid high-order methods in PETSc**
 
 **Speaker:** Bahaâ Sidi
 
 **Affiliation:** EDF R\&D, ENPC, and Sorbonne Université
 
-**Abstract:** This talk presents ongoing work carried out at EDF R&D on the coupling of Hybrid High-Order (HHO) discretizations with scalable linear solvers available in PETSc. The objective is to efficiently solve large-scale linear elasticity problems arising from HHO methods, which naturally lead to block-structured systems separating cell and face unknowns. We focus on Schur complement strategies based on PCFIELDSPLIT, where the cell block is eliminated locally and the resulting interface problem is solved using a combination of explicit Schur complements, Krylov methods, and domain decomposition preconditioners.
+**Abstract:** This talk presents ongoing work carried out at EDF R&D on the coupling of hybrid high-order (HHO) discretizations with scalable linear solvers available in PETSc. The objective is to efficiently solve large-scale linear elasticity problems arising from HHO methods, which naturally lead to block-structured systems separating cell and face unknowns. We focus on Schur complement strategies based on PCFIELDSPLIT, where the cell block is eliminated locally and the resulting interface problem is solved using a combination of explicit Schur complements, Krylov methods, and domain decomposition preconditioners.
 :::
 
 
 (talk-petsc-anl)=
 
-:::{topic} **PETSc new feature update**
+:::{topic} **PETSc new features update**
 
 **Speaker:** Barry Smith, Richard Tran Mills, Hansol Suh, Junchao Zhang
 
@@ -80,8 +80,7 @@ orphan: true
 
 **Affiliation:** Remcom Inc
 
-**Abstract:** A PETSc-based vector finite element method code for solving the frequency-domain Maxwell equations
-Abstract: A PETSc-based vector finite element method (FEM) code is under active development at Remcom Inc. for solving the frequency-domain Maxwell equations. The current implementation supports key electromagnetic analysis capabilities, including lumped-port excitation, perfectly matched layer (PML) boundary conditions, far-field radiation pattern computation, and input impedance evaluation.
+**Abstract:** A PETSc-based vector finite element method (FEM) code is under active development at Remcom Inc. for solving the frequency-domain Maxwell equations. The current implementation supports key electromagnetic analysis capabilities, including lumped-port excitation, perfectly matched layer (PML) boundary conditions, far-field radiation pattern computation, and input impedance evaluation.
 
 The code is built on PETSc’s DMPlex infrastructure to manage fully unstructured meshes, enabling scalable assembly and solution workflows. Direct solvers based on MUMPS have been validated on problems with up to 13 million complex-valued degrees of freedom, with scalability currently constrained by available computational resources.
 
@@ -91,7 +90,7 @@ Ongoing work is twofold. First, we are investigating iterative solvers, in parti
 
 (talk-jeremy-thompson)=
 
-:::{topic} **Ratel - Using MI300A APUs with libCEED and PETSc**
+:::{topic} **Ratel - using MI300A APUs with libCEED and PETSc**
 
 **Speaker:** Jeremy L Thompson
 
