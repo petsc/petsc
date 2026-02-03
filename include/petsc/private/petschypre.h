@@ -75,34 +75,37 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// hypre-2.31.0 added HYPRE_SetGpuAwareMPI.
-// HYPRE_USING_GPU_AWARE_MPI indicates hypre is configured with --enable-gpu-aware-mpi.
-// HYPRE_SetGpuAwareMPI() controls whether to actually use GPU-aware MPI.
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 31, 0) && defined(HYPRE_USING_GPU_AWARE_MPI)
-  #define PetscHYPRESetGpuAwareMPI() \
-    do { \
-      PetscCallHYPRE(HYPRE_SetGpuAwareMPI(use_gpu_aware_mpi ? 1 : 0)); \
-    } while (0)
-#else
-  #define PetscHYPRESetGpuAwareMPI() (void)0
-#endif
-
 #if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
 static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 {
+  PetscFunctionBegin;
   if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallHYPRE(HYPRE_Finalize());
-  return PETSC_SUCCESS;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
-  #define PetscHYPREInitialize() \
-    do { \
-      if (!HYPRE_Initialized()) { \
-        PetscCallHYPRE(HYPRE_Initialize()); \
-        PetscHYPRESetGpuAwareMPI(); \
-        PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
-      } \
-    } while (0)
+
+extern PetscBool use_gpu_aware_mpi;
+
+static inline PetscErrorCode PetscHYPREInitialize()
+{
+  PetscFunctionBegin;
+  if (!HYPRE_Initialized()) {
+    PetscCallHYPRE(HYPRE_Initialize());
+  // hypre-2.31.0 added HYPRE_SetGpuAwareMPI.
+  // HYPRE_USING_GPU_AWARE_MPI indicates hypre is configured with --enable-gpu-aware-mpi.
+  // HYPRE_SetGpuAwareMPI() controls whether to actually use GPU-aware MPI.
+  #if PETSC_PKG_HYPRE_VERSION_GE(2, 31, 0) && defined(HYPRE_USING_GPU_AWARE_MPI)
+    PetscCallHYPRE(HYPRE_SetGpuAwareMPI(use_gpu_aware_mpi ? 1 : 0));
+  #endif
+    PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #else
-  #define PetscHYPREInitialize() (void)0
+static inline PetscErrorCode PetscHYPREInitialize()
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #endif
 
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 19, 0)

@@ -18,7 +18,7 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map, VecHYPRE_IJVector *ij)
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   {
     HYPRE_MemoryLocation memloc;
-    PetscHYPREInitialize();
+    PetscCall(PetscHYPREInitialize());
     PetscCallHYPRE(HYPRE_GetMemoryLocation(&memloc));
     PetscCallHYPRE(HYPRE_IJVectorInitialize_v2(nij->ij, memloc));
   }
@@ -48,7 +48,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   {
     HYPRE_MemoryLocation memloc;
-    PetscHYPREInitialize();
+    PetscCall(PetscHYPREInitialize());
     PetscCallHYPRE(HYPRE_GetMemoryLocation(&memloc));
     PetscCallHYPRE(HYPRE_IJVectorInitialize_v2(ij->ij, memloc));
   }
