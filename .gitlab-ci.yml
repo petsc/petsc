@@ -246,6 +246,18 @@ petsc4py-pip:
     - python -m petsc --prefix
     - python -m petsc4py
 
+petsc-dist:
+  extends: .stage-2
+  tags:
+    - gce-u24-stage2
+  script:
+    - bash -x ./lib/petsc/bin/maint/builddist
+  artifacts:
+    paths:
+      - arch-*/lib/petsc/conf/*.log
+      - petsc*.gz
+    expire_in: 4 days
+
 checksource:
   extends: .test-basic
   stage: .pre
