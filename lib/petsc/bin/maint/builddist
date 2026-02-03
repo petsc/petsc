@@ -1,32 +1,24 @@
-#!/bin/bash
+#!/bin/bash -ex
 #
 # This script builds the PETSc tar file distribution
 #
-# Usage: builddist petscrepo [branch] [name]
+# Usage: builddist petscrepo [branch/commit] [version-suffix]
+#
+# Notes:
+#  default for branch/commit is 'main'
+#  when version-suffix="SETVERSION", obtain it from include/petscversion.h
+#
 # example usages:
-#   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone main [petsc-main.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone release [petsc-3.4.1.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone release release-snapshot [petsc-release-snapshot.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone balay/foo [creates petsc-HASH.tar.gz]
+#   builddist /sandbox/petsc/petsc.clone main ver-suffix [creates petsc-ver-suffix.tar.gz]
+#   builddist /sandbox/petsc/petsc.clone release SETVERSION [creates petsc-3.24.5.tar.gz]
 #
-# Notes: version info is automatically obtained from include/petscversion.h
-#
-#echo "------- Have you done ALL of the following?? -----------------------------"
-#echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in website/index.html?"
-#echo "(2) Set the version number and release date in petscversion.h?"
-#echo "(3) Made sure Fortran include files match C ones?"
-#echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
-#echo "(5) Update version info on all PETSc web pages"
-#echo "(6) tag the new release with git and make a new clone for the release"
-#echo "(7) got the users manual CLEARED by ANL publications for release"
-
-set -e
-
-# If version specified on the commandline, set the version
 echo "Starting date: `date +'%a, %d %b %Y %H:%M:%S %z'`"
-
-if [ $# = 3 ]; then
+#
+# ignore command line options in CI mode - and build tarball from current state setup by CI
+if [ ! -z "${CI_PIPELINE_ID+x}" ]; then
+  petscrepo=`pwd -P`
+elif [ $# = 3 ]; then
   petscrepo=$1
   branch=$2
   version=-$3
@@ -53,36 +45,27 @@ if [ ! -d $petscrepo/.git ]; then
 fi
 
 # Initialize vars
+ODIR=`pwd -P`
 PETSC_ARCH=arch-docs; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
-# Clean and Update the git repository and check for branch
-cd $PETSC_DIR
-/bin/rm -rf $PETSC_DIR/$PETSC_ARCH
-git clean -q -f -d -x
-git fetch -q origin
-git checkout -f origin/$branch
-if [ "$?" != "0" ]; then
-  echo 'Error: branch: $branch does not exist in $PETSC_DIR'
-  exit
+
+# Clean and Update the git repository and check for branch [when not in CI]
+if [ -z "${CI_PIPELINE_ID+x}" ]; then
+  cd $PETSC_DIR
+  /bin/rm -rf $PETSC_DIR/$PETSC_ARCH
+  git clean -q -f -d -x
+  git fetch -q origin $branch
+  if [ "$?" != "0" ]; then
+    echo 'Error: branch: $branch does not exist in $PETSC_DIR'
+    exit
+  fi
+  git checkout -f FETCH_HEAD
 fi
 
 pdir=`basename $PETSC_DIR`
-
 # Create a tmp dir
-if [ ! -d /tmp ]; then
-  echo 'Error: /tmp does not exist!'
-  exit
-fi
-tmpdir=/tmp/petsc-dist-tmp.$USER.$$
-if [ -d $tmpdir ]; then
-  /bin/rm -rf $tmpdir
-fi
-mkdir -p $tmpdir
-if [ ! -d $tmpdir ]; then
-  echo 'Error: Cannot create $tmpdir'
-  exit
-fi
+tmpdir=$(mktemp -d -t petsc-dist.$USER.XXXXXX)
 
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
@@ -95,8 +78,10 @@ version_date=`date +"%b %d, %Y"`
 version_git=`git describe --match "v*"`
 version_date_git=`git log -1 --pretty=format:%ci`
 if [ ${version}foo = foo ]; then
-  if  [ ${version_release} = 0 -o ${version_release} = -2 -o ${version_release} = -3 -o ${version_release} = -4 -o ${version_release} = -5 ]; then
-    version=-`echo ${branch} | sed s~/~-~g`
+    version=-`git rev-parse --short HEAD`
+elif [ ${version} = -SETVERSION ]; then
+  if  [ ${version_release} = 0 ]; then
+    version=-${version_major}.$((version_minor+1)).dev0
   elif [ ${version_release} = 1 ]; then
     version=-${version_major}.${version_minor}.${version_subminor}
   else
@@ -104,7 +89,7 @@ if [ ${version}foo = foo ]; then
     exit
   fi
 fi
-echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
+echo "Building $ODIR/petsc$version.tar.gz, $ODIR/petsc-with-docs$version.tar.gz, and $ODIR/petsc4py$version.tar.gz"
 
 # build PETSc docs (and include petsc4py docs within).
 VENV=$PETSC_DIR/venv-petsc-docs
@@ -121,7 +106,7 @@ cd $PETSC_DIR/src/binding/petsc4py
   rm -rf petsc-doc-env # remove python2 env created when building petsc+petsc4py docs
   make srcclean docsclean
   make sdist PYTHON=python3 SHELL=/bin/bash
-  cp dist/*.gz ~/
+  cp dist/petsc4py-*.tar.gz $tmpdir/
   make srcclean docsclean
 
 # Cleanup
@@ -183,7 +168,7 @@ find petsc$version -type d -name "*" -exec chmod a+x {} \;
 
 # Now create the tar files
 cd $tmpdir
-/bin/tar -czf ~/petsc-with-docs$version.tar.gz petsc$version
+/bin/tar -czf $ODIR/petsc-with-docs$version.tar.gz petsc$version
 
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
@@ -194,7 +179,18 @@ cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
 cd $tmpdir/petsc$version && python setup.py egg_info && /bin/cp petsc.egg-info/PKG-INFO . && /bin/rm -rf petsc.egg-info config/pypi
 
 cd $tmpdir
-/bin/tar -czf ~/petsc$version.tar.gz petsc$version
+/bin/tar -czf $ODIR/petsc$version.tar.gz petsc$version
+
+# process petsc4py tarball
+if [ -f petsc4py$version.tar.gz ]; then
+  cp petsc4py$version.tar.gz $ODIR/
+else
+  echo "Renaming petsc4py tarball to match petsc!"
+  dname=$(tar -tzf petsc4py-*.tar.gz | head -1)
+  /bin/tar -xzf petsc4py-*.tar.gz
+  /bin/mv $dname petsc4py$version
+  /bin/tar -czf $ODIR/petsc4py$version.tar.gz petsc4py$version
+fi
 
 #cleanup
 /bin/rm -rf $tmpdir
