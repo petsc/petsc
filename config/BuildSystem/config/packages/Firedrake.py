@@ -20,6 +20,7 @@ class Configure(config.package.PythonPackage):
     self.slepc           = framework.require('config.packages.SLEPc',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.petsc4py        = framework.require('config.packages.petsc4py',self)
+    self.slepc4py        = framework.require('config.packages.slepc4py',self)
     self.fftw            = framework.require('config.packages.fftw',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.hdf5            = framework.require('config.packages.HDF5',self)
@@ -37,7 +38,7 @@ class Configure(config.package.PythonPackage):
     self.hypre           = framework.require('config.packages.hypre',self)
     self.rtree           = framework.require('config.packages.rtree',self)
     self.libsupermesh    = framework.require('config.packages.libsupermesh',self)
-    self.deps            = [self.mpi,self.blasLapack,self.petsc4py,self.slepc,self.fftw,self.hwloc,self.hdf5,self.metis,self.pnetcdf,self.scalapack,self.suitesparse,self.zlib,self.bison,self.ptscotch,self.mumps,self.netcdf,self.superlu_dist,self.hypre,self.pybind11,self.rtree,self.libsupermesh]
+    self.deps            = [self.mpi,self.blasLapack,self.petsc4py,self.slepc,self.slepc4py,self.fftw,self.hwloc,self.hdf5,self.metis,self.pnetcdf,self.scalapack,self.suitesparse,self.zlib,self.bison,self.ptscotch,self.mumps,self.netcdf,self.superlu_dist,self.hypre,self.pybind11,self.rtree,self.libsupermesh]
 
   def Install(self):
     self.env = {}

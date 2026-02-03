@@ -35,6 +35,15 @@ class Configure(config.package.Package):
     self.odeps           = [self.cuda,self.thrust,self.hypre,self.SuiteSparse]
     return
 
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if 'download-slepc' in self.argDB and self.argDB['download-slepc']:
+      if 'download-slepc-configure-arguments' in self.argDB and '--with-slepc4py' in self.argDB['download-slepc-configure-arguments']:
+        raise RuntimeError('You should set --with-slepc4py as a separate option of PETSc configure, not within --download-slepc-configure-arguments')
+      if self.argDB['with-petsc4py'] and not self.argDB['with-slepc4py']:
+        raise RuntimeError('You should also set --with-slepc4py when using both --with-petsc4py and --download-slepc')
+    return
+
   def Install(self):
     import os
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
@@ -53,17 +62,8 @@ class Configure(config.package.Package):
        prefix = os.path.join(self.petscdir.dir,self.arch)
     self.directory = prefix
 
-    if  self.argDB['with-petsc4py']:
-      if 'download-slepc-configure-arguments' in self.argDB:
-        if self.argDB['download-slepc-configure-arguments'] and '--with-slepc4py' not in self.argDB['download-slepc-configure-arguments']:
-          self.argDB['download-slepc-configure-arguments'] += ' --with-slepc4py'
-      else:
-        self.argDB['download-slepc-configure-arguments'] = ' --with-slepc4py'
-
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
-      if '--with-slepc4py' in self.argDB['download-slepc-configure-arguments']:
-        carg += ' PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH}'
     else:
       configargs = ''
 
@@ -77,9 +77,5 @@ class Configure(config.package.Package):
                                   barg + ' ${OMAKE} ' + barg + ' install'])
     self.addMakeCheck(self.packageDir, '${OMAKE} ' + checkarg + ' check')
     self.addTest(self.packageDir, barg + ' ${OMAKE} ' + barg + ' test')
-    if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments'].find('--with-slepc4py')>-1:
-      self.name = 'slepc4py'
-      self.addTest(self.packageDir, barg + ' ${OMAKE} ' + barg + ' slepc4pytest')
-      self.name = 'SLEPc'
     self.logPrintBox('SLEPc examples are available at '+os.path.join(self.packageDir,'src','*','tutorials'))
     return self.installDir

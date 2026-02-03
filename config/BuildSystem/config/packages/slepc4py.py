@@ -14,14 +14,12 @@ class Configure(config.package.Package):
 
   def setupHelp(self,help):
     import nargs
-    help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.ArgBool(None, False, 'Build PETSc Python bindings (petsc4py)'))
-    help.addArgument('PETSc', '-with-petsc4py-test-np=<np>',nargs.ArgInt(None, None, min=1, help='Number of processes to use for petsc4py tests'))
-    help.addArgument('PETSc', '-with-numpy-include=<dir>', nargs.Arg(None, None, 'Path to numpy headers from numpy.get_include() (default: autodetect)'))
+    help.addArgument('slepc4py', '-with-slepc4py=<bool>', nargs.ArgBool(None, False, 'Build SLEPc Python bindings (slepc4py)'))
     return
 
   def __str__(self):
     if self.found:
-      s = 'petsc4py:\n'
+      s = 'slepc4py:\n'
       if hasattr(self,'pythonpath'):
         s += '  PYTHONPATH: '+self.pythonpath+'\n'
       return s
@@ -35,13 +33,20 @@ class Configure(config.package.Package):
     self.installdir      = framework.require('PETSc.options.installDir',self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.cython          = framework.require('config.packages.Cython',self)
-    self.slepc           = framework.require('config.packages.SLEPc',self)  # build SLEPc first
-    self.bamg            = framework.require('config.packages.BAMG',self)   # build BAMG first
-    self.odeps           = [self.cython,self.slepc,self.bamg]
+    self.petsc4py        = framework.require('config.packages.petsc4py',self)
+    self.slepc           = framework.require('config.packages.SLEPc',self)
+    self.deps            = [self.petsc4py,self.slepc]
+    self.odeps           = [self.cython]
     return
 
   def getDir(self):
-    return os.path.join('src','binding','petsc4py')
+    return os.path.join(self.slepc.getDir(),'src','binding','slepc4py')
+
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if 'with-slepc4py' in self.argDB and self.argDB['with-slepc4py']:
+      if not 'download-slepc' in self.argDB or not self.argDB['download-slepc']:
+        raise RuntimeError('The option --with-slepc4py requires --download-slepc')
 
   def Install(self):
     import os
@@ -65,7 +70,7 @@ class Configure(config.package.Package):
     # if DESTDIR is non-empty, then PETSc has been installed into staging dir
     # if prefix has been specified at config time, path to PETSc includes that prefix
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      newdir = 'PETSC_DIR=${DESTDIR}' + os.path.abspath(os.path.expanduser(self.argDB['prefix'])) + ' PETSC_ARCH= '
+      newdir = 'SLEPC_DIR=${DESTDIR}' + os.path.abspath(os.path.expanduser(self.argDB['prefix'])) + ' PETSC_DIR=${DESTDIR}' + os.path.abspath(os.path.expanduser(self.argDB['prefix'])) + ' PETSC_ARCH= '
     else:
       newdir = ''
 
@@ -74,7 +79,7 @@ class Configure(config.package.Package):
     if numpy_include is not None:
       newdir += 'NUMPY_INCLUDE="'+numpy_include+'" '
 
-    self.addDefine('PETSC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
+    self.addDefine('SLEPC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
     cflags = ''
     # by default, multiple flags are added by setup.py (-DNDEBUG -O3 -g), no matter the type of PETSc build
     # this is problematic with Intel compilers, which take extremely long to compile bindings when using -g
@@ -83,40 +88,15 @@ class Configure(config.package.Package):
     if config.setCompilers.Configure.isIntel(self.getCompiler(), self.log):
       cflags = 'CFLAGS=\'\' '
     self.addPost(self.packageDir, ['${RM} -rf build',
-                                   newdir + archflags + cflags + ' PYTHONPATH=${PETSCPYTHONPATH} ' + self.python.pyexe + ' setup.py build',
-                                   'MPICC=${PCC} ' + newdir + archflags + self.python.pyexe +' setup.py install --install-lib=' + installLibPath + ' $(if $(DESTDIR),--root=\'$(DESTDIR)\')'])
+                                   newdir + archflags + cflags + ' PYTHONPATH=${PETSCPYTHONPATH} SLEPC_DIR=' + self.slepc.installDir + ' ' + self.python.pyexe + ' setup.py build',
+                                   'MPICC=${PCC} ' + newdir + archflags + ' PYTHONPATH=${PETSCPYTHONPATH} SLEPC_DIR=' + self.slepc.installDir + ' ' + self.python.pyexe +' setup.py install --install-lib=' + installLibPath + ' $(if $(DESTDIR),--root=\'$(DESTDIR)\')'])
     self.pythonpath = installLibPath
-    np = self.make.make_test_np
-    if self.mpi.usingMPIUni:
-      np = 1
-    # TODO: some tests currently have issues with np > 4, this should be fixed
-    np = min(np,4)
-    if 'with-petsc4py-test-np' in self.argDB and self.argDB['with-petsc4py-test-np']:
-      np = self.argDB['with-petsc4py-test-np']
-    self.addMakeMacro('PETSC4PY_NP',np)
     self.addTest('.', 'PYTHONPATH=%s:${PETSCPYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % (installLibPath, '${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')))
+
     self.found = True
     self.python.path.add(installLibPath)
+    self.logPrintBox('slepc4py examples are available at '+os.path.join(self.packageDir,'demo'))
     return self.installDir
 
   def configureLibrary(self):
-    import sys
-    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
-      raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    if sys.version_info < (3, 6):
-      raise RuntimeError('petsc4py requires Python 3.6 at least')
-    chkpkgs = ['numpy']
-    if sys.version_info >= (3, 12):
-      chkpkgs.append('setuptools')
-    npkgs  = []
-    for pkg in chkpkgs:
-      if not getattr(self.python,pkg): npkgs.append(pkg)
-    if npkgs:
-      raise RuntimeError('petsc4py requires Python with "%s" module(s) installed!\n'
-                         'Please install using package managers - for ex: "apt" or "dnf" (on linux),\n'
-                         'or with "pip" using: %s -m pip install %s' % (" ".join(npkgs), self.python.pyexe, " ".join(npkgs)))
     self.getInstallDir()
-
-  def alternateConfigureLibrary(self):
-    '''This is ugly but currently .gitlab-ci.yml is hardwired to use petsc4pytest'''
-    self.addMakeRule('petsc4pytest','')

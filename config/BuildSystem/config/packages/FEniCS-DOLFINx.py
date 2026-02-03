@@ -34,8 +34,8 @@ class Configure(config.package.CMakePackage):
     self.python            = framework.require('config.packages.Python',self)
     self.pugixml           = framework.require('config.packages.pugixml',self)
     self.spdlog            = framework.require('config.packages.spdlog',self)
-    self.slepc             = framework.require('config.packages.SLEPc',self)
-    self.deps              = [self.mpi4py,self.petsc4py,self.boost,self.basix,self.ffcx,self.hdf5,self.pugixml,self.spdlog,self.scikit_build_core,self.nanobind,self.slepc]
+    self.slepc4py          = framework.require('config.packages.slepc4py',self)
+    self.deps              = [self.mpi4py,self.petsc4py,self.boost,self.basix,self.ffcx,self.hdf5,self.pugixml,self.spdlog,self.scikit_build_core,self.nanobind,self.slepc4py]
     self.odeps             = [self.parmetis,self.ptscotch]
     return
 
