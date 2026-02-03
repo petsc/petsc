@@ -1,10 +1,10 @@
 interface
-  subroutine SNESRestoreConvergenceHistory(snes, r, its, na, ierr)
+  subroutine SNESRestoreConvergenceHistory(snes, a, its, na, ierr)
     use, intrinsic :: ISO_C_binding
     import tSNES
     SNES snes
     PetscInt na
-    PetscReal, pointer :: r(:)
+    PetscReal, pointer :: a(:)
     PetscInt, pointer :: its(:)
     PetscErrorCode, intent(out) :: ierr
   end subroutine

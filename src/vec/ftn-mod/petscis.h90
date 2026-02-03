@@ -1,29 +1,29 @@
 interface
-  subroutine PetscLayoutRestoreRanges(a, b, z)
+  subroutine PetscLayoutRestoreRanges(map, ranges, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscLayout
-    PetscLayout a
-    PetscInt, pointer :: b(:)
-    PetscErrorCode z
+    PetscLayout map
+    PetscInt, pointer :: ranges(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
-  subroutine PetscSectionRestoreConstraintIndices(s, p, a, ierr)
+  subroutine PetscSectionRestoreConstraintIndices(s, point, indices, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscSection
-    PetscInt p
-    PetscInt, pointer :: a(:)
-    PetscErrorCode ierr
+    PetscInt point
+    PetscInt, pointer :: indices(:)
+    PetscErrorCode, intent(out) :: ierr
     PetscSection s
   end subroutine
 
-  subroutine PetscSectionRestoreFieldConstraintIndices(s, p, f, a, ierr)
+  subroutine PetscSectionRestoreFieldConstraintIndices(s, point, field, indices, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscSection
     PetscSection      :: s
-    PetscInt          :: p
-    PetscInt          :: f
-    PetscInt, pointer :: a(:)
-    PetscErrorCode    :: ierr
+    PetscInt          :: point
+    PetscInt          :: field
+    PetscInt, pointer :: indices(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 

@@ -1,21 +1,21 @@
 interface
-  subroutine MatFDColoringRestorePerturbedColumns(i, len, array, ierr)
+  subroutine MatFDColoringRestorePerturbedColumns(coloring, n, cols, ierr)
     use, intrinsic :: ISO_C_binding
     import tMatFDColoring
-    PetscInt, pointer :: array(:)
-    PetscInt len
-    PetscErrorCode ierr
-    MatFDColoring i
+    PetscInt, pointer :: cols(:)
+    PetscInt n
+    PetscErrorCode, intent(out) :: ierr
+    MatFDColoring coloring
   end subroutine
 
-  subroutine MatNullSpaceRestoreVecs(a, b, c, d, z)
+  subroutine MatNullSpaceRestoreVecs(sp, has_const, n, vecs, ierr)
     use, intrinsic :: ISO_C_binding
     import tMatNullSpace, tVec
-    MatNullSpace :: a
-    PetscBool :: b
-    PetscInt :: c
-    Vec, pointer :: d(:)
-    PetscErrorCode z
+    MatNullSpace :: sp
+    PetscBool, intent(out) :: has_const
+    PetscInt, intent(out) :: n
+    Vec, pointer :: vecs(:)
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 
@@ -25,103 +25,103 @@ end interface
 #endif
 
 interface MatDenseGetArray
-  subroutine MatDenseGetArray1d(v, array, ierr)
+  subroutine MatDenseGetArray1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseGetArray2d(v, array, ierr)
+  subroutine MatDenseGetArray2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseGetArray
 
 interface MatDenseRestoreArray
-  subroutine MatDenseRestoreArray1d(v, array, ierr)
+  subroutine MatDenseRestoreArray1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseRestoreArray2d(v, array, ierr)
+  subroutine MatDenseRestoreArray2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseRestoreArray
 
 interface MatDenseGetArrayRead
-  subroutine MatDenseGetArrayRead1d(v, array, ierr)
+  subroutine MatDenseGetArrayRead1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseGetArrayRead2d(v, array, ierr)
+  subroutine MatDenseGetArrayRead2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseGetArrayRead
 
 interface MatDenseRestoreArrayRead
-  subroutine MatDenseRestoreArrayRead1d(v, array, ierr)
+  subroutine MatDenseRestoreArrayRead1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseRestoreArrayRead2d(v, array, ierr)
+  subroutine MatDenseRestoreArrayRead2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseRestoreArrayRead
 
 interface MatDenseGetArrayWrite
-  subroutine MatDenseGetArrayWrite1d(v, array, ierr)
+  subroutine MatDenseGetArrayWrite1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseGetArrayWrite2d(v, array, ierr)
+  subroutine MatDenseGetArrayWrite2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseGetArrayWrite
 
 interface MatDenseRestoreArrayWrite
-  subroutine MatDenseRestoreArrayWrite1d(v, array, ierr)
+  subroutine MatDenseRestoreArrayWrite1d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
-  subroutine MatDenseRestoreArrayWrite2d(v, array, ierr)
+  subroutine MatDenseRestoreArrayWrite2d(A, array, ierr)
     use, intrinsic :: ISO_C_binding
     import tMat
     PetscScalar, pointer :: array(:, :)
-    PetscErrorCode ierr
-    Mat v
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
   end subroutine
 end interface MatDenseRestoreArrayWrite

@@ -8,7 +8,7 @@ interface
     PetscInt blocksize
     PetscDataType dtype
     PetscScalar, pointer :: data(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 
   subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
@@ -20,7 +20,7 @@ interface
     PetscInt blocksize
     PetscDataType dtype
     PetscScalar, pointer :: data(:)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
   end subroutine
 end interface
 

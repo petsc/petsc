@@ -7,20 +7,20 @@ interface
     PetscErrorCode, intent(out):: ierr
   end subroutine
 
-  subroutine PetscViewerASCIIOpenWithFileUnit(comm, unit, lab, ierr)
+  subroutine PetscViewerASCIIOpenWithFileUnit(comm, unit, viewer, ierr)
     use, intrinsic :: ISO_C_binding
     use petscmpi
     import tPetscViewer
     MPIU_Comm, intent(in) :: comm
     integer, intent(in) :: unit
-    PetscViewer, intent(out) :: lab
+    PetscViewer, intent(out) :: viewer
     PetscErrorCode, intent(out):: ierr
   end subroutine
 
-  subroutine PetscViewerASCIISetFileUnit(lab, unit, ierr)
+  subroutine PetscViewerASCIISetFileUnit(viewer, unit, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer, intent(in) :: lab
+    PetscViewer, intent(in) :: viewer
     integer, intent(in) :: unit
     PetscErrorCode, intent(out):: ierr
   end subroutine
@@ -33,61 +33,58 @@ end interface
 #endif
 
 interface PetscViewerBinaryWrite
-  subroutine PetscViewerBinaryWriteInt(v, a, cnt, tmp, ierr)
+  subroutine PetscViewerBinaryWriteInt(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscInt a(*)
-    PetscInt cnt
-    PetscBool tmp
+    PetscViewer viewer
+    PetscInt data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
-  subroutine PetscViewerBinaryWriteScalar(v, a, cnt, tmp, ierr)
+  subroutine PetscViewerBinaryWriteScalar(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscScalar a(*)
-    PetscInt cnt
-    PetscBool tmp
+    PetscViewer viewer
+    PetscScalar data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
 #if defined(PETSC_USE_COMPLEX)
-  subroutine PetscViewerBinaryWriteReal(v, a, cnt, tmp, ierr)
+  subroutine PetscViewerBinaryWriteReal(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscReal a(*)
-    PetscInt cnt
-    PetscBool tmp
+    PetscViewer viewer
+    PetscReal data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
 #endif
 end interface PetscViewerBinaryWrite
 
 interface PetscViewerBinaryRead
-  subroutine PetscViewerBinaryReadInt(v, a, cnt, ierr)
+  subroutine PetscViewerBinaryReadInt(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscInt a(*)
-    PetscInt cnt
+    PetscViewer viewer
+    PetscInt data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
-  subroutine PetscViewerBinaryReadScalar(v, a, cnt, ierr)
+  subroutine PetscViewerBinaryReadScalar(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscScalar a(*)
-    PetscInt cnt
+    PetscViewer viewer
+    PetscScalar data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
 #if defined(PETSC_USE_COMPLEX)
-  subroutine PetscViewerBinaryReadReal(v, a, cnt, ierr)
+  subroutine PetscViewerBinaryReadReal(viewer, data, count, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscViewer
-    PetscViewer v
-    PetscReal a(*)
-    PetscInt cnt
+    PetscViewer viewer
+    PetscReal data(*)
+    PetscInt count
     PetscErrorCode, intent(out):: ierr
   end subroutine
 #endif

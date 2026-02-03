@@ -26,10 +26,9 @@ subroutine PetscOptionsGetEnum(po, pre, name, FArray, opt, set, ierr)
   do i = 1, 100
     if (len_trim(Farray(i)) == 0) then
       Len = i - 1
-      goto 100
+      exit
     end if
   end do
-100 continue
 
   allocate (list1(Len), stat=ierr)
   if (ierr /= 0) return
@@ -66,10 +65,9 @@ subroutine PetscOptionsEnum(opt, text, man, Flist, curr, ivalue, set, ierr)
   do i = 1, 100
     if (len_trim(Flist(i)) == 0) then
       Len = i - 1
-      goto 100
+      exit
     end if
   end do
-100 continue
 
   allocate (list1(Len), stat=ierr)
   if (ierr /= 0) return
