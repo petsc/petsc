@@ -453,8 +453,9 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscCallMPI(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
 
   /* Enable runtime option for Bbn */
-  PetscOptionsBegin(comm, ((PetscObject)C)->prefix, "MatMatMult", "Mat");
-  PetscCall(PetscOptionsInt("-matmatmult_Bbn", "Number of columns in Bb", "MatMatMult", Bbn, &Bbn, NULL));
+  PetscOptionsBegin(comm, ((PetscObject)C)->prefix, "MatProduct", "Mat");
+  PetscCall(PetscOptionsDeprecated("-matmatmult_Bbn", "-matproduct_batch_size", "3.25", NULL));
+  PetscCall(PetscOptionsInt("-matproduct_batch_size", "Number of columns in Bb", "MatProduct", Bbn, &Bbn, NULL));
   PetscOptionsEnd();
   Bbn = PetscMin(Bbn, BN);
 

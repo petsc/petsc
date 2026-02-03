@@ -3,7 +3,7 @@ Modified from the code contributed by Ian Lin <iancclin@umich.edu> \n\n";
 
 /*
 Example:
-  mpiexec -n <np> ./ex33 -mem_view -matmatmult_Bbn <Bbn>
+  mpiexec -n <np> ./ex33 -mem_view -matproduct_batch_size <Bbn>
 */
 
 #include <petsc.h>
