@@ -32,8 +32,28 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
 {
   DM              dm;
   PetscInt        dim;
-  static PetscInt tri_seg[] = {1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0};
-  static PetscInt tri_tri[] = {0, -3, 2, -3, 1, -3, 2, -3, 1, -3, 0, -3, 1, -3, 0, -3, 2, -3, 0, 0, 1, 0, 2, 0, 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0};
+  static PetscInt tri_seg[]  = {1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0};
+  static PetscInt tri_tri[]  = {0, -3, 2, -3, 1, -3, 2, -3, 1, -3, 0, -3, 1, -3, 0, -3, 2, -3, 0, 0, 1, 0, 2, 0, 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0};
+  static PetscInt quad_seg[] = {
+    2, 0, 1, 0, 0, 0, 3, 0, /* o = -4 */
+    1, 0, 0, 0, 3, 0, 2, 0, /* o = -3 */
+    0, 0, 3, 0, 2, 0, 1, 0, /* o = -2 */
+    3, 0, 2, 0, 1, 0, 0, 0, /* o = -1 */
+    0, 0, 1, 0, 2, 0, 3, 0, /* o = 0 */
+    1, 0, 2, 0, 3, 0, 0, 0, /* o = 1 */
+    2, 0, 3, 0, 0, 0, 1, 0, /* o = 2 */
+    3, 0, 0, 0, 1, 0, 2, 0, /* o = 3 */
+  };
+  static PetscInt quad_tri[] = {
+    1, -3, 0, -3, 3, -3, 2, -3, /* o = -4 */
+    0, -3, 3, -3, 2, -3, 1, -3, /* o = -3 */
+    3, -3, 2, -3, 1, -3, 0, -3, /* o = -2 */
+    2, -3, 1, -3, 0, -3, 3, -3, /* o = -1 */
+    0, 0,  1, 0,  2, 0,  3, 0,  /* o = 0 */
+    1, 0,  2, 0,  3, 0,  0, 0,  /* o = 1 */
+    2, 0,  3, 0,  0, 0,  1, 0,  /* o = 2 */
+    3, 0,  0, 0,  1, 0,  2, 0,  /* o = 3 */
+  };
   static PetscInt tet_seg[] = {2, 0, 3, 0, 1, 0, 0, 0, 3, 0, 1, 0, 2, 0, 0, 0, 1, 0, 2, 0, 3, 0, 0, 0, 3, 0, 2, 0, 0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 0, 2, 0, 1, 0, 0, 0, 1, 0, 3, 0, 2, 0, 1, 0, 3, 0, 0, 0, 2, 0,
                                3, 0, 0, 0, 1, 0, 2, 0, 1, 0, 0, 0, 2, 0, 3, 0, 0, 0, 2, 0, 1, 0, 3, 0, 2, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 2, 0, 3, 0, 1, 0, 2, 0, 0, 0, 3, 0, 2, 0, 0, 0, 1, 0, 3, 0, 1, 0, 0, 0, 3, 0, 2, 0,
                                0, 0, 3, 0, 1, 0, 2, 0, 3, 0, 1, 0, 0, 0, 2, 0, 2, 0, 3, 0, 0, 0, 1, 0, 3, 0, 0, 0, 2, 0, 1, 0, 0, 0, 2, 0, 3, 0, 1, 0, 3, 0, 2, 0, 1, 0, 0, 0, 2, 0, 1, 0, 3, 0, 0, 0, 1, 0, 3, 0, 2, 0, 0, 0};
@@ -64,6 +84,21 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
     case DM_POLYTOPE_TRIANGLE:
       *rnew = tri_tri[(so + 3) * 6 + r * 2];
       *onew = DMPolytopeTypeComposeOrientation(tct, o, tri_tri[(so + 3) * 6 + r * 2 + 1]);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+    }
+  } else if (dim == 2 && sct == DM_POLYTOPE_QUADRILATERAL) {
+    switch (tct) {
+    case DM_POLYTOPE_POINT:
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      *rnew = quad_seg[(so + 4) * 8 + r * 2];
+      *onew = DMPolytopeTypeComposeOrientation(tct, o, quad_seg[(so + 4) * 8 + r * 2 + 1]);
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      *rnew = quad_tri[(so + 4) * 8 + r * 2];
+      *onew = DMPolytopeTypeComposeOrientation(tct, o, quad_tri[(so + 4) * 8 + r * 2 + 1]);
       break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
@@ -120,6 +155,45 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
   static PetscInt       triS[] = {1, 3, 3};
   static PetscInt triC[] = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 2};
   static PetscInt triO[] = {0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1};
+  /* Add 1 vertex and 4 edges inside every quad, making 4 new triangles.
+   3---2---2       +-------+
+   |       |       |\  2  /|
+   |       |       | 3   2 |
+   |       |       |  \ /  |
+   3       1  -->  | 3 x 1 |
+   |       |       |  / \  |
+   |       |       | 0   1 |
+   |       |       |/  0  \|
+   0---0---1       +-------+
+  */
+  static DMPolytopeType quadT[] = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE};
+  static PetscInt       quadS[] = {1, 4, 4};
+  static PetscInt       quadC[] = {/* Cone of edge 0 */
+                                   DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 0, 0, 0,
+                                   /* Cone of edge 1 */
+                                   DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 1, 0, 0,
+                                   /* Cone of edge 2 */
+                                   DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 2, 0, 0,
+                                   /* Cone of edge 3 */
+                                   DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 3, 0, 0,
+                                   /* Cone of cell 0 */
+                                   DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 0,
+                                   /* Cone of cell 1 */
+                                   DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 1,
+                                   /* Cone of cell 2 */
+                                   DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_SEGMENT, 0, 2,
+                                   /* Cone of cell 3 */
+                                   DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 3};
+  static PetscInt       quadO[] = {
+    0, 0,     /* Cone of edge 0 */
+    0, 0,     /* Cone of edge 1 */
+    0, 0,     /* Cone of edge 2 */
+    0, 0,     /* Cone of edge 3 */
+    0, -1, 0, /* Cone of cell 0 */
+    0, -1, 0, /* Cone of cell 1 */
+    0, -1, 0, /* Cone of cell 2 */
+    0, -1, 0, /* Cone of cell 3 */
+  };
   /* Add 6 triangles inside every cell, making 4 new tets
      The vertices of our reference tet are [(-1, -1, -1), (-1, 1, -1), (1, -1, -1), (-1, -1, 1)], which we call [v0, v1, v2, v3]. The first
      three edges are [v0, v1], [v1, v2], [v2, v0] called e0, e1, and e2, and then three edges to the top point [v0, v3], [v1, v3], [v2, v3]
@@ -153,6 +227,12 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
     *size   = triS;
     *cone   = triC;
     *ornt   = triO;
+  } else if (dim == 2 && source == DM_POLYTOPE_QUADRILATERAL) {
+    *Nt     = 3;
+    *target = quadT;
+    *size   = quadS;
+    *cone   = quadC;
+    *ornt   = quadO;
   } else if (dim == 3 && source == DM_POLYTOPE_TETRAHEDRON) {
     *Nt     = 4;
     *target = tetT;

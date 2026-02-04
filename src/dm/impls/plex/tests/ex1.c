@@ -906,6 +906,9 @@ int main(int argc, char **argv)
     requires: triangle
     args: -dm_plex_box_faces 5,3 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_alfeld -final_diagnostics
   test:
+    suffix: ref_alfeld2d_1
+    args: -dm_plex_box_faces 5,3 -dm_plex_simplex 0 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_alfeld -final_diagnostics
+  test:
     suffix: ref_alfeld3d_0
     requires: ctetgen
     args: -dm_plex_dim 3 -dm_plex_box_faces 5,1,1 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_alfeld -final_diagnostics
