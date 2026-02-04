@@ -662,6 +662,15 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -dm_coord_space 0 -dm_plex_dim 3 -dim 3 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox -dm_refine_volume_limit_pre 0.0625 -dm_view ascii::ascii_info_detail
 
+  # Test quad to simplex conversion
+  test:
+    suffix: q2s2_0
+    args: -dm_plex_box_faces 5,3 -dm_plex_simplex 0 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tosimplex -final_diagnostics
+
+  test:
+    suffix: q2s2_1
+    args: -dm_plex_box_faces 5,3 -dm_plex_simplex 0 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tosimplex -ref_dm_plex_transform_tosimplex_reflect 1 -final_diagnostics
+
   # Test cylinder
   testset:
     args: -dm_plex_shape cylinder -dm_plex_check_all -dm_view
