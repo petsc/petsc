@@ -830,8 +830,7 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxDialect(self, language, isGNUish=False):
-    """Determine the CXX dialect supported by the compiler (language) [and corresponding compiler
-    option - if any].
+    """Determine the CXX dialect supported by the compiler (language) [and corresponding compiler option - if any].
 
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
     -with-<lang>-dialect can take options:
@@ -868,31 +867,24 @@ class Configure(config.base.Configure):
     def includes11():
       return textwrap.dedent(
         """
-        // c++11 includes
-        #include <memory>
+        #include <memory> // c++11 includes
         #include <random>
         #include <complex>
         #include <iostream>
         #include <algorithm>
-
         template<class T> void ignore(const T&) { } // silence unused variable warnings
-        class valClass
-        {
+        class valClass {
         public:
           int i;
           valClass() { i = 3; }
           valClass(int x) : i(x) { }
         };
-
-        class MoveSemantics
-        {
+        class MoveSemantics {
           std::unique_ptr<valClass> _member;
-
         public:
           MoveSemantics(int val = 4) : _member(new valClass(val)) { }
           MoveSemantics& operator=(MoveSemantics &&other) noexcept = default;
         };
-
         template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
         auto trailing(int x) -> int { return x+2; }
         enum class Shapes : int {SQUARE,CIRCLE};
@@ -904,12 +896,10 @@ class Configure(config.base.Configure):
     def body11():
       return textwrap.dedent(
         """
-        // c++11 body
-        valClass cls = valClass(); // value initialization
+        valClass cls = valClass(); // c++11 body; // value initialization
         int i = cls.i;             // i is not declared const
         const int& rci = i;        // but rci is
         const_cast<int&>(rci) = 4;
-
         constexpr int big_value = 1234;
         decltype(big_value) ierr = big_value;
         auto ret = trailing(ierr);
@@ -926,29 +916,24 @@ class Configure(config.base.Configure):
         std::cout << x << ret << std::endl;
         std::vector<std::unique_ptr<double>> vector;
         std::sort(vector.begin(), vector.end(), [](std::unique_ptr<double> &a, std::unique_ptr<double> &b) { return *a < *b; });
-        {
-          std::size_t alignment = 0, size = 0, space;
-          void* ptr = nullptr;
-          std::align(alignment, size, ptr, space);
-        }
+        std::size_t alignment = 0, size = 0, space;
+        void* ptr2 = nullptr;
+        std::align(alignment, size, ptr2, space);
         """
       )
 
     def includes14():
-      return '\n'.join((includes11(),textwrap.dedent(
+      return ''.join((includes11(),textwrap.dedent(
         """
-        // c++14 includes
-        #include <type_traits>
-
+        #include <type_traits> // c++14 includes
         template<class T> constexpr T pi = T(3.1415926535897932385L);  // variable template
         """
         )))
 
     def body14():
-      return '\n'.join((body11(),textwrap.dedent(
+      return ''.join((body11(),textwrap.dedent(
         """
-        // c++14 body
-        auto ptr = std::make_unique<int>();
+        auto ptr = std::make_unique<int>();  // c++14 body
         *ptr = 1;
         std::cout << pi<double> << std::endl;
         constexpr const std::complex<double> const_i(0.0,1.0);
@@ -958,108 +943,77 @@ class Configure(config.base.Configure):
       )))
 
     def includes17():
-      return '\n'.join((includes14(),textwrap.dedent(
+      return ''.join((includes14(),textwrap.dedent(
         """
-        // c++17 includes
-        #include <string_view>
+        #include <string_view> // c++17 includes
         #include <any>
         #include <optional>
         #include <variant>
         #include <tuple>
         #include <new>
-
         std::align_val_t dummy;
         [[nodiscard]] int nodiscardFunc() { return 0; }
-        struct S2
-        {
-          // static inline member variables since c++17
-          static inline int var = 8675309;
+        struct S2 {
+          static inline int var = 8675309; // static inline member variables since c++17
           void f(int i);
         };
-        void S2::f(int i)
-        {
+        void S2::f(int i) {
           // until c++17: Error: invalid syntax
           // since c++17: OK: captures the enclosing S2 by copy
           auto lmbd = [=, *this] { std::cout << i << " " << this->var << std::endl; };
           lmbd();
         }
-        std::tuple<double, int, char> foobar()
-        {
-          return {3.8, 0, 'x'};
-        }
+        std::tuple<double, int, char> foobar() { return {3.8, 0, 'x'}; }
         """
       )))
 
     def body17():
-      return '\n'.join((body14(),textwrap.dedent(
+      return ''.join((body14(),textwrap.dedent(
         """
-        // c++17 body
-        std::variant<int,float> v,w;
+        std::variant<int,float> v,w;  // c++17 body
         v = 42;               // v contains int
         int ivar = std::get<int>(v);
         w = std::get<0>(v);   // same effect as the previous line
         w = v;                // same effect as the previous line
-        S2 foo;
-        foo.f(ivar);
+        S2 foo; foo.f(ivar);
         if constexpr (std::is_arithmetic_v<int>) std::cout << "c++17" << std::endl;
         typedef std::integral_constant<Shapes,Shapes::SQUARE> squareShape;
-        // static_assert with no message since c++17
-        static_assert(std::is_same_v<squareShape,squareShape>);
+        static_assert(std::is_same_v<squareShape,squareShape>); // static_assert with no message since c++17
         auto val = nodiscardFunc();ignore(val);
-        // structured binding
-        const auto [ab, cd, ef] = foobar();
+        const auto [ab, cd, ef] = foobar(); // structured binding
         """
       )))
 
     def includes20():
-      return '\n'.join((includes17(),textwrap.dedent(
+      return ''.join((includes17(),textwrap.dedent(
         """
-        // c++20 includes
-        #include <compare>
+        #include <compare> // c++20 includes
         #include <concepts>
-
-        consteval int sqr_cpp20(int n)
-        {
-          return n*n;
-        }
+        consteval int sqr_cpp20(int n) { return n*n; }
         constexpr auto r = sqr_cpp20(10);
         static_assert(r == 100);
-
         const char *g_cpp20() { return "dynamic initialization"; }
         constexpr const char *f_cpp20(bool p) { return p ? "constant initializer" : g_cpp20(); }
         constinit const char *cinit_c = f_cpp20(true); // OK
-
         // Declaration of the concept "Hashable", which is satisfied by any type 'T'
         // such that for values 'a' of type 'T', the expression std::hash<T>{}(a)
         // compiles and its result is convertible to std::size_t
         template <typename T>
-        concept Hashable = requires(T a)
-        {
-          { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
-        };
-
+        concept Hashable = requires(T a) { { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>; };
         struct meow {};
-
-        // Constrained C++20 function template:
-        template <Hashable T>
+        template <Hashable T> // Constrained C++20 function template:
         void f_concept(T) {}
-
         void abbrev_f1(auto); // same as template<class T> void abbrev_f1(T)
         void abbrev_f4(const std::destructible auto*, std::floating_point auto&); // same as template<C3 T, C4 U> void abbrev_f4(const T*, U&);
-
-        template<>
-        void abbrev_f4<int>(const int*, const double&); // specialization of abbrev_f4<int, const double> (since C++20)
+        template<> void abbrev_f4<int>(const int*, const double&); // specialization of abbrev_f4<int, const double> (since C++20)
         """
       )))
 
     def body20():
-      return '\n'.join((body17(),textwrap.dedent(
+      return ''.join((body17(),textwrap.dedent(
         """
-        // c++20 body
-        ignore(cinit_c);
-
-        using std::operator""s;
-        f_concept("abc"s);
+        ignore(cinit_c); // c++20 body
+        using std::operator""s; f_concept("abc"s);
         """
       )))
 

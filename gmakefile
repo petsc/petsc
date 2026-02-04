@@ -327,6 +327,12 @@ gmakeinfo:
 	-@if [ "${CUDAC}" != "" ]; then\
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
          fi
+	-@if [ "${HIPC}" != "" ]; then\
+	   echo "Using HIP compile: ${PETSC_HIPCOMPILE_SINGLE}";\
+         fi
+	-@if [ "${SYCLC}" != "" ]; then\
+	   echo "Using SYCL compile: ${PETSC_SYCLCOMPILE_SINGLE}";\
+         fi
 	-@if [ "${CLANGUAGE}" = "CXX" ]; then\
            echo "Using C++ compiler to compile PETSc";\
         fi
