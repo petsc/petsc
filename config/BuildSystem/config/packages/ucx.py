@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version           = '1.19.0'
+    self.version           = '1.20.0'
     self.versionname       = 'UCP_API_VERSION'
     self.versioninclude    = ['ucp/api/ucp_version.h']
     self.gitcommit         = 'v'+self.version
