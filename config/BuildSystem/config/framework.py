@@ -212,6 +212,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     buf = 'Environmental variables'
     for key,val in os.environ.items():
+      if key.find('KEY') > -1: continue
       buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
     def logPrintFilesInPath(path):
