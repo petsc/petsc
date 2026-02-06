@@ -73,20 +73,16 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
   if (use_gpu_aware_mpi) {
     bool aware;
 
+    // Even the MPI implementation is configured with GPU-aware, it might still need extra settings to enable it.
+    // So we do the check at runtime with a code that works only with GPU-aware MPI.
     PetscCall(CUPMAwareMPI_(&aware));
-    // For Open MPI, we could do a compile time check with
-    // "defined(PETSC_HAVE_OPENMPI) && defined(MPIX_CUDA_AWARE_SUPPORT) &&
-    // MPIX_CUDA_AWARE_SUPPORT" to see if it is CUDA-aware. However, recent versions of IBM
-    // Spectrum MPI (e.g., 10.3.1) on Summit meet above conditions, but one has to use jsrun
-    // --smpiargs=-gpu to really enable GPU-aware MPI. So we do the check at runtime with a
-    // code that works only with GPU-aware MPI.
     if (PetscUnlikely(!aware)) {
       PetscCall((*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n"));
       PetscCall((*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n"));
-      PetscCall((*PetscErrorPrintf)("If you do care, for IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n"));
-      PetscCall((*PetscErrorPrintf)("For Open MPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n"));
+      PetscCall((*PetscErrorPrintf)("For Open MPI, you need to configure it with CUDA, ROCm or GPU-aware UCX (https://docs.open-mpi.org/en/main/tuning-apps/accelerators/index.html)\n"));
+      PetscCall((*PetscErrorPrintf)("If you already configured it with GPU-aware UCX, you may need 'mpiexec -n <np> --mca pml ucx' or export 'OMPI_MCA_pml=\"ucx\"' to use it.\n"));
       PetscCall((*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n"));
-      PetscCall((*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_GPU_SUPPORT_ENABLED=1 (man mpi to see manual of cray-mpich)\n"));
+      PetscCall((*PetscErrorPrintf)("For Cray-MPICH, export MPICH_GPU_SUPPORT_ENABLED=1 (see its 'man mpi'); for MPICH, export MPIR_CVAR_ENABLE_GPU=1\n"));
       PETSCABORT(PETSC_COMM_SELF, PETSC_ERR_LIB);
     }
   }
