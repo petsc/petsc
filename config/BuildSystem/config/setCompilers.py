@@ -393,51 +393,6 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
-  def isGfortran45x(compiler, log):
-    '''returns true if the compiler is gfortran-4.5.x'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
-        if log: log.write('Detected GFortran45x compiler\n')
-        return 1
-    except RuntimeError:
-      pass
-
-  @staticmethod
-  def isGfortran46plus(compiler, log):
-    '''returns true if the compiler is gfortran-4.6.x or later'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (4,6):
-          if log: log.write('Detected GFortran46plus compiler\n')
-          return 1
-    except RuntimeError:
-      pass
-
-  @staticmethod
-  def isGfortran47plus(compiler, log):
-    '''returns true if the compiler is gfortran-4.7.x or later'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (4,7):
-          if log: log.write('Detected GFortran47plus compiler\n')
-          return 1
-    except RuntimeError:
-      pass
-
-  @staticmethod
   def isGfortran100plus(compiler, log):
     '''returns true if the compiler is gfortran-10.0.x or later'''
     try:
@@ -466,35 +421,6 @@ class Configure(config.base.Configure):
         if (int(VMAJOR),int(VMINOR)) >= (8,0):
           if log: log.write('Detected GFortran8plus compiler\n')
           return 1
-    except RuntimeError:
-      pass
-
-  @staticmethod
-  def isG95(compiler, log):
-    '''Returns true if the compiler is g95'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
-      output = output + error
-      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
-        return 0
-      if 'http://www.g95.org' in output:
-        if log: log.write('Detected g95 compiler\n')
-        return 1
-    except RuntimeError:
-      pass
-
-  @staticmethod
-  def isCompaqF90(compiler, log):
-    '''Returns true if the compiler is Compaq f90'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
-      output = output + error
-      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
-        return 0
-      found = any([s in output for s in ['Compaq Visual Fortran','Digital Visual Fortran']])
-      if found:
-        if log: log.write('Detected Compaq Visual Fortran compiler\n')
-        return 1
     except RuntimeError:
       pass
 
