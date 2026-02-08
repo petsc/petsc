@@ -115,7 +115,7 @@ def bootstrap():
 
 
 
-def config(prefix, dry_run=False):
+def config(prefix):
     log.info('PETSc: configure')
     options = [
         '--prefix=' + prefix,
@@ -157,8 +157,6 @@ def config(prefix, dry_run=False):
     for opt in options:
         log.info(' '*4 + opt)
     # Run PETSc configure
-    if dry_run:
-        return
     use_config_py = False
     if use_config_py:
         import configure
@@ -199,11 +197,9 @@ def config(prefix, dry_run=False):
                 new_fh.write(contents)
 
 
-def build(dry_run=False):
+def build():
     log.info('PETSc: build')
     # Run PETSc build
-    if dry_run:
-        return
     use_builder_py = False
     if use_builder_py:
         import builder
@@ -218,11 +214,9 @@ def build(dry_run=False):
             raise RuntimeError(status)
 
 
-def install(dry_run=False):
+def install():
     log.info('PETSc: install')
     # Run PETSc installer
-    if dry_run:
-        return
     use_install_py = False
     if use_install_py:
         import install
@@ -268,9 +262,9 @@ class cmd_install(_install):
         #
         ctx = context().enter()
         try:
-            config(prefix, self.dry_run)
-            build(self.dry_run)
-            install(self.dry_run)
+            config(prefix)
+            build()
+            install()
         finally:
             ctx.exit()
         #
