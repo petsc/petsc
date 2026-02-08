@@ -7,7 +7,7 @@ myst-parser==4.0.0
 sphinx-remove-toctrees==1.0.0.post1
 Jinja2==3.1.3
 # docutils 0.19.1 produces bad HTML from the references in PCFIELDSPLIT
-numpy==2.0.0
+numpy>=2.0.0,<2.4.3
 wheel==0.43.0
 pydata-sphinx-theme==0.15.1
 sphinx==7.3.7

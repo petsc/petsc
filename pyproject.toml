@@ -1,6 +1,7 @@
 [build-system]
 requires = [
-  "setuptools", "wheel",
+  "setuptools <= 80.10.2",
+  "wheel",
   "patchelf; platform_system=='Linux'",
 ]
 build-backend = "setuptools.build_meta"
