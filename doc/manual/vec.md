@@ -108,7 +108,7 @@ when communication of nonlocal data is needed before certain local
 computations can occur. `DMDA` is designed only for
 the case in which data can be thought of as being stored in a standard
 multidimensional array; thus, `DMDA` are *not* intended for
-parallelizing unstructured grid problems, etc.
+parallelizing staggered arrays/grids, `DMSTAG` -- {any}`ch_stag`, or unstructured grid problems, `DMPLEX` -- {any}`ch_unstructured`, etc.
 
 For example, a typical situation one encounters in solving PDEs in
 parallel is that, to evaluate a local function, `f(x)`, each process

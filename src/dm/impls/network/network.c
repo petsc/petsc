@@ -1030,7 +1030,7 @@ PetscErrorCode DMNetworkGetNumEdges(DM dm, PeOp PetscInt *nEdges, PeOp PetscInt 
 }
 
 /*@
-  DMNetworkGetVertexRange - Get the bounds [start, end) for the local vertices
+  DMNetworkGetVertexRange - Get the bounds [start, end) (also sometimes called the chart) for the local vertices
 
   Not Collective
 
@@ -1043,7 +1043,7 @@ PetscErrorCode DMNetworkGetNumEdges(DM dm, PeOp PetscInt *nEdges, PeOp PetscInt 
 
   Level: beginner
 
-.seealso: `DM`, `DMNETWORK`, `DMNetworkGetEdgeRange()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkGetEdgeRange()`, `DMNetworkGetSubnetwork()`
 @*/
 PetscErrorCode DMNetworkGetVertexRange(DM dm, PeOp PetscInt *vStart, PeOp PetscInt *vEnd)
 {
@@ -1056,7 +1056,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm, PeOp PetscInt *vStart, PeOp PetscI
 }
 
 /*@
-  DMNetworkGetEdgeRange - Get the bounds [start, end) for the local edges
+  DMNetworkGetEdgeRange - Get the bounds [start, end) (also sometimes called the chart) for the local edges
 
   Not Collective
 
@@ -1069,7 +1069,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm, PeOp PetscInt *vStart, PeOp PetscI
 
   Level: beginner
 
-.seealso: `DM`, `DMNETWORK`, `DMNetworkGetVertexRange()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkGetVertexRange()`, `DMNetworkGetSubnetwork()`
 @*/
 PetscErrorCode DMNetworkGetEdgeRange(DM dm, PeOp PetscInt *eStart, PeOp PetscInt *eEnd)
 {

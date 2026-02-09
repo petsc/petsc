@@ -10,7 +10,8 @@ mechanism for translating the problem specification of a model and its discretiz
 `DM` is an orphan initialism or orphan acronym, the letters have no meaning and never did.
 
 Some of the model
-classes `DM` currently supports are PDEs on structured and staggered grids with finite difference methods (`DMDA` and `DMSTAG` -- {any}`ch_stag`),
+classes `DM` currently supports are PDEs on structured and staggered grids with finite difference methods (`DMDA` -- {any}`sec_struct`
+and `DMSTAG` -- {any}`ch_stag`),
 PDEs on unstructured
 grids with finite element and finite volume methods (`DMPLEX` -- {any}`ch_unstructured`), PDEs on quad and octree-grids (`DMFOREST`), models on
 networks (graphs) such
@@ -60,3 +61,6 @@ Once the `DM` is attached, the solver can utilize it to create and process much 
 For example, with `PCMG` simply providing a `DM` can allow it to create all the data structures needed to run geometric multigrid on your problem.
 
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex19.c.html">SNES Tutorial ex19</a> demonstrates how this may be done with `DMDA`.
+
+See {any}`ch_dmcommonality` for an advanced discussion of the commonalities between the various `DM`. That material should be read after having read
+the material below for each of the `DM`.

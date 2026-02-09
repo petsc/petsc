@@ -1591,11 +1591,11 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
   of freedom with respect to this element, for example corresponding to
   the element or one of its neighboring faces, edges, or vertices.
 
-  For example, for a 3D `DMSTAG`, indexing is `array[k][j][i][idx]`, where `k` is the
+  For example, for a 3D `DMSTAG`, indexing is `array[k][j][i][slot]`, where `k` is the
   index in the z-direction, `j` is the index in the y-direction, and `i` is the
   index in the x-direction.
 
-  `idx` is obtained with `DMStagGetLocationSlot()`, since the correct offset
+  `slot` is obtained with `DMStagGetLocationSlot()`, since the correct offset
   into the $(d+1)$-dimensional C array for a $d$-dimensional `DMSTAG` depends on the grid size and the number
   of DOF stored at each location.
 

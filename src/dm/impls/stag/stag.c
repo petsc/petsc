@@ -933,12 +933,17 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems PetscOptions
   To allow easier reading and to some extent more similar code between different-dimensional implementations
   of the same problem, we associate canonical names for each type of point, for each dimension of DMStag.
 
-  * 1-dimensional `DMSTAG` objects have vertices (0D) and elements (1D).
-  * 2-dimensional `DMSTAG` objects have vertices (0D), faces (1D), and elements (2D).
-  * 3-dimensional `DMSTAG` objects have vertices (0D), edges (1D), faces (2D), and elements (3D).
+  * 1-dimensional `DMSTAG` objects have vertices (0D) and elements (cells) (1D).
+  * 2-dimensional `DMSTAG` objects have vertices (0D), faces (1D), and elements (cells) (2D).
+  * 3-dimensional `DMSTAG` objects have vertices (0D), edges (1D), faces (2D), and elements (cells) (3D).
 
   This naming is reflected when viewing a `DMSTAG` object with `DMView()`, and in forming
   convenient options prefixes when creating a decomposition with `DMCreateFieldDecomposition()`.
+
+  For a `DMSTAG` each point on the same dimension has the same number of `dof` associated with it. For example, all cell points may
+  have a single degree of freedom representing a pressure. This uniformity makes it possible to more efficiently "index into" (using
+  a computable offset) vectors and arrays than for `DMPLEX` where each point may have a different number of degrees of freedom so the
+  each `offset (as well as the `dof`) must be explicitly stored.
 
 .seealso: [](ch_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
           `DMSetType()`, `DMStagVecSplitToDMDA()`
