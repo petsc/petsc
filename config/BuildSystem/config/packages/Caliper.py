@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     '''Configure the Caliper performance profiling library, which can be used by the hypre package.'''
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '2.13.1'
+    self.version          = '2.14.0'
     self.versionname      = 'CALIPER_VERSION'
     self.versioninclude   = ['caliper/caliper-config.h']
     self.gitcommit        = 'v'+self.version
