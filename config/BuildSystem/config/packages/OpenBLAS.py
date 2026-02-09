@@ -11,8 +11,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version                = '0.3.30'
-    self.gitcommit              = 'v'+self.version
+    self.version                = '0.3.31'
+    self.gitcommit              = '14594773a0c06b1fb40208dcdbd3aad4c39d845d' # v'+self.version 0.3.31 + multithreading fixes
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.versioninclude         = 'openblas_config.h'
