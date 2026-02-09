@@ -2796,7 +2796,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     }
   }
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_19", "ICNTL(19): computes the Schur complement", "None", mumps->id.ICNTL(19), &mumps->id.ICNTL(19), NULL));
-  if (mumps->id.ICNTL(19) <= 0 || mumps->id.ICNTL(19) > 3) { /* reset any schur data (if any) */
+  if (mumps->id.ICNTL(19) <= 0 || mumps->id.ICNTL(19) > 3) { /* reset any Schur data (if any) */
     PetscCall(MatDestroy(&F->schur));
     PetscCall(MatMumpsResetSchur_Private(mumps));
   }
@@ -3255,21 +3255,18 @@ static PetscErrorCode MatGetInfo_MUMPS(Mat A, PETSC_UNUSED MatInfoType flag, Mat
 
 static PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 {
-  Mat_MUMPS         *mumps = (Mat_MUMPS *)F->data;
-  const PetscScalar *arr;
-  const PetscInt    *idxs;
-  PetscInt           size, i;
+  Mat_MUMPS      *mumps = (Mat_MUMPS *)F->data;
+  const PetscInt *idxs;
+  PetscInt        size, i;
 
   PetscFunctionBegin;
   PetscCall(ISGetLocalSize(is, &size));
   /* Schur complement matrix */
   PetscCall(MatDestroy(&F->schur));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, size, size, NULL, &F->schur));
-  PetscCall(MatDenseGetArrayRead(F->schur, &arr));
   // don't allocate mumps->id.schur[] now as its precision is yet to know
   PetscCall(PetscMUMPSIntCast(size, &mumps->id.size_schur));
   PetscCall(PetscMUMPSIntCast(size, &mumps->id.schur_lld));
-  PetscCall(MatDenseRestoreArrayRead(F->schur, &arr));
   if (mumps->sym == 1) PetscCall(MatSetOption(F->schur, MAT_SPD, PETSC_TRUE));
 
   /* MUMPS expects Fortran style indices */
