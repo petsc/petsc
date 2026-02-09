@@ -47,8 +47,8 @@ class Configure(config.package.Package):
         raise RuntimeError('pyconfig.h missing: Boost requires python development version to be installed. (pythonX.x-dev)')
 
       with self.Language('Cxx'):
-          cxx = self.getCompiler().lower()
-          cxxflags = self.getCompilerFlags()
+        cxx = self.getCompiler()
+        cxxflags = self.getCompilerFlags()
 
       if config.setCompilers.Configure.isGNU(cxx, self.log):
         toolset = 'gcc'
