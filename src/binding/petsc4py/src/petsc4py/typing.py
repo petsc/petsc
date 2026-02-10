@@ -111,7 +111,7 @@ PETSc was configured (``./configure --with-scalar-type=real|complex``).
 
 """
 
-ArrayBool = NDArray[np.bool]
+ArrayBool = NDArray[np.bool_]
 """Array of `bool`."""
 
 ArrayInt = NDArray[np.integer]
