@@ -498,6 +498,8 @@ PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperator(PC, PetscErrorCode (*)(PC,
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperatorExteriorFacets(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunctionExteriorFacets(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat *);
