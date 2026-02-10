@@ -1941,6 +1941,7 @@ class Configure(config.base.Configure):
         elif self.CC.find('win32fe_icl') >= 0:
           yield os.path.join(path,'win32fe_ifort')
         yield 'gfortran'
+        yield 'egfortran' # On OpenBSD, the GFortran executable is named egfortran, https://fortran-lang.org/learn/os_setup/install_gfortran/#openbsd
         yield 'g95'
         yield 'xlf90'
         yield 'xlf'
