@@ -686,8 +686,8 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
 
   Level: developer
 
-  Fortran Notes:
-  The call sequence is `PetscViewerASCIIPrintf`(`PetscViewer`, character(*), int ierr) from Fortran.
+  Fortran Note:
+  The call sequence is `PetscViewerASCIIPrintf`(`PetscViewer`, character(*), int ierr).
   That is, you can only pass a single character string from Fortran.
 
 .seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
@@ -1093,8 +1093,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
     PetscViewerASCIIPopSynchronized(viewer);
 .ve
 
-  Fortran Notes:
-  Can only print a single character* string
+  Fortran Note:
+  The call sequence is `PetscViewerASCIISynchronizedPrintf`(`PetscViewer`, `character(*)`, `PetscErrorCode` ierr)
+  That is, you can only pass a single character string from Fortran.
 
 .seealso: [](sec_viewers), `PetscViewerASCIIPushSynchronized()`, `PetscViewerFlush()`, `PetscViewerASCIIPopSynchronized()`,
           `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIIOpen()`,

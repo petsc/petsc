@@ -1,9 +1,17 @@
 interface
-  subroutine PetscPrintf(comm, c, ierr)
+  subroutine PetscPrintf(comm, msg, ierr)
     use, intrinsic :: ISO_C_binding
     use petscmpi
     MPIU_Comm :: comm
-    character(len=*) :: c
+    character(len=*) :: msg
+    PetscErrorCode :: ierr
+  end subroutine
+
+  subroutine PetscSynchronizedPrintf(comm, msg, ierr)
+    use, intrinsic :: ISO_C_binding
+    use petscmpi
+    MPIU_Comm :: comm
+    character(len=*) :: msg
     PetscErrorCode :: ierr
   end subroutine
 
@@ -93,6 +101,7 @@ end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscPrintf
+!DEC$ ATTRIBUTES DLLEXPORT::PetscSynchronizedPrintf
 !DEC$ ATTRIBUTES DLLEXPORT::PetscErrorf
 !DEC$ ATTRIBUTES DLLEXPORT::PetscErrorMPI
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_abort
