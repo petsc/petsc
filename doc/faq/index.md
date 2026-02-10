@@ -1853,7 +1853,7 @@ is 4, not 100.
 
 (valgrind)=
 
-### What does "corrupt argument" or "caught signal" Or "SEGV" Or "segmentation violation" Or "bus error" mean? Can I use Valgrind or CUDA-Memcheck to debug memory corruption issues?
+### What does "corrupt argument" or "caught signal" Or "SEGV" Or "segmentation violation" Or "bus error" mean? Can I use Valgrind or CUDA Compute Sanitizer to debug memory corruption issues?
 
 Sometimes it can mean an argument to a function is invalid. In Fortran this may be caused
 by forgetting to list an argument in the call, especially the final `PetscErrorCode`.
@@ -1865,7 +1865,8 @@ in that case run the optimized version with `-malloc_debug`. If you determine th
 problem is from memory corruption you can put the macro CHKMEMQ in the code near the crash
 to determine exactly what line is causing the problem.
 
-If `-malloc_debug` does not help: on NVIDIA CUDA systems you can use <https://docs.nvidia.com/cuda/cuda-memcheck/index.html>
+If `-malloc_debug` does not help: on NVIDIA CUDA systems you can use <https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html>,
+for example, `compute-sanitizer --tool memcheck [sanitizer_options] app_name [app_options]`.
 
 If `-malloc_debug` does not help: on GNU/Linux (not macOS machines) - you can
 use [valgrind](http://valgrind.org). Follow the below instructions:

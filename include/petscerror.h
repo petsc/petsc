@@ -1254,7 +1254,7 @@ M*/
    Notes:
    We recommend using Valgrind <https://petsc.org/release/faq/#valgrind> or Compute Sanitizer
    <https://developer.nvidia.com/compute-sanitizer> on NVIDIA CUDA systems for finding memory problems. The ``CHKMEMQ``
-   macro is useful on systems that do not have valgrind, but is not as good as Valgrind or cuda-memcheck.
+   macro is useful on systems that do not have `valgrind`, but is not as good as `valgrind` or `compute-sanitizer`.
 
    Must run with the option `-malloc_debug` (`-malloc_test` in debug mode; or if `PetscMallocSetDebug()` called) to enable this option
 
