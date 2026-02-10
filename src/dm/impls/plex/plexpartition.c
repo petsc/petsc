@@ -1469,10 +1469,6 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sort
   #include <parmetis.h>
 #endif
 
-/* The two functions below are used by DMPlexRebalanceSharedPoints which errors
- * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
- * them out in that case. */
-#if defined(PETSC_HAVE_PARMETIS)
 /*
   DMPlexRewriteSF - Rewrites the ownership of the `PetscSF` of a `DM` (in place).
 
@@ -1612,6 +1608,10 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* The function below is used by DMPlexRebalanceSharedPoints which errors
+ * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
+ * this out in that case. */
+#if defined(PETSC_HAVE_PARMETIS)
 static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
 {
   PetscInt   *distribution, min, max, sum;
@@ -1638,7 +1638,6 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   PetscCall(PetscFree(distribution));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
 #endif
 
 /*@
@@ -2050,4 +2049,152 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 #else
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
+}
+
+// If the point is in the closure of a label cell, set the owner to this process
+static PetscErrorCode CheckLabelPoint_Private(DM plex, DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt point, PetscInt *owner)
+{
+  PetscInt    starSize, *star = NULL;
+  PetscMPIInt rank;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)plex), &rank));
+  PetscCall(DMPlexGetTransitiveClosure(plex, point, PETSC_FALSE, &starSize, &star));
+  for (PetscInt s = 0; s < starSize; ++s) {
+    const PetscInt spoint = star[s * 2];
+    PetscInt       depth, val;
+
+    PetscCall(DMPlexGetPointDepth(plex, spoint, &depth));
+    PetscCall(DMLabelGetValue(label, spoint, &val));
+    for (PetscInt v = 0; v < Nv; ++v) {
+      if (val == values[v]) {
+        *owner = rank;
+        s      = starSize;
+        break;
+      }
+    }
+  }
+  PetscCall(DMPlexRestoreTransitiveClosure(plex, point, PETSC_FALSE, &starSize, &star));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexRebalanceSharedLabelPoints - Change ownership of labeled points in the Plex so that processes owning shared label points also own a cell that contains them. This routine updates the `PointSF` of the `DM` inplace.
+
+  Input Parameters:
++ dm        - the `DMPLEX` object
+. label     - the `DMLabel` object
+. Nv        - the number of label values
+. values    - the array of label values
+- cellDepth - depth of the cells in the label
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexDistribute()`, `DMPlexRebalanceSharedPoints()`
+@*/
+PetscErrorCode DMPlexRebalanceSharedLabelPoints(DM dm, DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt cellDepth)
+{
+  DM              plex;
+  PetscSF         sf;
+  const PetscInt *degrees, *leaves;
+  PetscInt       *lowner, *gowner, *newPoints, *newOwner;
+  PetscInt        Nr, Nl, numNewOwners = 0, tmp = 0;
+  PetscMPIInt     rank, size;
+  MPI_Comm        comm;
+  PetscInt        debug = ((DM_Plex *)dm->data)->printCohesive;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  if (size == 1) {
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMGetPointSF(dm, &sf));
+  PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &leaves, NULL));
+  PetscCall(PetscSFComputeDegreeBegin(sf, &degrees));
+  PetscCall(PetscSFComputeDegreeEnd(sf, &degrees));
+  PetscCall(PetscMalloc2(Nr, &lowner, Nr, &gowner));
+  // Loop over all shared points
+  //   If a shared point is in the label and connected to a label cell, then vote for it
+  //       -2: Not a labeled point
+  //       -1: Labeled point that cannot be owned by this process
+  //     rank: Labeled point that could be owned by this process
+  for (PetscInt l = 0; l < Nl; ++l) {
+    const PetscInt leaf = leaves ? leaves[l] : l;
+    PetscInt       val;
+
+    lowner[leaf] = -2;
+    PetscCall(DMLabelGetValue(label, leaf, &val));
+    for (PetscInt v = 0; v < Nv; ++v) {
+      if (val == values[v]) {
+        lowner[leaf] = -1;
+        PetscCall(CheckLabelPoint_Private(plex, label, Nv, values, leaf, &lowner[leaf]));
+        if (debug > 3) PetscCall(PetscSynchronizedPrintf(comm, "[%d] Marked leaf point %" PetscInt_FMT " as %" PetscInt_FMT "\n", rank, leaf, lowner[leaf]));
+        break;
+      }
+    }
+  }
+  for (PetscInt root = 0; root < Nr; ++root) {
+    gowner[root] = -2;
+    if (degrees[root] > 0) {
+      PetscInt val;
+
+      PetscCall(DMLabelGetValue(label, root, &val));
+      for (PetscInt v = 0; v < Nv; ++v) {
+        if (val == values[v]) {
+          gowner[root] = -1;
+          PetscCall(CheckLabelPoint_Private(plex, label, Nv, values, root, &gowner[root]));
+          if (debug > 3) PetscCall(PetscSynchronizedPrintf(comm, "[%d] Marked root point %" PetscInt_FMT " as %" PetscInt_FMT "\n", rank, root, gowner[root]));
+          break;
+        }
+      }
+    }
+  }
+  // Process votes
+  PetscCall(PetscSFReduceBegin(sf, MPIU_INT, lowner, gowner, MPI_MAX));
+  PetscCall(PetscSFReduceEnd(sf, MPIU_INT, lowner, gowner, MPI_MAX));
+  PetscCall(PetscSFBcastBegin(sf, MPIU_INT, gowner, lowner, MPI_MAX));
+  PetscCall(PetscSFBcastEnd(sf, MPIU_INT, gowner, lowner, MPI_MAX));
+  // Figure out which points changed ownership and rewrite the SF
+  for (PetscInt l = 0; l < Nl; ++l) {
+    const PetscInt leaf = leaves ? leaves[l] : l;
+
+    if (lowner[leaf] == rank) ++numNewOwners;
+  }
+  for (PetscInt root = 0; root < Nr; ++root) {
+    PetscCheck(!degrees[root] || gowner[root] != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "[%d]Shared point %" PetscInt_FMT " was not assigned an owner", rank, root);
+    if (degrees[root] > 0 && gowner[root] != -2 && gowner[root] != rank) ++numNewOwners;
+  }
+  PetscCall(PetscMalloc2(numNewOwners, &newPoints, numNewOwners, &newOwner));
+  for (PetscInt l = 0; l < Nl; ++l) {
+    const PetscInt leaf = leaves ? leaves[l] : l;
+
+    if (lowner[leaf] == rank) {
+      newPoints[tmp]  = leaf;
+      newOwner[tmp++] = rank;
+      if (debug > 3) PetscCall(PetscSynchronizedPrintf(comm, "[%d] Changed leaf point %" PetscInt_FMT " to owner %d\n", rank, leaf, rank));
+    }
+  }
+  for (PetscInt root = 0; root < Nr; ++root) {
+    if (degrees[root] > 0 && gowner[root] != -2 && gowner[root] != rank) {
+      newPoints[tmp]  = root;
+      newOwner[tmp++] = gowner[root];
+      if (debug > 3) PetscCall(PetscSynchronizedPrintf(comm, "[%d] Changed root point %" PetscInt_FMT " to owner %" PetscInt_FMT "\n", rank, root, gowner[root]));
+    }
+  }
+  PetscCheck(tmp == numNewOwners, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of new owners %" PetscInt_FMT " != %" PetscInt_FMT, tmp, numNewOwners);
+  if (debug > 3) {
+    PetscCall(PetscSynchronizedPrintf(comm, "[%d] Rewrote %" PetscInt_FMT " points\n", rank, numNewOwners));
+    for (PetscInt n = 0; n < numNewOwners; ++n) {
+      PetscCall(PetscSynchronizedPrintf(comm, "[%d]   point %" PetscInt_FMT " now owned by %" PetscInt_FMT "\n", rank, newPoints[n], newOwner[n]));
+    }
+    PetscCall(PetscSynchronizedFlush(comm, NULL));
+  }
+  PetscCall(DMPlexRewriteSF(dm, numNewOwners, newPoints, newOwner, degrees));
+  PetscCall(PetscFree2(newPoints, newOwner));
+  PetscCall(PetscFree2(lowner, gowner));
+  PetscCall(DMDestroy(&plex));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
