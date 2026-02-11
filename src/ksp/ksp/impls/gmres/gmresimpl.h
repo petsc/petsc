@@ -29,12 +29,12 @@
   PetscErrorCode (*orthog)(KSP, PetscInt); \
   KSPGMRESCGSRefinementType cgstype; \
 \
-  Vec     *vecs;           /* the work vectors */ \
-  Vec     *vecb;           /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
-  PetscInt q_preallocate;  /* 0=don't preallocate space for work vectors */ \
-  PetscInt delta_allocate; /* number of vectors to preallocaate in each block if not preallocated */ \
-  PetscInt vv_allocated;   /* number of allocated gmres direction vectors */ \
-  PetscInt vecs_allocated; /*   total number of vecs available */ \
+  Vec      *vecs;           /* the work vectors */ \
+  Vec      *vecb;           /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
+  PetscBool q_preallocate;  /* Preallocate all the work vectors for the Krylov subspace */ \
+  PetscInt  delta_allocate; /* number of vectors to preallocaate in each block if not preallocated */ \
+  PetscInt  vv_allocated;   /* number of allocated gmres direction vectors */ \
+  PetscInt  vecs_allocated; /*   total number of vecs available */ \
   /* Since we may call the user "obtain_work_vectors" several times, we have to keep track of the pointers that it has returned */ \
   Vec     **user_work; \
   PetscInt *mwork_alloc; /* Number of work vectors allocated as part of  a work-vector chunk */ \
