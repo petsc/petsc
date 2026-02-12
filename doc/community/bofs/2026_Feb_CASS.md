@@ -11,24 +11,24 @@ orphan: true
 
 **Time:** Feb 11, 2026, 10:00am - 11:30am (Central Time, US and Canada)
 
-**Registration:** [https://argonne.zoomgov.com/meeting/register/ay4bMcRgSZaZ-l7u9AzAzQ](https://argonne.zoomgov.com/meeting/register/ay4bMcRgSZaZ-l7u9AzAzQ)
+**Registration:** <del>https://argonne.zoomgov.com/meeting/register/ay4bMcRgSZaZ-l7u9AzAzQ</del> (expired)
 
 **Note:** All participants **must register** to receive their own Zoom link. The step is brief and requires only a name and email address. The meeting will not be recorded.
 
-## Agenda (tentative):
+## Agenda:
 
 | Time | Speaker | Affiliation | Title |
 | :---- | :---- | :---- | :---- |
 | 10:00 AM | Barry Smith | Argonne National Laboratory | Welcome and introduction |
-| 10:05 AM | Vincent Robert | CEA Paris-Saclay and Sorbonne Université | [Solving saddle-point systems from contact mechanics in HPC context using PETSc](#talk-vincent-robert) |
-| 10:12 AM | Bahaâ Sidi | EDF R\&D, ENPC, and Sorbonne Université | [Scalable domain decomposition solvers for hybrid high-order methods in PETSc](#talk-bahaa-sidi) |
-| 10:19 AM | Barry Smith, Richard Tran Mills, Hansol Suh, Junchao Zhang | Argonne National Laboratory | [PETSc new features update](#talk-petsc-anl) |
-| 10:42 AM | Xiaodong Liu | Remcom Inc | [A PETSc-based vector finite element method code for solving the frequency-domain Maxwell equations](#talk-xiaodong-liu) |
-| 10:49 AM | Jeremy L Thompson | University of Colorado Boulder | [Ratel \- using MI300A APUs with libCEED and PETSc](#talk-jeremy-thompson) |
-| 10:56 AM | Darsh Nathawani | Louisiana State University | [PETSc in Proteus](#talk-darsh-nathawani) |
+| 10:05 AM | Vincent Robert | CEA Paris-Saclay and Sorbonne Université | [Solving saddle-point systems from contact mechanics in HPC context using PETSc](#talk-vincent-robert) (Slides not available) |
+| 10:12 AM | Bahaâ Sidi | EDF R\&D, ENPC, and Sorbonne Université | [Scalable domain decomposition solvers for hybrid high-order methods in PETSc](#talk-bahaa-sidi) ([Slides][s_01])  |
+| 10:19 AM | Barry Smith, Richard Tran Mills, Hansol Suh, Junchao Zhang | Argonne National Laboratory | [PETSc new features update](#talk-petsc-anl) ([Slides-1][s_02], [Slides-2][s_03], [Slides-3][s_04])   |
+| 10:42 AM | Xiaodong Liu | Remcom Inc | [A PETSc-based vector finite element method code for solving the frequency-domain Maxwell equations](#talk-xiaodong-liu)  (Slides not available)|
+| 10:49 AM | Jeremy L Thompson | University of Colorado Boulder | [Ratel \- using MI300A APUs with libCEED and PETSc](#talk-jeremy-thompson) ([Slides][s_06]) |
+| 10:56 AM | Darsh Nathawani | Louisiana State University | [PETSc in Proteus](#talk-darsh-nathawani) ([Slides][s_07]) |
 | 11:03 AM | All participants |  | Users take this opportunity to provide feedback and make feature requests |
 | 11:08 AM | Barry Smith | Argonne National Laboratory | Open the PETSc/AI discussion |
-| 11:10 AM | Mark Adams | Lawrence Berkeley National Laboratory | [Using AI code assistants for large projects with PETSc](#talk-mark-adams) |
+| 11:10 AM | Mark Adams | Lawrence Berkeley National Laboratory | [Using AI code assistants for large projects with PETSc](#talk-mark-adams) ([Slides][s_08])|
 | 11:17 AM | All participants |  | Open discussion about PETSc in the era of AI and large language models |
 | 11:30 AM | BoF concludes |  |  |
 
@@ -125,3 +125,13 @@ Ongoing work is twofold. First, we are investigating iterative solvers, in parti
 
 I will give a quick demonstration and discuss my experience developing a data assimilation tool in PETSc for shallow water equations—both new topics for me. I will provide tips on using these tools and give an idea of how well they currently support developing PETSc C codes.
 :::
+
+
+[s_01]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/BahaaSidi.pdf
+[s_02]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/RichardMills.pdf
+[s_03]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/HansolSuh.pdf
+[s_04]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/JunchaoZhang.pdf
+
+[s_06]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/JeremyThompson.pdf
+[s_07]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/DarshNathawani.pdf
+[s_08]: https://petsc.gitlab.io/annual-meetings/BoFs/2026-02/MarkAdams.pdf

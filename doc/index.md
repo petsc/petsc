@@ -11,18 +11,16 @@ Immediately jump in and run PETSc and TAO code {any}`handson`.
 
 ## News
 
-**Upcoming:** PETSc will hold a free online Birds-of-a-Feather (BoF) session on **February 11, 2026**, from **10:00am - 11:30am (Central Time US and Canada)**, as part of the [CASS BoF Days](https://cass.community/news/2026-02-10-cass-bof-days.html). All participants must register to receive the Zoom link; registration is brief and requires only a name and email address. Please see the agenda and registration details {any}`here<2026-feb-cass-petsc-bof>`. The BoF session will not be recorded.
+**Upcoming:** The 2026 PETSc annual user meeting is to be hosted by Imperial College, near **London, UK**, during the week of **June 1~5, 2026**. Please check back later for further details.
+
+
+The PETSc community held an online Birds-of-a-Feather (BoF) session on February 11, 2026, as part of the [CASS BoF Days](https://cass.community/news/2026-02-10-cass-bof-days.html). The session was not recorded. The agenda and slides are availabe at {any}`here<2026-feb-cass-petsc-bof>`.
 
 Pierre Jolivet replaces Mrs. Hong Zhang as NumFOCUS signatory due
 to Mrs. Hong Zhang's retirement by unanimous vote of the PETSc council. {any}`Current list of NumFOCUS signatories<numfocus-signatories>`.
 
-The exciting {any}`2025 PETSc Annual User Meeting<2025_meeting>` recently took place May 20-21, 2025 in Buffalo, New York, USA.
-Follow the link for abstracts and talks.
-
 [SIAM News article](https://www.siam.org/publications/siam-news/articles/opencarp-personalized-computational-model-of-the-heart-examines-cardiac-rhythm/)
 on the PETSc-powered [OpenCarp](https://opencarp.org/) cardiac electrophysiology simulator.
-
-PETSc is now on [BlueSky](https://bsky.app/profile/petsc.org).
 
 ## Book
 
