@@ -1,7 +1,7 @@
 static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel vectors\n";
 /*
   Usage:
-   mpirun -n <np> ./ex15k -vec_type <device vector type>
+   mpiexec -n <np> ./ex15k -vec_type <device vector type>
      -n  <n>  # number of data points of vector sizes from 128, 256, 512 and up. Maxima and default is 23.
      -m  <m>  # run each VecAXPY() m times to get the average time, default is 1000.
 

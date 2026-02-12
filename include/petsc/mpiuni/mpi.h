@@ -89,7 +89,7 @@
 
     - Using MPICH/Open MPI sequentially should have minimal
     disadvantages. [for examples, the binaries can be run without
-    mpirun/mpiexec as ./executable, without requiring any extra
+    mpiexec/mpirun as ./executable, without requiring any extra
     configurations for ssh/rsh/daemons etc..]. This should not be a
     reason to avoid these packages for sequential use.
 */

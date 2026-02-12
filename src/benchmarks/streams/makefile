@@ -43,8 +43,8 @@ mpistream:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes> [MPI_BINDING='-bind-to core -map-by numa']\n or       [I_MPI_PIN_PROCESSOR_LIST=:map=scatter] [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes>\n"; exit 1 ; fi
 	-@printf "" > scaling.log
 	-@printf "Running streams with '${MPIEXEC} ${MPI_BINDING} ${MPI_BINDING_VIEW} -n <np> ./MPIVersion' using 'NPMAX=${NPMAX}' \n"
-	-@printf "(Hint: To change MPI process binding, use env var MPI_BINDING. To visualize the binding, with Open MPI, use another env var, MPI_BINDING_VIEW=-display-map, see 'mpirun --help binding | mapping';"
-	-@printf " with MPICH, use HYDRA_TOPO_DEBUG=1 instead, see 'mpirun -bind-to -help')\n"
+	-@printf "(Hint: To change MPI process binding, use env var MPI_BINDING. To visualize the binding, with Open MPI, use another env var, MPI_BINDING_VIEW=-display-map, see 'mpiexec --help binding | grep mapping';"
+	-@printf " with MPICH, use HYDRA_TOPO_DEBUG=1 instead, see 'mpiexec -bind-to -help')\n"
 	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
 	  ${MPIEXEC} ${MPI_BINDING} ${MPI_BINDING_VIEW} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done

@@ -12,7 +12,7 @@ static char help[] = "Benchmarking device kernel launch time\n";
   Average synchronous device kernel launch time  = 7.78 microseconds
 
   Aurora@ALCF
-  $ mpirun -n 1 ./ex1k
+  $ mpiexec -n 1 ./ex1k
   Average asynchronous device kernel launch time = 3.34 microseconds
   Average synchronous device kernel launch time  = 6.24 microseconds
 

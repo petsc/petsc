@@ -1,7 +1,7 @@
 # This script demonstrates solving a symmetric positive definite linear system using PETSc and HPDDM preconditioner
 # It must be run with exactly 4 MPI processes
 # Example run:
-#   mpirun -n 4 python3 hpddm.py -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_eps_threshold_absolute 0.1 -ksp_monitor
+#   mpiexec -n 4 python3 hpddm.py -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_eps_threshold_absolute 0.1 -ksp_monitor
 # For more options, see ${PETSC_DIR}/src/ksp/ksp/tutorials/ex76.c
 
 import sys

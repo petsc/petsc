@@ -1,6 +1,6 @@
 cd src/benchmarks/streams; /usr/bin/gmake  --no-print-directory PETSC_DIR=/home/bsmith/petsc PETSC_ARCH=arch-opt streams
 mpicc -o MPIVersion.o -c -fPIC  -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -g -O   -I/home/bsmith/petsc/include -I/home/bsmith/petsc/arch-opt/include -I/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mpi/intel64/include    `pwd`/MPIVersion.c
-Running streams with mpirun -hosts thing05 -hosts thing05 -bind-to core -map-by numa MPI rank 0 Process id: 48245 coreid 0
+Running streams with mpiexec -hosts thing05 -hosts thing05 -bind-to core -map-by numa MPI rank 0 Process id: 48245 coreid 0
 Number of MPI processes 1 Processor names  thing05.ftm.alcf.anl.gov 
 Triad:        14847.0938   Rate (MB/s) 
 MPI rank 0 Process id: 48283 coreid 0

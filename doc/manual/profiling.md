@@ -733,7 +733,7 @@ Next, run your program with TAU. For instance, to profile `ex56`,
 ```bash
 cd $PETSC_DIR/src/snes/tutorials
 make ex56
-mpirun -n 4 tau_exec -T mpi ./ex56 -log_perfstubs <args>
+mpiexec -n 4 tau_exec -T mpi ./ex56 -log_perfstubs <args>
 ```
 
 This should produce four `profile.*` files with profile data that can be

@@ -4016,12 +4016,12 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
   Two modes to run MUMPS/PETSc with OpenMP
 .vb
    Set `OMP_NUM_THREADS` and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
-   threads per rank, then you may use "export `OMP_NUM_THREADS` = 16 && mpirun -n 4 ./test".
+   threads per rank, then you may use "export `OMP_NUM_THREADS` = 16 && mpiexec -n 4 ./test".
 .ve
 
 .vb
    `-mat_mumps_use_omp_threads` [m] and run your code with as many MPI ranks as the number of cores. For example,
-   if a compute node has 32 cores and you run on two nodes, you may use "mpirun -n 64 ./test -mat_mumps_use_omp_threads 16"
+   if a compute node has 32 cores and you run on two nodes, you may use "mpiexec -n 64 ./test -mat_mumps_use_omp_threads 16"
 .ve
 
    To run MUMPS in MPI+OpenMP hybrid mode (i.e., enable multithreading in MUMPS), but still run the non-MUMPS part

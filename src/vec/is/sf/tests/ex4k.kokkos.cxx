@@ -9,7 +9,7 @@ static const char help[] = "Benchmarking PetscSF Ping-pong latency (similar to o
 
   It mimics osu_latency from the OSU microbenchmarks (https://mvapich.cse.ohio-state.edu/benchmarks/).
 
-  Usage: mpirun -n 2 ./ex4k -mtype <type>
+  Usage: mpiexec -n 2 ./ex4k -mtype <type>
   Other arguments have a default value that is also used in osu_latency.
 
   Examples:

@@ -2,7 +2,7 @@ static char help[] = "Benchmarking MatProduct with AIJ and its subclass matrix t
 
 /*
 Usage:
-  mpirun -n <np> ./ex6k
+  mpiexec -n <np> ./ex6k
     -A <filename>     : input PETSc binary file for matrix A; one can convert a file from MatrixMarket using mat/tests/ex72.c
     -P <filename>     : input PETSc binary file for matrix P; optional, if not given, P = A
     -mat_type  <str>  : aij or its subclass. Default is aij.

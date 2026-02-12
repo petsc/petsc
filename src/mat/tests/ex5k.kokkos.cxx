@@ -2,7 +2,7 @@ static char help[] = "Benchmarking MatMult() with AIJ and its subclass matrix ty
 
 /*
 Usage:
-  mpirun -n <np> ./ex5k
+  mpiexec -n <np> ./ex5k
     -f <file>        : input PETSc matrix binary file; one can convert a file from MatrixMarket using mat/tests/ex72.c
     -mat_type <type> : aij or its subclass. Default is aij.
     -n <num>         : run MatMult() this many times and report average time. Default is 500.
