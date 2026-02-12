@@ -281,17 +281,17 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
    test:
      suffix: 8
      requires: !single
-     args: -tao_monitor_short -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+     args: -tao_monitor_short -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
 
    test:
      suffix: 9
      requires: !single
-     args: -tao_monitor_short -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+     args: -tao_monitor_short -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
 
    test:
      suffix: 10
      requires: !single
-     args: -tao_monitor_short -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+     args: -tao_monitor_short -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
 
    test:
      suffix: 11

@@ -385,7 +385,6 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
 static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Augmented Lagrangian multiplier method solves problems with general constraints by converting them into a sequence of unconstrained problems.");
@@ -403,11 +402,6 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems PetscOpti
   PetscCall(TaoSetOptionsPrefix(auglag->subsolver, ((PetscObject)tao)->prefix));
   PetscCall(TaoAppendOptionsPrefix(auglag->subsolver, "tao_almm_subsolver_"));
   PetscCall(TaoSetFromOptions(auglag->subsolver));
-  for (i = 0; i < tao->numbermonitors; i++) {
-    PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
-    PetscCall(TaoMonitorSet(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-    if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoMonitorConstraintNorm || tao->monitor[i] == TaoMonitorGlobalization || tao->monitor[i] == TaoMonitorDefaultShort) auglag->info = PETSC_TRUE;
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -504,7 +498,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
 
   auglag->sub_obj = TaoALMMComputeAugLagAndGradient_Private;
   auglag->type    = TAO_ALMM_PHR;
-  auglag->info    = PETSC_FALSE;
 
   PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao), &auglag->subsolver));
   PetscCall(TaoSetType(auglag->subsolver, TAOBQNLS));

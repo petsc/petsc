@@ -52,45 +52,45 @@ PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorCancel()", ) static inline PetscE
 }
 PETSC_DEPRECATED_FUNCTION(3, 9, 0, "TaoMonitorDefault()", ) static inline PetscErrorCode TaoDefaultMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorDefault(tao, ctx);
+  return TaoMonitorDefault(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorGlobalization()", ) static inline PetscErrorCode TaoGMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorGlobalization(tao, ctx);
+  return TaoMonitorGlobalization(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorDefaultShort()", ) static inline PetscErrorCode TaoSMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorDefaultShort(tao, ctx);
+  return TaoMonitorDefaultShort(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorConstraintNorm()", ) static inline PetscErrorCode TaoCMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorConstraintNorm(tao, ctx);
+  return TaoMonitorConstraintNorm(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorSolution()", ) static inline PetscErrorCode TaoSolutionMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorSolution(tao, ctx);
+  return TaoMonitorSolution(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorGradient()", ) static inline PetscErrorCode TaoGradientMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorGradient(tao, ctx);
+  return TaoMonitorGradient(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorResidual()", ) static inline PetscErrorCode TaoResidualMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorResidual(tao, ctx);
+  return TaoMonitorResidual(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorStep()", ) static inline PetscErrorCode TaoStepDirectionMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorStep(tao, ctx);
+  return TaoMonitorStep(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorSolutionDraw()", ) static inline PetscErrorCode TaoDrawSolutionMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorGlobalization(tao, ctx);
+  return TaoMonitorSolutionDraw(tao, ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorGradientDraw()", ) static inline PetscErrorCode TaoDrawGradientMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorGlobalization(tao, ctx);
+  return TaoMonitorGradientDraw(tao, ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorStepDraw()", ) static inline PetscErrorCode TaoDrawStepDirectionMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorGlobalization(tao, ctx);
+  return TaoMonitorStepDraw(tao, ctx);
 }

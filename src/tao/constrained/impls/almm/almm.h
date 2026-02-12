@@ -19,8 +19,6 @@ typedef struct {
   PetscReal mu0, mu, mu_fac, mu_pow_good, mu_pow_bad;            /* penalty parameters */
   PetscReal ytol0, ytol, gtol0, gtol;                            /* convergence parameters */
   PetscReal mu_max, ye_min, yi_min, ye_max, yi_max;              /* parameter safeguards */
-
-  PetscBool info;
 } TAO_ALMM;
 
 PETSC_INTERN PetscErrorCode TaoALMMGetType_Private(Tao, TaoALMMType *);
