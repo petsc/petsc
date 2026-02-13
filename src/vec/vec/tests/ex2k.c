@@ -1,7 +1,7 @@
 static char help[] = "Benchmarking VecMDot() or VecMAXPY()\n";
 /*
   Usage:
-   mpirun -n <np> ./ex2k -vec_type <vector type>
+   mpiexec -n <np> ./ex2k -vec_type <vector type>
      -n  <n>  # number of data points of vector sizes from 128, 256, 512 and up. Maxima and default is 23.
      -m  <m>  # run each VecMDot() m times to get the average time, default is 100.
      -test_name <VecMDot or VecMAXPY>  # test to run, by default it is VecMDot

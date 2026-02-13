@@ -1,7 +1,7 @@
 static char help[] = "A benchmark for testing PetscSortInt(), PetscSortIntSemiOrdered(), PetscSortIntWithArrayPair(), PetscIntSortSemiOrderedWithArray(), and PetscSortIntWithArray()\n\
   The array is filled with random numbers, but one can control average duplicates for each unique integer with the -d option.\n\
   Usage:\n\
-   mpirun -n 1 ./ex32 -n <length of the array to sort>, default=100 \n\
+   mpiexec -n 1 ./ex32 -n <length of the array to sort>, default=100 \n\
                       -r <repeat times for each sort>, default=10 \n\
                       -d <average duplicates for each unique integer>, default=1, i.e., no duplicates \n\n";
 

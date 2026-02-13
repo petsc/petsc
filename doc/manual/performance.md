@@ -140,7 +140,7 @@ spread over all sockets in the respective node. For example, the
 recommended placement of a 8-way parallel run on a four-socket machine
 is to assign two processes to each CPU socket. To do so, one needs to
 know the enumeration of cores and pass the requested information to
-`mpirun`. Consider the hardware topology information returned by
+`mpiexec`. Consider the hardware topology information returned by
 `lstopo` (part of the hwloc package) for the following two-socket
 machine, in which each CPU consists of six cores and supports
 hyperthreading:
@@ -200,10 +200,10 @@ Unfortunately, mechanisms for process placement vary across MPI
 implementations, so make sure to consult the manual of your MPI
 implementation. The following discussion is based on how processor
 placement is done with MPICH and Open MPI, where one needs to pass
-`--bind-to core --map-by socket` to `mpirun`:
+`--bind-to core --map-by socket` to `mpiexec`:
 
 ```console
-$ mpirun -n 6 --bind-to core --map-by socket ./stream
+$ mpiexec -n 6 --bind-to core --map-by socket ./stream
 process 0 binding: 100000000000100000000000
 process 1 binding: 000000100000000000100000
 process 2 binding: 010000000000010000000000
@@ -222,7 +222,7 @@ all MPI processes are located on the same socket, memory bandwidth drops
 significantly:
 
 ```console
-$ mpirun -n 6 --bind-to core --map-by core ./stream
+$ mpiexec -n 6 --bind-to core --map-by core ./stream
 process 0 binding: 100000000000100000000000
 process 1 binding: 010000000000010000000000
 process 2 binding: 001000000000001000000000
@@ -235,7 +235,7 @@ Triad:        25510.7507   Rate (MB/s)
 All processes are now mapped to cores on the same socket. As a result,
 only the first memory channel is fully saturated at 25.5 GB/sec.
 
-One must not assume that `mpirun` uses good defaults. To
+One must not assume that `mpiexec` uses good defaults. To
 demonstrate, compare the full output of `make streams` from {any}`subsec_bandwidth_vs_processes` first, followed by
 the results obtained by passing `--bind-to core --map-by socket`:
 

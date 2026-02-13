@@ -2351,7 +2351,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
 .vb
   make -C $PETSC_DIR/src/vec/is/sf/tests ex18
   for m in {local,global,shared}; do
-    mpirun -n 2 $PETSC_DIR/src/vec/is/sf/tests/ex18 -nsfs 2 -n 2 -root_mode $m -sf_view
+    mpiexec -n 2 $PETSC_DIR/src/vec/is/sf/tests/ex18 -nsfs 2 -n 2 -root_mode $m -sf_view
   done
 .ve
   we generate two identical `PetscSF`s sf_0 and sf_1,

@@ -500,18 +500,7 @@ Unable to run hostname to check the network')
                        if (MPI_Neighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm)) { }\n\
                        if (MPI_Ineighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm,&req)) { }\n'):
       self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
-    cuda_aware = 0
-    if hasattr(self, 'ompi_major_version'):
-      openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This Open MPI is not CUDA-aware\n #endif\n'
-      if self.checkCompile(openmpi_cuda_test):
-        cuda_aware = 1
-    elif hasattr(self, 'mpich_numversion'):
-      if self.libraries.check(self.dlib, "yaksuri_cudai_unpack_wchar_t"):
-        cuda_aware = 1
-    if cuda_aware:
-      self.addDefine('HAVE_MPI_GPU_AWARE', 1)
-    else:
-      self.testoptions = '-use_gpu_aware_mpi 0'
+
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1] = {0}; MPI_Win win = 0; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win)) { }\n'):
       self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win = 0; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req)) { }\n'):
@@ -610,6 +599,30 @@ Unable to run hostname to check the network')
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logWrite(self.framework.restoreLog())
+    return
+
+  def configureMPIGPUAware(self):
+    '''Check if the MPI supports GPUs. If yes, define HAVE_MPI_GPU_AWARE, otherwise set testoptions to not rely on GPU-aware MPI.'''
+    import re
+    gpu_aware = 0
+    if hasattr(self, 'ompi_major_version') and hasattr(self, 'mpiexec'):
+      # https://docs.open-mpi.org/en/main/tuning-apps/accelerators/rocm.html#checking-that-open-mpi-has-been-built-with-rocm-support
+      # Check if ompi_info prints lines like "MPI extensions: affinity, cuda, ftmpi, rocm"
+      try:
+        ompi_info = os.path.join(os.path.dirname(self.mpiexec), 'ompi_info') # ompi_info should be in the same directory as mpiexec/mpirun
+        (out, err, status) = Configure.executeShellCommand(ompi_info, timeout = 60, log = self.log, threads = 1)
+        if not status and not err:
+          pattern = re.compile(r'^.*MPI extensions:.*\b(cuda|rocm)\b.*$', re.MULTILINE)
+          if pattern.search(out): gpu_aware = 1
+      except:
+        pass
+    elif hasattr(self, 'mpich_numversion'):
+      if (self.cuda.found and self.libraries.check(self.dlib, 'yaksuri_cudai_unpack_wchar_t')) or (self.hip.found and self.libraries.check(self.dlib, 'yaksuri_hipi_unpack_wchar_t')): gpu_aware = 1
+    if gpu_aware:
+      self.addDefine('HAVE_MPI_GPU_AWARE', 1)
+    else:
+      self.log.write('We find the MPI was not configured with GPU support. Add "-use_gpu_aware_mpi 0" to PETSc CI test.\n')
+      self.testoptions = '-use_gpu_aware_mpi 0'
     return
 
   def configureMPITypes(self):
@@ -977,6 +990,7 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureMPIX)
     self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPIEXEC_TAIL)
+    self.executeTest(self.configureMPIGPUAware) # needs self.mpiexec
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)

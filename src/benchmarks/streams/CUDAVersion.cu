@@ -891,7 +891,7 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
       fd = fopen("flops", "r");
       fscanf(fd, "%lg", &prate);
       fclose(fd);
-      printf("%d %11.4f   Rate (MB/s) %g \n", size, rate, rate / prate);
+      printf("%d %11.4f   Rate (MB/s) %g\n", size, rate, rate / prate);
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

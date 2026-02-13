@@ -1,38 +1,38 @@
 cd src/benchmarks/streams; /usr/bin/gmake  --no-print-directory PETSC_DIR=/home/bsmith/petsc PETSC_ARCH=arch-opt streams
 mpicc -o MPIVersion.o -c -fPIC  -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -g -O   -I/home/bsmith/petsc/include -I/home/bsmith/petsc/arch-opt/include -I/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mpi/intel64/include    `pwd`/MPIVersion.c
-Running streams with mpirun -hosts thing05 -hosts thing05 -bind-to core -map-by numa MPI rank 0 Process id: 48245 coreid 0
-Number of MPI processes 1 Processor names  thing05.ftm.alcf.anl.gov 
-Triad:        14847.0938   Rate (MB/s) 
+Running streams with mpiexec -hosts thing05 -hosts thing05 -bind-to core -map-by numa MPI rank 0 Process id: 48245 coreid 0
+Number of MPI processes 1 Processor names  thing05.ftm.alcf.anl.gov
+Triad:        14847.0938   Rate (MB/s)
 MPI rank 0 Process id: 48283 coreid 0
 MPI rank 1 Process id: 48284 coreid 18
-Number of MPI processes 2 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        29556.8659   Rate (MB/s) 
+Number of MPI processes 2 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        29556.8659   Rate (MB/s)
 MPI rank 0 Process id: 48323 coreid 0
 MPI rank 1 Process id: 48324 coreid 18
 MPI rank 2 Process id: 48325 coreid 9
-Number of MPI processes 3 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        41626.9840   Rate (MB/s) 
+Number of MPI processes 3 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        41626.9840   Rate (MB/s)
 MPI rank 0 Process id: 48363 coreid 0
 MPI rank 1 Process id: 48364 coreid 18
 MPI rank 2 Process id: 48365 coreid 9
 MPI rank 3 Process id: 48366 coreid 27
-Number of MPI processes 4 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        57081.5410   Rate (MB/s) 
+Number of MPI processes 4 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        57081.5410   Rate (MB/s)
 MPI rank 0 Process id: 48404 coreid 0
 MPI rank 1 Process id: 48405 coreid 18
 MPI rank 2 Process id: 48406 coreid 9
 MPI rank 3 Process id: 48407 coreid 27
 MPI rank 4 Process id: 48408 coreid 1
-Number of MPI processes 5 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        50711.4774   Rate (MB/s) 
+Number of MPI processes 5 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        50711.4774   Rate (MB/s)
 MPI rank 0 Process id: 48447 coreid 0
 MPI rank 1 Process id: 48448 coreid 18
 MPI rank 2 Process id: 48449 coreid 9
 MPI rank 3 Process id: 48450 coreid 27
 MPI rank 4 Process id: 48451 coreid 1
 MPI rank 5 Process id: 48452 coreid 19
-Number of MPI processes 6 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        60154.8534   Rate (MB/s) 
+Number of MPI processes 6 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        60154.8534   Rate (MB/s)
 MPI rank 0 Process id: 48490 coreid 0
 MPI rank 1 Process id: 48491 coreid 18
 MPI rank 2 Process id: 48492 coreid 9
@@ -40,8 +40,8 @@ MPI rank 3 Process id: 48493 coreid 27
 MPI rank 4 Process id: 48494 coreid 1
 MPI rank 5 Process id: 48495 coreid 19
 MPI rank 6 Process id: 48496 coreid 10
-Number of MPI processes 7 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        70180.5778   Rate (MB/s) 
+Number of MPI processes 7 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        70180.5778   Rate (MB/s)
 MPI rank 0 Process id: 48534 coreid 0
 MPI rank 1 Process id: 48535 coreid 18
 MPI rank 2 Process id: 48536 coreid 9
@@ -50,8 +50,8 @@ MPI rank 4 Process id: 48538 coreid 1
 MPI rank 5 Process id: 48539 coreid 19
 MPI rank 6 Process id: 48540 coreid 10
 MPI rank 7 Process id: 48541 coreid 28
-Number of MPI processes 8 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        80182.8468   Rate (MB/s) 
+Number of MPI processes 8 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        80182.8468   Rate (MB/s)
 MPI rank 0 Process id: 48579 coreid 0
 MPI rank 1 Process id: 48580 coreid 18
 MPI rank 2 Process id: 48581 coreid 9
@@ -61,8 +61,8 @@ MPI rank 5 Process id: 48584 coreid 19
 MPI rank 6 Process id: 48585 coreid 10
 MPI rank 7 Process id: 48586 coreid 28
 MPI rank 8 Process id: 48587 coreid 2
-Number of MPI processes 9 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        65626.9907   Rate (MB/s) 
+Number of MPI processes 9 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        65626.9907   Rate (MB/s)
 MPI rank 0 Process id: 48626 coreid 0
 MPI rank 1 Process id: 48627 coreid 18
 MPI rank 2 Process id: 48628 coreid 9
@@ -73,8 +73,8 @@ MPI rank 6 Process id: 48632 coreid 10
 MPI rank 7 Process id: 48633 coreid 28
 MPI rank 8 Process id: 48634 coreid 2
 MPI rank 9 Process id: 48635 coreid 20
-Number of MPI processes 10 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        73190.7742   Rate (MB/s) 
+Number of MPI processes 10 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        73190.7742   Rate (MB/s)
 MPI rank 0 Process id: 48673 coreid 0
 MPI rank 1 Process id: 48674 coreid 18
 MPI rank 2 Process id: 48675 coreid 9
@@ -86,8 +86,8 @@ MPI rank 7 Process id: 48680 coreid 28
 MPI rank 8 Process id: 48681 coreid 2
 MPI rank 9 Process id: 48682 coreid 20
 MPI rank 10 Process id: 48683 coreid 11
-Number of MPI processes 11 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        78998.2026   Rate (MB/s) 
+Number of MPI processes 11 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        78998.2026   Rate (MB/s)
 MPI rank 0 Process id: 48721 coreid 0
 MPI rank 1 Process id: 48722 coreid 18
 MPI rank 2 Process id: 48723 coreid 9
@@ -100,8 +100,8 @@ MPI rank 8 Process id: 48729 coreid 2
 MPI rank 9 Process id: 48730 coreid 20
 MPI rank 10 Process id: 48731 coreid 11
 MPI rank 11 Process id: 48732 coreid 29
-Number of MPI processes 12 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        86944.7439   Rate (MB/s) 
+Number of MPI processes 12 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        86944.7439   Rate (MB/s)
 MPI rank 0 Process id: 48770 coreid 0
 MPI rank 1 Process id: 48771 coreid 18
 MPI rank 2 Process id: 48772 coreid 9
@@ -115,8 +115,8 @@ MPI rank 9 Process id: 48779 coreid 20
 MPI rank 10 Process id: 48780 coreid 11
 MPI rank 11 Process id: 48781 coreid 29
 MPI rank 12 Process id: 48782 coreid 3
-Number of MPI processes 13 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        73441.6493   Rate (MB/s) 
+Number of MPI processes 13 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        73441.6493   Rate (MB/s)
 MPI rank 0 Process id: 48820 coreid 0
 MPI rank 1 Process id: 48821 coreid 18
 MPI rank 2 Process id: 48822 coreid 9
@@ -131,8 +131,8 @@ MPI rank 10 Process id: 48830 coreid 11
 MPI rank 11 Process id: 48831 coreid 29
 MPI rank 12 Process id: 48832 coreid 3
 MPI rank 13 Process id: 48833 coreid 21
-Number of MPI processes 14 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        78168.0480   Rate (MB/s) 
+Number of MPI processes 14 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        78168.0480   Rate (MB/s)
 MPI rank 0 Process id: 48871 coreid 0
 MPI rank 1 Process id: 48872 coreid 18
 MPI rank 2 Process id: 48873 coreid 9
@@ -148,8 +148,8 @@ MPI rank 11 Process id: 48882 coreid 29
 MPI rank 12 Process id: 48883 coreid 3
 MPI rank 13 Process id: 48884 coreid 21
 MPI rank 14 Process id: 48885 coreid 12
-Number of MPI processes 15 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        82417.9730   Rate (MB/s) 
+Number of MPI processes 15 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        82417.9730   Rate (MB/s)
 MPI rank 0 Process id: 48923 coreid 0
 MPI rank 1 Process id: 48924 coreid 18
 MPI rank 2 Process id: 48925 coreid 9
@@ -166,8 +166,8 @@ MPI rank 12 Process id: 48935 coreid 3
 MPI rank 13 Process id: 48936 coreid 21
 MPI rank 14 Process id: 48937 coreid 12
 MPI rank 15 Process id: 48938 coreid 30
-Number of MPI processes 16 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
-Triad:        89057.9353   Rate (MB/s) 
+Number of MPI processes 16 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov
+Triad:        89057.9353   Rate (MB/s)
 ------------------------------------------------
 np  speedup
 1 1.0

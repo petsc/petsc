@@ -48,20 +48,19 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
     args.append('--disable-vt')
+
+    # https://docs.open-mpi.org/en/main/tuning-apps/accelerators/index.html
+    # UCX can be configured with GPU support. Using UCX to provide GPU-awareness is preferred over Open MPI's built-in GPU support.
+    # For multi-node ROCm-aware runs, Open MPI needs UCX with ROCm support.
+    # One may need either mpiexec -n <np> --mca pml ucx ... or export OMPI_MCA_pml="ucx" to use UCX.
+    if self.ucx.found:
+      args.append('--with-ucx='+self.ucx.directory)
+
     if self.cuda.found:
-      if not hasattr(self.cuda, 'cudaDir'):
-        raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
-      args.append('--with-cuda='+self.cuda.cudaDir) # use openmpi's cuda support until it switches to ucx
+      args.append('--with-cuda='+self.cuda.cudaDir)
     elif self.hip.found:
-      if not self.ucx.found:
-        self.logPrintWarning('Found ROCm but not UCX, so Open MPI will NOT be configured with ROCm support. Consider having UCX by simply adding --download-ucx')
-      elif not self.ucx.enabled_rocm:
-        self.logPrintWarning('Found ROCm and UCX, but UCX was not configured with ROCm, so Open MPI will NOT be configured with ROCm support. Consider using a ROCm-enabled UCX, or letting PETSc build one for you with --download-ucx')
-      else:
-        # see https://docs.open-mpi.org/en/main/tuning-apps/networking/rocm.html#building-open-mpi-with-rocm-support
-        # One may need either mpirun -n 2 --mca pml ucx ./myapp or export OMPI_MCA_pml="ucx" to use UCX
-        args.append('--with-rocm='+self.hip.hipDir)
-        args.append('--with-ucx='+self.ucx.directory)
+      args.append('--with-rocm='+self.hip.hipDir)
+
     if self.hwloc.found:
       args.append('--with-hwloc="'+self.hwloc.directory+'"')
     else:
