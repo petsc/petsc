@@ -24,6 +24,7 @@
 ```
 
 - Add `PetscCallHYPRE()` to check HYPRE error codes and print error messages on failure
+- Add `PetscBTCountSet()` to count set bits in `PetscBT`
 
 
 ```{rubric} Event Logging:
@@ -118,6 +119,7 @@
 ```
 
 - Change the final argument of `DMShellSetDestroyContext()` to `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
+- Add `DMLabelGetValueISGlobal()` to get globally consistent `IS` of values in a `DMLabel`
 
 ```{rubric} DMSwarm:
 ```
@@ -128,6 +130,7 @@
 - Add `DMPlexVecGetClosureAtDepth()`
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
 - Add `DMPlexGetLETKFLocalizationMatrix` to compute localization weight matrix for LETKF
+- Change `verticesAdjSaved` parameter in `DMPlexCreateFromCell*Parallel*()` functions to be allocated by function rather than by user
 
 ```{rubric} FE/FV:
 ```

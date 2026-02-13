@@ -5906,7 +5906,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdjSaved - (Optional) vertex adjacency array
+- verticesAdjSaved - (Optional) vertex adjacency array, must be freed by user
 
   Level: advanced
 
@@ -5993,8 +5993,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
       for (p = 0; p < numCorners; ++p) PetscCall(PetscHSetIAdd(vhash, cells[c * numCorners + p]));
     }
     PetscCall(PetscHSetIGetSize(vhash, &numVerticesAdj));
-    if (!verticesAdjSaved) PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
-    else verticesAdj = *verticesAdjSaved;
+    PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
     PetscCall(PetscHSetIGetElems(vhash, &off, verticesAdj));
     PetscCall(PetscHSetIDestroy(&vhash));
     PetscCheck(off == numVerticesAdj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %" PetscInt_FMT " should be %" PetscInt_FMT, off, numVerticesAdj);
@@ -6024,7 +6023,8 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscCall(PetscLayoutSetBlockSize(layout, 1));
   PetscCall(PetscSFCreateByMatchingIndices(layout, numVerticesAdj, verticesAdj, NULL, numCells, numVerticesAdj, verticesAdj, NULL, numCells, vertexSF, &sfPoint));
   PetscCall(PetscLayoutDestroy(&layout));
-  if (!verticesAdjSaved) PetscCall(PetscFree(verticesAdj));
+  if (verticesAdjSaved) *verticesAdjSaved = verticesAdj;
+  else PetscCall(PetscFree(verticesAdj));
   PetscCall(PetscObjectSetName((PetscObject)sfPoint, "point SF"));
   if (dm->sf) {
     const char *prefix;
@@ -6057,7 +6057,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdjSaved - (Optional) vertex adjacency array
+- verticesAdjSaved - (Optional) vertex adjacency array, must be freed by user
 
   Level: advanced
 
@@ -6138,8 +6138,7 @@ PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, Pets
     PetscCall(PetscHSetICreate(&vhash));
     for (PetscInt i = 0; i < len; i++) PetscCall(PetscHSetIAdd(vhash, cells[i]));
     PetscCall(PetscHSetIGetSize(vhash, &numVerticesAdj));
-    if (!verticesAdjSaved) PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
-    else verticesAdj = *verticesAdjSaved;
+    PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
     PetscCall(PetscHSetIGetElems(vhash, &off, verticesAdj));
     PetscCall(PetscHSetIDestroy(&vhash));
     PetscCheck(off == numVerticesAdj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %" PetscInt_FMT " should be %" PetscInt_FMT, off, numVerticesAdj);
@@ -6178,7 +6177,8 @@ PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, Pets
   PetscCall(PetscLayoutSetBlockSize(layout, 1));
   PetscCall(PetscSFCreateByMatchingIndices(layout, numVerticesAdj, verticesAdj, NULL, numCells, numVerticesAdj, verticesAdj, NULL, numCells, vertexSF, &sfPoint));
   PetscCall(PetscLayoutDestroy(&layout));
-  if (!verticesAdjSaved) PetscCall(PetscFree(verticesAdj));
+  if (verticesAdjSaved) *verticesAdjSaved = verticesAdj;
+  else PetscCall(PetscFree(verticesAdj));
   PetscCall(PetscObjectSetName((PetscObject)sfPoint, "point SF"));
   if (dm->sf) {
     const char *prefix;
@@ -6292,7 +6292,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   Output Parameters:
 + dm          - The `DM`
 . vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdj - (Optional) vertex adjacency array
+- verticesAdj - (Optional) vertex adjacency array, must be freed by user
 
   Level: intermediate
 
@@ -6350,7 +6350,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   Output Parameters:
 + dm          - The `DM`
 . vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdj - (Optional) vertex adjacency array
+- verticesAdj - (Optional) vertex adjacency array, must be freed by user
 
   Level: intermediate
 

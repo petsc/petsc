@@ -83,4 +83,20 @@ static inline char PetscBTLookupClear(PetscBT array, PetscCount index)
   return ret;
 }
 
+static inline PetscCount PetscBTCountSet(PetscBT array, PetscCount m)
+{
+  PetscCount cnt = 0;
+  for (size_t j = 0; j < PetscBTLength(m); j++) {
+    unsigned char       byte = array[j];
+    const unsigned char c1   = 0x55;
+    const unsigned char c2   = 0x33;
+    const unsigned char c4   = 0x0F;
+
+    byte -= (byte >> 1) & c1;
+    byte = ((byte >> 2) & c2) + (byte & c2);
+    cnt += (byte + (byte >> 4)) & c4;
+  }
+  return cnt;
+}
+
 PETSC_EXTERN PetscErrorCode PetscBTView(PetscCount, const PetscBT, PetscViewer);

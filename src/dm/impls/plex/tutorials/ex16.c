@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     suffix: cgns
     requires: !complex
     nsize: 4
-    args: -infile ${wPETSC_DIR}/share/petsc/datafiles/meshes/2x2x2_Q3_wave.cgns
+    args: -infile ${DATAFILESPATH}/meshes/2x2x2_Q3_wave.cgns
     args: -dm_plex_cgns_parallel -loaded_dm_view
     test:
       suffix: simple
