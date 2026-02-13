@@ -134,7 +134,7 @@ int main(int argc, char **args)
 
   for (j = 0; j < 4; j++) irate[j] = 1.0E-06 * bytes[j] / mintime[j];
 
-  printf("Function      Rate (MB/s) \n");
+  printf("Function      Rate (MB/s)\n");
   for (j = 0; j < 4; j++) printf("%s%11.4f\n", label[j], irate[j]);
   return 0;
 }
