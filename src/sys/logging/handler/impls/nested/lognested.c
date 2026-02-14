@@ -237,6 +237,7 @@ static PetscErrorCode PetscLogHandlerContextCreate_Nested(MPI_Comm comm, PetscLo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wconversion")
 static PetscErrorCode PetscLogHandlerObjectCreate_Nested(PetscLogHandler h, PetscObject obj)
 {
   PetscClassId           classid;
@@ -382,6 +383,7 @@ static PetscErrorCode PetscLogNestedCreatePerfNodes(MPI_Comm comm, PetscLogHandl
   *perf_p = perf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 static PetscErrorCode PetscLogHandlerView_Nested(PetscLogHandler handler, PetscViewer viewer)
 {

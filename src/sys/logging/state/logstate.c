@@ -29,9 +29,9 @@ PetscErrorCode PetscLogStateCreate(PetscLogState *state)
   PetscCall(PetscLogRegistryGetNumEvents(s->registry, NULL, &max_events));
   PetscCall(PetscLogRegistryGetNumStages(s->registry, NULL, &max_stages));
 
-  s->bt_num_events = max_events + 1; // one extra column for default stage activity
-  s->bt_num_stages = max_stages;
-  num_entries      = s->bt_num_events * s->bt_num_stages;
+  PetscCall(PetscCIntCast(max_events + 1, &s->bt_num_events)); // one extra column for default stage activity
+  PetscCall(PetscCIntCast(max_stages, &s->bt_num_stages));
+  num_entries = s->bt_num_events * s->bt_num_stages;
   PetscCall(PetscBTCreate(num_entries, &s->active));
   s->current_stage = -1;
   s->refct         = 1;
@@ -177,9 +177,9 @@ static PetscErrorCode PetscLogStateResize(PetscLogState state)
     for (PetscInt i = 0; i < state->bt_num_events; i++) PetscCall(PetscMemcpy(&active_new[i * num_chars_new], &state->active[i * num_chars_old], num_chars_old));
   }
   PetscCall(PetscBTDestroy(&state->active));
-  state->active        = active_new;
-  state->bt_num_events = new_num_events;
-  state->bt_num_stages = new_num_stages;
+  state->active = active_new;
+  PetscCall(PetscCIntCast(new_num_events, &state->bt_num_events));
+  PetscCall(PetscCIntCast(new_num_stages, &state->bt_num_stages));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

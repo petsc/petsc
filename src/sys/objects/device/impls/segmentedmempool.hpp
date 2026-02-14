@@ -698,9 +698,9 @@ public:
 
   explicit SegmentedMemoryPool(AllocType = AllocType{}, std::size_t = DefaultChunkSize) noexcept(std::is_nothrow_default_constructible<pool_type>::value);
 
-  PetscErrorCode allocate(PetscInt, value_type **, const stream_type *, size_type = std::alignment_of<MemType>::value) noexcept;
+  PetscErrorCode allocate(size_t, value_type **, const stream_type *, size_type = std::alignment_of<MemType>::value) noexcept;
   PetscErrorCode deallocate(value_type **, const stream_type *) noexcept;
-  PetscErrorCode reallocate(PetscInt, value_type **, const stream_type *) noexcept;
+  PetscErrorCode reallocate(size_t, value_type **, const stream_type *) noexcept;
 
 private:
   pool_type      pool_;
@@ -793,12 +793,11 @@ inline SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::Se
   `req_size` cannot be negative. If `req_size` if zero, `ptr` is set to `nullptr`
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate(PetscInt req_size, value_type **ptr, const stream_type *stream, size_type alignment) noexcept
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate(size_t req_size, value_type **ptr, const stream_type *stream, size_type alignment) noexcept
 {
   value_type *ret_ptr = nullptr;
 
   PetscFunctionBegin;
-  PetscAssert(req_size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested memory amount (%" PetscInt_FMT ") must be >= 0", req_size);
   PetscAssertPointer(ptr, 2);
   PetscAssertPointer(stream, 3);
   if (req_size) {
@@ -861,7 +860,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
   It's OK to shrink the buffer, even down to 0 (in which case it is just deallocated).
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::reallocate(PetscInt new_req_size, value_type **ptr, const stream_type *stream) noexcept
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::reallocate(size_t new_req_size, value_type **ptr, const stream_type *stream) noexcept
 {
   using chunk_type = typename block_type::chunk_type;
 
@@ -870,7 +869,6 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
   chunk_type *chunk    = nullptr;
 
   PetscFunctionBegin;
-  PetscAssert(new_req_size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested memory amount (%" PetscInt_FMT ") must be >= 0", new_req_size);
   PetscAssertPointer(ptr, 2);
   PetscAssertPointer(stream, 3);
 
