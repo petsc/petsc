@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.version                = '1.0.1'
-    self.gitcommit              = 'v'+self.version # main jan-02-2026
+    self.version                = '1.0.2'
+    self.gitcommit              = '3b9e00d869885c59d0ba2d8ee600a4b41b6447ff' # (v1.0.2+) v'+self.version # main feb-18-2026
     self.download               = ['git://https://github.com/htool-ddm/htool','https://github.com/htool-ddm/htool/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '0.9.0'
     self.versionname            = 'HTOOL_VERSION_MAJOR.HTOOL_VERSION_MINOR.HTOOL_VERSION_SUBMINOR'
@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.precisions             = ['single', 'double']
     self.usesopenmp             = 'yes'
     self.requires32bitint       = 1
+    self.minCxxVersion          = 'c++14'
     return
 
   def setupDependencies(self,framework):

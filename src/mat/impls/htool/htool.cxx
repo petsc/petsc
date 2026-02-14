@@ -3,17 +3,30 @@
 
 const char *const MatHtoolCompressorTypes[] = {"sympartialACA", "fullACA", "SVD"};
 const char *const MatHtoolClusteringTypes[] = {"PCARegular", "PCAGeometric", "BoundingBox1Regular", "BoundingBox1Geometric"};
-const char        HtoolCitation[]           = "@article{marchand2020two,\n"
-                                              "  Author = {Marchand, Pierre and Claeys, Xavier and Jolivet, Pierre and Nataf, Fr\\'ed\\'eric and Tournier, Pierre-Henri},\n"
-                                              "  Title = {Two-level preconditioning for $h$-version boundary element approximation of hypersingular operator with {GenEO}},\n"
-                                              "  Year = {2020},\n"
-                                              "  Publisher = {Elsevier},\n"
-                                              "  Journal = {Numerische Mathematik},\n"
-                                              "  Volume = {146},\n"
-                                              "  Pages = {597--628},\n"
-                                              "  Url = {https://github.com/htool-ddm/htool}\n"
-                                              "}\n";
-static PetscBool  HtoolCite                 = PETSC_FALSE;
+// clang-format off
+const char       *HtoolCitations[2]         = {"@article{marchand2020two,\n"
+                                               "  Author = {Marchand, Pierre and Claeys, Xavier and Jolivet, Pierre and Nataf, Fr\\'ed\\'eric and Tournier, Pierre-Henri},\n"
+                                               "  Title = {Two-level preconditioning for $h$-version boundary element approximation of hypersingular operator with {GenEO}},\n"
+                                               "  Year = {2020},\n"
+                                               "  Publisher = {Elsevier},\n"
+                                               "  Journal = {Numerische Mathematik},\n"
+                                               "  Volume = {146},\n"
+                                               "  Pages = {597--628},\n"
+                                               "  Url = {https://github.com/htool-ddm/htool}\n"
+                                               "}\n",
+                                               "@article{Marchand2026,\n"
+                                               "  Author = {Marchand, Pierre and Tournier, Pierre-Henri and Jolivet, Pierre},\n"
+                                               "  Title = {{Htool-DDM}: A {C++} library for parallel solvers and compressed linear systems},\n"
+                                               "  Year = {2026},\n"
+                                               "  Publisher = {The Open Journal},\n"
+                                               "  Journal = {Journal of Open Source Software},\n"
+                                               "  Volume = {11},\n"
+                                               "  Number = {118},\n"
+                                               "  Pages = {9279},\n"
+                                               "  Url = {https://doi.org/10.21105/joss.09279}\n"
+                                               "}\n"};
+static PetscBool  HtoolCite[2]              = {PETSC_FALSE, PETSC_FALSE};
+// clang-format on
 
 static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
 {
@@ -405,7 +418,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   std::shared_ptr<htool::VirtualInternalLowRankGenerator<PetscScalar>> compressor;
 
   PetscFunctionBegin;
-  PetscCall(PetscCitationsRegister(HtoolCitation, &HtoolCite));
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(HtoolCite); ++i) PetscCall(PetscCitationsRegister(HtoolCitations[i], HtoolCite + i));
   PetscCall(MatShellGetContext(A, &a));
   delete a->wrapper;
   a->target_cluster.reset();
