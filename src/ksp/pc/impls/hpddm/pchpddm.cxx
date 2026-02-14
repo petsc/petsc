@@ -2470,6 +2470,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 }
                 PetscCall(PCSetType(data->levels[0]->pc, PCASM));
                 if (!data->levels[0]->pc->setupcalled) PetscCall(PCASMSetLocalSubdomains(data->levels[0]->pc, 1, ov + !flg, &loc));
+                PetscCall(PCSetModifySubMatrices(data->levels[0]->pc, pc->modifysubmatrices, pc->modifysubmatricesP));
                 PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(data->levels[0]->pc, flg ? A0 : a[0], PETSC_TRUE));
                 if (!flg) ++overlap;
                 if (data->share) {
@@ -2597,6 +2598,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PetscObjectDereference((PetscObject)sorted));
             }
             PetscCall(PCSetFromOptions(data->levels[0]->pc));
+            PetscCall(PCSetModifySubMatrices(data->levels[0]->pc, pc->modifysubmatrices, pc->modifysubmatricesP));
             if (block) {
               PetscCall(PCHPDDMPermute_Private(unsorted, data->is, &uis, sub[0], &C, &perm));
               PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(data->levels[0]->pc, C, algebraic));
@@ -2954,6 +2956,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (inner) {
         if (!inner->setupcalled) PetscCall(PCSetType(inner, PCASM));
         PetscCall(PCSetFromOptions(inner));
+        PetscCall(PCSetModifySubMatrices(inner, pc->modifysubmatrices, pc->modifysubmatricesP));
         PetscCall(PetscStrcmp(((PetscObject)inner)->type_name, PCASM, &flg));
         if (flg) {
           if (!inner->setupcalled) { /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
