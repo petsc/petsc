@@ -128,7 +128,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   Notes:
   This does not need to be called by all processes in the `SNES` MPI communicator.
 
-  A few solvers will try to cut the step size to avoid the domain error but for other solvers `SNESSolve()` stops iterating and and
+  A few solvers will try to cut the step size to avoid the domain error but for other solvers `SNESSolve()` stops iterating and
   returns with a `SNESConvergedReason` of `SNES_DIVERGED_FUNCTION_DOMAIN`
 
   You can direct `SNES` to avoid certain steps by using `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()` or
@@ -143,7 +143,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNESSetFunction()`, `SNESFunctionFn`, `SNESSetJacobianDomainError()`, `SNESVISetVariableBounds()`,
           `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESConvergedReason`, `SNESGetConvergedReason()`,
-          `SNES_DIVERGED_FUNCTION_DOMAIN`, `SNESSetObjectiveDomainError()`
+          `SNES_DIVERGED_FUNCTION_DOMAIN`, `SNESSetObjectiveDomainError()`, `SNES_DIVERGED_OBJECTIVE_DOMAIN`
 @*/
 PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 {
@@ -167,8 +167,8 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
   Notes:
   This does not need to be called by all processes in the `SNES` MPI communicator.
 
-  A few solvers will try to cut the step size to avoid the domain error but for other solvers `SNESSolve()` stops iterating and and
-  returns with a `SNESConvergedReason` of `SNES_DIVERGED_FUNCTION_DOMAIN`
+  A few solvers will try to cut the step size to avoid the domain error but for other solvers `SNESSolve()` stops iterating and
+  returns with a `SNESConvergedReason` of `SNES_DIVERGED_OBJECTIVE_DOMAIN`
 
   You can direct `SNES` to avoid certain steps by using `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()` or
   `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
@@ -178,11 +178,11 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
   You can call `SNESSetJacobianDomainError()` during a Jacobian computation to indicate the proposed solution is not in the domain.
 
   Developer Note:
-  This value is used by `SNESCheckFunctionDomainError()` to determine if the `SNESConvergedReason` is set to `SNES_DIVERGED_FUNCTION_DOMAIN`
+  This value is used by `SNESCheckObjectiveDomainError()` to determine if the `SNESConvergedReason` is set to `SNES_DIVERGED_OBJECTIVE_DOMAIN`
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNESSetFunction()`, `SNESFunctionFn`, `SNESSetJacobianDomainError()`, `SNESVISetVariableBounds()`,
           `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESConvergedReason`, `SNESGetConvergedReason()`,
-          `SNES_DIVERGED_FUNCTION_DOMAIN`, `SNESSetFunctionDomainError()`
+          `SNES_DIVERGED_OBJECTIVE_DOMAIN`, `SNESSetFunctionDomainError()`, `SNES_DIVERGED_FUNCTION_DOMAIN`
 @*/
 PetscErrorCode SNESSetObjectiveDomainError(SNES snes)
 {
@@ -203,7 +203,7 @@ PetscErrorCode SNESSetObjectiveDomainError(SNES snes)
   Level: advanced
 
   Notes:
-  If this is called the `SNESSolve()` stops iterating and returns with a `SNESConvergedReason` of `SNES_DIVERGED_FUNCTION_DOMAIN`
+  If this is called the `SNESSolve()` stops iterating and returns with a `SNESConvergedReason` of `SNES_DIVERGED_JACOBIAN_DOMAIN`
 
   You should always call `SNESGetConvergedReason()` after each `SNESSolve()` and verify if the iteration converged (positive result) or diverged (negative result).
 
