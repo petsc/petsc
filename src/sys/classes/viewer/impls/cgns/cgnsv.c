@@ -226,7 +226,7 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `TSSetFromOptions()`
 M*/
-PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
 {
   PetscViewer_CGNS *cgv;
 
