@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_MPI_H
+#if !defined(PETSC4PY_COMPAT_MPI_H)
 #define PETSC4PY_COMPAT_MPI_H
 
 #if defined(OPEN_MPI)
@@ -16,7 +16,7 @@
 #endif
 #endif
 
-#ifndef OPENMPI_DLOPEN_LIBMPI
+#if !defined(OPENMPI_DLOPEN_LIBMPI)
 #define OPENMPI_DLOPEN_LIBMPI 1
 #endif
 
@@ -60,16 +60,16 @@
   #endif
 #endif
 
-#ifndef RTLD_LAZY
+#if !defined(RTLD_LAZY)
 #define RTLD_LAZY 1
 #endif
-#ifndef RTLD_NOW
+#if !defined(RTLD_NOW)
 #define RTLD_NOW RTLD_LAZY
 #endif
-#ifndef RTLD_LOCAL
+#if !defined(RTLD_LOCAL)
 #define RTLD_LOCAL 0
 #endif
-#ifndef RTLD_GLOBAL
+#if !defined(RTLD_GLOBAL)
 #define RTLD_GLOBAL RTLD_LOCAL
 #endif
 

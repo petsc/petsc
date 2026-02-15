@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_PYBUFFER_H
+#if !defined(PETSC4PY_PYBUFFER_H)
 #define PETSC4PY_PYBUFFER_H
 
 #include <Python.h>

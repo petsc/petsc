@@ -1,4 +1,4 @@
-#ifndef BRATU3D_H
+#if !defined(BRATU3D_H)
 #define BRATU3D_H
 
 #include <petsc.h>

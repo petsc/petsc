@@ -1,6 +1,6 @@
 /* file: del2mat.h */
 
-#ifndef DEL2MAT_H
+#if !defined(DEL2MAT_H)
 #define DEL2MAT_H
 
 #include <petsc.h>

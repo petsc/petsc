@@ -1647,9 +1647,6 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   ux->r     = vp[0];         /* density */
   ux->ru[0] = vp[0] * vp[1]; /* x momentum */
   ux->ru[1] = 0.;
-#if defined DIM > 2
-  if (dim > 2) ux->ru[2] = 0.;
-#endif
   /* E = rho * e + rho * v^2/2 = p/(gam-1) + rho*v^2/2 */
   ux->E = vp[2] / (gamma - 1.) + 0.5 * vp[0] * vp[1] * vp[1];
   return 0;

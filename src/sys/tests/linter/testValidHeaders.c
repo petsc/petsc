@@ -2,7 +2,7 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/randomimpl.h>
 
-#ifndef DMDA
+#if !defined(DMDA)
   #define DMDA "da"
 #endif
 

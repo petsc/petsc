@@ -2091,7 +2091,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     PetscCheck(tjsch->stype == NONE || tjsch->max_cps_ram >= 1 || tjsch->max_cps_disk >= 1, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "The specified storage capacity is insufficient for one checkpoint, which is the minimum");
   }
   if (tjsch->stype >= CAMS_OFFLINE) {
-#ifndef PETSC_HAVE_CAMS
+#if !defined(PETSC_HAVE_CAMS)
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "CAMS is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-cams.");
 #else
     CAMSCTX *actx;
@@ -2111,7 +2111,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     tjsch->actx              = actx;
 #endif
   } else if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
-#ifndef PETSC_HAVE_REVOLVE
+#if !defined(PETSC_HAVE_REVOLVE)
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #else
     PetscRevolveInt rfine, rsnaps, rsnaps2;

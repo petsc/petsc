@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_TAO_H
+#if !defined(PETSC4PY_COMPAT_TAO_H)
 #define PETSC4PY_COMPAT_TAO_H
 #if defined(PETSC_USE_COMPLEX)
 

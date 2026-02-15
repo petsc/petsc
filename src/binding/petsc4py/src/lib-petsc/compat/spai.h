@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_SPAI_H
+#if !defined(PETSC4PY_COMPAT_SPAI_H)
 #define PETSC4PY_COMPAT_SPAI_H
 
 #if !defined(PETSC_HAVE_SPAI)

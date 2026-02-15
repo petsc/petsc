@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_NUMPY_H
+#if !defined(PETSC4PY_NUMPY_H)
 #define PETSC4PY_NUMPY_H
 
 #include <Python.h>

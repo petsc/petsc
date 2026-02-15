@@ -5,7 +5,7 @@
 ! No spaces for #defines as some compilers (PGI) also adds
 ! those additional spaces during preprocessing - bad for fixed format
 !
-#if !defined (PETSCISBASEDEF_H)
+#if !defined(PETSCISBASEDEF_H)
 #define PETSCISBASEDEF_H
 
 #define ISColoringValue PETSC_IS_COLORING_VALUE_TYPE_F

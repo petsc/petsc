@@ -39,7 +39,7 @@ PetscErrorCode VecRegisterAll(void)
   PetscCall(VecRegister(VECMPI, VecCreate_MPI));
   PetscCall(VecRegister(VECSTANDARD, VecCreate_Standard));
   PetscCall(VecRegister(VECSHARED, VecCreate_Shared));
-#if defined PETSC_HAVE_VIENNACL
+#if defined(PETSC_HAVE_VIENNACL)
   PetscCall(VecRegister(VECSEQVIENNACL, VecCreate_SeqViennaCL));
   PetscCall(VecRegister(VECMPIVIENNACL, VecCreate_MPIViennaCL));
   PetscCall(VecRegister(VECVIENNACL, VecCreate_ViennaCL));

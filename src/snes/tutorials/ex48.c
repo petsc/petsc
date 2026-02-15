@@ -71,12 +71,12 @@ There are two compile-time options:
   #define PETSC_RESTRICT
 #endif
 
-#if defined __SSE2__
+#if defined(__SSE2__)
   #include <emmintrin.h>
 #endif
 
 /* The SSE2 kernels are only for PetscScalar=double on architectures that support it */
-#if !defined NO_SSE2 && !defined PETSC_USE_COMPLEX && !defined PETSC_USE_REAL_SINGLE && !defined PETSC_USE_REAL___FLOAT128 && !defined PETSC_USE_REAL___FP16 && defined __SSE2__
+#if !defined(NO_SSE2) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16) && defined(__SSE2__)
   #define USE_SSE2_KERNELS 1
 #else
   #define USE_SSE2_KERNELS 0
@@ -1096,7 +1096,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info, Node ***x, Mat B,
               t2         = _mm_mul_pd(dp1, p4dv1p2du0);                          /* dp1 (4 dv1 + 2 du0) */
 
 #endif
-#if defined COMPUTE_LOWER_TRIANGULAR      /* The element matrices are always symmetric so computing the lower-triangular part is not necessary */
+#if defined(COMPUTE_LOWER_TRIANGULAR)     /* The element matrices are always symmetric so computing the lower-triangular part is not necessary */
             for (ll = ls; ll < 8; ll++) { /* trial functions */
 #else
             for (ll = l; ll < 8; ll++) {
@@ -1186,7 +1186,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info, Node ***x, Mat B,
                 {rc[l].k,  rc[l].j,  rc[l].i,  0},
                 {rc[l4].k, rc[l4].j, rc[l4].i, 0}
               };
-#if defined COMPUTE_LOWER_TRIANGULAR
+#if defined(COMPUTE_LOWER_TRIANGULAR)
               const PetscScalar Kel[4][4] = {
                 {Ke[2 * l + 0][2 * l + 0],  Ke[2 * l + 0][2 * l + 1],  Ke[2 * l + 0][2 * l4 + 0],  Ke[2 * l + 0][2 * l4 + 1] },
                 {Ke[2 * l + 1][2 * l + 0],  Ke[2 * l + 1][2 * l + 1],  Ke[2 * l + 1][2 * l4 + 0],  Ke[2 * l + 1][2 * l4 + 1] },
@@ -1205,7 +1205,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info, Node ***x, Mat B,
               PetscCall(MatSetValuesBlockedStencil(B, 2, rcl, 2, rcl, &Kel[0][0], ADD_VALUES));
             }
           } else {
-#if !defined COMPUTE_LOWER_TRIANGULAR /* fill in lower-triangular part, this is really cheap compared to computing the entries */
+#if !defined(COMPUTE_LOWER_TRIANGULAR) /* fill in lower-triangular part, this is really cheap compared to computing the entries */
             for (l = 0; l < 8; l++) {
               for (ll = l + 1; ll < 8; ll++) {
                 Ke[ll * 2 + 0][l * 2 + 0] = Ke[l * 2 + 0][ll * 2 + 0];

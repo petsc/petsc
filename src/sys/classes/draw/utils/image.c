@@ -58,7 +58,7 @@ static PetscErrorCode PetscDrawImageSave_PPM(const char filename[], unsigned cha
   #include <png.h>
 
   #if defined(PNG_SETJMP_SUPPORTED)
-    #ifndef png_jmpbuf
+    #if !defined(png_jmpbuf)
       #define png_jmpbuf(png_ptr) ((png_ptr)->jmpbuf)
     #endif
   #endif

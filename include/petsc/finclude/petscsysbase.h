@@ -2,10 +2,10 @@
 !  Manually maintained part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements
 !
-#if !defined (PETSCSYSBASEDEF_H)
+#if !defined(PETSCSYSBASEDEF_H)
 #define PETSCSYSBASEDEF_H
 #include "petscconf.h"
-#if defined (PETSC_HAVE_MPIUNI)
+#if defined(PETSC_HAVE_MPIUNI)
 #include "petsc/mpiuni/mpiunifdef.h"
 #endif
 #include "petscversion.h"
@@ -106,7 +106,7 @@
 #define PetscConj(a) conjg(a)
 #define PetscImaginaryPart(a) aimag(a)
 #else
-#if defined (PETSC_USE_REAL_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscScalar PetscFortranFloat
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscScalar PetscFortranLongDouble
@@ -118,7 +118,7 @@
 #define PetscImaginaryPart(a) 0.0
 #endif
 
-#if defined (PETSC_USE_REAL_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscReal PetscFortranFloat
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscReal PetscFortranLongDouble

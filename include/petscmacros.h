@@ -19,7 +19,7 @@
   #endif
 #endif // __cplusplus
 
-#ifndef PETSC_CPP_VERSION
+#if !defined(PETSC_CPP_VERSION)
   #define PETSC_CPP_VERSION 0
 #endif
 
@@ -36,7 +36,7 @@
   #endif
 #endif // __STDC_VERSION__
 
-#ifndef PETSC_C_VERSION
+#if !defined(PETSC_C_VERSION)
   #define PETSC_C_VERSION 0
 #endif
 
@@ -238,15 +238,15 @@ M*/
   #endif
 #endif // PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG
 
-#ifndef PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE
+#if !defined(PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE)
   #define PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(bufno, typeno)
 #endif
 
-#ifndef PETSC_ATTRIBUTE_MPI_TYPE_TAG
+#if !defined(PETSC_ATTRIBUTE_MPI_TYPE_TAG)
   #define PETSC_ATTRIBUTE_MPI_TYPE_TAG(type)
 #endif
 
-#ifndef PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE
+#if !defined(PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE)
   #define PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(type)
 #endif
 
@@ -1225,7 +1225,7 @@ static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcep
   #endif
 #endif
 
-#ifndef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN
+#if !defined(PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN)
   #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN(...)
   #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END(...)
   // only undefine these if they are not used
@@ -1310,7 +1310,7 @@ M*/
   #define PetscPragmaSIMD _Pragma("_CRI ivdep")
 #endif
 
-#ifndef PetscPragmaSIMD
+#if !defined(PetscPragmaSIMD)
   #define PetscPragmaSIMD
 #endif
 

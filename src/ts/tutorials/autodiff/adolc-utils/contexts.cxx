@@ -7,7 +7,7 @@
      $PETSC_ARCH/externalpackages/ADOL-C-2.6.0/ADOL-C/doc/adolc-manual.pdf
 */
 
-#ifndef ADOLCCTX
+#if !defined(ADOLCCTX)
   #define ADOLCCTX
 typedef struct {
   /* No ADOL-C annotation */
@@ -24,7 +24,7 @@ typedef struct {
 #endif
 
 /* Matrix (free) context */
-#ifndef MATCTX
+#if !defined(MATCTX)
   #define MATCTX
 typedef struct {
   PetscReal     time;

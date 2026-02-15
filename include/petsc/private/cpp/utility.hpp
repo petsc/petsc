@@ -34,7 +34,7 @@ struct integer_sequence {
   static constexpr std::size_t size() noexcept { return sizeof...(idx); }
 };
 
-  #ifndef __has_builtin
+  #if !defined(__has_builtin)
     #define __has_builtin(x) 0
   #endif
 
