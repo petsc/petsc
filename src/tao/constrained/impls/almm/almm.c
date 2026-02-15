@@ -411,8 +411,6 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------- */
-
 /*MC
   TAOALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
 

@@ -436,8 +436,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
-
 static PetscErrorCode TaoSetup_BMRM(Tao tao)
 {
   PetscFunctionBegin;
@@ -446,7 +444,6 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 {
   PetscFunctionBegin;
@@ -465,7 +462,6 @@ static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 {
   PetscBool isascii;
@@ -479,7 +475,6 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 /*MC
   TAOBMRM - bundle method for regularized risk minimization
 

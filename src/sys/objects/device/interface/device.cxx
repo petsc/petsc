@@ -682,9 +682,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 
   PetscCall(PetscDeviceSetDefaultDeviceType(deviceContextInitDevice));
   PetscCall(PetscDeviceContextSetRootDeviceType_Internal(PETSC_DEVICE_DEFAULT()));
-  /* ----------------------------------------------------------------------------------- */
   /*                       PetscDevice is now fully initialized                          */
-  /* ----------------------------------------------------------------------------------- */
   {
     /*
       query the options db to get the root settings from the user (if any).

@@ -641,7 +641,6 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*----------------------------------------------------------------------------------------------*/
 /*@
   VecStrideGatherAll - Gathers all the single components from a multi-component vector into
   separate vectors.

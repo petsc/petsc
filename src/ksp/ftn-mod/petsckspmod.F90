@@ -5,8 +5,6 @@ module petsckspdef
 #include <../ftn/ksp/petscall.h>
 end module petsckspdef
 
-!     ----------------------------------------------
-
 module petscksp
   use petscdm
   use petsckspdef

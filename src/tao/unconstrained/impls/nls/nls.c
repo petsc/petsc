@@ -694,7 +694,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetUp_NLS(Tao tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
@@ -711,7 +710,6 @@ static PetscErrorCode TaoSetUp_NLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoDestroy_NLS(Tao tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
@@ -728,7 +726,6 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_NLS(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
@@ -788,7 +785,6 @@ static PetscErrorCode TaoSetFromOptions_NLS(Tao tao, PetscOptionItems PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 {
   TAO_NLS  *nlsP = (TAO_NLS *)tao->data;
@@ -814,7 +810,6 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
   TAONLS - Newton's method with linesearch for unconstrained minimization.
   At each iteration, the Newton line search method solves the symmetric

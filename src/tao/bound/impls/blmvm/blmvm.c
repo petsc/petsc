@@ -2,7 +2,6 @@
 #include <../src/tao/unconstrained/impls/lmvm/lmvm.h>
 #include <../src/tao/bound/impls/blmvm/blmvm.h>
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 {
   TAO_BLMVM                   *blmP      = (TAO_BLMVM *)tao->data;
@@ -134,7 +133,6 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 {
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
@@ -151,7 +149,6 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
@@ -169,7 +166,6 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)
 {
   TAO_BLMVM *lmP = (TAO_BLMVM *)tao->data;
@@ -207,7 +203,6 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
   TAOBLMVM - Bounded limited memory variable metric is a quasi-Newton method
          for nonlinear minimization with bound constraints. It is an extension

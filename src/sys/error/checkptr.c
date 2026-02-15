@@ -30,8 +30,6 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------------*/
-
 #if PetscDefined(HAVE_SETJMP_H)
   #include <setjmp.h>
 static jmp_buf   PetscSegvJumpBuf;

@@ -4,7 +4,6 @@
 static PetscErrorCode GPCGGradProjections(Tao tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -26,7 +25,6 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -41,7 +39,6 @@ static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao, PetscOptionItems PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -76,7 +73,6 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetup_GPCG(Tao tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -285,7 +281,6 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 /*MC
   TAOGPCG - gradient projected conjugate gradient algorithm is an active-set
         conjugate-gradient based method for bound-constrained minimization

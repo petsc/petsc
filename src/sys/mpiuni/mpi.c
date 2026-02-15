@@ -360,8 +360,6 @@ int MPI_Abort(MPI_Comm comm, int errorcode)
   return MPI_SUCCESS;
 }
 
-/* --------------------------------------------------------------------------*/
-
 static int MPI_was_initialized = 0;
 static int MPI_was_finalized   = 0;
 

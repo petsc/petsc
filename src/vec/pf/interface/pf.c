@@ -103,8 +103,6 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------*/
-
 /*@
   PFApplyVec - Applies the mathematical function to a vector
 

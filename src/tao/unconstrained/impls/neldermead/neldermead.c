@@ -1,7 +1,6 @@
 #include <../src/tao/unconstrained/impls/neldermead/neldermead.h>
 #include <petscvec.h>
 
-/*------------------------------------------------------------*/
 static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
 {
   PetscReal *values  = nm->f_values;
@@ -20,7 +19,6 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
 {
   PetscFunctionBegin;
@@ -36,7 +34,6 @@ static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetUp_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -59,7 +56,6 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoDestroy_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -78,7 +74,6 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -95,7 +90,6 @@ static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems PetscOption
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_NM(Tao tao, PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -115,7 +109,6 @@ static PetscErrorCode TaoView_NM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSolve_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -227,7 +220,6 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
  TAONM - Nelder-Mead solver for derivative free, unconstrained minimization
 

@@ -94,7 +94,6 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
    TAOSSILS - semi-smooth infeasible linesearch algorithm for solving
        complementarity constraints

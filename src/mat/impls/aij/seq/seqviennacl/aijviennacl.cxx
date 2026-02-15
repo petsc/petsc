@@ -249,7 +249,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------*/
 /*@C
   MatCreateSeqAIJViennaCL - Creates a sparse matrix in `MATSEQAIJVIENNACL` (compressed row) format
   (the default parallel PETSc format).  This matrix will ultimately be pushed down

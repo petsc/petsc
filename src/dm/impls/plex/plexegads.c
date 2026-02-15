@@ -889,8 +889,8 @@ PetscErrorCode DMPlexCreateGeom_Internal(MPI_Comm comm, ego context, ego model, 
   if (rank == 0) {
     const PetscInt debug = 0;
 
-    /* ---------------------------------------------------------------------------------------------------
-    Generate PETSc DMPlex
+    /*
+      Generate PETSc DMPlex
       Get all Nodes in model, record coordinates in a correctly formatted array
       Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
       We need to uniformly refine the initial geometry to guarantee a valid mesh
@@ -1488,7 +1488,6 @@ PetscErrorCode DMPlexCreateGeom(MPI_Comm comm, ego context, ego model, DM *newdm
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    // ---------------------------------------------------------------------------------------------------
     // Generate PETSc DMPlex
     //  Get all Nodes in model, record coordinates in a correctly formatted array
     //  Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
@@ -2103,9 +2102,7 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    // ---------------------------------------------------------------------------------------------------
     // Generate PETSc DMPlex from EGADSlite created Tessellation of geometry
-    // ---------------------------------------------------------------------------------------------------
 
     // Calculate cell and vertex sizes
     if (islite) {

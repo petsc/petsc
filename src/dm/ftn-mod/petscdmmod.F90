@@ -22,7 +22,6 @@ module petscdmdef
   end type tPetscTabulation
 
 end module petscdmdef
-!     ----------------------------------------------
 
 module petscdm
   use, intrinsic :: ISO_C_binding
@@ -174,8 +173,6 @@ contains
 
 end module petscdm
 
-!     ----------------------------------------------
-
 module petscdmdadef
   use, intrinsic :: ISO_C_binding
   use petscdmdef
@@ -198,8 +195,6 @@ contains
 
 #include <../ftn/dm/petscdmda.hf90>
 end module petscdmda
-
-!     ----------------------------------------------
 
 module petscdmplex
   use, intrinsic :: ISO_C_binding
@@ -224,8 +219,6 @@ contains
 #include <../ftn/dm/petscdmplextransform.hf90>
 end module petscdmplex
 
-!     ----------------------------------------------
-
 module petscdmstag
   use, intrinsic :: ISO_C_binding
   use petscdmdef
@@ -238,8 +231,6 @@ contains
 
 #include <../ftn/dm/petscdmstag.hf90>
 end module petscdmstag
-
-!     ----------------------------------------------
 
 module petscdmswarm
   use, intrinsic :: ISO_C_binding
@@ -256,8 +247,6 @@ contains
 #include <../ftn/dm/petscdmswarm.hf90>
 end module petscdmswarm
 
-!     ----------------------------------------------
-
 module petscdmcomposite
   use, intrinsic :: ISO_C_binding
   use petscdm
@@ -267,8 +256,6 @@ module petscdmcomposite
 #include <../ftn/dm/petscdmcomposite.h90>
 end module petscdmcomposite
 
-!     ----------------------------------------------
-
 module petscdmforest
   use, intrinsic :: ISO_C_binding
   use petscdm
@@ -276,8 +263,6 @@ module petscdmforest
 #include <../ftn/dm/petscdmforest.h>
 #include <../ftn/dm/petscdmforest.h90>
 end module petscdmforest
-
-!     ----------------------------------------------
 
 module petscdmnetwork
   use, intrinsic :: ISO_C_binding
@@ -291,8 +276,6 @@ contains
 
 #include <../ftn/dm/petscdmnetwork.hf90>
 end module petscdmnetwork
-
-!     ----------------------------------------------
 
 module petscdmadaptor
   use, intrinsic :: ISO_C_binding
@@ -308,8 +291,6 @@ contains
 
 !#include <../ftn/dm/petscdmadaptor.hf90>
 end module petscdmadaptor
-
-!     ----------------------------------------------
 
 module petscdmshell
   use petscdm

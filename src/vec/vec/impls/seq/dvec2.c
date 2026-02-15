@@ -298,7 +298,6 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
 }
 #endif
 
-/* ----------------------------------------------------------------------------*/
 PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   const PetscInt     n = xin->map->n;

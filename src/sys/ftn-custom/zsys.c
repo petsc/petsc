@@ -28,7 +28,6 @@ PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x, PetscScalar *y, size_t *sh
   *shift = y - x;
 }
 
-/* ---------------------------------------------------------------------------------*/
 /*
         This version does not do a malloc
 */

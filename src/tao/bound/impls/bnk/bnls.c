@@ -5,8 +5,6 @@
  Implements Newton's Method with a line search approach for
  solving bound constrained minimization problems.
 
- ------------------------------------------------------------
-
  x_0 = VecMedian(x_0)
  f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)

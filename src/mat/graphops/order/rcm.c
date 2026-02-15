@@ -3,9 +3,7 @@
 #include <petscsys.h>
 #include <petsc/private/matorderimpl.h>
 
-/*****************************************************************/
 /*********     RCM ..... REVERSE CUTHILL-MCKEE ORDERING   *******/
-/*****************************************************************/
 /*    PURPOSE - RCM NUMBERS A CONNECTED COMPONENT SPECIFIED BY    */
 /*       MASK AND ROOT, USING THE RCM ALGORITHM.                  */
 /*       THE NUMBERING IS TO BE STARTED AT THE NODE ROOT.         */
@@ -36,7 +34,6 @@
 /*    PROGRAM SUBROUTINES -                                     */
 /*       DEGREE.                                                */
 /*                                                              */
-/****************************************************************/
 PetscErrorCode SPARSEPACKrcm(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
 {
   /* System generated locals */
@@ -48,7 +45,6 @@ PetscErrorCode SPARSEPACKrcm(const PetscInt *root, const PetscInt *xadj, const P
 
   /*       FIND THE DEGREES OF THE NODES IN THE                  */
   /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */
-  /*       -------------------------------------                 */
 
   PetscFunctionBegin;
   /* Parameter adjustments */

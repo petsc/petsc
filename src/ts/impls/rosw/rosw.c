@@ -1287,8 +1287,6 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSRosWTableauReset(TS ts)
 {
   TS_RosW    *ros = (TS_RosW *)ts->data;
@@ -1512,7 +1510,6 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems PetscOptionsObject)
 {

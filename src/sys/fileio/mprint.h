@@ -3,7 +3,6 @@
 #include <petscsys.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/petscimpl.h>
 
-/* ----------------------------------------------------------------------- */
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
   char       *string;

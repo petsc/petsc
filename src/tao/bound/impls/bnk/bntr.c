@@ -5,8 +5,6 @@
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
 
- ------------------------------------------------------------
-
  x_0 = VecMedian(x_0)
  f_0, g_0= TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)
@@ -197,7 +195,6 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTR(Tao tao)
 {
   KSP       ksp;
@@ -211,8 +208,6 @@ static PetscErrorCode TaoSetUp_BNTR(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
@@ -223,7 +218,6 @@ static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 /*MC
   TAOBNTR - Bounded Newton Trust Region for nonlinear minimization with bound constraints.
 

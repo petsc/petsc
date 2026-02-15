@@ -122,8 +122,6 @@ PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -----------------------------------------------------------------------------------------*/
-
 /*
     Creates the global mapping information in the ISLocalToGlobalMapping structure
 

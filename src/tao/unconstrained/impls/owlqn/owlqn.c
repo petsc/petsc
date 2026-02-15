@@ -240,7 +240,6 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 {
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
@@ -257,7 +256,6 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
@@ -270,7 +268,6 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 {
   TAO_OWLQN *lm = (TAO_OWLQN *)tao->data;
@@ -288,7 +285,6 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
   TAOOWLQN - orthant-wise limited memory quasi-newton algorithm
 

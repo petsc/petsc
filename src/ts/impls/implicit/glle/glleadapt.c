@@ -218,7 +218,6 @@ static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------- None ----------------------------------- */
 typedef struct {
   PetscInt  scheme;
   PetscReal h;
@@ -248,7 +247,6 @@ PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------- Size ----------------------------------- */
 typedef struct {
   PetscReal desired_h;
 } TSGLLEAdapt_Size;
@@ -289,7 +287,6 @@ PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------- Both ----------------------------------- */
 typedef struct {
   PetscInt  count_at_order;
   PetscReal desired_h;

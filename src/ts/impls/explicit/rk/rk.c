@@ -1079,8 +1079,6 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSRKTableauReset(TS ts)
 {
   TS_RK    *rk  = (TS_RK *)ts->data;

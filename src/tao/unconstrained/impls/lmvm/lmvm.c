@@ -165,7 +165,6 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 {
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
@@ -182,7 +181,6 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_LMVM *lm = (TAO_LMVM *)tao->data;
@@ -196,7 +194,6 @@ static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems PetscOpti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 {
   TAO_LMVM *lm = (TAO_LMVM *)tao->data;
@@ -221,8 +218,6 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------- */
 
 /*MC
   TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton

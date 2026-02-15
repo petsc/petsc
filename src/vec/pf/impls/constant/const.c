@@ -76,7 +76,6 @@ PETSC_INTERN PetscErrorCode PFCreate_Quick(PF pf, PetscErrorCode (*function)(voi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------------------------------------------*/
 static PetscErrorCode PFApply_Identity(void *value, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
   PetscInt i;

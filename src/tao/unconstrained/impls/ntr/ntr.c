@@ -430,7 +430,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_NTR(Tao tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
@@ -445,7 +444,6 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoDestroy_NTR(Tao tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
@@ -457,7 +455,6 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
@@ -497,7 +494,6 @@ static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 /*MC
   TAONTR - Newton's method with trust region for unconstrained minimization.
   At each iteration, the Newton trust region method solves the system.

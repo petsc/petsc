@@ -41,7 +41,6 @@ static PetscErrorCode TSStep_Euler(TS ts)
   ts->time_step = next_time_step;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetUp_Euler(TS ts)
 {
@@ -71,7 +70,6 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
   PetscCall(PetscFree(ts->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_Euler(TS ts, PetscOptionItems PetscOptionsObject)
 {
@@ -104,7 +102,6 @@ static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscR
   *yi = xi;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------------ */
 
 /*MC
       TSEULER - ODE solver using the explicit forward Euler method

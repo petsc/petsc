@@ -6,7 +6,7 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-/* ------------------------------------------------------------------
+/*
    Microsoft Windows has its own time routines
 */
 #if defined(PETSC_USE_MICROSOFT_TIME)
@@ -59,7 +59,7 @@ double MPI_Wtime(void)
   return ptime;
 }
 
-/* ------------------------------------------------------------------
+/*
     The usual Unix time routines.
 */
 #else

@@ -104,8 +104,6 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
   return PETSC_SUCCESS;
 }
 
-/* -----------------------------------------------------------------------------------------------*/
-
 PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void);
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *filename, PetscInt len)
