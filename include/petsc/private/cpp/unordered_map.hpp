@@ -1150,11 +1150,18 @@ struct indirect_hasher : Hasher {
     return static_cast<const nested_value_type &>(*this)(kv.first);
   }
 
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
   template <typename T>
   PETSC_NODISCARD std::size_t operator()(const std::pair<key_type, T> &kv) noexcept
   {
     return static_cast<nested_value_type &>(*this)(kv.first);
   }
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
 
   using nested_value_type::operator();
 };

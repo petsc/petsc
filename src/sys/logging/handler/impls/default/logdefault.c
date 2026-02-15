@@ -377,6 +377,7 @@ static PetscErrorCode PetscLogHandlerDefaultGetClassPerf(PetscLogHandler handler
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wconversion")
 static PetscErrorCode PetscLogHandlerObjectCreate_Default(PetscLogHandler h, PetscObject obj)
 {
   PetscLogHandler_Default def = (PetscLogHandler_Default)h->data;
@@ -1848,6 +1849,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, PetscViewer viewer)
 {

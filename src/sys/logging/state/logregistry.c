@@ -208,6 +208,7 @@ struct _n_PetscLogGlobalNames {
   PetscInt    *local_to_global;
 };
 
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wconversion")
 static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt num_names_local, const char **names, PetscInt *num_names_global_p, PetscInt **global_index_to_local_index_p, PetscInt **local_index_to_global_index_p, const char ***global_names_p)
 {
   PetscMPIInt size, rank;
@@ -259,7 +260,7 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
     PetscCallMPI(MPIU_Allreduce(&my_loc, &next_loc, 1, MPIU_INT, MPI_MIN, comm));
     if (next_loc == PETSC_MPI_INT_MAX) break;
     PetscAssert(next_loc >= p, comm, PETSC_ERR_PLIB, "Failed invariant, expected increasing next process");
-    p          = next_loc;
+    PetscCall(PetscCIntCast(next_loc, &p));
     num_to_add = (rank == p) ? num_names_local_remaining : -1;
     PetscCallMPI(MPI_Bcast(&num_to_add, 1, MPIU_INT, p, comm));
     {
@@ -292,8 +293,7 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
         num_names_local_remaining--;
       }
     } else {
-      for (PetscInt i = 0; i < num_to_add; i++) {
-        PetscInt s;
+      for (PetscInt i = 0, s; i < num_to_add; i++) {
         PetscCallMPI(MPI_Bcast(str_buffer, max_name_len + 1, MPI_CHAR, p, comm));
         PetscCall(PetscStrallocpy(str_buffer, &global_names[num_names_global]));
         for (s = 0; s < num_names_local; s++) {
@@ -323,6 +323,7 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
   *global_names_p                = (const char **)global_names;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 PETSC_INTERN PetscErrorCode PetscLogGlobalNamesCreate(MPI_Comm comm, PetscInt num_names_local, const char **local_names, PetscLogGlobalNames *global_names_p)
 {
@@ -391,7 +392,7 @@ PETSC_INTERN PetscErrorCode PetscLogRegistryCreateGlobalStageNames(MPI_Comm comm
   PetscFunctionBegin;
   PetscCall(PetscLogStageArrayGetSize(registry->stages, &num_stages_local, NULL));
   PetscCall(PetscMalloc1(num_stages_local, &names));
-  for (PetscInt i = 0; i < num_stages_local; i++) {
+  for (PetscLogEvent i = 0; i < num_stages_local; i++) {
     PetscLogStageInfo stage_info = {NULL};
     PetscCall(PetscLogRegistryStageGetInfo(registry, i, &stage_info));
     names[i] = stage_info.name;
@@ -409,7 +410,7 @@ PETSC_INTERN PetscErrorCode PetscLogRegistryCreateGlobalEventNames(MPI_Comm comm
   PetscFunctionBegin;
   PetscCall(PetscLogEventArrayGetSize(registry->events, &num_events_local, NULL));
   PetscCall(PetscMalloc1(num_events_local, &names));
-  for (PetscInt i = 0; i < num_events_local; i++) {
+  for (PetscLogEvent i = 0; i < num_events_local; i++) {
     PetscLogEventInfo event_info = {NULL, 0, PETSC_FALSE};
 
     PetscCall(PetscLogRegistryEventGetInfo(registry, i, &event_info));
