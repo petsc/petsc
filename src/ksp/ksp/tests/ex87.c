@@ -28,13 +28,14 @@ int main(int argc, char **argv)
   PCType      type;
   PetscReal   norm[2], tol = 100.0 * PETSC_MACHINE_EPSILON;
   PetscScalar a, b, c, d;
-  PetscInt    n = 24, Istart, Iend, i;
+  PetscInt    n = 24, Istart, Iend, i, M = 1;
   PetscBool   flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nBlock-structured matrix, n=%" PetscInt_FMT "\n\n", n));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,16 +107,38 @@ int main(int argc, char **argv)
   PetscCall(KSPSetFromOptions(ksp));
 
   PetscCall(MatCreateVecs(H, &x, &rhs));
-  PetscCall(VecSet(rhs, 1.0));
-  PetscCall(KSPSolve(ksp, rhs, x));
+  if (M == 1) {
+    PetscCall(VecSet(rhs, 1.0));
+    PetscCall(KSPSolve(ksp, rhs, x));
 
-  /* check final residual */
-  PetscCall(VecDuplicate(rhs, &r));
-  PetscCall(MatMult(H, x, r));
-  PetscCall(VecAXPY(r, -1.0, rhs));
-  PetscCall(VecNorm(r, NORM_2, norm));
-  PetscCall(VecNorm(rhs, NORM_2, norm + 1));
-  PetscCheck(norm[0] / norm[1] < 10.0 * PETSC_SMALL, PetscObjectComm((PetscObject)H), PETSC_ERR_PLIB, "Error ||H x-rhs||_2 / ||rhs||_2: %1.6e", (double)(norm[0] / norm[1]));
+    /* check final residual */
+    PetscCall(VecDuplicate(rhs, &r));
+    PetscCall(MatMult(H, x, r));
+    PetscCall(VecAXPY(r, -1.0, rhs));
+    PetscCall(VecNorm(r, NORM_2, norm));
+    PetscCall(VecNorm(rhs, NORM_2, norm + 1));
+    PetscCheck(norm[0] / norm[1] < 10.0 * PETSC_SMALL, PetscObjectComm((PetscObject)H), PETSC_ERR_PLIB, "Error ||H x-rhs||_2 / ||rhs||_2: %1.6e", (double)(norm[0] / norm[1]));
+    PetscCall(VecDestroy(&r));
+  } else {
+    Mat     B, X, R;
+    VecType type;
+
+    PetscCall(MatGetLocalSize(H, &n, NULL));
+    PetscCall(VecGetType(rhs, &type));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, type, n, PETSC_DECIDE, PETSC_DECIDE, M, -1, NULL, &B));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, type, n, PETSC_DECIDE, PETSC_DECIDE, M, -1, NULL, &X));
+    PetscCall(MatSetRandom(B, NULL));
+    PetscCall(KSPMatSolve(ksp, B, X));
+    /* check final residual */
+    PetscCall(MatMatMult(H, X, MAT_INITIAL_MATRIX, PETSC_DECIDE, &R));
+    PetscCall(MatAXPY(R, -1.0, B, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(R, NORM_1, norm));
+    PetscCall(MatNorm(B, NORM_1, norm + 1));
+    PetscCheck(norm[0] / norm[1] < 10.0 * PETSC_SMALL, PetscObjectComm((PetscObject)H), PETSC_ERR_PLIB, "Error ||H X-B||_1 / ||B||_1: %1.6e", (double)(norm[0] / norm[1]));
+    PetscCall(MatDestroy(&R));
+    PetscCall(MatDestroy(&X));
+    PetscCall(MatDestroy(&B));
+  }
 
   /* check PetscMemType */
   PetscCall(KSPGetPC(ksp, &pc));
@@ -148,7 +171,6 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&H));
   PetscCall(VecDestroy(&rhs));
   PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&r));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -163,17 +185,22 @@ int main(int argc, char **argv)
          args: -ksp_pc_side right
       test:
          suffix: real_fieldsplit
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -M {{1 2}shared output}
       test:
          requires: cuda
          nsize: {{1 4}}
          suffix: real_fieldsplit_cuda
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijcusparse
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijcusparse -M {{1 2}shared output}
       test:
          requires: hip
          nsize: 4 # this is broken with a single process, see https://gitlab.com/petsc/petsc/-/issues/1529
          suffix: real_fieldsplit_hip
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijhipsparse
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijhipsparse -M {{1 2}shared output}
+      test:
+         requires: hpddm
+         nsize: 4
+         suffix: real_fieldsplit_hpddm
+         args: -ksp_type hpddm -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type {{diag lower upper}shared output} -pc_fieldsplit_schur_precondition full -M 2
 
    testset:
       requires: complex
@@ -193,6 +220,10 @@ int main(int argc, char **argv)
          args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type scalapack -fieldsplit_1_explicit_operator_mat_type scalapack
       test:
          suffix: complex_fieldsplit
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian -M {{1 2}shared output}
+      test:
+         requires: hpddm
+         suffix: complex_fieldsplit_hpddm
+         args: -ksp_type hpddm -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type {{diag lower upper}shared output} -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian -M 2
 
 TEST*/
