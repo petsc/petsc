@@ -3,21 +3,23 @@
 typedef struct {
   PetscErrorCode (*numeric)(Mat);
   PetscCtxDestroyFn *destroy;
-  Mat                B;
+  Mat                B, D;
   PetscScalar        scale;
   PetscBool          conjugate;
-  PetscContainer     container;
   void              *data;
 } MatProductCtx_HT;
 
 static PetscErrorCode MatProductCtxDestroy_HT(PetscCtxRt ptr)
 {
   MatProductCtx_HT *data = *(MatProductCtx_HT **)ptr;
+  PetscContainer    container;
 
   PetscFunctionBegin;
   if (data->data) PetscCall((*data->destroy)(&data->data));
   if (data->conjugate) PetscCall(MatDestroy(&data->B));
-  PetscCall(PetscContainerDestroy(&data->container));
+  PetscCall(PetscObjectQuery((PetscObject)data->D, "MatProductCtx_HT", (PetscObject *)&container));
+  PetscCall(PetscContainerDestroy(&container));
+  PetscCall(PetscObjectCompose((PetscObject)data->D, "MatProductCtx_HT", NULL));
   PetscCall(PetscFree(data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -154,7 +156,7 @@ static PetscErrorCode MatProductSetFromOptions_HT(Mat D)
       } else PetscCall(PetscContainerGetPointer(container, &data));
       data->scale     = scale;
       data->conjugate = (PetscBool)Atrans;
-      data->container = container;
+      data->D         = D;
     }
     ptype = MATPRODUCT_UNSPECIFIED;
     switch (D->product->type) {
