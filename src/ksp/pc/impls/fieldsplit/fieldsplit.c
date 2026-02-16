@@ -1119,7 +1119,7 @@ static PetscErrorCode PCSetUpOnBlocks_FieldSplit_Schur(PC pc)
   if (jac->schurpre != PC_FIELDSPLIT_SCHUR_PRE_FULL) {
     PetscCall(KSPSetUp(jac->kspschur));
     PetscCall(KSPSetUpOnBlocks(jac->kspschur));
-  } else if (kspUpper == kspA) {
+  } else if (kspUpper == kspA && jac->schurfactorization == PC_FIELDSPLIT_SCHUR_FACT_FULL) {
     Mat          A;
     PetscInt     m, M, N;
     VecType      vtype;
@@ -1131,16 +1131,19 @@ static PetscErrorCode PCSetUpOnBlocks_FieldSplit_Schur(PC pc)
     PetscCall(MatGetVecType(jac->B, &vtype));
     PetscCall(VecGetArrayAndMemType(ilinkA->x, &array, &mtype));
     PetscCall(VecRestoreArrayAndMemType(ilinkA->x, &array));
-    if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(PetscMalloc1(m * (N + 1), &array));
+    PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&A));
+    if (!A) {
+      if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(PetscMalloc1(m * (N + 1), &array));
 #if PetscDefined(HAVE_CUDA)
-    else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+      else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
 #endif
 #if PetscDefined(HAVE_HIP)
-    else if (PetscMemTypeHIP(mtype)) PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+      else if (PetscMemTypeHIP(mtype)) PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
 #endif
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
-    PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", (PetscObject)A));
-    PetscCall(MatDestroy(&A));
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
+      PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", (PetscObject)A));
+      PetscCall(MatDestroy(&A));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
