@@ -5,7 +5,7 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petscbt.h>
 
-static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat, PetscInt, char **, PetscInt *, PetscInt **);
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat, PetscInt, PetscBT *, PetscInt *, PetscInt **);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat, PetscInt, PetscInt **, PetscInt **, PetscInt *);
 
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov)
@@ -66,7 +66,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[])
   PetscBT         *table;
   MPI_Comm         comm, *iscomms;
   MPI_Request     *s_waits1, *r_waits1, *s_waits2, *r_waits2;
-  char            *t_p;
+  PetscByte       *t_p;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));

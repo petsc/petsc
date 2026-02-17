@@ -8,7 +8,7 @@
 #include <petscsf.h>
 
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat, PetscInt, IS *);
-static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat, PetscInt, char **, PetscInt *, PetscInt **, PetscHMapI *);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat, PetscInt, PetscBT *, PetscInt *, PetscInt **, PetscHMapI *);
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat, PetscInt, PetscInt **, PetscInt **, PetscInt *);
 extern PetscErrorCode MatGetRow_MPIAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 extern PetscErrorCode MatRestoreRow_MPIAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
@@ -509,7 +509,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
   MPI_Request *s_waits1, *r_waits1, *s_waits2, *r_waits2;
   MPI_Status  *recv_status;
   MPI_Comm    *iscomms;
-  char        *t_p;
+  PetscByte   *t_p;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));

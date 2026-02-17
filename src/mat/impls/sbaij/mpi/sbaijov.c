@@ -166,7 +166,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscInt      **odata2_ptr, *ctable = NULL, *btable, len_max, len_est;
   PetscInt        len_unused, nodata2;
   PetscInt        ois_max; /* max no of is[] in each of processor */
-  char           *t_p;
+  PetscByte      *t_p;
   MPI_Comm        comm;
   MPI_Request    *s_waits1, *s_waits2, r_req;
   MPI_Status     *s_status, r_status;
