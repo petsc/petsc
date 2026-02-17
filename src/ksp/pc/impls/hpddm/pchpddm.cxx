@@ -2332,6 +2332,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       else if (!algebraic && structure != SAME_NONZERO_PATTERN)
         PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_levels_1_st_matstructure %s (!= %s)\n", pcpre ? pcpre : "", MatStructures[structure], MatStructures[SAME_NONZERO_PATTERN]));
       else data->share = PETSC_TRUE;
+      if (!data->share) {
+        PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-%spc_hpddm_levels_1_st_share_sub_ksp", pcpre ? pcpre : ""));
+        PetscCall(PetscOptionsClearValue(((PetscObject)pc)->options, prefix));
+      }
     }
     if (!ismatis) {
       if (data->share || (!PetscBool3ToBool(data->Neumann) && subdomains)) PetscCall(ISDuplicate(is[0], &unsorted));
