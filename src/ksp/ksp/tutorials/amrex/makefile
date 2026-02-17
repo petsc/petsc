@@ -21,10 +21,10 @@ amrex: $(OBJECTS)
 testamrex: amrex
 	-${QUIET}${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./amrex inputs.rt.2d.petsc | grep -E -v "(AMReX|Timers)" > amrex.tmp 2>&1;
 	-${QUIET}${DIFF} output/amrex_1.testout amrex.tmp > amrex.dtmp;
-	-@if [ ! -s amrex.dtmp ];  then \
-		echo "example src/ksp/ksp/tutorials/amrex/amrex run successfully with 1 MPI process"; \
-  else echo "Possible error running  example src/ksp/ksp/tutorials/amrex/amrex with 1 MPI process"; \
+	-@if [ ! -s amrex.dtmp ]; then\
+		echo "example src/ksp/ksp/tutorials/amrex/amrex run successfully with 1 MPI process";\
+  else echo "Possible error running  example src/ksp/ksp/tutorials/amrex/amrex with 1 MPI process";\
 		echo "See https://petsc.org/release/faq/";\
-		cat amrex.tmp;
-	fi;  \
-  ${RM} -f amrex.tmp amrex.dtmp;
+		cat amrex.tmp;\
+	fi;\
+	${RM} -f amrex.tmp amrex.dtmp;
