@@ -564,7 +564,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", KSPGMRESGetCGSRefinementType_GMRES));
 
   fgmres->haptol         = 1.0e-30;
-  fgmres->q_preallocate  = 0;
+  fgmres->q_preallocate  = PETSC_FALSE;
   fgmres->delta_allocate = FGMRES_DELTA_DIRECTIONS;
   fgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   fgmres->nrs            = NULL;

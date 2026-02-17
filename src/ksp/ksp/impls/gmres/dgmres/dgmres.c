@@ -1062,7 +1062,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   PetscCall(PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation));
 
   dgmres->haptol         = 1.0e-30;
-  dgmres->q_preallocate  = 0;
+  dgmres->q_preallocate  = PETSC_FALSE;
   dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   dgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   dgmres->nrs            = NULL;
