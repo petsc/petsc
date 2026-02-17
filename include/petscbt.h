@@ -87,7 +87,7 @@ static inline PetscCount PetscBTCountSet(PetscBT array, PetscCount m)
 {
   PetscCount cnt = 0;
   for (size_t j = 0; j < PetscBTLength(m); j++) {
-    unsigned char       byte = array[j];
+    unsigned char       byte = (unsigned char)array[j];
     const unsigned char c1   = 0x55;
     const unsigned char c2   = 0x33;
     const unsigned char c4   = 0x0F;
