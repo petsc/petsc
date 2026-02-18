@@ -1003,8 +1003,6 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSReset_GLLE(TS ts)
 {
   TS_GLLE *gl = (TS_GLLE *)ts->data;
@@ -1118,7 +1116,6 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
   PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSGLLE, DMSubDomainRestrictHook_TSGLLE, ts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems PetscOptionsObject)
 {
@@ -1319,7 +1316,6 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
 /*MC
   TSGLLE - DAE solver using implicit General Linear methods {cite}`butcher_2007` {cite}`butcher2016numerical`
 

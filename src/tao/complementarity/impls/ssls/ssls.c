@@ -1,6 +1,5 @@
 #include <../src/tao/complementarity/impls/ssls/ssls.h>
 
-/*------------------------------------------------------------*/
 PetscErrorCode TaoSetFromOptions_SSLS(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
@@ -15,14 +14,12 @@ PetscErrorCode TaoSetFromOptions_SSLS(Tao tao, PetscOptionItems PetscOptionsObje
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 PetscErrorCode TaoView_SSLS(Tao tao, PetscViewer pv)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch ls, Vec X, PetscReal *fcn, void *ptr)
 {
   Tao       tao  = (Tao)ptr;
@@ -36,7 +33,6 @@ PetscErrorCode Tao_SSLS_Function(TaoLineSearch ls, Vec X, PetscReal *fcn, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, Vec G, void *ptr)
 {
   Tao       tao  = (Tao)ptr;

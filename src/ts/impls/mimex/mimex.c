@@ -246,8 +246,6 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSSetUp_Mimex(TS ts)
 {
   TS_Mimex *mimex = (TS_Mimex *)ts->data;
@@ -275,7 +273,6 @@ static PetscErrorCode TSDestroy_Mimex(TS ts)
   PetscCall(PetscFree(ts->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_Mimex(TS ts, PetscOptionItems PetscOptionsObject)
 {
@@ -317,7 +314,6 @@ static PetscErrorCode TSComputeLinearStability_Mimex(TS ts, PetscReal xr, PetscR
   *yi = xi;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------------ */
 
 /*MC
       TSMIMEX - ODE solver using the explicit forward Mimex method

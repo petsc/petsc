@@ -84,10 +84,10 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -----------------------------------------------------------------------------
+/*
    Checks for periodicity of a DM and Maps points outside of a domain back onto the domain
    using appropriate periodicity. At the moment assumes only a 2-D DMDA.
-   ----------------------------------------------------------------------------------------*/
+ */
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
   DMBoundaryType bx, by;

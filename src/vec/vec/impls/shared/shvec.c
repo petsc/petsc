@@ -46,8 +46,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  /* ----------------------------------------------------------------------------------------
-     Code to manage shared memory allocation using standard Unix shared memory
+/*
+  Code to manage shared memory allocation using standard Unix shared memory
 */
   #include <petscsys.h>
   #if defined(PETSC_HAVE_PWD_H)

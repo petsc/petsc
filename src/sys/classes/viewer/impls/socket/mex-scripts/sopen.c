@@ -71,7 +71,6 @@ typedef unsigned long  u_long;
     return -1; \
   }
 
-/*-----------------------------------------------------------------*/
 /* The listenport variable is an ugly hack. If the user hits a         */
 /* control c while we are listening then we stop listening         */
 /* but do not close the listen. Therefore if we try to bind again  */
@@ -79,7 +78,6 @@ typedef unsigned long  u_long;
 /* hanging; the problem is if the user uses several portnumbers    */
 /* and control c we may not be able to close the correct listener. */
 static int listenport;
-/*-----------------------------------------------------------------*/
 extern int establish(u_short);
 static int SOCKConnect_Private(int portnumber)
 {
@@ -101,7 +99,6 @@ static int SOCKConnect_Private(int portnumber)
   close(listenport);
   return t;
 }
-/*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
 int establish(u_short portnum)
 {

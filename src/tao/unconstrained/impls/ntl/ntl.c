@@ -601,7 +601,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetUp_NTL(Tao tao)
 {
   TAO_NTL *tl = (TAO_NTL *)tao->data;
@@ -617,7 +616,6 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoDestroy_NTL(Tao tao)
 {
   TAO_NTL *tl = (TAO_NTL *)tao->data;
@@ -633,7 +631,6 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NTL *tl = (TAO_NTL *)tao->data;
@@ -683,7 +680,6 @@ static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 {
   TAO_NTL  *tl = (TAO_NTL *)tao->data;
@@ -702,7 +698,6 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
   TAONTL - Newton's method with trust region globalization and line search fallback.
   At each iteration, the Newton trust region method solves the system for d

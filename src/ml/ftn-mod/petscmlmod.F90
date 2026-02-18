@@ -18,14 +18,10 @@ contains
 
 end module petscregressor
 
-!     ----------------------------------------------
-
 module petscmldef
   use petscregressordef
 #include <petsc/finclude/petscml.h>
 end module petscmldef
-
-!     ----------------------------------------------
 
 module petscml
   use petscregressor

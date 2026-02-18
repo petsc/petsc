@@ -885,7 +885,6 @@ static PetscErrorCode TSForwardGetStages_Theta(TS ts, PetscInt *ns, Mat *stagese
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 static PetscErrorCode TSReset_Theta(TS ts)
 {
   TS_Theta *th = (TS_Theta *)ts->data;
@@ -1057,8 +1056,6 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
 {
   TS_Theta *th = (TS_Theta *)ts->data;
@@ -1185,7 +1182,6 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------ */
 /*MC
       TSTHETA - DAE solver using the implicit Theta method
 

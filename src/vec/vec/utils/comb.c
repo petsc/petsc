@@ -322,8 +322,6 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------------------------------------*/
-
 /*@
   VecDotBegin - Starts a split phase dot product computation.
 
@@ -473,8 +471,6 @@ PetscErrorCode VecTDotEnd(Vec x, Vec y, PetscScalar *result)
   PetscCall(VecDotEnd(x, y, result));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* -------------------------------------------------------------------------*/
 
 /*@
   VecNormBegin - Starts a split phase norm computation.

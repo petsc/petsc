@@ -217,7 +217,6 @@ PETSC_EXTERN void tsgetifunction_(TS *ts, Vec *r, void *func, void **ctx, PetscE
   *ierr = TSGetIFunction(*ts, r, NULL, ctx);
 }
 
-/* ---------------------------------------------------------*/
 PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
 
 PETSC_EXTERN void tssetrhsjacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
@@ -277,8 +276,6 @@ PETSC_EXTERN void tsgetrhsjacobianp_(TS *ts, Mat *J, int *func, void **ctx, Pets
 
 PETSC_EXTERN void tsmonitordefault_(TS *, PetscInt *, PetscReal *, Vec *, PetscViewerAndFormat **, PetscErrorCode *);
 
-/* ---------------------------------------------------------*/
-
 /* PETSC_EXTERN void tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*); */
 
 PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal *, Vec *, void *, PetscErrorCode *), void *mctx, void (*d)(void *, PetscErrorCode *), PetscErrorCode *ierr)
@@ -293,7 +290,6 @@ PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal
   }
 }
 
-/* ---------------------------------------------------------*/
 /*  func is currently ignored from Fortran */
 PETSC_EXTERN void tsgetrhsjacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx, PetscErrorCode *ierr)
 {

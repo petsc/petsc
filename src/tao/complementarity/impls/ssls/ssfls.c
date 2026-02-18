@@ -103,7 +103,6 @@ static PetscErrorCode TaoDestroy_SSFLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
    TAOSSFLS - Semi-smooth feasible linesearch algorithm for solving
        complementarity constraints

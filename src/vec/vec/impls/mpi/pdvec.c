@@ -910,10 +910,8 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(VecGetLocalSize(x, &m));
   PetscCall(VecGetSize(x, &M));
 
-  /* ---------------------------------------------------------------------------*/
   /* Sort COOs along with a permutation array, so that negative indices come    */
   /* first, then local ones, then remote ones.                                  */
-  /* ---------------------------------------------------------------------------*/
   PetscCount n1 = coo_n, nneg, *perm;
   PetscInt  *i1; /* Copy of input COOs along with a permutation array */
   PetscCall(PetscMalloc1(n1, &i1));
@@ -946,9 +944,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(PetscSortedIntUpperBound(i1, nneg, n1, rend - 1 - PETSC_INT_MAX, &rem)); /* rem is upper bound of the last local row */
   for (k = nneg; k < rem; k++) i1[k] += PETSC_INT_MAX;                               /* Revert indices of local entries */
 
-  /* ---------------------------------------------------------------------------*/
   /*           Build stuff for local entries                                    */
-  /* ---------------------------------------------------------------------------*/
   PetscCount tot1, *jmap1, *perm1;
   PetscCall(PetscCalloc1(m + 1, &jmap1));
   for (k = nneg; k < rem; k++) jmap1[i1[k] - rstart + 1]++; /* Count repeats of each local entry */
@@ -958,17 +954,13 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(PetscMalloc1(tot1, &perm1));
   PetscCall(PetscArraycpy(perm1, perm + nneg, tot1));
 
-  /* ---------------------------------------------------------------------------*/
   /*        Record the permutation array for filling the send buffer            */
-  /* ---------------------------------------------------------------------------*/
   PetscCount *Cperm;
   PetscCall(PetscMalloc1(n1 - rem, &Cperm));
   PetscCall(PetscArraycpy(Cperm, perm + rem, n1 - rem));
   PetscCall(PetscFree(perm));
 
-  /* ---------------------------------------------------------------------------*/
   /*           Send remote entries to their owner                                  */
-  /* ---------------------------------------------------------------------------*/
   /* Find which entries should be sent to which remote ranks*/
   PetscInt        nsend = 0; /* Number of MPI ranks to send data to */
   PetscMPIInt    *sendto;    /* [nsend], storing remote ranks */
@@ -1061,9 +1053,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(PetscFree(offsets));
   PetscCall(PetscFree2(sendto, nentries));
 
-  /* ---------------------------------------------------------------*/
   /* Sort received COOs along with a permutation array            */
-  /* ---------------------------------------------------------------*/
   PetscCount  *imap2;
   PetscCount  *jmap2, nnz2;
   PetscScalar *sendbuf, *recvbuf;

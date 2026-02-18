@@ -210,7 +210,6 @@ static PetscErrorCode TSStep_SSP(TS ts)
   ts->time_step = next_time_step;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 static PetscErrorCode TSReset_SSP(TS ts)
 {
@@ -237,7 +236,6 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSSPSetNumStages_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*------------------------------------------------------------*/
 
 /*@
   TSSSPSetType - set the `TSSSP` time integration scheme to use
@@ -415,8 +413,6 @@ static PetscErrorCode TSView_SSP(TS ts, PetscViewer viewer)
   if (ascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Scheme: %s\n", ssp->type_name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ------------------------------------------------------------ */
 
 /*MC
       TSSSP - Explicit strong stability preserving ODE solver {cite}`ketcheson_2008` {cite}`gottliebketchesonshu2009`

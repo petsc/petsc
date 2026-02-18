@@ -96,7 +96,6 @@ PetscErrorCode PetscFPTrapPop(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------- ---------------------------------------------------*/
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
   #include <floatingpoint.h>
 
@@ -221,7 +220,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_SOLARIS_STYLE_FPTRAP)
   #include <sunmath.h>
   #include <floatingpoint.h>
@@ -281,7 +279,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_IRIX_STYLE_FPTRAP)
   #include <sigfpe.h>
 static struct {
@@ -326,7 +323,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*----------------------------------------------- --------------------------------------------*/
 #elif defined(PETSC_HAVE_RS6000_STYLE_FPTRAP)
 /* In "fast" mode, floating point traps are imprecise and ignored.
    This is the reason for the fptrap(FP_TRAP_SYNC) call */
@@ -402,7 +398,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_WINDOWS_COMPILERS)
   #include <float.h>
 void PetscDefaultFPTrap(int sig)
@@ -439,7 +434,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_FENV_H) && !defined(__cplusplus)
   /*
    C99 style floating point environment.
@@ -575,7 +569,6 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   #endif
 }
 
-/* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_IEEEFP_H)
   #include <ieeefp.h>
 void PetscDefaultFPTrap(int sig)
@@ -618,7 +611,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------Default -----------------------------------*/
+/* Default */
 #else
 
 static void PetscDefaultFPTrap(int sig)

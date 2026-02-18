@@ -7,8 +7,6 @@
 #include <petscdmda.h> /*I "petscdmda.h" I*/
 #include <../src/dm/impls/da/hypre/mhyp.h>
 
-/* -----------------------------------------------------------------------------------------------------------------*/
-
 /*MC
    MATHYPRESTRUCT - MATHYPRESTRUCT = "hyprestruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_StructMatrix.

@@ -30,7 +30,6 @@ module petscmpi
 #endif
 end module petscmpi
 
-! ------------------------------------------------------------------------
 module petscsysdef
   use, intrinsic :: ISO_C_binding
   use petscmpi
@@ -263,8 +262,6 @@ module petscsysdef
   end type tPetscReal2D
 
 end module petscsysdef
-
-!   ------------------------------------------------------------------------
 
 module petscsys
   use, intrinsic :: ISO_C_binding
@@ -555,7 +552,6 @@ end subroutine F90ArraySetRealPointer
 !DEC$ ATTRIBUTES DLLEXPORT:: F90ArraySetRealPointer
 #endif
 
-!------------------------------------------------------------------------
 !TODO: generate the modules below by looping over
 !      ftn/sys/XXX.h90
 !      and skipping those in petscall.h
@@ -569,7 +565,6 @@ contains
 #include <../ftn/sys/petscbag.hf90>
 end module petscbag
 
-!------------------------------------------------------------------------
 module petscbm
   use petscsys
 #include <../include/petsc/finclude/petscbm.h>
@@ -580,7 +575,6 @@ contains
 #include <../ftn/sys/petscbm.hf90>
 end module petscbm
 
-!------------------------------------------------------------------------
 module petscmatlab
   use petscsys
 #include <../include/petsc/finclude/petscmatlab.h>
@@ -592,7 +586,6 @@ contains
 #include <../ftn/sys/petscmatlab.hf90>
 end module petscmatlab
 
-!------------------------------------------------------------------------
 module petscdraw
   use petscsys
 #include <../include/petsc/finclude/petscdraw.h>
@@ -640,7 +633,6 @@ contains
 #include <../ftn/sys/petscdraw.hf90>
 end module petscdraw
 
-!------------------------------------------------------------------------
 subroutine PetscSetCOMM(c1, c2)
   use, intrinsic :: ISO_C_binding
   use petscmpi

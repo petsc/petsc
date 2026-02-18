@@ -36,7 +36,6 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
   is attached to a communicator that manages the sequential phase code below.

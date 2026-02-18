@@ -13,8 +13,6 @@ module petscmatdef
 
 end module
 
-!     ----------------------------------------------
-
 module petscmat
   use petscmatdef
   use petscvec

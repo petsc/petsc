@@ -207,8 +207,6 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------*/
-
 static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;

@@ -9,8 +9,6 @@
  the existing Newton step instead of re-solving the step with a
  different radius.
 
- ------------------------------------------------------------
-
  x_0 = VecMedian(x_0)
  f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)

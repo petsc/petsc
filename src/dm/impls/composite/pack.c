@@ -96,7 +96,6 @@ static PetscErrorCode DMView_Composite(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------------*/
 static PetscErrorCode DMSetUp_Composite(DM dm)
 {
   PetscInt                nprev = 0;

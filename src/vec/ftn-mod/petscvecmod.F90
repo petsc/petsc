@@ -33,8 +33,6 @@ end subroutine
 !DEC$ ATTRIBUTES DLLEXPORT:: F90Array1dDestroySFNode
 #endif
 
-!     ----------------------------------------------
-
 module petscis
   use petscisdef
   use petscsys
@@ -61,15 +59,11 @@ contains
 
 end module
 
-!     ----------------------------------------------
-
 module petscvecdef
   use petscisdef
 #include <petsc/finclude/petscvec.h>
 #include <../ftn/vec/petscvec.h>
 end module
-
-!     ----------------------------------------------
 
 module petscvec
   use petscis
@@ -84,16 +78,12 @@ contains
 
 end module
 
-!     ----------------------------------------------
-
 module petscaodef
   use petscsys
   use petscvecdef
 #include <petsc/finclude/petscao.h>
 #include <../ftn/vec/petscao.h>
 end module
-
-!     ----------------------------------------------
 
 module petscao
   use petscsys
@@ -103,16 +93,12 @@ contains
 #include <../ftn/vec/petscao.hf90>
 end module
 
-!     ----------------------------------------------
-
 module petscpfdef
   use petscsys
   use petscvecdef
 #include <petsc/finclude/petscpf.h>
 #include <../ftn/vec/petscpf.h>
 end module
-
-!     ----------------------------------------------
 
 module petscpf
   use petscsys

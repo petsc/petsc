@@ -163,7 +163,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
     }
     PetscCall(PetscFree(Jentry2));
     c->matentry2 = Jentry2_new;
-  } /* ---------------------------------------------*/
+  }
 
   PetscCall(PetscFree2(color_start, row_start));
 

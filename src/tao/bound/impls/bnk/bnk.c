@@ -274,8 +274,6 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /* Computes the exact Hessian and extracts its subHessian */
 
 PetscErrorCode TaoBNKComputeHessian(Tao tao)
@@ -291,8 +289,6 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   PetscCall(TaoBNKComputeSubHessian(tao));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /* Routine for estimating the active set */
 
@@ -343,8 +339,6 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /* Routine for bounding the step direction */
 
 PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
@@ -364,8 +358,6 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /* Routine for taking a finite number of BNCG iterations to
    accelerate Newton convergence.
@@ -401,8 +393,6 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /* Routine for computing the Newton step. */
 
@@ -528,8 +518,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /* Routine for recomputing the predicted reduction for a given step vector */
 
 PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
@@ -559,8 +547,6 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /* Routine for ensuring that the Newton step is a descent direction.
 
@@ -695,8 +681,6 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 /* Routine for performing a bound-projected More-Thuente line search.
 
   Includes fallbacks to BFGS, scaled gradient, and unscaled gradient steps if the
@@ -796,8 +780,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
   *reason = ls_reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 /* Routine for updating the trust radius.
 
@@ -971,8 +953,6 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
-
 PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
@@ -996,8 +976,6 @@ PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------- */
 
 PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
@@ -1064,8 +1042,6 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode TaoDestroy_BNK(Tao tao)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
@@ -1092,8 +1068,6 @@ PetscErrorCode TaoDestroy_BNK(Tao tao)
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*------------------------------------------------------------*/
 
 PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems PetscOptionsObject)
 {
@@ -1164,8 +1138,6 @@ PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems PetscOptionsObjec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
-
 PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 {
   TAO_BNK  *bnk = (TAO_BNK *)tao->data;
@@ -1198,8 +1170,6 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------- */
 
 /*MC
   TAOBNK - Shared base-type for Bounded Newton-Krylov type algorithms.

@@ -46,8 +46,6 @@ PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun,
   return n;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-
 static char      arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128];
 static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];

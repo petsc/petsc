@@ -101,7 +101,6 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, PetscInt64 seed)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------- */
 /*
   PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 

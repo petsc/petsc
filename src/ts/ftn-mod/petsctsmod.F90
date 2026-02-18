@@ -18,8 +18,6 @@ contains
 
 end module petscts
 
-!     ----------------------------------------------
-
 module petsccharacteristic
   use petscdm
 #include <petsc/finclude/petsccharacteristic.h>
