@@ -779,7 +779,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   }
   if (d_coo_vals) {
     PetscCall(MatSetValuesCOO(JacP, d_coo_vals, ADD_VALUES));
-  #ifndef LAND_SUPPORT_CPU_ASS
+  #if !defined(LAND_SUPPORT_CPU_ASS)
     Kokkos::fence(); // for timers
   #endif
   } else if (elem_mat_num_cells_max_grid) { // CPU assembly

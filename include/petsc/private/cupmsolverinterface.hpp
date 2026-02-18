@@ -33,7 +33,7 @@ namespace impl
 #define PetscCallCUPMSOLVER(...)             PetscCallCUPMSOLVER_(SETERRQ, PETSC_COMM_SELF, __VA_ARGS__)
 #define PetscCallCUPMSOLVERAbort(comm_, ...) PetscCallCUPMSOLVER_(SETERRABORT, comm_, __VA_ARGS__)
 
-#ifndef PetscConcat3
+#if !defined(PetscConcat3)
   #define PetscConcat3(a, b, c) PetscConcat(PetscConcat(a, b), c)
 #endif
 

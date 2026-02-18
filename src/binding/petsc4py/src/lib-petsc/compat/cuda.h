@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_CUDA_H
+#if !defined(PETSC4PY_COMPAT_CUDA_H)
 #define PETSC4PY_COMPAT_CUDA_H
 
 #if !defined(PETSC_HAVE_CUDA)

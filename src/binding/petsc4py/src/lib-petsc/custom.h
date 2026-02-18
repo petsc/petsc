@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_CUSTOM_H
+#if !defined(PETSC4PY_CUSTOM_H)
 #define PETSC4PY_CUSTOM_H
 
 #include <petsc/private/deviceimpl.h>
@@ -228,7 +228,7 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifndef MatNullSpaceFunction
+#if !defined(MatNullSpaceFunction)
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #endif
 

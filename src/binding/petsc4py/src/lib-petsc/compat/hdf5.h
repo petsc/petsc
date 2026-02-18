@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_HDF5_H
+#if !defined(PETSC4PY_COMPAT_HDF5_H)
 #define PETSC4PY_COMPAT_HDF5_H
 
 #include <petscviewerhdf5.h>

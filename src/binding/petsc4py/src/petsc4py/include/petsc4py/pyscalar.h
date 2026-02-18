@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_PYSCALAR_H
+#if !defined(PETSC4PY_PYSCALAR_H)
 #define PETSC4PY_PYSCALAR_H
 
 #include <Python.h>

@@ -10,7 +10,7 @@
   #define PETSC_HAVE_ASAN 1
 #endif
 
-#ifndef ASAN_POISON_MEMORY_REGION // use poison as canary
+#if !defined(ASAN_POISON_MEMORY_REGION) // use poison as canary
   #define ASAN_POISON_MEMORY_REGION(addr, size)   ((void)(addr), (void)(size))
   #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
@@ -24,7 +24,7 @@
   #endif
 #endif
 
-#ifndef VALGRIND_MAKE_MEM_NOACCESS // use noaccess as canary
+#if !defined(VALGRIND_MAKE_MEM_NOACCESS) // use noaccess as canary
   #define VALGRIND_MAKE_MEM_NOACCESS(addr, size)  ((void)(addr), (void)(size))
   #define VALGRIND_MAKE_MEM_UNDEFINED(addr, size) ((void)(addr), (void)(size))
   #define VALGRIND_MAKE_MEM_DEFINED(addr, size)   ((void)(addr), (void)(size))

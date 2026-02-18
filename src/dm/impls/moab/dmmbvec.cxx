@@ -414,7 +414,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
   else range = userrange;
   PetscCheck(range, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
 
-#ifndef USE_NATIVE_PETSCVEC
+#if !defined(USE_NATIVE_PETSCVEC)
   /* If the tag data is in a single sequence, use PETSc native vector since tag_iterate isn't useful anymore */
   lnative_vec = (range->psize() - 1);
 #else

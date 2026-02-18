@@ -67,10 +67,10 @@ struct timezone { int tz_minuteswest;
 
 #define HLINE "-------------------------------------------------------------\n"
 
-#ifndef MIN
+#if !defined(MIN)
   #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
-#ifndef MAX
+#if !defined(MAX)
   #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 

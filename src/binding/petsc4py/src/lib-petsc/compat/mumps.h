@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_MUMPS_H
+#if !defined(PETSC4PY_COMPAT_MUMPS_H)
 #define PETSC4PY_COMPAT_MUMPS_H
 
 #include <petscmat.h>

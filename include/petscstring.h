@@ -209,7 +209,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   #endif
 #endif
 
-#ifndef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
+#if !defined(PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN)
   #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN (void)0
   #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END   (void)0
 #endif

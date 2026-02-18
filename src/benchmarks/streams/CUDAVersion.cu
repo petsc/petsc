@@ -29,10 +29,10 @@ static char help[] = "Double-Precision STREAM Benchmark implementation in CUDA\n
 #define N      10000000
 #define NTIMES 10
 
-#ifndef MIN
+#if !defined(MIN)
   #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
-#ifndef MAX
+#if !defined(MAX)
   #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 

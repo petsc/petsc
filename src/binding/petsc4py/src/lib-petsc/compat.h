@@ -1,4 +1,4 @@
-#ifndef PETSC4PY_COMPAT_H
+#if !defined(PETSC4PY_COMPAT_H)
 #define PETSC4PY_COMPAT_H
 
 #include <petsc.h>

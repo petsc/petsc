@@ -132,7 +132,7 @@ M*/
    Note: with MPICH and OpenMPI, accept versions [x.y.z, x+1.0.0) as compatible
 */
 #if defined(PETSC_HAVE_MPIUNI)
-  #ifndef MPIUNI_H
+  #if !defined(MPIUNI_H)
     #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
   #endif
 #elif defined(PETSC_HAVE_I_MPI)

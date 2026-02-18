@@ -1,4 +1,4 @@
-#if !defined (MPIUNIFDEF_H)
+#if !defined(MPIUNIFDEF_H)
 #define MPIUNIFDEF_H
 
 #include "petscconf.h"

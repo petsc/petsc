@@ -3878,7 +3878,7 @@ static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecO
       quad_coords[2] = quad->z;
   #endif
       for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
-  #ifndef P4_TO_P8
+  #if !defined(P4_TO_P8)
       PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
   #else
       PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
@@ -3923,7 +3923,7 @@ static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pfor
     quad_coords[2] = quad->z;
   #endif
     for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
-  #ifndef P4_TO_P8
+  #if !defined(P4_TO_P8)
     PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
   #else
     PetscCallP4est(p4est_qcoord_to_vertex, (pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));

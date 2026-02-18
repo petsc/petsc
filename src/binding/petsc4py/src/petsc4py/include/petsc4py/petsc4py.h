@@ -1,7 +1,7 @@
 /* Author:  Lisandro Dalcin   */
 /* Contact: dalcinl@gmail.com */
 
-#ifndef PETSC4PY_H
+#if !defined(PETSC4PY_H)
 #define PETSC4PY_H
 
 #include <Python.h>

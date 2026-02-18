@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   if (norm > tol) PetscCall(PetscPrintf(comm, "Error! GlobalToLocal result does not match Local projection by norm %g\n", (double)norm));
 
   if (test_cgns_load) {
-#ifndef PETSC_HAVE_CGNS
+#if !defined(PETSC_HAVE_CGNS)
     SETERRQ(comm, PETSC_ERR_SUP, "PETSc not compiled with CGNS support");
 #else
     PetscViewer viewer;

@@ -346,7 +346,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < Np) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#ifndef PETSC_USE_COMPLEX
+#if !defined(PETSC_USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }

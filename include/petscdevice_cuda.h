@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode PetscGetCurrentCUDAStream(cudaStream_t *);
   #define PETSC_CONSTMEM_DECL  __constant__
 #endif
 
-#ifndef PETSC_HOST_DECL // use HOST_DECL as canary
+#if !defined(PETSC_HOST_DECL) // use HOST_DECL as canary
   #define PETSC_HOST_DECL
   #define PETSC_DEVICE_DECL
   #define PETSC_KERNEL_DECL
@@ -196,7 +196,7 @@ PETSC_EXTERN PetscErrorCode PetscGetCurrentCUDAStream(cudaStream_t *);
   #define PETSC_CONSTMEM_DECL
 #endif
 
-#ifndef PETSC_DEVICE_DEFINED_DECLS_PRIVATE
+#if !defined(PETSC_DEVICE_DEFINED_DECLS_PRIVATE)
   #define PETSC_DEVICE_DEFINED_DECLS_PRIVATE
   #define PETSC_HOSTDEVICE_DECL        PETSC_HOST_DECL PETSC_DEVICE_DECL
   #define PETSC_DEVICE_INLINE_DECL     PETSC_DEVICE_DECL PETSC_FORCEINLINE

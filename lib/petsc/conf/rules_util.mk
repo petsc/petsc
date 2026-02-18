@@ -174,7 +174,11 @@ checkbadSource:
 	-@git --no-pager grep -n "[[:space:]]*do[[:space:]]*[0-9]" -- ${GITFSRC} >> checkbadSource.out;true
 	-@echo "----- Duplicate CUDA/Kokkos file names -----------------------------" >> checkbadSource.out
 	-@git ls-files *.cu *.kokkos.cxx | xargs -I{} sh -c 'basename "{}"' | sort | uniq -d  >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 40` ;\
+	-@echo "----- #if [!]defined with a trailing white space -------------------" >> checkbadSource.out
+	-@git --no-pager grep -n "#if [!]defined " -- ${GITFSRC} ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- #if[n]def should use #if [!]defined()-------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n "#if[n]def " -- ${GITFSRC} ${GITSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 42` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
