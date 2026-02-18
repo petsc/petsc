@@ -8,20 +8,20 @@ program DMSwarmTestProjection
   use petscksp
   implicit none
 
-  DM ::          dm, sw
-  PetscFE ::     fe
-  KSP ::         ksp
-  Mat ::         M_p, M
-  Vec ::         f, rho, rhs
-  PetscInt ::    dim
-  PetscInt ::    p, bs
+  DM ::       dm, sw
+  PetscFE ::  fe
+  KSP ::      ksp
+  Mat ::      M_p, M
+  Vec ::      f, rho, rhs
+  PetscInt :: dim
+  PetscInt :: p, bs
   PetscInt, parameter :: Np = 100, field = 0, Nc = 1, degree = 1, timestep = 0
   PetscReal, parameter :: time = 0.0
   PetscReal :: norm
   PetscBool :: removePoints = PETSC_TRUE
   PetscDataType :: dtype
-  PetscScalar, pointer :: coords(:)
-  PetscScalar, pointer :: wq(:)
+  PetscReal, pointer :: coords(:)
+  PetscReal, pointer :: wq(:)
   PetscErrorCode :: ierr
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
@@ -43,15 +43,15 @@ program DMSwarmTestProjection
   PetscCallA(DMSetDimension(sw, dim, ierr))
   PetscCallA(DMSwarmSetType(sw, DMSWARM_PIC, ierr))
   PetscCallA(DMSwarmSetCellDM(sw, dm, ierr))
-  PetscCallA(DMSwarmRegisterPetscDatatypeField(sw, 'w_q', Nc, PETSC_SCALAR, ierr))
+  PetscCallA(DMSwarmRegisterPetscDatatypeField(sw, 'w_q', Nc, PETSC_REAL, ierr))
   PetscCallA(DMSwarmFinalizeFieldRegister(sw, ierr))
   PetscCallA(DMSwarmSetLocalSizes(sw, Np, 0_PETSC_INT_KIND, ierr))
   PetscCallA(DMSetFromOptions(sw, ierr))
   PetscCallA(DMSwarmGetField(sw, 'w_q', bs, dtype, wq, ierr))
   PetscCallA(DMSwarmGetField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr))
   do p = 1, Np
-    coords(p*2 - 1) = -cos(dble(p)/dble(Np + 1)*PETSC_PI)
-    coords(p*2 - 0) = sin(dble(p)/dble(Np + 1)*PETSC_PI)
+    coords(p*2 - 1) = -cos(real(p, PETSC_REAL_KIND)/real(Np + 1, PETSC_REAL_KIND)*PETSC_PI)
+    coords(p*2 - 0) = sin(real(p, PETSC_REAL_KIND)/real(Np + 1, PETSC_REAL_KIND)*PETSC_PI)
     wq(p) = 1.0
   end do
   PetscCallA(DMSwarmRestoreField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr))

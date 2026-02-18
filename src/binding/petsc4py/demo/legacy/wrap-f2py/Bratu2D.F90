@@ -61,19 +61,19 @@ contains
     PetscInt i, j
     PetscReal hx, hy, temp, temp1
 
-    hx = 1.0_PETSC_REAL_KIND/(dble(grd%mx - 1))
-    hy = 1.0_PETSC_REAL_KIND/(dble(grd%my - 1))
-    temp1 = lambda/(lambda + 1.0_PETSC_REAL_KIND)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
+    temp1 = lambda/(lambda + 1.0)
 
     do j = grd%ys, grd%ye
-      temp = dble(min(j - 1, grd%my - j))*hy
+      temp = real(min(j - 1, grd%my - j), PETSC_REAL_KIND)*hy
       do i = grd%xs, grd%xe
         if (i == 1 .or. j == 1 .or. i == grd%mx .or. j == grd%my) then
           ! boundary points
           x(i, j) = 0.0
         else
           ! interior grid points
-          x(i, j) = temp1*sqrt(min(dble(min(i - 1, grd%mx - i)*hx), dble(temp)))
+          x(i, j) = temp1*sqrt(min(real(min(i - 1, grd%mx - i), PETSC_REAL_KIND)*hx, temp))
         end if
       end do
     end do
@@ -91,8 +91,8 @@ contains
     PetscReal hx, hy, hxdhy, hydhx, sc
     PetscScalar u, uxx, uyy
 
-    hx = 1._PETSC_REAL_KIND/dble(grd%mx - 1)
-    hy = 1._PETSC_REAL_KIND/dble(grd%my - 1)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
     sc = hx*hy
     hxdhy = hx/hy
     hydhx = hy/hx
@@ -105,8 +105,8 @@ contains
         else
           ! interior grid points
           u = x(i, j)
-          uxx = (2.0_PETSC_REAL_KIND*u - x(i - 1, j) - x(i + 1, j))*hydhx
-          uyy = (2.0_PETSC_REAL_KIND*u - x(i, j - 1) - x(i, j + 1))*hxdhy
+          uxx = (2.0*u - x(i - 1, j) - x(i + 1, j))*hydhx
+          uyy = (2.0*u - x(i, j - 1) - x(i, j + 1))*hxdhy
           f(i, j) = uxx + uyy - lambda*exp(u)*sc
         end if
       end do
@@ -126,8 +126,8 @@ contains
     PetscInt i, j, row(1), col(5)
     PetscReal hx, hy, hxdhy, hydhx, sc, v(5)
 
-    hx = 1._PETSC_REAL_KIND/dble(grd%mx - 1)
-    hy = 1._PETSC_REAL_KIND/dble(grd%my - 1)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
     sc = hx*hy
     hxdhy = hx/hy
     hydhx = hy/hx
@@ -139,13 +139,13 @@ contains
         if (i == 1 .or. j == 1 .or. i == grd%mx .or. j == grd%my) then
           ! boundary points
           col(1) = row(1)
-          v(1) = 1._PETSC_REAL_KIND
+          v(1) = 1.0
           PetscCall(MatSetValuesLocal(Jac, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         else
           ! interior grid points
           v(1) = -hxdhy
           v(2) = -hydhx
-          v(3) = 2._PETSC_REAL_KIND*(hydhx + hxdhy) - lambda*exp(x(i, j))*sc
+          v(3) = 2.0*(hydhx + hxdhy) - lambda*exp(x(i, j))*sc
           v(4) = -hydhx
           v(5) = -hxdhy
           col(1) = row(1) - grd%gxm
