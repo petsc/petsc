@@ -4276,28 +4276,6 @@ static PetscErrorCode MatSeqAIJInvertVariableBlockDiagonalMat(Mat A, PetscInt nb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDenseScatter(Mat A, PetscSF sf, Mat B)
-{
-  const PetscScalar *rarr;
-  PetscScalar       *larr;
-  PetscSF            vsf;
-  PetscInt           n, rld, lld;
-
-  PetscFunctionBegin;
-  PetscCall(MatGetSize(A, NULL, &n));
-  PetscCall(MatDenseGetLDA(A, &rld));
-  PetscCall(MatDenseGetLDA(B, &lld));
-  PetscCall(MatDenseGetArrayRead(A, &rarr));
-  PetscCall(MatDenseGetArrayWrite(B, &larr));
-  PetscCall(PetscSFCreateStridedSF(sf, n, rld, lld, &vsf));
-  PetscCall(PetscSFBcastBegin(vsf, MPIU_SCALAR, rarr, larr, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(vsf, MPIU_SCALAR, rarr, larr, MPI_REPLACE));
-  PetscCall(MatDenseRestoreArrayRead(A, &rarr));
-  PetscCall(MatDenseRestoreArrayWrite(B, &larr));
-  PetscCall(PetscSFDestroy(&vsf));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
 {
   PC_IS          *pcis       = (PC_IS *)pc->data;
@@ -4627,15 +4605,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
     /* Assemble explicitly S_CC = ( C_{CR} A_{RR}^{-1} C^T_{CR})^{-1}  */
     if (!pcbddc->switch_static) {
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_B, n_eff_constraints, NULL, &pcbddc->local_auxmat2));
-      for (i = 0; i < n_eff_constraints; i++) {
-        Vec r, b;
-        PetscCall(MatDenseGetColumnVecRead(local_auxmat2_R, i, &r));
-        PetscCall(MatDenseGetColumnVec(pcbddc->local_auxmat2, i, &b));
-        PetscCall(VecScatterBegin(pcbddc->R_to_B, r, b, INSERT_VALUES, SCATTER_FORWARD));
-        PetscCall(VecScatterEnd(pcbddc->R_to_B, r, b, INSERT_VALUES, SCATTER_FORWARD));
-        PetscCall(MatDenseRestoreColumnVec(pcbddc->local_auxmat2, i, &b));
-        PetscCall(MatDenseRestoreColumnVecRead(local_auxmat2_R, i, &r));
-      }
+      PetscCall(MatDenseScatter_Private(pcbddc->R_to_B, local_auxmat2_R, pcbddc->local_auxmat2, INSERT_VALUES, SCATTER_FORWARD));
       if (multi_element) {
         Mat T;
 
@@ -4941,7 +4911,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         Mat B;
 
         PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_B, n_eff_vertices, NULL, &B));
-        PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_B, B));
+        PetscCall(MatDenseScatter_Private(pcbddc->R_to_B, A_RRmA_RV, B, INSERT_VALUES, SCATTER_FORWARD));
 
         /* S_CV = pcbddc->local_auxmat1 * B */
         if (multi_element) {
@@ -5042,9 +5012,15 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       PetscCall(MatDestroy(&Vid));
     } else {
       if (A_RRmA_RV) {
-        PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_B, pcbddc->coarse_phi_B));
+        Mat B;
+
+        PetscCall(MatDenseGetSubMatrix(pcbddc->coarse_phi_B, PETSC_DECIDE, PETSC_DECIDE, 0, n_vertices, &B));
+        PetscCall(MatDenseScatter_Private(pcbddc->R_to_B, A_RRmA_RV, B, INSERT_VALUES, SCATTER_FORWARD));
+        PetscCall(MatDenseRestoreSubMatrix(pcbddc->coarse_phi_B, &B));
         if (pcbddc->switch_static || pcbddc->dbg_flag) {
-          PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_D, pcbddc->coarse_phi_D));
+          PetscCall(MatDenseGetSubMatrix(pcbddc->coarse_phi_D, PETSC_DECIDE, PETSC_DECIDE, 0, n_vertices, &B));
+          PetscCall(MatDenseScatter_Private(pcbddc->R_to_D, A_RRmA_RV, B, INSERT_VALUES, SCATTER_FORWARD));
+          PetscCall(MatDenseRestoreSubMatrix(pcbddc->coarse_phi_D, &B));
           if (pcbddc->benign_n) {
             for (i = 0; i < n_vertices; i++) PetscCall(MatSetValues(pcbddc->coarse_phi_D, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES));
             PetscCall(MatAssemblyBegin(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
@@ -5092,11 +5068,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       PetscCall(MatNestSetSubMat(coarse_phi_multi, 0, 1, B));
     } else {
       PetscCall(MatDenseGetSubMatrix(pcbddc->coarse_phi_B, PETSC_DECIDE, PETSC_DECIDE, n_vertices, n_vertices + n_constraints, &B2));
-      PetscCall(MatDenseScatter(B, pcbddc->R_to_B, B2));
+      PetscCall(MatDenseScatter_Private(pcbddc->R_to_B, B, B2, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(MatDenseRestoreSubMatrix(pcbddc->coarse_phi_B, &B2));
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
         PetscCall(MatDenseGetSubMatrix(pcbddc->coarse_phi_D, PETSC_DECIDE, PETSC_DECIDE, n_vertices, n_vertices + n_constraints, &B2));
-        PetscCall(MatDenseScatter(B, pcbddc->R_to_D, B2));
+        PetscCall(MatDenseScatter_Private(pcbddc->R_to_D, B, B2, INSERT_VALUES, SCATTER_FORWARD));
         if (pcbddc->benign_n) {
           for (i = 0; i < n_constraints; i++) PetscCall(MatSetValues(B2, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES));
         }

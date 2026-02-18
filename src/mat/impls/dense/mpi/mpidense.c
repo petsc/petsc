@@ -8,8 +8,8 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscblaslapack.h>
 #include <petsc/private/vecimpl.h>
-#include <petscdevice.h>
 #include <petsc/private/deviceimpl.h>
+#include <petsc/private/sfimpl.h>
 
 /*@
   MatDenseGetLocalMatrix - For a `MATMPIDENSE` or `MATSEQDENSE` matrix returns the sequential
@@ -2663,5 +2663,61 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense(Mat C)
   default:
     break;
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode, ScatterMode smode)
+{
+  const PetscScalar *in;
+  PetscScalar       *out;
+  PetscSF            vsf;
+  PetscInt           N, ny, rld, lld;
+  PetscMemType       mtype[2];
+  MPI_Op             op = MPI_OP_NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
+  if (mode == INSERT_VALUES) op = MPI_REPLACE;
+  else if (mode == ADD_VALUES) op = MPIU_SUM;
+  else if (mode == MAX_VALUES) op = MPIU_MAX;
+  else if (mode == MIN_VALUES) op = MPIU_MIN;
+  PetscCheck(op != MPI_OP_NULL, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "Unsupported InsertMode %d in MatDenseScatter_Private()", mode);
+  PetscCheck(smode == SCATTER_FORWARD || smode == SCATTER_REVERSE, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "Unsupported ScatterMode %d in MatDenseScatter_Private()", smode);
+  PetscCall(MatGetSize(X, NULL, &N));
+  PetscCall(MatGetSize(Y, NULL, &ny));
+  PetscCheck(N == ny, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_SIZ, "Matrix column sizes must match: %" PetscInt_FMT " != %" PetscInt_FMT, N, ny);
+  PetscCall(MatDenseGetLDA(X, &rld));
+  PetscCall(MatDenseGetLDA(Y, &lld));
+  /* get cached or create new strided PetscSF when the number of columns is greater than one */
+  if (N > 1) {
+    PetscCall(PetscObjectQuery((PetscObject)sf, "_MatDenseScatter_StridedSF", (PetscObject *)&vsf));
+    if (vsf) {
+      PetscInt nr[2], nl[2];
+
+      PetscCall(PetscSFGetGraph(sf, nr, nl, NULL, NULL));
+      PetscCall(PetscSFGetGraph(vsf, nr + 1, nl + 1, NULL, NULL));
+      if (N * nr[0] != nr[1] || N * nl[0] != nl[1]) vsf = NULL;
+    }
+    if (!vsf) {
+      PetscCall(PetscSFCreateStridedSF(sf, N, rld, lld, &vsf));
+      PetscCall(PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", (PetscObject)vsf));
+      PetscCall(PetscObjectDereference((PetscObject)vsf));
+    }
+  } else vsf = sf;
+  /* the output array is accessed in read and write mode,
+    but write-only in the INSERT_VALUES case could be worth exploring */
+  PetscCall(MatDenseGetArrayReadAndMemType(X, &in, &mtype[0]));
+  PetscCall(MatDenseGetArrayAndMemType(Y, &out, &mtype[1]));
+  if (smode == SCATTER_FORWARD) {
+    PetscCall(PetscSFBcastWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
+    PetscCall(PetscSFBcastEnd(vsf, vsf->vscat.unit, in, out, op));
+  } else {
+    PetscCall(PetscSFReduceWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
+    PetscCall(PetscSFReduceEnd(vsf, vsf->vscat.unit, in, out, op));
+  }
+  PetscCall(MatDenseRestoreArrayAndMemType(Y, &out));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(X, &in));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
