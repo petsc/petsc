@@ -3,14 +3,14 @@ program ex47f90
   use petsc
   implicit none
 
-  type(tDM)                         :: dm
-  type(tPetscSection)               :: section
-  character(len=PETSC_MAX_PATH_LEN) :: IOBuffer
-  PetscInt                          :: dof, p, pStart, pEnd, d
-  type(tVec)                        :: v
-  PetscScalar, dimension(:), pointer  :: val
-  PetscScalar, pointer              :: x(:)
-  PetscErrorCode                    :: ierr
+  type(tDM)                          :: dm
+  type(tPetscSection)                :: section
+  character(len=PETSC_MAX_PATH_LEN)  :: IOBuffer
+  PetscInt                           :: dof, p, pStart, pEnd, d
+  type(tVec)                         :: v
+  PetscScalar, dimension(:), pointer :: val
+  PetscScalar, pointer               :: x(:)
+  PetscErrorCode                     :: ierr
 
   PetscCallA(PetscInitialize(ierr))
 

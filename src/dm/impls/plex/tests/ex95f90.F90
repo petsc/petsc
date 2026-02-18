@@ -4,9 +4,6 @@ program ex95f90
   implicit none
 #include "exodusII.inc"
 
-  ! Shortcuts for Fortran kinds (used to specify literals)
-  integer, parameter :: kPI = PETSC_INT_KIND
-  integer, parameter :: kPR = PETSC_REAL_KIND
   PetscBool :: flg
   integer :: nNodalVar = 4
   integer :: nZonalVar = 3
@@ -51,7 +48,7 @@ program ex95f90
   PetscCallA(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD, ierr))
   PetscCall(PetscViewerFlush(viewer, ierr))
 
-  PetscCallA(DMPlexDistribute(dm, 0_kPI, PETSC_NULL_SF, pdm, ierr))
+  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, pdm, ierr))
   if (pdm /= PETSC_NULL_DM) then
     pdm = dm
   end if
