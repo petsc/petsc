@@ -194,10 +194,8 @@ class Configure(config.package.GNUPackage):
     args.append('--without-superlu')
 
     if self.getDefaultIndexSize() == 64:
-      if cudabuild or hipbuild or syclbuild: # HYPRE 2.23 supports only mixedint configurations with CUDA/HIP/SYCL
-        args.append('--enable-bigint=no --enable-mixedint=yes')
-      else:
-        args.append('--enable-bigint')
+      # --enable-bigint=no is the default; mixedint is the preferred way to support 64-bit
+      args.append('--enable-mixedint=yes')
     if self.scalar.scalartype == 'complex':
       args.append('--enable-complex')
 
