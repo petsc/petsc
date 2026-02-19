@@ -162,11 +162,13 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&b));
   if (N > 1) {
     KSPType type;
+    VecType vt;
 
     PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
     PetscCall(KSPSetFromOptions(ksp));
-    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &B));
-    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &X));
+    PetscCall(MatGetVecType(A, &vt));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, vt, m, PETSC_DECIDE, PETSC_DECIDE, N, PETSC_DECIDE, NULL, &B));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, vt, m, PETSC_DECIDE, PETSC_DECIDE, N, PETSC_DECIDE, NULL, &X));
     PetscCall(MatSetRandom(B, NULL));
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
@@ -472,14 +474,20 @@ int main(int argc, char **args)
         suffix: fgmres_geneo_20_p_2_geneo_algebraic
         args: -pc_hpddm_levels_2_st_pc_type mat
    # PCHPDDM + KSPHPDDM test to exercise multilevel + multiple RHS in one go
-   test:
+   testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-      suffix: fgmres_geneo_20_p_2_geneo_rhs
       output_file: output/ex76_fgmres_geneo_20_p_2.out
       # for -pc_hpddm_coarse_correction additive
       filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 37/Linear solve converged due to CONVERGED_RTOL iterations 25/g"
       nsize: 4
-      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type baij -pc_hpddm_levels_2_eps_nev 5 -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_max_it 10 -pc_hpddm_levels_2_ksp_type hpddm -pc_hpddm_levels_2_ksp_hpddm_type gmres -ksp_type hpddm -ksp_hpddm_variant flexible -pc_hpddm_coarse_mat_type baij -mat_type aij -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -rhs 4 -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -ksp_type hpddm -ksp_hpddm_variant flexible -pc_hpddm_coarse_mat_type baij -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -rhs 4
+      test:
+        suffix: fgmres_geneo_20_p_2_geneo_rhs
+        args: -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type baij -pc_hpddm_levels_2_eps_nev 5 -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_max_it 10 -pc_hpddm_levels_2_ksp_type hpddm -pc_hpddm_levels_2_ksp_hpddm_type gmres -mat_type aij -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
+      test:
+        requires: cuda
+        suffix: fgmres_geneo_20_rhs_cuda
+        args: -mat_type aijcusparse -pc_hpddm_coarse_correction {{deflated balanced}shared output}
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES) mumps defined(PETSC_HAVE_OPENMP_SUPPORT)
