@@ -39,5 +39,5 @@ gmakefile*                @krugers @jedbrown @BarrySmith
 /lib/petsc                @krugers @sbalay
 
 **/*.kokkos.cxx           @jczhang07 @jedbrown @stefanozampini @markadams4
-**/*.hip.cpp              @jczhang07 @jedbrown @stefanozampini @markadams4 @krugers
+**/*.hip.cxx              @jczhang07 @jedbrown @stefanozampini @markadams4 @krugers
 **/*.cu                   @jczhang07 @stefanozampini @markadams4 @karlrupp

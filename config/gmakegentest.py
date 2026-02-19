@@ -186,7 +186,7 @@ class generateExamples(Petsc):
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext in ".kokkos.cxx".split(): langReq="kokkos_cxx"
-    if srcext in ".hip.cpp".split(): langReq="hip_cpp"
+    if srcext in ".hip.cxx".split(): langReq="hip_cxx"
     if srcext in ".raja.cxx".split(): langReq="raja_cxx"
     if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
