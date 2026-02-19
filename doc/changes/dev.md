@@ -25,6 +25,7 @@
 
 - Add `PetscCallHYPRE()` to check HYPRE error codes and print error messages on failure
 - Add `PetscBTCountSet()` to count set bits in `PetscBT`
+- Add the option `-hypre_umpire_device_pool_size <n>` to set the Umpire device memory pool size (in MiB), which is used by HYPRE and 4 Gib by default
 
 
 ```{rubric} Event Logging:

@@ -209,11 +209,11 @@ int main(int argc, char **args)
       args: -pc_type eisenstat -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always
 
     test:
-      requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)
+      requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE) umpire
       suffix: hypre_device_none
       output_file: output/ex4_hypre_none.out
       nsize: {{1 2}}
-      args: -usezerorows 0 -mat_type hypre -pc_type none -m 5
+      args: -usezerorows 0 -mat_type hypre -pc_type none -m 5 -hypre_umpire_device_pool_size 128
 
     test:
       requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)

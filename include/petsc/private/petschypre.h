@@ -75,34 +75,53 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// hypre-2.31.0 added HYPRE_SetGpuAwareMPI.
-// HYPRE_USING_GPU_AWARE_MPI indicates hypre is configured with --enable-gpu-aware-mpi.
-// HYPRE_SetGpuAwareMPI() controls whether to actually use GPU-aware MPI.
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 31, 0) && defined(HYPRE_USING_GPU_AWARE_MPI)
-  #define PetscHYPRESetGpuAwareMPI() \
-    do { \
-      PetscCallHYPRE(HYPRE_SetGpuAwareMPI(use_gpu_aware_mpi ? 1 : 0)); \
-    } while (0)
-#else
-  #define PetscHYPRESetGpuAwareMPI() (void)0
-#endif
-
 #if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
 static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 {
+  PetscFunctionBegin;
   if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallHYPRE(HYPRE_Finalize());
-  return PETSC_SUCCESS;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
-  #define PetscHYPREInitialize() \
-    do { \
-      if (!HYPRE_Initialized()) { \
-        PetscCallHYPRE(HYPRE_Initialize()); \
-        PetscHYPRESetGpuAwareMPI(); \
-        PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private)); \
-      } \
-    } while (0)
+
+PETSC_EXTERN PetscBool use_gpu_aware_mpi;
+/*
+  Options Database Keys:
+. -hypre_umpire_device_pool_size <n>  - set the Umpire device memory pool size (in MiB). HYPRE uses 4 GiB by default.
+*/
+static inline PetscErrorCode PetscHYPREInitialize()
+{
+  PetscFunctionBegin;
+  if (!HYPRE_Initialized()) {
+    PetscCallHYPRE(HYPRE_Initialize());
+  #if defined(HYPRE_USING_UMPIRE_DEVICE)
+    PetscInt  size = 0;
+    PetscBool set  = PETSC_FALSE;
+
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-hypre_umpire_device_pool_size", &size, &set));
+    if (set) {
+      PetscCheck(size >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "-hypre_umpire_device_pool_size must be non-negative");
+      PetscCallHYPRE(HYPRE_SetUmpireDevicePoolSize((size_t)(size << 20))); // converr to size in bytes
+    } else if (PetscCIEnabled) {
+      // Set smaller pool size for CI tests to avoid OOM, but keep the default for users
+      PetscCallHYPRE(HYPRE_SetUmpireDevicePoolSize((size_t)(256 << 20))); // 256 MiB
+    }
+  #endif
+  // hypre-2.31.0 added HYPRE_SetGpuAwareMPI.
+  // HYPRE_USING_GPU_AWARE_MPI indicates hypre is configured with --enable-gpu-aware-mpi.
+  // HYPRE_SetGpuAwareMPI() controls whether to actually use GPU-aware MPI.
+  #if PETSC_PKG_HYPRE_VERSION_GE(2, 31, 0) && defined(HYPRE_USING_GPU_AWARE_MPI)
+    PetscCallHYPRE(HYPRE_SetGpuAwareMPI(use_gpu_aware_mpi ? 1 : 0));
+  #endif
+    PetscCall(PetscRegisterFinalize(PetscHYPREFinalize_Private));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #else
-  #define PetscHYPREInitialize() (void)0
+static inline PetscErrorCode PetscHYPREInitialize()
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #endif
 
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 19, 0)

@@ -67,7 +67,8 @@ runex19_hypre:
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_hypre_cuda:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
+	-${QUIET}USE_DEVICE=$$(echo $${CUDA_VISIBLE_DEVICES:-0} | cut -d ',' -f 1); \
+	CUDA_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_hypre.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/CUDA"; \
@@ -77,7 +78,8 @@ runex19_hypre_cuda:
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_hypre_hip:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -dm_vec_type hip -dm_mat_type aijhipsparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
+	-${QUIET}USE_DEVICE=$$(echo $${HIP_VISIBLE_DEVICES:-0} | cut -d ',' -f 1); \
+	HIP_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type hip -dm_mat_type aijhipsparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_hypre.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/HIP"; \

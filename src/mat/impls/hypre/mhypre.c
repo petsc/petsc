@@ -91,7 +91,7 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   rend   = (HYPRE_Int)A->rmap->rend;
   cstart = (HYPRE_Int)A->cmap->rstart;
   cend   = (HYPRE_Int)A->cmap->rend;
-  PetscHYPREInitialize();
+  PetscCall(PetscHYPREInitialize());
   if (hA->ij) {
     if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
     PetscCallHYPRE(HYPRE_IJMatrixDestroy(hA->ij));
@@ -610,7 +610,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   PetscFunctionBegin;
   if (PetscDefined(HAVE_HYPRE_DEVICE)) {
     PetscCall(MatGetCurrentMemType(A, &memtype));
-    PetscHYPREInitialize();
+    PetscCall(PetscHYPREInitialize());
     boundtocpu = PetscMemTypeHost(memtype) ? PETSC_TRUE : PETSC_FALSE;
     PetscCallHYPRE(HYPRE_SetMemoryLocation(boundtocpu ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE));
   }
@@ -817,7 +817,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscCheck(ismpiaij || isseqaij, comm, PETSC_ERR_SUP, "Unsupported type %s", ((PetscObject)A)->type_name);
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
-  PetscHYPREInitialize();
+  PetscCall(PetscHYPREInitialize());
   if (ismpiaij) {
     Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
@@ -2395,7 +2395,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 #endif
 
   PetscFunctionBegin;
-  PetscHYPREInitialize();
+  PetscCall(PetscHYPREInitialize());
   PetscCall(PetscNew(&hB));
 
   hB->inner_free      = PETSC_TRUE;

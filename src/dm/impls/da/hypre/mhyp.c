@@ -314,7 +314,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &ex->hcomm));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATHYPRESTRUCT));
-  PetscHYPREInitialize();
+  PetscCall(PetscHYPREInitialize());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -826,6 +826,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &ex->hcomm));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATHYPRESSTRUCT));
-  PetscHYPREInitialize();
+  PetscCall(PetscHYPREInitialize());
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -18,7 +18,7 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--with-mpi-dir=/software/mpich-5.0.0b1-cuda131',
     '--with-cuda-dir=/usr/local/cuda-13.1',
-    #'--download-umpire', #'hypre' reserves 4G VRAM for each MPI process
+    '--download-umpire',
     '--download-hypre=1',
     '--download-superlu_dist',
     '--with-cxx-dialect=17',
