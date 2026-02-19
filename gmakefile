@@ -84,7 +84,7 @@ ifneq ($(CUDAC),)
 langs += cu
 endif
 ifneq ($(HIPC),)
-langs += hip.cpp
+langs += hip.cxx
 endif
 ifneq ($(SYCLC),)
 langs += sycl.cxx
@@ -213,8 +213,8 @@ $(OBJDIR)/src/%.o : src/%.cxx | $$(@D)/.DIR
 $(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.hip.cpp | $$(@D)/.DIR
-	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
+$(OBJDIR)/%.o : %.hip.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.hip.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile

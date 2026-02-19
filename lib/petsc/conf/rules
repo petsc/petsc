@@ -9,7 +9,7 @@
 # The makefile will then compile executables that link against the PETSc libraries
 # See https://petsc.org/release/docs/manual/getting_started/#writing-c-c-or-fortran-applications
 
-.SUFFIXES: .F .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .F95 .f95 .fiat .cu .hip.cpp .kokkos.cxx .raja.cxx *.sycl.cxx
+.SUFFIXES: .F .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .F95 .f95 .fiat .cu .hip.cxx .kokkos.cxx .raja.cxx .sycl.cxx
 
 clean-legacy:
 	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
@@ -42,7 +42,7 @@ clean:: clean-legacy
 .cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
-.cu.PETSc .hip.cpp.PETSc .kokkos.cxx.PETSc .c.PETSc .cxx.PETSc:
+.cu.PETSc .hip.cxx.PETSc .kokkos.cxx.PETSc .c.PETSc .cxx.PETSc:
 	-@if [ "$V" = "1" ]; then echo "** Building $* in $${PWD}"; fi
 	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
@@ -155,7 +155,7 @@ clean:: clean-legacy
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} $<
 
-.hip.cpp.o:
+.hip.cxx.o:
 	${PETSC_HIPCOMPILE_SINGLE} $<
 
 .kokkos.cxx.o:
@@ -204,7 +204,7 @@ endif
 PETSC_KOKKOSCOMPILE_SINGLE = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_COMPILE_SINGLE))))
 LINK.kokkos.cxx = $(filter-out -fvisibility=hidden,$(subst -Xcompiler -fvisibility=hidden ,,$(strip $(KOKKOS_LINK))))
 
-LINK.hip.cpp = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
+LINK.hip.cxx = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
   PETSC_RAJACOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
@@ -222,8 +222,8 @@ LDLIBS += $(PRELIBS) $(PETSC_LIB) $(LIBS)
 	$(LINK.kokkos.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.cxx
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
-% : %.hip.cpp
-	$(LINK.hip.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
+% : %.hip.cxx
+	$(LINK.hip.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 # Shall we compile *.c to *.o and then link *.o to executables in two separate steps?
 SEPARATE_COMPILE_LINK =

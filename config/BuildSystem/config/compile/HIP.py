@@ -12,13 +12,13 @@ import config.setsOrdered as sets
 HIP is a C++ compiler with extensions to support the HIP programming model.
 Because of its slowness, and in some ways the extensions make it a new language,
 we have a separate compiler for it.
-But we use the extension .hip.cpp to denote these files similar to what is done
+But we use the extension .hip.cxx to denote these files similar to what is done
 for SYCL and following the recommendations of AMD
 '''
 class Preprocessor(config.compile.processor.Processor):
   '''The HIP preprocessor'''
   def __init__(self, argDB):
-    config.compile.processor.Processor.__init__(self, argDB, 'HIPPP', 'HIPPPFLAGS', '.hip.cpp', '.hip.cpp')
+    config.compile.processor.Processor.__init__(self, argDB, 'HIPPP', 'HIPPPFLAGS', '.hip.cxx', '.hip.cxx')
     self.language        = 'HIP'
     self.includeDirectories = sets.Set()
     return
@@ -26,7 +26,7 @@ class Preprocessor(config.compile.processor.Processor):
 class Compiler(config.compile.processor.Processor):
   '''The HIP compiler'''
   def __init__(self, argDB, usePreprocessorFlags = True):
-    config.compile.processor.Processor.__init__(self, argDB, 'HIPC', 'HIPFLAGS', '.hip.cpp', '.o')
+    config.compile.processor.Processor.__init__(self, argDB, 'HIPC', 'HIPFLAGS', '.hip.cxx', '.o')
     self.language        = 'HIP'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
@@ -40,7 +40,7 @@ class Compiler(config.compile.processor.Processor):
     '''Return None for header files'''
     import os
 
-    # HIP files are foo.hip.cpp
+    # HIP files are foo.hip.cxx
     base1, ext1 = os.path.splitext(source)
     base2, ext2 = os.path.splitext(base1)
     if ext1 == '.h':

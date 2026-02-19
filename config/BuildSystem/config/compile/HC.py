@@ -19,7 +19,7 @@ class Preprocessor(config.compile.processor.Processor):
 class Compiler(config.compile.processor.Processor):
   '''The HCC compiler'''
   def __init__(self, argDB, usePreprocessorFlags = True):
-    config.compile.processor.Processor.__init__(self, argDB, 'HIPC', 'HIPFLAGS', '.hip.cpp', '.o')
+    config.compile.processor.Processor.__init__(self, argDB, 'HIPC', 'HIPFLAGS', '.hip.cxx', '.o')
     self.language        = 'HC'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'

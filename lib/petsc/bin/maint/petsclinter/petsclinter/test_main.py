@@ -134,7 +134,7 @@ def test_main(
   # }
   #output = {key : '\n'.join(val if len(val) == 4 else val + ['']) for key, val in output.items()}
   if test_path.is_dir():
-    c_suffixes = (r'*.c', r'*.cxx', r'*.cpp', r'*.cc', r'*.CC')
+    c_suffixes = (r'*.c', r'*.cxx', r'*.cc', r'*.CC')
     file_list  = [item for sublist in map(test_path.glob, c_suffixes) for item in sublist]
   else:
     file_list  = [test_path]
