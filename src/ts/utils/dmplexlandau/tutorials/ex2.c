@@ -251,6 +251,7 @@ static void f0_0_diff_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   diff      = 2. * PETSC_PI * x[0] * (PetscRealPart(u[ii]) - f_maxwell);
   f0[0]     = PetscPowReal(diff, ppp);
 }
+
 static void f0_0_maxwellian_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
 {
   LandauCtx      *ctx   = (LandauCtx *)constants;
@@ -406,7 +407,7 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
+static PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
 {
   LandauCtx        *ctx   = (LandauCtx *)actx; /* user-defined application context */
   REctx            *rectx = (REctx *)ctx->data;
@@ -477,7 +478,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PreStep(TS ts)
+static PetscErrorCode PreStep(TS ts)
 {
   LandauCtx *ctx;
   REctx     *rectx;
@@ -515,6 +516,7 @@ static PetscErrorCode zeroSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
   *rho = 0.;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
 {
   REctx *rectx = (REctx *)ctx->data;
@@ -530,8 +532,6 @@ static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessREOptions"
 static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm, const char prefix[])
 {
   PetscFunctionList plist = NULL, testlist = NULL, elist = NULL;

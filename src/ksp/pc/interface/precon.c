@@ -1182,8 +1182,8 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   `KSPSolve()`.
 
   A routine set by `PCSetModifySubMatrices()` is currently called within
-  the block Jacobi (`PCBJACOBI`) and additive Schwarz (`PCASM`)
-  preconditioners.  All other preconditioners ignore this routine.
+  `PCBJACOBI`, `PCASM`, `PCGASM`, and `PCHPDDM`.
+  All other preconditioners ignore this routine.
 
 .seealso: [](ch_ksp), `PC`, `PCModifySubMatricesFn`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
