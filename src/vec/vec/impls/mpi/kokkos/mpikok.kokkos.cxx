@@ -204,6 +204,8 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
 static PetscErrorCode VecCreate_MPIKokkos_Common(Vec v)
 {
   PetscFunctionBegin;
+  v->boundtocpu           = PetscDefined(HAVE_KOKKOS_WITHOUT_GPU) ? PETSC_TRUE : PETSC_FALSE; // VECKOKKOS has yet to support CPU binding. But in this case, we deem it is bound to CPU.
+  v->ops->bindtocpu       = VecBindToCPU_SeqKokkos;
   v->ops->abs             = VecAbs_SeqKokkos;
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
   v->ops->pointwisemult   = VecPointwiseMult_SeqKokkos;

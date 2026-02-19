@@ -1427,14 +1427,20 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A, const PetscScalar v[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatBindToCPU_SeqAIJKokkos(Mat A, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscCheck(A->boundtocpu == flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Changing binding of a MATAIJKOKKOS matrix is not supported yet");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
-  A->offloadmask = PETSC_OFFLOAD_KOKKOS; /* We do not really use this flag */
-  A->boundtocpu  = PETSC_FALSE;
-
+  A->offloadmask                    = PETSC_OFFLOAD_KOKKOS;                                             // We do not really use this flag
+  A->boundtocpu                     = PetscDefined(HAVE_KOKKOS_WITHOUT_GPU) ? PETSC_TRUE : PETSC_FALSE; // MATAIJKOKKOS has yet to support CPU binding. But in this case, we deem it is bound to CPU.
   A->ops->assemblyend               = MatAssemblyEnd_SeqAIJKokkos;
   A->ops->destroy                   = MatDestroy_SeqAIJKokkos;
   A->ops->duplicate                 = MatDuplicate_SeqAIJKokkos;
@@ -1456,6 +1462,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->diagonalset               = MatDiagonalSet_SeqAIJKokkos;
   A->ops->diagonalscale             = MatDiagonalScale_SeqAIJKokkos;
   A->ops->getcurrentmemtype         = MatGetCurrentMemType_SeqAIJKokkos;
+  A->ops->bindtocpu                 = MatBindToCPU_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;
   a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJKokkos;
   a->ops->getarrayread              = MatSeqAIJGetArrayRead_SeqAIJKokkos;

@@ -176,3 +176,4 @@ PETSC_INTERN PetscErrorCode VecMTDot_SeqKokkos_GEMV(Vec, PetscInt, const Vec *, 
 PETSC_INTERN PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec, PetscInt, const PetscScalar *, Vec *);
 
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, const PetscScalar *, const PetscScalar *, Vec *);
+PETSC_INTERN PetscErrorCode VecBindToCPU_SeqKokkos(Vec, PetscBool);
