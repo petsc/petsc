@@ -650,7 +650,7 @@ Options:
   OUTPUT=1          Show only the errors on stdout
   ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)
   DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)
-  CUDAMEMCHECK=1    Execute the tests using cuda-memcheck (-U to test scripts)
+  CUDAMEMCHECK=1    Execute the tests using CUDA "compute-sanitizer --tool memcheck" (-U to test scripts)
                     Use PETSC_CUDAMEMCHECK_COMMAND to change the executable to run and
                     PETSC_CUDAMEMCHECK_ARGS to change the arguments (note: both
                     cuda-memcheck and compute-sanitizer are supported)

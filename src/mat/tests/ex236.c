@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&y));
   PetscCall(PetscFinalize());
 
-  /* Uncomment this line if you want to use "cuda-memcheck --leaf-check full" to check this program */
+  /* Uncomment this line if you want to use "compute-sanitizer --tool memcheck [sanitizer_options] app_name [app_options]" to check this program */
   /*cudaDeviceReset();*/
   return 0;
 }

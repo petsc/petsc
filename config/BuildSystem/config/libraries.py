@@ -617,10 +617,11 @@ extern PETSC_DLLEXPORT int foo(void) {
 
   def checkPthreadMutex(self):
     '''Check for pthread mutex support'''
-    funcs = ['pthread_mutex_unlock']
-    prototypes = ['#include <pthread.h>']
+    # Per Pim Heeman from petsc-maint, OpenBSD does not support PTHREAD_PROCESS_SHARED, which is used by pcmpi.c
+    funcs = ['pthread_mutex_unlock', 'pthread_mutexattr_setpshared']
+    prototypes = ['#include <pthread.h>', '#include <pthread.h>']
+    calls = ['pthread_mutex_t m; pthread_mutex_unlock(&m)', 'pthread_mutexattr_t attr; pthread_mutexattr_init(&attr); pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED)']
     self.pthreadmutex = []
-    calls = ['pthread_mutex_t m; pthread_mutex_unlock(&m)']
     if self.check('', funcs, prototype=prototypes, call=calls):
       self.logPrint('pthread mutex are linked in by default')
       self.pthreadmutex = []
