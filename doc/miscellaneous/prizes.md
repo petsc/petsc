@@ -16,7 +16,7 @@
 - Lois Curfman McInnes and Barry Smith won the 2011 [Department of Energy E. O. Lawrence
   Award](http://science.energy.gov/lawrence/) for contributions to DOE for their work
   developing PETSc in the mid-1990s.
-- PETSc was a winner of a [2009 R and D 100 Award](https://www.rdmag.com/article/2009/07/r-d-100-awards)
+- PETSc was a winner of a [2009 R&D 100 Award](https://www.rdworldonline.com/rd-100-archive/?YEAR=2009)
 - PETSc was one of the **Top Ten Advances in Computational Science Accomplishments of the U.S. Department of Energy** (DOE) in 2008
 
 ## Prizes won by PETSc users
