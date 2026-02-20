@@ -4204,7 +4204,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
 #if 0 //Errors on SUMMIT cuda 11.1.0
       PetscCallThrust(thrust::partition_copy(thrust::device, cci, cce, wPerm->begin(), p1, p2, thrust::identity<int>()));
 #else
-      auto pred = thrust::identity<int>();
+      auto pred = [](const int &x) { return x; };
       PetscCallThrust(thrust::copy_if(thrust::device, cci, cce, wPerm->begin(), p1, pred));
       PetscCallThrust(thrust::remove_copy_if(thrust::device, cci, cce, wPerm->begin(), p2, pred));
 #endif
