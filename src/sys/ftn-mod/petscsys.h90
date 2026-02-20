@@ -1,8 +1,8 @@
 interface
-  subroutine PetscPrintf(m, c, ierr)
+  subroutine PetscPrintf(comm, c, ierr)
     use, intrinsic :: ISO_C_binding
     use petscmpi
-    MPIU_Comm :: m
+    MPIU_Comm :: comm
     character(len=*) :: c
     PetscErrorCode :: ierr
   end subroutine

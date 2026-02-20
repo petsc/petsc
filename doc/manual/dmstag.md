@@ -2,11 +2,12 @@
 
 # DMSTAG: Staggered, Structured Grid
 
-For structured (aka "regular") grids with staggered data (living on elements, faces, edges,
+For structured (aka "regular") grids with staggered data (degrees of freedom potentially living on elements, faces, edges,
 and/or vertices), the `DMSTAG` object is available. This can
 be useful for problems in many domains, including fluid flow, MHD, and seismology.
 
-It is possible, though cumbersome, to implement a staggered-grid code using multiple `DMDA` objects, or a single multi-component `DMDA` object where some degrees of freedom are unused.
+It is possible, though extremely cumbersome, to implement a staggered-grid code using multiple `DMDA` objects, or a single
+multi-component `DMDA` object where some degrees of freedom are unused.
 `DMSTAG` was developed for two main purposes:
 
 1. To help manage some of the burden of choosing and adhering to the complex indexing conventions needed for staggered grids (in parallel)
@@ -29,11 +30,13 @@ are referred to as *faces* and the 1-dimensional boundaries between faces are re
 The set of cells of a given dimension is referred to as a *stratum* (which one can think of as a level in DAG representation of the mesh); a `DMSTAG` object of dimension $d$
 represents a complete cell complex with $d+1$ *strata* (levels).
 
-In the description of any:`ch_unstructured` the cells at each level are referred to as *points*. Thus we adopt that terminology uniformly in PETSc and so furthermore in this document,
+In the description of any:`ch_unstructured` the cells at each level are referred to as *points*. Thus we adopt that terminology uniformly in PETSc and
+so furthermore in this document,
 point will refer to a cell.
 
 Each stratum has a constant number of unknowns (which may be zero) associated with each point (cell) on that level.
-The distinct unknowns associated with each point are referred to as *components*.
+The distinct unknowns associated with each point are referred to as *components*. For a `DMPLEX` there may be a different
+number of unknowns for each point on the same level. 
 
 The structured grid, is like with `DMDA`, decomposed via a Cartesian product of decompositions in each dimension,
 giving a rectangular local subdomain on each rank. This is extended by an element-wise stencil width
