@@ -1134,6 +1134,15 @@ static PetscErrorCode PCSetUpOnBlocks_FieldSplit_Schur(PC pc)
     PetscCall(VecGetArrayAndMemType(ilinkA->x, &array, &mtype));
     PetscCall(VecRestoreArrayAndMemType(ilinkA->x, &array));
     PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&A));
+    if (A) {
+      PetscInt P;
+
+      PetscCall(MatGetSize(A, NULL, &P));
+      if (P < N + 1) { // need to recreate AinvB, otherwise, the Schur complement won't be updated
+        PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", NULL));
+        A = NULL;
+      }
+    }
     if (!A) {
       if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(PetscMalloc1(m * (N + 1), &array));
 #if PetscDefined(HAVE_CUDA)
