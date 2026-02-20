@@ -123,6 +123,7 @@ miscellaneous/index
 - [SLEPc](https://slepc.upv.es/) Scalable Library for
   Eigenvalue Problems
 - [tmm4py](https://github.com/samarkhatiwala/tmm) Transport Matrix Method for simulating ocean biogeochemical processes
+- [Underworld3](https://www.underworldcode.org/underworld3-come-and-get-it/) Mathematically Self-Describing Modelling in Python for Geodynamics
 
 (doc_index_citing_petsc)=
 
