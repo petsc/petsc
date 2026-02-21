@@ -63,13 +63,11 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType fty
   PetscInt     m = A->rmap->n, n = A->cmap->n;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (A->hermitian != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && A->hermitian != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Only for Hermitian matrices.\n"));
     *F = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
   /* Create the factorization matrix F */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));

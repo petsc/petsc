@@ -343,9 +343,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
-#else
+  PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
   PetscFunctionReturn(PETSC_SUCCESS);
-#endif
 }

@@ -3531,11 +3531,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
       for (m = 0; m < dimC; m++) guess[l] += PetscRealPart(invJ[l * dimC + m]) * resNeg[m];
     }
   } else {
-#if defined(PETSC_USE_COMPLEX)
-    char transpose = 'C';
-#else
-    char transpose = 'T';
-#endif
+    char         transpose = PetscDefined(USE_COMPLEX) ? 'C' : 'T';
     PetscBLASInt m, n, one = 1, worksize, info;
 
     PetscCall(PetscBLASIntCast(dimR, &m));

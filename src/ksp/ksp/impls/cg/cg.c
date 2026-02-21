@@ -694,11 +694,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&cg));
-#if !defined(PETSC_USE_COMPLEX)
-  cg->type = KSP_CG_SYMMETRIC;
-#else
-  cg->type = KSP_CG_HERMITIAN;
-#endif
+  cg->type    = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
   cg->obj_min = 0.0;
   ksp->data   = (void *)cg;
 

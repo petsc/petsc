@@ -148,11 +148,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &aij, MATSEQAIJ, MATSEQBAIJ, ""));
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_TRUE));
-#else
-  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
-#endif
+  PetscCall(MatSetOption(A, PetscDefined(USE_COMPLEX) ? MAT_HERMITIAN : MAT_SYMMETRIC, PETSC_TRUE));
 
   PetscCall(MatCreateTranspose(A, &At));
   PetscCall(MatCreateHermitianTranspose(A, &Aht));

@@ -10,11 +10,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
   PetscInt     *ai = a->i, *aj = a->j, m = A->rmap->N, n = A->cmap->n, i, j, k, *bi, *bj, *rowlengths, nz, *rowstart, itmp;
   PetscInt      bs = A->rmap->bs, bs2 = bs * bs, mbs = A->rmap->N / bs, diagcnt = 0;
   MatScalar    *av, *bv;
-#if defined(PETSC_USE_COMPLEX)
-  const int aconj = A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
-#else
-  const int aconj = 0;
-#endif
+  const int     aconj = PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
@@ -244,11 +240,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
   PetscInt     *ai = a->i, *aj = a->j, m = A->rmap->N, n = A->cmap->n, *bi, *bj, *browlengths, nz, *browstart, itmp;
   PetscInt      bs = A->rmap->bs, bs2 = bs * bs, mbs = m / bs;
   MatScalar    *av, *bv;
-#if defined(PETSC_USE_COMPLEX)
-  const int aconj = A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
-#else
-  const int aconj = 0;
-#endif
+  const int     aconj = PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */

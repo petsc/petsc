@@ -210,9 +210,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   PetscCall(PCSetType(pc, PCKSP));
   PetscCall(PCKSPGetKSP(pc, &sub_ksp));
   PetscCall(KSPSetTolerances(sub_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 30));
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
-#else
+  PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
   PetscFunctionReturn(PETSC_SUCCESS);
-#endif
 }

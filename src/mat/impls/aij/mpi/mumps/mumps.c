@@ -4068,13 +4068,11 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A, MatFactorType ftype, Mat *F)
   PetscMPIInt size;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
     *F = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
   /* Create the factorization matrix */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeqAIJ));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATDIAGONAL, &isDiag));
@@ -4122,12 +4120,9 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A, MatFactorType ftype, Mat *F)
     else if (isDense) mumps->ConvertToTriples = MatConvertToTriples_dense_xaij;
     else mumps->ConvertToTriples = MatConvertToTriples_mpiaij_mpisbaij;
     PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_CHOLESKY]));
-#if defined(PETSC_USE_COMPLEX)
-    mumps->sym = 2;
-#else
-    if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
+    if (PetscDefined(USE_COMPLEX)) mumps->sym = 2;
+    else if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
     else mumps->sym = 2;
-#endif
   }
 
   /* set solvertype */
@@ -4158,13 +4153,11 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A, PETSC_UNUSED MatFactorType
   PetscMPIInt size;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
     *F = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
   PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
   PetscCall(PetscStrallocpy(MATSOLVERMUMPS, &((PetscObject)B)->type_name));
@@ -4199,12 +4192,9 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A, PETSC_UNUSED MatFactorType
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsSetBlk_C", MatMumpsSetBlk_MUMPS));
 
   B->factortype = MAT_FACTOR_CHOLESKY;
-#if defined(PETSC_USE_COMPLEX)
-  mumps->sym = 2;
-#else
-  if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
+  if (PetscDefined(USE_COMPLEX)) mumps->sym = 2;
+  else if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
   else mumps->sym = 2;
-#endif
 
   /* set solvertype */
   PetscCall(PetscFree(B->solvertype));
@@ -4359,13 +4349,11 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscBool   flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
     *F = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
 
   /* Return if some condition is not satisfied */
   *F = NULL;
@@ -4463,12 +4451,9 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
   } else {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MUMPS;
     B->factortype                  = MAT_FACTOR_CHOLESKY;
-#if defined(PETSC_USE_COMPLEX)
-    mumps->sym = 2;
-#else
-    if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
+    if (PetscDefined(USE_COMPLEX)) mumps->sym = 2;
+    else if (A->spd == PETSC_BOOL3_TRUE) mumps->sym = 1;
     else mumps->sym = 2;
-#endif
   }
   mumps->ConvertToTriples = MatConvertToTriples_nest_xaij;
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[ftype]));

@@ -202,15 +202,12 @@ PetscErrorCode VecHYPRE_IJVectorPopVec(VecHYPRE_IJVector ij)
 
 PetscErrorCode VecHYPRE_IJBindToCPU(VecHYPRE_IJVector ij, PetscBool bind)
 {
-  HYPRE_MemoryLocation hmem = bind ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE;
+  HYPRE_MemoryLocation hmem = bind || !PetscDefined(HAVE_HYPRE_DEVICE) ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE;
   hypre_ParVector     *hij;
 
   PetscFunctionBegin;
   PetscCheck(!ij->pvec, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheck(!ij->hv, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Forgot to call VecHYPRE_IJVectorPopVec()");
-#if !defined(PETSC_HAVE_HYPRE_DEVICE)
-  hmem = HYPRE_MEMORY_HOST;
-#endif
 #if PETSC_PKG_HYPRE_VERSION_GT(2, 19, 0)
   if (hmem != VecHYPRE_IJVectorMemoryLocation(ij->ij)) {
     PetscCallHYPRE(HYPRE_IJVectorGetObject(ij->ij, (void **)&hij));

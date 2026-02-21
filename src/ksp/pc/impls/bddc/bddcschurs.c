@@ -2124,15 +2124,11 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
   PetscCall(PetscStrncpy(sub_schurs->mat_solver_type, MATSOLVERPETSC, sizeof(sub_schurs->mat_solver_type)));
 #endif
   sub_schurs->mat_factor_type = MAT_FACTOR_NONE;
-#if defined(PETSC_USE_COMPLEX)
-  sub_schurs->is_hermitian = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
-#else
-  sub_schurs->is_hermitian = PETSC_TRUE;
-#endif
-  sub_schurs->is_posdef     = PETSC_TRUE;
-  sub_schurs->is_symmetric  = PETSC_TRUE;
-  sub_schurs->debug         = PETSC_FALSE;
-  sub_schurs->restrict_comm = PETSC_FALSE;
+  sub_schurs->is_hermitian    = PetscDefined(USE_COMPLEX) ? PETSC_FALSE : PETSC_TRUE; /* Hermitian Cholesky is not supported by PETSc and external packages */
+  sub_schurs->is_posdef       = PETSC_TRUE;
+  sub_schurs->is_symmetric    = PETSC_TRUE;
+  sub_schurs->debug           = PETSC_FALSE;
+  sub_schurs->restrict_comm   = PETSC_FALSE;
   PetscOptionsBegin(PetscObjectComm((PetscObject)graph->l2gmap), sub_schurs->prefix, "BDDC sub_schurs options", "PC");
   PetscCall(PetscOptionsString("-sub_schurs_mat_solver_type", "Specific direct solver to use", NULL, sub_schurs->mat_solver_type, sub_schurs->mat_solver_type, sizeof(sub_schurs->mat_solver_type), NULL));
   PetscCall(PetscOptionsEnum("-sub_schurs_mat_factor_type", "Factor type to use. Use MAT_FACTOR_NONE for automatic selection", NULL, MatFactorTypes, (PetscEnum)sub_schurs->mat_factor_type, (PetscEnum *)&sub_schurs->mat_factor_type, NULL));

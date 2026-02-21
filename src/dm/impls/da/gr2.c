@@ -805,11 +805,7 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscCallHDF5Return(rdim, H5Sget_simple_extent_dims, (filespace, dims, NULL));
 
   /* Expected dimension for holding the dof's */
-  #if defined(PETSC_USE_COMPLEX)
-  dofInd = rdim - 2;
-  #else
-  dofInd = rdim - 1;
-  #endif
+  dofInd = PetscDefined(USE_COMPLEX) ? rdim - 2 : rdim - 1;
 
   /* The expected number of dimensions, assuming basedimension2 = false */
   dim = (int)dimension;

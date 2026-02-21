@@ -175,9 +175,9 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscInt                 dimEmbed, cellHeight, cStart, cEnd, vStart, vEnd, numLabelCells, hasLabel, c, v, i;
   PetscBool                localized;
   PieceInfo                piece, *gpiece = NULL;
-  void                    *buffer     = NULL;
-  const char              *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
-  PetscInt                 loops_per_scalar;
+  void                    *buffer           = NULL;
+  const char              *byte_order       = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
+  PetscInt                 loops_per_scalar = PetscDefined(USE_COMPLEX) ? 2 : 1;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
@@ -191,11 +191,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscCall(PetscCommGetNewTag(PetscObjectComm((PetscObject)dm), &tag));
 
   PetscCall(DMPlexGetNonEmptyComm_Private(dm, &comm));
-#if defined(PETSC_USE_COMPLEX)
-  loops_per_scalar = 2;
-#else
-  loops_per_scalar = 1;
-#endif
   if (comm == MPI_COMM_NULL) goto finalize;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -452,17 +447,12 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         const PetscScalar *x, *cx = NULL;
         PetscVTUReal      *y = NULL;
         Vec                coords, cellCoords;
-        PetscBool          copy;
+        const PetscBool    copy = PetscDefined(USE_COMPLEX) ? PETSC_TRUE : (PetscBool)(dimEmbed != 3 || localized || (sizeof(PetscReal) != sizeof(PetscVTUReal)));
 
         PetscCall(DMGetCoordinatesLocal(dm, &coords));
         PetscCall(VecGetArrayRead(coords, &x));
         PetscCall(DMGetCellCoordinatesLocal(dm, &cellCoords));
         if (cellCoords) PetscCall(VecGetArrayRead(cellCoords, &cx));
-#if defined(PETSC_USE_COMPLEX)
-        copy = PETSC_TRUE;
-#else
-        copy = (PetscBool)(dimEmbed != 3 || localized || (sizeof(PetscReal) != sizeof(PetscVTUReal)));
-#endif
         if (copy) {
           PetscCall(PetscMalloc1(piece.nvertices * 3, &y));
           if (localized) {

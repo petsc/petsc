@@ -1111,12 +1111,7 @@ PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep
 PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
 {
   PetscFunctionBegin;
-  if (ptype == PETSC_INT)
-#if defined(PETSC_USE_64BIT_INDICES)
-    *htype = H5T_NATIVE_LLONG;
-#else
-    *htype = H5T_NATIVE_INT;
-#endif
+  if (ptype == PETSC_INT) *htype = PetscDefined(USE_64BIT_INDICES) ? H5T_NATIVE_LLONG : H5T_NATIVE_INT;
   else if (ptype == PETSC_DOUBLE) *htype = H5T_NATIVE_DOUBLE;
   else if (ptype == PETSC_LONG) *htype = H5T_NATIVE_LONG;
   else if (ptype == PETSC_SHORT) *htype = H5T_NATIVE_SHORT;
@@ -1148,11 +1143,9 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
 PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptype)
 {
   PetscFunctionBegin;
+  if (htype == H5T_NATIVE_INT) *ptype = PetscDefined(USE_64BIT_INDICES) ? PETSC_LONG : PETSC_INT;
 #if defined(PETSC_USE_64BIT_INDICES)
-  if (htype == H5T_NATIVE_INT) *ptype = PETSC_LONG;
   else if (htype == H5T_NATIVE_LLONG) *ptype = PETSC_INT;
-#else
-  if (htype == H5T_NATIVE_INT) *ptype = PETSC_INT;
 #endif
   else if (htype == H5T_NATIVE_DOUBLE) *ptype = PETSC_DOUBLE;
   else if (htype == H5T_NATIVE_LONG) *ptype = PETSC_LONG;
