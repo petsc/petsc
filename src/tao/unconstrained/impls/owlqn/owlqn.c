@@ -56,7 +56,6 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   PetscReal                    step = 1.0;
   PetscReal                    delta;
   PetscInt                     stepType;
-  PetscInt                     iter      = 0;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -71,7 +70,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
-  PetscCall(TaoMonitor(tao, iter, f, gnorm, 0.0, step));
+  PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -208,9 +207,9 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
     PetscCall(VecNorm(lmP->GV, NORM_2, &gnorm));
 
-    iter++;
+    ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
-    PetscCall(TaoMonitor(tao, iter, f, gnorm, 0.0, step));
+    PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
 
     if ((int)ls_status < 0) break;
