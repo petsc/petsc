@@ -1,7 +1,5 @@
 #pragma once
 
-#include <petscviewerexodusii.h>
-
 #if defined(PETSC_HAVE_EXODUSII)
 
 typedef struct {
