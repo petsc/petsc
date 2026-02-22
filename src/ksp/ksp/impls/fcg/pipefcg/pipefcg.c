@@ -496,7 +496,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 }
 
 /*@
-  KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions `KSPPIPEFCG` uses during orthoganalization
+  KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions `KSPPIPEFCG` uses during orthogonalization
 
   Logically Collective
 
@@ -504,8 +504,8 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 + ksp        - the Krylov space context
 - truncstrat - the choice of strategy
 .vb
-  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCD_TRUNC_TYPE_NOTAY uses max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to `mmax`) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses `max(1,mod(i,mmax))` stored directions at iteration i = 0, 1, ...
 .ve
 
   Options Database Key:
@@ -539,7 +539,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -572,14 +572,14 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems PetscO
   KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method {cite}`sananschneppmay2016`. [](sec_pipelineksp). [](sec_flexibleksp)
 
   Options Database Keys:
-+   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
-.   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
++   -ksp_pipefcg_mmax <N>                         - The number of previous search directions to store
+.   -ksp_pipefcg_nprealloc <N>                    - The number of previous search directions to preallocate
 -   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
   Level: intermediate
 
   Notes:
-  Compare to `KSPFCG`
+  Pipelined version of `KSPFCG` that overlaps communication (global reductions) with computation (preconditioner application and matrix-vector products) to reduce the impact of communication latency on parallel performance.
 
   Supports left preconditioning only.
 

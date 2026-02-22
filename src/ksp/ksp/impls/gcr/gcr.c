@@ -170,7 +170,6 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp)
   PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRGetRestart_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetModifyPC_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -189,7 +188,7 @@ static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
+static PetscErrorCode KSPFlexibleSetModifyPC_GCR(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   KSP_GCR *gcr = (KSP_GCR *)ksp->data;
 
@@ -198,28 +197,6 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPFlexibleModifyPCFn *func
   gcr->modifypc         = function;
   gcr->modifypc_destroy = destroy;
   gcr->modifypc_ctx     = ctx;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  KSPGCRSetModifyPC - Sets the routine used by `KSPGCR` to modify the preconditioner for each iteration
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp      - iterative context obtained from `KSPCreate()`
-. function - user defined function to modify the preconditioner, see `KSPFlexibleModifyPCFn`
-. ctx      - user provided context for the modify preconditioner function
-- destroy  - the function to use to destroy the user provided application context.
-
-  Level: intermediate
-
-.seealso: [](ch_ksp), `KSP`, `KSPGCR`, `KSPFlexibleModifyPCFn`, `KSPFGMRESModifyPCFn`, [](sec_flexibleksp)
- @*/
-PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
-{
-  PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, void *, PetscCtxDestroyFn *), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -325,7 +302,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 }
 
 /*MC
-   KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual method {cite}`eisenstat1983variational`. [](sec_flexibleksp),
+   KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual (GCR) method {cite}`eisenstat1983variational`. [](sec_flexibleksp)
 
    Options Database Key:
 .   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
@@ -333,32 +310,30 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
    Level: beginner
 
     Notes:
-    The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
+    This method supports non-symmetric matrices and permits the use of a preconditioner
     which may vary from one iteration to the next.
 
-    Users can define a method to vary the preconditioner between iterates via `KSPFlexibleSetModifyPC()` or `KSPGCRSetModifyPC()`.
+    Users can define a method to vary the preconditioner between iterates via `KSPFlexibleSetModifyPC()`.
 
-    Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
-    solution is given by the current estimate for x which was obtained by the last restart
-    iterations of the GCR algorithm.
+    When a restart occurs, the initial starting solution is given by the current estimate for `x`.
 
     Unlike `KSPGMRES` and `KSPFGMRES`, when using GCR, the solution and residual vector can be directly accessed at any iterate,
     with zero computational cost, via a call to `KSPBuildSolution()` and `KSPBuildResidual()` respectively.
 
-    This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm,
-    where ksp->chknorm is specified via the command line argument `-ksp_check_norm_iteration` or via
-    the function `KSPSetCheckNormIteration()`. Hence the residual norm reported by the monitor and stored
-    in the residual history will be listed as 0.0 before this iteration. It is actually not 0.0; just not calculated.
+    The stopping condition test is only applied after the iteration count exceeds the value set by
+    `KSPSetCheckNormIteration()` (also available as `-ksp_check_norm_iteration`). The residual norm
+    reported by the monitor and stored in the residual history will be listed as 0.0 before that
+    iteration; the norm is not actually zero, it is simply not computed until then.
 
     The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as `KSPGMRES`.
 
-    Support only for right preconditioning.
+    Supports only right preconditioning.
 
     Contributed by:
     Dave May
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`,
-          `KSPGCRSetRestart()`, `KSPFlexibleSetModifyPC()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPEGCR`, `KSPPIPEFCG`, `KSPFGMRES`, `KSPCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`,
+          `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`, `KSPFlexibleSetModifyPC()`, `KSPGMRES`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
 {
@@ -385,7 +360,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C", KSPGCRSetRestart_GCR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRGetRestart_C", KSPGCRGetRestart_GCR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetModifyPC_C", KSPGCRSetModifyPC_GCR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPGCRSetModifyPC_GCR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPFlexibleSetModifyPC_GCR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -249,7 +249,6 @@ static PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_FGMRES(ksp));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -426,15 +425,15 @@ static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems PetscOp
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP flexible GMRES Options");
-  PetscCall(PetscOptionsBoolGroupBegin("-ksp_fgmres_modifypcnochange", "do not vary the preconditioner", "KSPFGMRESSetModifyPC", &flg));
-  if (flg) PetscCall(KSPFGMRESSetModifyPC(ksp, KSPFGMRESModifyPCNoChange, NULL, NULL));
-  PetscCall(PetscOptionsBoolGroupEnd("-ksp_fgmres_modifypcksp", "vary the KSP based preconditioner", "KSPFGMRESSetModifyPC", &flg));
-  if (flg) PetscCall(KSPFGMRESSetModifyPC(ksp, KSPFGMRESModifyPCKSP, NULL, NULL));
+  PetscCall(PetscOptionsBoolGroupBegin("-ksp_fgmres_modifypcnochange", "do not vary the preconditioner", "KSPFlexibleSetModifyPC", &flg));
+  if (flg) PetscCall(KSPFlexibleSetModifyPC(ksp, KSPFlexibleModifyPCNoChange, NULL, NULL));
+  PetscCall(PetscOptionsBoolGroupEnd("-ksp_fgmres_modifypcksp", "vary the KSP based preconditioner", "KSPFlexibleSetModifyPC", &flg));
+  if (flg) PetscCall(KSPFlexibleSetModifyPC(ksp, KSPFlexibleModifyPCKSP, NULL, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *d)
+static PetscErrorCode KSPFlexibleSetModifyPC_FGMRES(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -502,12 +501,12 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
                                       stability of the classical Gram-Schmidt orthogonalization.
 .   -ksp_gmres_krylov_monitor       - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange    - do not change the preconditioner between iterations
--   -ksp_fgmres_modifypcksp         - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
+-   -ksp_fgmres_modifypcksp         - modify the preconditioner using `KSPFlexibleModifyPCKSP()`
 
    Level: beginner
 
    Notes:
-   See `KSPFlexibleSetModifyPC()` or `KSPFGMRESSetModifyPC()` for how to vary the preconditioner between iterations
+   See `KSPFlexibleSetModifyPC()` for how to vary the preconditioner between iterations
 
    GMRES requires that the preconditioner used is a linear operator. Flexible GMRES allows the preconditioner to be a nonlinear operator. This
    allows, for example, Flexible GMRES to use GMRES solvers or other Krylov solvers (which are nonlinear operators in general) inside the preconditioner
@@ -528,8 +527,8 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPFCG`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
-          `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPFGMRESSetModifyPC()`,
-          `KSPFGMRESModifyPCKSP()`
+          `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPFlexibleSetModifyPC()`,
+          `KSPFlexibleModifyPCKSP()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
@@ -558,8 +557,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetOrthogonalization_C", KSPGMRESGetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_FGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_FGMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", KSPFGMRESSetModifyPC_FGMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPFGMRESSetModifyPC_FGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPFlexibleSetModifyPC_FGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", KSPGMRESGetCGSRefinementType_GMRES));
 
@@ -572,7 +570,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   fgmres->max_k          = FGMRES_DEFAULT_MAXK;
   fgmres->Rsvd           = NULL;
   fgmres->orthogwork     = NULL;
-  fgmres->modifypc       = KSPFGMRESModifyPCNoChange;
+  fgmres->modifypc       = KSPFlexibleModifyPCNoChange;
   fgmres->modifyctx      = NULL;
   fgmres->modifydestroy  = NULL;
   fgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
