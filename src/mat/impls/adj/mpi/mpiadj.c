@@ -752,13 +752,12 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A, Mat *B)
   const PetscInt *ranges;
   MPI_Comm        acomm, bcomm;
   MPI_Group       agroup, bgroup;
-  PetscMPIInt     i, rank, size, nranks, *ranks;
+  PetscMPIInt     i, size, nranks, *ranks;
 
   PetscFunctionBegin;
   *B = NULL;
   PetscCall(PetscObjectGetComm((PetscObject)A, &acomm));
   PetscCallMPI(MPI_Comm_size(acomm, &size));
-  PetscCallMPI(MPI_Comm_size(acomm, &rank));
   PetscCall(MatGetOwnershipRanges(A, &ranges));
   for (i = 0, nranks = 0; i < size; i++) {
     if (ranges[i + 1] - ranges[i] > 0) nranks++;

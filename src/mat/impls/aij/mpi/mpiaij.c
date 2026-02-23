@@ -6432,8 +6432,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
       PetscCall(PetscMalloc2(maxNsend2, &sendto2, maxNsend2, &nentries2));
       PetscCall(PetscArraycpy(sendto2, sendto, maxNsend));
-      PetscCall(PetscArraycpy(nentries2, nentries2, maxNsend + 1));
-      PetscCall(PetscFree2(sendto, nentries2));
+      PetscCall(PetscArraycpy(nentries2, nentries, maxNsend));
+      PetscCall(PetscFree2(sendto, nentries));
       sendto   = sendto2;
       nentries = nentries2;
       maxNsend = maxNsend2;

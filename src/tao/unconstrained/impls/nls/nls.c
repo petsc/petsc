@@ -470,7 +470,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           /* Attempt to use the BFGS direction */
           PetscCall(MatSolve(nlsP->M, tao->gradient, nlsP->D));
           /* Check for success (descent direction) */
-          PetscCall(VecDot(tao->solution, nlsP->D, &gdx));
+          PetscCall(VecDot(tao->gradient, nlsP->D, &gdx));
           if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
             /* BFGS direction is not descent or direction produced not a number
                We can assert bfgsUpdates > 1 in this case

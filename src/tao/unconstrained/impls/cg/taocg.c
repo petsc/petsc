@@ -115,7 +115,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
         PetscCall(VecCopy(cgP->X_old, tao->solution));
         PetscCall(VecCopy(cgP->G_old, tao->gradient));
         delta = 1.0;
-        PetscCall(VecCopy(tao->solution, tao->stepdirection));
+        PetscCall(VecCopy(tao->gradient, tao->stepdirection));
         PetscCall(VecScale(tao->stepdirection, -1.0));
 
         PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch, delta));

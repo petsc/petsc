@@ -280,14 +280,8 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, P
   const PetscScalar *Xarr, *aa;
   PetscScalar        vals[2];
   PetscInt           proc, nx_all, *nce_all = pdipm->nce_all;
-  MPI_Comm           comm;
-  PetscMPIInt        rank, size;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCallMPI(MPI_Comm_rank(comm, &size));
-
   PetscCall(MatGetOwnershipRanges(Jpre, &Jranges));
   PetscCall(MatGetOwnershipRange(Jpre, &Jrstart, NULL));
   PetscCall(MatGetOwnershipRangesColumn(tao->hessian, &rranges));

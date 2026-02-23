@@ -3098,7 +3098,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
     }
     /* csr_spmv does y = alpha op(A) x + beta y */
     if (hipsparsestruct->format == MAT_HIPSPARSE_CSR) {
-#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
+#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0) && !PETSC_PKG_HIP_VERSION_EQ(7, 2, 0)
       PetscCheck(opA >= 0 && opA <= 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE API on hipsparseOperation_t has changed and PETSc has not been updated accordingly");
       if (!matstruct->hipSpMV[opA].initialized) { /* built on demand */
         PetscCallHIPSPARSE(hipsparseCreateDnVec(&matstruct->hipSpMV[opA].vecXDescr, nx, xptr, hipsparse_scalartype));
@@ -3116,7 +3116,9 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
                                        matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, hipsparsestruct->spmvAlg, matstruct->hipSpMV[opA].spmvBuffer));
 #else
       CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
-      PetscCallHIPSPARSE(hipsparse_csr_spmv(hipsparsestruct->handle, opA, mat->num_rows, mat->num_cols, mat->num_entries, matstruct->alpha_one, matstruct->descr, mat->values->data().get(), mat->row_offsets->data().get(), mat->column_indices->data().get(), xptr, beta, dptr));
+      nx             = mat->num_rows; /* nx,ny are set before the #if block, set them again to avoid set-but-not-used warning */
+      ny             = mat->num_cols;
+      PetscCallHIPSPARSE(hipsparse_csr_spmv(hipsparsestruct->handle, opA, nx, ny, mat->num_entries, matstruct->alpha_one, matstruct->descr, mat->values->data().get(), mat->row_offsets->data().get(), mat->column_indices->data().get(), xptr, beta, dptr));
 #endif
     } else {
       if (hipsparsestruct->nrows) {
@@ -4196,7 +4198,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
 #if 0 //Errors on SUMMIT cuda 11.1.0
       PetscCallThrust(thrust::partition_copy(thrust::device, cci, cce, wPerm->begin(), p1, p2, thrust::identity<int>()));
 #else
-      auto pred = thrust::identity<int>();
+      auto pred = [](const int &x) { return x; };
       PetscCallThrust(thrust::copy_if(thrust::device, cci, cce, wPerm->begin(), p1, pred));
       PetscCallThrust(thrust::remove_copy_if(thrust::device, cci, cce, wPerm->begin(), p2, pred));
 #endif
