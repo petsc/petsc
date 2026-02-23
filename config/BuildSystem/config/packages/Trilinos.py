@@ -37,7 +37,7 @@ class Configure(config.package.CMakePackage):
     self.ml              = framework.require('config.packages.ml',self)
     self.chaco           = framework.require('config.packages.Chaco',self)
     self.exodusii        = framework.require('config.packages.ExodusII',self)
-    self.boost           = framework.require('config.packages.boost',self)
+    self.boost           = framework.require('config.packages.Boost',self)
     self.flibs           = framework.require('config.packages.flibs',self)
     self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
     self.mathlib         = framework.require('config.packages.mathlib',self)
