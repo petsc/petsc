@@ -212,11 +212,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&cg));
-#if !defined(PETSC_USE_COMPLEX)
-  cg->type = KSP_CG_SYMMETRIC;
-#else
-  cg->type = KSP_CG_HERMITIAN;
-#endif
+  cg->type  = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
   ksp->data = (void *)cg;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

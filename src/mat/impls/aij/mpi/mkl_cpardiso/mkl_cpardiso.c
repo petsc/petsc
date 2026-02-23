@@ -447,11 +447,7 @@ static PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A, Vec b, Vec x)
   Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO *)A->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  mat_mkl_cpardiso->iparm[12 - 1] = 1;
-#else
-  mat_mkl_cpardiso->iparm[12 - 1] = 2;
-#endif
+  mat_mkl_cpardiso->iparm[12 - 1] = PetscDefined(USE_COMPLEX) ? 1 : 2;
   PetscCall(MatSolve_MKL_CPARDISO(A, b, x));
   mat_mkl_cpardiso->iparm[12 - 1] = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -611,17 +607,9 @@ static PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_
   mat_mkl_cpardiso->nrhs   = 1;
   mat_mkl_cpardiso->err    = 0;
   mat_mkl_cpardiso->phase  = -1;
-#if defined(PETSC_USE_COMPLEX)
-  mat_mkl_cpardiso->mtype = 13;
-#else
-  mat_mkl_cpardiso->mtype = 11;
-#endif
+  mat_mkl_cpardiso->mtype  = PetscDefined(USE_COMPLEX) ? 13 : 11;
 
-#if defined(PETSC_USE_REAL_SINGLE)
-  mat_mkl_cpardiso->iparm[27] = 1;
-#else
-  mat_mkl_cpardiso->iparm[27] = 0;
-#endif
+  mat_mkl_cpardiso->iparm[27] = PetscDefined(USE_REAL_SINGLE) ? 1 : 0;
 
   mat_mkl_cpardiso->iparm[0]  = 1;  /* Solver default parameters overridden with provided by iparm */
   mat_mkl_cpardiso->iparm[1]  = 2;  /* Use METIS for fill-in reordering */

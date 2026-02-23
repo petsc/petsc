@@ -52,10 +52,7 @@ static PetscErrorCode PetscSplitReductionCreate(MPI_Comm comm, PetscSplitReducti
   (*sr)->comm    = comm;
   (*sr)->request = MPI_REQUEST_NULL;
   (*sr)->mix     = PETSC_FALSE;
-  (*sr)->async   = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  (*sr)->async = PETSC_TRUE; /* Enable by default */
-#endif
+  (*sr)->async   = PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES) ? PETSC_TRUE : PETSC_FALSE; /* Enable by default */
   /* always check for option; so that tests that run on systems without support don't warn about unhandled options */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-splitreduction_async", &(*sr)->async, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);

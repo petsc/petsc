@@ -70,12 +70,8 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A, Vec xx, Vec zz)
   const PetscInt *ib = a->j;
   PetscInt        ibt;
 #endif
-  PetscInt nonzerorow = 0, jmin;
-#if defined(PETSC_USE_COMPLEX)
-  const int aconj = A->hermitian == PETSC_BOOL3_TRUE;
-#else
-  const int aconj = 0;
-#endif
+  PetscInt  nonzerorow = 0, jmin;
+  const int aconj      = PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, 0.0));

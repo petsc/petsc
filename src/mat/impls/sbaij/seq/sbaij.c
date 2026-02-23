@@ -178,14 +178,8 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt bs;
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatGetBlockSize(A, &bs));
-#endif
   switch (op) {
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
@@ -206,22 +200,21 @@ static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
     a->nounused = (flg ? -1 : 0);
     break;
   case MAT_HERMITIAN:
-#if defined(PETSC_USE_COMPLEX)
-    if (flg) { /* disable transpose ops */
+    if (PetscDefined(USE_COMPLEX) && flg) { /* disable transpose ops */
+      PetscInt bs;
+
+      PetscCall(MatGetBlockSize(A, &bs));
       PetscCheck(bs <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for Hermitian with block size greater than 1");
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
     }
-#endif
     break;
   case MAT_SYMMETRIC:
   case MAT_SPD:
-#if defined(PETSC_USE_COMPLEX)
-    if (flg) { /* An Hermitian and symmetric matrix has zero imaginary part (restore back transpose ops) */
+    if (PetscDefined(USE_COMPLEX) && flg) { /* An Hermitian and symmetric matrix has zero imaginary part (restore back transpose ops) */
       A->ops->multtranspose    = A->ops->mult;
       A->ops->multtransposeadd = A->ops->multadd;
     }
-#endif
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     a->ignore_ltriangular = flg;
@@ -1674,13 +1667,11 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A, MatFactorType fty
   PetscInt n = A->rmap->n;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if ((ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY or MAT_FACTOR_ICC are not supported. Use MAT_FACTOR_LU instead.\n"));
     *B = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));

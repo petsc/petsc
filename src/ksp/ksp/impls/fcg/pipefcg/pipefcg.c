@@ -602,11 +602,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&pipefcg));
-#if !defined(PETSC_USE_COMPLEX)
-  pipefcg->type = KSP_CG_SYMMETRIC;
-#else
-  pipefcg->type = KSP_CG_HERMITIAN;
-#endif
+  pipefcg->type       = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
   pipefcg->mmax       = KSPPIPEFCG_DEFAULT_MMAX;
   pipefcg->nprealloc  = KSPPIPEFCG_DEFAULT_NPREALLOC;
   pipefcg->nvecs      = 0;

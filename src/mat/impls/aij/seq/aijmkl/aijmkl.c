@@ -1000,11 +1000,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
   B->ops->destroy     = MatDestroy_SeqAIJMKL;
 
   aijmkl->sparse_optimized = PETSC_FALSE;
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  aijmkl->no_SpMV2 = PETSC_FALSE; /* Default to using the SpMV2 routines if our MKL supports them. */
-#else
-  aijmkl->no_SpMV2 = PETSC_TRUE;
-#endif
+  aijmkl->no_SpMV2         = PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE) ? PETSC_FALSE : PETSC_TRUE; /* Default to using the SpMV2 routines if our MKL supports them. */
   aijmkl->eager_inspection = PETSC_FALSE;
 
   /* Parse command line options. */

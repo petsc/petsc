@@ -2040,7 +2040,6 @@ static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
 
 #if defined(PETSC_HAVE_EXODUSII)
   #include <exodusII.h>
-  #include <petscviewerexodusii.h>
 #endif
 
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)

@@ -144,9 +144,7 @@ int main(int argc, char **args)
   /* Test LU/Cholesky Factorization */
   use_lu = PETSC_FALSE;
   if (!symm) use_lu = PETSC_TRUE;
-#if defined(PETSC_USE_COMPLEX)
-  if (isolver == 1) use_lu = PETSC_TRUE;
-#endif
+  if (PetscDefined(USE_COMPLEX) && isolver == 1) use_lu = PETSC_TRUE;
   if (cuda && symm && !herm) use_lu = PETSC_TRUE;
 
   if (herm && !use_lu) { /* test also conversion routines inside the solver packages */

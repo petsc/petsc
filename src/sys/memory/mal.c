@@ -327,12 +327,7 @@ PetscErrorCode PetscMallocResetDRAM(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscBool petscmalloccoalesce =
-#if defined(PETSC_USE_MALLOC_COALESCED)
-  PETSC_TRUE;
-#else
-  PETSC_FALSE;
-#endif
+static PetscBool petscmalloccoalesce = PetscDefined(USE_MALLOC_COALESCED) ? PETSC_TRUE : PETSC_FALSE;
 
 /*@
   PetscMallocSetCoalesce - Use coalesced `PetscMalloc()` when allocating groups of objects, that is when using `PetscMallocN()`

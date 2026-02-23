@@ -534,11 +534,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&fcg));
-#if !defined(PETSC_USE_COMPLEX)
-  fcg->type = KSP_CG_SYMMETRIC;
-#else
-  fcg->type = KSP_CG_HERMITIAN;
-#endif
+  fcg->type       = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
   fcg->mmax       = KSPFCG_DEFAULT_MMAX;
   fcg->nprealloc  = KSPFCG_DEFAULT_NPREALLOC;
   fcg->nvecs      = 0;

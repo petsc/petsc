@@ -545,12 +545,10 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType f
     PetscCall(PetscInfo(A, "CHOLMOD only supports block size=1.\n"));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#if defined(PETSC_USE_COMPLEX)
-  if (A->hermitian != PETSC_BOOL3_TRUE) {
+  if (PetscDefined(USE_COMPLEX) && A->hermitian != PETSC_BOOL3_TRUE) {
     PetscCall(PetscInfo(A, "Only for Hermitian matrices.\n"));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#endif
   /* Create the factorization matrix F */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));

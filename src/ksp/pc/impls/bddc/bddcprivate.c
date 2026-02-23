@@ -1965,7 +1965,7 @@ boundary:
           Vec                cvec;
           const PetscScalar *coords;
           PetscInt           dof, n, cdim;
-          PetscBool          memc = PETSC_TRUE;
+          PetscBool          memc = PetscDefined(USE_COMPLEX) ? PETSC_FALSE : PETSC_TRUE;
 
           PetscCall(DMDAGetInfo(dm, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
           PetscCall(DMGetCoordinates(dm, &cvec));
@@ -1975,9 +1975,6 @@ boundary:
           PetscCall(PetscFree(pcbddc->mat_graph->coords));
           PetscCall(PetscMalloc1(dof * n * cdim, &pcbddc->mat_graph->coords));
           PetscCall(VecGetArrayRead(cvec, &coords));
-#if defined(PETSC_USE_COMPLEX)
-          memc = PETSC_FALSE;
-#endif
           if (dof != 1) memc = PETSC_FALSE;
           if (memc) {
             PetscCall(PetscArraycpy(pcbddc->mat_graph->coords, coords, cdim * n * dof));
@@ -6589,12 +6586,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscScalar *temp_basis = NULL, *correlation_mat = NULL;
     PetscBLASInt dummy_int    = 1;
     PetscScalar  dummy_scalar = 1.;
-    PetscBool    use_pod      = PETSC_FALSE;
+    PetscBool    use_pod      = PetscDefined(MISSING_LAPACK_GESVD) || PetscDefined(HAVE_MKL_LIBS) ? PETSC_TRUE : PETSC_FALSE; /* MKL SVD with same input gives different results on different processes! */
 
-    /* MKL SVD with same input gives different results on different processes! */
-#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL_LIBS)
-    use_pod = PETSC_TRUE;
-#endif
     /* Get index sets for faces, edges and vertices from graph */
     PetscCall(PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph, &n_ISForFaces, &ISForFaces, &n_ISForEdges, &ISForEdges, &ISForVertices));
     o_nf       = n_ISForFaces;
