@@ -980,7 +980,6 @@ PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
 PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
-  PetscInt i;
 
   PetscFunctionBegin;
   if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
@@ -1022,10 +1021,6 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     PetscCall(TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP));
     PetscCall(TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP));
     PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)bnk->bncg));
-    for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoMonitorSet(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-      PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
-    }
   }
   bnk->X_inactive    = NULL;
   bnk->G_inactive    = NULL;

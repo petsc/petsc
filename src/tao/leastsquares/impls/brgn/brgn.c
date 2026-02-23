@@ -406,7 +406,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
   PetscBool is_bnls, is_bntr, is_bntl;
-  PetscInt  i, n, N, K; /* dict has size K*N*/
+  PetscInt  n, N, K; /* dict has size K*N*/
 
   PetscFunctionBegin;
   PetscCheck(tao->ls_res, PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetResidualRoutine() must be called before setup!");
@@ -471,10 +471,6 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     PetscCall(TaoSetTolerances(gn->subsolver, tao->gatol, tao->grtol, tao->gttol));
     PetscCall(TaoSetMaximumIterations(gn->subsolver, tao->max_it));
     PetscCall(TaoSetMaximumFunctionEvaluations(gn->subsolver, tao->max_funcs));
-    for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoMonitorSet(gn->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-      PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
-    }
     PetscCall(TaoSetUp(gn->subsolver));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -54,17 +54,17 @@ int main(int argc, char **argv)
 
   test:
     suffix: 8
-    args: -tao_monitor_short -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+    args: -tao_monitor_short -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
     output_file: output/rosenbrock1_8.out
 
   test:
     suffix: 9
-    args: -tao_monitor_short -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+    args: -tao_monitor_short -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
     output_file: output/rosenbrock1_9.out
 
   test:
     suffix: 10
-    args: -tao_monitor_short -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+    args: -tao_monitor_short -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
     output_file: output/rosenbrock1_10.out
 
   test:

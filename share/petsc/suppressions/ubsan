@@ -16,6 +16,7 @@ function:dmadapt.c
 function:KSPMonitor
 function:SNESMonitor
 function:TSMonitor
+function:TaoMonitor
 
 # DMDA array access with void*
 function:SNESComputeFunction_DMDA
