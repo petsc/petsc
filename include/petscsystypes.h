@@ -1086,6 +1086,15 @@ typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
 
 /*S
+     PetscByte - datatype used to represent bytes
+
+     Level: intermediate
+
+.seealso: `PetscBT`
+S*/
+typedef unsigned char PetscByte;
+
+/*S
      PetscBT - PETSc bitarrays, efficient storage of arrays of boolean values
 
      Level: advanced
@@ -1110,7 +1119,7 @@ typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
     would cost hundreds more cycles then the operation.
 
 S*/
-typedef char *PetscBT;
+typedef PetscByte *PetscBT;
 
 /* The number of bits in a byte */
 #define PETSC_BITS_PER_BYTE CHAR_BIT

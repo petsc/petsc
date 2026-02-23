@@ -13,9 +13,9 @@ static inline size_t PetscBTIndex_Internal(PetscCount index)
   return (size_t)index / PETSC_BITS_PER_BYTE;
 }
 
-static inline char PetscBTMask_Internal(PetscCount index)
+static inline PetscByte PetscBTMask_Internal(PetscCount index)
 {
-  return (char)(1 << index % PETSC_BITS_PER_BYTE);
+  return (PetscByte)(1 << index % PETSC_BITS_PER_BYTE);
 }
 
 static inline size_t PetscBTLength(PetscCount m)
@@ -43,7 +43,7 @@ static inline PetscErrorCode PetscBTCopy(PetscBT dest, PetscCount m, PetscBT sou
   return PetscArraycpy(dest, source, PetscBTLength(m));
 }
 
-static inline char PetscBTLookup(PetscBT array, PetscCount index)
+static inline PetscByte PetscBTLookup(PetscBT array, PetscCount index)
 {
   return array[PetscBTIndex_Internal(index)] & PetscBTMask_Internal(index);
 }
@@ -65,20 +65,20 @@ static inline PetscErrorCode PetscBTNegate(PetscBT array, PetscCount index)
 static inline PetscErrorCode PetscBTClear(PetscBT array, PetscCount index)
 {
   PetscFunctionBegin;
-  array[PetscBTIndex_Internal(index)] &= (char)~PetscBTMask_Internal(index);
+  array[PetscBTIndex_Internal(index)] &= (PetscByte)~PetscBTMask_Internal(index);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline char PetscBTLookupSet(PetscBT array, PetscCount index)
+static inline PetscByte PetscBTLookupSet(PetscBT array, PetscCount index)
 {
-  const char ret = PetscBTLookup(array, index);
+  const PetscByte ret = PetscBTLookup(array, index);
   PetscCallContinue(PetscBTSet(array, index));
   return ret;
 }
 
-static inline char PetscBTLookupClear(PetscBT array, PetscCount index)
+static inline PetscByte PetscBTLookupClear(PetscBT array, PetscCount index)
 {
-  const char ret = PetscBTLookup(array, index);
+  const PetscByte ret = PetscBTLookup(array, index);
   PetscCallContinue(PetscBTClear(array, index));
   return ret;
 }
@@ -87,10 +87,10 @@ static inline PetscCount PetscBTCountSet(PetscBT array, PetscCount m)
 {
   PetscCount cnt = 0;
   for (size_t j = 0; j < PetscBTLength(m); j++) {
-    unsigned char       byte = (unsigned char)array[j];
-    const unsigned char c1   = 0x55;
-    const unsigned char c2   = 0x33;
-    const unsigned char c4   = 0x0F;
+    PetscByte       byte = array[j];
+    const PetscByte c1   = 0x55;
+    const PetscByte c2   = 0x33;
+    const PetscByte c4   = 0x0F;
 
     byte -= (byte >> 1) & c1;
     byte = ((byte >> 2) & c2) + (byte & c2);
