@@ -21,7 +21,6 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('MUMPS', '-with-mumps-serial', nargs.ArgBool(None, 0, 'Use serial build of MUMPS'))
     help.addArgument('MUMPS', '-download-mumps-openmp', nargs.ArgBool(None, 1, 'Let MUMPS use OpenMP if available'))
     help.addArgument('MUMPS', '-download-mumps-avoid-mpi-in-place', nargs.ArgBool(None, 0, 'Let MUMPS not use MPI_IN_PLACE. Since MUMPS-5.6.2, it can be used to avoid a bug in MPICH older than 4.0b1'))
     return
@@ -38,7 +37,7 @@ class Configure(config.package.Package):
     self.hwloc            = framework.require('config.packages.hwloc',self)
     self.openmp           = framework.require('config.packages.OpenMP',self)
     self.scalartypes      = framework.require('PETSc.options.scalarTypes',self)
-    if self.argDB['with-mumps-serial']:
+    if not self.argDB['with-mpi']:
       self.deps           = [self.blasLapack,self.flibs]
       self.odeps          = [self.metis,self.openmp]
     else:
@@ -77,16 +76,6 @@ class Configure(config.package.Package):
       for libc in liblist_common:
         self.liblist.append(['lib'+l+'mumps.a'] + libc)
       config.package.Package.configureLibrary(self)
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.argDB['with-'+self.package] or self.argDB['download-'+self.package]:
-      if self.mpi.usingMPIUni and not self.argDB['with-mumps-serial']:
-        raise RuntimeError('Since you are building without MPI you must use --with-mumps-serial to install the correct MUMPS.')
-    if self.argDB['with-mumps-serial']:
-      if not self.mpi.usingMPIUni:
-        raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-    return
 
   def Install(self):
     import os
@@ -161,7 +150,7 @@ class Configure(config.package.Package):
     g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n')
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+'\n')
-    if not self.argDB['with-mumps-serial']:
+    if not self.mpi.usingMPIUni:
       g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
       g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n')
     else:
@@ -172,7 +161,7 @@ class Configure(config.package.Package):
     g.write('OPTL    = '+self.getLinkerFlags()+'\n')
     g.write('INCS = $(INCPAR)\n')
     g.write('LIBS = $(LIBPAR)\n')
-    if self.argDB['with-mumps-serial']:
+    if self.mpi.usingMPIUni:
       g.write('LIBSEQNEEDED = libseqneeded\n')
       g.write('LIBS = $(LIBSEQ)\n')
     else:
@@ -208,7 +197,7 @@ class Configure(config.package.Package):
            'cp -f lib/*.* '+libDir,
            'cp -f include/*.* '+includeDir
           ], cwd=self.packageDir, timeout=60, log = self.log)
-        if self.argDB['with-mumps-serial']:
+        if self.mpi.usingMPIUni:
           output,err,ret = config.package.Package.executeShellCommand(['cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on MUMPS: '+str(e))

@@ -20,7 +20,6 @@ if __name__ == '__main__':
     '--download-metis',
     '--download-superlu',
     '--download-mumps',
-    '--with-mumps-serial',
     '--download-p4est=1',
     '--with-zlib=1',
     # stress-test h2opus: mpiuni and CPU code while PETSc has GPU support
