@@ -678,7 +678,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
   See the manual page for `PetscFormatConvert()` for details.
 
   Fortran Notes:
-  The call sequence is `PetscPrintf`(MPI_Comm, character(*), `PetscErrorCode` ierr) from Fortran.
+  The call sequence is `PetscPrintf`(`MPI_Comm`, `character(*)`, `PetscErrorCode` ierr).
   That is, you can only pass a single character string from Fortran.
 
 .seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`, `PetscFFlush()`

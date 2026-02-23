@@ -24,12 +24,31 @@ interface
     integer, intent(in) :: unit
     PetscErrorCode, intent(out):: ierr
   end subroutine
+
+  subroutine PetscViewerASCIISynchronizedPrintf(viewer, msg, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tPetscViewer
+    PetscViewer, intent(in) :: viewer
+    character(len=*) :: msg
+    PetscErrorCode, intent(out) :: ierr
+  end subroutine
+
+  subroutine PetscViewerASCIIPrintf(viewer, msg, ierr)
+    use, intrinsic :: ISO_C_binding
+    import tPetscViewer
+    PetscViewer, intent(in) :: viewer
+    character(len=*) :: msg
+    PetscErrorCode, intent(out) :: ierr
+  end subroutine
+
 end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToFileUnit
 !DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIIOpenWithFileUnit
 !DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIISetFileUnit
+!DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIISynchronizedPrintf
+!DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIIPrintf
 #endif
 
 interface PetscViewerBinaryWrite
