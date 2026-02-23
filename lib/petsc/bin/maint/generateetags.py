@@ -72,7 +72,15 @@ def createTagsBlock(flist,etagfile,ctagfile):
   # error check for each parameter?
   frlist = [os.path.relpath(path,os.getcwd()) for path in flist]
 
-  subprocess.check_call('etags -a -o '+etagfile+' '+' '.join(frlist), shell=True)
+  try:
+    response = subprocess.run('etags -a -o '+etagfile+' '+' '.join(frlist), capture_output = True, shell=True, check=True)
+  except subprocess.CalledProcessError as e:
+    # do not raise exception since it spews a huge file list to the screen obscuring the problem
+    print('Unable to run etags command. Likely it is not in your path. You may need to install etags or Emacs')
+    exit(1)
+  except e:
+    print('Unable to run etags command. Likely it is not in your path. You may need to install etags or Emacs')
+    exit(1)
 
   # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
   if ctagfile:
