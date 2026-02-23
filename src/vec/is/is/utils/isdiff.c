@@ -631,7 +631,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscAssertPointer(islist, 4);
   PetscCall(PetscObjectGetComm((PetscObject)xis, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCallMPI(MPI_Comm_rank(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   /* Extract, copy and sort the local indices and colors on the color. */
   PetscCall(ISGetLocalSize(coloris, &llen));
   PetscCall(ISGetLocalSize(indis, &ilen));

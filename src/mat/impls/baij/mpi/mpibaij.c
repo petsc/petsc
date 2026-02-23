@@ -3615,7 +3615,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm, Mat inmat
     MatPreallocateBegin(comm, mbs, nbs, dnz, onz); /* inline function, output __end and __rstart are used below */
 
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
-    PetscCallMPI(MPI_Comm_rank(comm, &size));
+    PetscCallMPI(MPI_Comm_size(comm, &size));
     if (rank == size - 1) {
       /* Check sum(nbs) = Nbs */
       PetscCheck(__end == Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Sum of local block columns %" PetscInt_FMT " != global block columns %" PetscInt_FMT, __end, Nbs);

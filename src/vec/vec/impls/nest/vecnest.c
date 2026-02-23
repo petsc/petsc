@@ -642,7 +642,7 @@ static PetscErrorCode VecGetLocalVector_Nest(Vec v, Vec w)
 
   PetscFunctionBegin;
   PetscCheckSameType(v, 1, w, 2);
-  PetscCheck(bv->nb = bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
+  PetscCheck(bv->nb == bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
   for (i = 0; i < bv->nb; i++) PetscCall(VecGetLocalVector(bv->v[i], bw->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -655,7 +655,7 @@ static PetscErrorCode VecRestoreLocalVector_Nest(Vec v, Vec w)
 
   PetscFunctionBegin;
   PetscCheckSameType(v, 1, w, 2);
-  PetscCheck(bv->nb = bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
+  PetscCheck(bv->nb == bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
   for (i = 0; i < bv->nb; i++) PetscCall(VecRestoreLocalVector(bv->v[i], bw->v[i]));
   PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -669,7 +669,7 @@ static PetscErrorCode VecGetLocalVectorRead_Nest(Vec v, Vec w)
 
   PetscFunctionBegin;
   PetscCheckSameType(v, 1, w, 2);
-  PetscCheck(bv->nb = bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
+  PetscCheck(bv->nb == bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
   for (i = 0; i < bv->nb; i++) PetscCall(VecGetLocalVectorRead(bv->v[i], bw->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -682,7 +682,7 @@ static PetscErrorCode VecRestoreLocalVectorRead_Nest(Vec v, Vec w)
 
   PetscFunctionBegin;
   PetscCheckSameType(v, 1, w, 2);
-  PetscCheck(bv->nb = bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
+  PetscCheck(bv->nb == bw->nb, PetscObjectComm((PetscObject)w), PETSC_ERR_ARG_WRONG, "Invalid local vector");
   for (i = 0; i < bv->nb; i++) PetscCall(VecRestoreLocalVectorRead(bv->v[i], bw->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
