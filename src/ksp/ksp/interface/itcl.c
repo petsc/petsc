@@ -349,9 +349,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
 
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
-  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
-  if (!ksp->skippcsetfromoptions) PetscCall(PCSetFromOptions(ksp->pc));
 
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
@@ -385,7 +383,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
     PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
     PetscCall(KSPSetReusePreconditioner(ksp, reuse));
-    PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, NULL));
+    PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, &set));
+    if (set) PetscCall(KSPSetErrorIfNotConverged(ksp, ksp->errorifnotconverged));
     PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
     PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
     PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
@@ -439,7 +438,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(KSPSetReusePreconditioner(ksp, reuse));
 
   PetscCall(PetscOptionsBool("-ksp_knoll", "Use preconditioner applied to b for initial guess", "KSPSetInitialGuessKnoll", ksp->guess_knoll, &ksp->guess_knoll, NULL));
-  PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, NULL));
+  PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, &set));
+  if (set) PetscCall(KSPSetErrorIfNotConverged(ksp, ksp->errorifnotconverged));
   PetscCall(PetscOptionsFList("-ksp_guess_type", "Initial guess in Krylov method", NULL, KSPGuessList, NULL, guesstype, 256, &flg));
   if (flg) {
     PetscCall(KSPGetGuess(ksp, &ksp->guess));
@@ -644,6 +644,9 @@ skipoptions:
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)ksp, PetscOptionsObject));
   PetscOptionsEnd();
   ksp->setfromoptionscalled++;
+
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
+  if (!ksp->skippcsetfromoptions) PetscCall(PCSetFromOptions(ksp->pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

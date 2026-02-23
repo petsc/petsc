@@ -1963,8 +1963,6 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char *strreason[])
 @*/
 PetscErrorCode KSPSetDM(KSP ksp, DM dm)
 {
-  PC pc;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
@@ -1978,11 +1976,10 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
     }
     PetscCall(DMDestroy(&ksp->dm));
   }
-  ksp->dm     = dm;
-  ksp->dmAuto = PETSC_FALSE;
-  PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetDM(pc, dm));
+  ksp->dm       = dm;
+  ksp->dmAuto   = PETSC_FALSE;
   ksp->dmActive = PETSC_TRUE;
+  if (ksp->pc) PetscCall(PCSetDM(ksp->pc, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
