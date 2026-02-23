@@ -397,7 +397,6 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
   See the pARMS function `parms_PCILUSetType()` for more information.
 
 .seealso: [](ch_ksp), `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
-
 @*/
 PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type)
 {

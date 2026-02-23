@@ -453,7 +453,11 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   gradient property. This timestepper applies to systems of the form $u_t = S(u) \nabla F(u)$
   where $S(u)$ is a linear operator, and $F$ is a functional of $u$.
 
-.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+  For Hamiltonian systems designed to conserve the first integral (energy),
+  but also has the property for some systems of monotonicity in a functional.
+
+.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSType`, `TSDiscGradSetFormulation()`, `TSDiscGradGetFormulation()`,
+          `TSDiscGradSetType()`, `TSDiscGradGetType()`, `TSDGType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 {

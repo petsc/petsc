@@ -159,7 +159,7 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
 
    Only supportst right preconditioning
 
-.seealso: [](ch_ksp),  [](sec_flexibleksp), `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPFBCGS`, `KSPCreate()`, `KSPFGMRES`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPFBCGS`, `KSPCreate()`, `KSPFGMRES`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {

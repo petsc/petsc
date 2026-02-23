@@ -846,7 +846,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
   Level: advanced
 
 .seealso: [](ch_snes), `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
-          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
@@ -1650,7 +1650,7 @@ PetscErrorCode SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
   Note:
   By default this is 1; that is `SNES` returns on the first failed linear solve
 
-.seealso: [](ch_snes), `SNESSetErrorIfNotConverged()`, `SNESGetLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`,
+.seealso: [](ch_snes), `SNESSetErrorIfNotConverged()`, `SNESGetLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`
 @*/
 PetscErrorCode SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 {
@@ -3751,7 +3751,6 @@ PetscErrorCode SNESSetLagJacobian(SNES snes, PetscInt lag)
   The jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1 or `SNESSetLagJacobianPersists()` was called.
 
 .seealso: [](ch_snes), `SNES`, `SNESSetLagJacobian()`, `SNESSetLagPreconditioner()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
-
 @*/
 PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
 {

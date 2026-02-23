@@ -380,7 +380,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
 }
 
 /*MC
-      SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
+   SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
 
    Options Database Keys:
 +   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
@@ -395,7 +395,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
 
    See {cite}`munson.facchinei.ea:semismooth` and {cite}`benson2006flexible`
 
-.seealso: [](ch_snes), `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONRSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
+.seealso: [](ch_snes), `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {

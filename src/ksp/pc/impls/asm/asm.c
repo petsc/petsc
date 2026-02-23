@@ -1237,7 +1237,7 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
   Call `PCASMRestoreSubKSP()` when access to the array of `KSP` is no longer needed
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
-          `PCASMCreateSubdomains2D()`,
+          `PCASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
 {
@@ -1277,8 +1277,8 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
    If the `PC` has an associated `DM`, then, by default, `DMCreateDomainDecomposition()` is used to create the subdomains
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
-          `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMType`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
-          `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`, `PCCompositeType`
+          `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`,
+          `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
@@ -1731,7 +1731,7 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
   Developer Note:
   This should be `PCASMSetUseDMSubdomains()`, similarly for the options database key
 
-.seealso: [](ch_ksp), `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
@@ -1764,7 +1764,7 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
   Developer Note:
   This should be `PCASMSetUseDMSubdomains()`
 
-.seealso: [](ch_ksp), `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)

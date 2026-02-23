@@ -426,7 +426,6 @@ PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, co
 .seealso: `VecCreateSeqKokkosWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
-
 @*/
 PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar darray[], Vec *v)
 {

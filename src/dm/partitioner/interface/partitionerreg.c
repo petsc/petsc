@@ -35,7 +35,6 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
   Level: advanced
 
 .seealso: `PetscPartitionerRegisterAll()`
-
 @*/
 PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*function)(PetscPartitioner))
 {

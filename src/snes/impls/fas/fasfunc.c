@@ -579,7 +579,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
   Note:
   Returns `NULL` on the coarsest level.
 
-.seealso: [](ch_snes), `SNES`, `SNESFAS` `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
+.seealso: [](ch_snes), `SNES`, `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
 PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 {

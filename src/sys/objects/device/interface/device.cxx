@@ -364,7 +364,7 @@ PetscDeviceType PETSC_DEVICE_DEFAULT(void)
   Notes:
   This sets the `PetscDeviceType` returned by `PETSC_DEVICE_DEFAULT()`.
 
-.seealso: `PetscDeviceType`, `PetscDeviceGetType`,
+.seealso: `PetscDeviceType`, `PetscDeviceGetType`
 @*/
 PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
 {

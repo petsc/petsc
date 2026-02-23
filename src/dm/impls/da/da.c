@@ -1385,7 +1385,6 @@ static PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nod
 }
 
 /*@
-
   DMDASetGLLCoordinates - Sets the global coordinates from -1 to 1 to the GLL points of as many GLL elements that fit the number of grid points
 
   Collective

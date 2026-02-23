@@ -17,7 +17,7 @@ static constexpr auto VecSeq_HIP = impl::VecSeq_CUPM<DeviceType::HIP>{};
   Level: beginner
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQ`,
-`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, VECMPICUDA`, `VECMPIHIP`, `VECSEQCUDA`
+          `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, `VECMPICUDA`, `VECMPIHIP`, `VECSEQCUDA`
 M*/
 
 PetscErrorCode VecCreate_SeqHIP(Vec v)

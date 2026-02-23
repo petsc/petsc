@@ -23,7 +23,7 @@
    `LinearRegression` component instead of a `LinearRegressor` component).
 
 .seealso: `PetscRegressorCreate()`, `PetscRegressorLinearType`, `PetscRegressorSetType()`, `PetscRegressorType`, `PetscRegressorDestroy()`,
-          `PETSCREGRESSORLINEAR`, `PetscRegressorLinearType`, `REGRESSOR_LINEAR_OLS`, `REGRESSOR_LINEAR_LASSO`, `REGRESSOR_LINEAR_RIDGE`.
+          `PETSCREGRESSORLINEAR`, `REGRESSOR_LINEAR_OLS`, `REGRESSOR_LINEAR_LASSO`, `REGRESSOR_LINEAR_RIDGE`
 S*/
 typedef struct _p_PetscRegressor *PetscRegressor;
 

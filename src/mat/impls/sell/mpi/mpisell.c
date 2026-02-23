@@ -1801,7 +1801,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat, MatType, MatReus
 
   Level: beginner
 
-.seealso: `Mat`, `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
+.seealso: `Mat`, `MATSELL`, `MATSEQSELL`, `MatCreateSELL()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
 {

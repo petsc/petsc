@@ -482,28 +482,28 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 */
 
 /*MC
-     PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
+   PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Keys:
-+    -pc_jacobi_type (diagonal|rowl1|rowmax|rowsum) - approach for forming the preconditioner
-.    -pc_jacobi_abs (true|false)                    - use the absolute value of the diagonal entry
-.    -pc_jacobi_rowl1_scale (true|false)            - scaling of off-diagonal terms
--    -pc_jacobi_fixdiag (true|false)                - fix for zero diagonal terms by placing 1.0 in those locations
++  -pc_jacobi_type (diagonal|rowl1|rowmax|rowsum) - approach for forming the preconditioner
+.  -pc_jacobi_abs (true|false)                    - use the absolute value of the diagonal entry
+.  -pc_jacobi_rowl1_scale (true|false)            - scaling of off-diagonal terms
+-  -pc_jacobi_fixdiag (true|false)                - fix for zero diagonal terms by placing 1.0 in those locations
 
-   Level: beginner
+  Level: beginner
 
   Notes:
-    By using `KSPSetPCSide`(ksp,`PC_SYMMETRIC`) or -ksp_pc_side symmetric
-    can scale each side of the matrix by the square root of the diagonal entries.
+  By using `KSPSetPCSide`(ksp,`PC_SYMMETRIC`) or -ksp_pc_side symmetric
+  can scale each side of the matrix by the square root of the diagonal entries.
 
-    Zero entries along the diagonal are replaced with the value 1.0
+  Zero entries along the diagonal are replaced with the value 1.0
 
-    See `PCPBJACOBI` for fixed-size point block, `PCVPBJACOBI` for variable-sized point block, and `PCBJACOBI` for large size blocks
+  See `PCPBJACOBI` for fixed-size point block, `PCVPBJACOBI` for variable-sized point block, and `PCBJACOBI` for large size block preconditioners
 
 .seealso:  `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
            `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCASM`,
-           `PCJacobiSetFixDiagonal()`, `PCJacobiGetFixDiagonal()`
-           `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCPBJACOBI`, `PCBJACOBI`, `PCVPBJACOBI`
+           `PCJacobiSetFixDiagonal()`, `PCJacobiGetFixDiagonal()`,
+           `PCPBJACOBI`, `PCBJACOBI`, `PCVPBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)

@@ -1052,7 +1052,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
  LOSSY, LOSSLESS and ZFP_BLR_HODLR compression require STRUMPACK to be configured with ZFP support (`--download-zfp`).
 
 .seealso: `MATSOLVERSTRUMPACK`, [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
-          `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKReordering`, `MatSTRUMPACKCompressionType`, `MatSTRUMPACKSetColPerm()`.
+          `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKReordering`, `MatSTRUMPACKCompressionType`, `MatSTRUMPACKSetColPerm()`
 M*/
 static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F)
 {

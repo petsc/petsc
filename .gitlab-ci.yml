@@ -270,6 +270,7 @@ checksource:
     - PATH=/nfs/gce/projects/petsc/soft/LLVM-22.1.0-Linux-X64/bin:$PATH make checkclangformat checkfprettifyformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
+    - make checkbadManualPages SHELL=bash
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst
     - make -C src/binding/petsc4py lint

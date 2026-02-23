@@ -926,9 +926,9 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
           `SNESFASSetNumberSmoothUp()`, `SNESFASSetNumberSmoothDown()`, `SNESFASSetContinuation()`, `SNESFASSetCycles()`, `SNESFASSetMonitor()`,
           `SNESFASSetLog()`, `SNESFASCycleSetCycles()`, `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`,
           `SNESFASCycleGetCorrection()`, `SNESFASCycleGetInterpolation()`, `SNESFASCycleGetRestriction()`, `SNESFASCycleGetInjection()`,
-          `SNESFASCycleGetRScale()`, `SNESFASCycleIsFine()`, `SNESFASSetInterpolation()`, `SNESFASGetInterpolation()`, `SNESFASSetRestriction()`,
-          `SNESFASGetRestriction()`, `SNESFASSetInjection()`, `SNESFASGetInjection()`, `SNESFASSetRScale()`,`SNESFASGetSmoother()`,
-          `SNESFASGetSmootherDown()`, `SNESFASGetSmootherUp()`, `SNESFASGetCoarseSolve()`, `SNESFASFullSetDownSweep()`, `SNESFASFullSetTotal()`, `SNESFASFullGetTotal()`
+          `SNESFASCycleGetRScale()`, `SNESFASCycleIsFine()`, `SNESFASSetInterpolation()`, `SNESFASGetInterpolation()`,
+          `SNESFASGetRestriction()`, `SNESFASGetInjection()`, `SNESFASSetRScale()`, `SNESFASGetSmoother()`,
+          `SNESFASGetSmootherDown()`, `SNESFASGetSmootherUp()`, `SNESFASGetCoarseSolve()`, `SNESFASFullSetDownSweep()`, `SNESFASFullSetTotal()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)

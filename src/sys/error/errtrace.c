@@ -12,40 +12,6 @@
   #include <petsc/private/deviceimpl.h>
 #endif
 
-/*@C
-  PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
-
-  Not Collective, No Fortran Support
-
-  Input Parameters:
-+ comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
-. fun  - the function name
-. file - the file in which the error was detected (indicated by __FILE__)
-. mess - an error text string, usually just printed to the screen
-. n    - the generic error number
-. p    - specific error number
-- ctx  - error handler context
-
-  Level: developer
-
-  Note:
-  Users do not directly call this routine
-
-.seealso: `PetscReturnErrorHandler()`
- @*/
-PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, PetscCtx ctx)
-{
-  (void)comm;
-  (void)line;
-  (void)fun;
-  (void)file;
-  (void)p;
-  (void)mess;
-  (void)ctx;
-  return n;
-}
-
 static char      arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128];
 static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];
@@ -143,9 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
 
 /*@C
-
-  PetscTraceBackErrorHandler - Default error handler routine that generates
-  a traceback on error detection.
+  PetscTraceBackErrorHandler - Default error handler routine that generates a traceback on error detection.
 
   Not Collective, No Fortran Support
 

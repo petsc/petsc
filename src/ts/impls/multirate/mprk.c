@@ -1244,16 +1244,16 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
 }
 
 /*MC
-      TSMPRK - ODE solver using Multirate Partitioned Runge-Kutta schemes
-
-  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
+  TSMPRK - ODE solver using Multirate Partitioned Runge-Kutta schemes
 
   Level: beginner
 
   Note:
-  The default is `TSMPRKPM2`, it can be changed with `TSMPRKSetType()` or -ts_mprk_type
+  The default is `TSMPRKPM2`, it can be changed with `TSMPRKSetType()` or `-ts_mprk_type`
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
+  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
+
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`,
           `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)

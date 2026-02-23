@@ -9,7 +9,12 @@
 
   Level: beginner
 
-.seealso: `Tao`, `TaoType`, `TAOBNK`, `TAOBQNKTR`, `TAOBQNKTL`
+  Notes:
+  The base class for this method is `TAOBNK`
+
+  The various algorithmic factors can only be supplied via the options database
+
+.seealso: `Tao`, `TaoType`, `TAOBNK`, `TAOBQNKTR`, `TAOBQNKTL`, `TaoCreate()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
 {

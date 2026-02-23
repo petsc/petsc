@@ -256,7 +256,7 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
   This function should really be called `MatCreateSNESMFFD()` in correspondence to `MatCreateMFFD()` to clearly indicate
   that this is for using finite differences to apply the operator matrix-free.
 
-.seealso: [](ch_snes), `SNES`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`
+.seealso: [](ch_snes), `SNES`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`,
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateMFFD()`, `MatCreateShell()`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`, `MatSNESMFSetReuseBase()`, `MatSNESMFGetReuseBase()`
 @*/

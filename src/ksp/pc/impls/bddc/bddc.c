@@ -2799,7 +2799,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `KSPFETIDP`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `KSPFETIDP`, `PCLU`, `PCGAMG`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
           `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/

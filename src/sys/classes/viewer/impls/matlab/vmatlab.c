@@ -225,7 +225,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 
   PETSc must be configured with the option `--with-matlab` for this functionality
 
-.seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
+.seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
 @*/
 PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *binv)

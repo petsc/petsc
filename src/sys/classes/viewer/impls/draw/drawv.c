@@ -380,7 +380,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`
 @*/
 PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 {
@@ -413,7 +413,7 @@ PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`
 @*/
 PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
 {
@@ -454,7 +454,7 @@ PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
 
   Level: intermediate
 
-.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`
 @*/
 PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 {
@@ -486,7 +486,7 @@ PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 
   Level: intermediate
 
-.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`
 @*/
 PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
 {
@@ -516,7 +516,7 @@ PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
 
   Level: intermediate
 
-.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`
 @*/
 PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
 {

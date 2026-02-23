@@ -72,7 +72,7 @@ typedef struct _n_ISColoring *ISColoring;
    Similarly PETSc matrices have layouts, these are discussed in [](ch_matrices).
 
 .seealso: `PetscLayoutCreate()`, `PetscLayoutDestroy()`, `PetscLayoutGetRange()`, `PetscLayoutGetLocalSize()`, `PetscLayoutGetSize()`,
-          `PetscLayoutGetBlockSize()`, `PetscLayoutGetRanges()`, `PetscLayoutFindOwner()`,  `PetscLayoutFindOwnerIndex()`,
+          `PetscLayoutGetBlockSize()`, `PetscLayoutGetRanges()`, `PetscLayoutFindOwner()`, `PetscLayoutFindOwnerIndex()`,
           `VecGetLayout()`, `VecGetLocalSize()`, `VecGetOwnershipRange()`, `PetscLayoutSetUp()`, `PetscLayoutSetSize()`, `PetscLayoutSetLocalSize()`
 S*/
 typedef struct _n_PetscLayout *PetscLayout;

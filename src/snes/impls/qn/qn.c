@@ -455,7 +455,7 @@ static PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`,  `SNESQNScaleType`, `TAOLMVM`, `TAOBLMVM`
+.seealso: [](ch_snes), `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`, `SNESQNScaleType`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
 {

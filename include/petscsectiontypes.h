@@ -37,7 +37,7 @@
 
   Level: beginner
 
-.seealso: [PetscSection](ch_petscsection), `PetscSectionCreate()`, `PetscSectionGetOffset()`, `PetscSectionGetOffset()`, `PetscSectionSetChart()`,
+.seealso: [PetscSection](ch_petscsection), `PetscSectionCreate()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `PetscSectionSetChart()`,
           `PetscSectionGetChart()`, `PetscSectionDestroy()`, `PetscSectionSym`, `PetscSectionSetup()`, `DM`, `DMDA`, `DMPLEX`
 S*/
 typedef struct _p_PetscSection *PetscSection;

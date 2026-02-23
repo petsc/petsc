@@ -10,7 +10,7 @@
    Note:
    `DM` is an orphan initialism or orphan acronym, the letters have no meaning and never did.
 
-.seealso: [](ch_dmbase), `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
+.seealso: [](ch_dmbase), `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMDA`, `DMPLEX`, `DMSWARM`, `DMNETWORK`, `DMCreate()`
 S*/
 typedef struct _p_DM *DM;
 

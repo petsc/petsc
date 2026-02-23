@@ -135,7 +135,7 @@ alldone:
 
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
-          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`
+          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`,
           `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearGlobalVectors()`, `DMGetNamedGlobalVector()`, `DMGetNamedLocalVector()`
 @*/
 PetscErrorCode DMGetGlobalVector(DM dm, Vec *g)
@@ -182,7 +182,7 @@ alldone:
 
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
-          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`
+          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`,
           `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearLocalVectors()`
 @*/
 PetscErrorCode DMClearGlobalVectors(DM dm)
@@ -220,7 +220,7 @@ PetscErrorCode DMClearGlobalVectors(DM dm)
 
 .seealso: `DM`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMLocalToLocalBegin()`,
-          `DMLocalToLocalEnd()`, `DMRestoreLocalVector()`
+          `DMLocalToLocalEnd()`, `DMRestoreLocalVector()`,
           `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearGlobalVectors()`
 @*/
 PetscErrorCode DMClearLocalVectors(DM dm)

@@ -2487,6 +2487,7 @@ PetscErrorCode PetscLogGpuEnergy(void)
   `nvmlDeviceGetTotalEnergyConsumption()`, which returns the total energy used by the GPU since the driver was last initialized.
   For newer GPUs, energy readings are updated every 20-100ms, so this approach may be inaccurate for short-duration GPU events.
 
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuEnergyMeterEnd()`, `PetscLogGpuEnergyMeterBegin()`
 @*/
 PetscErrorCode PetscLogGpuEnergyMeter(void)
 {

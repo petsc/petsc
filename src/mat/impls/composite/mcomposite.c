@@ -567,7 +567,7 @@ static PetscErrorCode MatCompositeSetMatStructure_Composite(Mat mat, MatStructur
   Note:
   Information about the matrices structure is used in `MatCompositeMerge()` for additive composite matrix.
 
-.seealso: [](ch_matrices), `Mat`, `MatAXPY()`, `MatCreateComposite()`, `MatCompositeMerge()` `MatCompositeGetMatStructure()`, `MATCOMPOSITE`
+.seealso: [](ch_matrices), `Mat`, `MatAXPY()`, `MatCreateComposite()`, `MatCompositeMerge()`, `MatCompositeGetMatStructure()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeSetMatStructure(Mat mat, MatStructure str)
 {

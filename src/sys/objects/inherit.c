@@ -768,7 +768,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   call PetscObjectQuery(PetscObjectCast(obj), name, ptr, ierr)
 .ve
 
-.seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`
+.seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
           `PetscContainerGetPointer()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject *ptr)

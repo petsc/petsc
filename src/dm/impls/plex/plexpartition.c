@@ -929,7 +929,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
   Note:
   Any existing `PetscPartitioner` will be destroyed.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPartitioner`,`DMPlexDistribute()`, `DMPlexGetPartitioner()`, `PetscPartitionerCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPartitioner`, `DMPlexDistribute()`, `DMPlexGetPartitioner()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
 {

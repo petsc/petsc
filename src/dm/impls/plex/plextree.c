@@ -17,7 +17,7 @@
 
   Level: intermediate
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`,`DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 {
@@ -1017,7 +1017,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
   Level: intermediate
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`,`DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
 {

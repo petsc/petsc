@@ -760,8 +760,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
 
   Not optimized; could be easily
 
-.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
-
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`
 @*/
 PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
 {
@@ -1261,7 +1260,6 @@ PetscErrorCode VecExpAsync_Private(Vec v, PetscDeviceContext dctx)
   Level: beginner
 
 .seealso: `Vec`, `VecLog()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
-
 @*/
 PetscErrorCode VecExp(Vec v)
 {
@@ -1297,7 +1295,6 @@ PetscErrorCode VecLogAsync_Private(Vec v, PetscDeviceContext dctx)
   Level: beginner
 
 .seealso: `Vec`, `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
-
 @*/
 PetscErrorCode VecLog(Vec v)
 {
@@ -1397,7 +1394,6 @@ PetscErrorCode VecSqrtAbsAsync_Private(Vec v, PetscDeviceContext dctx)
   The actual function is sqrt(|x_i|)
 
 .seealso: `Vec`, `VecLog()`, `VecExp()`, `VecReciprocal()`, `VecAbs()`
-
 @*/
 PetscErrorCode VecSqrtAbs(Vec v)
 {
@@ -1487,7 +1483,6 @@ PetscErrorCode VecRealPart(Vec v)
   conj(x) is the complex conjugate of x when x is complex
 
 .seealso: `Vec`, `VecDot()`, `VecNorm()`, `VecDotBegin()`, `VecNormBegin()`, `VecDotEnd()`, `VecNormEnd()`
-
 @*/
 PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 {

@@ -1169,8 +1169,8 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 /*MC
   TAOBNK - Shared base-type for Bounded Newton-Krylov type algorithms.
   At each iteration, the BNK methods solve the symmetric
-  system of equations to obtain the step direction dk:
-              Hk dk = -gk
+  system of equations to obtain the step direction $d_k$:
+             $ H_k d_k = -g_k $
   for free variables only. The step can be globalized either through
   trust-region methods, or a line search, or a heuristic mixture of both.
 
@@ -1226,6 +1226,10 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 - -tao_bnk_theta_i     - (developer) trust region interpolation factor (-init_type interpolation)
 
   Level: beginner
+
+  The various algorithmic factors can only be supplied via the options database
+
+.seealso: `Tao`, `TAONLS`, `TAONTL`, `TAONM`, `TaoType`, `TaoCreate()`
 M*/
 
 PetscErrorCode TaoCreate_BNK(Tao tao)

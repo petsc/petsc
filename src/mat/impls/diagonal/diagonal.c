@@ -574,7 +574,7 @@ static PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info
   The input vector `diag` will be referenced internally: any changes to `diag`
   will affect the matrix `J`.
 
-.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`,
           `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
 @*/
 PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)

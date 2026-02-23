@@ -716,7 +716,7 @@ PetscErrorCode PetscLogStateStageGetInfo(PetscLogState state, PetscLogStage stag
   Classes are automatically registered with PETSc's global logging state (`PetscLogGetState()`), so this
   is only needed for non-global states.
 
-.seealso: [](ch_profiling), `PetscLogStateClassGetInfo()` `PetscLogStateGetClassFromName()`, `PetscLogStateGetClassFromClassId()`
+.seealso: [](ch_profiling), `PetscLogStateClassGetInfo()`, `PetscLogStateGetClassFromName()`, `PetscLogStateGetClassFromClassId()`
 @*/
 PetscErrorCode PetscLogStateClassRegister(PetscLogState state, const char name[], PetscClassId id, PetscLogClass *logclass)
 {

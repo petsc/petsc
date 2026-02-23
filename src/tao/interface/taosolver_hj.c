@@ -22,7 +22,7 @@
 
   Level: beginner
 
-.seealso: [](ch_tao), `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
+.seealso: [](ch_tao), `Tao`, `TaoType`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
 @*/
 PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao tao, Vec x, Mat H, Mat Hpre, PetscCtx ctx), PetscCtx ctx)
 {

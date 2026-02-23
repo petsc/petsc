@@ -10,12 +10,11 @@ static constexpr impl::MatDense_Seq_CUPM<DeviceType::CUDA> cupm_mat{};
   GPUs.
 
   Options Database Keys:
-. -mat_type seqdensecuda - sets the matrix type to `MATSEQDENSECUDA` during a call to
-                           `MatSetFromOptions()`
+. -mat_type seqdensecuda - sets the matrix type to `MATSEQDENSECUDA` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATSEQDENSE`
+.seealso: `Mat`, `MatType`, `MATSEQDENSE`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat A)
 {
@@ -69,7 +68,7 @@ PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat A)
 
   Level: intermediate
 
-.seealso: `MATSEQDENSE`, `MatCreate()`, `MatCreateSeqDense()`
+.seealso: `Mat`, `MatType`, `MATSEQDENSECUDA`, `MatCreate()`, `MatCreateSeqDense()`
 @*/
 PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscScalar *data, Mat *A)
 {

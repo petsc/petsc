@@ -1063,6 +1063,8 @@ accepted and the next step is modified according to
 {eq}`hnew`; otherwise, the step is rejected and retaken
 with the step length computed in {eq}`hnew`.
 
+(sec_ts_event)=
+
 ## Handling of discontinuities
 
 For problems that involve discontinuous right-hand sides, one can set an

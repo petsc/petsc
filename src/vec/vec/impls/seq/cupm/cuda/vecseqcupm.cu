@@ -17,7 +17,7 @@ static constexpr auto VecSeq_CUDA = impl::VecSeq_CUPM<DeviceType::CUDA>{};
   Level: beginner
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQ`,
-`VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, VECMPICUDA`, `VECMPIHIP`, `VECSEQHIP`
+          `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`, `VECCUDA`, `VECHIP`, `VECMPICUDA`, `VECMPIHIP`, `VECSEQHIP`
 M*/
 
 PetscErrorCode VecCreate_SeqCUDA(Vec v)
@@ -55,7 +55,7 @@ PetscErrorCode VecConvert_Seq_SeqCUDA_inplace(Vec v)
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqCUDAWithArray()`,
+.seealso: [](ch_vectors), `Vec`, `VECSEQCUDA`, `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqCUDAWithArray()`,
           `VecCreateMPI()`, `VecCreateMPICUDA()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
@@ -89,7 +89,7 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
   SET the array for storing the vector values. Otherwise, the array must be allocated on the
   device.
 
-  If both cpuarray and gpuarray are provided, the provided arrays must have identical
+  If both `cpuarray` and `gpuarray` are provided, the provided arrays must have identical
   values.
 
   The arrays are NOT freed when the vector is destroyed via `VecDestroy()`. The user must free

@@ -36,7 +36,7 @@
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArray()`
 @*/
@@ -161,7 +161,7 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   Developer Note:
   This has code duplication with `DMDAVecGetArray()` and `DMDAVecGetArrayRead()`
 
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)

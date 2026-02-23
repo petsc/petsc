@@ -4423,7 +4423,6 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
   You can pass in `NULL` for any return argument you do not need.
 
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
-
 @*/
 PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **func, PetscCtxRt ctx)
 {

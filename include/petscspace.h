@@ -13,7 +13,7 @@
 
   Level: beginner
 
-.seealso: `PetscSpaceCreate()`, `PetscDualSpace`, `PetscDualSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceType`, PetscFE`
+.seealso: `PetscSpaceCreate()`, `PetscDualSpace`, `PetscDualSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceType`, `PetscFE`
 S*/
 typedef struct _p_PetscSpace *PetscSpace;
 

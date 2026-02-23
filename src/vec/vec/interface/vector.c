@@ -846,7 +846,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
   in the PETSc storage format (each MPI process values follow the previous MPI processes) instead of the "natural" grid
   ordering.
 
-.seealso: [](ch_vectors), `Vec`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscDrawLGCreate()`, `VecView()`
+.seealso: [](ch_vectors), `Vec`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscDrawLGCreate()`, `VecView()`,
           `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `VecLoad()`, `PetscViewerCreate()`,
           `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`, `PetscViewerHDF5SetTimestep()`
 @*/

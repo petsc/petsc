@@ -15,6 +15,6 @@
 
   Some of the `SNES` solvers support nonlinear preconditioners, which themselves are also `SNES` objects managed with `SNESGetNPC()`
 
-.seealso: [](doc_nonlinsolve), [](ch_snes), `SNESCreate()`, `SNESSolve()`, `SNESSetType()`, `SNESType`, `TS`, `SNESType`, `KSP`, `PC`, `SNESDestroy()`
+.seealso: [](doc_nonlinsolve), [](ch_snes), `SNESCreate()`, `SNESSolve()`, `SNESSetType()`, `SNESType`, `TS`, `KSP`, `PC`, `SNESDestroy()`
 S*/
 typedef struct _p_SNES *SNES;

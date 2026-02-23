@@ -66,7 +66,7 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
   This is a struct, not a `PetscObject`.
 
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
-          `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`
+          `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`
 S*/
 typedef struct {
   DMStagStencilLocation loc;
@@ -78,8 +78,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`,
-          `DMDAStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
 E*/
 
 typedef enum {

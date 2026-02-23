@@ -253,7 +253,7 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `Block_Preconditioners`, `PCFIELDSPLIT`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`,
-          `MatCreateSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementSetSubMatrices()`, `MatSchurComplementUpdateSubMatrices()`,
+          `MatCreateSchurComplement()`, `MatSchurComplementSetSubMatrices()`, `MatSchurComplementUpdateSubMatrices()`,
           `MatSchurComplementSetAinvType()`, `MatGetSchurComplement()`
 M*/
 

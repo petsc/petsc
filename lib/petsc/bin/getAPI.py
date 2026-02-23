@@ -39,6 +39,9 @@ structs = {}
 includefiles = {}
 mansecs = {}         # mansec[mansecname] = set(all submansecnames in mansecname)
 submansecs = set()
+manualpages = {}
+defines = {}         # function-like macros
+senumvalues = {}
 
 regcomment   = re.compile(r'/\* [-A-Za-z _(),<>|^\*/0-9.:=\[\]\.;]* \*/')
 regcomment2  = re.compile(r'// [-A-Za-z _(),<>|^\*/0-9.:=\[\]\.;]*')
@@ -50,6 +53,35 @@ def displayIncludeMansec(obj):
 def displayFile(obj):
     return str(obj.dir) + '/' + str(obj.file) + '\n'
 
+class Define:
+    '''Represents a function-like macro'''
+    def __init__(self, name, mansec, includefile, args):
+        self.name        = name
+        self.mansec      = mansec
+        self.includefile = includefile
+        self.args        = args
+
+    def __str__(self):
+        mstr = str(self.name) + '\n'
+        mstr += displayIncludeMansec(self)
+        mstr += '  Arguments\n'
+        for i in self.args:
+            mstr += '    ' + i + '\n'
+        return mstr
+
+class ManualPage:
+    '''Represents a manual page'''
+    def __init__(self, name, mansec, text, seealsos):
+        self.name        = name
+        self.mansec      = mansec
+        self.text        = text
+        self.seealsos    = seealsos
+
+    def __str__(self):
+        mstr = str(self.name) + '\n'
+        mstr += str(self.seealsos)
+        return mstr
+
 class Typedef:
     '''Represents typedef oldtype newtype'''
     def __init__(self, name, mansec, includefile, value, *args, **kwargs):
@@ -57,6 +89,7 @@ class Typedef:
         self.mansec      = mansec
         self.includefile = includefile
         self.value       = value
+        self.opaque      = False
 
     def __str__(self):
         mstr = str(self.name) + ' ' + str(self.value)+'\n'
@@ -269,6 +302,122 @@ def getIncludeFiles(filename,pkgname):
   includefiles[file] = IncludeFile(mansec,file,included)
   f.close()
 
+badSeealso = False
+
+def processManualPage(name, lines):
+  '''Processes the manual page associated with a name'''
+  global badSeealso
+  cnt = 0
+  lastline  = -1
+  firstline = -1
+  for i in lines:
+    for flag in ['E', 'J', 'S', 'M', '@']:
+      if lastline == -1 and i.find(flag + '*/') > -1:
+        lastline = cnt + 1
+        if lastline > 3:
+           #print('It is unlikely ' +  name + ' has a manual page')
+           return
+      elif firstline == -1 and i.find('/*' + flag) > -1:
+        firstline = cnt
+        break
+    cnt += 1
+  if firstline == -1:
+    #print('Unable to find /*' + 'X' + ' for ' + name)
+    return
+  if lastline == -1:
+    #print('Unable to find ' + 'X' + '*/ for ' + name)
+    return
+  lines = lines[lastline:firstline]
+  lines.reverse()
+  text = lines
+  top = lines[0].strip(' ')
+  loc = top.find(name)
+  if not loc == 0:
+    print('First line of manual page does not start with ' + name)
+    badSeealso = True
+    return
+  cnt = 0
+  for i in lines:
+    if i.startswith('.seealso:'): break
+    cnt += 1
+  if cnt == len(lines):
+    print('.seealso missing in manual page for ' + name)
+    badSeealso = True
+    return
+  seealso = lines[cnt][10:].strip().strip('\n')
+  for i in range(cnt+1, len(lines)):
+    seealso += ' ' + lines[i].strip().strip('\n')
+  #print(seealso)
+  old_seealso = seealso
+  seealso = ''
+  in_brack = False
+  for i in old_seealso:
+    if i == '[':
+      if in_brack:
+        print('See also for ' + name + ' has a double [')
+        badSeealso = True
+        return
+      in_brack = True
+    elif i == ']':
+      if not in_brack:
+        print('See also for ' + name + ' has a closing ] without and opening [')
+        badSeealso = True
+        return
+      in_brack = False
+    if i == ' ' and in_brack:
+      seealso += '+'
+    else:
+      seealso += i
+  # ensure there is a ", " after each token
+  c_seealso = seealso.split(',')
+  for i in range(1, len(c_seealso)):
+    if not c_seealso[i].startswith(' '):
+      print('See also for ' + name + ' is messed up before the ' + str(i-1) + ' token:' + c_seealso[i])
+      badSeealso = True
+      return
+  s_seealso = seealso.split(' ')
+  for i in range(0, len(s_seealso)-1):
+    if not s_seealso[i].endswith(','):
+      print('See also for ' + name + ' is messed up after the ' + str(i) + ' token:' + s_seealso[i])
+      badSeealso = True
+      return
+  seealso = seealso.split(', ')
+  # ensure each seealso is [zzz](xxxx_yyy) or `xxx[]`
+  for i in seealso:
+    if i.startswith('['):
+      if not i.endswith(')'):
+        print('See also for ' + name + ': ' + i + ' is misformed. Does not end with expected )')
+        badSeealso = True
+        return
+    elif i.startswith('`'):
+      if not i.endswith('`'):
+        print('See also for ' + name + ': ' + i + ' is misformed. Does not end with expected `')
+        badSeealso = True
+        return
+      if i.find(' ') > -1:
+        print('See also for ' + name + ': ' + i + ' is misformed. Seems to contain a blank space')
+        badSeealso = True
+        return
+      if i.endswith(')') and not i.endswith('()'):
+        print('See also for ' + name + ': ' + i + ' is misformed. Seems to be missing a (')
+        badSeealso = True
+        return
+    else:
+      print('See also for ' + name + ': ' + i + ' is misformed')
+      badSeealso = True
+      return
+  seealsos = []
+  for i in seealso:
+    if i.startswith('`'):
+      see = i[1:-1]
+      if see in seealsos:
+        print('See also for ' + name + ': ' + see + ' is duplicate')
+        badSeealso = True
+        return
+      seealsos.append(see)
+  manualpages[name] = ManualPage(name, 'unknown', text, seealsos)
+  #print(seealso)
+
 def getEnums(filename):
   import re
   regtypedef  = re.compile(r'typedef [ ]*enum')
@@ -277,7 +426,9 @@ def getEnums(filename):
 
   file = os.path.basename(filename).replace('types.h','.h')
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   submansec = None
   mansec = None
   while line:
@@ -309,10 +460,13 @@ def getEnums(filename):
               ivalues.append(i)
 
           enums[name] = Enum(name,mansec,file,ivalues)
+          processManualPage(name, lines)
+          lines = []
           break
         line = f.readline()
         struct = struct + line
     line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def getSenums(filename):
@@ -321,7 +475,9 @@ def getSenums(filename):
   file = os.path.basename(filename).replace('types.h','.h')
   mansec = None
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     mansec,submansec = findmansec(line,mansec,None)
     fl = regdefine.search(line)
@@ -334,7 +490,34 @@ def getSenums(filename):
         d[values[1]] = values[2]
         line = regblank.sub(" ",f.readline().strip())
       senums[senum]             = Senum(senum,mansec,file,d)
+      processManualPage(senum, lines)
+      lines = []
     line = f.readline()
+    lines.insert(0,line)
+  f.close()
+
+def getDefines(filename):
+  import re
+  file = os.path.basename(filename).replace('types.h','.h')
+  regdefine   = re.compile(r'#define [A-Za-z0-9]*\([A-Za-z0-9_, ]*\) ')
+  submansec = None
+  mansec = None
+  f = open(filename)
+  lines = []
+  line = f.readline()
+  lines.insert(0,line)
+  while line:
+    mansec,submansec = findmansec(line,mansec,submansec)
+    fl = regdefine.search(line)
+    if fl:
+      name = fl.group(0).split('(')[0][8:]
+      args = fl.group(0).split('(')[1][:-2]
+      args = args.split(', ')
+      defines[name] = Define(name,mansec,file,args)
+      processManualPage(name, lines)
+      lines = []
+    line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def getTypedefs(filename):
@@ -344,17 +527,23 @@ def getTypedefs(filename):
   submansec = None
   mansec = None
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regdefine.search(line)
     if fl:
       typedef = fl.group(0).split()[2][0:-1];
       if typedef in typedefs:
-        typedefs[typedef].name = None # mark to be deleted since it appears multiple times (with presumably different values)
+        typedefs[typedef].opaque = True # found more than once so cannot generate Fortran code from it
+        pass
       else:
         typedefs[typedef] = Typedef(typedef,mansec,file,fl.group(0).split()[1])
+      processManualPage(typedef, lines)
+      lines = []
     line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def getFunctionTypedefs(filename):
@@ -364,7 +553,9 @@ def getFunctionTypedefs(filename):
   submansec = None
   mansec = None
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regdefine.search(line)
@@ -374,7 +565,10 @@ def getFunctionTypedefs(filename):
       fun.submansec   = submansec
       fun.includefile = os.path.basename(filename)
       functiontypedefs[fun.name] = fun
+      processManualPage(fun.name, lines)
+      lines = []
     line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def getStructs(filename):
@@ -386,7 +580,9 @@ def getStructs(filename):
   submansec = None
   mansec = None
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regtypedef.search(line)
@@ -416,10 +612,13 @@ def getStructs(filename):
           for i in values:
             ivalues.append(Record(i.strip()))
           structs[name] = Struct(name,mansec,file,opaque,ivalues)
+          processManualPage(name, lines)
+          lines = []
           break
         line = f.readline()
         struct = struct + line
     line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def getClasses(filename):
@@ -431,7 +630,9 @@ def getClasses(filename):
   mansec = None
   file = os.path.basename(filename).replace('types.h','.h')
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regclass.search(line)
@@ -448,7 +649,10 @@ def getClasses(filename):
       classes[struct].mansec = mansec
       classes[struct].includefile = file
       if gl: classes[struct].petscobject = False
+      processManualPage(struct, lines)
+      lines = []
     line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 def findlmansec(dir):  # could use dir to determine mansec
@@ -616,7 +820,7 @@ def getFunctions(mansec, functiontoinclude, filename):
   regfncntnptrarrays = re.compile(r'\(\*[A-Za-z0-9]*\[[A-Za-z0-9]*\]\)')
   regfncntnptrnoname = re.compile(r'\(\*\)')
 
-  rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
+  rejects     = ['...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
   #
   # search through list BACKWARDS to get the longest match
   #
@@ -624,7 +828,9 @@ def getFunctions(mansec, functiontoinclude, filename):
   classlist = sorted(classlist)
   classlist.reverse()
   f = open(filename)
+  lines = []
   line = f.readline()
+  lines.insert(0,line)
   while line:
     fl = regfun.search(line)
     if fl:
@@ -633,6 +839,7 @@ def getFunctions(mansec, functiontoinclude, filename):
       penss = False
       if  line[0:line.find('(')].find('_') > -1:
         line = f.readline()
+        lines.insert(0,line)
         continue
       line = line.replace('PETSC_UNUSED ','')
       line = line.replace('PETSC_RESTRICT ','')
@@ -647,9 +854,11 @@ def getFunctions(mansec, functiontoinclude, filename):
         line = line[0:-6]
       if line.endswith(';'):
         line = f.readline()
+        lines.insert(0,line)
         continue
       if not line.endswith(')'):
         line = f.readline()
+        lines.insert(0,line)
         continue
       line = regfun.sub("",line)
       line = regcomment.sub("",line)
@@ -658,6 +867,7 @@ def getFunctions(mansec, functiontoinclude, filename):
       name = line[:line.find("(")]
       if not name in functiontoinclude or name in allfuncs:
         line = f.readline()
+        lines.insert(0,line)
         continue
 
       # find arguments that return a function pointer (**xxx)
@@ -776,8 +986,42 @@ def getFunctions(mansec, functiontoinclude, filename):
               break
           if notfound:
             funcs[name] = fun
+          processManualPage(name, lines)
+          lines = []
 
     line = f.readline()
+    lines.insert(0,line)
+  f.close()
+
+def getSenumValueManualPage(mansec, filename):
+  '''Finds manual pages for SenumValues such as MATSEQ
+     These are standalone and may not have code associated with them
+  '''
+  import re
+  regdefine   = re.compile(r' [A-Za-z][A-Za-z0-9]* ')
+  f = open(filename)
+  lines = []
+  line = f.readline()
+  lines.insert(0,line)
+  while line:
+    if line.find('/*MC') > -1:
+      line = f.readline()
+      lines.insert(0,line)
+      fl = regdefine.search(line)
+      if fl:
+        senumvalue = fl.group(0)[1:-1]
+        if senumvalue in senumvalues:
+          line = f.readline()
+          lines.insert(0,line)
+          while line:
+            line = f.readline()
+            lines.insert(0,line)
+            if line.find('M*/') > -1:
+              processManualPage(senumvalue, lines)
+              lines = []
+              line = None
+    line = f.readline()
+    lines.insert(0,line)
   f.close()
 
 ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
@@ -798,10 +1042,21 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
     verbosePrint(verbose, enums[i])
 
   for i in args:
+    getDefines(i)
+  verbosePrint(verbose, 'Defines ---------------------------------------------')
+  for i in defines.keys():
+    verbosePrint(verbose, defines[i])
+
+  for i in args:
     getSenums(i)
   verbosePrint(verbose, '# PETSc string represented enum types')
   for i in senums.keys():
     verbosePrint(verbose, senums[i])
+
+  # make a list of all senum values to use to search for manual pages
+  for i in senums.keys():
+    for value in senums[i].values:
+      senumvalues[value] = senums[i]
 
   for i in args:
     getStructs(i)
@@ -833,8 +1088,9 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
     mansec, submansec = findlmansec(dirpath)
     for i in os.listdir(dirpath):
       if i.startswith('.'): continue
-      if i.endswith('.c') or i.endswith('.cxx'):
+      if i.endswith('.c') or i.endswith('.cxx') or i.endswith('.cu'):
         getFunctions(mansec, functiontoinclude, os.path.join(dirpath,i))
+        getSenumValueManualPage(mansec, os.path.join(dirpath,i))
   for i in args:
     mansec = None
     with open(i) as fd:
@@ -1001,6 +1257,23 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
   for i in functiontypedefs.keys():
     verbosePrint(verbose, functiontypedefs[i])
 
+  verbosePrint(verbose, 'Function-like macros  --------------------------------')
+  for i in defines.keys():
+    verbosePrint(verbose, defines[i])
+
+  # check seealso for manual pages that they actually point to a valid manual page
+  # this will be turned on later
+  #for i in manualpages.keys():
+  #  man = manualpages[i]
+  #  for j in man.seealsos:
+  #    if j.endswith('()'): j = j[:-2]
+  #    if not j in manualpages:
+  #      print('Manual page ' + man.name + ' has incorrect seealso ' + j)
+
+  verbosePrint(verbose, 'Manual pages  --------------------------------')
+  for i in manualpages.keys():
+    verbosePrint(verbose, manualpages[i])
+
   #file = open('classes.data','wb')
   #pickle.dump(enums,file)
   #pickle.dump(senums,file)
@@ -1022,3 +1295,4 @@ if __name__ ==  '__main__':
   args = parser.parse_args()
 
   getAPI(args.directory, args.package, args.verbose)
+  if badSeealso: exit(1)

@@ -482,6 +482,8 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 . - tao_bmrm_lambda - regulariser weight
 
   Level: beginner
+
+.seealso: `Tao`, `TAONTR`, `TAONLS`, `TAOCG`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)

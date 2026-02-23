@@ -354,7 +354,7 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
   Level: developer
 
 .seealso: [](ch_ts), `Tao`, `TaoMonitorSet()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
-          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
@@ -945,7 +945,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   Level: intermediate
 
-.seealso: [](ch_tao), `Tao`, `TaoConvergedReasons`,`TaoGetTolerances()`, `TaoSetTolerances()`, `TaoSetConstraintTolerances()`
+.seealso: [](ch_tao), `Tao`, `TaoConvergedReason`, `TaoGetTolerances()`, `TaoSetTolerances()`, `TaoSetConstraintTolerances()`
 @*/
 PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *crtol)
 {

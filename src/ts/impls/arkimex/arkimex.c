@@ -2485,16 +2485,16 @@ PetscErrorCode TSDIRKGetType(TS ts, TSDIRKType *dirktype)
   Notes:
   The default is `TSDIRKES213SAL`, it can be changed with `TSDIRKSetType()` or `-ts_dirk_type`.
   The convention used in PETSc to name the DIRK methods is TSDIRK[E][S]PQS[SA][L][A] with:
-+ E - whether the method has an explicit first stage
-. S - whether the method is single diagonal
-. P - order of the advancing method
-. Q - order of the embedded method
-. S - number of stages
++ E  - whether the method has an explicit first stage
+. S  - whether the method is single diagonal
+. P  - order of the advancing method
+. Q  - order of the embedded method
+. S  - number of stages
 . SA - whether the method is stiffly accurate
-. L - whether the method is L-stable
-- A - whether the method is A-stable
+. L  - whether the method is L-stable
+- A  - whether the method is A-stable
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSDIRKSetType()`, `TSDIRKGetType()`, `TSDIRKRegister()`.
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSDIRKSetType()`, `TSDIRKGetType()`, `TSDIRKRegister()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DIRK(TS ts)
 {

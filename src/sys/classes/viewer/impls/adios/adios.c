@@ -141,7 +141,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
-          `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
+          `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`,
           `MatLoad()`, `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *adiosv)

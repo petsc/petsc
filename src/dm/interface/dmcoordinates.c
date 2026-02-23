@@ -72,8 +72,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, PetscCtx ctx)
 
   Level: intermediate
 
-.seealso: `DM`, `DMSetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGSetCellCoordinateDM()`,
-
+.seealso: `DM`, `DMSetCoordinateDM()`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGSetCellCoordinateDM()`
 @*/
 PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 {

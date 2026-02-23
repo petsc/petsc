@@ -14,7 +14,7 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
   Note:
   This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
-.seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
+.seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`,
           `MatColoring`, `MatPartitioning`
 S*/
 typedef struct _p_MatCoarsen *MatCoarsen;
