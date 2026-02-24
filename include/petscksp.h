@@ -329,15 +329,21 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP, PetscBool, PetscBool, PetscInt *
 
 /*E
 
-  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
+  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate gradient/directions methods
 
   Values:
-+ `KSP_FCD_TRUNC_TYPE_STANDARD` - uses all (up to mmax) stored directions
-- `KSP_FCD_TRUNC_TYPE_NOTAY`    - uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
++ `KSP_FCD_TRUNC_TYPE_STANDARD` - uses all (up to `mmax`) stored directions
+- `KSP_FCD_TRUNC_TYPE_NOTAY`    - uses the last `max(1,mod(i,mmax))` stored directions at iteration i = 0, 1, ...
 
    Level: intermediate
 
-.seealso: [](ch_ksp), `KSP`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
+  Note:
+  Function such as `KSPFCGSetMmax()`, `KSPPIPEGCRSetNMax()`, `KSPPIPEGCRSetNMax()`, and `KSPPIPEFCGSetNMax()` may be
+  used to provide `nmax` or they may be provided with the option database.
+
+.seealso: [](ch_ksp), `KSP`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`,
+          `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRGetTruncationType()`,
+          `KSPFCGSetMmax()`, `KSPPIPEGCRSetNMax()`, `KSPPIPEGCRGetNMax()`, `KSPPIPEFCGGetNMax()`
 E*/
 typedef enum {
   KSP_FCD_TRUNC_TYPE_STANDARD,
@@ -376,16 +382,21 @@ PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP, PetscBool *);
 . total_its - the total number of iterations that have occurred.
 . local_its - the number of iterations since last restart if applicable
 . res_norm  - the current residual norm
-- ctx       - optional context variable set with `KSPFlexibleSetModifyPC()`, `KSPPIPEGCRSetModifyPC()`, `KSPGCRSetModifyPC()`, `KSPFGMRESSetModifyPC()`
+- ctx       - optional context variable set with `KSPFlexibleSetModifyPC()`
 
   Level: beginner
 
-.seealso: [](ch_ksp), `KSP`, `KSPFlexibleSetModifyPC()`, `KSPPIPEGCRSetModifyPC()`, `KSPGCRSetModifyPC()`, `KSPFGMRESSetModifyPC()`
+.seealso: [](ch_ksp), `KSP`, `KSPFlexibleSetModifyPC()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPFlexibleModifyPCFn(KSP ksp, PetscInt total_its, PetscInt local_its, PetscReal res_norm, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode KSPFlexibleSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
-PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
+
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
+static inline PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
+{
+  return KSPFlexibleSetModifyPC(ksp, fun, ctx, dfun);
+}
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt *);
@@ -405,7 +416,12 @@ PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
+
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
+static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
+{
+  return KSPFlexibleSetModifyPC(ksp, fun, ctx, dfun);
+}
 
 PETSC_EXTERN PetscErrorCode KSPMINRESSetRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPMINRESGetUseQLP(KSP, PetscBool *);
@@ -536,9 +552,20 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType(KSP, KSPGMRESCGSRefinementType);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetCGSRefinementType(KSP, KSPGMRESCGSRefinementType *);
 
-PETSC_EXTERN KSPFlexibleModifyPCFn KSPFGMRESModifyPCNoChange;
-PETSC_EXTERN KSPFlexibleModifyPCFn KSPFGMRESModifyPCKSP;
-PETSC_EXTERN PetscErrorCode        KSPFGMRESSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
+PETSC_EXTERN KSPFlexibleModifyPCFn KSPFlexibleModifyPCNoChange;
+PETSC_EXTERN KSPFlexibleModifyPCFn KSPFlexibleModifyPCKSP;
+
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCNoChange()", )
+static inline PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+{
+  return KSPFlexibleModifyPCNoChange(ksp, total_its, loc_its, res_norm, ctx);
+}
+
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCKSP()", )
+static inline PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+{
+  return KSPFlexibleModifyPCKSP(ksp, total_its, loc_its, res_norm, ctx);
+}
 
 PETSC_EXTERN PetscErrorCode KSPQCGSetTrustRegionRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPQCGGetQuadratic(KSP, PetscReal *);

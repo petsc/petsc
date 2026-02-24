@@ -1,36 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 /*@C
-  KSPFGMRESSetModifyPC - Sets the routine used by `KSPFGMRES` to modify the preconditioner. [](sec_flexibleksp)
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp     - iterative context obtained from `KSPCreate()`
-. fcn     - function to modify the `PC`, see `KSPFlexibleModifyPCFn`
-. ctx     - optional context
-- destroy - optional context destroy routine
-
-  Options Database Keys:
-+ -ksp_fgmres_modifypcnochange - do not change the `PC`
-- -ksp_fgmres_modifypcksp      - changes the inner KSP solver tolerances
-
-  Level: intermediate
-
-  Note:
-  Several `fcn` routines are predefined, including `KSPFGMRESModifyPCNoChange()` and `KSPFGMRESModifyPCKSP()`
-
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFlexibleSetModifyPC()`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
-@*/
-PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *destroy)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscTryMethod(ksp, "KSPFGMRESSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *), (ksp, fcn, ctx, destroy));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
   KSPFlexibleSetModifyPC - Sets the routine used by flexible `KSP` methods to modify the preconditioner. [](sec_flexibleksp)
 
   Logically Collective
@@ -44,9 +14,9 @@ PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCt
   Level: intermediate
 
   Note:
-  Several `fcn` routines are predefined, including `KSPFGMRESModifyPCNoChange()` and `KSPFGMRESModifyPCKSP()`
+  Several `fcn` routines are predefined, including `KSPFlexibleModifyPCNoChange()` and `KSPFlexibleModifyPCKSP()`
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFCG`, `KSPPIPEFCG`, `KSPGCR`, `KSPPIPEGCR`, `KSPFlexibleModifyPCFn`, `KSPFlexibleModifyPCNoChange()`, `KSPFlexibleModifyPCKSP()`
 @*/
 PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
@@ -57,43 +27,48 @@ PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, Petsc
 }
 
 /*@C
-  KSPFGMRESModifyPCNoChange - this is the default used by `KSPFMGMRES` - it doesn't change the preconditioner. [](sec_flexibleksp)
+  KSPFlexibleModifyPCNoChange - this is the default used by the flexible Krylov methods - it doesn't change the preconditioner. [](sec_flexibleksp)
 
   Input Parameters:
 + ksp       - the ksp context being used.
-. total_its - the total number of `KSPFGMRES` iterations that have occurred.
-. loc_its   - the number of `KSPFGMRES` iterations since last restart.
+. total_its - the total number of `KSP` iterations that have occurred.
+. loc_its   - the number of `KSP` iterations since last restart.
 . res_norm  - the current residual norm.
 - ctx       - context variable, unused in this routine
 
   Level: intermediate
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
+  Note:
+  See `KSPFlexibleModifyPCKSP()` for a template for providing your own modification routines.
+
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFCG`, `KSPPIPEFCG`, `KSPGCR`, `KSPPIPEGCR`, `KSPFlexibleModifyPCFn`, `KSPFlexibleSetModifyPC()`, `KSPFlexibleModifyPCKSP()`
 @*/
-PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+PetscErrorCode KSPFlexibleModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  KSPFGMRESModifyPCKSP - modifies the attributes of the `KSPFGMRES` preconditioner, see [](sec_flexibleksp).
+  KSPFlexibleModifyPCKSP - modifies the attributes of the `PCKSP` preconditioner, see [](sec_flexibleksp).
 
   Input Parameters:
 + ksp       - the ksp context being used.
-. total_its - the total number of `KSPFGMRES` iterations that have occurred.
-. loc_its   - the number of `KSPFGMRES` iterations since last restart.
+. total_its - the total number of `KSP` iterations that have occurred.
+. loc_its   - the number of `KSP` iterations since last restart.
 . res_norm  - the current residual norm.
-- ctx       - context, not used in this routine
+- ctx       - context, unused in this routine
 
   Level: intermediate
 
-  Note:
-  You can use this as a template for writing a custom modification callback
+  Notes:
+  You can use this as a template for writing a custom modification callback. See the source code for the change it makes.
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFlexibleModifyPCFn`, `KSPFGMRESSetModifyPC()`
+  You can provide this to a `KSP` with `KSPFlexibleSetModifyPC()`
+
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFCG`, `KSPPIPEFCG`, `KSPGCR`, `KSPPIPEGCR`, `KSPFlexibleModifyPCFn`, `KSPFlexibleSetModifyPC()`
 @*/
-PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+PetscErrorCode KSPFlexibleModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   PC        pc;
   PetscInt  maxits;

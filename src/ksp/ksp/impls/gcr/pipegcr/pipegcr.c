@@ -413,7 +413,6 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   if (pipegcr->unroll_w) PetscCall(PetscFree3(pipegcr->tvecs, pipegcr->ptvecs, pipegcr->told));
 
   PetscCall(KSPReset_PIPEGCR(ksp));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPPIPEGCRSetModifyPC_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -589,8 +588,8 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 + ksp        - the Krylov space context
 - truncstrat - the choice of strategy
 .vb
-  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to `mmax`) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last `max(1,mod(i,mmax))` directions at iteration i = 0, 1, ..
 .ve
 
   Options Database Key:
@@ -598,7 +597,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPFCDTruncationType`, `KSPPIPEGCRGetTruncationType()`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -622,13 +621,13 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
   Output Parameter:
 . truncstrat - the strategy type
 .vb
-  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to `mmax`) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last `max(1,mod(i,mmax))` directions at iteration i =0, 1, ..
 .ve
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -658,7 +657,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
+static PetscErrorCode KSPFlexibleSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
@@ -670,47 +669,25 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  KSPPIPEGCRSetModifyPC - Sets the routine used by `KSPPIPEGCR` to modify the preconditioner at each iteration
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp      - iterative context obtained from `KSPCreate()`
-. function - user defined function to modify the preconditioner, see `KSPFlexibleModifyPCFn`
-. ctx      - user provided context for the modify preconditioner function
-- destroy  - the function to use to destroy the user provided application context.
-
-  Level: intermediate
-
-.seealso: [](ch_ksp), `KSPFlexibleSetModifyPC()`, `KSPFlexibleModifyPCFn`, `KSPPIPEGCR`
- @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, PetscCtx ctx, PetscCtxDestroyFn *destroy)
-{
-  PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, PetscCtx ctx, PetscCtxDestroyFn *), (ksp, function, ctx, destroy));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
   KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method {cite}`sananschneppmay2016`. [](sec_flexibleksp). [](sec_pipelineksp)
 
   Options Database Keys:
-+   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
-.   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: `PETSC_TRUE`)
-.   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
++   -ksp_pipegcr_mmax <N>                         - the max number of Krylov directions to orthogonalize against
+.   -ksp_pipegcr_unroll_w                         - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: `PETSC_TRUE`)
+.   -ksp_pipegcr_nprealloc <N>                    - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
 -   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
 
   Level: intermediate
 
   Notes:
-  Compare to `KSPGCR`
+  Pipelined version of `KSPGCR` that overlaps communication (global reductions) with computation (preconditioner application and matrix-vector products) to reduce the impact of communication latency on parallel performance.
 
   The `KSPPIPEGCR` Krylov method supports non-symmetric matrices and permits the use of a preconditioner
   which may vary from one iteration to the next. Users can define a method to vary the
-  preconditioner between iterates via `KSPFlexibleSetModifyPC()` or `KSPPIPEGCRSetModifyPC()`.
+  preconditioner between iterates via `KSPFlexibleSetModifyPC()`.
   Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
-  solution is given by the current estimate for x which was obtained by the last restart
+  solution is given by the current estimate for `x` which was obtained by the last restart
   iterations of the `KSPPIPEGCR` algorithm.
   The method implemented requires at most the storage of 4 x mmax + 5 vectors, roughly twice as much as `KSPGCR`.
 
@@ -726,8 +703,8 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, P
   Sascha M. Schnepp and Patrick Sanan
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`,
-          `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRGetMmax()`, `KSPGCR`, `KSPPIPEGCRGetUnrollW()
+          `KSPFlexibleSetModifyPC()`, `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`,
+          `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRGetMmax()`, `KSPGCR`, `KSPPIPEGCRGetUnrollW()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
 {
@@ -761,7 +738,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPPIPEGCRSetModifyPC_C", KSPPIPEGCRSetModifyPC_PIPEGCR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPPIPEGCRSetModifyPC_PIPEGCR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPFlexibleSetModifyPC_PIPEGCR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
