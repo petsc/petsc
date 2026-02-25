@@ -4772,7 +4772,9 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 }
 
 /*@
-  MatGetFactor - Returns a matrix suitable to calls to MatXXFactorSymbolic,Numeric()
+  MatGetFactor - Returns a matrix suitable to calls to routines such as `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatILUFactorSymbolic()`,
+  `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactorNumeric()`, `MatILUFactorNumeric()`, and
+  `MatICCFactorNumeric()`
 
   Collective
 
@@ -4793,28 +4795,31 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
   Level: intermediate
 
   Notes:
-  The return matrix can be `NULL` if the requested factorization is not available, since some combinations of matrix types and factorization
-  types registered with `MatSolverTypeRegister()` cannot be fully tested if not at runtime.
-
-  Users usually access the factorization solvers via `KSP`
+  Some of the packages, such as MUMPS, have options for controlling the factorization, these are in the form `-prefix_mat_packagename_packageoption`
+  (for example, `-mat_mumps_icntl_6 1`)  where `prefix` is normally set automatically from the calling `KSP`/`PC`. If `MatGetFactor()` is called directly,
+  without using a `PC`, one can set the prefix by
+  calling `MatSetOptionsPrefixFactor()` on the originating matrix or  `MatSetOptionsPrefix()` on the resulting factor matrix.
 
   Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
-  such as pastix, superlu, mumps etc. PETSc must have been ./configure to use the external solver, using the option --download-package or --with-package-dir
+  such as PaStiX, SuperLU, MUMPS etc. PETSc must have been configured using `./configure` to use the external solver,
+  using the option such as `--download-package` or `--with-package-dir`.
 
   When `type` is `NULL` the available results are searched for based on the order of the calls to `MatSolverTypeRegister()` in `MatInitializePackage()`.
   Since different PETSc configurations may have different external solvers, seemingly identical runs with different PETSc configurations may use a different solver.
-  For example if one configuration had --download-mumps while a different one had --download-superlu_dist.
+  For example if one configuration had `--download-mumps` while a different one had `--download-superlu_dist`.
 
-  Some of the packages have options for controlling the factorization, these are in the form -prefix_mat_packagename_packageoption
-  where prefix is normally obtained from the calling `KSP`/`PC`. If `MatGetFactor()` is called directly one can set
-  call `MatSetOptionsPrefixFactor()` on the originating matrix or  `MatSetOptionsPrefix()` on the resulting factor matrix.
+  The return matrix can be `NULL` if the requested factorization is not available, since some combinations of matrix types and factorization
+  types registered with `MatSolverTypeRegister()` cannot be fully tested if not at runtime.
 
   Developer Note:
   This should actually be called `MatCreateFactor()` since it creates a new factor object
 
 .seealso: [](ch_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `KSP`, `MatSolverType`, `MatFactorType`, `MatCopy()`, `MatDuplicate()`,
           `MatGetFactorAvailable()`, `MatFactorGetCanUseOrdering()`, `MatSolverTypeRegister()`, `MatSolverTypeGet()`,
-          `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`, `MatInitializePackage()`
+          `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`, `MatInitializePackage()`,
+          `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatILUFactorSymbolic()`,
+          `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactorNumeric()`, `MatILUFactorNumeric()`,
+          `MatICCFactorNumeric()`
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Mat *f)
 {

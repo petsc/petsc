@@ -235,7 +235,7 @@ static PetscErrorCode PCMatApplyTranspose_LU(PC pc, Mat X, Mat Y)
 .  -pc_factor_shift_amount shiftamount             - Sets shift amount or -1 for the default
 .  -pc_factor_nonzeros_along_diagonal (true|false) - permutes the rows and columns to try to put nonzero value along the diagonal.
 .  -pc_factor_mat_solver_type packagename          - use an external package for the solve, see `MatSolverType` for possibilities
--  -mat_solvertype_optionname                      - options for a specific solver package, for example -mat_mumps_cntl_1
+-  -mat_solvertype_optionname                      - options for a specific solver package, for example `-mat_mumps_cntl_1`
 
    Level: beginner
 

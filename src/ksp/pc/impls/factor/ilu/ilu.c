@@ -250,15 +250,16 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
 +  -pc_factor_levels k                                   - number of levels of fill for ILU(k)
 .  -pc_factor_in_place (true|false)                      - only for ILU(0) with natural ordering, reuses the space of the matrix for
                                                            its factorization (overwrites original matrix)
-.  -pc_factor_diagonal_fill (true|false)                 - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
+.  -pc_factor_diagonal_fill (true|false)                 - fill in a zero diagonal even if levels of fill indicate it wouldn't be filled
 .  -pc_factor_reuse_ordering (true|false)                - reuse ordering of factorized matrix from previous factorization
 .  -pc_factor_fill nfill                                 - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_factor_nonzeros_along_diagonal (true|false)       - reorder the matrix before factorization to remove zeros from the diagonal,
                                                            this decreases the chance of getting a zero pivot
 .  -pc_factor_mat_ordering_type (natural|nd|1wd|rcm|qmd) - set the row/column ordering of the factored matrix
--  -pc_factor_pivot_in_blocks (true|false)               - for block ILU(k) factorization, i.e. with `MATBAIJ` matrices with block size larger
+.  -pc_factor_pivot_in_blocks (true|false)               - for block ILU(k) factorization, i.e. with `MATBAIJ` matrices with block size larger
                                                            than 1 the diagonal blocks are factored with partial pivoting (this increases the
                                                            stability of the ILU factorization
+-  -mat_solvertype_optionname                            - options for a specific solver package, for example `-mat_mumps_cntl_1`
 
    Level: beginner
 
