@@ -301,6 +301,8 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
    not need a Krylov method (i.e. you can use -ksp_type preonly, or
    `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
 
+   The options prefix of the factored matrix is set to be the same as the `PC` options prefix.
+
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCILU`, `PCLU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,

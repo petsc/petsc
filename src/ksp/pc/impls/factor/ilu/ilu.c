@@ -273,6 +273,8 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
    If you are using `MATSEQAIJCUSPARSE` matrices (or `MATMPIAIJCUSPARSE` matrices with block Jacobi), factorization
    is never done on the GPU).
 
+   The options prefix of the factored matrix is set to be the same as the `PC` options prefix.
+
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,
           `PCFactorSetDropTolerance()`, `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,
