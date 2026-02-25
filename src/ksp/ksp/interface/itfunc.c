@@ -353,7 +353,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
   PetscCall(KSPSetUpNorms_Private(ksp, PETSC_TRUE, &ksp->normtype, &ksp->pc_side));
 
-  if (ksp->dmActive && !ksp->setupstage) {
+  if ((ksp->dmActive & KSP_DMACTIVE_OPERATOR) && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) PetscCall(DMCreateGlobalVector(ksp->dm, &ksp->vec_rhs));
     if (!ksp->vec_sol) PetscCall(DMCreateGlobalVector(ksp->dm, &ksp->vec_sol));
@@ -366,15 +366,14 @@ PetscErrorCode KSPSetUp(KSP ksp)
     DMKSP kdm;
     PetscCall(DMGetDMKSP(ksp->dm, &kdm));
 
-    if (kdm->ops->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (kdm->ops->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS && (ksp->dmActive & KSP_DMACTIVE_INITIAL_GUESS)) {
       /* only computes initial guess the first time through */
       PetscCallBack("KSP callback initial guess", (*kdm->ops->computeinitialguess)(ksp, ksp->vec_sol, kdm->initialguessctx));
       PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
     }
-    if (kdm->ops->computerhs) PetscCallBack("KSP callback rhs", (*kdm->ops->computerhs)(ksp, ksp->vec_rhs, kdm->rhsctx));
-
-    if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      PetscCheck(kdm->ops->computeoperators, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
+    if (kdm->ops->computerhs && (ksp->dmActive & KSP_DMACTIVE_RHS)) PetscCallBack("KSP callback rhs", (*kdm->ops->computerhs)(ksp, ksp->vec_rhs, kdm->rhsctx));
+    if ((ksp->setupstage != KSP_SETUP_NEWRHS) && (ksp->dmActive & KSP_DMACTIVE_OPERATOR)) {
+      PetscCheck(kdm->ops->computeoperators, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE);");
       PetscCall(KSPGetOperators(ksp, &A, &B));
       PetscCallBack("KSP callback operators", (*kdm->ops->computeoperators)(ksp, A, B, kdm->operatorsctx));
     }

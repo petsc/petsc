@@ -81,6 +81,12 @@ cdef extern from * nogil:
         KSP_DIVERGED_INDEFINITE_MAT
         KSP_DIVERGED_PC_FAILED
 
+    ctypedef enum PetscKSPDMActive "KSPDMActive":
+        KSP_DMACTIVE_OPERATOR = 1
+        KSP_DMACTIVE_RHS = 2
+        KSP_DMACTIVE_INITIAL_GUESS = 4
+        KSP_DMACTIVE_ALL = 7
+
     ctypedef enum PetscKSPHPDDMType "KSPHPDDMType":
         KSP_HPDDM_TYPE_GMRES
         KSP_HPDDM_TYPE_BGMRES
@@ -179,7 +185,7 @@ cdef extern from * nogil:
 
     PetscErrorCode KSPGetDM(PetscKSP, PetscDM*)
     PetscErrorCode KSPSetDM(PetscKSP, PetscDM)
-    PetscErrorCode KSPSetDMActive(PetscKSP, PetscBool)
+    PetscErrorCode KSPSetDMActive(PetscKSP, PetscKSPDMActive, PetscBool)
 
     PetscErrorCode KSPSetUp(PetscKSP)
     PetscErrorCode KSPReset(PetscKSP)

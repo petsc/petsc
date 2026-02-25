@@ -360,6 +360,15 @@ class KSPHPDDMType(object):
     BFBCG                     = KSP_HPDDM_TYPE_BFBCG
     PREONLY                   = KSP_HPDDM_TYPE_PREONLY
 
+
+class KSPDMActive(object):
+    """Argument to KSPSetDMActive()."""
+    OPERATOR      = KSP_DMACTIVE_OPERATOR
+    RHS           = KSP_DMACTIVE_RHS
+    INITIAL_GUESS = KSP_DMACTIVE_INITIAL_GUESS
+    ALL           = KSP_DMACTIVE_ALL
+
+
 # --------------------------------------------------------------------
 
 
@@ -387,6 +396,7 @@ cdef class KSP(Object):
     NormType        = KSPNormType
     ConvergedReason = KSPConvergedReason
     HPDDMType       = KSPHPDDMType
+    DMActive        = KSPDMActive
 
     # --- xxx ---
 
@@ -682,7 +692,8 @@ cdef class KSP(Object):
         -----
         If this is used then the `KSP` will attempt to use the `DM` to
         create the matrix and use the routine set with
-        `DM.setKSPComputeOperators`. Use ``setDMActive(False)``
+        `DM.setKSPComputeOperators`. Use
+        ``setDMActive(KSP.DMActive.OPERATOR, False)``
         to instead use the matrix you have provided with
         `setOperators`.
 
@@ -701,7 +712,7 @@ cdef class KSP(Object):
         """
         CHKERR(KSPSetDM(self.ksp, dm.dm))
 
-    def setDMActive(self, flag: bool) -> None:
+    def setDMActive(self, dmactive: DMActive, flag: bool) -> None:
         """`DM` should be used to generate system matrix & RHS vector.
 
         Logically collective.
@@ -714,7 +725,7 @@ cdef class KSP(Object):
         Notes
         -----
         By default `setDM` sets the `DM` as active, call
-        ``setDMActive(False)`` after ``setDM(dm)`` to not
+        ``setDMActive(KSP.DMactive.ALL, False)`` after ``setDM(dm)`` to not
         have the `KSP` object use the `DM` to generate the matrices.
 
         See Also
@@ -723,7 +734,7 @@ cdef class KSP(Object):
 
         """
         cdef PetscBool cflag = asBool(flag)
-        CHKERR(KSPSetDMActive(self.ksp, cflag))
+        CHKERR(KSPSetDMActive(self.ksp, dmactive, cflag))
 
     # --- operators and preconditioner ---
 

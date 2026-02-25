@@ -460,7 +460,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ilink->ksp, &prefix));
           PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dms[i], prefix));
           PetscCall(KSPSetDM(ilink->ksp, dms[i]));
-          PetscCall(KSPSetDMActive(ilink->ksp, PETSC_FALSE));
+          PetscCall(KSPSetDMActive(ilink->ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
           PetscCall(PetscObjectIncrementTabLevel((PetscObject)dms[i], (PetscObject)ilink->ksp, 0));
           PetscCall(DMDestroy(&dms[i]));
         }
@@ -936,7 +936,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         /* Set DM for new solver */
         PetscCall(KSPGetDM(jac->head->ksp, &dmInner));
         PetscCall(KSPSetDM(kspInner, dmInner));
-        PetscCall(KSPSetDMActive(kspInner, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(kspInner, KSP_DMACTIVE_ALL, PETSC_FALSE));
 
         /* Defaults to PCKSP as preconditioner */
         PetscCall(KSPGetPC(kspInner, &pcInner));
@@ -985,7 +985,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspupper->pc, (PetscObject)pc, 1));
         PetscCall(KSPGetDM(jac->head->ksp, &dmInner));
         PetscCall(KSPSetDM(jac->kspupper, dmInner));
-        PetscCall(KSPSetDMActive(jac->kspupper, PETSC_FALSE));
+        PetscCall(KSPSetDMActive(jac->kspupper, KSP_DMACTIVE_ALL, PETSC_FALSE));
         PetscCall(KSPSetFromOptions(jac->kspupper));
         PetscCall(KSPSetOperators(jac->kspupper, jac->mat[0], jac->pmat[0]));
         PetscCall(VecDuplicate(jac->head->x, &jac->head->z));
@@ -1016,7 +1016,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(KSPGetDM(jac->head->next->ksp, &sdm));
         if (sdm) {
           PetscCall(KSPSetDM(jac->kspschur, sdm));
-          PetscCall(KSPSetDMActive(jac->kspschur, PETSC_FALSE));
+          PetscCall(KSPSetDMActive(jac->kspschur, KSP_DMACTIVE_ALL, PETSC_FALSE));
         }
       }
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */

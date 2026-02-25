@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   /* create linear solver */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetDM(ksp, fine_ctx.da));
-  PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+  PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
 
   /* set values for rhs vector */
   PetscCall(VecSet(fine_ctx.b, one));

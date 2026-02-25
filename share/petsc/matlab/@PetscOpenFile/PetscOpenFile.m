@@ -16,8 +16,6 @@ if S.fd == -1
     error(strcat('File ',filename,' opening for read does not exist'))
   else
     dir = fileparts(filename)
-    'funck'
-    and(not(isempty(dir)),isfolder(dir))
     if and(not(isempty(dir)),not(isfolder(dir)))
       error(strcat('Directory ',dir,' does not exist to write file ',filename,'into'))
     else

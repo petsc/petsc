@@ -103,7 +103,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc, PC_Telescope sred)
   /* attach coarse dm to ksp on sub communicator */
   if (PCTelescope_isActiveRank(sred)) {
     PetscCall(KSPSetDM(sred->ksp, ctx->dm_coarse));
-    if (sred->ignore_kspcomputeoperators) PetscCall(KSPSetDMActive(sred->ksp, PETSC_FALSE));
+    if (sred->ignore_kspcomputeoperators) PetscCall(KSPSetDMActive(sred->ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
   }
 
   /* check if there is a method to provide a permutation */
@@ -183,7 +183,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc, PC_Telescope sred)
         /* sub ksp inherits dmksp_func and context provided by user */
         PetscCall(KSPSetComputeOperators(sred->ksp, dmfine_kspfunc, dmcoarse_kspctx));
         /* PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)ctx->dmrepart)); */
-        PetscCall(KSPSetDMActive(sred->ksp, PETSC_TRUE));
+        PetscCall(KSPSetDMActive(sred->ksp, KSP_DMACTIVE_ALL, PETSC_TRUE));
       }
     }
   }

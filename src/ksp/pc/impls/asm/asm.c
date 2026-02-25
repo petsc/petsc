@@ -259,7 +259,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
         if (domain_dm) {
           PetscCall(KSPSetDM(ksp, domain_dm[i]));
-          PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+          PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
           PetscCall(DMDestroy(&domain_dm[i]));
         }
         osm->ksp[i] = ksp;
