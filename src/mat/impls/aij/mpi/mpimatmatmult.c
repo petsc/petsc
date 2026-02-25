@@ -485,7 +485,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   contents->nrecvs = nrecvs;
   contents->blda   = blda;
 
-  PetscCall(PetscMalloc1(Bm + 1, &disp));
+  PetscCall(PetscMalloc1(Bm, &disp));
   for (PetscMPIInt i = 0; i < nsends; i++) {
     PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
     for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j], &disp[j])); /* rowB to be sent */
@@ -511,7 +511,13 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-
+  PetscCall(MatProductClear(aij->A));
+  PetscCall(MatProductClear(((Mat_MPIDense *)B->data)->A));
+  PetscCall(MatProductClear(((Mat_MPIDense *)C->data)->A));
+  PetscCall(MatProductCreateWithMat(aij->A, ((Mat_MPIDense *)B->data)->A, NULL, ((Mat_MPIDense *)C->data)->A));
+  PetscCall(MatProductSetType(((Mat_MPIDense *)C->data)->A, MATPRODUCT_AB));
+  PetscCall(MatProductSetFromOptions(((Mat_MPIDense *)C->data)->A));
+  PetscCall(MatProductSymbolic(((Mat_MPIDense *)C->data)->A));
   C->product->data       = contents;
   C->product->destroy    = MatMPIAIJ_MPIDenseDestroy;
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
@@ -595,9 +601,21 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   contents = (MPIAIJ_MPIDense *)C->product->data;
-  /* diagonal block of A times all local rows of B */
-  /* TODO: this calls a symbolic multiplication every time, which could be avoided */
-  PetscCall(MatMatMult(aij->A, bdense->A, MAT_REUSE_MATRIX, PETSC_CURRENT, &cdense->A));
+  /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
+  if (!cdense->A->product) {
+    PetscCall(MatProductCreateWithMat(aij->A, bdense->A, NULL, cdense->A));
+    PetscCall(MatProductSetType(cdense->A, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(cdense->A));
+    PetscCall(MatProductSymbolic(cdense->A));
+  } else PetscCall(MatProductReplaceMats(aij->A, bdense->A, NULL, cdense->A));
+  if (PetscDefined(HAVE_CUPM) && !cdense->A->product->clear) {
+    PetscBool flg;
+
+    PetscCall(PetscObjectTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
+    if (flg) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
+    if (!flg) cdense->A->product->clear = PETSC_TRUE; /* if either A or C is a device Mat, make sure MatProductClear() is called */
+  }
+  PetscCall(MatProductNumeric(cdense->A));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     PetscCall(MatMPIDenseScatter(A, B, 0, C, &workB));
