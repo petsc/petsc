@@ -728,6 +728,11 @@ static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, Petsc
       PetscCheck(i[ii] >= 0 && i[ii] >= i[ii - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "i[%" PetscInt_FMT "]=%" PetscInt_FMT " index is out of range: i[%" PetscInt_FMT "]=%" PetscInt_FMT, ii, i[ii], ii - 1, i[ii - 1]);
     }
     for (ii = 0; ii < i[B->rmap->n]; ii++) PetscCheck(j[ii] >= 0 && j[ii] < B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " out of range %" PetscInt_FMT, ii, j[ii]);
+    for (ii = 0; ii < B->rmap->n; ii++) {
+      PetscInt jj;
+      for (jj = i[ii] + 1; jj < i[ii + 1]; jj++)
+        PetscCheck(j[jj] > j[jj - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " column indices are not sorted: j[%" PetscInt_FMT "]=%" PetscInt_FMT " >= j[%" PetscInt_FMT "]=%" PetscInt_FMT, ii, jj - 1, j[jj - 1], jj, j[jj]);
+    }
   }
   b->j      = j;
   b->i      = i;
