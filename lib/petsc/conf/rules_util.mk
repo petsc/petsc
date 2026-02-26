@@ -191,7 +191,7 @@ checkbadSource:
 env-lint:
 	@if [[ `which llvm-config` == "" ]]; then echo "llvm-config for version 14 must be in your path"; exit 1; fi
 	@if [ `llvm-config --version | cut -f1 -d"."` != 14 ]; then echo "llvm-config for version 14 must be in your path"; exit 1; fi
-	@python3 -m venv petsc-lint-env
+	@${PYTHON} -m venv  petsc-lint-env
 	@source petsc-lint-env/bin/activate && python3 -m pip install --quiet -r lib/petsc/bin/maint/petsclinter/requirements.txt && \
           python3 ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} --clang_lib=`llvm-config --libdir`/libclang.dylib --werror 1 ./src ; deactivate
 
