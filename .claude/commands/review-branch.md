@@ -1,0 +1,1 @@
+Review a local branch's changes against main. First run `git fetch origin main` to ensure the base is up to date. If a branch name is given in $ARGUMENTS, use `git diff origin/main...$ARGUMENTS`. Otherwise, use `git diff origin/main...HEAD` for the current branch. Follow steps 3–4 from `.claude/commands/review-mr.md`.

@@ -198,6 +198,12 @@ checkbadSource:
          fi
 	@test ! -s badSourceChar.out
 
+# Review the current branch's changes against main
+.PHONY: branch-review
+branch-review:
+	@command -v claude >/dev/null 2>&1 || { echo "Claude Code not installed"; exit 1; }
+	@claude "/review-branch"
+
 #  Run a linter in a Python virtual environment to check (and fix) the formatting of PETSc manual pages
 #     V=1        verbose
 #     REPLACE=1  replace ill-formatted docs with correctly formatted docs
