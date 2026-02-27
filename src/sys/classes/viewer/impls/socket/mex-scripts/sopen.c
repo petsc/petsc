@@ -78,28 +78,7 @@ typedef unsigned long  u_long;
 /* hanging; the problem is if the user uses several portnumbers    */
 /* and control c we may not be able to close the correct listener. */
 static int listenport;
-extern int establish(u_short);
-static int SOCKConnect_Private(int portnumber)
-{
-  struct sockaddr_in isa;
-#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
-  size_t i;
-#else
-  int i;
-#endif
-  int t;
-
-  /* open port*/
-  listenport = establish((u_short)portnumber);
-  if (listenport == -1) PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
-
-  /* wait for someone to try to connect */
-  i = sizeof(struct sockaddr_in);
-  if ((t = accept(listenport, (struct sockaddr *)&isa, (socklen_t *)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
-  close(listenport);
-  return t;
-}
-#define MAXHOSTNAME 100
+#define MAXHOSTNAME 255
 static int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME + 1];
@@ -153,6 +132,27 @@ static int establish(u_short portnum)
   }
   listen(s, 0);
   return s;
+}
+
+static int SOCKConnect_Private(int portnumber)
+{
+  struct sockaddr_in isa;
+#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
+  size_t i;
+#else
+  int i;
+#endif
+  int t;
+
+  /* open port*/
+  listenport = establish((u_short)portnumber);
+  if (listenport == -1) PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
+
+  /* wait for someone to try to connect */
+  i = sizeof(struct sockaddr_in);
+  if ((t = accept(listenport, (struct sockaddr *)&isa, (socklen_t *)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
+  close(listenport);
+  return t;
 }
 
 PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
