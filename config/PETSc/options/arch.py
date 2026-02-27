@@ -106,6 +106,7 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
     import nargs
     hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
+    hash += 'Python: ' + sys.executable + '\n'
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     hash += 'args:\n' + '\n'.join('    '+a for a in sorted(args.values())) + '\n'
     chash=''
