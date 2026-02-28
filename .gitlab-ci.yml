@@ -300,6 +300,32 @@ pause-for-approval:
   when: manual
   allow_failure: false
 
+ai-review-optional:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+  stage: .pre
+  tags:
+    - gce-stage1
+  before_script:
+    - date
+    - hostname
+  script:
+    - test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
+    - command -v claude >/dev/null 2>&1 || { echo "claude not installed"; exit 1; }
+    - command -v glab >/dev/null 2>&1 || { echo "glab not installed"; exit 1; }
+    - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
+    - |
+      if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'AI review'; then
+        REVIEW_CMD="/review-mr-post"
+      else
+        REVIEW_CMD="/review-mr"
+      fi
+      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 30
+  timeout: 15m
+  allow_failure: true
+  interruptible: true
+
 #
 # Basic template for code coverage generation. Tests should additionally inherit from the more
 # specialized OS-specific versions instead of this one.
