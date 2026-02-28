@@ -121,13 +121,13 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
 
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)
-    #define hipsparse_scalartype                                                             HIP_C_32F
-    #define hipsparse_csr_spmv(a, b, c, d, e, f, g, h, i, j, k, l, m)                        hipsparseCcsrmv((a), (b), (c), (d), (e), (hipComplex *)(f), (g), (hipComplex *)(h), (i), (j), (hipComplex *)(k), (hipComplex *)(l), (hipComplex *)(m))
-    #define hipsparse_csr_spmm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)               hipsparseCcsrmm((a), (b), (c), (d), (e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (j), (k), (hipComplex *)(l), (m), (hipComplex *)(n), (hipComplex *)(o), (p))
-    #define hipsparse_csr2csc(a, b, c, d, e, f, g, h, i, j, k, l)                            hipsparseCcsr2csc((a), (b), (c), (d), (hipComplex *)(e), (f), (g), (hipComplex *)(h), (i), (j), (k), (l))
-    #define hipsparse_hyb_spmv(a, b, c, d, e, f, g, h)                                       hipsparseChybmv((a), (b), (hipComplex *)(c), (d), (e), (hipComplex *)(f), (hipComplex *)(g), (hipComplex *)(h))
-    #define hipsparse_csr2hyb(a, b, c, d, e, f, g, h, i, j)                                  hipsparseCcsr2hyb((a), (b), (c), (d), (hipComplex *)(e), (f), (g), (h), (i), (j))
-    #define hipsparse_hyb2csr(a, b, c, d, e, f)                                              hipsparseChyb2csr((a), (b), (c), (hipComplex *)(d), (e), (f))
+    #define hipsparse_scalartype                                               HIP_C_32F
+    #define hipsparse_csr_spmv(a, b, c, d, e, f, g, h, i, j, k, l, m)          hipsparseCcsrmv((a), (b), (c), (d), (e), (hipComplex *)(f), (g), (hipComplex *)(h), (i), (j), (hipComplex *)(k), (hipComplex *)(l), (hipComplex *)(m))
+    #define hipsparse_csr_spmm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) hipsparseCcsrmm((a), (b), (c), (d), (e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (j), (k), (hipComplex *)(l), (m), (hipComplex *)(n), (hipComplex *)(o), (p))
+    #define hipsparse_csr2csc(a, b, c, d, e, f, g, h, i, j, k, l)              hipsparseCcsr2csc((a), (b), (c), (d), (hipComplex *)(e), (f), (g), (hipComplex *)(h), (i), (j), (k), (l))
+    #define hipsparse_hyb_spmv(a, b, c, d, e, f, g, h)                         hipsparseChybmv((a), (b), (hipComplex *)(c), (d), (e), (hipComplex *)(f), (hipComplex *)(g), (hipComplex *)(h))
+    #define hipsparse_csr2hyb(a, b, c, d, e, f, g, h, i, j)                    hipsparseCcsr2hyb((a), (b), (c), (d), (hipComplex *)(e), (f), (g), (h), (i), (j))
+    #define hipsparse_hyb2csr(a, b, c, d, e, f)                                hipsparseChyb2csr((a), (b), (c), (hipComplex *)(d), (e), (f))
     #define hipsparse_csr_spgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) hipsparseCcsrgemm(a, b, c, d, e, f, g, h, (hipComplex *)i, j, k, l, m, (hipComplex *)n, o, p, q, (hipComplex *)r, s, t)
   // #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)    hipsparseCcsrgeam(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s)
   #elif defined(PETSC_USE_REAL_DOUBLE)

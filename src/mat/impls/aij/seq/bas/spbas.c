@@ -739,7 +739,7 @@ static PetscErrorCode spbas_mark_row_power(PetscInt     *iwork,     /* marker-ve
                                            spbas_matrix *in_matrix, /* matrix for which the power is being  calculated */
                                            PetscInt      marker,    /* marker-value: 2^power */
                                            PetscInt      minmrk,    /* lower bound for marked points */
-                                           PetscInt      maxmrk)         /* upper bound for marked points */
+                                           PetscInt      maxmrk)    /* upper bound for marked points */
 {
   PetscInt i, j, nnz;
 

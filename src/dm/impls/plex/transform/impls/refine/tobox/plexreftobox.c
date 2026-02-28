@@ -254,10 +254,10 @@ static PetscErrorCode DMPlexTransformCellRefine_ToBox(DMPlexTransform tr, DMPoly
   */
   static DMPolytopeType tsegT[] = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_QUADRILATERAL};
   static PetscInt       tsegS[] = {1, 2};
-  static PetscInt       tsegC[] = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0,
-                                   /* TODO  Fix these */
-                                   DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 0, 1, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 1, 1, DM_POLYTOPE_SEGMENT, 0, 0};
-  static PetscInt       tsegO[] = {0, 0, 0, 0, -1, -1, 0, 0, -1, -1};
+  static PetscInt tsegC[] = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0,
+                             /* TODO  Fix these */
+                             DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 0, 1, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 1, 1, DM_POLYTOPE_SEGMENT, 0, 0};
+  static PetscInt tsegO[] = {0, 0, 0, 0, -1, -1, 0, 0, -1, -1};
   /* Add 6 triangles inside every cell, making 4 new hexs
      The vertices of our reference tet are [(-1, -1, -1), (-1, 1, -1), (1, -1, -1), (-1, -1, 1)], which we call [v0, v1, v2, v3]. The first
      three edges are [v0, v1], [v1, v2], [v2, v0] called e0, e1, and e2, and then three edges to the top point [v0, v3], [v1, v3], [v2, v3]

@@ -162,11 +162,7 @@ MemoryMap::map_type::const_iterator MemoryMap::search_for(const void *ptr, bool 
   PetscFunctionBegin;
   if (it != end_it) PetscFunctionReturn(it);
   // wasn't found, but maybe its part of a block. have to search every block for it
-  // clang-format off
-  it = std::find_if(map.begin(), end_it, [ptr](map_type::const_iterator::reference map_it) {
-    return map_it.second.contains(map_it.first, ptr);
-  });
-  // clang-format on
+  it = std::find_if(map.begin(), end_it, [ptr](map_type::const_iterator::reference map_it) { return map_it.second.contains(map_it.first, ptr); });
   PetscCheckAbort(!must_find || it != end_it, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p was not registered with the memory tracker, call PetscDeviceRegisterMemory() on it", ptr);
   PetscFunctionReturn(it);
 }
