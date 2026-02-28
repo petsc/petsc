@@ -335,12 +335,7 @@ int main(int argc, char *argv[])
   PetscCall(mem_read(dctx_a, x));
   PetscCall(mem_read(dctx_b, y));
   PetscCall(PetscDeviceContextSynchronize(dctx_c));
-  // clang-format off
-  PetscCall(CheckMapEqual({
-    make_map_entry(x_id, PETSC_MEMORY_ACCESS_READ, dctx_a),
-    make_map_entry(y_id, PETSC_MEMORY_ACCESS_READ, dctx_b)
-  }));
-  // clang-format on
+  PetscCall(CheckMapEqual({make_map_entry(x_id, PETSC_MEMORY_ACCESS_READ, dctx_a), make_map_entry(y_id, PETSC_MEMORY_ACCESS_READ, dctx_b)}));
   PetscCall(PetscDeviceContextSynchronize(dctx_a));
   PetscCall(PetscDeviceContextSynchronize(dctx_b));
   // Now the map is empty again

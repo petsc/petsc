@@ -31,7 +31,7 @@ static PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,      
                                                      PetscInt     *n_row_alloc_ok, /* I/O: Number of rows which are already in their final
                                                                                     places in the arrays: they need not be moved any more */
                                                      PetscInt     *n_alloc_used,   /* I/O:  */
-                                                     PetscInt     *max_row_nnz)        /* I  : Over-estimate of the number of nonzeros needed to store each row */
+                                                     PetscInt     *max_row_nnz)    /* I  : Over-estimate of the number of nonzeros needed to store each row */
 {
   /* PSEUDO-CODE:
   1. Choose the appropriate size for the arrays

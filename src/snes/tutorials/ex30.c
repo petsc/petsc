@@ -880,10 +880,10 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->fault_depth  = grid->jfault * grid->dz;                   /* dim'less */
   grid->corner        = grid->jlid + 1;                            /* gridcells */
   param->peclet       = param->V                                   /* m/sec */
-                * param->L * 1000.0                                /* m */
-                / param->kappa;                                    /* m^2/sec */
-  param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
-  param->skt     = PetscSqrtReal(param->kappa * param->slab_age * SEC_PER_YR);
+                      * param->L * 1000.0                          /* m */
+                      / param->kappa;                              /* m^2/sec */
+  param->z_scale      = param->L * alpha_g_on_cp_units_inverse_km;
+  param->skt          = PetscSqrtReal(param->kappa * param->slab_age * SEC_PER_YR);
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-peclet", &param->peclet, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

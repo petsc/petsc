@@ -3,7 +3,6 @@
 
 const char *const MatHtoolCompressorTypes[] = {"sympartialACA", "fullACA", "SVD"};
 const char *const MatHtoolClusteringTypes[] = {"PCARegular", "PCAGeometric", "BoundingBox1Regular", "BoundingBox1Geometric"};
-// clang-format off
 const char       *HtoolCitations[2]         = {"@article{marchand2020two,\n"
                                                "  Author = {Marchand, Pierre and Claeys, Xavier and Jolivet, Pierre and Nataf, Fr\\'ed\\'eric and Tournier, Pierre-Henri},\n"
                                                "  Title = {Two-level preconditioning for $h$-version boundary element approximation of hypersingular operator with {GenEO}},\n"
@@ -26,7 +25,6 @@ const char       *HtoolCitations[2]         = {"@article{marchand2020two,\n"
                                                "  Url = {https://doi.org/10.21105/joss.09279}\n"
                                                "}\n"};
 static PetscBool  HtoolCite[2]              = {PETSC_FALSE, PETSC_FALSE};
-// clang-format on
 
 static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
 {

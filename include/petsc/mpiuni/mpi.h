@@ -410,31 +410,31 @@ typedef int MPI_Fint;
   #define MPI_Op_f2c(op)     (MPI_Op)(op)
   #define MPI_Op_c2f(op)     (MPI_Fint)(op)
 
-  #define MPI_Send_c                                                                              MPI_Send
-  #define MPI_Send(buf, count, datatype, dest, tag, comm)                                         (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Recv_c                                                                              MPI_Recv
-  #define MPI_Recv(buf, count, datatype, source, tag, comm, status)                               (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(source), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(status), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Get_count_c                                                                         MPI_Get_count
-  #define MPI_Get_count(status, datatype, count)                                                  (MPIUNI_ARG(status), MPIUNI_ARG(datatype), MPIUNI_ARG(count), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Bsend(buf, count, datatype, dest, tag, comm)                                        (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Ssend(buf, count, datatype, dest, tag, comm)                                        (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Rsend(buf, count, datatype, dest, tag, comm)                                        (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Buffer_attach(buffer, size)                                                         (MPIUNI_ARG(buffer), MPIUNI_ARG(size), MPI_SUCCESS)
-  #define MPI_Buffer_detach(buffer, size)                                                         (MPIUNI_ARG(buffer), MPIUNI_ARG(size), MPI_SUCCESS)
-  #define MPI_Ibsend(buf, count, datatype, dest, tag, comm, request)                              (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Issend(buf, count, datatype, dest, tag, comm, request)                              (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Irsend(buf, count, datatype, dest, tag, comm, request)                              (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Irecv_c                                                                             MPI_Irecv
-  #define MPI_Irecv(buf, count, datatype, source, tag, comm, request)                             (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(source), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Isend_c                                                                             MPI_Isend
-  #define MPI_Isend(buf, count, datatype, dest, tag, comm, request)                               (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
-  #define MPI_Wait(request, status)                                                               (MPIUNI_ARG(request), MPIUNI_ARG(status), MPI_SUCCESS)
-  #define MPI_Test(request, flag, status)                                                         (MPIUNI_ARG(request), MPIUNI_ARG(status), *(flag) = 0, MPI_SUCCESS)
-  #define MPI_Request_free(request)                                                               (MPIUNI_ARG(request), MPI_SUCCESS)
-  #define MPI_Waitany(count, array_of_requests, index, status)                                    (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(status), (*(status)).MPI_SOURCE = 0, *(index) = 0, MPI_SUCCESS)
-  #define MPI_Testany(a, b, c, d, e)                                                              (MPIUNI_ARG(a), MPIUNI_ARG(b), MPIUNI_ARG(c), MPIUNI_ARG(d), MPIUNI_ARG(e), MPI_SUCCESS)
-  #define MPI_Waitall(count, array_of_requests, array_of_statuses)                                (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(array_of_statuses), MPI_SUCCESS)
-  #define MPI_Testall(count, array_of_requests, flag, array_of_statuses)                          (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(flag), MPIUNI_ARG(array_of_statuses), MPI_SUCCESS)
+  #define MPI_Send_c                                                     MPI_Send
+  #define MPI_Send(buf, count, datatype, dest, tag, comm)                (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Recv_c                                                     MPI_Recv
+  #define MPI_Recv(buf, count, datatype, source, tag, comm, status)      (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(source), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(status), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Get_count_c                                                MPI_Get_count
+  #define MPI_Get_count(status, datatype, count)                         (MPIUNI_ARG(status), MPIUNI_ARG(datatype), MPIUNI_ARG(count), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Bsend(buf, count, datatype, dest, tag, comm)               (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Ssend(buf, count, datatype, dest, tag, comm)               (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Rsend(buf, count, datatype, dest, tag, comm)               (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Buffer_attach(buffer, size)                                (MPIUNI_ARG(buffer), MPIUNI_ARG(size), MPI_SUCCESS)
+  #define MPI_Buffer_detach(buffer, size)                                (MPIUNI_ARG(buffer), MPIUNI_ARG(size), MPI_SUCCESS)
+  #define MPI_Ibsend(buf, count, datatype, dest, tag, comm, request)     (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Issend(buf, count, datatype, dest, tag, comm, request)     (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Irsend(buf, count, datatype, dest, tag, comm, request)     (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Irecv_c                                                    MPI_Irecv
+  #define MPI_Irecv(buf, count, datatype, source, tag, comm, request)    (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(source), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Isend_c                                                    MPI_Isend
+  #define MPI_Isend(buf, count, datatype, dest, tag, comm, request)      (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(tag), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUni_Abort(MPI_COMM_WORLD, 0))
+  #define MPI_Wait(request, status)                                      (MPIUNI_ARG(request), MPIUNI_ARG(status), MPI_SUCCESS)
+  #define MPI_Test(request, flag, status)                                (MPIUNI_ARG(request), MPIUNI_ARG(status), *(flag) = 0, MPI_SUCCESS)
+  #define MPI_Request_free(request)                                      (MPIUNI_ARG(request), MPI_SUCCESS)
+  #define MPI_Waitany(count, array_of_requests, index, status)           (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(status), (*(status)).MPI_SOURCE = 0, *(index) = 0, MPI_SUCCESS)
+  #define MPI_Testany(a, b, c, d, e)                                     (MPIUNI_ARG(a), MPIUNI_ARG(b), MPIUNI_ARG(c), MPIUNI_ARG(d), MPIUNI_ARG(e), MPI_SUCCESS)
+  #define MPI_Waitall(count, array_of_requests, array_of_statuses)       (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(array_of_statuses), MPI_SUCCESS)
+  #define MPI_Testall(count, array_of_requests, flag, array_of_statuses) (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(flag), MPIUNI_ARG(array_of_statuses), MPI_SUCCESS)
   #define MPI_Waitsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses) (MPIUNI_ARG(incount), MPIUNI_ARG(array_of_requests), MPIUNI_ARG(outcount), MPIUNI_ARG(array_of_indices), MPIUNI_ARG(array_of_statuses), MPI_SUCCESS)
   #define MPI_Comm_group(comm, group)                                                             (MPIUNI_ARG(comm), *group = 1, MPI_SUCCESS)
   #define MPI_Group_excl(group, n, ranks, newgroup)                                               (MPIUNI_ARG(group), MPIUNI_ARG(n), MPIUNI_ARG(ranks), MPIUNI_ARG(newgroup), MPI_SUCCESS)
