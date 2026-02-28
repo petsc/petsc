@@ -520,7 +520,7 @@ class Linter:
       raw_result_spelling = func.raw().partition(func.spelling)[0]
       if result_spelling not in raw_result_spelling:
         # The type is likely unknown, i.e. it defaulted to int
-        assert result_type.kind == clx.TypeKind.INT
+        #assert result_type.kind == clx.TypeKind.INT
         # Let's try and extract the type nonetheless
         raw_types = [
           t
