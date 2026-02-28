@@ -3,8 +3,8 @@ name            = "petsclinter"
 version         = "1.2.0"
 requires-python = ">=3.8"
 dependencies    = [
-  "clang",
   "colorama",
+  "clang==14.0",
   "tomli; python_version < '3.11'",
 ]
 

@@ -1,4 +1,4 @@
 # PETSc clang linter installation requirements
-clang
 colorama
+clang==14.0
 tomli; python_version < '3.11'
