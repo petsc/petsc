@@ -21,10 +21,21 @@ Use the GitLab Discussions API with JSON input to create inline DiffNote comment
 
 For each comment, use this Python pattern:
 ```python
-import json, subprocess
+import json, re, subprocess
+
+body = "<comment body with optional suggestion block>"
+# Guard against patterns that break GitLab suggestion blocks:
+# 1. Trailing backslash breaks suggestion rendering
+# 2. Triple backticks inside suggestion body (e.g., in markdown files)
+suggestion_match = re.search(r'(```suggestion[^\n]*\n)(.*?)(```)\s*$', body, re.DOTALL)
+if suggestion_match:
+    opening, inner, _ = suggestion_match.groups()
+    if inner.count('```') > 0 or inner.rstrip('\n').endswith('\\'):
+        # Fall back to plain code block
+        body = body.replace(opening, '```\n', 1)
 
 payload = {
-    "body": "<comment body with optional suggestion block>",
+    "body": body,
     "position": {
         "position_type": "text",
         "base_sha": "<BASE_SHA>",
@@ -40,7 +51,7 @@ p = subprocess.run(
      "-X", "POST", "--input", "-", "-H", "Content-Type: application/json"],
     input=json.dumps(payload), capture_output=True, text=True, check=True
 )
-assert '"type":"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
+assert '"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
 ```
 
 ### 6. Use GitLab suggestion blocks for concrete fixes
@@ -64,4 +75,4 @@ corrected line here
 - For **modified files**: `new_line` = the line number in the new version of the file. Parse the `@@` hunk headers to map correctly.
 
 ### 8. Verify
-After posting, confirm each response has `"type":"DiffNote"` to ensure comments appear inline on the Changes tab.
+After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
