@@ -386,14 +386,14 @@ static PetscErrorCode MatHYPRE_DestroyCOOMat(Mat mat)
       csr = hypre_ParCSRMatrixDiag(parcsr);
       if (csr) {
         mem = hypre_CSRMatrixMemoryLocation(csr);
-        PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixJ(csr), mem));
-        PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixBigJ(csr), mem));
+        PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixJ(csr), mem));
+        PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixBigJ(csr), mem));
       }
       csr = hypre_ParCSRMatrixOffd(parcsr);
       if (csr) {
         mem = hypre_CSRMatrixMemoryLocation(csr);
-        PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixJ(csr), mem));
-        PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixBigJ(csr), mem));
+        PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixJ(csr), mem));
+        PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixBigJ(csr), mem));
       }
     }
   }
@@ -484,7 +484,7 @@ static PetscErrorCode MatHYPRE_AttachCOOMat(Mat mat)
   hmem = hypre_CSRMatrixMemoryLocation(diag);
   PetscCall(MatSeqAIJGetCSRAndMemType(A, NULL, NULL, &a, &pmem));
   PetscAssert((PetscMemTypeHost(pmem) && hmem == HYPRE_MEMORY_HOST) || (PetscMemTypeDevice(pmem) && hmem == HYPRE_MEMORY_DEVICE), comm, PETSC_ERR_PLIB, "PETSc and hypre's memory types mismatch");
-  PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(diag), hmem));
+  PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(diag), hmem));
   hypre_CSRMatrixData(diag)     = (HYPRE_Complex *)a;
   hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
 
@@ -492,7 +492,7 @@ static PetscErrorCode MatHYPRE_AttachCOOMat(Mat mat)
     hmem = hypre_CSRMatrixMemoryLocation(offd);
     PetscCall(MatSeqAIJGetCSRAndMemType(B, NULL, NULL, &a, &pmem));
     PetscAssert((PetscMemTypeHost(pmem) && hmem == HYPRE_MEMORY_HOST) || (PetscMemTypeDevice(pmem) && hmem == HYPRE_MEMORY_DEVICE), comm, PETSC_ERR_PLIB, "PETSc and hypre's memory types mismatch");
-    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(offd), hmem));
+    PetscCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(offd), hmem));
     hypre_CSRMatrixData(offd)     = (HYPRE_Complex *)a;
     hypre_CSRMatrixOwnsData(offd) = 0;
   }
@@ -1389,7 +1389,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
 
   PetscCall(MatStashDestroy_Private(&A->stash));
   PetscCall(PetscFree(hA->array));
-  if (hA->rows_d) PetscStackCallExternalVoid("hypre_Free", hypre_Free(hA->rows_d, HYPRE_MEMORY_DEVICE));
+  if (hA->rows_d) PetscCallExternalVoid("hypre_Free", hypre_Free(hA->rows_d, HYPRE_MEMORY_DEVICE));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_hypre_aij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_hypre_is_C", NULL));
@@ -2053,7 +2053,7 @@ static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[]
       if (m) PetscCheck(hA->rows_d, PETSC_COMM_SELF, PETSC_ERR_MEM, "HYPRE_TAlloc failed");
     }
     PetscCheck(len <= m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Too many rows in rows[]");
-    PetscStackCallExternalVoid("hypre_Memcpy", hypre_Memcpy(hA->rows_d, lrows, sizeof(PetscInt) * len, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST));
+    PetscCallExternalVoid("hypre_Memcpy", hypre_Memcpy(hA->rows_d, lrows, sizeof(PetscInt) * len, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST));
     lrows2 = hA->rows_d;
   } else
 #endif

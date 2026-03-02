@@ -473,31 +473,31 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
   if (outer->precision == PETSC_PRECISION_SINGLE) {
     CMUMPS_STRUC_C *inner = (CMUMPS_STRUC_C *)outer->internal_id;
     PreMumpsCall(inner, outer, CMUMPS_COMPLEX);
-    PetscStackCallExternalVoid("cmumps_c", cmumps_c(inner));
+    PetscCallExternalVoid("cmumps_c", cmumps_c(inner));
     PostMumpsCall(inner, outer);
   } else {
     ZMUMPS_STRUC_C *inner = (ZMUMPS_STRUC_C *)outer->internal_id;
     PreMumpsCall(inner, outer, ZMUMPS_COMPLEX);
-    PetscStackCallExternalVoid("zmumps_c", zmumps_c(inner));
+    PetscCallExternalVoid("zmumps_c", zmumps_c(inner));
     PostMumpsCall(inner, outer);
   }
   #else
   if (outer->precision == PETSC_PRECISION_SINGLE) {
     SMUMPS_STRUC_C *inner = (SMUMPS_STRUC_C *)outer->internal_id;
     PreMumpsCall(inner, outer, SMUMPS_REAL);
-    PetscStackCallExternalVoid("smumps_c", smumps_c(inner));
+    PetscCallExternalVoid("smumps_c", smumps_c(inner));
     PostMumpsCall(inner, outer);
   } else {
     DMUMPS_STRUC_C *inner = (DMUMPS_STRUC_C *)outer->internal_id;
     PreMumpsCall(inner, outer, DMUMPS_REAL);
-    PetscStackCallExternalVoid("dmumps_c", dmumps_c(inner));
+    PetscCallExternalVoid("dmumps_c", dmumps_c(inner));
     PostMumpsCall(inner, outer);
   }
   #endif
 #else
   MUMPS_STRUC_C *inner = (MUMPS_STRUC_C *)outer->internal_id;
   PreMumpsCall(inner, outer, MumpsScalar);
-  PetscStackCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(inner));
+  PetscCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(inner));
   PostMumpsCall(inner, outer);
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

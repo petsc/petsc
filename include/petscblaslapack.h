@@ -56,7 +56,7 @@
 
    This macro exists so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalVoid()`
 M*/
 #define PetscCallBLAS(name, routine) \
   do { \

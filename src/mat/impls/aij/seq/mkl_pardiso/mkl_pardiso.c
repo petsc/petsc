@@ -53,7 +53,7 @@ void pardiso_64init(void *pt, INT_TYPE *mtype, INT_TYPE iparm[])
   #define MKL_PARDISO_INIT pardisoinit
 #endif
 
-#define PetscCallPardiso(f) PetscStackCallExternalVoid("MKL_PARDISO", f);
+#define PetscCallPardiso(f) PetscCallExternalVoid("MKL_PARDISO", f);
 
 /*
    Internal data structure.

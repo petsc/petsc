@@ -31,7 +31,7 @@ PetscErrorCode MatSetHPL(Mat A, int iseed)
   PetscCall(MatDenseGetLDA(A, &LDA));
   PetscCall(PetscBLASIntCast(LDA, &bLDA));
   PetscCall(MatDenseGetArrayWrite(A, &values));
-  PetscStackCallExternalVoid("HPL_dmatgen", HPL_dmatgen(bM, bN, values, bLDA, iseed));
+  PetscCallExternalVoid("HPL_dmatgen", HPL_dmatgen(bM, bN, values, bLDA, iseed));
   PetscCall(MatDenseRestoreArrayWrite(A, &values));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
