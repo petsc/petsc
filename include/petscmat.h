@@ -2353,7 +2353,6 @@ typedef enum {
 } MatHtoolClusteringType;
 #endif
 
-#ifdef PETSC_HAVE_MUMPS
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat, PetscInt, PetscReal);
@@ -2370,16 +2369,6 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetBlk(Mat, PetscInt, const PetscInt[], cons
 
 PETSC_EXTERN PetscErrorCode MatMumpsSetOocTmpDir(Mat, const char *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetOocTmpDir(Mat, const char **);
-#else
-static inline PetscErrorCode MatMumpsSetIcntl(PETSC_UNUSED Mat F, PETSC_UNUSED PetscInt icntl, PETSC_UNUSED PetscInt ival)
-{
-  return PETSC_SUCCESS;
-}
-static inline PetscErrorCode MatMumpsSetCntl(PETSC_UNUSED Mat F, PETSC_UNUSED PetscInt icntl, PETSC_UNUSED PetscReal val)
-{
-  return PETSC_SUCCESS;
-}
-#endif
 
 #ifdef PETSC_HAVE_MKL_PARDISO
 PETSC_EXTERN PetscErrorCode MatMkl_PardisoSetCntl(Mat, PetscInt, PetscInt);

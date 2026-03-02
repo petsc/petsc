@@ -4,7 +4,6 @@
 #include <petsc.h>
 #include "compat/mpi.h"
 #include "compat/hdf5.h"
-#include "compat/mumps.h"
 #include "compat/hpddm.h"
 #include "compat/viennacl.h"
 #include "compat/cuda.h"
