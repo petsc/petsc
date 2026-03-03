@@ -2166,7 +2166,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   const PetscScalar *coords;
   PetscScalar       *coordsNew;
   const PetscReal   *maxCell, *Lstart, *L;
-  PetscBool          localized, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE;
+  PetscBool          localized, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE, sparseLocalize;
   PetscInt           dE, dEo, d, cStart, cEnd, c, cStartNew, cEndNew, vStartNew, vEndNew, v, pStart, pEnd, p;
 
   PetscFunctionBegin;
@@ -2177,6 +2177,8 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
+  PetscCall(DMGetSparseLocalize(dm, &sparseLocalize));
+  PetscCall(DMSetSparseLocalize(rdm, sparseLocalize));
   PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   if (localized) {
     /* Localize coordinates of new vertices */
