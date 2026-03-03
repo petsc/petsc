@@ -2146,7 +2146,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
 
-  hypre_host_n = (HYPRE_Int)n;
+  PetscCall(PetscHYPREIntCast(n, &hypre_host_n));
 
   // Setup HYPRE_BigInt host idxn array
   if (sizeof(HYPRE_BigInt) > sizeof(PetscInt)) {

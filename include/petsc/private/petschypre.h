@@ -75,6 +75,14 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static inline PetscErrorCode PetscHYPREIntCast(PetscInt a, HYPRE_Int *b)
+{
+  PetscFunctionBegin;
+  PetscCheck(sizeof(PetscInt) <= sizeof(HYPRE_Int) || (a <= (PetscInt)HYPRE_INT_MAX && a >= (PetscInt)HYPRE_INT_MIN), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for HYPRE_Int, you may need to configure hypre with --enable-bigint", a);
+  if (b) *b = (HYPRE_Int)a;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
 static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 {
