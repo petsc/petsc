@@ -58,5 +58,5 @@ Tao Object: 1 MPI process
   Objective value=1.41847
   total number of iterations=10,                          (max: 10000)
   total number of function evaluations=53,                  (max: unlimited)
-  total number of gradient evaluations=31,                  (max: unlimited)
+  total number of function/gradient evaluations=31,      (max: unlimited)
   Solution converged:    User Terminated

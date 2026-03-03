@@ -287,7 +287,6 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   PetscCheckSameComm(tao, 1, X, 2);
   PetscCall(TaoTermMappingComputeHessian(&tao->objective_term, X, tao->objective_parameters, INSERT_VALUES, H, Hpre));
   PetscCall(TaoTestHessian(tao));
-  tao->nhess++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

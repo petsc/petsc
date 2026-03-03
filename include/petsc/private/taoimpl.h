@@ -152,10 +152,6 @@ struct _p_Tao {
   PetscReal  fc;
 
   PetscInt max_constraints;
-  PetscInt nfuncs;
-  PetscInt ngrads;
-  PetscInt nfuncgrads;
-  PetscInt nhess;
   PetscInt niter;
   PetscInt ntotalits;
   PetscInt nconstraints;
@@ -292,14 +288,15 @@ struct _p_TaoTerm {
   MatType               H_mattype;
   MatType               Hpre_mattype;
 
-  MatType H_mattype_pre_fd_push;
-  MatType Hpre_mattype_pre_fd_push;
-
   PetscInt ngrad_mffd;
+  PetscInt nobj;     // actual objective callback invocations
+  PetscInt ngrad;    // actual gradient callback invocations
+  PetscInt nobjgrad; // actual objective+gradient callback invocations
+  PetscInt nhess;    // actual Hessian callback invocations
 
-  PetscReal fd_delta;      // increment for TaoTermGradientFD()
-  PetscInt  fd_grad_level; // push/pop using finite difference for the gradient
-  PetscInt  fd_hess_level; // push/pop using finite difference for the Hessian
+  PetscReal fd_delta;    // for TaoTermComputeGradientFD()
+  PetscBool fd_gradient; // use finite differences for the gradient
+  PetscBool fd_hessian;  // use finite differences for the Hessian
 };
 
 PETSC_INTERN PetscErrorCode TaoTermRegisterAll(void);

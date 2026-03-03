@@ -28,6 +28,9 @@ Tao Object: 1 MPI process
                 rows=100, cols=100
                   Vec Object: 1 MPI process
                     type: seq
+              total number of function evaluations=5
+              total number of function/gradient evaluations=3
+              total number of Hessian evaluations=2
           Map:
             Mat Object: (Amat_) 1 MPI process
               type: seqdense
@@ -41,6 +44,9 @@ Tao Object: 1 MPI process
               type: halfl2squared
               solution vector space: N = 20
               parameter vector space: (optional) K = 20
+              total number of function evaluations=5
+              total number of function/gradient evaluations=3
+              total number of Hessian evaluations=2
         Summand 2:
           Scale: 0.1
           Term:
@@ -49,6 +55,9 @@ Tao Object: 1 MPI process
               solution vector space: N = 10
               parameter vector space: (optional) K = 10
               epsilon (tao_term_l1_epsilon): 0.
+              total number of function evaluations=5
+              total number of function/gradient evaluations=3
+              total number of Hessian evaluations=2
           Map:
             Mat Object: (Dmat_) 1 MPI process
               type: seqdense
@@ -62,6 +71,12 @@ Tao Object: 1 MPI process
               type: halfl2squared
               solution vector space: N = 20
               parameter vector space: (optional) K = 20
+              total number of function evaluations=5
+              total number of function/gradient evaluations=3
+              total number of Hessian evaluations=2
+      total number of function evaluations=5
+      total number of function/gradient evaluations=3
+      total number of Hessian evaluations=2
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30

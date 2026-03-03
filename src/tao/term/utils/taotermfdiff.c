@@ -50,15 +50,15 @@ static PetscErrorCode SNESFunction_TaoTerm(SNES snes, Vec X, Vec G, void *ctx)
   This routine is slow and expensive, and is not optimized to take advantage of
   sparsity in the problem.  Although not recommended for general use in
   large-scale applications, it can be useful in checking the correctness of a
-  user-provided gradient.  Call `TaoTermComputeGradientUseFDPush()` to start using
+  user-provided gradient.  Call `TaoTermComputeGradientSetUseFD()` to start using
   this routine in `TaoTermComputeGradient()`.
 
 .seealso: [](sec_tao_term),
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
-          `TaoTermComputeGradientUseFDPush()`,
-          `TaoTermComputeGradientUseFDPop()`,
+          `TaoTermComputeGradientSetUseFD()`,
+          `TaoTermComputeGradientGetUseFD()`,
           `TaoTermComputeHessianFD()`
 @*/
 PetscErrorCode TaoTermComputeGradientFD(TaoTerm term, Vec x, Vec params, Vec g)
@@ -125,7 +125,7 @@ PetscErrorCode TaoTermComputeGradientFD(TaoTerm term, Vec x, Vec params, Vec g)
   This routine is slow and expensive, and is not optimized to take advantage of
   sparsity in the problem.  Although not recommended for general use in
   large-scale applications, it can be useful in checking the correctness of a
-  user-provided Hessian.  Call `TaoTermComputeHessianUseFDPush()` to start using
+  user-provided Hessian.  Call `TaoTermComputeHessianSetUseFD()` to start using
   this routine in `TaoTermComputeHessian()`.
 
 .seealso: [](sec_tao_term),
@@ -133,8 +133,8 @@ PetscErrorCode TaoTermComputeGradientFD(TaoTerm term, Vec x, Vec params, Vec g)
           `TaoTermComputeHessian()`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
-          `TaoTermComputeHessianUseFDPush()`,
-          `TaoTermComputeHessianUseFDPop()`
+          `TaoTermComputeHessianSetUseFD()`,
+          `TaoTermComputeHessianGetUseFD()`
 @*/
 PetscErrorCode TaoTermComputeHessianFD(TaoTerm term, Vec x, Vec params, Mat H, Mat Hpre)
 {

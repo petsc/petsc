@@ -46,6 +46,8 @@ Tao Object: 1 MPI process
           type: callbacks
           solution vector space: N = 48
           attached to Tao [name omitted]
+          total number of function/gradient evaluations=25
+          total number of Hessian evaluations=3
       TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
         type: more-thuente
         maximum function evaluations=30
@@ -60,7 +62,8 @@ Tao Object: 1 MPI process
       Residual in Function/Gradient:=0.00127873
       Objective value=1.50566
       total number of iterations=3,                              (max: 3)
-      total number of function/gradient evaluations=7,          (max: 4000)
+      total number of function/gradient evaluations=25,          (max: 4000)
+      total number of Hessian evaluations=3
       Solver failed:        Maximum Iterations
     Rejected BFGS updates: 0
     CG steps: 6
@@ -124,8 +127,6 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=1.26759e-06
   Objective value=1.50566
   total number of iterations=2,                          (max: 50)
-  total number of function evaluations=7,                  (max: unlimited)
-  total number of gradient evaluations=3,                  (max: unlimited)
-  total number of function/gradient evaluations=15,      (max: unlimited)
+  total number of function/gradient evaluations=25,      (max: unlimited)
   total number of Hessian evaluations=3
   Solution converged:    ||g(X)|| <= gatol

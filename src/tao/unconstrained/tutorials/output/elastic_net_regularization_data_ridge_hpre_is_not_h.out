@@ -35,6 +35,9 @@ Tao Object: 1 MPI process
                     Vec Object: 1 MPI process
                       type: seq
                       length=100
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
             Map:
               Mat Object: (Amat_) 1 MPI process
                 type: seqdense
@@ -50,6 +53,9 @@ Tao Object: 1 MPI process
                 parameter vector space: (optional) K = 20 [VecType standard (tao_term_parameters_vec_type)]
                 Hessian MatType (tao_term_hessian_mat_type): diagonal
                 Hessian preconditioning MatType (tao_term_hessian_pre_mat_type): diagonal
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
             Map: unmapped
           Summand 2:
             Scale (tao_term_sum_lasso_scale): 0.1
@@ -60,12 +66,18 @@ Tao Object: 1 MPI process
                 parameter vector space: (optional) K = 10 [VecType standard (tao_term_parameters_vec_type)]
                 Hessian MatType (tao_term_hessian_mat_type): diagonal
                 epsilon (tao_term_l1_epsilon): 0.
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
             Map:
               Mat Object: (Dmat_) 1 MPI process
                 type: seqdense
                 rows=10, cols=20
                 total: nonzeros=200, allocated nonzeros=200
                 total number of mallocs used during MatSetValues calls=0
+        total number of function evaluations=5
+        total number of function/gradient evaluations=3
+        total number of Hessian evaluations=2
     Map: unmapped
   TaoLineSearch Object: 1 MPI process
     type: more-thuente

@@ -19,6 +19,8 @@ Tao Object: 1 MPI process
         parameter vector space: (none)
         Hessian MatType (tao_term_hessian_mat_type): (undefined)
         attached to Tao [name omitted]
+        total number of function/gradient evaluations=21
+        total number of Hessian evaluations=14
     Map: unmapped
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
@@ -63,8 +65,6 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=5.41582e-13
   Objective value=1.72502e-28
   total number of iterations=13,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of gradient evaluations=1,                  (max: unlimited)
-  total number of function/gradient evaluations=15,      (max: unlimited)
+  total number of function/gradient evaluations=21,      (max: unlimited)
   total number of Hessian evaluations=14
   Solution converged:    ||g(X)|| <= gatol

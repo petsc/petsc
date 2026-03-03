@@ -24,6 +24,9 @@ Tao Object: 1 MPI process
             Vec Object: 1 MPI process
               type: mpi
               length=100
+        total number of function evaluations=5
+        total number of function/gradient evaluations=2
+        total number of Hessian evaluations=1
     Map:
       Mat Object: 1 MPI process
         type: seqaij

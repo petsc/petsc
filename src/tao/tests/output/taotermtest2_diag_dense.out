@@ -20,6 +20,8 @@ Tao Object: (shell_) 1 MPI process
         default Hessian MatType (tao_term_hessian_mat_type): diagonal
         Context has been set
         The following methods have been set: objectiveandgradient, hessian,
+        total number of function/gradient evaluations=7
+        total number of Hessian evaluations=1
     Map:
       Mat Object: 1 MPI process
         type: seqdense
@@ -64,8 +66,7 @@ Tao Object: (shell_) 1 MPI process
   Residual in Function/Gradient:=4.12673e-16
   Objective value=1.00192e-29
   total number of iterations=1,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of function/gradient evaluations=2,      (max: unlimited)
+  total number of function/gradient evaluations=7,      (max: unlimited)
   total number of Hessian evaluations=1
   Solution converged:    ||g(X)|| <= gatol
 Tao Object: (regular_) 1 MPI process
@@ -89,6 +90,8 @@ Tao Object: (regular_) 1 MPI process
         parameter vector space: (none)
         Hessian MatType (tao_term_hessian_mat_type): (undefined)
         attached to Tao [name omitted] (regular_)
+        total number of function/gradient evaluations=7
+        total number of Hessian evaluations=1
     Map: unmapped
   TaoLineSearch Object: (regular_) 1 MPI process
     type: more-thuente
@@ -128,8 +131,7 @@ Tao Object: (regular_) 1 MPI process
   Residual in Function/Gradient:=4.12673e-16
   Objective value=1.00192e-29
   total number of iterations=1,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of function/gradient evaluations=2,      (max: unlimited)
+  total number of function/gradient evaluations=7,      (max: unlimited)
   total number of Hessian evaluations=1
   Solution converged:    ||g(X)|| <= gatol
 Relative difference < 1e-12

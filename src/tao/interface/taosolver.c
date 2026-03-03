@@ -558,7 +558,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-tao_fd_gradient", "compute gradient using finite differences", "TaoDefaultComputeGradient", flg, &flg, NULL));
-  if (flg) PetscCall(TaoTermComputeGradientUseFDPush(tao->objective_term.term));
+  if (flg) PetscCall(TaoTermComputeGradientSetUseFD(tao->objective_term.term, PETSC_TRUE));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-tao_fd_hessian", "compute Hessian using finite differences", "TaoDefaultComputeHessian", flg, &flg, NULL));
   if (flg) {
@@ -569,7 +569,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     PetscCall(MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE));
     PetscCall(MatSetOption(H, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
     PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessian, NULL));
-    PetscCall(TaoTermComputeHessianUseFDPush(tao->objective_term.term));
+    PetscCall(TaoTermComputeHessianSetUseFD(tao->objective_term.term, PETSC_TRUE));
     PetscCall(MatDestroy(&H));
   }
   flg = PETSC_FALSE;
@@ -774,34 +774,23 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "total number of iterations=%" PetscInt_FMT ",          ", tao->niter));
     PetscCall(PetscViewerASCIIPrintf(viewer, "              (max: %" PetscInt_FMT ")\n", tao->max_it));
 
-    if (tao->nfuncs > 0) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function evaluations=%" PetscInt_FMT ",", tao->nfuncs));
+    if (tao->objective_term.term->nobj > 0) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function evaluations=%" PetscInt_FMT ",", tao->objective_term.term->nobj));
+      if (tao->max_funcs == PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "                (max: unlimited)\n"));
+      else PetscCall(PetscViewerASCIIPrintf(viewer, "               (max: %" PetscInt_FMT ")\n", tao->max_funcs));
+    }
+    if (tao->objective_term.term->ngrad > 0) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "total number of gradient evaluations=%" PetscInt_FMT ",", tao->objective_term.term->ngrad));
       if (tao->max_funcs == PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "                (max: unlimited)\n"));
       else PetscCall(PetscViewerASCIIPrintf(viewer, "                (max: %" PetscInt_FMT ")\n", tao->max_funcs));
     }
-    {
-      PetscBool is_callback;
-      PetscInt  ngrad_mffd, ngrads_display;
-
-      /* Check if tao has only one term and it's a callback */
-      PetscCall(PetscObjectTypeCompare((PetscObject)tao->objective_term.term, TAOTERMCALLBACKS, &is_callback));
-      ngrad_mffd = tao->objective_term.term->ngrad_mffd;
-      if (ngrad_mffd > 0 && format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of MFFD gradient evaluations=%" PetscInt_FMT "\n", ngrad_mffd));
-      ngrads_display = tao->ngrads;
-      if (is_callback) ngrads_display += ngrad_mffd;
-      if (ngrads_display > 0) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "total number of gradient evaluations=%" PetscInt_FMT ",", ngrads_display));
-        if (tao->max_funcs == PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "                (max: unlimited)\n"));
-        else PetscCall(PetscViewerASCIIPrintf(viewer, "                (max: %" PetscInt_FMT ")\n", tao->max_funcs));
-      }
-    }
-    if (tao->nfuncgrads > 0) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT ",", tao->nfuncgrads));
+    if (tao->objective_term.term->nobjgrad > 0) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT ",", tao->objective_term.term->nobjgrad));
       if (tao->max_funcs == PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "    (max: unlimited)\n"));
       else PetscCall(PetscViewerASCIIPrintf(viewer, "    (max: %" PetscInt_FMT ")\n", tao->max_funcs));
     }
     if (tao->nres > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of residual evaluations=%" PetscInt_FMT "\n", tao->nres));
-    if (tao->nhess > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", tao->nhess));
+    if (tao->objective_term.term->nhess > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", tao->objective_term.term->nhess));
     if (tao->nconstraints > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of constraint function evaluations=%" PetscInt_FMT "\n", tao->nconstraints));
     if (tao->njac > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Jacobian evaluations=%" PetscInt_FMT "\n", tao->njac));
 
@@ -1206,7 +1195,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao, PetscInt *nfuncs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscAssertPointer(nfuncs, 2);
-  *nfuncs = PetscMax(tao->nfuncs, tao->nfuncgrads);
+  *nfuncs = PetscMax(tao->objective_term.term->nobj, tao->objective_term.term->nobjgrad);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1481,9 +1470,9 @@ PetscErrorCode TaoAddLineSearchCounts(Tao tao)
     PetscCall(TaoLineSearchIsUsingTaoRoutines(tao->linesearch, &flg));
     if (!flg) {
       PetscCall(TaoLineSearchGetNumberFunctionEvaluations(tao->linesearch, &nfeval, &ngeval, &nfgeval));
-      tao->nfuncs += nfeval;
-      tao->ngrads += ngeval;
-      tao->nfuncgrads += nfgeval;
+      tao->objective_term.term->nobj += nfeval;
+      tao->objective_term.term->ngrad += ngeval;
+      tao->objective_term.term->nobjgrad += nfgeval;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1538,11 +1527,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   tao->niter        = 0;
-  tao->nfuncs       = 0;
-  tao->nfuncgrads   = 0;
-  tao->ngrads       = 0;
   tao->nres         = 0;
-  tao->nhess        = 0;
   tao->njac         = 0;
   tao->nconstraints = 0;
   tao->ksp_its      = 0;
@@ -2126,7 +2111,7 @@ PetscErrorCode TaoMonitorResidual(Tao tao, PetscViewerAndFormat *vf)
 @*/
 PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
 {
-  PetscInt           niter = tao->niter, nfuncs = PetscMax(tao->nfuncs, tao->nfuncgrads);
+  PetscInt           niter     = tao->niter, nfuncs;
   PetscInt           max_funcs = tao->max_funcs;
   PetscReal          gnorm = tao->residual, gnorm0 = tao->gnorm0;
   PetscReal          f = tao->fc, steptol = tao->steptol, trradius = tao->step;
@@ -2139,6 +2124,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
+  PetscCall(TaoGetCurrentFunctionEvaluations(tao, &nfuncs));
   if (PetscIsInfOrNanReal(f)) {
     PetscCall(PetscInfo(tao, "Failed to converged, function value is infinity or NaN\n"));
     reason = TAO_DIVERGED_NAN;

@@ -561,33 +561,65 @@ $\nabla_x f(x; p)$ (`TaoTermComputeGradient()` and
 `TaoTermComputeObjectiveAndGradient()`), and $\nabla_x^2 f(x; p)$
 (`TaoTermComputeHessian()`).
 
-When a `TaoTerm` is added to a `Tao` object using `TaoAddTerm()`, a scaling
-coefficient $\alpha$ is specified. If the current objective function is
-$f(x)$, then after calling `TaoAddTerm()` with scale $\alpha$ and term $g$,
-the objective becomes
+#### Adding terms, solution space, parameter space, and the mapping matrix
+
+A `TaoTerm` can be added to a `Tao` object by calling the
+
+```
+TaoAddTerm(Tao, const char[], PetscReal, TaoTerm, Vec, Mat);
+```
+
+routine. The first argument is the `Tao` object. The second argument is an optional prefix
+for the `TaoTerm`. The third argument is the scaling coefficient $\alpha$, and the fourth
+argument is the `TaoTerm` to add to the `Tao` object. The fifth and sixth arguments are
+the optional parameters vector and optional mapping matrix, respectively.
+
+If the current objective function of `Tao` is $f(x)$, then after calling `TaoAddTerm()`
+with scale $\alpha$, term $g$, parameter $p$, and map $A$, the objective becomes
 
 $$
 f(x) + \alpha g(Ax; p).
 $$
 
-TAO automatically applies the scaling to the objective value, gradient, and
-Hessian contributed by the term
+The mapping matrix $A$ transforms the `Tao` solution vector $x$ into the term's
+solution space before evaluation. For example, if the `Tao` solution vector is
+$x \in \mathbb{R}^n$ and $A \in \mathbb{R}^{m \times n}$, then $Ax \in \mathbb{R}^m$
+and therefore the term's solution space is $\mathbb{R}^m$. If no mapping matrix is provided,
+the identity matrix is assumed and the term's solution space must match the `Tao` solution
+space. When a mapping matrix is used, the parameter space may depend on either the
+row or column space of $A$; see the documentation for each `TaoTermType`.
 
-When a mapping matrix $A$ is also provided, the full
-contribution of the term to the objective is $\alpha g(Ax; p)$, and the
-scaling is applied after the chain-rule transformation of the gradient and
-Hessian.
+`Tao` automatically applies the scaling and the chain-rule transformation of
+gradients and Hessians:
 
-#### Mapping matrix in TaoTerm
+* Mapped gradients: $\alpha A^T \nabla g(Ax; p)$
 
-When a `TaoTerm` is added to a `Tao` object using `TaoAddTerm()`, a mapping matrix $A$ can be optionally provided.
-This allows the term to evaluate the function $f(Ax; p)$ instead of $f(x; p)$.
+* Mapped Hessians: $\alpha A^T \nabla^2 g(Ax; p) A$
 
-For a mapped term $f(Ax; p)$, TAO automatically handles the transformation of gradients and Hessians:
+##### Spaces of TaoTerm
 
-* Mapped gradients: When computing the gradient with respect to $x$, TAO applies the chain rule to obtain $A^T \nabla f(x; p)$
+Every `TaoTerm` has two vector spaces:
 
-* Mapped Hessians: Similarly, the Hessian with respect to $x$ is computed as $A^T \nabla^2 f(x; p) A$
+* **Solution space** — the vector space of the optimization variable $x$ in $f(x; p)$.
+  Its size is set with `TaoTermSetSolutionSizes()`,
+  `TaoTermSetSolutionLayout()`, or `TaoTermSetSolutionTemplate()`, and reported
+  as $N$ in `TaoTermView()`.
+
+  If a mapping matrix $A \in \mathbb{R}^{m \times n}$ is used, then $n$ must match the
+  dimension of the `Tao` solution space, and $m$ must match the solution space of the
+  `TaoTerm`.
+
+* **Parameter space** — the vector space of the parameter vector $p$ in $f(x; p)$.
+  Parameters are fixed data that are *not* optimized over; they are passed to the
+  evaluation routines (e.g., `TaoTermComputeObjective()`).  Its size is set with
+  `TaoTermSetParametersSizes()`, `TaoTermSetParametersLayout()`, or
+  `TaoTermSetParametersTemplate()`, and reported as $K$ in `TaoTermView()`.
+  Whether a term accepts, requires, or ignores parameters is determined by
+  `TaoTermSetParametersMode()`.
+  Some `TaoTermType`s require the solution and parameter spaces to be related
+  (e.g., have the same size); see the documentation for each type.
+  For users, setting parameter space for built-in `TaoTermType`s is generally
+  not needed, except for `TAOTERMSHELL`.
 
 For an example of using mapping matrices with `TaoTerm`, see {any}`the elastic net regularization example <tao_example2>`, which demonstrates the use of `TAOTERMHALFL2SQUARED` with a mapping matrix to represent a data misfit term.
 
@@ -619,6 +651,9 @@ the parametric behavior of a `TaoTerm` is determined by `TaoTermSetParametersMod
 
 A `TaoTerm` can be set to an empty `Tao` object or added to an existing
 `Tao` using `TaoAddTerm()`. The entire objective function of a `Tao` object can be retrieved as a single `TaoTerm` using `TaoGetTerm()`, which returns the term along with its scale, parameters, and mapping matrix (if any).
+
+Currently, `TaoAddTerm()` does not support bounded Newton solvers (`TAOBNK`,`TAOBNLS`,`TAOBNTL`,`TAOBNTR`,and `TAOBQNK`).
+For these solvers, one must use function callbacks only - `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, or `TaoSetHessian()`.
 
 For example: if you have specified an objective function $f(x)$ using
 `TaoSetObjectiveAndGradient()`, and a regularizer $g(x;p)$ is specified by a `TaoTerm`,

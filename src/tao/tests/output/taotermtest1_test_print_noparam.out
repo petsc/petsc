@@ -20,11 +20,17 @@ Tao Object: 1 MPI process
           type: callbacks
           solution vector space: N = 2
           attached to Tao [name omitted]
+          total number of function/gradient evaluations=20
+          total number of Hessian evaluations=13
       f_{Regularizer TaoTerm}:
         TaoTerm Object: Regularizer TaoTerm (reg1_) 1 MPI process
           type: l1
           solution vector space: N = 1
           epsilon (tao_term_l1_epsilon): 0.
+          total number of function evaluations=5
+          total number of gradient evaluations=1
+          total number of function/gradient evaluations=14
+          total number of Hessian evaluations=13
       A_{Regularizer TaoTerm Map}:
         Mat Object: Regularizer TaoTerm Map (A1_) 1 MPI process
           type: seqaij
@@ -32,6 +38,10 @@ Tao Object: 1 MPI process
           total: nonzeros=2, allocated nonzeros=2
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
+      total number of function evaluations=5
+      total number of gradient evaluations=1
+      total number of function/gradient evaluations=14
+      total number of Hessian evaluations=13
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
@@ -129,9 +139,7 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=1.38367e-10
   Objective value=0.0729093
   total number of iterations=12,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of gradient evaluations=1,                  (max: unlimited)
-  total number of function/gradient evaluations=14,      (max: unlimited)
+  total number of function/gradient evaluations=20,      (max: unlimited)
   total number of Hessian evaluations=13
   Solution converged:    ||g(X)|| <= gatol
 Solutions match (relative difference < 1e-12)

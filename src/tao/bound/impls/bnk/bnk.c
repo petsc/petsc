@@ -377,11 +377,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     bnk->bncg_ctx->f = bnk->f;
     /* Take some small finite number of BNCG iterations */
     PetscCall(TaoSolve(bnk->bncg));
-    /* Add the number of gradient and function evaluations to the total */
-    tao->nfuncs += bnk->bncg->nfuncs;
-    tao->nfuncgrads += bnk->bncg->nfuncgrads;
-    tao->ngrads += bnk->bncg->ngrads;
-    tao->nhess += bnk->bncg->nhess;
+    /* Add the number of gradient and function evaluations to the total     *
+     * Note: nfuncs are not copied as tao and subsolvers share same TaoTerm */
     bnk->tot_cg_its += bnk->bncg->niter;
     /* Extract the BNCG function value out and save it into BNK */
     bnk->f = bnk->bncg_ctx->f;
@@ -1023,6 +1020,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
       PetscReal scale;
       Mat       map;
 
+      // Note: tao->objective_term.term and bnk->bncg->objective_term.term will point to same address
       PetscCall(TaoGetTerm(tao, &scale, &term, &params, &map));
       PetscCall(TaoAddTerm(bnk->bncg, NULL, scale, term, params, map));
     }

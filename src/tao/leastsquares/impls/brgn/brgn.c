@@ -224,11 +224,13 @@ static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, PetscCtx ctx)
 
   PetscFunctionBegin;
   /* Update basic tao information from the subsolver */
-  gn->parent->nfuncs      = tao->nfuncs;
-  gn->parent->ngrads      = tao->ngrads;
-  gn->parent->nfuncgrads  = tao->nfuncgrads;
+  {
+    gn->parent->objective_term.term->nobj     = tao->objective_term.term->nobj;
+    gn->parent->objective_term.term->ngrad    = tao->objective_term.term->ngrad;
+    gn->parent->objective_term.term->nobjgrad = tao->objective_term.term->nobjgrad;
+    gn->parent->objective_term.term->nhess    = tao->objective_term.term->nhess;
+  }
   gn->parent->nres        = tao->nres;
-  gn->parent->nhess       = tao->nhess;
   gn->parent->niter       = tao->niter;
   gn->parent->ksp_its     = tao->ksp_its;
   gn->parent->ksp_tot_its = tao->ksp_tot_its;
@@ -333,11 +335,13 @@ static PetscErrorCode TaoSolve_BRGN(Tao tao)
   PetscFunctionBegin;
   PetscCall(TaoSolve(gn->subsolver));
   /* Update basic tao information from the subsolver */
-  tao->nfuncs      = gn->subsolver->nfuncs;
-  tao->ngrads      = gn->subsolver->ngrads;
-  tao->nfuncgrads  = gn->subsolver->nfuncgrads;
+  /* NOTE: Due to subsolver nature of BRGN, TaoTerm cannot properly track counts */
+  tao->objective_term.term->nobj     = gn->subsolver->objective_term.term->nobj;
+  tao->objective_term.term->ngrad    = gn->subsolver->objective_term.term->ngrad;
+  tao->objective_term.term->nobjgrad = gn->subsolver->objective_term.term->nobjgrad;
+  tao->objective_term.term->nhess    = gn->subsolver->objective_term.term->nhess;
+
   tao->nres        = gn->subsolver->nres;
-  tao->nhess       = gn->subsolver->nhess;
   tao->niter       = gn->subsolver->niter;
   tao->ksp_its     = gn->subsolver->ksp_its;
   tao->ksp_tot_its = gn->subsolver->ksp_tot_its;
@@ -757,6 +761,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BRGN;
   tao->ops->view           = TaoView_BRGN;
   tao->ops->solve          = TaoSolve_BRGN;
+  tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(TaoParametersInitialize(tao));
 

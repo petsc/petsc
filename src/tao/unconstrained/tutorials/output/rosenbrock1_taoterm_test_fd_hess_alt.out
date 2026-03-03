@@ -31,6 +31,8 @@ Tao Object: 1 MPI process
       solution vector space: N = 2
       Context has been set
       The following methods have been set: objectiveandgradient, hessian,
+      total number of function/gradient evaluations=63
+      total number of Hessian evaluations=14
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
@@ -71,8 +73,6 @@ Tao Object: 1 MPI process
   Residual in Function/Gradient:=8.57087e-12
   Objective value=2.16365e-24
   total number of iterations=13,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of gradient evaluations=1,                  (max: unlimited)
-  total number of function/gradient evaluations=15,      (max: unlimited)
+  total number of function/gradient evaluations=63,      (max: unlimited)
   total number of Hessian evaluations=14
   Solution converged:    ||g(X)|| <= gatol

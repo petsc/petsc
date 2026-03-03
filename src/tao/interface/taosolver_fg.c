@@ -140,7 +140,6 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscCheckSameComm(tao, 1, X, 2);
   PetscCheckSameComm(tao, 1, G, 3);
   PetscCall(TaoTermMappingComputeGradient(&tao->objective_term, X, tao->objective_parameters, INSERT_VALUES, G));
-  tao->ngrads++;
   PetscCall(TaoTestGradient(tao, X, G));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -173,7 +172,6 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   PetscAssertPointer(f, 3);
   PetscCheckSameComm(tao, 1, X, 2);
   PetscCall(TaoTermMappingComputeObjective(&tao->objective_term, X, tao->objective_parameters, INSERT_VALUES, f));
-  tao->nfuncs++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -208,7 +206,6 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscCheckSameComm(tao, 1, X, 2);
   PetscCheckSameComm(tao, 1, G, 4);
   PetscCall(TaoTermMappingComputeObjectiveAndGradient(&tao->objective_term, X, tao->objective_parameters, INSERT_VALUES, f, G));
-  tao->nfuncgrads++;
   PetscCall(TaoTestGradient(tao, X, G));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -610,7 +607,7 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 . tao - the `Tao` context
 
   Output Parameter:
-. flg - `PETSC_TRUE` if the objective `TaoTerm` has this routine `PETSC_FALSE` otherwise
+. flg - `PETSC_TRUE` if the objective `TaoTerm` has this routine, `PETSC_FALSE` otherwise
 
   Level: developer
 

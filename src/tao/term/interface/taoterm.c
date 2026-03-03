@@ -41,8 +41,6 @@ PetscErrorCode TaoTermDestroy(TaoTerm *term)
   PetscTryTypeMethod(*term, destroy);
   PetscCall(PetscFree((*term)->H_mattype));
   PetscCall(PetscFree((*term)->Hpre_mattype));
-  PetscCall(PetscFree((*term)->H_mattype_pre_fd_push));
-  PetscCall(PetscFree((*term)->Hpre_mattype_pre_fd_push));
   PetscCall(MatDestroy(&(*term)->solution_factory));
   PetscCall(MatDestroy(&(*term)->parameters_factory));
   PetscCall(MatDestroy(&(*term)->parameters_factory_orig));
@@ -117,10 +115,9 @@ PetscErrorCode TaoTermView(TaoTerm term, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscBool3 is_fdpossible;
 
-      //TODO print ngrad_mffd
       PetscCall(TaoTermIsComputeHessianFDPossible(term, &is_fdpossible));
       if (is_fdpossible == PETSC_BOOL3_FALSE) {
-        if (term->fd_hess_level > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Finite differences for Hessian computation was requested, but ignored.\n"));
+        if (term->fd_hessian) PetscCall(PetscViewerASCIIPrintf(viewer, "Finite differences for Hessian computation was requested, but ignored.\n"));
         if (term->ops->createhessianmatrices == TaoTermCreateHessianMatricesDefault) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "default Hessian MatType (tao_term_hessian_mat_type): %s\n", term->H_mattype ? term->H_mattype : "(undefined)"));
           if (!term->Hpre_is_H) PetscCall(PetscViewerASCIIPrintf(viewer, "default Hessian preconditioning MatType (tao_term_hessian_pre_mat_type): %s\n", term->Hpre_mattype ? term->Hpre_mattype : "(undefined)"));
@@ -129,7 +126,7 @@ PetscErrorCode TaoTermView(TaoTerm term, PetscViewer viewer)
           if (!term->Hpre_is_H) PetscCall(PetscViewerASCIIPrintf(viewer, "Hessian preconditioning MatType (tao_term_hessian_pre_mat_type): %s\n", term->Hpre_mattype ? term->Hpre_mattype : "(undefined)"));
         }
       } else {
-        if (term->fd_hess_level > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Using finite differences for Hessian computation\n"));
+        if (term->fd_hessian) PetscCall(PetscViewerASCIIPrintf(viewer, "Using finite differences for Hessian computation\n"));
         else if (term->ops->createhessianmatrices == TaoTermCreateHessianMatricesDefault) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "default Hessian MatType (tao_term_hessian_mat_type): %s\n", term->H_mattype ? term->H_mattype : "(undefined)"));
           if (!term->Hpre_is_H) PetscCall(PetscViewerASCIIPrintf(viewer, "default Hessian preconditioning MatType (tao_term_hessian_pre_mat_type): %s\n", term->Hpre_mattype ? term->Hpre_mattype : "(undefined)"));
@@ -146,7 +143,11 @@ PetscErrorCode TaoTermView(TaoTerm term, PetscViewer viewer)
         }
       }
     }
-    if (term->ops->view) PetscUseTypeMethod(term, view, viewer);
+    PetscTryTypeMethod(term, view, viewer);
+    if (term->nobj > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function evaluations=%" PetscInt_FMT "\n", term->nobj));
+    if (term->ngrad > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of gradient evaluations=%" PetscInt_FMT "\n", term->ngrad));
+    if (term->nobjgrad > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT "\n", term->nobjgrad));
+    if (term->nhess > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", term->nhess));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -255,19 +256,16 @@ PetscErrorCode TaoTermSetFromOptions(TaoTerm term)
   char        typeName[256];
   VecType     sol_type, params_type;
   PetscBool   opt;
-  PetscBool   grad_use_fd = PETSC_FALSE;
-  PetscBool   hess_use_fd = PETSC_FALSE;
+  PetscBool   grad_use_fd;
+  PetscBool   hess_use_fd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   if (((PetscObject)term)->type_name) deft = ((PetscObject)term)->type_name;
   PetscObjectOptionsBegin((PetscObject)term);
   PetscCall(PetscOptionsFList("-tao_term_type", "TaoTerm type", "TaoTermType", TaoTermList, deft, typeName, 256, &flg));
-  if (flg) {
-    PetscCall(TaoTermSetType(term, typeName));
-  } else {
-    PetscCall(TaoTermSetType(term, deft));
-  }
+  if (flg) PetscCall(TaoTermSetType(term, typeName));
+  else PetscCall(TaoTermSetType(term, deft));
   PetscCall(TaoTermGetSolutionVecType(term, &sol_type));
   PetscCall(TaoTermGetParametersVecType(term, &params_type));
   PetscCall(PetscOptionsFList("-tao_term_solution_vec_type", "Solution vector type", "TaoTermSetSolutionVecType", VecList, sol_type, typeName, 256, &opt));
@@ -290,7 +288,7 @@ PetscErrorCode TaoTermSetFromOptions(TaoTerm term)
         PetscCall(PetscFree(term->H_mattype));
         PetscCall(PetscStrallocpy(typeName, (char **)&term->H_mattype));
       } else {
-        PetscCall(PetscInfo(term, "TaoTerm Hessian MatType MFFD requested but TaoTerm type is neither SHELL nor CALLBACKS. Ignoring.\n"));
+        PetscCall(PetscInfo(term, "%s: TaoTerm Hessian MatType MFFD requested but TaoTerm type is neither SHELL nor CALLBACKS. Ignoring.\n", ((PetscObject)term)->prefix));
       }
     } else {
       PetscCall(PetscFree(term->H_mattype));
@@ -306,19 +304,27 @@ PetscErrorCode TaoTermSetFromOptions(TaoTerm term)
     PetscCall(PetscStrallocpy(typeName, (char **)&term->Hpre_mattype));
   }
 
-  if (term->Hpre_is_H && (term->H_mattype != term->Hpre_mattype)) {
-    PetscCall(PetscInfo(term, "Hpre_is_H, but H_mattype and Hpre_mattype are different. Setting Hpre_mattype to be same as H_mattype\n"));
-    PetscCall(PetscFree(term->Hpre_mattype));
-    PetscCall(PetscStrallocpy(term->H_mattype, (char **)&term->Hpre_mattype));
+  if (term->Hpre_is_H) {
+    PetscBool mattypes_same;
+
+    PetscCall(PetscStrcmp(term->H_mattype, term->Hpre_mattype, &mattypes_same));
+    if (!mattypes_same) {
+      PetscCall(PetscInfo(term, "%s: Hpre_is_H, but H_mattype and Hpre_mattype are different. Setting Hpre_mattype to be same as H_mattype\n", ((PetscObject)term)->prefix));
+      PetscCall(PetscFree(term->Hpre_mattype));
+      PetscCall(PetscStrallocpy(term->H_mattype, (char **)&term->Hpre_mattype));
+    }
   }
 
-  PetscCall(PetscOptionsBoundedReal("-tao_term_fd_delta", "Finite difference increment", "TaoTermSetFDDelta", term->fd_delta, &term->fd_delta, NULL, 0.0));
+  PetscCall(PetscOptionsBoundedReal("-tao_term_fd_delta", "Finite difference increment", "TaoTermSetFDDelta", term->fd_delta, &term->fd_delta, NULL, PETSC_SMALL));
+  PetscCall(PetscInfo(term, "%s: Finite difference delta set to %g\n", ((PetscObject)term)->prefix, (double)term->fd_delta));
 
-  PetscCall(PetscOptionsBool("-tao_term_gradient_use_fd", "Use finite differences in TaoTermComputeGradient()", "TaoTermComputeGradientUseFDPush", grad_use_fd, &grad_use_fd, NULL));
-  if (grad_use_fd) PetscCall(TaoTermComputeGradientUseFDPush(term));
+  grad_use_fd = term->fd_gradient;
+  PetscCall(PetscOptionsBool("-tao_term_gradient_use_fd", "Use finite differences in TaoTermComputeGradient()", "TaoTermComputeGradientSetUseFD", grad_use_fd, &grad_use_fd, NULL));
+  PetscCall(TaoTermComputeGradientSetUseFD(term, grad_use_fd));
 
-  PetscCall(PetscOptionsBool("-tao_term_hessian_use_fd", "Use finite differences in TaoTermComputeHessian()", "TaoTermComputeHessianUseFDPush", hess_use_fd, &hess_use_fd, NULL));
-  if (hess_use_fd) PetscCall(TaoTermComputeHessianUseFDPush(term));
+  hess_use_fd = term->fd_hessian;
+  PetscCall(PetscOptionsBool("-tao_term_hessian_use_fd", "Use finite differences in TaoTermComputeHessian()", "TaoTermComputeHessianSetUseFD", hess_use_fd, &hess_use_fd, NULL));
+  PetscCall(TaoTermComputeHessianSetUseFD(term, hess_use_fd));
 
   PetscTryTypeMethod(term, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
@@ -371,6 +377,7 @@ PetscErrorCode TaoTermSetType(TaoTerm term, TaoTermType type)
   /* Destroy the existing term information */
   PetscTryTypeMethod(term, destroy);
   term->setup_called = PETSC_FALSE;
+  PetscCall(PetscMemzero(term->ops, sizeof(struct _TaoTermOps)));
 
   PetscCall((*create)(term));
   PetscCall(PetscObjectChangeTypeName((PetscObject)term, type));
@@ -452,14 +459,16 @@ PetscErrorCode TaoTermCreate(MPI_Comm comm, TaoTerm *term)
   PetscCall(MatGetLayouts(_term->parameters_factory, &rlayout, &clayout));
   PetscCall(MatSetLayouts(_term->parameters_factory, rlayout, zero_layout));
   PetscCall(PetscLayoutDestroy(&zero_layout));
-  _term->ngrad_mffd               = 0;
-  _term->Hpre_is_H                = PETSC_TRUE;
-  _term->fd_delta                 = 0.5 * PETSC_SQRT_MACHINE_EPSILON;
-  _term->H_mattype                = NULL;
-  _term->Hpre_mattype             = NULL;
-  _term->H_mattype_pre_fd_push    = NULL;
-  _term->Hpre_mattype_pre_fd_push = NULL;
-  *term                           = _term;
+  _term->ngrad_mffd   = 0;
+  _term->nobj         = 0;
+  _term->ngrad        = 0;
+  _term->nobjgrad     = 0;
+  _term->nhess        = 0;
+  _term->Hpre_is_H    = PETSC_TRUE;
+  _term->fd_delta     = 0.5 * PETSC_SQRT_MACHINE_EPSILON;
+  _term->H_mattype    = NULL;
+  _term->Hpre_mattype = NULL;
+  *term               = _term;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -487,34 +496,42 @@ PetscErrorCode TaoTermCreate(MPI_Comm comm, TaoTerm *term)
 @*/
 PetscErrorCode TaoTermComputeObjective(TaoTerm term, Vec x, Vec params, PetscReal *value)
 {
+  PetscBool obj, objgrad;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscCall(VecLockReadPush(x));
   PetscCheckSameComm(term, 1, x, 2);
+  PetscAssertPointer(value, 4);
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_NONE || params == NULL, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters passed to a TaoTerm with TAOTERM_PARAMETERS_NONE");
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_REQUIRED || params, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters required but not provided for a TaoTerm with TAOTERM_PARAMETERS_REQUIRED");
   if (params) {
     PetscValidHeaderSpecific(params, VEC_CLASSID, 3);
     PetscCheckSameComm(term, 1, params, 3);
     PetscCall(VecLockReadPush(params));
   }
-  PetscAssertPointer(value, 4);
-  if (term->ops->objective) {
+  PetscCall(VecLockReadPush(x));
+  PetscCall(TaoTermIsObjectiveDefined(term, &obj));
+  PetscCall(TaoTermIsObjectiveAndGradientDefined(term, &objgrad));
+  if (obj) {
     PetscCall(PetscLogEventBegin(TAOTERM_ObjectiveEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, objective, x, params, value);
     PetscCall(PetscLogEventEnd(TAOTERM_ObjectiveEval, term, NULL, NULL, NULL));
-  } else if (term->ops->objectiveandgradient) {
+    term->nobj++;
+  } else if (objgrad) {
     Vec temp;
 
-    PetscCall(PetscInfo(term, "Duplicating solution vector in order to call objective/gradient routine\n"));
+    PetscCall(PetscInfo(term, "%s: Duplicating solution vector in order to call objective/gradient routine\n", ((PetscObject)term)->prefix));
     PetscCall(VecDuplicate(x, &temp));
     PetscCall(PetscLogEventBegin(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, objectiveandgradient, x, params, value, temp);
     PetscCall(PetscLogEventEnd(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
     PetscCall(VecDestroy(&temp));
-  } else SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have an objective function.  You should have called TaoSetObjective() or TaoTermShellSetObjective()");
+    term->nobjgrad++;
+  } else SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have an objective function");
   if (params) PetscCall(VecLockReadPop(params));
   PetscCall(VecLockReadPop(x));
-  PetscCall(PetscInfo(term, "TaoTerm value: %20.19e\n", (double)(*value)));
+  PetscCall(PetscInfo(term, "%s: TaoTerm value: %20.19e\n", ((PetscObject)term)->prefix, (double)(*value)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -542,34 +559,43 @@ PetscErrorCode TaoTermComputeObjective(TaoTerm term, Vec x, Vec params, PetscRea
 @*/
 PetscErrorCode TaoTermComputeGradient(TaoTerm term, Vec x, Vec params, Vec g)
 {
+  PetscBool objgrad, grad;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscCall(VecLockReadPush(x));
-  PetscCheckSameComm(term, 1, x, 2);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 4);
+  PetscCheckSameComm(term, 1, x, 2);
+  PetscCheckSameComm(term, 1, g, 4);
+  VecCheckSameSize(x, 2, g, 4);
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_NONE || params == NULL, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters passed to a TaoTerm with TAOTERM_PARAMETERS_NONE");
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_REQUIRED || params, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters required but not provided for a TaoTerm with TAOTERM_PARAMETERS_REQUIRED");
   if (params) {
     PetscValidHeaderSpecific(params, VEC_CLASSID, 3);
     PetscCheckSameComm(term, 1, params, 3);
     PetscCall(VecLockReadPush(params));
   }
-  PetscCheckSameComm(term, 1, g, 4);
-  VecCheckSameSize(x, 2, g, 4);
-  if (term->fd_grad_level > 0) {
+  PetscCall(VecLockReadPush(x));
+  PetscCall(TaoTermIsGradientDefined(term, &grad));
+  PetscCall(TaoTermIsObjectiveAndGradientDefined(term, &objgrad));
+  if (term->fd_gradient) {
     PetscCall(PetscLogEventBegin(TAOTERM_GradientEval, term, NULL, NULL, NULL));
     PetscCall(TaoTermComputeGradientFD(term, x, params, g));
     PetscCall(PetscLogEventEnd(TAOTERM_GradientEval, term, NULL, NULL, NULL));
-  } else if (term->ops->gradient) {
+    term->ngrad++;
+  } else if (grad) {
     PetscCall(PetscLogEventBegin(TAOTERM_GradientEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, gradient, x, params, g);
     PetscCall(PetscLogEventEnd(TAOTERM_GradientEval, term, NULL, NULL, NULL));
-  } else if (term->ops->objectiveandgradient) {
+    term->ngrad++;
+  } else if (objgrad) {
     PetscReal value;
 
     PetscCall(PetscLogEventBegin(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, objectiveandgradient, x, params, &value, g);
     PetscCall(PetscLogEventEnd(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
-  } else SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have a gradient function.  You should have called TaoSetGradient() or TaoTermShellSetGradient()");
+    term->nobjgrad++;
+  } else SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have a gradient function");
   if (params) PetscCall(VecLockReadPop(params));
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -601,43 +627,51 @@ PetscErrorCode TaoTermComputeGradient(TaoTerm term, Vec x, Vec params, Vec g)
 @*/
 PetscErrorCode TaoTermComputeObjectiveAndGradient(TaoTerm term, Vec x, Vec params, PetscReal *value, Vec g)
 {
+  PetscBool objgrad, obj, grad;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscCall(VecLockReadPush(x));
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 5);
+  PetscAssertPointer(value, 4);
   PetscCheckSameComm(term, 1, x, 2);
+  PetscCheckSameComm(term, 1, g, 5);
+  VecCheckSameSize(x, 2, g, 5);
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_NONE || params == NULL, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters passed to a TaoTerm with TAOTERM_PARAMETERS_NONE");
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_REQUIRED || params, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters required but not provided for a TaoTerm with TAOTERM_PARAMETERS_REQUIRED");
   if (params) {
     PetscValidHeaderSpecific(params, VEC_CLASSID, 3);
     PetscCheckSameComm(term, 1, params, 3);
     PetscCall(VecLockReadPush(params));
   }
-  PetscAssertPointer(value, 4);
-  PetscValidHeaderSpecific(g, VEC_CLASSID, 5);
-  PetscCheckSameComm(term, 1, g, 5);
-  VecCheckSameSize(x, 2, g, 5);
-  if (term->fd_grad_level > 0) {
+  PetscCall(VecLockReadPush(x));
+  PetscCall(TaoTermIsObjectiveDefined(term, &obj));
+  PetscCall(TaoTermIsGradientDefined(term, &grad));
+  PetscCall(TaoTermIsObjectiveAndGradientDefined(term, &objgrad));
+  if (term->fd_gradient) {
     PetscCall(TaoTermComputeObjective(term, x, params, value));
     PetscCall(PetscLogEventBegin(TAOTERM_GradientEval, term, NULL, NULL, NULL));
     PetscCall(TaoTermComputeGradientFD(term, x, params, g));
     PetscCall(PetscLogEventEnd(TAOTERM_GradientEval, term, NULL, NULL, NULL));
-  } else if (term->ops->objectiveandgradient) {
+    term->ngrad++;
+  } else if (objgrad) {
     PetscCall(PetscLogEventBegin(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, objectiveandgradient, x, params, value, g);
     PetscCall(PetscLogEventEnd(TAOTERM_ObjGradEval, term, NULL, NULL, NULL));
-  } else if (term->ops->objective && term->ops->gradient) {
+    term->nobjgrad++;
+  } else if (obj && grad) {
     PetscCall(PetscLogEventBegin(TAOTERM_ObjectiveEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, objective, x, params, value);
     PetscCall(PetscLogEventEnd(TAOTERM_ObjectiveEval, term, NULL, NULL, NULL));
+    term->nobj++;
     PetscCall(PetscLogEventBegin(TAOTERM_GradientEval, term, NULL, NULL, NULL));
     PetscUseTypeMethod(term, gradient, x, params, g);
     PetscCall(PetscLogEventEnd(TAOTERM_GradientEval, term, NULL, NULL, NULL));
-  } else
-    SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE,
-            "TaoTerm does not have objective and gradient function.  "
-            "You should have called some of the following functions: TaoSetObjective(), TaoSetGradient(), TaoSetObjectiveAndGradient(), TaoTermShellSetObjective(), TaoTermShellSetGradient(), TaoTermShellSetObjectiveAndGradient()");
+    term->ngrad++;
+  } else SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have objective and gradient function");
   if (params) PetscCall(VecLockReadPop(params));
   PetscCall(VecLockReadPop(x));
-  PetscCall(PetscInfo(term, "TaoTerm value: %20.19e\n", (double)(*value)));
+  PetscCall(PetscInfo(term, "%s: TaoTerm value: %20.19e\n", ((PetscObject)term)->prefix, (double)(*value)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -671,19 +705,21 @@ PetscErrorCode TaoTermComputeObjectiveAndGradient(TaoTerm term, Vec x, Vec param
 @*/
 PetscErrorCode TaoTermComputeHessian(TaoTerm term, Vec x, Vec params, Mat H, Mat Hpre)
 {
-  PetscBool  is_mffd;
+  PetscBool  is_mffd       = PETSC_FALSE;
   PetscBool3 is_fdpossible = PETSC_BOOL3_UNKNOWN;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
-  PetscCall(VecLockReadPush(x));
   PetscCheckSameComm(term, 1, x, 2);
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_NONE || params == NULL, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters passed to a TaoTerm with TAOTERM_PARAMETERS_NONE");
+  PetscCheck(term->parameters_mode != TAOTERM_PARAMETERS_REQUIRED || params, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONG, "Parameters required but not provided for a TaoTerm with TAOTERM_PARAMETERS_REQUIRED");
   if (params) {
     PetscValidHeaderSpecific(params, VEC_CLASSID, 3);
     PetscCheckSameComm(term, 1, params, 3);
     PetscCall(VecLockReadPush(params));
   }
+  PetscCall(VecLockReadPush(x));
   if (H) {
     PetscValidHeaderSpecific(H, MAT_CLASSID, 4);
     PetscCheckSameComm(term, 1, H, 4);
@@ -692,23 +728,24 @@ PetscErrorCode TaoTermComputeHessian(TaoTerm term, Vec x, Vec params, Mat H, Mat
     PetscValidHeaderSpecific(Hpre, MAT_CLASSID, 5);
     PetscCheckSameComm(term, 1, Hpre, 5);
   }
-  PetscCall(PetscObjectTypeCompare((PetscObject)H, MATMFFD, &is_mffd));
+  if (H) PetscCall(PetscObjectTypeCompare((PetscObject)H, MATMFFD, &is_mffd));
   PetscCall(TaoTermIsComputeHessianFDPossible(term, &is_fdpossible));
   PetscCall(PetscLogEventBegin(TAOTERM_HessianEval, term, NULL, NULL, NULL));
   if (is_fdpossible == PETSC_BOOL3_FALSE) {
     PetscUseTypeMethod(term, hessian, x, params, H, Hpre);
-  } else if (term->fd_hess_level > 0) {
-    if (is_fdpossible == PETSC_BOOL3_UNKNOWN) PetscCall(PetscInfo(term, "Whether TaoTermComputeHessianFD is possible is unknown. Trying anyway.\n"));
+  } else if (term->fd_hessian) {
+    if (is_fdpossible == PETSC_BOOL3_UNKNOWN) PetscCall(PetscInfo(term, "%s: Whether TaoTermComputeHessianFD is possible is unknown. Trying anyway.\n", ((PetscObject)term)->prefix));
     PetscCall(TaoTermComputeHessianFD(term, x, params, H, Hpre));
   } else if (is_mffd) {
-    if (is_fdpossible == PETSC_BOOL3_UNKNOWN) PetscCall(PetscInfo(term, "Whether TaoTermComputeHessianMFFD is possible is unknown. Trying anyway.\n"));
+    if (is_fdpossible == PETSC_BOOL3_UNKNOWN) PetscCall(PetscInfo(term, "%s: Whether TaoTermComputeHessianMFFD is possible is unknown. Trying anyway.\n", ((PetscObject)term)->prefix));
     PetscCall(TaoTermComputeHessianMFFD(term, x, params, H, Hpre));
   } else {
     if (term->ops->hessian) PetscUseTypeMethod(term, hessian, x, params, H, Hpre);
     else
-      SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have TaoTermComputeHessian routine, and cannot use finite differences for Hessian computation. Either set Hessian MatType to MATMFFD, or call TaoTermComputeHessianUseFDPush()");
+      SETERRQ(PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_WRONGSTATE, "TaoTerm does not have TaoTermComputeHessian routine, and cannot use finite differences for Hessian computation. Either set Hessian MatType to MATMFFD, or call TaoTermComputeHessianSetUseFD()");
   }
   PetscCall(PetscLogEventEnd(TAOTERM_HessianEval, term, NULL, NULL, NULL));
+  term->nhess++;
   if (params) PetscCall(VecLockReadPop(params));
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -716,7 +753,7 @@ PetscErrorCode TaoTermComputeHessian(TaoTerm term, Vec x, Vec params, Mat H, Mat
 
 /*@
   TaoTermIsComputeHessianFDPossible - Whether this term can compute Hessian with finite differences
-  with either `-tao_term_hessian_use_fd`, `TaoTermComputeHessianUseFDPush()`,  or `MATMFFD`.
+  with either `-tao_term_hessian_use_fd`, `TaoTermComputeHessianSetUseFD()`, or `MATMFFD`.
 
   Not collective
 
@@ -1155,7 +1192,8 @@ PetscErrorCode TaoTermGetParametersLayout(TaoTerm term, PetscLayout *parameters_
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  if (parameters_layout) PetscCall(MatGetLayouts(term->parameters_factory, parameters_layout, NULL));
+  PetscAssertPointer(parameters_layout, 2);
+  PetscCall(MatGetLayouts(term->parameters_factory, parameters_layout, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1230,7 +1268,8 @@ PetscErrorCode TaoTermGetSolutionLayout(TaoTerm term, PetscLayout *solution_layo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  if (solution_layout) PetscCall(MatGetLayouts(term->solution_factory, solution_layout, NULL));
+  PetscAssertPointer(solution_layout, 2);
+  PetscCall(MatGetLayouts(term->solution_factory, solution_layout, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1270,8 +1309,7 @@ PetscErrorCode TaoTermGetSolutionLayout(TaoTerm term, PetscLayout *solution_layo
 @*/
 PetscErrorCode TaoTermSetSolutionTemplate(TaoTerm term, Vec sol_template)
 {
-  PetscLayout layout;
-  PetscLayout clayout;
+  PetscLayout layout, clayout;
   VecType     vec_type;
 
   PetscFunctionBegin;
@@ -1317,8 +1355,7 @@ PetscErrorCode TaoTermSetSolutionTemplate(TaoTerm term, Vec sol_template)
 @*/
 PetscErrorCode TaoTermSetParametersTemplate(TaoTerm term, Vec params_template)
 {
-  PetscLayout layout;
-  PetscLayout clayout;
+  PetscLayout layout, clayout;
   VecType     vec_type;
 
   PetscFunctionBegin;
@@ -1710,8 +1747,8 @@ PetscErrorCode TaoTermGetCreateHessianMode(TaoTerm term, PetscBool *Hpre_is_H, M
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
   if (Hpre_is_H) *Hpre_is_H = term->Hpre_is_H;
-  if (H_mattype) *H_mattype = term->H_mattype;
-  if (Hpre_mattype) *Hpre_mattype = term->Hpre_mattype;
+  if (H_mattype) *H_mattype = term->fd_hessian ? MATAIJ : term->H_mattype;
+  if (Hpre_mattype) *Hpre_mattype = term->fd_hessian ? MATAIJ : term->Hpre_mattype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1750,6 +1787,7 @@ PetscErrorCode TaoTermDuplicate(TaoTerm term, TaoTermDuplicateOption opt, TaoTer
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
+  PetscAssertPointer(newterm, 3);
   PetscCall(TaoTermCreate(PetscObjectComm((PetscObject)term), newterm));
   PetscCall(PetscObjectTypeCompare((PetscObject)term, TAOTERMSHELL, &is_shell));
   // Check if createsolutionvec is available first (for TaoTermShell)
@@ -1824,6 +1862,7 @@ PetscErrorCode TaoTermGetParametersMode(TaoTerm term, TaoTermParametersMode *par
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
+  PetscAssertPointer(parameters_mode, 2);
   *parameters_mode = term->parameters_mode;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1839,7 +1878,7 @@ PetscErrorCode TaoTermGetParametersMode(TaoTerm term, TaoTermParametersMode *par
   Output Parameter:
 . delta - the finite difference increment
 
-  Options Database Keys:
+  Options Database Key:
 . -tao_term_fd_delta <delta> - the above increment
 
   Level: advanced
@@ -1848,13 +1887,14 @@ PetscErrorCode TaoTermGetParametersMode(TaoTerm term, TaoTermParametersMode *par
           `TaoTerm`,
           `TaoTermSetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPush()`,
-          `TaoTermComputeGradientUseFDPop()`
+          `TaoTermComputeGradientSetUseFD()`,
+          `TaoTermComputeGradientGetUseFD()`
 @*/
 PetscErrorCode TaoTermGetFDDelta(TaoTerm term, PetscReal *delta)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
+  PetscAssertPointer(delta, 2);
   *delta = term->fd_delta;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1877,11 +1917,11 @@ PetscErrorCode TaoTermGetFDDelta(TaoTerm term, PetscReal *delta)
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPush()`,
-          `TaoTermComputeGradientUseFDPop()`,
+          `TaoTermComputeGradientSetUseFD()`,
+          `TaoTermComputeGradientGetUseFD()`,
           `TaoTermComputeHessianFD()`,
-          `TaoTermComputeHessianUseFDPush()`,
-          `TaoTermComputeHessianUseFDPop()`
+          `TaoTermComputeHessianSetUseFD()`,
+          `TaoTermComputeHessianGetUseFD()`
 @*/
 PetscErrorCode TaoTermSetFDDelta(TaoTerm term, PetscReal delta)
 {
@@ -1894,147 +1934,131 @@ PetscErrorCode TaoTermSetFDDelta(TaoTerm term, PetscReal delta)
 }
 
 /*@
-  TaoTermComputeGradientUseFDPush - Use finite differences instead of the user-provided or built-in gradient method in `TaoTermComputeGradient()`.
+  TaoTermComputeGradientSetUseFD - Set whether to use finite differences instead of the user-provided or built-in gradient method in `TaoTermComputeGradient()`.
 
   Logically collective
 
-  Input Parameter:
-. term - a `TaoTerm`
+  Input Parameters:
++ term   - a `TaoTerm`
+- use_fd - `PETSC_TRUE` to use finite differences, `PETSC_FALSE` to use the user-provided or built-in gradient method
 
   Options Database Keys:
-. -tao_term_gradient_use_fd <bool> - pushes once, making finite differences the default for gradient computation
+. -tao_term_gradient_use_fd <bool> - use finite differences for gradient computation
 
   Level: advanced
-
-  Note:
-  This increments an internal counter: finite differences will be used whenever the counter is greater than zero.  Use
-  `TaoTermComputeGradientUseFDPop()` to undo.
 
 .seealso: [](sec_tao_term),
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPop()`,
+          `TaoTermComputeGradientGetUseFD()`,
           `TaoTermComputeHessianFD()`,
-          `TaoTermComputeHessianUseFDPush()`,
-          `TaoTermComputeHessianUseFDPop()`
+          `TaoTermComputeHessianSetUseFD()`,
+          `TaoTermComputeHessianGetUseFD()`
 @*/
-PetscErrorCode TaoTermComputeGradientUseFDPush(TaoTerm term)
+PetscErrorCode TaoTermComputeGradientSetUseFD(TaoTerm term, PetscBool use_fd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  term->fd_grad_level++;
+  PetscValidLogicalCollectiveBool(term, use_fd, 2);
+  term->fd_gradient = use_fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  TaoTermComputeGradientUseFDPop - Stop using finite differences in `TaoTermComputeGradient()`.
+  TaoTermComputeGradientGetUseFD - Get whether finite differences are used in `TaoTermComputeGradient()`.
 
-  Logically collective
+  Not collective
 
   Input Parameter:
 . term - a `TaoTerm`
 
-  Level: advanced
+  Output Parameter:
+. use_fd - `PETSC_TRUE` if finite differences are used
 
-  Note:
-  This decrements an internal counter: finite differences will be used whenever the counter is greater than zero,
-  undoing `TaoTermComputeGradientUseFDPush()`.
+  Level: advanced
 
 .seealso: [](sec_tao_term),
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPush()`,
+          `TaoTermComputeGradientSetUseFD()`,
           `TaoTermComputeHessianFD()`,
-          `TaoTermComputeHessianUseFDPush()`,
-          `TaoTermComputeHessianUseFDPop()`
+          `TaoTermComputeHessianSetUseFD()`,
+          `TaoTermComputeHessianGetUseFD()`
 @*/
-PetscErrorCode TaoTermComputeGradientUseFDPop(TaoTerm term)
+PetscErrorCode TaoTermComputeGradientGetUseFD(TaoTerm term, PetscBool *use_fd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  term->fd_grad_level--;
+  PetscAssertPointer(use_fd, 2);
+  *use_fd = term->fd_gradient;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  TaoTermComputeHessianUseFDPush - Use finite differences instead of the user-provided or built-in methods in `TaoTermComputeHessian()`.
+  TaoTermComputeHessianSetUseFD - Set whether to use finite differences instead of the user-provided or built-in methods in `TaoTermComputeHessian()`.
 
   Logically collective
 
-  Input Parameter:
-. term - a `TaoTerm`
+  Input Parameters:
++ term   - a `TaoTerm`
+- use_fd - `PETSC_TRUE` to use finite differences, `PETSC_FALSE` to use the user-provided or built-in Hessian method
 
   Options Database Keys:
-. -tao_term_hessian_use_fd <bool> - pushes once, making finite differences the default for Hessian computation
+. -tao_term_hessian_use_fd <bool> - use finite differences for Hessian computation
 
   Level: advanced
-
-  Note:
-  This increments an internal counter: finite differences will be used whenever the counter is greater than zero.  Use
-  `TaoTermComputeHessianUseFDPop()` to undo.
 
 .seealso: [](sec_tao_term),
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPush()`,
-          `TaoTermComputeGradientUseFDPop()`,
+          `TaoTermComputeGradientSetUseFD()`,
+          `TaoTermComputeGradientGetUseFD()`,
           `TaoTermComputeHessianFD()`,
-          `TaoTermComputeHessianUseFDPop()`
+          `TaoTermComputeHessianGetUseFD()`
 @*/
-PetscErrorCode TaoTermComputeHessianUseFDPush(TaoTerm term)
+PetscErrorCode TaoTermComputeHessianSetUseFD(TaoTerm term, PetscBool use_fd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  term->fd_hess_level++;
-  PetscCall(PetscStrallocpy(term->H_mattype, (char **)&term->H_mattype_pre_fd_push));
-  PetscCall(PetscStrallocpy(term->Hpre_mattype, (char **)&term->Hpre_mattype_pre_fd_push));
-  PetscCall(PetscFree(term->H_mattype));
-  PetscCall(PetscFree(term->Hpre_mattype));
-  PetscCall(PetscStrallocpy(MATAIJ, (char **)&term->H_mattype));
-  PetscCall(PetscStrallocpy(MATAIJ, (char **)&term->Hpre_mattype));
+  PetscValidLogicalCollectiveBool(term, use_fd, 2);
+  term->fd_hessian = use_fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  TaoTermComputeHessianUseFDPop - Stop using finite differences in `TaoTermComputeHessian()`.
+  TaoTermComputeHessianGetUseFD - Get whether finite differences are used in `TaoTermComputeHessian()`.
 
-  Logically collective
+  Not collective
 
   Input Parameter:
 . term - a `TaoTerm`
 
-  Level: advanced
+  Output Parameter:
+. use_fd - `PETSC_TRUE` if finite differences are used
 
-  Note:
-  This decrements an internal counter: finite differences will be used whenever the counter is greater than zero,
-  undoing `TaoTermComputeHessianUseFDPush()`.
+  Level: advanced
 
 .seealso: [](sec_tao_term),
           `TaoTerm`,
           `TaoTermGetFDDelta()`,
           `TaoTermSetFDDelta()`,
           `TaoTermComputeGradientFD()`,
-          `TaoTermComputeGradientUseFDPush()`,
-          `TaoTermComputeGradientUseFDPop()`,
+          `TaoTermComputeGradientSetUseFD()`,
+          `TaoTermComputeGradientGetUseFD()`,
           `TaoTermComputeHessianFD()`,
-          `TaoTermComputeHessianUseFDPush()`
+          `TaoTermComputeHessianSetUseFD()`
 @*/
-PetscErrorCode TaoTermComputeHessianUseFDPop(TaoTerm term)
+PetscErrorCode TaoTermComputeHessianGetUseFD(TaoTerm term, PetscBool *use_fd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(term, TAOTERM_CLASSID, 1);
-  term->fd_hess_level--;
-  PetscCall(PetscFree(term->H_mattype));
-  PetscCall(PetscStrallocpy(term->H_mattype_pre_fd_push, (char **)&term->H_mattype));
-  PetscCall(PetscFree(term->Hpre_mattype));
-  PetscCall(PetscStrallocpy(term->Hpre_mattype_pre_fd_push, (char **)&term->Hpre_mattype));
-  PetscCall(PetscFree(term->H_mattype_pre_fd_push));
-  PetscCall(PetscFree(term->Hpre_mattype_pre_fd_push));
+  PetscAssertPointer(use_fd, 2);
+  *use_fd = term->fd_hessian;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

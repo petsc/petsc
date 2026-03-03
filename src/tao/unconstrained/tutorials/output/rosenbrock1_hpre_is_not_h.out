@@ -19,6 +19,8 @@ Tao Object: 1 MPI process
         parameter vector space: (none)
         Hessian MatType (tao_term_hessian_mat_type): (undefined)
         attached to Tao [name omitted]
+        total number of function/gradient evaluations=21
+        total number of Hessian evaluations=14
     Map: unmapped
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
@@ -47,27 +49,22 @@ Tao Object: 1 MPI process
             rows=10, cols=10
             package used to perform factorization: petsc
             total: nonzeros=10, allocated nonzeros=10
-                block size is 1
     linear system matrix, followed by the matrix used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqbaij
       rows=10, cols=10, bs=2
       total: nonzeros=20, allocated nonzeros=20
       total number of mallocs used during MatSetValues calls=0
-          block size is 2
     Mat Object: 1 MPI process
       type: seqbaij
       rows=10, cols=10
       total: nonzeros=10, allocated nonzeros=10
       total number of mallocs used during MatSetValues calls=0
-          block size is 1
   total KSP iterations: 26
   convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=5.41582e-13
   Objective value=1.72502e-28
   total number of iterations=13,                          (max: 50)
-  total number of function evaluations=5,                  (max: unlimited)
-  total number of gradient evaluations=1,                  (max: unlimited)
-  total number of function/gradient evaluations=15,      (max: unlimited)
+  total number of function/gradient evaluations=21,      (max: unlimited)
   total number of Hessian evaluations=14
   Solution converged:    ||g(X)|| <= gatol

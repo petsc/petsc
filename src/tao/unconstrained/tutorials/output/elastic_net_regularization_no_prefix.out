@@ -31,6 +31,9 @@ Tao Object: 1 MPI process
             rows=100, cols=100
               Vec Object: 1 MPI process
                 type: seq
+          total number of function evaluations=5
+          total number of function/gradient evaluations=5
+          total number of Hessian evaluations=4
       A_0:
         Mat Object: 1 MPI process
           type: seqdense
@@ -42,18 +45,27 @@ Tao Object: 1 MPI process
           type: halfl2squared
           solution vector space: N = 20
           parameter vector space: (optional) K = 20
+          total number of function evaluations=5
+          total number of function/gradient evaluations=5
+          total number of Hessian evaluations=4
       f_2:
         TaoTerm Object: 1 MPI process
           type: l1
           solution vector space: N = 10
           parameter vector space: (optional) K = 10
           epsilon (tao_term_l1_epsilon): 0.1
+          total number of function evaluations=5
+          total number of function/gradient evaluations=5
+          total number of Hessian evaluations=4
       A_2:
         Mat Object: 1 MPI process
           type: seqdense
           rows=10, cols=20
           total: nonzeros=200, allocated nonzeros=200
           total number of mallocs used during MatSetValues calls=0
+      total number of function evaluations=5
+      total number of function/gradient evaluations=5
+      total number of Hessian evaluations=4
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
@@ -91,7 +103,7 @@ Tao Object: 1 MPI process
         using I-node routines: found 4 nodes, limit used is 5
   total KSP iterations: 4
   convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.333e-11
+  Residual in Function/Gradient:=1.33253e-11
   Objective value=19.561
   total number of iterations=4,                          (max: 50)
   total number of function evaluations=5,                  (max: unlimited)

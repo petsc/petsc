@@ -56,8 +56,8 @@ int main(int argc, char **argv)
 
   if (user.use_fd) {
     PetscCall(TaoTermSetFDDelta(objective, 7.e-9));
-    PetscCall(TaoTermComputeGradientUseFDPush(objective));
-    PetscCall(TaoTermComputeHessianUseFDPush(objective));
+    PetscCall(TaoTermComputeGradientSetUseFD(objective, PETSC_TRUE));
+    PetscCall(TaoTermComputeHessianSetUseFD(objective, PETSC_TRUE));
   }
   /* Set routines for function, gradient, hessian evaluation */
   PetscCall(TaoAddTerm(tao, NULL, 1.0, objective, NULL, NULL));
@@ -79,10 +79,6 @@ int main(int argc, char **argv)
     PetscCheck(PetscAbsReal(fd_delta_get - 1.e-6) < 1.e-15, comm, PETSC_ERR_PLIB, "FD delta changed: set %g, got %g", (double)fd_delta_set, (double)fd_delta_get);
   }
 
-  if (user.use_fd) {
-    PetscCall(TaoTermComputeGradientUseFDPop(objective));
-    PetscCall(TaoTermComputeHessianUseFDPop(objective));
-  }
   /* Clean up */
   PetscCall(AppCtxFinalize(&user, tao));
   PetscCall(TaoDestroy(&tao));

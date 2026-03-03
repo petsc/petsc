@@ -70,7 +70,6 @@ Tao Object: 2 MPI processes
   Objective value=1.41847
   total number of iterations=3,                          (max: 50)
   total number of function evaluations=5,                  (max: unlimited)
-  total number of gradient evaluations=1,                  (max: unlimited)
-  total number of function/gradient evaluations=4,      (max: unlimited)
+  total number of function/gradient evaluations=5,      (max: unlimited)
   total number of Hessian evaluations=4
   Solution converged:    ||g(X)|| <= gatol

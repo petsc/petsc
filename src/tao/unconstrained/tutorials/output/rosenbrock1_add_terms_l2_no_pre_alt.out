@@ -39,6 +39,8 @@ Tao Object: 1 MPI process
                 parameter vector space: (none)
                 Hessian MatType (tao_term_hessian_mat_type): seqbaij
                 attached to Tao [name omitted]
+                total number of function/gradient evaluations=16
+                total number of Hessian evaluations=10
             Map: unmapped
           Summand 1:
             Scale (tao_term_sum_reg_scale): 0.3
@@ -48,7 +50,15 @@ Tao Object: 1 MPI process
                 solution vector space: N = 2 [VecType seq (tao_term_solution_vec_type)]
                 parameter vector space: (optional) K = 2 [VecType seq (tao_term_parameters_vec_type)]
                 Hessian MatType (tao_term_hessian_mat_type): diagonal
+                total number of function evaluations=5
+                total number of gradient evaluations=1
+                total number of function/gradient evaluations=10
+                total number of Hessian evaluations=10
             Map: unmapped
+        total number of function evaluations=5
+        total number of gradient evaluations=1
+        total number of function/gradient evaluations=10
+        total number of Hessian evaluations=10
     Map: unmapped
   TaoLineSearch Object: 1 MPI process
     type: more-thuente

@@ -63,6 +63,8 @@ PetscRegressor Object: 1 MPI process
               parameter vector space: (none)
               Hessian MatType (tao_term_hessian_mat_type): (undefined)
               attached to Tao [name omitted] (tao_brgn_subsolver_)
+              total number of function/gradient evaluations=3
+              total number of Hessian evaluations=1
           Map: unmapped
         TaoLineSearch Object: (tao_brgn_subsolver_) 1 MPI process
           type: more-thuente
@@ -107,8 +109,7 @@ PetscRegressor Object: 1 MPI process
         Residual in Function/Gradient:=2.7894e-16
         Objective value=0.0571429
         total number of iterations=1,                                (max: 10000)
-        total number of function evaluations=1,                        (max: unlimited)
-        total number of function/gradient evaluations=2,            (max: unlimited)
+        total number of function/gradient evaluations=3,            (max: unlimited)
         total number of residual evaluations=3
         total number of Hessian evaluations=1
         total number of Jacobian evaluations=4
@@ -122,13 +123,14 @@ PetscRegressor Object: 1 MPI process
           parameter vector space: (none)
           Hessian MatType (tao_term_hessian_mat_type): (undefined)
           attached to Tao [name omitted] (regressor_linear_)
+          total number of function/gradient evaluations=3
+          total number of Hessian evaluations=1
       Map: unmapped
     convergence tolerances: gatol=1e-08,     grtol=1e-08,     steptol=0.,     gttol=0.
     Residual in Function/Gradient:=0.
     Objective value=1.15
     total number of iterations=1,                            (max: 10000)
-    total number of function evaluations=1,                    (max: unlimited)
-    total number of function/gradient evaluations=2,        (max: unlimited)
+    total number of function/gradient evaluations=3,        (max: unlimited)
     total number of residual evaluations=3
     total number of Hessian evaluations=1
     Solution converged:      ||g(X)|| <= gatol

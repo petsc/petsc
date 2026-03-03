@@ -143,6 +143,7 @@
 - Add `TAOTERMHALFL2SQUARED` implementation of `TaoTerm` for a squared-norm penalty function
 - Add `TAOTERML1` implementation of `TaoTerm` for a 1-norm penalty function
 - Add `TAOTERMQUADRATIC` implementation of `TaoTerm` for a quadratic penalty function
+- Add finite difference utilities: `TaoTermComputeGradientFD()`, `TaoTermComputeHessianFD()`, `TaoTermCreateHessianMFFD()`, and set/get functions `TaoTermComputeGradientSetUseFD()`/`TaoTermComputeGradientGetUseFD()`, `TaoTermComputeHessianSetUseFD()`/`TaoTermComputeHessianGetUseFD()`
 
 ```{rubric} PetscRegressor:
 ```
