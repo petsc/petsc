@@ -1436,12 +1436,12 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
 {
   Mat_Product *product = mat->product;
-  PetscBool    match   = PETSC_FALSE;
-  PetscBool    usecpu  = PETSC_FALSE;
+  PetscBool    match   = PETSC_FALSE; // Do we multiply two MPIAIJKokkos matrices?
+  PetscBool    usecpu  = PETSC_FALSE; // Use PETSc MATAIJ's native CPU implementation?
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
-  if (!product->A->boundtocpu && !product->B->boundtocpu) PetscCall(PetscObjectTypeCompare((PetscObject)product->B, ((PetscObject)product->A)->type_name, &match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)product->B, ((PetscObject)product->A)->type_name, &match));
   if (match) { /* we can always fallback to the CPU if requested */
     switch (product->type) {
     case MATPRODUCT_AB:
@@ -1698,6 +1698,7 @@ static PetscErrorCode MatShift_MPIAIJKokkos(Mat A, PetscScalar a)
 static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
 {
   PetscFunctionBegin;
+  B->boundtocpu                 = PetscDefined(HAVE_KOKKOS_WITHOUT_GPU) ? PETSC_TRUE : PETSC_FALSE; // MATAIJKOKKOS has yet to support CPU binding. But in this case, we deem it is bound to CPU.
   B->ops->assemblyend           = MatAssemblyEnd_MPIAIJKokkos;
   B->ops->mult                  = MatMult_MPIAIJKokkos;
   B->ops->multadd               = MatMultAdd_MPIAIJKokkos;
@@ -1706,6 +1707,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   B->ops->destroy               = MatDestroy_MPIAIJKokkos;
   B->ops->shift                 = MatShift_MPIAIJKokkos;
   B->ops->getcurrentmemtype     = MatGetCurrentMemType_MPIAIJ;
+  B->ops->bindtocpu             = MatBindToCPU_SeqAIJKokkos;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));
@@ -1730,7 +1732,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   }
   B = *newmat;
 
-  B->boundtocpu = PETSC_FALSE;
   PetscCall(PetscFree(B->defaultvectype));
   PetscCall(PetscStrallocpy(VECKOKKOS, &B->defaultvectype));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJKOKKOS));

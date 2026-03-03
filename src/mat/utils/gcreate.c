@@ -569,6 +569,12 @@ PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
 
   Level: intermediate
 
+  Note:
+  `MATAIJKOKKOS` has yet to implement CPU binding. If Kokkos is configured without GPU support,
+   we deem a `MATAIJKOKKOS` matrix as bound to the CPU. Different from `MATAIJVIENNACL` with a CPU
+   backend, `MATAIJKOKKOS` always use its own operation implementations (in constrast to CPU-bound
+  `MATAIJVIENNACL`, which uses `MATAIJ`'s CPU operations).
+
 .seealso: [](ch_matrices), `Mat`, `MatBoundToCPU()`
 @*/
 PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
