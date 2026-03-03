@@ -800,6 +800,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       if (tao->max_funcs == PETSC_UNLIMITED) PetscCall(PetscViewerASCIIPrintf(viewer, "    (max: unlimited)\n"));
       else PetscCall(PetscViewerASCIIPrintf(viewer, "    (max: %" PetscInt_FMT ")\n", tao->max_funcs));
     }
+    if (tao->nres > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of residual evaluations=%" PetscInt_FMT "\n", tao->nres));
     if (tao->nhess > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Hessian evaluations=%" PetscInt_FMT "\n", tao->nhess));
     if (tao->nconstraints > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of constraint function evaluations=%" PetscInt_FMT "\n", tao->nconstraints));
     if (tao->njac > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of Jacobian evaluations=%" PetscInt_FMT "\n", tao->njac));
@@ -1540,6 +1541,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   tao->nfuncs       = 0;
   tao->nfuncgrads   = 0;
   tao->ngrads       = 0;
+  tao->nres         = 0;
   tao->nhess        = 0;
   tao->njac         = 0;
   tao->nconstraints = 0;

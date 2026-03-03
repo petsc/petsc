@@ -402,7 +402,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
   PetscCall(PetscLogEventBegin(TAO_ResidualEval, tao, X, NULL, NULL));
   PetscCallBack("Tao callback least-squares residual", (*tao->ops->computeresidual)(tao, X, F, tao->user_lsresP));
   PetscCall(PetscLogEventEnd(TAO_ResidualEval, tao, X, NULL, NULL));
-  tao->nfuncs++;
+  tao->nres++;
   PetscCall(PetscInfo(tao, "TAO least-squares residual evaluation.\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

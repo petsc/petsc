@@ -107,8 +107,9 @@ PetscRegressor Object: 1 MPI process
         Residual in Function/Gradient:=2.57862e-16
         Objective value=0.0571429
         total number of iterations=1,                                (max: 10000)
-        total number of function evaluations=4,                        (max: unlimited)
+        total number of function evaluations=1,                        (max: unlimited)
         total number of function/gradient evaluations=2,            (max: unlimited)
+        total number of residual evaluations=3
         total number of Hessian evaluations=1
         total number of Jacobian evaluations=4
         Solution converged:          ||g(X)|| <= gatol
@@ -126,8 +127,9 @@ PetscRegressor Object: 1 MPI process
     Residual in Function/Gradient:=0.
     Objective value=1.15
     total number of iterations=1,                            (max: 10000)
-    total number of function evaluations=4,                    (max: unlimited)
+    total number of function evaluations=1,                    (max: unlimited)
     total number of function/gradient evaluations=2,        (max: unlimited)
+    total number of residual evaluations=3
     total number of Hessian evaluations=1
     Solution converged:      ||g(X)|| <= gatol
 Intercept is 0.000000

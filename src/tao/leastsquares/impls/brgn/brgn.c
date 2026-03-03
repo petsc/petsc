@@ -227,6 +227,7 @@ static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, PetscCtx ctx)
   gn->parent->nfuncs      = tao->nfuncs;
   gn->parent->ngrads      = tao->ngrads;
   gn->parent->nfuncgrads  = tao->nfuncgrads;
+  gn->parent->nres        = tao->nres;
   gn->parent->nhess       = tao->nhess;
   gn->parent->niter       = tao->niter;
   gn->parent->ksp_its     = tao->ksp_its;
@@ -335,6 +336,7 @@ static PetscErrorCode TaoSolve_BRGN(Tao tao)
   tao->nfuncs      = gn->subsolver->nfuncs;
   tao->ngrads      = gn->subsolver->ngrads;
   tao->nfuncgrads  = gn->subsolver->nfuncgrads;
+  tao->nres        = gn->subsolver->nres;
   tao->nhess       = gn->subsolver->nhess;
   tao->niter       = gn->subsolver->niter;
   tao->ksp_its     = gn->subsolver->ksp_its;
