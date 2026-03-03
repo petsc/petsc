@@ -61,7 +61,7 @@ important. We use several conventions
 
 11. Use the phrase `infinity or NaN` not `NaN or infinity`.
 
-12. Use the abbreviation NaN for Not-a-Number.
+12. Use the abbreviation `NaN` for Not-a-Number.
 
 (stylepetsccount)=
 
@@ -324,7 +324,7 @@ Even with the use of `clang-format` there are still many decisions about code fo
 04. Subroutines that would normally have a `void **` argument to return
     a pointer to some data should be prototyped as `void *`.
     This prevents the caller from having to put a `(void **)` cast in
-    each function call. See, for example, `DMDAVecGetArray()`.
+    each function call. See, for example, `DMDAVecGetArray()`. See also 11 of this section.
 
 05. Do not use the `register` directive.
 
@@ -390,6 +390,13 @@ Even with the use of `clang-format` there are still many decisions about code fo
     `__VA_ARGS__`, but MSVC's implementation is not conforming and may need workarounds.
     See `PetscDefined()` for an example of how to work around MSVC's limitations to write
     a macro that is usable in both.
+
+11. Context variables are declared as `PetscCtx` which is a typedef for `void *`. When
+    context variables are returned as function arguments they are declared as `PetscCtxRt`
+    which is also a typedef for `void *`. See also 4 of this section. See, for example, `SNESSetApplicationContext()`
+    and `SNESGetApplicationContext()`. The `PetscCtx` and `PetscCtxRt` are used to
+    provide the Fortran bindings automatically for functions that take contexts. In Fortran,
+    the context must be a Fortran derived type, `type(xxx)`.
 
 (usage_of_petsc_functions_and_macros)=
 
