@@ -2762,8 +2762,6 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
   Vec               x = snes->vec_sol, f;
   PetscReal         nrm, gnorm;
   PetscReal         threshold = 1.e-5;
-  MatType           mattype;
-  PetscInt          m, n, M, N;
   void             *functx;
   PetscBool         complete_print = PETSC_FALSE, threshold_print = PETSC_FALSE, flg, istranspose;
   PetscBool         silent = diffNorm != PETSC_NULLPTR ? PETSC_TRUE : PETSC_FALSE;
@@ -2826,14 +2824,7 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
       PetscCall(MatComputeOperator(jacobian, MATAIJ, &A));
     }
 
-    PetscCall(MatGetType(A, &mattype));
-    PetscCall(MatGetSize(A, &M, &N));
-    PetscCall(MatGetLocalSize(A, &m, &n));
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
-    PetscCall(MatSetType(B, mattype));
-    PetscCall(MatSetSizes(B, m, n, M, N));
-    PetscCall(MatSetBlockSizesFromMats(B, A, A));
-    PetscCall(MatSetUp(B));
+    PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
     PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
     PetscCall(SNESGetFunction(snes, NULL, NULL, &functx));
@@ -2859,11 +2850,7 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
       const PetscInt    *bcols;
       const PetscScalar *bvals;
 
-      PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
-      PetscCall(MatSetType(C, mattype));
-      PetscCall(MatSetSizes(C, m, n, M, N));
-      PetscCall(MatSetBlockSizesFromMats(C, A, A));
-      PetscCall(MatSetUp(C));
+      PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &C));
       PetscCall(MatSetOption(C, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
       PetscCall(MatAYPX(B, -1.0, A, DIFFERENT_NONZERO_PATTERN));

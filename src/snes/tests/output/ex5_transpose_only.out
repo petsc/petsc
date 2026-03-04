@@ -15,21 +15,21 @@ row 4: (3, 16.)  (4, 1.)
   Finite difference Jacobian ----------
 Mat Object: 1 MPI process
   type: seqaij
-row 0: (0, 1.) 
+row 0: (0, 1.)  (1, 0.) 
 row 1: (0, 16.)  (1, -31.)  (2, 16.) 
 row 2: (1, 16.)  (2, -31.)  (3, 16.) 
 row 3: (2, 16.)  (3, -31.)  (4, 16.) 
-row 4: (4, 1.) 
+row 4: (3, 0.)  (4, 1.) 
   Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
 Mat Object: 1 MPI process
   type: seqaij
-row 0: (1, 16.) 
-row 1: (0, -16.) 
-row 2:
-row 3: (4, -16.) 
-row 4: (3, 16.) 
+row 0: (0, 0.)  (1, 16.) 
+row 1: (0, -16.)  (1, 0.)  (2, 0.) 
+row 2: (1, 0.)  (2, 0.)  (3, 0.) 
+row 3: (2, 0.)  (3, 0.)  (4, -16.) 
+row 4: (3, 16.)  (4, 0.) 
     0 KSP Residual norm 6.945929944146e+00
-    1 KSP Residual norm 2.792520156365e-15
+    1 KSP Residual norm 9.466138621055e-16
 Vec Object: 1 MPI process
   type: seq
 0.5

@@ -960,4 +960,10 @@ int main(int argc, char **argv)
      suffix: mis_view_detailed
      args: -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type mis
 
+   test:
+     requires: !single
+     suffix: snes_test_jacobian
+     nsize: 4
+     args: -snes_test_jacobian -snes_test_jacobian_view
+
 TEST*/
