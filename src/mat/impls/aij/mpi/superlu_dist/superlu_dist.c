@@ -593,7 +593,8 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   const char        *rowperm[]     = {"NOROWPERM", "LargeDiag_MC64", "LargeDiag_AWPM", "MY_PERMR"};
   const char        *factPattern[] = {"SamePattern", "SamePattern_SameRowPerm", "DOFACT"};
   MPI_Comm           comm;
-  PetscSuperLU_DIST *context = NULL;
+  PetscSuperLU_DIST *context   = NULL;
+  PetscPrecision     precision = PETSC_PRECISION_INVALID;
 
   PetscFunctionBegin;
   /* Set options to F */
@@ -603,6 +604,14 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "SuperLU_Dist Options", "Mat");
   PetscCall(PetscOptionsBool("-mat_superlu_dist_equil", "Equilibrate matrix", "None", lu->options.Equil ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
   if (set && !flg) lu->options.Equil = NO;
+
+  PetscCall(PetscOptionsEnum("-pc_precision", "Precision used by SuperLU_DIST", "MATSOLVERSUPERLU_DIST", PetscPrecisionTypes, (PetscEnum)precision, (PetscEnum *)&precision, &flg));
+  if (flg) {
+    PetscCheck(precision == PETSC_PRECISION_SINGLE || precision == PETSC_PRECISION_DOUBLE, PetscObjectComm((PetscObject)A), PETSC_ERR_USER_INPUT, "-pc_precision only accepts single or double as option for SuperLU_DIST");
+#if defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
+    lu->singleprecision = (PetscBool)(precision == PETSC_PRECISION_SINGLE); // It also implies PetscReal is not single; not merely SuperLU_DIST is running in single
+#endif
+  }
 
   PetscCall(PetscOptionsEList("-mat_superlu_dist_rowperm", "Row permutation", "None", rowperm, 4, rowperm[1], &indx, &flg));
   if (flg) {
@@ -903,8 +912,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   PetscInt               M = A->rmap->N, N = A->cmap->N;
   PetscMPIInt            size;
   superlu_dist_options_t options;
-  PetscBool              flg;
-  PetscPrecision         precision = PETSC_PRECISION_INVALID;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -956,16 +963,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
 
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A), ((PetscObject)A)->prefix, "SuperLU_DIST Options", "Mat");
-  PetscCall(PetscOptionsEnum("-pc_precision", "Precision used by SuperLU_DIST", "MATSOLVERSUPERLU_DIST", PetscPrecisionTypes, (PetscEnum)precision, (PetscEnum *)&precision, &flg));
-  PetscOptionsEnd();
-  if (flg) {
-    PetscCheck(precision == PETSC_PRECISION_SINGLE || precision == PETSC_PRECISION_DOUBLE, PetscObjectComm((PetscObject)A), PETSC_ERR_USER_INPUT, "-pc_precision only accepts single or double as option for SuperLU_DIST");
-#if defined(PETSC_HAVE_SUPERLU_DIST_SINGLE)
-    lu->singleprecision = (PetscBool)(precision == PETSC_PRECISION_SINGLE); // It also implies PetscReal is not single; not merely SuperLU_DIST is running in single
-#endif
-  }
-
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_aij_superlu_dist));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSuperluDistGetDiagU_C", MatSuperluDistGetDiagU_SuperLU_DIST));
 
@@ -997,19 +994,19 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
    Works with `MATAIJ` matrices
 
   Options Database Keys:
-+ -mat_superlu_dist_r <n> - number of rows in processor partition
-. -mat_superlu_dist_c <n> - number of columns in processor partition
-. -mat_superlu_dist_3d - use 3d partition, requires SuperLU_DIST 7.2 or later
-. -mat_superlu_dist_d <n> - depth in 3d partition (valid only if `-mat_superlu_dist_3d`) is provided
-. -mat_superlu_dist_equil - equilibrate the matrix
-. -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR> - row permutation
++ -mat_superlu_dist_r <n>                                                            - number of rows in processor partition
+. -mat_superlu_dist_c <n>                                                            - number of columns in processor partition
+. -mat_superlu_dist_3d                                                               - use 3d partition, requires SuperLU_DIST 7.2 or later
+. -mat_superlu_dist_d <n>                                                            - depth in 3d partition (valid only if `-mat_superlu_dist_3d`) is provided
+. -mat_superlu_dist_equil                                                            - equilibrate the matrix
+. -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR>       - row permutation
 . -mat_superlu_dist_colperm <NATURAL,MMD_AT_PLUS_A,MMD_ATA,METIS_AT_PLUS_A,PARMETIS> - column permutation
-. -mat_superlu_dist_replacetinypivot - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern> - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
-. -mat_superlu_dist_iterrefine - use iterative refinement
-. -mat_superlu_dist_printstat - print factorization information
-. -mat_superlu_dist_gpuoffload - offload factorization onto the GPUs, requires SuperLU_DIST 8.0.0 or later
-- -pc_precision single - use SuperLU_DIST single precision with PETSc double precision
+. -mat_superlu_dist_replacetinypivot                                                 - replace tiny pivots
+. -mat_superlu_dist_fact <SamePattern>                                               - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
+. -mat_superlu_dist_iterrefine                                                       - use iterative refinement
+. -mat_superlu_dist_printstat                                                        - print factorization information
+. -mat_superlu_dist_gpuoffload                                                       - offload factorization onto the GPUs, requires SuperLU_DIST 8.0.0 or later
+- -pc_precision single                                                               - use SuperLU_DIST single precision with PETSc double precision
 
   Level: beginner
 
