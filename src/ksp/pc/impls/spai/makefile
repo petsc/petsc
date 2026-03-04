@@ -1,7 +1,5 @@
 -include ../../../../../petscdir.mk
-#requirespackage   'PETSC_HAVE_SPAI'
 
-CPPFLAGS  = ${SPAI_INCLUDE}
 MANSEC    = KSP
 SUBMANSEC = PC
 
