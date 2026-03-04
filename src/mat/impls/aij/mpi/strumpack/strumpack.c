@@ -992,73 +992,7 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactor
 
 static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
-  PetscFunctionBegin;
-  F->ops->lufactornumeric = MatLUFactorNumeric_STRUMPACK;
-  F->ops->solve           = MatSolve_STRUMPACK;
-  F->ops->matsolve        = MatMatSolve_STRUMPACK;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType *type)
-{
-  PetscFunctionBegin;
-  *type = MATSOLVERSTRUMPACK;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*MC
-  MATSOLVERSTRUMPACK = "strumpack" - A solver package providing a direct sparse solver (PCLU)
-  and a preconditioner (PCILU) using low-rank compression via the external package STRUMPACK <https://portal.nersc.gov/project/sparse/strumpack/master>.
-
-  Use `./configure --download-strumpack --download-metis` to have PETSc installed with STRUMPACK.
-
-  For full functionality, add `--download-slate --download-magma --download-parmetis --download-ptscotch --download-zfp --download-butterflypack`.
-  SLATE provides GPU support in the multi-GPU setting, providing ScaLAPACK functionality but with GPU acceleration.
-  MAGMA can optionally be used for on node GPU support instead cuBLAS/cuSOLVER, and performs slightly better.
-  ParMETIS and PTScotch can be used for parallel fill-reducing ordering.
-  ZFP is used for floating point compression of the sparse factors (LOSSY or LOSSLESS compression).
-  ButterflyPACK is used for HODLR (Hierarchically Off-Diagonal Low Rank) and HODBF (Hierarchically Off-Diagonal Butterfly) compression of the sparse factors.
-
-  Options Database Keys:
-+ -mat_strumpack_verbose                      - Enable verbose output
-. -mat_strumpack_compression                  - Type of rank-structured compression in sparse LU factors (choose one of) NONE HSS BLR HODLR BLR_HODLR ZFP_BLR_HODLR LOSSLESS LOSSY
-. -mat_strumpack_compression_rel_tol          - Relative compression tolerance, when using `-pctype ilu`
-. -mat_strumpack_compression_abs_tol          - Absolute compression tolerance, when using `-pctype ilu`
-. -mat_strumpack_compression_min_sep_size     - Minimum size of separator for rank-structured compression, when using `-pctype ilu`
-. -mat_strumpack_compression_leaf_size        - Size of diagonal blocks in rank-structured approximation, when using `-pctype ilu`
-. -mat_strumpack_compression_lossy_precision  - Precision when using lossy compression [1-64], when using `-pctype ilu`, compression LOSSY (requires ZFP support)
-. -mat_strumpack_compression_butterfly_levels - Number of levels in the hierarchically off-diagonal matrix for which to use butterfly, when using `-pctype ilu`, (BLR_)HODLR compression (requires ButterflyPACK support)
-. -mat_strumpack_gpu                          - Enable GPU acceleration in numerical factorization (not supported for all compression types)
-. -mat_strumpack_colperm <TRUE>               - Permute matrix to make diagonal nonzeros
-. -mat_strumpack_reordering <METIS>           - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM GEOMETRIC AMD MMD AND MLF SPECTRAL
-. -mat_strumpack_geometric_xyz <1,1,1>        - Mesh x,y,z dimensions, for use with GEOMETRIC ordering
-. -mat_strumpack_geometric_components <1>     - Number of components per mesh point, for geometric nested dissection ordering
-. -mat_strumpack_geometric_width <1>          - Width of the separator of the mesh, for geometric nested dissection ordering
-- -mat_strumpack_metis_nodeNDP                - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
-
- Level: beginner
-
- Notes:
- Recommended use is 1 MPI process per GPU.
-
- Use `-pc_type lu` `-pc_factor_mat_solver_type strumpack` to use this as an exact (direct) solver.
-
- Use `-pc_type ilu` `-pc_factor_mat_solver_type strumpack` to enable low-rank compression (i.e, use as a preconditioner), by default using block low rank (BLR).
-
- Works with `MATAIJ` matrices
-
- HODLR, BLR_HODBF and ZFP_BLR_HODLR compression require STRUMPACK to be configured with ButterflyPACK support (`--download-butterflypack`).
-
- LOSSY, LOSSLESS and ZFP_BLR_HODLR compression require STRUMPACK to be configured with ZFP support (`--download-zfp`).
-
-.seealso: `MATSOLVERSTRUMPACK`, [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
-          `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKReordering`, `MatSTRUMPACKCompressionType`, `MatSTRUMPACKSetColPerm()`
-M*/
-static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F)
-{
-  Mat       B;
-  PetscInt  M = A->rmap->N, N = A->cmap->N;
-  PetscBool verb, flg, set;
+  PetscBool flg, set, verb;
   PetscReal ctol;
   PetscInt  min_sep_size, leaf_size, nxyz[3], nrdims, nc, w;
 #if defined(STRUMPACK_USE_ZFP)
@@ -1067,82 +1001,17 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
 #if defined(STRUMPACK_USE_BPACK)
   PetscInt bfly_lvls;
 #endif
-#if defined(STRUMPACK_USE_SLATE_SCALAPACK)
-  PetscMPIInt mpithreads;
-#endif
-  STRUMPACK_SparseSolver       *S;
-  STRUMPACK_INTERFACE           iface;
+  STRUMPACK_SparseSolver       *S = (STRUMPACK_SparseSolver *)F->data;
   STRUMPACK_REORDERING_STRATEGY ndcurrent, ndvalue;
   STRUMPACK_COMPRESSION_TYPE    compcurrent, compvalue;
-  const STRUMPACK_PRECISION     table[2][2][2] = {
-    {{STRUMPACK_FLOATCOMPLEX_64, STRUMPACK_DOUBLECOMPLEX_64}, {STRUMPACK_FLOAT_64, STRUMPACK_DOUBLE_64}},
-    {{STRUMPACK_FLOATCOMPLEX, STRUMPACK_DOUBLECOMPLEX},       {STRUMPACK_FLOAT, STRUMPACK_DOUBLE}      }
-  };
-  const STRUMPACK_PRECISION prec               = table[(sizeof(PetscInt) == 8) ? 0 : 1][(PETSC_SCALAR == PETSC_COMPLEX) ? 0 : 1][(PETSC_REAL == PETSC_FLOAT) ? 0 : 1];
-  const char *const         STRUMPACKNDTypes[] = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "STRUMPACKNDTypes", "", 0};
-  const char *const         CompTypes[]        = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "CompTypes", "", 0};
+  const char *const             STRUMPACKNDTypes[] = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "STRUMPACKNDTypes", "", 0};
+  const char *const             CompTypes[]        = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "CompTypes", "", 0};
 
   PetscFunctionBegin;
-#if defined(STRUMPACK_USE_SLATE_SCALAPACK)
-  PetscCallMPI(MPI_Query_thread(&mpithreads));
-  PetscCheck(mpithreads == MPI_THREAD_MULTIPLE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP_SYS, "SLATE requires MPI_THREAD_MULTIPLE");
-#endif
-  /* Create the factorization matrix */
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
-  PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, M, N));
-  PetscCall(PetscStrallocpy("strumpack", &((PetscObject)B)->type_name));
-  PetscCall(MatSetUp(B));
-  PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
-  B->trivialsymbolic = PETSC_TRUE;
-  PetscCheck(ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
-  B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
-  B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
-  B->ops->getinfo           = MatGetInfo_External;
-  B->ops->view              = MatView_STRUMPACK;
-  B->ops->destroy           = MatDestroy_STRUMPACK;
-  B->ops->getdiagonal       = MatGetDiagonal_STRUMPACK;
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_aij_strumpack));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetReordering_C", MatSTRUMPACKSetReordering_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetReordering_C", MatSTRUMPACKGetReordering_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetColPerm_C", MatSTRUMPACKSetColPerm_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetColPerm_C", MatSTRUMPACKGetColPerm_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricNxyz_C", MatSTRUMPACKSetGeometricNxyz_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricComponents_C", MatSTRUMPACKSetGeometricComponents_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricWidth_C", MatSTRUMPACKSetGeometricWidth_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGPU_C", MatSTRUMPACKSetGPU_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetGPU_C", MatSTRUMPACKGetGPU_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompression_C", MatSTRUMPACKSetCompression_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompression_C", MatSTRUMPACKGetCompression_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompRelTol_C", MatSTRUMPACKSetCompRelTol_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompRelTol_C", MatSTRUMPACKGetCompRelTol_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompAbsTol_C", MatSTRUMPACKSetCompAbsTol_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompAbsTol_C", MatSTRUMPACKGetCompAbsTol_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompLeafSize_C", MatSTRUMPACKSetCompLeafSize_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompLeafSize_C", MatSTRUMPACKGetCompLeafSize_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompMinSepSize_C", MatSTRUMPACKSetCompMinSepSize_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompMinSepSize_C", MatSTRUMPACKGetCompMinSepSize_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompLossyPrecision_C", MatSTRUMPACKSetCompLossyPrecision_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompLossyPrecision_C", MatSTRUMPACKGetCompLossyPrecision_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompButterflyLevels_C", MatSTRUMPACKSetCompButterflyLevels_STRUMPACK));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompButterflyLevels_C", MatSTRUMPACKGetCompButterflyLevels_STRUMPACK));
-  B->factortype = ftype;
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "STRUMPACK Options", "Mat");
 
-  /* set solvertype */
-  PetscCall(PetscFree(B->solvertype));
-  PetscCall(PetscStrallocpy(MATSOLVERSTRUMPACK, &B->solvertype));
-
-  PetscCall(PetscNew(&S));
-  B->data = S;
-
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &flg)); /* A might be MATSEQAIJCUSPARSE */
-  iface = flg ? STRUMPACK_MT : STRUMPACK_MPI_DIST;
-
-  PetscOptionsBegin(PetscObjectComm((PetscObject)B), ((PetscObject)B)->prefix, "STRUMPACK Options", "Mat");
-  verb = PetscLogPrintInfo ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-mat_strumpack_verbose", "Print STRUMPACK information", "None", verb, &verb, NULL));
-
-  PetscCallExternalVoid("STRUMPACK_init", STRUMPACK_init(S, PetscObjectComm((PetscObject)A), prec, iface, 0, NULL, verb));
+  PetscCall(PetscOptionsBool("-mat_strumpack_verbose", "Print Strumpack's verbose output", "", PETSC_FALSE, &verb, &flg));
+  if (flg) PetscCallExternalVoid("STRUMPACK_set_verbose", STRUMPACK_set_verbose(*S, verb));
 
   /* By default, no compression is done. Compression is enabled when the user enables it with        */
   /*  -mat_strumpack_compression with anything else than NONE, or when selecting ilu                 */
@@ -1151,11 +1020,8 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   /* (or approximate) LU factorization.                                                              */
   PetscCallExternalVoid("STRUMPACK_compression", compcurrent = STRUMPACK_compression(*S));
   PetscCall(PetscOptionsEnum("-mat_strumpack_compression", "Rank-structured compression type", "None", CompTypes, (PetscEnum)compcurrent, (PetscEnum *)&compvalue, &set));
-  if (set) {
-    PetscCall(MatSTRUMPACKSetCompression(B, (MatSTRUMPACKCompressionType)compvalue));
-  } else {
-    if (ftype == MAT_FACTOR_ILU) PetscCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR));
-  }
+  if (set) PetscCall(MatSTRUMPACKSetCompression(F, (MatSTRUMPACKCompressionType)compvalue));
+  else if (F->factortype == MAT_FACTOR_ILU) PetscCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR));
 
   PetscCallExternalVoid("STRUMPACK_compression_rel_tol", ctol = (PetscReal)STRUMPACK_compression_rel_tol(*S));
   PetscCall(PetscOptionsReal("-mat_strumpack_compression_rel_tol", "Relative compression tolerance", "None", ctol, &ctol, &set));
@@ -1188,7 +1054,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
 #if defined(STRUMPACK_USE_CUDA) || defined(STRUMPACK_USE_HIP) || defined(STRUMPACK_USE_SYCL)
   PetscCallExternalVoid("STRUMPACK_use_gpu", flg = (STRUMPACK_use_gpu(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
   PetscCall(PetscOptionsBool("-mat_strumpack_gpu", "Enable GPU acceleration (not supported for all compression types)", "None", flg, &flg, &set));
-  if (set) MatSTRUMPACKSetGPU(B, flg);
+  if (set) MatSTRUMPACKSetGPU(F, flg);
 #endif
 
   PetscCallExternalVoid("STRUMPACK_matching", flg = (STRUMPACK_matching(*S) == STRUMPACK_MATCHING_NONE) ? PETSC_FALSE : PETSC_TRUE);
@@ -1205,8 +1071,8 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   nxyz[0] = nxyz[1] = nxyz[2] = 1;
   PetscCall(PetscOptionsIntArray("-mat_strumpack_geometric_xyz", "Mesh sizes nx,ny,nz (Use 1 for default)", "", nxyz, &nrdims, &set));
   if (set) {
-    PetscCheck(nrdims == 1 || nrdims == 2 || nrdims == 3, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_OUTOFRANGE, "'-mat_strumpack_geometric_xyz' requires 1, 2, or 3 values.");
-    PetscCall(MatSTRUMPACKSetGeometricNxyz(B, (int)nxyz[0], (int)nxyz[1], (int)nxyz[2]));
+    PetscCheck(nrdims == 1 || nrdims == 2 || nrdims == 3, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_OUTOFRANGE, "-mat_strumpack_geometric_xyz requires 1, 2, or 3 values");
+    PetscCall(MatSTRUMPACKSetGeometricNxyz(F, (int)nxyz[0], (int)nxyz[1], (int)nxyz[2]));
   }
   PetscCall(PetscOptionsInt("-mat_strumpack_geometric_components", "Number of components per mesh point, for geometric nested dissection ordering", "None", 1, &nc, &set));
   if (set) PetscCallExternalVoid("STRUMPACK_set_components", STRUMPACK_set_components(*S, (int)nc));
@@ -1216,11 +1082,8 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscCallExternalVoid("STRUMPACK_use_METIS_NodeNDP", flg = (STRUMPACK_use_METIS_NodeNDP(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
   PetscCall(PetscOptionsBool("-mat_strumpack_metis_nodeNDP", "Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree", "None", flg, &flg, &set));
   if (set) {
-    if (flg) {
-      PetscCallExternalVoid("STRUMPACK_enable_METIS_NodeNDP", STRUMPACK_enable_METIS_NodeNDP(*S));
-    } else {
-      PetscCallExternalVoid("STRUMPACK_disable_METIS_NodeNDP", STRUMPACK_disable_METIS_NodeNDP(*S));
-    }
+    if (flg) PetscCallExternalVoid("STRUMPACK_enable_METIS_NodeNDP", STRUMPACK_enable_METIS_NodeNDP(*S));
+    else PetscCallExternalVoid("STRUMPACK_disable_METIS_NodeNDP", STRUMPACK_disable_METIS_NodeNDP(*S));
   }
 
   /* Disable the outer iterative solver from STRUMPACK.                                       */
@@ -1229,9 +1092,135 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   /* low-rank compression), it will use it's own preconditioned GMRES. Here we can disable    */
   /* the outer iterative solver, as PETSc uses STRUMPACK from within a KSP.                   */
   PetscCallExternalVoid("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(*S, STRUMPACK_DIRECT));
-
   PetscOptionsEnd();
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
+static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERSTRUMPACK;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*MC
+  MATSOLVERSTRUMPACK = "strumpack" - A solver package providing a direct sparse solver (PCLU)
+  and a preconditioner (PCILU) using low-rank compression via the external package STRUMPACK <https://portal.nersc.gov/project/sparse/strumpack/master>.
+
+  Use `./configure --download-strumpack --download-metis` to have PETSc installed with STRUMPACK.
+
+  For full functionality, add `--download-slate --download-magma --download-parmetis --download-ptscotch --download-zfp --download-butterflypack`.
+  SLATE provides GPU support in the multi-GPU setting, providing ScaLAPACK functionality but with GPU acceleration.
+  MAGMA can optionally be used for on node GPU support instead cuBLAS/cuSOLVER, and performs slightly better.
+  ParMETIS and PTScotch can be used for parallel fill-reducing ordering.
+  ZFP is used for floating point compression of the sparse factors (`LOSSY` or `LOSSLESS` compression).
+  ButterflyPACK is used for `HODLR` (Hierarchically Off-Diagonal Low Rank) and `HODBF` (Hierarchically Off-Diagonal Butterfly) compression of the sparse factors.
+
+  Options Database Keys:
++ -mat_strumpack_verbose                      - Enable verbose output
+. -mat_strumpack_compression                  - Type of rank-structured compression in sparse LU factors (choose one of) `NONE`, `HSS`, `BLR`, `HODLR`, `BLR_HODLR ZFP_BLR_HODLR`, `LOSSLESS`, `LOSSY`
+. -mat_strumpack_compression_rel_tol          - Relative compression tolerance, when using `-pctype ilu`
+. -mat_strumpack_compression_abs_tol          - Absolute compression tolerance, when using `-pctype ilu`
+. -mat_strumpack_compression_min_sep_size     - Minimum size of separator for rank-structured compression, when using `-pctype ilu`
+. -mat_strumpack_compression_leaf_size        - Size of diagonal blocks in rank-structured approximation, when using `-pctype ilu`
+. -mat_strumpack_compression_lossy_precision  - Precision when using lossy compression [1-64], when using `-pctype ilu`, compression `LOSSY` (requires ZFP support)
+. -mat_strumpack_compression_butterfly_levels - Number of levels in the hierarchically off-diagonal matrix for which to use butterfly, when using `-pctype ilu`, (BLR_)HODLR compression (requires ButterflyPACK support)
+. -mat_strumpack_gpu                          - Enable GPU acceleration in numerical factorization (not supported for all compression types)
+. -mat_strumpack_colperm <TRUE>               - Permute matrix to make diagonal nonzeros
+. -mat_strumpack_reordering <METIS>           - Sparsity reducing matrix reordering (choose one of) `NATURAL`, `METIS`, `PARMETIS`, `SCOTCH`, `PTSCOTCH`, `RCM`, `GEOMETRIC`, `AMD`, `MMD`, `AND`, `MLF`, `SPECTRAL`
+. -mat_strumpack_geometric_xyz <1,1,1>        - Mesh x,y,z dimensions, for use with `GEOMETRIC` ordering
+. -mat_strumpack_geometric_components <1>     - Number of components per mesh point, for geometric nested dissection ordering
+. -mat_strumpack_geometric_width <1>          - Width of the separator of the mesh, for geometric nested dissection ordering
+- -mat_strumpack_metis_nodeNDP                - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
+
+ Level: beginner
+
+ Notes:
+ Recommended use is 1 MPI process per GPU.
+
+ Use `-pc_type lu` `-pc_factor_mat_solver_type strumpack` to use this as an exact (direct) solver.
+
+ Use `-pc_type ilu` `-pc_factor_mat_solver_type strumpack` to enable low-rank compression (i.e, use as a preconditioner), by default using block low rank (BLR).
+
+ Works with `MATAIJ` matrices
+
+ `HODLR`, `BLR_HODBF` and `ZFP_BLR_HODLR` compression require STRUMPACK to be configured with ButterflyPACK support (`--download-butterflypack`).
+
+ `LOSSY`, `LOSSLESS` and `ZFP_BLR_HODLR` compression require STRUMPACK to be configured with ZFP support (`--download-zfp`).
+
+.seealso: `MATSOLVERSTRUMPACK`, [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
+          `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKReordering`, `MatSTRUMPACKCompressionType`, `MatSTRUMPACKSetColPerm()`
+M*/
+static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F)
+{
+  Mat       B;
+  PetscBool flg;
+#if defined(STRUMPACK_USE_SLATE_SCALAPACK)
+  PetscMPIInt mpithreads;
+#endif
+  STRUMPACK_SparseSolver   *S;
+  STRUMPACK_INTERFACE       iface;
+  const STRUMPACK_PRECISION table[2][2][2] = {
+    {{STRUMPACK_FLOATCOMPLEX_64, STRUMPACK_DOUBLECOMPLEX_64}, {STRUMPACK_FLOAT_64, STRUMPACK_DOUBLE_64}},
+    {{STRUMPACK_FLOATCOMPLEX, STRUMPACK_DOUBLECOMPLEX},       {STRUMPACK_FLOAT, STRUMPACK_DOUBLE}      }
+  };
+  const STRUMPACK_PRECISION prec = table[(sizeof(PetscInt) == 8) ? 0 : 1][(PETSC_SCALAR == PETSC_COMPLEX) ? 0 : 1][(PETSC_REAL == PETSC_FLOAT) ? 0 : 1];
+
+  PetscFunctionBegin;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
+  PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
+  PetscCall(PetscStrallocpy("strumpack", &((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
+  PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
+  PetscCheck(ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
+  B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
+  B->ops->getinfo           = MatGetInfo_External;
+  B->ops->view              = MatView_STRUMPACK;
+  B->ops->destroy           = MatDestroy_STRUMPACK;
+  B->ops->getdiagonal       = MatGetDiagonal_STRUMPACK;
+  B->ops->lufactornumeric   = MatLUFactorNumeric_STRUMPACK;
+  B->ops->solve             = MatSolve_STRUMPACK;
+  B->ops->matsolve          = MatMatSolve_STRUMPACK;
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_aij_strumpack));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetReordering_C", MatSTRUMPACKSetReordering_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetReordering_C", MatSTRUMPACKGetReordering_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetColPerm_C", MatSTRUMPACKSetColPerm_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetColPerm_C", MatSTRUMPACKGetColPerm_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricNxyz_C", MatSTRUMPACKSetGeometricNxyz_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricComponents_C", MatSTRUMPACKSetGeometricComponents_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGeometricWidth_C", MatSTRUMPACKSetGeometricWidth_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetGPU_C", MatSTRUMPACKSetGPU_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetGPU_C", MatSTRUMPACKGetGPU_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompression_C", MatSTRUMPACKSetCompression_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompression_C", MatSTRUMPACKGetCompression_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompRelTol_C", MatSTRUMPACKSetCompRelTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompRelTol_C", MatSTRUMPACKGetCompRelTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompAbsTol_C", MatSTRUMPACKSetCompAbsTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompAbsTol_C", MatSTRUMPACKGetCompAbsTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompLeafSize_C", MatSTRUMPACKSetCompLeafSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompLeafSize_C", MatSTRUMPACKGetCompLeafSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompMinSepSize_C", MatSTRUMPACKSetCompMinSepSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompMinSepSize_C", MatSTRUMPACKGetCompMinSepSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompLossyPrecision_C", MatSTRUMPACKSetCompLossyPrecision_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompLossyPrecision_C", MatSTRUMPACKGetCompLossyPrecision_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetCompButterflyLevels_C", MatSTRUMPACKSetCompButterflyLevels_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetCompButterflyLevels_C", MatSTRUMPACKGetCompButterflyLevels_STRUMPACK));
+  B->factortype = ftype;
+
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSTRUMPACK, &B->solvertype));
+
+#if defined(STRUMPACK_USE_SLATE_SCALAPACK)
+  PetscCallMPI(MPI_Query_thread(&mpithreads));
+  PetscCheck(mpithreads == MPI_THREAD_MULTIPLE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP_SYS, "SLATE requires MPI_THREAD_MULTIPLE");
+#endif
+  PetscCall(PetscNew(&S));
+  B->data = S;
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &flg)); /* A might be MATSEQAIJCUSPARSE */
+  iface = flg ? STRUMPACK_MT : STRUMPACK_MPI_DIST;
+  PetscCallExternalVoid("STRUMPACK_init", STRUMPACK_init(S, PetscObjectComm((PetscObject)A), prec, iface, 0, NULL, PETSC_FALSE));
   *F = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
