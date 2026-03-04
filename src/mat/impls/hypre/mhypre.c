@@ -14,6 +14,7 @@
 #include <HYPRE_utilities.h>
 #include <_hypre_parcsr_ls.h>
 #include <_hypre_sstruct_ls.h>
+#include <_hypre_utilities.h>
 
 #if PETSC_PKG_HYPRE_VERSION_LT(2, 18, 0)
   #define hypre_ParCSRMatrixClone(A, B) hypre_ParCSRMatrixCompleteClone(A)
@@ -1422,6 +1423,11 @@ static PetscErrorCode MatBindToCPU_HYPRE(Mat A, PetscBool bind)
 
   PetscFunctionBegin;
   A->boundtocpu = bind;
+  if (hA->cooMat) {
+    PetscBool coobound;
+    PetscCall(MatBoundToCPU(hA->cooMat, &coobound));
+    if (coobound != bind) PetscCall(MatBindToCPU(hA->cooMat, bind));
+  }
   if (hA->ij && hypre_IJMatrixAssembleFlag(hA->ij) && hmem != hypre_IJMatrixMemoryLocation(hA->ij)) {
     hypre_ParCSRMatrix *parcsr;
     PetscCallHYPRE(HYPRE_IJMatrixGetObject(hA->ij, (void **)&parcsr));
@@ -2077,12 +2083,30 @@ static PetscErrorCode MatGetRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscIn
 {
   hypre_ParCSRMatrix *parcsr;
   HYPRE_Int           hnz;
+#if PETSC_HAVE_HYPRE_DEVICE
+  PetscInt    *didx;
+  PetscScalar *dv;
+#endif
 
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-  /* call HYPRE API */
-  PetscCallHYPRE(HYPRE_ParCSRMatrixGetRow(parcsr, row, &hnz, (HYPRE_BigInt **)idx, (HYPRE_Complex **)v));
+#if PETSC_HAVE_HYPRE_DEVICE
+  if (hypre_ParCSRMatrixMemoryLocation(parcsr) == HYPRE_MEMORY_DEVICE) {
+    PetscCallExternal(HYPRE_ParCSRMatrixGetRow, parcsr, row, &hnz, (HYPRE_BigInt **)&didx, (HYPRE_Complex **)&dv);
+    if (idx) {
+      PetscCall(PetscMalloc1(hnz, idx));
+      hypre_TMemcpy(*idx, didx, PetscInt, hnz, HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
+    }
+    if (v) {
+      PetscCall(PetscMalloc1(hnz, v));
+      hypre_TMemcpy(*v, dv, PetscScalar, hnz, HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
+    }
+  } else
+#endif
+    /* call HYPRE API */
+    PetscCallHYPRE(HYPRE_ParCSRMatrixGetRow(parcsr, row, &hnz, (HYPRE_BigInt **)idx, (HYPRE_Complex **)v));
+
   if (nz) *nz = (PetscInt)hnz;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2095,7 +2119,14 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-  /* call HYPRE API */
+#if PETSC_HAVE_HYPRE_DEVICE
+  if (hypre_ParCSRMatrixMemoryLocation(parcsr) == HYPRE_MEMORY_DEVICE) {
+    if (idx) PetscFree(*idx);
+    if (v) PetscFree(*v);
+  }
+#endif
+  /* call HYPRE API. It doesn't actually use any of the arguments so it's ok if we've actually
+     already free'd idx and v above */
   hnz = nz ? (HYPRE_Int)(*nz) : 0;
   PetscCallHYPRE(HYPRE_ParCSRMatrixRestoreRow(parcsr, row, &hnz, (HYPRE_BigInt **)idx, (HYPRE_Complex **)v));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2103,20 +2134,73 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
 
 static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
-  Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
-  PetscInt   i;
+  Mat_HYPRE    *hA = (Mat_HYPRE *)A->data;
+  PetscInt      i;
+  HYPRE_Int     hypre_host_n;
+  HYPRE_BigInt  hypre_host_idxm;
+  HYPRE_BigInt *device_idxm = NULL, *device_idxn = NULL, *hypre_host_idxn;
+  HYPRE_Int    *device_n      = NULL;
+  PetscScalar  *device_values = NULL;
+  PetscBool     hypre_on_host = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(PetscHYPREIntCast(n, &hypre_host_n));
+
+  // Setup HYPRE_BigInt host idxn array
+  if (sizeof(HYPRE_BigInt) > sizeof(PetscInt)) {
+    PetscCall(PetscMalloc1(n, &hypre_host_idxn));
+    for (PetscInt j = 0; j < n; ++j) hypre_host_idxn[j] = idxn[j];
+  } else {
+    PetscCheck(sizeof(HYPRE_BigInt) == sizeof(PetscInt), PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing handling of HYPRE_BigInt size less than PetscInt size");
+    hypre_host_idxn = (HYPRE_BigInt *)idxn;
+  }
+
+  // Check compatibility of PetscScalar and HYPRE_Complex
+  PetscCheck(sizeof(PetscScalar) == sizeof(HYPRE_Complex), PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing handling of incompatible PetscScalar and HYPRE_Complex sizes");
+
+#if PETSC_HAVE_HYPRE_DEVICE
+  if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
+    hypre_on_host = PETSC_FALSE;
+    device_idxm   = hypre_TAlloc(HYPRE_BigInt, 1, HYPRE_MEMORY_DEVICE);
+    device_n      = hypre_TAlloc(HYPRE_Int, 1, HYPRE_MEMORY_DEVICE);
+    device_values = hypre_TAlloc(PetscScalar, n, HYPRE_MEMORY_DEVICE);
+    device_idxn   = hypre_TAlloc(HYPRE_BigInt, n, HYPRE_MEMORY_DEVICE);
+    hypre_TMemcpy(device_idxn, hypre_host_idxn, HYPRE_BigInt, n, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
+    hypre_TMemcpy(device_n, &hypre_host_n, HYPRE_Int, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
+  }
+#endif
+
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
   for (i = 0; i < m; i++) {
     if (idxm[i] >= 0) {
-      HYPRE_Int hn = (HYPRE_Int)n;
-      PetscCallHYPRE(HYPRE_IJMatrixGetValues(hA->ij, 1, &hn, (HYPRE_BigInt *)&idxm[i], (HYPRE_BigInt *)idxn, (HYPRE_Complex *)(v + i * n)));
+      HYPRE_BigInt  *rows, *cols;
+      HYPRE_Int     *ncols;
+      HYPRE_Complex *values;
+      hypre_host_idxm = idxm[i];
+      if (!hypre_on_host) hypre_TMemcpy(device_idxm, &hypre_host_idxm, HYPRE_BigInt, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
+      ncols  = hypre_on_host ? &hypre_host_n : device_n;
+      rows   = hypre_on_host ? &hypre_host_idxm : device_idxm;
+      cols   = hypre_on_host ? hypre_host_idxn : device_idxn;
+      values = hypre_on_host ? (HYPRE_Complex *)(v + i * n) : (HYPRE_Complex *)device_values;
+      PetscCallHYPRE(HYPRE_IJMatrixGetValues2(hA->ij, 1, ncols, rows, NULL, cols, values));
+
+      if (!hypre_on_host) hypre_TMemcpy((HYPRE_Complex *)(v + i * n), device_values, HYPRE_Complex, n, HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
     }
   }
+
+  if (sizeof(PetscInt) < sizeof(HYPRE_BigInt)) PetscCall(PetscFree(hypre_host_idxn));
+#if PETSC_HAVE_HYPRE_DEVICE
+  if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
+    hypre_TFree(device_idxm, HYPRE_MEMORY_DEVICE);
+    hypre_TFree(device_idxn, HYPRE_MEMORY_DEVICE);
+    hypre_TFree(device_values, HYPRE_MEMORY_DEVICE);
+    hypre_TFree(device_n, HYPRE_MEMORY_DEVICE);
+  }
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

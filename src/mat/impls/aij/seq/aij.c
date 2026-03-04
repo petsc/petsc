@@ -596,8 +596,11 @@ static PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[]
   PetscInt        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
   PetscInt        *ai = a->i, *ailen = a->ilen;
   const MatScalar *ap, *aa;
+  PetscBool        hyprecoo;
 
   PetscFunctionBegin;
+  PetscCall(PetscStrcmp("_internal_COO_mat_for_hypre", ((PetscObject)A)->name, &hyprecoo));
+
   PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   for (k = 0; k < m; k++) { /* loop over rows */
     row = im[k];
@@ -615,9 +618,17 @@ static PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[]
         continue;
       } /* negative column */
       PetscCheck(in[l] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[l], A->cmap->n - 1);
-      col  = in[l];
+      col = in[l];
+      /* hypre coo mat stores its diagonal at the front, out of sort */
+      if (hyprecoo) {
+        if (col == rp[0]) {
+          *v++ = ap[0];
+          goto finished;
+        }
+        low = 1;
+      } else low = 0;
       high = nrow;
-      low  = 0; /* assume unsorted */
+      /* assume sorted */
       while (high - low > 5) {
         t = (low + high) / 2;
         if (rp[t] > col) high = t;
