@@ -505,7 +505,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
   pkgname = 'slepc' if slepcdir else 'petsc'
 
   if not slepcdir:
-    classes, enums, senums, typedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI(petscdir,'petsc')
+    classes, enums, senums, typedefs, functiontypedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI(petscdir,'petsc')
 
     with open(os.path.join(petscdir,petscarch,'lib','petsc','conf','classes.data'),'wb') as file:
       pickle.dump(classes,file)
@@ -528,7 +528,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       petsctypedefs = pickle.load(file)
 
     petscobjectfunctions = petscclasses['PetscObject'].functions
-    classes, enums, senums, typedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI(slepcdir,'slepc')
+    classes, enums, senums, typedefs, functiontypedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI(slepcdir,'slepc')
     classesext = classes.copy(); classesext.update(petscclasses)
     structsext = structs.copy(); structsext.update(petscstructs)
     enumsext = enums.copy(); enumsext.update(petscenums)

@@ -95,6 +95,9 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 + sname    - The name of a new user-defined creation routine
 - function - The creation routine itself
 
+  Calling sequence of `function`:
+. ts - the `TS` being setup for the new `TSType` being registered
+
   Level: advanced
 
   Notes:
@@ -118,7 +121,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 
 .seealso: [](ch_ts), `TSSetType()`, `TSType`, `TSRegisterAll()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS))
+PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS ts))
 {
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());

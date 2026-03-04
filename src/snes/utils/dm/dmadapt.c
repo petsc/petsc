@@ -676,14 +676,14 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor adaptor, DM dm, Vec xin, DM newdm, Vec xout, PetscCtx ctx))
 {
   PetscFunctionBegin;
   *tfunc = adaptor->ops->transfersolution;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor adaptor, DM dm, Vec xin, DM newdm, Vec xout, PetscCtx ctx))
 {
   PetscFunctionBegin;
   adaptor->ops->transfersolution = tfunc;
@@ -1639,11 +1639,15 @@ PetscErrorCode DMAdaptorGetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode 
 + adaptor   - the `DMAdaptor`
 - setupFunc - the function setting up the mixed problem
 
+  Calling sequence of setupFunc:
++ adaptor - the `DMAdaptor`
+- dm      - the `DM`
+
   Level: advanced
 
 .seealso: `DMAdaptor`, `DMAdaptorGetMixedSetupFunction()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode (*setupFunc)(DMAdaptor, DM))
+PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode (*setupFunc)(DMAdaptor adaptor, DM dm))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);

@@ -596,6 +596,12 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 . func - the function to check of redundancies
 - ctx  - optional context used by the function
 
+  Calling sequence of func:
++ snes      - the `SNES` context
+. is_act    - the set of points in the active sets
+. is_redact - output, the set of points in the non-redundant active set
+- ctx       - optional context
+
   Level: advanced
 
   Note:
@@ -604,7 +610,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
  @*/
-PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES, IS, IS *, void *), PetscCtx ctx)
+PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES snes, IS is_act, IS *is_redact, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS *)snes->data;
 

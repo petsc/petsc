@@ -23,7 +23,7 @@ struct _n_TaoShell {
 
 .seealso: `Tao`, `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
-PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
+PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao tao))
 {
   Tao_Shell *shell = (Tao_Shell *)tao->data;
 

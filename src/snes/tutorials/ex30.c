@@ -171,11 +171,11 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, (void *)user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunctionFn *)FormFunctionLocal, user));
   PetscCall(SNESSetFromOptions(snes));
 
-  PetscCall(SNESSetConvergenceTest(snes, SNESConverged_Interactive, (void *)user, NULL));
-  PetscCall(PetscPushSignalHandler(InteractiveHandler, (void *)user));
+  PetscCall(SNESSetConvergenceTest(snes, SNESConverged_Interactive, user, NULL));
+  PetscCall(PetscPushSignalHandler(InteractiveHandler, user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system

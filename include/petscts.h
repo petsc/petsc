@@ -1214,10 +1214,10 @@ typedef const char *TSGLLEAcceptType;
   TSGLLEAcceptFn - A prototype of a `TS` accept function that would be passed to `TSGLLEAcceptRegister()`
 
   Calling Sequence:
-+ ts  - timestep context
-. nt - time to end of solution time
-. h - the proposed step-size
-. enorm - unknown
++ ts     - timestep context
+. nt     - time to end of solution time
+. h      - the proposed step-size
+. enorm  - unknown
 - accept - output, if the proposal is accepted
 
   Level: beginner
@@ -1228,7 +1228,7 @@ typedef const char *TSGLLEAcceptType;
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunctionFn`,
 `TSIJacobianFn`, `TSRHSJacobianFn`, `TSGLLEAcceptRegister()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TSGLLEAcceptFn)(TS ts, PetscReal nt, PetscReal h, const PetscReal enorm[], PetscBool *accept);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSGLLEAcceptFn(TS ts, PetscReal nt, PetscReal h, const PetscReal enorm[], PetscBool *accept);
 
 PETSC_EXTERN_TYPEDEF typedef TSGLLEAcceptFn *TSGLLEAcceptFunction;
 

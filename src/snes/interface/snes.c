@@ -807,7 +807,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt, void *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt, PetscCtx);
 
 static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 {
@@ -3352,8 +3352,8 @@ PetscErrorCode SNESSetUp(SNES snes)
   void          *funcctx;
   void          *jacctx, *appctx;
   Mat            j, jpre;
-  PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, void *);
-  PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
+  PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, PetscCtx);
+  PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, PetscCtx);
   SNESFunctionFn *func;
   SNESJacobianFn *jac;
 
@@ -4074,7 +4074,7 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
 
 PETSC_INTERN PetscErrorCode SNESMonitorRange_Private(SNES, PetscInt, PetscReal *);
 
-PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *monctx)
+PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, PetscCtx monctx)
 {
   PetscDrawLG      lg;
   PetscReal        x, y, per;
@@ -4213,7 +4213,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
 
      Synopsis:
      #include <petscsnes.h>
-    PetscErrorCode SNESMonitorFunction(SNES snes, PetscInt its, PetscReal norm, void *mctx)
+    PetscErrorCode SNESMonitorFunction(SNES snes, PetscInt its, PetscReal norm, PetscCtx mctx)
 
      Collective
 
@@ -4225,7 +4225,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
 
    Level: advanced
 
-.seealso: [](ch_snes), `SNESMonitorSet()`
+.seealso: [](ch_snes), `SNESMonitorSet()`, `PetscCtx`
 M*/
 
 /*@C
@@ -4240,6 +4240,12 @@ M*/
 . f              - the monitor function,  for the calling sequence see `SNESMonitorFunction`
 . mctx           - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
 - monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
+
+  Calling sequence of f:
++ snes  - the `SNES` object
+. it    - the current iteration
+. rnorm - norm of the residual
+- mctx  - the optional monitor context
 
   Options Database Keys:
 + -snes_monitor               - sets `SNESMonitorDefault()`
@@ -4259,7 +4265,7 @@ M*/
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESMonitorDefault()`, `SNESMonitorCancel()`, `SNESMonitorFunction`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, PetscReal, PetscCtx), PetscCtx mctx, PetscCtxDestroyFn *monitordestroy)
+PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES snes, PetscInt it, PetscReal rnorm, PetscCtx mctx), PetscCtx mctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -4309,31 +4315,6 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-    SNESConvergenceTestFunction - functional form used for testing of convergence of nonlinear solver
-
-     Synopsis:
-     #include <petscsnes.h>
-     PetscErrorCode SNESConvergenceTest(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *cctx)
-
-     Collective
-
-    Input Parameters:
-+    snes - the `SNES` context
-.    it - current iteration (0 is the first and is before any Newton step)
-.    xnorm - 2-norm of current iterate
-.    gnorm - 2-norm of current step
-.    f - 2-norm of function
--    cctx - [optional] convergence context
-
-    Output Parameter:
-.    reason - reason for convergence/divergence, only needs to be set when convergence or divergence is detected
-
-   Level: intermediate
-
-.seealso: [](ch_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`
-M*/
-
 /*@C
   SNESSetConvergenceTest - Sets the function that is to be used
   to test for convergence of the nonlinear iterative solution.
@@ -4341,22 +4322,31 @@ M*/
   Logically Collective
 
   Input Parameters:
-+ snes                        - the `SNES` context
-. SNESConvergenceTestFunction - routine to test for convergence
-. ctx                         - [optional] context for private data for the convergence routine  (may be `NULL`)
-- destroy                     - [optional] destructor for the context (may be `NULL`; `PETSC_NULL_FUNCTION` in Fortran)
++ snes    - the `SNES` context
+. func    - routine to test for convergence
+. ctx     - [optional] context for private data for the convergence routine  (may be `NULL`)
+- destroy - [optional] destructor for the context (may be `NULL`; `PETSC_NULL_FUNCTION` in Fortran)
+
+  Calling sequence of func:
++ snes   - the `SNES` context
+. it     - the current iteration number
+. xnorm  - the norm of the new solution
+. snorm  - the norm of the step
+. fnorm  - the norm of the function value
+. reason - output, the reason convergence or divergence as declared
+- ctx    - the optional convergence test context
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNES`, `SNESConvergedDefault()`, `SNESConvergedSkip()`, `SNESConvergenceTestFunction`
+.seealso: [](ch_snes), `SNES`, `SNESConvergedDefault()`, `SNESConvergedSkip()`
 @*/
-PetscErrorCode SNESSetConvergenceTest(SNES snes, PetscErrorCode (*SNESConvergenceTestFunction)(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *), PetscCtx ctx, PetscCtxDestroyFn *destroy)
+PetscErrorCode SNESSetConvergenceTest(SNES snes, PetscErrorCode (*func)(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, PetscCtx ctx), PetscCtx ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESConvergedSkip;
+  if (!func) func = SNESConvergedSkip;
   if (snes->ops->convergeddestroy) PetscCall((*snes->ops->convergeddestroy)(&snes->cnvP));
-  snes->ops->converged        = SNESConvergenceTestFunction;
+  snes->ops->converged        = func;
   snes->ops->convergeddestroy = destroy;
   snes->cnvP                  = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4703,7 +4693,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESConvergedReason`, `SNESGetConvergedReason()`, `SNESConvergedReasonView()`, `SNESConvergedReasonViewCancel()`,
           `PetscCtxDestroyFn`
 @*/
-PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES snes, void *vctx), void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
+PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES snes, PetscCtx vctx), PetscCtx vctx, PetscCtxDestroyFn *reasonviewdestroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);

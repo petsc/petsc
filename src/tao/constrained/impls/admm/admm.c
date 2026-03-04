@@ -994,16 +994,23 @@ PetscErrorCode TaoADMMGetRegularizerCoefficient(Tao tao, PetscReal *lambda)
 
   Input Parameters:
 + tao  - the Tao solver context
-. J    - user-created regularizer constraint Jacobian matrix
-. Jpre - user-created regularizer Jacobian constraint matrix for constructing the preconditioner, often this is `J`
-. func - function pointer for the regularizer constraint Jacobian update function
-- ctx  - user context for the regularizer Hessian
+. J    - user-created misfit constraint Jacobian matrix
+. Jpre - user-created misfit Jacobian constraint matrix for constructing the preconditioner, often this is `J`
+. func - function pointer for the misfit constraint Jacobian update function
+- ctx  - application context for the regularizer constraint Jacobian
+
+  Calling sequence of func:
++ tao  - the `Tao` context
+. u    - in current input solution
+. J    - the contribution to the misfit constraint Jacobian
+. Jpre - the contribution to matrix from which to construct a preconditioner for the misfit constraint Jacobian
+- ctx  - the optional application context
 
   Level: advanced
 
 .seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao tao, Vec u, Mat J, Mat Jpre, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
@@ -1043,13 +1050,20 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 . J    - user-created regularizer constraint Jacobian matrix
 . Jpre - user-created regularizer Jacobian constraint matrix for constructing the preconditioner, often this is `J`
 . func - function pointer for the regularizer constraint Jacobian update function
-- ctx  - user context for the regularizer Hessian
+- ctx  - application context for the regularizer constraint Jacobian
+
+  Calling sequence of func:
++ tao  - the `Tao` context
+. u    - in current input solution
+. J    - the contribution to the constraint Jacobian
+. Jpre - the contribution to matrix from which to construct a preconditioner for the constraint Jacobian
+- ctx  - the optional application context
 
   Level: advanced
 
 .seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetMisfitConstraintJacobian()`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao tao, Vec u, Mat J, Mat Jpre, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
@@ -1087,13 +1101,20 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
   Input Parameters:
 + tao  - the `Tao` context
 . func - function pointer for the misfit value and gradient evaluation
-- ctx  - user context for the misfit
+- ctx  - application context for the misfit
+
+  Calling sequence of func:
++ tao - the `Tao` context
+. u   - in current input solution
+. f   - the contribution to the objective function
+. g   - the contribution to the gradient
+- ctx - the optional application context
 
   Level: advanced
 
 .seealso: `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao tao, Vec u, PetscReal *f, Vec g, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
@@ -1115,13 +1136,20 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
 . H    - user-created matrix for the Hessian of the misfit term
 . Hpre - user-created matrix for the preconditioner of Hessian of the misfit term
 . func - function pointer for the misfit Hessian evaluation
-- ctx  - user context for the misfit Hessian
+- ctx  - application context for the misfit Hessian
+
+  Calling sequence of func:
++ tao  - the `Tao` context
+. u    - in current input solution
+. H    - output, the contribution to the Hessian matrix
+. Hpre - an optional contribution to an alternative matrix with which the preconditioner is to be constructed
+- ctx  - the optional application context
 
   Level: advanced
 
 .seealso: `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao tao, Vec u, Mat H, Mat Hpre, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
@@ -1158,13 +1186,20 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
   Input Parameters:
 + tao  - the Tao context
 . func - function pointer for the regularizer value and gradient evaluation
-- ctx  - user context for the regularizer
+- ctx  - application context for the regularizer
+
+  Calling sequence of func:
++ tao - the `Tao` context
+. u   - in current input solution
+. f   - the contribution to the objective function
+. g   - the contribution to the gradient
+- ctx - the optional application context
 
   Level: advanced
 
 .seealso: `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao tao, Vec u, PetscReal *f, Vec g, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
@@ -1184,15 +1219,22 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
   Input Parameters:
 + tao  - the `Tao` context
 . H    - user-created matrix for the Hessian of the regularization term
-. Hpre - user-created matrix for the preconditioner of Hessian of the regularization term
+. Hpre - user-created matrix for building the preconditioner of the Hessian of the regularization term
 . func - function pointer for the regularizer Hessian evaluation
-- ctx  - user context for the regularizer Hessian
+- ctx  - application context for the regularizer Hessian
+
+  Calling sequence of func:
++ tao  - the `Tao` context
+. u    - in current input solution
+. H    - output, the contribution to the Hessian matrix
+. Hpre - an optional contribution to an alternative matrix with which the preconditioner is to be constructed
+- ctx  - the optional application context
 
   Level: advanced
 
 .seealso: `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), PetscCtx ctx)
+PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao tao, Vec u, Mat H, Mat Hpre, PetscCtx ctx), PetscCtx ctx)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 

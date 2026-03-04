@@ -2,14 +2,14 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 
 typedef struct {
-  PetscErrorCode (*objectivelocal)(DM, Vec, PetscReal *, void *);
-  PetscErrorCode (*residuallocal)(DM, Vec, Vec, void *);
-  PetscErrorCode (*jacobianlocal)(DM, Vec, Mat, Mat, void *);
-  PetscErrorCode (*boundarylocal)(DM, Vec, void *);
-  void *objectivelocalctx;
-  void *residuallocalctx;
-  void *jacobianlocalctx;
-  void *boundarylocalctx;
+  PetscErrorCode (*objectivelocal)(DM, Vec, PetscReal *, PetscCtx);
+  PetscErrorCode (*residuallocal)(DM, Vec, Vec, PetscCtx);
+  PetscErrorCode (*jacobianlocal)(DM, Vec, Mat, Mat, PetscCtx);
+  PetscErrorCode (*boundarylocal)(DM, Vec, PetscCtx);
+  PetscCtx objectivelocalctx;
+  PetscCtx residuallocalctx;
+  PetscCtx jacobianlocalctx;
+  PetscCtx boundarylocalctx;
 } DMSNES_Local;
 
 static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
@@ -197,13 +197,19 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
   Input Parameters:
 + dm   - `DM` to associate callback with
 . func - local objective evaluation
-- ctx  - optional context for local residual evaluation
+- ctx  - optional context for local objective function evaluation
+
+  Calling sequence of func:
++ dm  - the `DM`
+. x   - the location where the objective is to be evaluated
+. obj - the value of the objective function
+- ctx - optional context for the local objective function evaluation
 
   Level: advanced
 
 .seealso: `DMSNESSetFunctionLocal()`, `DMSNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DM, Vec, PetscReal *, void *), PetscCtx ctx)
+PetscErrorCode DMSNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec x, PetscReal *obj, PetscCtx ctx), PetscCtx ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -242,7 +248,7 @@ PetscErrorCode DMSNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Pe
 
 .seealso: [](ch_snes), `DMSNESSetFunction()`, `DMSNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec x, Vec f, PetscCtx ctx), PetscCtx ctx)
+PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec x, Vec f, PetscCtx ctx), PetscCtx ctx) PeNSS
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -317,7 +323,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 
 .seealso: [](ch_snes), `DMSNESSetObjectiveLocal()`, `DMSNESSetFunctionLocal()`, `DMSNESSetBoundaryLocal()`
 @*/
-PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, Mat J, Mat Jp, PetscCtx ctx), PetscCtx ctx)
+PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, Mat J, Mat Jp, PetscCtx ctx), PetscCtx ctx) PeNSS
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -346,11 +352,17 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 + func - local objective evaluation
 - ctx  - context for local residual evaluation
 
+  Calling sequence of func:
++ dm  - the `DM`
+. x   - the location where the objective function is to be evaluated
+. obj - the value of the objective function
+- ctx - optional context for the local objective function evaluation
+
   Level: beginner
 
 .seealso: `DMSNESSetObjective()`, `DMSNESSetObjectiveLocal()`, `DMSNESSetFunctionLocal()`
 @*/
-PetscErrorCode DMSNESGetObjectiveLocal(DM dm, PetscErrorCode (**func)(DM, Vec, PetscReal *, void *), PetscCtxRt ctx)
+PetscErrorCode DMSNESGetObjectiveLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec x, PetscReal *obj, PetscCtx ctx), PetscCtxRt ctx) PeNSS
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -376,11 +388,17 @@ PetscErrorCode DMSNESGetObjectiveLocal(DM dm, PetscErrorCode (**func)(DM, Vec, P
 + func - local residual evaluation
 - ctx  - context for local residual evaluation
 
+  Calling sequence of `func`:
++ dm  - `DM` for the function
+. x   - vector to state at which to evaluate residual
+. f   - vector to hold the function evaluation
+- ctx - optional context passed above
+
   Level: beginner
 
 .seealso: [](ch_snes), `DMSNESSetFunction()`, `DMSNESSetFunctionLocal()`, `DMSNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Vec, void *), PetscCtxRt ctx)
+PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec x, Vec f, PetscCtx ctx), PetscCtxRt ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -406,11 +424,16 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Ve
 + func - local boundary value evaluation
 - ctx  - context for local boundary value evaluation
 
+  Calling sequence of `func`:
++ dm  - the `DM` context
+. X   - ghosted solution vector, appropriate locations (such as essential boundary condition nodes) should be filled
+- ctx - option context passed in `DMSNESSetBoundaryLocal()`
+
   Level: intermediate
 
 .seealso: [](ch_snes), `DMSNESSetFunctionLocal()`, `DMSNESSetBoundaryLocal()`, `DMSNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, void *), PetscCtxRt ctx)
+PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec X, PetscCtx ctx), PetscCtxRt ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -436,11 +459,18 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, vo
 + func - local Jacobian evaluation
 - ctx  - context for local Jacobian evaluation
 
+  Calling sequence of `func`:
++ dm  - the `DM` context
+. X   - current solution vector (ghosted or not?)
+. J   - the Jacobian
+. Jp  - approximate Jacobian used to compute the preconditioner, often `J`
+- ctx - a user provided context
+
   Level: beginner
 
 .seealso: [](ch_snes), `DMSNESSetJacobianLocal()`, `DMSNESSetJacobian()`
 @*/
-PetscErrorCode DMSNESGetJacobianLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Mat, Mat, void *), PetscCtxRt ctx)
+PetscErrorCode DMSNESGetJacobianLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec X, Mat J, Mat Jp, PetscCtx ctx), PetscCtxRt ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
