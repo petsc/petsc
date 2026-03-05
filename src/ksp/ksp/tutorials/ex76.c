@@ -374,6 +374,12 @@ int main(int argc, char **args)
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
       test:
+        requires: cuda
+        suffix: harmonic_overlap_1_cuda
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -mat_type aijcusparse
+      test:
         suffix: harmonic_overlap_1_share_petsc
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
@@ -412,6 +418,12 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 9/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 12 -pc_hpddm_levels_1_svd_type {{trlanczos randomized}shared output} -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
+      test:
+        requires: cuda
+        suffix: harmonic_overlap_2_cuda
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 9/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 12 -pc_hpddm_levels_1_svd_type trlanczos -pc_hpddm_levels_1_st_share_sub_ksp -mat_type aijcusparse
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -434,6 +446,13 @@ int main(int argc, char **args)
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
       test:
+        TODO: broken # slightly different convergence rate, which may be a sign of something wrong somewhere
+        requires: cuda
+        suffix: geneo_transpose_cuda
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[2-4]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -pc_hpddm_coarse_correction balanced -mat_type aijcusparse
+      test:
         suffix: geneo_explicittranspose
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
@@ -455,6 +474,12 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm -successive_solves
+      test:
+        TODO: broken # PCGASM does not handle MATAIJCUSPARSE, see GitLab issue #1873
+        requires: cuda
+        suffix: geneo_share_not_asm_cuda
+        output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm -successive_solves -mat_type aijcusparse
 
    test:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -517,11 +542,17 @@ int main(int argc, char **args)
         output_file: output/ex76_1.out
         requires: mumps
 
-   test:
+   testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-      suffix: reuse_symbolic
       output_file: output/empty.out
       nsize: 4
-      args: -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -rhs 4 -pc_hpddm_coarse_correction {{additive deflated balanced}shared output} -ksp_pc_side {{left right}shared output} -ksp_max_it 20 -ksp_type hpddm -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -ksp_error_if_not_converged -transpose {{true false} shared output}
+      args: -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -rhs 4 -ksp_max_it 20 -ksp_type hpddm -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -ksp_error_if_not_converged
+      test:
+        suffix: reuse_symbolic
+        args: -pc_hpddm_coarse_correction {{additive deflated balanced}shared output} -ksp_pc_side {{left right}shared output} -transpose {{true false} shared output}
+      test:
+        requires: cuda
+        suffix: reuse_symbolic_cuda
+        args: -pc_hpddm_coarse_correction deflated -ksp_pc_side right -transpose -mat_type aijcusparse
 
 TEST*/
