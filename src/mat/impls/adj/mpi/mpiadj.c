@@ -263,6 +263,12 @@ static PetscErrorCode MatView_MPIAdj(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(MatView_MPIAdj_ASCII(A, viewer));
+  else {
+    Mat B;
+    PetscCall(MatConvert(A, MATMPIAIJ, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatView(B, viewer));
+    PetscCall(MatDestroy(&B));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
