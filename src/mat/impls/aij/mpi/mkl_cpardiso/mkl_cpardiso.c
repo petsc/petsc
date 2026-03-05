@@ -68,7 +68,7 @@ static const char *Err_MSG_CPardiso(int errNo)
   }
 }
 
-#define PetscCallCluster(f) PetscStackCallExternalVoid("cluster_sparse_solver", f);
+#define PetscCallCluster(f) PetscCallExternalVoid("cluster_sparse_solver", f);
 
 /*
  *  Internal data structure.

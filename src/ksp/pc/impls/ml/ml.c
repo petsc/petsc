@@ -159,7 +159,7 @@ static PetscErrorCode MatMult_ML(Mat A, Vec x, Vec y)
   PetscCall(VecGetArray(y, &yarray));
   x_length = shell->mlmat->invec_leng;
   y_length = shell->mlmat->outvec_leng;
-  PetscStackCallExternalVoid("ML_Operator_Apply", ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar *)xarray, y_length, yarray));
+  PetscCallExternalVoid("ML_Operator_Apply", ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar *)xarray, y_length, yarray));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(y, &yarray));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -288,13 +288,13 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
     PetscCall(MatSetBlockSize(*newmat, mlmat->num_PDEs));
 
     PetscCall(PetscMalloc1(m, &nnz));
-    for (i = 0; i < m; i++) PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
+    for (i = 0; i < m; i++) PetscCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
     PetscCall(MatSeqAIJSetPreallocation(*newmat, 0, nnz));
   }
   for (i = 0; i < m; i++) {
     PetscInt ncols;
 
-    PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &ncols));
+    PetscCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &ncols));
     PetscCall(MatSetValues(*newmat, 1, &i, ncols, aj, aa, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(*newmat, MAT_FINAL_ASSEMBLY));
@@ -347,7 +347,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
   PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "m %d must equal to n %d", m, n);
 
   /* create global row numbering for a ML_Operator */
-  PetscStackCallExternalVoid("ML_build_global_numbering", ML_build_global_numbering(mlmat, &gordering, "rows"));
+  PetscCallExternalVoid("ML_build_global_numbering", ML_build_global_numbering(mlmat, &gordering, "rows"));
 
   nz_max = PetscMax(1, mlmat->max_nz_per_row) + 1;
   PetscCall(PetscMalloc2(nz_max, &aa, nz_max, &aj));
@@ -367,7 +367,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
 
     for (i = 0; i < m; i++) {
       row = gordering[i] - rstart;
-      PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
+      PetscCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &nnz[i]));
       nnzA[row] = 0;
       for (j = 0; j < nnz[i]; j++) {
         if (aj[j] < m) nnzA[row]++;
@@ -381,11 +381,11 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat, MatReuse reuse, Mat *
     PetscInt ncols;
     row = gordering[i];
 
-    PetscStackCallExternalVoid(",ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &ncols));
+    PetscCallExternalVoid("ML_Operator_Getrow", ML_Operator_Getrow(mlmat, 1, &i, nz_max, aj, aa, &ncols));
     for (j = 0; j < ncols; j++) aj[j] = gordering[aj[j]];
     PetscCall(MatSetValues(A, 1, &row, ncols, aj, aa, INSERT_VALUES));
   }
-  PetscStackCallExternalVoid("ML_free", ML_free(gordering));
+  PetscCallExternalVoid("ML_free", ML_free(gordering));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   *newmat = A;
@@ -456,11 +456,11 @@ static PetscErrorCode PCReset_ML(PC pc)
       grid_info->x                      = 0; /* do this so ML doesn't try to free coordinates */
       grid_info->y                      = 0;
       grid_info->z                      = 0;
-      PetscStackCallExternalVoid("ML_Operator_Getrow", ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
+      PetscCallExternalVoid("ML_Aggregate_VizAndStats_Clean", ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object));
     }
   }
-  PetscStackCallExternalVoid("ML_Aggregate_Destroy", ML_Aggregate_Destroy(&pc_ml->agg_object));
-  PetscStackCallExternalVoid("ML_Aggregate_Destroy", ML_Destroy(&pc_ml->ml_object));
+  PetscCallExternalVoid("ML_Aggregate_Destroy", ML_Aggregate_Destroy(&pc_ml->agg_object));
+  PetscCallExternalVoid("ML_Aggregate_Destroy", ML_Destroy(&pc_ml->ml_object));
 
   if (pc_ml->PetscMLdata) {
     PetscCall(PetscFree(pc_ml->PetscMLdata->pwork));
@@ -555,8 +555,8 @@ static PetscErrorCode PCSetUp_ML(PC pc)
       PetscCall(MatDestroy(&PetscMLdata->Aloc));
       PetscMLdata->A    = A;
       PetscMLdata->Aloc = Aloc;
-      PetscStackCallExternalVoid("ML_Aggregate_Destroy", ML_Init_Amatrix(ml_object, 0, m, m, PetscMLdata));
-      PetscStackCallExternalVoid("ML_Set_Amatrix_Matvec", ML_Set_Amatrix_Matvec(ml_object, 0, PetscML_matvec));
+      PetscCallExternalVoid("ML_Aggregate_Destroy", ML_Init_Amatrix(ml_object, 0, m, m, PetscMLdata));
+      PetscCallExternalVoid("ML_Set_Amatrix_Matvec", ML_Set_Amatrix_Matvec(ml_object, 0, PetscML_matvec));
 
       mesh_level = ml_object->ML_finest_level;
       while (ml_object->SingleLevel[mesh_level].Rmat->to) {
@@ -565,9 +565,9 @@ static PetscErrorCode PCSetUp_ML(PC pc)
 
         /* clean and regenerate A */
         mlmat = &ml_object->Amat[mesh_level];
-        PetscStackCallExternalVoid("ML_Operator_Clean", ML_Operator_Clean(mlmat));
-        PetscStackCallExternalVoid("ML_Operator_Init", ML_Operator_Init(mlmat, ml_object->comm));
-        PetscStackCallExternalVoid("ML_Gen_AmatrixRAP", ML_Gen_AmatrixRAP(ml_object, old_mesh_level, mesh_level));
+        PetscCallExternalVoid("ML_Operator_Clean", ML_Operator_Clean(mlmat));
+        PetscCallExternalVoid("ML_Operator_Init", ML_Operator_Init(mlmat, ml_object->comm));
+        PetscCallExternalVoid("ML_Gen_AmatrixRAP", ML_Gen_AmatrixRAP(ml_object, old_mesh_level, mesh_level));
       }
 
       level = fine_level - 1;
@@ -648,17 +648,17 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   PetscCall(MatGetSize(Aloc, &m, &nlocal_allcols));
   PetscCall(MatGetBlockSize(A, &bs));
-  PetscStackCallExternalVoid("ML_Create", ML_Create(&ml_object, pc_ml->MaxNlevels));
-  PetscStackCallExternalVoid("ML_Comm_Set_UsrComm", ML_Comm_Set_UsrComm(ml_object->comm, PetscObjectComm((PetscObject)A)));
+  PetscCallExternalVoid("ML_Create", ML_Create(&ml_object, pc_ml->MaxNlevels));
+  PetscCallExternalVoid("ML_Comm_Set_UsrComm", ML_Comm_Set_UsrComm(ml_object->comm, PetscObjectComm((PetscObject)A)));
   pc_ml->ml_object = ml_object;
-  PetscStackCallExternalVoid("ML_Init_Amatrix", ML_Init_Amatrix(ml_object, 0, m, m, PetscMLdata));
-  PetscStackCallExternalVoid("ML_Set_Amatrix_Getrow", ML_Set_Amatrix_Getrow(ml_object, 0, PetscML_getrow, ML_PetscML_comm, nlocal_allcols));
-  PetscStackCallExternalVoid("ML_Set_Amatrix_Matvec", ML_Set_Amatrix_Matvec(ml_object, 0, PetscML_matvec));
+  PetscCallExternalVoid("ML_Init_Amatrix", ML_Init_Amatrix(ml_object, 0, m, m, PetscMLdata));
+  PetscCallExternalVoid("ML_Set_Amatrix_Getrow", ML_Set_Amatrix_Getrow(ml_object, 0, PetscML_getrow, ML_PetscML_comm, nlocal_allcols));
+  PetscCallExternalVoid("ML_Set_Amatrix_Matvec", ML_Set_Amatrix_Matvec(ml_object, 0, PetscML_matvec));
 
-  PetscStackCallExternalVoid("ML_Set_Symmetrize", ML_Set_Symmetrize(ml_object, pc_ml->Symmetrize ? ML_YES : ML_NO));
+  PetscCallExternalVoid("ML_Set_Symmetrize", ML_Set_Symmetrize(ml_object, pc_ml->Symmetrize ? ML_YES : ML_NO));
 
   /* aggregation */
-  PetscStackCallExternalVoid("ML_Aggregate_Create", ML_Aggregate_Create(&agg_object));
+  PetscCallExternalVoid("ML_Aggregate_Create", ML_Aggregate_Create(&agg_object));
   pc_ml->agg_object = agg_object;
 
   {
@@ -689,11 +689,11 @@ static PetscErrorCode PCSetUp_ML(PC pc)
         for (j = 0; j < mlocal; j++) nullvec[(i + !!has_const) * mlocal + j] = v[j];
         PetscCall(VecRestoreArrayRead(vecs[i], &v));
       }
-      PetscStackCallExternalVoid("ML_Aggregate_Set_NullSpace", ML_Aggregate_Set_NullSpace(agg_object, bs, nvec + !!has_const, nullvec, mlocal));
+      PetscCallExternalVoid("ML_Aggregate_Set_NullSpace", ML_Aggregate_Set_NullSpace(agg_object, bs, nvec + !!has_const, nullvec, mlocal));
       PetscCall(PetscFree(nullvec));
     } break;
     case PCML_NULLSPACE_BLOCK:
-      PetscStackCallExternalVoid("ML_Aggregate_Set_NullSpace", ML_Aggregate_Set_NullSpace(agg_object, bs, bs, 0, 0));
+      PetscCallExternalVoid("ML_Aggregate_Set_NullSpace", ML_Aggregate_Set_NullSpace(agg_object, bs, bs, 0, 0));
       break;
     case PCML_NULLSPACE_SCALAR:
       break;
@@ -701,22 +701,22 @@ static PetscErrorCode PCSetUp_ML(PC pc)
       SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Unknown null space type");
     }
   }
-  PetscStackCallExternalVoid("ML_Aggregate_Set_MaxCoarseSize", ML_Aggregate_Set_MaxCoarseSize(agg_object, pc_ml->MaxCoarseSize));
+  PetscCallExternalVoid("ML_Aggregate_Set_MaxCoarseSize", ML_Aggregate_Set_MaxCoarseSize(agg_object, pc_ml->MaxCoarseSize));
   /* set options */
   switch (pc_ml->CoarsenScheme) {
   case 1:
-    PetscStackCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_Coupled", ML_Aggregate_Set_CoarsenScheme_Coupled(agg_object));
+    PetscCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_Coupled", ML_Aggregate_Set_CoarsenScheme_Coupled(agg_object));
     break;
   case 2:
-    PetscStackCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_MIS", ML_Aggregate_Set_CoarsenScheme_MIS(agg_object));
+    PetscCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_MIS", ML_Aggregate_Set_CoarsenScheme_MIS(agg_object));
     break;
   case 3:
-    PetscStackCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_METIS", ML_Aggregate_Set_CoarsenScheme_METIS(agg_object));
+    PetscCallExternalVoid("ML_Aggregate_Set_CoarsenScheme_METIS", ML_Aggregate_Set_CoarsenScheme_METIS(agg_object));
     break;
   }
-  PetscStackCallExternalVoid("ML_Aggregate_Set_Threshold", ML_Aggregate_Set_Threshold(agg_object, pc_ml->Threshold));
-  PetscStackCallExternalVoid("ML_Aggregate_Set_DampingFactor", ML_Aggregate_Set_DampingFactor(agg_object, pc_ml->DampingFactor));
-  if (pc_ml->SpectralNormScheme_Anorm) PetscStackCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object));
+  PetscCallExternalVoid("ML_Aggregate_Set_Threshold", ML_Aggregate_Set_Threshold(agg_object, pc_ml->Threshold));
+  PetscCallExternalVoid("ML_Aggregate_Set_DampingFactor", ML_Aggregate_Set_DampingFactor(agg_object, pc_ml->DampingFactor));
+  if (pc_ml->SpectralNormScheme_Anorm) PetscCallExternalVoid("ML_Set_SpectralNormScheme_Anorm", ML_Set_SpectralNormScheme_Anorm(ml_object));
   agg_object->keep_agg_information      = (int)pc_ml->KeepAggInfo;
   agg_object->keep_P_tentative          = (int)pc_ml->Reusable;
   agg_object->block_scaled_SA           = (int)pc_ml->BlockScaling;
@@ -743,7 +743,7 @@ static PetscErrorCode PCSetUp_ML(PC pc)
     PetscCall(MatGetBlockSize(A, &bs));
     nlocghost = Aloc->cmap->n / bs;
 
-    PetscStackCallExternalVoid("ML_Aggregate_VizAndStats_Setup(", ML_Aggregate_VizAndStats_Setup(ml_object)); /* create ml info for coords */
+    PetscCallExternalVoid("ML_Aggregate_VizAndStats_Setup(", ML_Aggregate_VizAndStats_Setup(ml_object)); /* create ml info for coords */
     grid_info = (ML_Aggregate_Viz_Stats *)ml_object->Grid[0].Grid;
     for (i = 0; i < dim; i++) {
       /* set the finest level coordinates to point to the column-order array
@@ -768,24 +768,24 @@ static PetscErrorCode PCSetUp_ML(PC pc)
 
   /* repartitioning */
   if (pc_ml->Repartition) {
-    PetscStackCallExternalVoid("ML_Repartition_Activate", ML_Repartition_Activate(ml_object));
-    PetscStackCallExternalVoid("ML_Repartition_Set_LargestMinMaxRatio", ML_Repartition_Set_LargestMinMaxRatio(ml_object, pc_ml->MaxMinRatio));
-    PetscStackCallExternalVoid("ML_Repartition_Set_MinPerProc", ML_Repartition_Set_MinPerProc(ml_object, pc_ml->MinPerProc));
-    PetscStackCallExternalVoid("ML_Repartition_Set_PutOnSingleProc", ML_Repartition_Set_PutOnSingleProc(ml_object, pc_ml->PutOnSingleProc));
+    PetscCallExternalVoid("ML_Repartition_Activate", ML_Repartition_Activate(ml_object));
+    PetscCallExternalVoid("ML_Repartition_Set_LargestMinMaxRatio", ML_Repartition_Set_LargestMinMaxRatio(ml_object, pc_ml->MaxMinRatio));
+    PetscCallExternalVoid("ML_Repartition_Set_MinPerProc", ML_Repartition_Set_MinPerProc(ml_object, pc_ml->MinPerProc));
+    PetscCallExternalVoid("ML_Repartition_Set_PutOnSingleProc", ML_Repartition_Set_PutOnSingleProc(ml_object, pc_ml->PutOnSingleProc));
 #if 0 /* Function not yet defined in ml-6.2 */
     /* I'm not sure what compatibility issues might crop up if we partitioned
      * on the finest level, so to be safe repartition starts on the next
      * finest level (reflection default behavior in
      * ml_MultiLevelPreconditioner) */
-    PetscStackCallExternalVoid("ML_Repartition_Set_StartLevel",ML_Repartition_Set_StartLevel(ml_object,1));
+    PetscCallExternalVoid("ML_Repartition_Set_StartLevel",ML_Repartition_Set_StartLevel(ml_object,1));
 #endif
 
     if (!pc_ml->RepartitionType) {
       PetscInt i;
 
       PetscCheck(pc_ml->dim, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "ML Zoltan repartitioning requires coordinates");
-      PetscStackCallExternalVoid("ML_Repartition_Set_Partitioner", ML_Repartition_Set_Partitioner(ml_object, ML_USEZOLTAN));
-      PetscStackCallExternalVoid("ML_Aggregate_Set_Dimensions", ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim));
+      PetscCallExternalVoid("ML_Repartition_Set_Partitioner", ML_Repartition_Set_Partitioner(ml_object, ML_USEZOLTAN));
+      PetscCallExternalVoid("ML_Aggregate_Set_Dimensions", ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim));
 
       for (i = 0; i < ml_object->ML_num_levels; i++) {
         ML_Aggregate_Viz_Stats *grid_info = (ML_Aggregate_Viz_Stats *)ml_object->Grid[i].Grid;
@@ -796,14 +796,14 @@ static PetscErrorCode PCSetUp_ML(PC pc)
         grid_info->smoothing_steps      = 4; /* only relevant to hypergraph / fast hypergraph */
       }
     } else {
-      PetscStackCallExternalVoid("ML_Repartition_Set_Partitioner", ML_Repartition_Set_Partitioner(ml_object, ML_USEPARMETIS));
+      PetscCallExternalVoid("ML_Repartition_Set_Partitioner", ML_Repartition_Set_Partitioner(ml_object, ML_USEPARMETIS));
     }
   }
 
   if (pc_ml->OldHierarchy) {
-    PetscStackCallExternalVoid("ML_Gen_MGHierarchy_UsingAggregation", Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object, 0, ML_INCREASING, agg_object));
+    PetscCallExternalVoid("ML_Gen_MGHierarchy_UsingAggregation", Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object, 0, ML_INCREASING, agg_object));
   } else {
-    PetscStackCallExternalVoid("ML_Gen_MultiLevelHierarchy_UsingAggregation", Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object, 0, ML_INCREASING, agg_object));
+    PetscCallExternalVoid("ML_Gen_MultiLevelHierarchy_UsingAggregation", Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object, 0, ML_INCREASING, agg_object));
   }
   PetscCheck(Nlevels > 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Nlevels %d must > 0", Nlevels);
   pc_ml->Nlevels = Nlevels;
@@ -982,7 +982,7 @@ static PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems PetscOptionsOb
   partindx   = 0;
 
   PetscCall(PetscOptionsInt("-pc_ml_PrintLevel", "Print level", "ML_Set_PrintLevel", PrintLevel, &PrintLevel, NULL));
-  PetscStackCallExternalVoid("ML_Set_PrintLevel", ML_Set_PrintLevel(PrintLevel));
+  PetscCallExternalVoid("ML_Set_PrintLevel", ML_Set_PrintLevel(PrintLevel));
   PetscCall(PetscOptionsInt("-pc_ml_maxNlevels", "Maximum number of levels", "None", pc_ml->MaxNlevels, &pc_ml->MaxNlevels, NULL));
   PetscCall(PetscOptionsInt("-pc_ml_maxCoarseSize", "Maximum coarsest mesh size", "ML_Aggregate_Set_MaxCoarseSize", pc_ml->MaxCoarseSize, &pc_ml->MaxCoarseSize, NULL));
   PetscCall(PetscOptionsEList("-pc_ml_CoarsenScheme", "Aggregate Coarsen Scheme", "ML_Aggregate_Set_CoarsenScheme_*", scheme, 4, scheme[0], &indx, NULL));

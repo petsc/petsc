@@ -83,7 +83,7 @@ static PetscErrorCode MatConvertToSPM(Mat A, MatReuse reuse, Mat_Pastix *pastix)
   PetscCall(MatSeqAIJGetArrayRead(A_loc, &val));
 
   PetscCall(PetscMalloc1(1, &spm));
-  PetscStackCallExternalVoid("spmInitDist", spmInitDist(spm, pastix->comm));
+  PetscCallExternalVoid("spmInitDist", spmInitDist(spm, pastix->comm));
 
   spm->n          = n;
   spm->nnz        = row[n];
@@ -91,8 +91,8 @@ static PetscErrorCode MatConvertToSPM(Mat A, MatReuse reuse, Mat_Pastix *pastix)
   spm->flttype    = SPM_FLTTYPE;
   spm->replicated = !(A->rmap->n != A->rmap->N);
 
-  PetscStackCallExternalVoid("spmUpdateComputedFields", spmUpdateComputedFields(spm));
-  PetscStackCallExternalVoid("spmAlloc", spmAlloc(spm));
+  PetscCallExternalVoid("spmUpdateComputedFields", spmUpdateComputedFields(spm));
+  PetscCallExternalVoid("spmAlloc", spmAlloc(spm));
 
   /* Get data distribution */
   if (!spm->replicated) {
@@ -123,9 +123,9 @@ static PetscErrorCode MatConvertToSPM(Mat A, MatReuse reuse, Mat_Pastix *pastix)
   }
 
   /* Update matrix to be in PaStiX format */
-  PetscStackCallExternalVoid("spmCheckAndCorrect", spm_err = spmCheckAndCorrect(spm, &spm2));
+  PetscCallExternalVoid("spmCheckAndCorrect", spm_err = spmCheckAndCorrect(spm, &spm2));
   if (spm_err != 0) {
-    PetscStackCallExternalVoid("spmExit", spmExit(spm));
+    PetscCallExternalVoid("spmExit", spmExit(spm));
     *spm = spm2;
   }
 
@@ -146,7 +146,7 @@ static PetscErrorCode MatDestroy_PaStiX(Mat A)
   PetscFunctionBegin;
   /* Finalize SPM (matrix handler of PaStiX) */
   if (pastix->spm) {
-    PetscStackCallExternalVoid("spmExit", spmExit(pastix->spm));
+    PetscCallExternalVoid("spmExit", spmExit(pastix->spm));
     PetscCall(PetscFree(pastix->spm));
   }
 
@@ -454,7 +454,7 @@ static PetscErrorCode MatGetFactor_pastix(Mat A, MatFactorType ftype, Mat *F, co
   B->data = (void *)pastix;
 
   /* Call to set default pastix options */
-  PetscStackCallExternalVoid("pastixInitParam", pastixInitParam(pastix->iparm, pastix->dparm));
+  PetscCallExternalVoid("pastixInitParam", pastixInitParam(pastix->iparm, pastix->dparm));
   PetscCall(MatSetFromOptions_PaStiX(B));
 
   /* Get PETSc communicator */
@@ -462,7 +462,7 @@ static PetscErrorCode MatGetFactor_pastix(Mat A, MatFactorType ftype, Mat *F, co
 
   /* Initialise PaStiX structure */
   pastix->iparm[IPARM_SCOTCH_MT] = 0;
-  PetscStackCallExternalVoid("pastixInit", pastixInit(&pastix->pastix_data, pastix->comm, pastix->iparm, pastix->dparm));
+  PetscCallExternalVoid("pastixInit", pastixInit(&pastix->pastix_data, pastix->comm, pastix->iparm, pastix->dparm));
 
   /* Warning: Cholesky in PETSc wrapper does not handle (complex) Hermitian matrices.
      The factorization type can be forced using the parameter

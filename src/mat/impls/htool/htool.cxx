@@ -37,7 +37,7 @@ static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayWrite(v, &x));
-  PetscStackCallExternalVoid("copy_diagonal_in_user_numbering", htool::copy_diagonal_in_user_numbering(a->distributed_operator_holder->hmatrix, x));
+  PetscCallExternalVoid("copy_diagonal_in_user_numbering", htool::copy_diagonal_in_user_numbering(a->distributed_operator_holder->hmatrix, x));
   PetscCall(VecRestoreArrayWrite(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -62,7 +62,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     PetscCall(MatDenseGetArrayWrite(B, &ptr));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
     source_cluster = a->source_cluster ? a->source_cluster.get() : a->target_cluster.get();
-    PetscStackCallExternalVoid("copy_to_dense_in_user_numbering", htool::copy_to_dense_in_user_numbering(*a->distributed_operator_holder->hmatrix.get_sub_hmatrix(a->target_cluster->get_cluster_on_partition(rank), source_cluster->get_cluster_on_partition(rank)), ptr));
+    PetscCallExternalVoid("copy_to_dense_in_user_numbering", htool::copy_to_dense_in_user_numbering(*a->distributed_operator_holder->hmatrix.get_sub_hmatrix(a->target_cluster->get_cluster_on_partition(rank), source_cluster->get_cluster_on_partition(rank)), ptr));
     PetscCall(MatDenseRestoreArrayWrite(B, &ptr));
     PetscCall(MatPropagateSymmetryOptions(A, B));
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
