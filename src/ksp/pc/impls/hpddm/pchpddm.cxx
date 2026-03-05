@@ -1078,9 +1078,9 @@ static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
       /* ctx->V[0] and ctx->V[1] memory regions overlap, so need to copy to ctx->V[2] and switch array */
       PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
       if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
-      PetscCall(MatDenseGetArrayWrite(ctx->V[2], &array));
+      PetscCall(MatDenseGetArray(ctx->V[2], &array));
       PetscCall(MatDensePlaceArray(ctx->V[1], array));
-      PetscCall(MatDenseRestoreArrayWrite(ctx->V[2], &array));
+      PetscCall(MatDenseRestoreArray(ctx->V[2], &array));
       reset = PETSC_TRUE;
       PetscCall(PCHPDDMDeflate_Private<true>(pc, ctx->V[1], ctx->V[1]));
       PetscCall(MatAXPY(Y, -1.0, ctx->V[1], SAME_NONZERO_PATTERN));
@@ -2524,6 +2524,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 if (uaux) PetscCall(MatDestroy(&uaux));
               } else PetscCall(MatDestroy(&A0));
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
+              PetscCall(MatSetVecType(data->aux, h->A[0]->defaultvectype));
               PetscCall(KSPSetErrorIfNotConverged(h->ksp, PETSC_TRUE)); /* bail out as early as possible to avoid (apparently) unrelated error messages */
               PetscCall(MatCreateVecs(h->ksp->pc->pmat, &h->v, nullptr));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Harmonic));
