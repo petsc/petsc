@@ -683,6 +683,7 @@ PETSC_EXTERN PetscErrorCode    MatDenseGetArray(Mat, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDenseRestoreArray(Mat, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDensePlaceArray(Mat, const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode    MatDenseReplaceArray(Mat, const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode    MatDenseReplaceArrayWithMemType(Mat, PetscMemType, const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode    MatDenseResetArray(Mat);
 PETSC_EXTERN PetscErrorCode    MatDenseGetArrayRead(Mat, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayRead(Mat, const PetscScalar *[]);
@@ -2690,6 +2691,7 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal,
 PETSC_EXTERN PetscErrorCode MatEliminateZeros(Mat, PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseFromVecType(MPI_Comm, VecType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateDenseWithMemType(MPI_Comm, PetscMemType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *);
 
 PETSC_EXTERN PetscErrorCode MatSetHPL(Mat, int);
 #define PETSCBMHPL "hpl"

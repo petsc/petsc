@@ -515,7 +515,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
     } else PetscCall(MatConvert(B, mtype, MAT_INITIAL_MATRIX, &Bd));
   } else {
     PetscCall(MatGetSize(B, &M, &N));
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, -1, NULL, &AinvBd));
+    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, PETSC_DECIDE, NULL, &AinvBd));
     PetscCall(MatGetType(AinvBd, &mtype));
     PetscCall(MatConvert(B, mtype, MAT_INITIAL_MATRIX, &Bd));
   }
@@ -523,32 +523,12 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   if (set && AinvBd->cmap->N > A->cmap->N) {
     Mat          AinvB;
     PetscScalar *v;
-    PetscBool    match;
+    PetscMemType type;
 
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)AinvBd, &match, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-    if (match) {
-#if PetscDefined(HAVE_CUDA)
-      PetscCall(MatDenseCUDAGetArrayWrite(AinvBd, &v));
-      PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)A), AinvBd->rmap->n, A->cmap->n, AinvBd->rmap->N, A->cmap->N, v, &AinvB));
-      PetscCall(MatDenseCUDAReplaceArray(AinvB, v));
-      PetscCall(MatDenseCUDARestoreArrayWrite(AinvBd, &v));
-#endif
-    } else {
-      PetscCall(PetscObjectTypeCompareAny((PetscObject)AinvBd, &match, MATSEQDENSEHIP, MATMPIDENSEHIP, ""));
-      if (match) {
-#if PetscDefined(HAVE_HIP)
-        PetscCall(MatDenseHIPGetArrayWrite(AinvBd, &v));
-        PetscCall(MatCreateDenseHIP(PetscObjectComm((PetscObject)A), AinvBd->rmap->n, A->cmap->n, AinvBd->rmap->N, A->cmap->N, v, &AinvB));
-        PetscCall(MatDenseHIPReplaceArray(AinvB, v));
-        PetscCall(MatDenseHIPRestoreArrayWrite(AinvBd, &v));
-#endif
-      } else {
-        PetscCall(MatDenseGetArrayWrite(AinvBd, &v)); // no easy way to resize a Mat, so create a new one with the same data pointer
-        PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), AinvBd->rmap->n, A->cmap->n, AinvBd->rmap->N, A->cmap->N, v, &AinvB));
-        PetscCall(MatDenseReplaceArray(AinvB, v)); // let MatDestroy() free the data pointer
-        PetscCall(MatDenseRestoreArrayWrite(AinvBd, &v));
-      }
-    }
+    PetscCall(MatDenseGetArrayWriteAndMemType(AinvBd, &v, &type)); // no easy way to resize a Mat, so create a new one with the same data pointer
+    PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)A), type, AinvBd->rmap->n, A->cmap->n, AinvBd->rmap->N, A->cmap->N, PETSC_DECIDE, v, &AinvB));
+    PetscCall(MatDenseReplaceArrayWithMemType(AinvB, type, v)); // let MatDestroy() free the data pointer
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(AinvBd, &v));
     PetscCall(MatHeaderReplace(AinvBd, &AinvB)); // replace the input composed Mat with just A00^-1 A01 (trailing columns are removed)
   }
   PetscCall(MatDestroy(&Bd));
@@ -556,7 +536,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   if (D && !*S) {
     PetscCall(MatGetLocalSize(D, &m, &n));
     PetscCall(MatGetSize(D, &M, &N));
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, -1, NULL, S));
+    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, PETSC_DECIDE, NULL, S));
   } else if (*S) {
     PetscCall(MatGetType(AinvBd, &mtype));
     PetscCall(MatSetType(*S, mtype));

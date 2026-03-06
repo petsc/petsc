@@ -1151,7 +1151,7 @@ static PetscErrorCode PCSetUpOnBlocks_FieldSplit_Schur(PC pc)
 #if PetscDefined(HAVE_HIP)
       else if (PetscMemTypeHIP(mtype)) PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
 #endif
-      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, PETSC_DECIDE, array, &A)); // number of columns of the Schur complement plus one
       PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", (PetscObject)A));
       PetscCall(MatDestroy(&A));
     }
@@ -1381,8 +1381,8 @@ static PetscErrorCode PCFieldSplitCreateWorkMats_Private(PC pc, Mat X)
       PetscCall(VecGetLocalSize(ilink->y, &my));
       PetscCall(VecGetSize(ilink->y, &My));
       /* use default lda */
-      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)pc), xtype, mx, X->cmap->n, Mx, X->cmap->N, -1, NULL, &ilink->X));
-      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)pc), ytype, my, X->cmap->n, My, X->cmap->N, -1, NULL, &ilink->Y));
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)pc), xtype, mx, X->cmap->n, Mx, X->cmap->N, PETSC_DECIDE, NULL, &ilink->X));
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)pc), ytype, my, X->cmap->n, My, X->cmap->N, PETSC_DECIDE, NULL, &ilink->Y));
     }
     ilink = ilink->next;
   }
@@ -1476,34 +1476,25 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
             Mat replace;
 
             PetscCall(MatGetLocalSize(jac->B, NULL, &p));
-            if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) {
-              PetscCall(PetscFree(array));
-              PetscCall(PetscMalloc1(m * (P + Q), &array));
-              PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->schur), m, PETSC_DECIDE, M, P + Q, array, &replace));
-            }
+            if (PetscMemTypeCUDA(mtype)) {
 #if PetscDefined(HAVE_CUDA)
-            else if (PetscMemTypeCUDA(mtype)) {
               PetscCallCUDA(cudaFree(array));
               PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (P + Q)));
-              PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)jac->schur), m, PETSC_DECIDE, M, P + Q, array, &replace));
-            }
 #endif
+            } else if (PetscMemTypeHIP(mtype)) {
 #if PetscDefined(HAVE_HIP)
-            else if (PetscMemTypeHIP(mtype)) {
               PetscCallHIP(hipFree(array));
               PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (P + Q)));
-              PetscCall(MatCreateDenseHIP(PetscObjectComm((PetscObject)jac->schur), m, PETSC_DECIDE, M, P + Q, array, &replace));
-            }
 #endif
+            } else {
+              PetscCheck(PetscMemTypeHost(mtype), PetscObjectComm((PetscObject)jac->schur), PETSC_ERR_SUP, "PetscMemType should be either PETSC_MEMTYPE_HOST, PETSC_MEMTYPE_CUDA, or PETSC_MEMTYPE_HIP");
+              PetscCall(PetscFree(array));
+              PetscCall(PetscMalloc1(m * (P + Q), &array));
+            }
+            PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)jac->schur), mtype, m, PETSC_DECIDE, M, P + Q, PETSC_DECIDE, array, &replace));
             PetscCall(MatHeaderReplace(AinvB, &replace));
           }
-          if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->schur), m, q, M, Q, array + m * P, &C));
-#if PetscDefined(HAVE_CUDA)
-          else if (PetscMemTypeCUDA(mtype)) PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)jac->schur), m, q, M, Q, array + m * P, &C));
-#endif
-#if PetscDefined(HAVE_HIP)
-          else if (PetscMemTypeHIP(mtype)) PetscCall(MatCreateDenseHIP(PetscObjectComm((PetscObject)jac->schur), m, q, M, Q, array + m * P, &C));
-#endif
+          PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)jac->schur), mtype, m, q, M, Q, PETSC_DECIDE, array + m * P, &C));
           PetscCall(MatDenseRestoreArrayAndMemType(AinvB, &array));
           PetscCall(MatCopy(ilinkA->X, C, SAME_NONZERO_PATTERN));
           PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));

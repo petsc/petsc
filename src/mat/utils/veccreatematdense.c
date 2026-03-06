@@ -1,7 +1,7 @@
 #include <petscmat.h> /*I    "petscmat.h"   I*/
 
 /*@
-  MatCreateDenseFromVecType - Create a matrix that matches the type of a Vec.
+  MatCreateDenseFromVecType - Create a matrix that matches the type of a `Vec`.
 
   Collective
 
@@ -12,7 +12,7 @@
 . n     - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
 . M     - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
 . N     - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
-. lda   - optional leading dimension. Pass any non-positive number to use the default.
+. lda   - leading dimension (or `PETSC_DECIDE` to use the default)
 - data  - optional location of matrix data, which should have the same memory type as the vector. Pass `NULL` to have PETSc take care of matrix memory allocation.
 
   Output Parameter:
@@ -20,7 +20,7 @@
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateDense()`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `PetscMemType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateDense()`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `MatCreateDenseWithMemType()`, `PetscMemType`
 @*/
 PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt lda, PetscScalar *data, Mat *A)
 {
@@ -32,12 +32,12 @@ PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt 
   PetscCall(PetscStrcmpAny(vtype, &iscuda, VECCUDA, VECMPICUDA, VECSEQCUDA, ""));
   PetscCall(PetscStrcmpAny(vtype, &iship, VECHIP, VECMPIHIP, VECSEQHIP, ""));
   PetscCall(PetscStrcmpAny(vtype, &iskokkos, VECKOKKOS, VECMPIKOKKOS, VECSEQKOKKOS, ""));
-  PetscCheck(isstd || iscuda || iship || iskokkos, comm, PETSC_ERR_SUP, "Not for type %s", vtype);
+  PetscCheck(isstd || iscuda || iship || iskokkos, comm, PETSC_ERR_SUP, "Not for VecType %s", vtype);
   if (iscuda) root_type = VECCUDA;
   else if (iship) root_type = VECHIP;
   else if (iskokkos) {
     /* We support only one type of kokkos device */
-    PetscCheck(!PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_SYCL), comm, PETSC_ERR_SUP, "Not for sycl backend");
+    PetscCheck(!PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_SYCL), comm, PETSC_ERR_SUP, "Not for SYCL backend");
     if (PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_CUDA)) iscuda = PETSC_TRUE;
     else if (PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_HIP)) iship = PETSC_TRUE;
     else isstd = PETSC_TRUE;
@@ -66,5 +66,39 @@ PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt 
 #endif
   }
   PetscCall(MatSetVecType(*A, root_type));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatCreateDenseWithMemType - Create a matrix that matches the supplied `PetscMemType`.
+
+  Collective
+
+  Input Parameters:
++ comm  - the communicator
+. mtype - the memory type
+. m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+. n     - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+. M     - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
+. N     - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
+. lda   - leading dimension (or `PETSC_DECIDE` to use the default)
+- data  - optional location of matrix data, which should match the specified `mtype`. Pass `NULL` to have PETSc take care of matrix memory allocation.
+
+  Output Parameter:
+. A - the dense matrix
+
+  Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateDense()`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `MatCreateDenseFromVecType()`, `PetscMemType`
+@*/
+PetscErrorCode MatCreateDenseWithMemType(MPI_Comm comm, PetscMemType mtype, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt lda, PetscScalar *data, Mat *A)
+{
+  VecType root_type = VECSTANDARD;
+
+  PetscFunctionBegin;
+  if (PetscMemTypeCUDA(mtype)) root_type = VECCUDA;
+  else if (PetscMemTypeHIP(mtype)) root_type = VECHIP;
+  else PetscCheck(PetscMemTypeHost(mtype), comm, PETSC_ERR_SUP, "Not for PetscMemType %s", PetscMemTypeToString(mtype));
+  PetscCall(MatCreateDenseFromVecType(comm, root_type, m, n, M, N, lda, data, A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
