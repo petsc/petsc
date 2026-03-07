@@ -10,6 +10,7 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 - Informational or observational notes ("just noting...", "no issue, but...")
 - Findings that acknowledge correctness but flag theoretical fragility
 - Style nits with no specific suggested change
+- Comments on code that was not changed in the MR (surrounding context is for understanding, not reviewing)
 
 Each posted comment opens a discussion thread the author must resolve — avoid noise.
 
@@ -20,10 +21,21 @@ Use the GitLab Discussions API with JSON input to create inline DiffNote comment
 
 For each comment, use this Python pattern:
 ```python
-import json, subprocess
+import json, re, subprocess
+
+body = "<comment body with optional suggestion block>"
+# Guard against patterns that break GitLab suggestion blocks:
+# 1. Trailing backslash breaks suggestion rendering
+# 2. Triple backticks inside suggestion body (e.g., in markdown files)
+suggestion_match = re.search(r'(```suggestion[^\n]*\n)(.*?)(```)\s*$', body, re.DOTALL)
+if suggestion_match:
+    opening, inner, _ = suggestion_match.groups()
+    if inner.count('```') > 0 or inner.rstrip('\n').endswith('\\'):
+        # Fall back to plain code block
+        body = body.replace(opening, '```\n', 1)
 
 payload = {
-    "body": "<comment body with optional suggestion block>",
+    "body": body,
     "position": {
         "position_type": "text",
         "base_sha": "<BASE_SHA>",
@@ -39,7 +51,7 @@ p = subprocess.run(
      "-X", "POST", "--input", "-", "-H", "Content-Type: application/json"],
     input=json.dumps(payload), capture_output=True, text=True, check=True
 )
-assert '"type":"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
+assert '"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
 ```
 
 ### 6. Use GitLab suggestion blocks for concrete fixes
@@ -52,14 +64,15 @@ corrected line here
 ````
 
 - `-0+0` means replace just the target line (the `new_line` in the position). Use `-N+M` to expand the range to N lines before and M lines after the target line.
-- The suggestion body **replaces the entire selected range**. You MUST reproduce every line in the range, not just the changed ones. For example, `suggestion:-2+0` selects 3 lines (2 before + the target); the body must contain all 3 lines (with your edits applied). Omitting unchanged lines will delete them.
+- **CRITICAL:** The suggestion body **replaces the entire selected range**. You MUST reproduce every line in the range, not just the changed ones. For example, `suggestion:-2+0` selects 3 lines (2 before + the target); the body must contain all 3 lines (with your edits applied). Omitting unchanged lines will **delete them**. When in doubt, prefer `suggestion:-0+0` targeting a single line.
 - To insert a new line after the target, use `suggestion:-0+0` and include both the original target line and the new line.
 - To delete a line, use an empty suggestion block.
 - Only use suggestions for concrete fixes. Use plain comments for design/architectural feedback.
+- **Only comment on lines that are part of the MR diff.** Do not suggest changes to unchanged code that happens to be near the diff.
 
 ### 7. Line number mapping
 - For **new files**: `new_line` = the line number in the file itself.
 - For **modified files**: `new_line` = the line number in the new version of the file. Parse the `@@` hunk headers to map correctly.
 
 ### 8. Verify
-After posting, confirm each response has `"type":"DiffNote"` to ensure comments appear inline on the Changes tab.
+After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
