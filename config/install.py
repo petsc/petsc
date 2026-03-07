@@ -127,7 +127,7 @@ class Installer(script.Script):
     self.using_build_backend = any(
       os.environ.get(prefix + '_BUILD_BACKEND')
       for prefix in ('_PYPROJECT_HOOKS', 'PEP517')
-    )
+    ) or bool(os.environ.get('PETSC_BUILDING_WHEEL'))
     self.relocate_py_env = os.environ.get('CIBUILDWHEEL', '0') == '1'
 
   def copyfile(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
