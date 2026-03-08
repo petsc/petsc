@@ -26,8 +26,8 @@ program main
   parameter(imax=10000)
   PetscLogDouble onefp
   parameter(onefp=1.0d0)
-  PetscReal onereal, tenreal
-  parameter(onereal=1.0, tenreal=10.0)
+  PetscReal onereal
+  parameter(onereal=1.0)
   PetscInt n
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

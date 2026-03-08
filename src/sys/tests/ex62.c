@@ -1,11 +1,11 @@
-static char help[] = "Tests `PetscGarbageKeySortedIntersect()`\n\n";
+static char help[] = "Tests PetscGarbageKeySortedIntersect()\n\n";
 
 #include <petscsys.h>
 #include <petsc/private/garbagecollector.h>
 
-/* This program tests `PetscGarbageKeySortedIntersect(), which is the
+/* This program tests PetscGarbageKeySortedIntersect(), which is the
    public (MPI) interface to
-   `PetscErrorCode GarbageKeySortedIntersect_Private()`.
+   PetscErrorCode GarbageKeySortedIntersect_Private().
    Sets are sent packed in arrays, with the first entry as the number of
    set elements and the sets the remaining elements. This is because the
    MPI reduction operation must have the call signature:
@@ -98,7 +98,7 @@ PetscErrorCode AssertSetsEqual(PetscInt64 *set, PetscInt64 *true_set)
 }
 
 /* Tests functionality when two enpty sets are passed */
-PetscErrorCode test_empty_empty()
+PetscErrorCode test_empty_empty(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -122,7 +122,7 @@ PetscErrorCode test_empty_empty()
 }
 
 /* Tests functionality when seta is empty */
-PetscErrorCode test_a_empty()
+PetscErrorCode test_a_empty(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -147,7 +147,7 @@ PetscErrorCode test_a_empty()
 }
 
 /* Tests functionality when setb is empty */
-PetscErrorCode test_b_empty()
+PetscErrorCode test_b_empty(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -172,7 +172,7 @@ PetscErrorCode test_b_empty()
 }
 
 /* Tests functionality when both sets are identical */
-PetscErrorCode test_identical()
+PetscErrorCode test_identical(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {3, 1, 4, 9};
@@ -202,7 +202,7 @@ PetscErrorCode test_identical()
 }
 
 /* Tests functionality when sets have no elements in common */
-PetscErrorCode test_disjoint()
+PetscErrorCode test_disjoint(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -232,7 +232,7 @@ PetscErrorCode test_disjoint()
 }
 
 /* Tests functionality when sets only have one element in common */
-PetscErrorCode test_single_common()
+PetscErrorCode test_single_common(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {1, 4};
@@ -263,7 +263,7 @@ PetscErrorCode test_single_common()
 }
 
 /* Specific test case flagged by PETSc issue #1247 */
-PetscErrorCode test_issue_1247()
+PetscErrorCode test_issue_1247(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -290,7 +290,7 @@ PetscErrorCode test_issue_1247()
 }
 
 /* Tests functionality when seta is empty and setb is large */
-PetscErrorCode test_empty_big()
+PetscErrorCode test_empty_big(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -312,7 +312,7 @@ PetscErrorCode test_empty_big()
 }
 
 /* Tests functionality when seta is small and setb is large */
-PetscErrorCode test_small_big()
+PetscErrorCode test_small_big(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {3, 1, 4, 9};
@@ -338,7 +338,7 @@ PetscErrorCode test_small_big()
 }
 
 /* Tests functionality when seta is medium sized and setb is large */
-PetscErrorCode test_moderate_big()
+PetscErrorCode test_moderate_big(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {2, 1, 144};
@@ -358,7 +358,7 @@ PetscErrorCode test_moderate_big()
 }
 
 /* Tests functionality when seta and setb are large */
-PetscErrorCode test_big_big()
+PetscErrorCode test_big_big(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64 *truth;
@@ -381,7 +381,7 @@ PetscErrorCode test_big_big()
 }
 
 /* Tests functionality when setb is empty and setb is large */
-PetscErrorCode test_big_empty()
+PetscErrorCode test_big_empty(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {0};
@@ -403,7 +403,7 @@ PetscErrorCode test_big_empty()
 }
 
 /* Tests functionality when setb is small and setb is large */
-PetscErrorCode test_big_small()
+PetscErrorCode test_big_small(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {2, 1, 8};
@@ -429,7 +429,7 @@ PetscErrorCode test_big_small()
 }
 
 /* Tests functionality when setb is medium sized and setb is large */
-PetscErrorCode test_big_moderate()
+PetscErrorCode test_big_moderate(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64  truth[] = {2, 1, 8};
@@ -450,7 +450,7 @@ PetscErrorCode test_big_moderate()
 
 /* Tests functionality when seta and setb are large, in the opposite
  order to test_big_big() */
-PetscErrorCode test_big_big_reversed()
+PetscErrorCode test_big_big_reversed(void)
 {
   PetscInt64 *set_a, *set_b;
   PetscInt64 *truth;

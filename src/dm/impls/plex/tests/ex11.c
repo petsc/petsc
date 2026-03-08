@@ -3,7 +3,7 @@ static char help[] = "Tests for DMLabel\n\n";
 #include <petscdmplex.h>
 #include <petsc/private/dmimpl.h>
 
-static PetscErrorCode TestInsertion()
+static PetscErrorCode TestInsertion(void)
 {
   DMLabel        label, label2;
   const PetscInt values[5] = {0, 3, 4, -1, 176}, N = 10000;

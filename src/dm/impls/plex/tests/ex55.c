@@ -112,7 +112,7 @@ static PetscErrorCode CheckDistributedInterpolated(DM dm, PetscBool expectedInte
   case PETSC_VIEWER_HDF5_VIZ: {
     distributed  = PETSC_TRUE;
     interpolated = PETSC_FALSE;
-  }; break;
+  } break;
   case PETSC_VIEWER_HDF5_PETSC:
   case PETSC_VIEWER_DEFAULT:
   case PETSC_VIEWER_NATIVE: {
@@ -120,7 +120,7 @@ static PetscErrorCode CheckDistributedInterpolated(DM dm, PetscBool expectedInte
 
     PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(v, &version));
     distributed = (PetscBool)(version->major >= 3);
-  }; break;
+  } break;
   default:
     distributed = PETSC_FALSE;
   }

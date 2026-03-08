@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   for (i = 0; i < n / 2; i++) {
     tomap[i]         = i + n / 2;
     tomap[i + n / 2] = i;
-  };
+  }
   PetscCall(VecScatterRemap(vscat, tomap, NULL));
   PetscCall(VecScatterBegin(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
   for (i = 0; i < n / 2; i++) {
     tomap[i]         = i + n / 2;
     tomap[i + n / 2] = i;
-  };
+  }
   PetscCall(VecScatterRemap(vscat, tomap, NULL));
   PetscCall(VecScatterBegin(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
   for (i = 0; i < n / 2; i++) {
     tomap[i]         = i + n / 2;
     tomap[i + n / 2] = i;
-  };
+  }
   PetscCall(VecScatterRemap(vscat, tomap, NULL));
   PetscCall(VecScatterBegin(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));

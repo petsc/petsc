@@ -104,7 +104,7 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr)
 /*
     UserJacobian - for nonlinear function x^2 - value = 0
 */
-PetscErrorCode UserJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+PetscErrorCode UserJacobian(PETSC_UNUSED SNES snes, Vec X, Mat J, Mat jac, PETSC_UNUSED void *ptr)
 {
   PetscInt           N, i, row, col;
   const PetscScalar *x;
