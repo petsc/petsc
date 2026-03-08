@@ -8,7 +8,9 @@
 #include <petsc/private/petscimpl.h>
 #include <petscmath.h>
 #include <petscviewer.h>
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 #include <KokkosBlas.hpp>
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #include <Kokkos_Functional.hpp>
 
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
