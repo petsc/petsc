@@ -2,8 +2,8 @@
 #define PETSC4PY_COMPAT_H
 
 #include <petsc.h>
+#include <petscviewerhdf5.h>
 #include "compat/mpi.h"
-#include "compat/hdf5.h"
 #include "compat/hpddm.h"
 #include "compat/viennacl.h"
 #include "compat/cuda.h"
