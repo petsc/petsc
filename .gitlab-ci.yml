@@ -1143,6 +1143,8 @@ macos-cxx-cmplx-pkgs-dbg-arm:
     - os:macos-arm
   variables:
     TEST_ARCH: arch-ci-macos-cxx-cmplx-pkgs-dbg-arm
+    MAKE_CFLAGS: -Werror -Wno-deprecated
+    MAKE_CXXFLAGS: -Werror -Wno-deprecated -Wno-pass-failed -Wundef
     INIT_SCRIPT: .zprofile
 
 macos-cxx-pkgs-opt-arm:
