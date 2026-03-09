@@ -2083,7 +2083,7 @@ static PetscErrorCode MatGetRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscIn
 {
   hypre_ParCSRMatrix *parcsr;
   HYPRE_Int           hnz;
-#if PETSC_HAVE_HYPRE_DEVICE
+#ifdef PETSC_HAVE_HYPRE_DEVICE
   PetscInt    *didx;
   PetscScalar *dv;
 #endif
@@ -2091,7 +2091,7 @@ static PetscErrorCode MatGetRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscIn
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-#if PETSC_HAVE_HYPRE_DEVICE
+#ifdef PETSC_HAVE_HYPRE_DEVICE
   if (hypre_ParCSRMatrixMemoryLocation(parcsr) == HYPRE_MEMORY_DEVICE) {
     PetscCallExternal(HYPRE_ParCSRMatrixGetRow, parcsr, row, &hnz, (HYPRE_BigInt **)&didx, (HYPRE_Complex **)&dv);
     if (idx) {
@@ -2119,7 +2119,7 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
   PetscFunctionBegin;
   /* retrieve the internal matrix */
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-#if PETSC_HAVE_HYPRE_DEVICE
+#ifdef PETSC_HAVE_HYPRE_DEVICE
   if (hypre_ParCSRMatrixMemoryLocation(parcsr) == HYPRE_MEMORY_DEVICE) {
     if (idx) PetscFree(*idx);
     if (v) PetscFree(*v);
@@ -2160,7 +2160,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   // Check compatibility of PetscScalar and HYPRE_Complex
   PetscCheck(sizeof(PetscScalar) == sizeof(HYPRE_Complex), PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing handling of incompatible PetscScalar and HYPRE_Complex sizes");
 
-#if PETSC_HAVE_HYPRE_DEVICE
+#ifdef PETSC_HAVE_HYPRE_DEVICE
   if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
     hypre_on_host = PETSC_FALSE;
     device_idxm   = hypre_TAlloc(HYPRE_BigInt, 1, HYPRE_MEMORY_DEVICE);
@@ -2193,7 +2193,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   }
 
   if (sizeof(PetscInt) < sizeof(HYPRE_BigInt)) PetscCall(PetscFree(hypre_host_idxn));
-#if PETSC_HAVE_HYPRE_DEVICE
+#ifdef PETSC_HAVE_HYPRE_DEVICE
   if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
     hypre_TFree(device_idxm, HYPRE_MEMORY_DEVICE);
     hypre_TFree(device_idxn, HYPRE_MEMORY_DEVICE);
