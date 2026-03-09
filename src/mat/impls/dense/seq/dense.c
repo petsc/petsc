@@ -2722,24 +2722,27 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill
 PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
 {
   Mat_SeqDense      *a = (Mat_SeqDense *)A->data, *b = (Mat_SeqDense *)B->data, *c = (Mat_SeqDense *)C->data;
-  PetscBLASInt       m, n, k;
   const PetscScalar *av, *bv;
   PetscScalar       *cv;
+  PetscBLASInt       m, n, k;
   PetscScalar        _DOne = 1.0, _DZero = 0.0;
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->cmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!m || !n || !k) {
+    PetscCall(MatZeroEntries(C));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));
   PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &m, &n, &k, &_DOne, av, &a->lda, bv, &b->lda, &_DZero, cv, &c->lda));
-  PetscCall(PetscLogFlops(1.0 * m * n * k + 1.0 * m * n * (k - 1)));
   PetscCall(MatDenseRestoreArrayRead(A, &av));
   PetscCall(MatDenseRestoreArrayRead(B, &bv));
   PetscCall(MatDenseRestoreArrayWrite(C, &cv));
+  PetscCall(PetscLogFlops(1.0 * m * n * k + 1.0 * m * n * (k - 1)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2768,9 +2771,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
 
 PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
 {
-  Mat_SeqDense      *a = (Mat_SeqDense *)A->data;
-  Mat_SeqDense      *b = (Mat_SeqDense *)B->data;
-  Mat_SeqDense      *c = (Mat_SeqDense *)C->data;
+  Mat_SeqDense      *a = (Mat_SeqDense *)A->data, *b = (Mat_SeqDense *)B->data, *c = (Mat_SeqDense *)C->data;
   const PetscScalar *av, *bv;
   PetscScalar       *cv;
   PetscBLASInt       m, n, k;
@@ -2780,7 +2781,10 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->cmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!m || !n || !k) {
+    PetscCall(MatZeroEntries(C));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));
@@ -2817,9 +2821,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
 
 PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
 {
-  Mat_SeqDense      *a = (Mat_SeqDense *)A->data;
-  Mat_SeqDense      *b = (Mat_SeqDense *)B->data;
-  Mat_SeqDense      *c = (Mat_SeqDense *)C->data;
+  Mat_SeqDense      *a = (Mat_SeqDense *)A->data, *b = (Mat_SeqDense *)B->data, *c = (Mat_SeqDense *)C->data;
   const PetscScalar *av, *bv;
   PetscScalar       *cv;
   PetscBLASInt       m, n, k;
@@ -2829,7 +2831,10 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->rmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!m || !n || !k) {
+    PetscCall(MatZeroEntries(C));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));

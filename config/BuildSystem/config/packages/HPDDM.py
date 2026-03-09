@@ -79,5 +79,8 @@ class Configure(config.package.Package):
         self.logPrintWarning('Compiling HPDDM without SLEPc, PCHPDDM won\'t be available, unless reconfiguring with --download-slepc or configuring SLEPc with --download-hpddm')
     else:
       self.logPrintWarning('Skipping PCHPDDM installation, remove --with-shared-libraries=0')
+    if not hasattr(self.framework,'packages'):
+      self.framework.packages = []
+    self.framework.packages.append(self)
     self.logPrintBox('HPDDM examples are available at '+os.path.join(self.packageDir,'examples'))
     return self.installDir

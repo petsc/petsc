@@ -1630,10 +1630,19 @@ static PetscErrorCode VecDestroy_SeqKokkos(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode VecBindToCPU_SeqKokkos(Vec v, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscCheck(v->boundtocpu == flg, PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Changing binding of a VECKOKKOS vector is not supported yet");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 // Shared by all VecCreate/Duplicate routines for VecSeqKokkos
 static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
 {
   PetscFunctionBegin;
+  v->boundtocpu           = PetscDefined(HAVE_KOKKOS_WITHOUT_GPU) ? PETSC_TRUE : PETSC_FALSE; // VECKOKKOS has yet to support CPU binding. But in this case, we deem it is bound to CPU.
+  v->ops->bindtocpu       = VecBindToCPU_SeqKokkos;
   v->ops->abs             = VecAbs_SeqKokkos;
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
   v->ops->pointwisemult   = VecPointwiseMult_SeqKokkos;
