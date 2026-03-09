@@ -33,7 +33,7 @@ int main(int argc, char **args)
   PetscCall(MatGetNearNullSpace(A, &nullsp));
   PetscCall(MatGetSize(A, &rows, &cols));
   PetscCall(MatGetBlockSize(A, &bs));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "A has rows = %" PetscInt_FMT ", cols = %" PetscInt_FMT ", bs = %" PetscInt_FMT ", nearnullsp = %p\n", rows, cols, bs, nullsp));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "A has rows = %" PetscInt_FMT ", cols = %" PetscInt_FMT ", bs = %" PetscInt_FMT ", nearnullsp = %p\n", rows, cols, bs, (void *)nullsp));
 
   PetscCall(PetscStrcpy(datafile, datafilespath));
   PetscCall(PetscStrcat(datafile, "/lostnullspace/"));
@@ -96,7 +96,7 @@ int main(int argc, char **args)
   PetscCall(MatGetSize(K, &rows, &cols));
   PetscCall(MatGetBlockSize(K, &bs));
   PetscCall(MatGetNearNullSpace(K, &nullsp));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "K has rows = %" PetscInt_FMT ", cols = %" PetscInt_FMT ", bs = %" PetscInt_FMT ", nearnullsp = %p\n", rows, cols, bs, nullsp));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "K has rows = %" PetscInt_FMT ", cols = %" PetscInt_FMT ", bs = %" PetscInt_FMT ", nearnullsp = %p\n", rows, cols, bs, (void *)nullsp));
 
   PetscCall(ISGetIndices(is_thermal, &bc_thermal_indexes));
   PetscCall(ISGetIndices(is_mech, &bc_mech_indexes));

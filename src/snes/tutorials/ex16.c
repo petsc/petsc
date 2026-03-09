@@ -367,7 +367,7 @@ void SaintVenantKirchoffJacobian(PetscReal lambda, PetscReal mu, PetscScalar *F,
   }
 }
 
-PetscErrorCode FormElements()
+PetscErrorCode FormElements(void)
 {
   PetscInt  i, j, k, ii, jj, kk;
   PetscReal bx, by, bz, dbx, dby, dbz;

@@ -285,21 +285,21 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
 #else
   #include "ex55.h"
 
-PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj, AppCtx *user)
+PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *, Vec, PetscReal *, AppCtx *)
 {
   PetscFunctionBeginUser;
   PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *user)
+PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *, Vec, Vec, AppCtx *)
 {
   PetscFunctionBeginUser;
   PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jacpre, AppCtx *user)
+PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *, Vec, Mat, Mat, AppCtx *)
 {
   PetscFunctionBeginUser;
   PetscCheck(PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to reconfigure with --download-kokkos-kernels");

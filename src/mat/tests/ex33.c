@@ -25,7 +25,7 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
    Illustrate how to use MPI derived data types.
    It would save memory significantly. See MatMPIDenseScatter()
 */
-PetscErrorCode TestMPIDerivedDataType()
+PetscErrorCode TestMPIDerivedDataType(void)
 {
   MPI_Datatype type1, type2, rtype1, rtype2;
   PetscInt     i, j;

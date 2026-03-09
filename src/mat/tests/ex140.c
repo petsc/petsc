@@ -36,7 +36,7 @@ const char *const optstr[] = {"mult",
                               "multHermitian",
                               "multHermitianAdd"};
 
-PetscErrorCode RunHasOperationTest()
+PetscErrorCode RunHasOperationTest(void)
 {
   Mat      A;
   PetscInt matop, nop = PETSC_STATIC_ARRAY_LENGTH(optenum);

@@ -17,7 +17,7 @@ program main
   PetscMPIInt   ::  rank, sizef
   PetscErrorCode ierr
   PetscBool set
-  PetscInt, parameter :: zero = 0, one = 1, two = 2, three = 3
+  PetscInt, parameter :: one = 1, two = 2, three = 3
 
   PetscCallA(PetscInitialize(ierr))
 
