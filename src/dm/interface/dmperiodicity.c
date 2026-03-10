@@ -298,7 +298,7 @@ PetscErrorCode DMGetSparseLocalize(DM dm, PetscBool *sparse)
 /*@
   DMSetSparseLocalize - Set the flag indicating that `DM` coordinates should be localized only for cells near the periodic boundary.
 
-  Logically collective
+  Collective
 
   Input Parameters:
 + dm     - The `DM`
@@ -306,13 +306,22 @@ PetscErrorCode DMGetSparseLocalize(DM dm, PetscBool *sparse)
 
   Level: intermediate
 
+  Note:
+  If previous cell coordinates existed with a different sparse localization then these will be destroyed.
+
 .seealso: `DMGetSparseLocalize()`, `DMLocalizeCoordinates()`, `DMSetPeriodicity()`
 @*/
 PetscErrorCode DMSetSparseLocalize(DM dm, PetscBool sparse)
 {
+  PetscBool prevSparse, areLocalized;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(dm, sparse, 2);
+  // Blow away previously localized coordinates if they were created with the other sparse localize option
+  PetscCall(DMGetSparseLocalize(dm, &prevSparse));
+  PetscCall(DMGetCoordinatesLocalized(dm, &areLocalized));
+  if (prevSparse != sparse && areLocalized) PetscCall(DMDestroyCoordinates_Internal(&dm->coordinates[1]));
   dm->sparseLocalize = sparse;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

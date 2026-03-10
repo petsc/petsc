@@ -351,6 +351,8 @@ PETSC_EXTERN PetscLogEvent DM_ProjectFunction;
 PETSC_INTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM, Vec *);
 PETSC_INTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM, Vec *);
 
+PETSC_INTERN PetscErrorCode DMDestroyCoordinates_Internal(DMCoordinates *);
+
 PETSC_INTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM, PetscViewer));
 
 /*

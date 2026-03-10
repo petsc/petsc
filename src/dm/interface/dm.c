@@ -612,7 +612,7 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
+PetscErrorCode DMDestroyCoordinates_Internal(DMCoordinates *c)
 {
   PetscFunctionBegin;
   c->dim = PETSC_DEFAULT;
@@ -756,8 +756,8 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscCall(PetscFree((*dm)->L));
   PetscCall(PetscFree((*dm)->maxCell));
   PetscCall(PetscFree2((*dm)->nullspaceConstructors, (*dm)->nearnullspaceConstructors));
-  PetscCall(DMDestroyCoordinates_Private(&(*dm)->coordinates[0]));
-  PetscCall(DMDestroyCoordinates_Private(&(*dm)->coordinates[1]));
+  PetscCall(DMDestroyCoordinates_Internal(&(*dm)->coordinates[0]));
+  PetscCall(DMDestroyCoordinates_Internal(&(*dm)->coordinates[1]));
   if ((*dm)->transformDestroy) PetscCall((*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx));
   PetscCall(DMDestroy(&(*dm)->transformDM));
   PetscCall(VecDestroy(&(*dm)->transform));
