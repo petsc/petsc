@@ -671,7 +671,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
 }
 
 // To finish MatMPIAIJKokkosReduce.
-static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A, KokkosCsrMatrix B, PetscInt cstart, PetscInt cend, const PetscInt *garray1, PetscSF ownerSF, MatReuse reuse, PetscInt *map, MatMatStruct_AtB *mm)
+static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm, KokkosCsrMatrix, KokkosCsrMatrix, PetscInt, PetscInt, const PetscInt *, PetscSF, MatReuse, PetscInt *, MatMatStruct_AtB *mm)
 {
   auto       &leafBuf  = mm->leafBuf;
   auto       &rootBuf  = mm->rootBuf;
@@ -998,7 +998,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
 }
 
 // To finish MatMPIAIJKokkosBcast.
-static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat E, PetscSF ownerSF, MatReuse reuse, PetscInt *map, MatMatStruct_AB *mm)
+static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat, PetscSF, MatReuse, PetscInt *, MatMatStruct_AB *mm)
 {
   PetscFunctionBegin;
   const auto &Fd  = mm->Fd;
@@ -1047,7 +1047,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat E, PetscSF ownerSF, MatReuse r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, Mat A, Mat B, MatMatStruct_AtB *mm)
+static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *, Mat A, Mat B, MatMatStruct_AtB *mm)
 {
   Mat_MPIAIJ     *ampi = static_cast<Mat_MPIAIJ *>(A->data);
   Mat_MPIAIJ     *bmpi = static_cast<Mat_MPIAIJ *>(B->data);
@@ -1125,7 +1125,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AtB(Mat_Product *product, Mat A, Mat B, MatMatStruct_AtB *mm)
+static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AtB(Mat_Product *, Mat A, Mat B, MatMatStruct_AtB *mm)
 {
   Mat_MPIAIJ     *ampi = static_cast<Mat_MPIAIJ *>(A->data);
   Mat_MPIAIJ     *bmpi = static_cast<Mat_MPIAIJ *>(B->data);
@@ -1166,7 +1166,7 @@ static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AtB(Mat_Product *product, M
 .  B        - an MPIAIJKOKKOS matrix
 -  mm       - a struct used to stash intermediate data when computing AB. Persist from symbolic to numeric operations.
 */
-static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, Mat A, Mat B, MatMatStruct_AB *mm)
+static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *, Mat A, Mat B, MatMatStruct_AB *mm)
 {
   Mat_MPIAIJ     *ampi = static_cast<Mat_MPIAIJ *>(A->data);
   Mat_MPIAIJ     *bmpi = static_cast<Mat_MPIAIJ *>(B->data);
@@ -1237,7 +1237,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AB(Mat_Product *product, Mat A, Mat B, MatMatStruct_AB *mm)
+static PetscErrorCode MatProductNumeric_MPIAIJKokkos_AB(Mat_Product *, Mat A, Mat B, MatMatStruct_AB *mm)
 {
   Mat_MPIAIJ     *ampi = static_cast<Mat_MPIAIJ *>(A->data);
   Mat_MPIAIJ     *bmpi = static_cast<Mat_MPIAIJ *>(B->data);
@@ -1719,7 +1719,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype, MatReuse reuse, Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType, MatReuse reuse, Mat *newmat)
 {
   Mat         B;
   Mat_MPIAIJ *a;
