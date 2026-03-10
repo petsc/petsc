@@ -1345,6 +1345,39 @@ cdef class DM(Object):
         CHKERR(DMGetCoordinatesLocalized(self.dm, &flag))
         return toBool(flag)
 
+    def getSparseLocalize(self) -> bool:
+        """Return if coordinates should only be localized at the boundary.
+
+        Not collective.
+
+        See Also
+        --------
+        DM.setSparseLocalize, petsc.DMGetSparseLocalize
+
+        """
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR(DMGetSparseLocalize(self.dm, &flag))
+        return toBool(flag)
+
+    def setSparseLocalize(self, flag: bool) -> None:
+        """Set if coordinates should be only localized at the boundary.
+
+        Collective.
+
+        Parameters
+        ----------
+        flag
+            Whether the coordinates should only be localized at the boundary.
+
+        See Also
+        --------
+        DM.getSparseLocalize, petsc.DMSetSparseLocalize
+
+        """
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag: cflag = PETSC_TRUE
+        CHKERR(DMSetSparseLocalize(self.dm, cflag))
+
     def getBoundingBox(self) -> tuple[tuple[float, float], ...]:
         """Return the dimension of embedding space for coordinates values.
 
