@@ -319,8 +319,12 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
 
   PetscCall(VecZeroEntries(DeltaX));
 
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   /* set snes->max_its for convergence test */
   snes->max_its = maxits * maxincs;
+  snes->iter    = 0;
+  snes->norm    = 0.0;
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   /* main incremental-iterative loop */
   for (PetscInt i = 0; i < maxincs || maxincs < 0; i++) {
@@ -336,9 +340,9 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
     SNESCheckFunctionDomainError(snes, fnorm);
 
     /* Monitor convergence */
-    PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
+    PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
     PetscCall(SNESMonitor(snes, snes->iter, fnorm));
-    if (i == 0 && snes->reason) break;
+    if (snes->reason) break;
     for (PetscInt j = 0; j < maxits; j++) {
       PetscReal normsqX_Q, deltaS = 1;
 
