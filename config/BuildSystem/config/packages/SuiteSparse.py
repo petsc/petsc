@@ -66,6 +66,13 @@ class Configure(config.package.CMakePackage):
           raise RuntimeError('SuiteSparse build with CUDA enabled requires --with-cuda=1 and --with-openmp=1')
       else:
         enablecuda = 0
+    elif self.cuda.found and not self.openmp.found:
+      self.logPrintWarning('SuiteSparse will not be configured with CUDA support, as it also requires OpenMP. Enabling CUDA support requires --with-cuda=1 and --with-openmp=1')
+    # A string, such as "all" or "35;50;75;80" that lists the CUDA architectures.
+    # See https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/dev/README.md?plain=1#L986-L990
+    if enablecuda:
+      arches = self.cuda.cudaArch.replace(',',';') # Convert PETSc's comma-separated list to SuiteSparse's semicolon-separated list
+      args.append('-DSUITESPARSE_CUDA_ARCHITECTURES:STRING="'+arches+'"')
     args.append('-DSUITESPARSE_USE_CUDA:BOOL='+('ON' if enablecuda else 'OFF'))
     args.append('-DSUITESPARSE_USE_OPENMP:BOOL='+('ON' if self.openmp.found else 'OFF'))
     args.append('-DSUITESPARSE_USE_64BIT_BLAS:BOOL='+('ON' if self.blasLapack.has64bitindices else 'OFF'))
