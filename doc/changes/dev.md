@@ -114,6 +114,7 @@
 - Change the `destroy()` function argument of `TSTrajectorySetTransform()` to type `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
 - Correct option `-ts_max_reject` to `-ts_max_step_rejections`
 - Correct option `-ts_dt` to `-ts_time_step`
+- Change `TSAdaptCheckStage()` to call function set by `TSAdaptSetCheckStage()` before other checks
 
 ```{rubric} TAO:
 ```

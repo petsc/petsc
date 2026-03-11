@@ -449,7 +449,7 @@ M*/
   Level: developer
 
   Notes:
-  `PetscUseTypeMethod()` and ` PetscTryTypeMethod()` are the preferred API for this functionality. But when the callback functions are associated with a
+  `PetscUseTypeMethod()` and `PetscTryTypeMethod()` are the preferred API for this functionality. But when the callback functions are associated with a
   `DMSNES` or `DMTS` this API must be used.
 
   Once the error handler is called the calling function is then returned from with the given
