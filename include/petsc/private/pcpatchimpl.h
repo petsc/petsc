@@ -25,6 +25,7 @@ typedef struct {
   IS           extFacets;
   IS           intFacets;
   IS           intFacetsToPatchCell; /* Support of interior facet in local patch point numbering: AKA which two cells touch the facet (in patch local numbering of cells) */
+  IS           extFacetsToPatchCell; /* Support of exterior facet in local patch point numbering: the one cell that touches the facet (in patch local numbering of cells) */
   PetscSection intFacetCounts;
   PetscSection extFacetCounts;
   PetscSection cellNumbering; /* Plex: NULL Firedrake: Numbering of cells in DM */
@@ -69,9 +70,15 @@ typedef struct {
   /* Interior facet integrals: Jacobian */
   PetscErrorCode (*usercomputeopintfacet)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
   void *usercomputeopintfacetctx;
-  /* Residual */
+  /* Interior facet integrals: Residual */
   PetscErrorCode (*usercomputefintfacet)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
-  void           *usercomputefintfacetctx;
+  void *usercomputefintfacetctx;
+  /* Exterior facet integrals: Jacobian */
+  PetscErrorCode (*usercomputeopextfacet)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void *usercomputeopextfacetctx;
+  /* Exterior facet integrals: Residual */
+  PetscErrorCode (*usercomputefextfacet)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *);
+  void           *usercomputefextfacetctx;
   IS              cellIS;                   /* Temporary IS for each cell patch */
   PetscBool       save_operators;           /* Save all operators (or create/destroy one at a time?) */
   PetscBool       precomputeElementTensors; /* Precompute all element tensors (each cell is assembled exactly once)? */

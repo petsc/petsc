@@ -551,13 +551,15 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
+    const PetscInt ornt = fgeom->face[e][1];
 
     fegeom.v = x; /* Workspace */
     PetscCall(PetscArrayzero(f0, Nq * NcI));
     PetscCall(PetscArrayzero(f1, Nq * NcI * dE));
     for (q = 0; q < Nq; ++q) {
-      PetscReal w;
-      PetscInt  c, d;
+      PetscReal      w;
+      PetscInt       c, d;
+      const PetscInt qp = ornt < 0 ? (Nq - 1 - q) : q; /* Map physical quadrature index to tabulation index accounting for face orientation */
 
       PetscCall(PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q * fgeom->dim], &fegeom));
       PetscCall(PetscFEGeomGetCellPoint(fgeom, e, q, &cgeom));
@@ -572,19 +574,19 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
 #endif
         }
       }
-      PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
-      if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face, q, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
-      for (i = 0; i < n0; ++i) f0_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[q * NcI]);
-      for (c = 0; c < NcI; ++c) f0[q * NcI + c] *= w;
-      for (i = 0; i < n1; ++i) f1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q * NcI * dE]);
+      PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, qp, Tf, &cgeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
+      if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face, qp, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
+      for (i = 0; i < n0; ++i) f0_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[qp * NcI]);
+      for (c = 0; c < NcI; ++c) f0[qp * NcI + c] *= w;
+      for (i = 0; i < n1; ++i) f1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[qp * NcI * dE]);
       for (c = 0; c < NcI; ++c)
-        for (d = 0; d < dE; ++d) f1[(q * NcI + c) * dE + d] *= w;
+        for (d = 0; d < dE; ++d) f1[(qp * NcI + c) * dE + d] *= w;
       if (debug) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " quad point %" PetscInt_FMT "\n", e, q));
         for (c = 0; c < NcI; ++c) {
-          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[q * NcI + c])));
+          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[qp * NcI + c])));
           if (n1) {
-            for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(q * NcI + c) * dim + d])));
+            for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(qp * NcI + c) * dim + d])));
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
           }
         }
@@ -966,6 +968,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
+    const PetscInt ornt = fgeom->face[e][1];
     fegeom.n            = NULL;
     fegeom.v            = NULL;
     fegeom.xi           = NULL;
@@ -988,8 +991,9 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
       cgeom.detJ = &fgeom->suppDetJ[0][e * Np];
     } else fegeom.xi = NULL;
     for (q = 0; q < Nq; ++q) {
-      PetscReal w;
-      PetscInt  c;
+      PetscReal      w;
+      PetscInt       c;
+      const PetscInt qp = ornt < 0 ? (Nq - 1 - q) : q; /* Map physical quadrature index to tabulation index accounting for face orientation */
 
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       if (isAffine) {
@@ -1007,8 +1011,8 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
       }
       PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
-      if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, T, &cgeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
-      if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, face, q, TAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
+      if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, qp, T, &cgeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
+      if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, face, qp, TAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       if (n0) {
         PetscCall(PetscArrayzero(g0, NcI * NcJ));
         for (i = 0; i < n0; ++i) g0_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, fegeom.n, numConstants, constants, g0);
@@ -1030,7 +1034,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
         for (c = 0; c < NcI * NcJ * dim * dim; ++c) g3[c] *= w;
       }
 
-      PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, face, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &cgeom, g0, g1, g2, g3, totDim, offsetI, offsetJ, elemMat + eOffset));
+      PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, face, qp, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &cgeom, g0, g1, g2, g3, totDim, offsetI, offsetJ, elemMat + eOffset));
     }
     if (debug > 1) {
       PetscInt fc, f, gc, g;

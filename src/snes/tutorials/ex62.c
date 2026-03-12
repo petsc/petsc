@@ -41,13 +41,22 @@ typedef enum {
 } SolType;
 const char *SolTypes[] = {"quadratic", "trig", "unknown", "SolType", "SOL_", 0};
 
+typedef enum {
+  BC_ESSENTIAL,
+  BC_NITSCHE,
+  BC_UNKNOWN
+} BCType;
+const char *BCTypes[] = {"essential", "nitsche", "unknown", "BCType", "BC_", 0};
+
 typedef struct {
-  PetscScalar mu; /* dynamic shear viscosity */
+  PetscScalar mu;  /* dynamic shear viscosity */
+  PetscScalar eta; /* Nitsche penalty parameter (dimensionless) */
 } Parameter;
 
 typedef struct {
   PetscBag bag; /* Problem parameters */
   SolType  sol; /* MMS solution */
+  BCType   bc;  /* Boundary condition type */
 } AppCtx;
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
@@ -225,16 +234,171 @@ static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
   }
 }
 
+/* Inline helpers for computing exact velocity in void boundary kernels */
+static inline void ExactVelocityQuadratic(PetscInt dim, const PetscReal x[], PetscScalar g[])
+{
+  PetscInt c;
+
+  g[0] = (dim - 1) * x[0] * x[0];
+  for (c = 1; c < dim; ++c) {
+    g[0] += x[c] * x[c];
+    g[c] = 2.0 * x[0] * x[0] - 2.0 * x[0] * x[c];
+  }
+}
+
+static inline void ExactVelocityTrig(PetscInt dim, const PetscReal x[], PetscScalar g[])
+{
+  PetscInt c;
+
+  g[0] = (dim - 1) * PetscSinReal(PETSC_PI * x[0]);
+  for (c = 1; c < dim; ++c) {
+    g[0] += PetscSinReal(PETSC_PI * x[c]);
+    g[c] = -PETSC_PI * PetscCosReal(PETSC_PI * x[0]) * x[c];
+  }
+}
+
+/* Nitsche boundary residual kernels for velocity (field 0)
+   f0_bd_u[c] = -mu * sum_d (u_x[c*dim+d] + u_x[d*dim+c]) * n[d]   (consistency: stress flux from IBP)
+              + p * n[c]                                               (pressure flux from IBP)
+              + penalty * (u[c] - g[c])                                (penalty) */
+static void f0_bd_nitsche_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal mu      = PetscRealPart(constants[0]);
+  const PetscReal penalty = PetscRealPart(constants[1]);
+  PetscScalar     g[3];
+  PetscInt        c, d;
+
+  ExactVelocityQuadratic(dim, x, g);
+  for (c = 0; c < dim; ++c) {
+    f0[c] = penalty * (u[c] - g[c]) + u[uOff[1]] * n[c];
+    for (d = 0; d < dim; ++d) f0[c] -= mu * (u_x[c * dim + d] + u_x[d * dim + c]) * n[d];
+  }
+}
+
+static void f0_bd_nitsche_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal mu      = PetscRealPart(constants[0]);
+  const PetscReal penalty = PetscRealPart(constants[1]);
+  PetscScalar     g[3];
+  PetscInt        c, d;
+
+  ExactVelocityTrig(dim, x, g);
+  for (c = 0; c < dim; ++c) {
+    f0[c] = penalty * (u[c] - g[c]) + u[uOff[1]] * n[c];
+    for (d = 0; d < dim; ++d) f0[c] -= mu * (u_x[c * dim + d] + u_x[d * dim + c]) * n[d];
+  }
+}
+
+/* f1_bd_u[c*dim+d] = -mu * (n[d]*(u[c]-g[c]) + n[c]*(u[d]-g[d]))  (symmetry / adjoint consistency) */
+static void f1_bd_nitsche_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
+  const PetscReal mu = PetscRealPart(constants[0]);
+  PetscScalar     g[3];
+  PetscInt        c, d;
+
+  ExactVelocityQuadratic(dim, x, g);
+  for (c = 0; c < dim; ++c)
+    for (d = 0; d < dim; ++d) f1[c * dim + d] = -mu * (n[d] * (u[c] - g[c]) + n[c] * (u[d] - g[d]));
+}
+
+static void f1_bd_nitsche_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
+  const PetscReal mu = PetscRealPart(constants[0]);
+  PetscScalar     g[3];
+  PetscInt        c, d;
+
+  ExactVelocityTrig(dim, x, g);
+  for (c = 0; c < dim; ++c)
+    for (d = 0; d < dim; ++d) f1[c * dim + d] = -mu * (n[d] * (u[c] - g[c]) + n[c] * (u[d] - g[d]));
+}
+
+/* Nitsche boundary residual kernels for pressure (field 1)
+   f0_bd_p = sum_d n[d] * (u[d] - g[d])  (continuity equation boundary correction) */
+static void f0_bd_nitsche_quadratic_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscScalar g[3];
+  PetscInt    d;
+
+  ExactVelocityQuadratic(dim, x, g);
+  f0[0] = 0.0;
+  for (d = 0; d < dim; ++d) f0[0] += n[d] * (u[d] - g[d]);
+}
+
+static void f0_bd_nitsche_trig_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscScalar g[3];
+  PetscInt    d;
+
+  ExactVelocityTrig(dim, x, g);
+  f0[0] = 0.0;
+  for (d = 0; d < dim; ++d) f0[0] += n[d] * (u[d] - g[d]);
+}
+
+/* Nitsche boundary Jacobian kernels (solution-independent)
+   g0_bd_uu[c*Nc+d] = delta(c,d) * penalty  (penalty Jacobian) */
+static void g0_bd_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscReal penalty = PetscRealPart(constants[1]);
+  const PetscInt  Nc      = uOff[1] - uOff[0];
+  PetscInt        c;
+
+  for (c = 0; c < Nc; ++c) g0[c * Nc + c] = penalty;
+}
+
+/* g1_bd_uu[(c*Nc+d)*dim+e] = -mu * (delta(c,d)*n[e] + delta(c,e)*n[d])  (consistency Jacobian: df0/du_x) */
+static void g1_bd_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  const PetscReal mu = PetscRealPart(constants[0]);
+  const PetscInt  Nc = uOff[1] - uOff[0];
+  PetscInt        c, d, e;
+
+  for (c = 0; c < Nc; ++c)
+    for (d = 0; d < Nc; ++d)
+      for (e = 0; e < dim; ++e) g1[(c * Nc + d) * dim + e] = -mu * ((c == d ? 1.0 : 0.0) * n[e] + (c == e ? 1.0 : 0.0) * n[d]);
+}
+
+/* g2_bd_uu[(c*Nc+d)*dim+e] = -mu * (n[e]*delta(c,d) + n[c]*delta(e,d))  (symmetry Jacobian: df1/du) */
+static void g2_bd_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
+{
+  const PetscReal mu = PetscRealPart(constants[0]);
+  const PetscInt  Nc = uOff[1] - uOff[0];
+  PetscInt        c, d, e;
+
+  for (c = 0; c < Nc; ++c)
+    for (d = 0; d < Nc; ++d)
+      for (e = 0; e < dim; ++e) g2[(c * Nc + d) * dim + e] = -mu * (n[e] * (c == d ? 1.0 : 0.0) + n[c] * (e == d ? 1.0 : 0.0));
+}
+
+/* g0_bd_up[c*1+0] = n[c]  (velocity-pressure coupling: df0_u/dp) */
+static void g0_bd_up(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  PetscInt c;
+
+  for (c = 0; c < dim; ++c) g0[c] = n[c];
+}
+
+/* g0_bd_pu[0*Nc+d] = n[d]  (pressure-velocity coupling: df0_p/du) */
+static void g0_bd_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  PetscInt d;
+
+  for (d = 0; d < dim; ++d) g0[d] = n[d];
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt sol;
+  PetscInt sol, bc;
 
   PetscFunctionBeginUser;
   options->sol = SOL_QUADRATIC;
+  options->bc  = BC_ESSENTIAL;
   PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   sol = options->sol;
   PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes) - 3, SolTypes[options->sol], &sol, NULL));
   options->sol = (SolType)sol;
+  bc           = options->bc;
+  PetscCall(PetscOptionsEList("-bc", "The boundary condition type", "ex62.c", BCTypes, PETSC_STATIC_ARRAY_LENGTH(BCTypes) - 3, BCTypes[options->bc], &bc, NULL));
+  options->bc = (BCType)bc;
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -259,6 +423,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
   PetscCall(PetscBagGetData(ctx->bag, &p));
   PetscCall(PetscBagSetName(ctx->bag, "par", "Stokes Parameters"));
   PetscCall(PetscBagRegisterScalar(ctx->bag, &p->mu, 1.0, "mu", "Dynamic Shear Viscosity, Pa s"));
+  PetscCall(PetscBagRegisterScalar(ctx->bag, &p->eta, 100.0, "eta", "Nitsche penalty parameter (dimensionless)"));
   PetscCall(PetscBagSetFromOptions(ctx->bag));
   {
     PetscViewer       viewer;
@@ -280,6 +445,9 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
 static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[2])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
+  void (*f0_bd_u)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  void (*f1_bd_u)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  void (*f0_bd_p)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
@@ -291,11 +459,17 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
     PetscCall(PetscDSSetResidual(ds, 0, f0_quadratic_u, f1_u));
     exactFuncs[0] = quadratic_u;
     exactFuncs[1] = quadratic_p;
+    f0_bd_u       = f0_bd_nitsche_quadratic_u;
+    f1_bd_u       = f1_bd_nitsche_quadratic_u;
+    f0_bd_p       = f0_bd_nitsche_quadratic_p;
     break;
   case SOL_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
     exactFuncs[0] = trig_u;
     exactFuncs[1] = trig_p;
+    f0_bd_u       = f0_bd_nitsche_trig_u;
+    f1_bd_u       = f1_bd_nitsche_trig_u;
+    f0_bd_p       = f0_bd_nitsche_trig_p;
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%d)", SolTypes[PetscMin(user->sol, SOL_UNKNOWN)], user->sol);
@@ -311,16 +485,70 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
   PetscCall(PetscDSSetExactSolution(ds, 1, exactFuncs[1], user));
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], NULL, user, NULL));
+  switch (user->bc) {
+  case BC_ESSENTIAL:
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], NULL, user, NULL));
+    break;
+  case BC_NITSCHE: {
+    PetscWeakForm   wf;
+    DMLabel         faceSetsLabel;
+    IS              valueIS;
+    const PetscInt *faceSetValues;
+    PetscInt        numValues, bd, i;
+
+    PetscCall(DMGetLabel(dm, "Face Sets", &faceSetsLabel));
+    PetscCall(DMLabelGetNumValues(faceSetsLabel, &numValues));
+    PetscCall(DMLabelGetValueIS(faceSetsLabel, &valueIS));
+    PetscCall(ISGetIndices(valueIS, &faceSetValues));
+
+    /* Velocity boundary: natural BC with Nitsche terms on all boundary faces */
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "wall", faceSetsLabel, numValues, faceSetValues, 0, 0, NULL, NULL, NULL, user, &bd));
+    PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+    for (i = 0; i < numValues; ++i) {
+      /* Velocity residual (field 0): f0 and f1 */
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, faceSetsLabel, faceSetValues[i], 0, 0, 0, f0_bd_u, 0, f1_bd_u));
+      /* Velocity-velocity Jacobian (field 0, field 0): g0 (penalty), g1 (consistency), g2 (symmetry) */
+      PetscCall(PetscWeakFormSetIndexBdJacobian(wf, faceSetsLabel, faceSetValues[i], 0, 0, 0, 0, g0_bd_uu, 0, g1_bd_uu, 0, g2_bd_uu, 0, NULL));
+      /* Velocity-pressure Jacobian (field 0, field 1): g0 (pressure coupling) */
+      PetscCall(PetscWeakFormSetIndexBdJacobian(wf, faceSetsLabel, faceSetValues[i], 0, 1, 0, 0, g0_bd_up, 0, NULL, 0, NULL, 0, NULL));
+    }
+
+    /* Pressure boundary: natural BC for continuity equation correction */
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "wall_pres", faceSetsLabel, numValues, faceSetValues, 1, 0, NULL, NULL, NULL, user, &bd));
+    PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+    for (i = 0; i < numValues; ++i) {
+      /* Pressure residual (field 1): f0 */
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, faceSetsLabel, faceSetValues[i], 1, 0, 0, f0_bd_p, 0, NULL));
+      /* Pressure-velocity Jacobian (field 1, field 0): g0 */
+      PetscCall(PetscWeakFormSetIndexBdJacobian(wf, faceSetsLabel, faceSetValues[i], 1, 0, 0, 0, g0_bd_pu, 0, NULL, 0, NULL, 0, NULL));
+    }
+    PetscCall(ISRestoreIndices(valueIS, &faceSetValues));
+    PetscCall(ISDestroy(&valueIS));
+  } break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unsupported BC type: %s (%d)", BCTypes[PetscMin(user->bc, BC_UNKNOWN)], user->bc);
+  }
 
   /* Make constant values available to pointwise functions */
   {
     Parameter  *param;
-    PetscScalar constants[1];
+    PetscScalar constants[2];
 
     PetscCall(PetscBagGetData(user->bag, &param));
     constants[0] = param->mu; /* dynamic shear viscosity, Pa s */
-    PetscCall(PetscDSSetConstants(ds, 1, constants));
+    constants[1] = 0.0;       /* Nitsche penalty (set below if needed) */
+    if (user->bc == BC_NITSCHE) {
+      /* Compute cell size h from mesh */
+      PetscInt  dim, cStart;
+      PetscReal vol, h;
+
+      PetscCall(DMGetDimension(dm, &dim));
+      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, cStart, &vol, NULL, NULL));
+      h            = PetscPowReal(vol, 1.0 / dim);
+      constants[1] = PetscRealPart(param->eta) * PetscRealPart(param->mu) / h;
+    }
+    PetscCall(PetscDSSetConstants(ds, 2, constants));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -739,5 +967,29 @@ int main(int argc, char **argv)
         -mg_levels_pc_type patch -mg_levels_pc_patch_partition_of_unity 0 -mg_levels_pc_patch_construct_codim 0 -mg_levels_pc_patch_construct_type vanka \
           -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu \
         -mg_coarse_pc_type svd
+  #   Nitsche BC consistency check
+  test:
+    suffix: 2d_q2_q1_nitsche_check
+    requires: double !complex
+    args: -sol quadratic -bc nitsche -dm_plex_simplex 0 -dm_refine 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+  #   Nitsche BC + Vanka
+  test:
+    suffix: 2d_q1_p0_nitsche_vanka
+    output_file: output/empty.out
+    requires: double !complex
+    args: -sol quadratic -bc nitsche -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 \
+      -ksp_type fgmres -ksp_atol 1e-5 -ksp_error_if_not_converged \
+      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu
+  #   Nitsche BC + GMRES (sanity check that Nitsche formulation solves correctly)
+  test:
+    suffix: 2d_q2_q1_nitsche_gmres
+    output_file: output/empty.out
+    requires: double !complex
+    args: -sol quadratic -bc nitsche -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+      -snes_error_if_not_converged \
+      -ksp_type gmres -ksp_rtol 1e-12 -pc_type jacobi
 
 TEST*/
