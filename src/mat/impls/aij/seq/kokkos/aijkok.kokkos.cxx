@@ -7,9 +7,7 @@
 #include <petsc/private/kokkosimpl.hpp>
 #include <petscsys.h>
 
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 #include <KokkosBlas.hpp>
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #include <KokkosSparse_CrsMatrix.hpp>
 
 // To suppress compiler warnings:
@@ -20,9 +18,7 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #define DISABLE_CUSPARSE_DEPRECATED
 #include <KokkosSparse_spmv.hpp>
 
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 #include <KokkosSparse_spiluk.hpp>
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #include <KokkosSparse_sptrsv.hpp>
 #include <KokkosSparse_spgemm.hpp>
 #include <KokkosSparse_spadd.hpp>
