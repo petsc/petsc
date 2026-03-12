@@ -19,7 +19,8 @@ typedef struct {
   SNESNewtonALCorrectionType correction_type;        /* type of correction scheme to use */
   PetscBool                  copied_rhs;             /* has the right-hand side vector been copied? */
 
-  Vec vec_rhs_orig; /* original right-hand side vector, used if `scale_rhs == PETSC_TRUE` */
+  Vec vec_rhs_orig;     /* original right-hand side vector, used if `scale_rhs == PETSC_TRUE` */
+  Mat mat_diag_scaling; /* vector defining the scaling of DoFs for arc length computation */
 
   SNESFunctionFn *computealfunction; /* user-provided function to compute the tangent load vector  */
   void           *alctx;             /* user-provided context for the tangent load vector computation */

@@ -1,0 +1,10 @@
+lambda: 2.777778 mu: 4.166667
+  0 SNES Function norm 3.18716
+  1 SNES Function norm 22.408
+  2 SNES Function norm 4.70912
+  3 SNES Function norm 0.518389
+  4 SNES Function norm 0.0161005
+  5 SNES Function norm 9.94415e-05
+  6 SNES Function norm 4.38672e-08
+  7 SNES Function norm < 1.e-11
+Number of SNES iterations = 7

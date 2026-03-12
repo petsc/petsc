@@ -109,6 +109,7 @@
 - Add `SNES_DIVERGED_OBJECTIVE_NANORINF`
 - Add `SNES_DIVERGED_OBJECTIVE_DOMAIN`
 - Add developer functions `SNESCheckFunctionDomainError()`, `SNESLineSearchCheckFunctionDomainError()`, `SNESCheckObjectiveDomainError()`, `SNESLineSearchCheckObjectiveDomainError()`, `SNESCheckJacobianDomainError()`, and `SNESLineSearchCheckJacobianDomainError()`
+- Add `SNESNewtonALSetDiagonalScaling` to allow for per-DoF scaling of solution vector when computing arc length
 
 ```{rubric} SNESLineSearch:
 ```
