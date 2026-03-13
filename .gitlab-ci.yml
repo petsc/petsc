@@ -158,7 +158,7 @@ uni-complex-float-int64:
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS=="-ffree-line-length-none -ffree-line-length-0" CXXFLAGS=
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS="-ffree-line-length-none -ffree-line-length-0" CXXFLAGS=
     ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t% tao_unconstrained_tutorials-rosenbrock1% ml_regressor_tests-ex3_ols%
     MAKE_TEST_CFLAGS: -Werror -std=c99 -Wdeclaration-after-statement
@@ -1143,6 +1143,8 @@ macos-cxx-cmplx-pkgs-dbg-arm:
     - os:macos-arm
   variables:
     TEST_ARCH: arch-ci-macos-cxx-cmplx-pkgs-dbg-arm
+    MAKE_CFLAGS: -Werror -Wno-deprecated
+    MAKE_CXXFLAGS: -Werror -Wno-deprecated -Wno-pass-failed -Wundef
     INIT_SCRIPT: .zprofile
 
 macos-cxx-pkgs-opt-arm:
@@ -1155,7 +1157,7 @@ macos-cxx-pkgs-opt-arm:
   variables:
     EXTRA_OPTIONS_INITIAL: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-macos-cxx-pkgs-opt-arm
-    MAKE_CXXFLAGS: -Werror -Wno-pass-failed
+    MAKE_CXXFLAGS: -Werror -Wno-pass-failed -Wundef
     INIT_SCRIPT: .zprofile
 
 macos-dbg:

@@ -12,7 +12,6 @@ configure_options = [
   'FOPTFLAGS=-g -Og',
   'CXXOPTFLAGS=-g -Og',
 
-  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
@@ -44,9 +43,9 @@ configure_options = [
   '--download-mpi4py=1',
   '--download-elemental=1',
   #'--download-sundials2=1',
-  #'--download-hypre=1',
-  #'--download-suitesparse=1',
-  #'--download-chaco=1',
+  '--download-hypre=1',
+  '--download-suitesparse=1',
+  '--download-chaco=1',
   #'--download-spai=1',
   #'--with-coverage',
   '--with-strict-petscerrorcode',

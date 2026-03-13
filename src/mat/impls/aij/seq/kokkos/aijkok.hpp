@@ -4,7 +4,9 @@
 #include <petsc/private/kokkosimpl.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 #include <KokkosSparse_spiluk.hpp>
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #include <string>
 
 namespace
