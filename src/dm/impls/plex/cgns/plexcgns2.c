@@ -2101,13 +2101,12 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   isize[2] = 0;
   PetscCallCGNSWrite(cg_zone_write(cgv->file_num, base, "Zone", isize, CGNS_ENUMV(Unstructured), &zone), dm, viewer);
 
-  cgsize_t e_owned, e_global, e_start;
-  {
+  { // Write the coordinate data to file
     const PetscScalar *X;
     PetscScalar       *x[3];
+    cgsize_t           start = nStart + 1, end = nEnd; // CGNS nodes use 1-based indexing
     int                coord_ids[3];
 
-    PetscCall(VecGetArrayRead(coord, &X));
     for (PetscInt d = 0; d < coord_dim; d++) {
       const double exponents[] = {0, 1, 0, 0, 0};
       char         coord_name[64];
@@ -2117,28 +2116,26 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCallCGNSWrite(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents), dm, viewer);
     }
 
-    int        section;
-    cgsize_t  *conn = NULL;
-    const int *perm;
-    cgsize_t   start = nStart + 1, end = nEnd; // CGNS nodes use 1-based indexing
-    CGNS_ENUMT(ElementType_t) element_type = CGNS_ENUMV(ElementTypeNull);
-    { // TODO: Move VecGetArray to inside this block
-      // TODO: Move the PetscScalar pointers into this block
-      // TODO: Move perm further down to where it is used
-      PetscCall(PetscMalloc3(nEnd - nStart, &x[0], nEnd - nStart, &x[1], nEnd - nStart, &x[2]));
-      for (PetscInt d = 0; d < coord_dim; d++) {
-        for (PetscInt n = 0; n < num_local_nodes; n++) {
-          PetscInt gn = node_l2g[n];
-          if (gn < nStart || nEnd <= gn) continue;
-          x[d][gn - nStart] = X[n * coord_dim + d];
-        }
+    PetscCall(VecGetArrayRead(coord, &X));
+    PetscCall(PetscMalloc3(nEnd - nStart, &x[0], nEnd - nStart, &x[1], nEnd - nStart, &x[2]));
+    for (PetscInt d = 0; d < coord_dim; d++) {
+      for (PetscInt n = 0; n < num_local_nodes; n++) {
+        PetscInt gn = node_l2g[n];
+        if (gn < nStart || nEnd <= gn) continue;
+        x[d][gn - nStart] = X[n * coord_dim + d];
       }
-      PetscCallCGNSWriteData(cgp_coord_multi_write_data(cgv->file_num, base, zone, coord_ids, &start, &end, coord_dim, (const void **)x), dm, viewer);
-      PetscCall(PetscFree3(x[0], x[1], x[2]));
-      PetscCall(VecRestoreArrayRead(coord, &X));
     }
+    PetscCallCGNSWriteData(cgp_coord_multi_write_data(cgv->file_num, base, zone, coord_ids, &start, &end, coord_dim, (const void **)x), dm, viewer);
+    PetscCall(PetscFree3(x[0], x[1], x[2]));
+    PetscCall(VecRestoreArrayRead(coord, &X));
+  }
 
-    e_owned = cEnd - cStart;
+  { // Write element connectivity and element type
+    int        section;
+    cgsize_t   e_owned = cEnd - cStart, e_global, e_start;
+    cgsize_t  *conn    = NULL;
+    const int *perm;
+    CGNS_ENUMT(ElementType_t) element_type = CGNS_ENUMV(ElementTypeNull);
     if (e_owned > 0) {
       DMPolytopeType cell_type;
 
@@ -2174,15 +2171,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     elem_offset = e_global;
     PetscCall(PetscFree(conn));
 
-    cgv->base            = base;
-    cgv->zone            = zone;
-    cgv->node_l2g        = node_l2g;
-    cgv->num_local_nodes = num_local_nodes;
-    cgv->nStart          = nStart;
-    cgv->nEnd            = nEnd;
-    cgv->eStart          = e_start;
-    cgv->eEnd            = e_start + e_owned;
-    if (1) {
+    { // Write CellInfo for Rank and CellSet information
       PetscMPIInt rank;
       int        *efield;
       int         sol, field;
@@ -2206,6 +2195,15 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       }
       PetscCall(PetscFree(efield));
     }
+
+    cgv->base            = base;
+    cgv->zone            = zone;
+    cgv->node_l2g        = node_l2g;
+    cgv->num_local_nodes = num_local_nodes;
+    cgv->nStart          = nStart;
+    cgv->nEnd            = nEnd;
+    cgv->eStart          = e_start;
+    cgv->eEnd            = e_start + e_owned;
   }
 
   DMLabel  fsLabel;
