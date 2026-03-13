@@ -942,8 +942,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
           Note: if the 2nd post-event step is not managed by the event handler (e.g. given 1st = numerical, 2nd = PETSC_DECIDE),
           this if-branch is not entered, and TSAdapt may reject/adjust the proposed 1st post-event step.
         */
-        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come\n", ts->steps));
-      } else PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Event handling in progress\n", ts->steps));
+        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come\n", ts->steps));
+      } else PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Event handling in progress\n", ts->steps));
 
       PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
     }
@@ -1001,10 +1001,10 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     const char *sc_name = (scheme < ncandidates) ? adapt->candidates.name[scheme] : "";
     PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
     if (wlte < 0) {
-      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s %s %" PetscInt_FMT ":%s step %3" PetscInt_FMT " %s t=%-11g+%10.3e dt=%-10.3e\n", ((PetscObject)adapt)->type_name, ((PetscObject)ts)->type_name, scheme, sc_name, ts->steps, *accept ? "accepted" : "rejected",
+      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "TSAdapt %s %s %" PetscInt_FMT ":%s step %3" PetscInt_FMT " %s t=%-11g+%10.3e dt=%-10.3e\n", ((PetscObject)adapt)->type_name, ((PetscObject)ts)->type_name, scheme, sc_name, ts->steps, *accept ? "accepted" : "rejected",
                                        (double)ts->ptime, (double)h, (double)*next_h));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s %s %" PetscInt_FMT ":%s step %3" PetscInt_FMT " %s t=%-11g+%10.3e dt=%-10.3e wlte=%5.3g  wltea=%5.3g wlter=%5.3g\n", ((PetscObject)adapt)->type_name, ((PetscObject)ts)->type_name, scheme, sc_name, ts->steps, *accept ? "accepted" : "rejected",
+      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "TSAdapt %s %s %" PetscInt_FMT ":%s step %3" PetscInt_FMT " %s t=%-11g+%10.3e dt=%-10.3e wlte=%5.3g  wltea=%5.3g wlter=%5.3g\n", ((PetscObject)adapt)->type_name, ((PetscObject)ts)->type_name, scheme, sc_name, ts->steps, *accept ? "accepted" : "rejected",
                                        (double)ts->ptime, (double)h, (double)*next_h, (double)wlte, (double)wltea, (double)wlter));
     }
     PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
@@ -1104,7 +1104,7 @@ reject_stage:
   PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", %s\n", ts->steps, reject_stage_message));
   if (adapt->monitor) {
     PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected t=%-11g+%10.3e, %s", ((PetscObject)adapt)->type_name, ts->steps, (double)ts->ptime, (double)ts->time_step, reject_stage_message));
+    PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "TSAdapt %s step %3" PetscInt_FMT " stage rejected t=%-11g+%10.3e, %s", ((PetscObject)adapt)->type_name, ts->steps, (double)ts->ptime, (double)ts->time_step, reject_stage_message));
     PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
   }
   if (!ts->reason) {

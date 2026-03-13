@@ -24,7 +24,7 @@ step    0) time= 5.000000e-03 temperature (eV): electron: T= 3.5979e+02 T_par= 3
     Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 6
     Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
     Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
-      TSAdapt basic arkimex 0:1bee step   0 accepted t=0.005      + 1.000e-02 dt=1.500e-02  wlte=0.0955  wltea=   -1 wlter=   -1
+  TSAdapt basic arkimex 0:1bee step   0 accepted t=0.005      + 1.000e-02 dt=1.500e-02  wlte=0.0955  wltea=   -1 wlter=   -1
 1 TS dt 0.015 time 0.015
 step    1) time= 1.500000e-02 temperature (eV): electron: T= 3.6086e+02 T_par= 3.0234e+02 T_perp= 3.9012e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_e_par= 3.0021e+02 NRL_e_perp= 3.8989e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02
   1) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.8991559794627e-04 energy=  1.4050260075707e+04
