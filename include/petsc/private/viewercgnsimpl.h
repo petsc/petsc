@@ -16,7 +16,8 @@ typedef struct {
   CGNS_ENUMT(GridLocation_t) grid_loc;
   PetscInt       num_local_nodes, nStart, nEnd;
   PetscInt       eStart, eEnd;
-  PetscScalar   *nodal_field;
+  PetscInt       num_nodal_fields;
+  PetscScalar  **nodal_fields;
   PetscSegBuffer output_steps;
   PetscSegBuffer output_times;
   PetscInt       previous_output_step;

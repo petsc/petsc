@@ -93,7 +93,9 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
 #endif
   cgv->file_num = 0;
   PetscCall(PetscFree(cgv->node_l2g));
-  PetscCall(PetscFree(cgv->nodal_field));
+  for (PetscInt i = 0; i < cgv->num_nodal_fields; i++) PetscCall(PetscFree(cgv->nodal_fields[i]));
+  cgv->num_nodal_fields = 0;
+  PetscCall(PetscFree(cgv->nodal_fields));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
