@@ -1741,6 +1741,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
       cgsize_t range_min[3] = {mystartv + 1, 1, 1};
       cgsize_t range_max[3] = {myendv, 1, 1};
       int      ngrids, ncoords;
+      // We assume that the coordinates array are in the CGNS file in the expected order (X,Y,Z, or whatever other coordinate system). This could be verified using `cg_coord_info()`, but ignoring for now
+      int coord_indices[] = {1, 2, 3};
 
       PetscCallCGNSRead(cg_zone_read(cgid, base, zone, buffer, sizes), *dm, 0);
       PetscCallCGNSRead(cg_ngrids(cgid, base, zone, &ngrids), *dm, 0);
@@ -1748,7 +1750,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
       PetscCallCGNSRead(cg_ncoords(cgid, base, zone, &ncoords), *dm, 0);
       PetscCheck(ncoords == coordDim, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a coordinate array for each dimension, not %d", ncoords);
       if (read_with_double) {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, base, zone, (d + 1), range_min, range_max, xd[d]), *dm, 0);
+        PetscCallCGNSReadData(cgp_coord_multi_read_data(cgid, base, zone, coord_indices, range_min, range_max, coordDim, (void **)xd), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = xd[0][v];
         }
@@ -1759,7 +1761,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 2] = xd[2][v];
         }
       } else {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, 1, zone, (d + 1), range_min, range_max, x[d]), *dm, 0);
+        PetscCallCGNSReadData(cgp_coord_multi_read_data(cgid, base, zone, coord_indices, range_min, range_max, coordDim, (void **)x), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = x[0][v];
         }
@@ -2102,7 +2104,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   cgsize_t e_owned, e_global, e_start;
   {
     const PetscScalar *X;
-    PetscScalar       *x;
+    PetscScalar       *x[3];
     int                coord_ids[3];
 
     PetscCall(VecGetArrayRead(coord, &X));
@@ -2118,20 +2120,21 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     int        section;
     cgsize_t  *conn = NULL;
     const int *perm;
+    cgsize_t   start = nStart + 1, end = nEnd; // CGNS nodes use 1-based indexing
     CGNS_ENUMT(ElementType_t) element_type = CGNS_ENUMV(ElementTypeNull);
-    {
-      PetscCall(PetscMalloc1(nEnd - nStart, &x));
+    { // TODO: Move VecGetArray to inside this block
+      // TODO: Move the PetscScalar pointers into this block
+      // TODO: Move perm further down to where it is used
+      PetscCall(PetscMalloc3(nEnd - nStart, &x[0], nEnd - nStart, &x[1], nEnd - nStart, &x[2]));
       for (PetscInt d = 0; d < coord_dim; d++) {
         for (PetscInt n = 0; n < num_local_nodes; n++) {
           PetscInt gn = node_l2g[n];
           if (gn < nStart || nEnd <= gn) continue;
-          x[gn - nStart] = X[n * coord_dim + d];
+          x[d][gn - nStart] = X[n * coord_dim + d];
         }
-        // CGNS nodes use 1-based indexing
-        cgsize_t start = nStart + 1, end = nEnd;
-        PetscCallCGNSWriteData(cgp_coord_write_data(cgv->file_num, base, zone, coord_ids[d], &start, &end, x), dm, viewer);
       }
-      PetscCall(PetscFree(x));
+      PetscCallCGNSWriteData(cgp_coord_multi_write_data(cgv->file_num, base, zone, coord_ids, &start, &end, coord_dim, (const void **)x), dm, viewer);
+      PetscCall(PetscFree3(x[0], x[1], x[2]));
       PetscCall(VecRestoreArrayRead(coord, &X));
     }
 
