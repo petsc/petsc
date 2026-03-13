@@ -2874,6 +2874,26 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMLabelGetStratumIS(depthLabel, dim - 1, &facetIS));
+  /* Filter out ghost facets (SF leaves) so that each boundary facet is only
+     counted on one rank. Without this, shared facets at partition boundaries
+     are integrated on multiple ranks, causing double-counting after MPI sum. */
+  if (facetIS) {
+    PetscSF         sf;
+    PetscInt        nleaves;
+    const PetscInt *leaves;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &nleaves, &leaves, NULL));
+    if (nleaves > 0 && leaves) {
+      IS leafIS, ownedFacetIS;
+
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nleaves, leaves, PETSC_USE_POINTER, &leafIS));
+      PetscCall(ISDifference(facetIS, leafIS, &ownedFacetIS));
+      PetscCall(ISDestroy(&leafIS));
+      PetscCall(ISDestroy(&facetIS));
+      facetIS = ownedFacetIS;
+    }
+  }
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionGetNumFields(section, &Nf));
   /* Get local solution with boundary values */
@@ -5113,6 +5133,27 @@ static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMLabelGetStratumIS(depthLabel, dim - 1, &facetIS));
+  /* Filter out ghost facets (SF leaves) so that boundary residual contributions
+     from shared facets are only assembled on the owning rank. Without this,
+     internal boundary natural BCs at partition junctions get double-counted
+     because LocalToGlobal with ADD_VALUES sums contributions from all ranks. */
+  if (facetIS) {
+    PetscSF         sf;
+    PetscInt        nleaves;
+    const PetscInt *leaves;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &nleaves, &leaves, NULL));
+    if (nleaves > 0 && leaves) {
+      IS leafIS, ownedFacetIS;
+
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nleaves, leaves, PETSC_USE_POINTER, &leafIS));
+      PetscCall(ISDifference(facetIS, leafIS, &ownedFacetIS));
+      PetscCall(ISDestroy(&leafIS));
+      PetscCall(ISDestroy(&facetIS));
+      facetIS = ownedFacetIS;
+    }
+  }
   PetscCall(PetscDSGetNumBoundary(prob, &numBd));
   for (bd = 0; bd < numBd; ++bd) {
     PetscWeakForm           wf;
