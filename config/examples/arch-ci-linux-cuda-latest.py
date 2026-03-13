@@ -19,6 +19,7 @@ if __name__ == '__main__':
     '--with-mpi-dir=/software/mpich-5.0.0b1-cuda131',
     '--with-cuda-dir=/usr/local/cuda-13.1',
     '--download-umpire',
+    '--with-cuda-arch=80,86',
     '--download-hypre=1',
     '--download-superlu_dist',
     '--with-cxx-dialect=17',

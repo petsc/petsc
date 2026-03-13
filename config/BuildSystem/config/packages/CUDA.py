@@ -102,15 +102,11 @@ class Configure(config.package.Package):
   def nvccArchFlags(self):
     if not self.cudaArchIsVersionList():
       return ' -arch='+self.cudaArch
-
-    if self.setCompilers.isCygwin(self.log):
-      arg_sep = '='
-    else:
-      arg_sep = ' '
-
     # generate both SASS and PTX for the arch, see https://stackoverflow.com/a/35657430/3447299
-    # e.g., '-arch=sm_50' is equivalent to '-arch=compute_50 -code=sm_50,compute_50'.
-    return ''.join(' -arch=sm_'+gen for gen in self.cudaArchList())
+    # Note options like '-arch=sm_75 -arch=sm_86' would cause:
+    #   nvcc warning : incompatible redefinition for option 'gpu-architecture', the last value of this option was used
+    # So use '-gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86' instead
+    return ''.join(' -gencode arch=compute_'+gen+',code=sm_'+gen for gen in self.cudaArchList())
 
   def clangArchFlags(self):
     if not self.cudaArchIsVersionList():
