@@ -1762,7 +1762,9 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
+// Convert VECSEQ to VECSEQKOKKOS. One could provide a non-NULL array_d[] for memory on device. If that is the case, we assume
+// array_d[] is already synced with the host array. If array_d is NULL, then PETSc will allocate the device memory.
+PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v, PetscScalar *array_d)
 {
   Vec_Seq *vecseq;
 
@@ -1773,7 +1775,7 @@ PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
   PetscCall(VecCreate_SeqKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   vecseq = static_cast<Vec_Seq *>(v->data);
-  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecseq->array, NULL));
+  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecseq->array, array_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -13,6 +13,7 @@ static PetscErrorCode VecDestroy_MPIKokkos(Vec v)
 {
   PetscFunctionBegin;
   delete static_cast<Vec_Kokkos *>(v->spptr);
+  v->spptr = NULL;
   PetscCall(VecDestroy_MPI(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -97,10 +98,9 @@ static PetscErrorCode VecCreate_MPIKokkos_Common(Vec); // forward declaration
 
 static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
 {
-  Vec         v;
-  Vec_Kokkos *veckok;
-  Vec_MPI    *wdata = (Vec_MPI *)win->data;
-
+  Vec                       v;
+  Vec_Kokkos               *veckok;
+  Vec_MPI                  *wdata = (Vec_MPI *)win->data, *vdata;
   PetscScalarKokkosDualView w_dual;
 
   PetscFunctionBegin;
@@ -109,6 +109,9 @@ static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
   /* Reuse VecDuplicate_MPI, which contains a lot of stuff */
   PetscCall(VecDuplicateWithArray_MPI(win, w_dual.view_host().data(), &v)); /* after the call, v is a VECMPI */
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
+  // In case win is a ghost vector, we also need to convert its localrep to VECKOKKOS. We provide the device array, so allocation in w_dual is not wasted
+  vdata = static_cast<Vec_MPI *>(v->data);
+  if (vdata->localrep) PetscCall(VecConvert_Seq_SeqKokkos_inplace(vdata->localrep, w_dual.view_device().data()));
   PetscCall(VecCreate_MPIKokkos_Common(v));
   v->ops[0] = win->ops[0]; // always follow ops[] in win
 
@@ -277,7 +280,15 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec v)
   PetscCall(VecCreate_MPIKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   vecmpi = static_cast<Vec_MPI *>(v->data);
-  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecmpi->array, NULL));
+  if (vecmpi->localrep) { // It is a ghost vector
+    Vec         local = vecmpi->localrep;
+    Vec_Kokkos *veckok;
+
+    PetscCall(VecConvert_Seq_SeqKokkos_inplace(local, NULL));
+    veckok = static_cast<Vec_Kokkos *>(local->spptr);
+    // TODO: can we subview on veckok->v_dual?
+    PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, veckok->v_dual.view_host().data(), veckok->v_dual.view_device().data()));
+  } else PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecmpi->array, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

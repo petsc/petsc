@@ -126,7 +126,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
     PetscBool dstKokkos = PETSC_FALSE;
     if (!dstStandard) PetscCall(VecTypeCompareAny_Private(newType, &dstKokkos, VECKOKKOS, VECSEQKOKKOS, VECMPIKOKKOS, ""));
     if (srcStandard && dstKokkos) {
-      if (size == 1) PetscCall(VecConvert_Seq_SeqKokkos_inplace(vec));
+      if (size == 1) PetscCall(VecConvert_Seq_SeqKokkos_inplace(vec, NULL));
       else PetscCall(VecConvert_MPI_MPIKokkos_inplace(vec));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
