@@ -626,7 +626,7 @@ preceded by and followed by a blank line. For source code, this information is f
 ### Manual Page Format
 
 Each function, typedef, class, macro, enum, and so on in the public API
-should include the following data, correctly formatted (see codes
+must include the following data, correctly formatted (see codes
 section) to generate complete manual pages and (possibly) Fortran interfaces with
 Sowing. All entries below should be separated by blank lines. Except
 where noted, add a newline after the section headings.
@@ -697,6 +697,12 @@ where noted, add a newline after the section headings.
 15. All PETSc functions that appear in a manual page (except the one in the header at the top) should end with a `()` and be enclosed
     in single back tick marks. All PETSc enum types and macros etc, should also be enclosed in single back tick marks.
     This includes each item listed in the `.seealso:` lines.
+
+16. Every new API entry such as functions and typedefs must have a corresponding manual page. A merge request cannot be accepted
+    without said manual pages.
+
+17. Every new API entry such as functions and typedefs must be listed in the `doc/changes/dev.md` file. A merge request cannot be accepted
+    without said entries in the `doc/changes/dev.md` file.
 
 [^footnote-1]: Type also refers to the string name of the subclass.
 
