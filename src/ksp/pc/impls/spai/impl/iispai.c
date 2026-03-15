@@ -262,14 +262,14 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc, PetscOptionItems PetscOptions
    PCSPAI - Use the Sparse Approximate Inverse method {cite}`gh97`
 
    Options Database Keys:
-+  -pc_spai_epsilon <eps>            - set tolerance
-.  -pc_spai_nbstep <n>               - set nbsteps
-.  -pc_spai_max <m>                  - set max
-.  -pc_spai_max_new <m>              - set maxnew
-.  -pc_spai_block_size <n>           - set block size
-.  -pc_spai_cache_size <n>           - set cache size
-.  -pc_spai_sp <m>                   - set sp
--  -pc_spai_set_verbose <true,false> - verbose output
++  -pc_spai_epsilon eps              - set tolerance
+.  -pc_spai_nbstep n                 - set nbsteps
+.  -pc_spai_max m                    - set max
+.  -pc_spai_max_new m                - set maxnew
+.  -pc_spai_block_size n             - set block size
+.  -pc_spai_cache_size n             - set cache size
+.  -pc_spai_sp m                     - set sp
+-  -pc_spai_set_verbose (true|false) - verbose output
 
    Level: beginner
 

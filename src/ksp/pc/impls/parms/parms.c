@@ -593,29 +593,29 @@ PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lf
       available in the package pARMS
 
    Options Database Keys:
-+  -pc_parms_global - one of ras, schur, bj
-.  -pc_parms_local - one of ilu0, iluk, ilut, arms
-.  -pc_parms_solve_tol - set the tolerance for local solve
-.  -pc_parms_levels - set the number of levels
-.  -pc_parms_nonsymmetric_perm - set the use of nonsymmetric permutation
-.  -pc_parms_blocksize - set the block size
-.  -pc_parms_ind_tol - set the tolerance for independent sets
-.  -pc_parms_max_dim - set the inner krylov dimension
-.  -pc_parms_max_it - set the maximum number of inner iterations
++  -pc_parms_global                  - one of ras, schur, bj
+.  -pc_parms_local                   - one of ilu0, iluk, ilut, arms
+.  -pc_parms_solve_tol               - set the tolerance for local solve
+.  -pc_parms_levels                  - set the number of levels
+.  -pc_parms_nonsymmetric_perm       - set the use of nonsymmetric permutation
+.  -pc_parms_blocksize               - set the block size
+.  -pc_parms_ind_tol                 - set the tolerance for independent sets
+.  -pc_parms_max_dim                 - set the inner krylov dimension
+.  -pc_parms_max_it                  - set the maximum number of inner iterations
 .  -pc_parms_inter_nonsymmetric_perm - set the use of nonsymmetric permutation for interlevel blocks
-.  -pc_parms_inter_column_perm - set the use of column permutation for interlevel blocks
-.  -pc_parms_inter_row_scaling - set the use of row scaling for interlevel blocks
-.  -pc_parms_inter_column_scaling - set the use of column scaling for interlevel blocks
-.  -pc_parms_last_nonsymmetric_perm - set the use of nonsymmetric permutation for last level blocks
-.  -pc_parms_last_column_perm - set the use of column permutation for last level blocks
-.  -pc_parms_last_row_scaling - set the use of row scaling for last level blocks
-.  -pc_parms_last_column_scaling - set the use of column scaling for last level blocks
-.  -pc_parms_lfil_ilu_arms - set the amount of fill-in for ilut, iluk and arms
-.  -pc_parms_lfil_schur - set the amount of fill-in for schur
-.  -pc_parms_lfil_ilut_L_U - set the amount of fill-in for ILUT L and U
-.  -pc_parms_droptol_factors - set the drop tolerance for L, U, L^{-1}F and EU^{-1}
-.  -pc_parms_droptol_schur_compl - set the drop tolerance for schur complement at each level
--  -pc_parms_droptol_last_schur - set the drop tolerance for ILUT in last level schur complement
+.  -pc_parms_inter_column_perm       - set the use of column permutation for interlevel blocks
+.  -pc_parms_inter_row_scaling       - set the use of row scaling for interlevel blocks
+.  -pc_parms_inter_column_scaling    - set the use of column scaling for interlevel blocks
+.  -pc_parms_last_nonsymmetric_perm  - set the use of nonsymmetric permutation for last level blocks
+.  -pc_parms_last_column_perm        - set the use of column permutation for last level blocks
+.  -pc_parms_last_row_scaling        - set the use of row scaling for last level blocks
+.  -pc_parms_last_column_scaling     - set the use of column scaling for last level blocks
+.  -pc_parms_lfil_ilu_arms           - set the amount of fill-in for ilut, iluk and arms
+.  -pc_parms_lfil_schur              - set the amount of fill-in for schur
+.  -pc_parms_lfil_ilut_L_U           - set the amount of fill-in for ILUT L and U
+.  -pc_parms_droptol_factors         - set the drop tolerance for L, U, L^{-1}F and EU^{-1}
+.  -pc_parms_droptol_schur_compl     - set the drop tolerance for schur complement at each level
+-  -pc_parms_droptol_last_schur      - set the drop tolerance for ILUT in last level schur complement
 
    Note:
    Unless configured appropriately, this preconditioner performs an inexact solve

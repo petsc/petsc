@@ -38,10 +38,8 @@ const char *const PetscSFConcatenateRootModes[] = {"local", "shared", "global", 
 . sf - new star forest context
 
   Options Database Key:
-+ -sf_type basic                 - Use MPI persistent Isend/Irecv for communication (Default)
-. -sf_type window                - Use MPI-3 one-sided window for communication
-. -sf_type neighbor              - Use MPI-3 neighborhood collectives for communication
-- -sf_neighbor_persistent <bool> - If true, use MPI-4 persistent neighborhood collectives for communication (used along with -sf_type neighbor)
++ -sf_type (basic|window|neighbor)     - Use MPI persistent Isend/Irecv, or MPI-3 one-sided window, or MPI-3 neighborhood collectives for communication
+- -sf_neighbor_persistent (true|false) - Use MPI-4 persistent neighborhood collectives for communication (used along with `-sf_type neighbor`)
 
   Level: intermediate
 
@@ -158,7 +156,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 .ve
 
   Options Database Key:
-. -sf_type <type> - Sets the method; for example `basic` or `window` use -help for a list of available methods
+. -sf_type type - Sets the method; see `PetscSFType`
 
   Level: intermediate
 
@@ -325,15 +323,15 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 . sf - star forest
 
   Options Database Keys:
-+ -sf_type                      - implementation type, see `PetscSFSetType()`
-. -sf_rank_order                - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
++ -sf_type type                 - implementation type, see `PetscSFSetType()`
+. -sf_rank_order (true|false)   - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
 . -sf_use_default_stream        - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
                                   use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
                                   If true, this option only works with `-use_gpu_aware_mpi 1`.
 . -sf_use_stream_aware_mpi      - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
                                   If true, this option only works with `-use_gpu_aware_mpi 1`.
 
-- -sf_backend <cuda,hip,kokkos> - Select the device backend`PetscSF` uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
+- -sf_backend (cuda|hip|kokkos) - Select the device backend`PetscSF` uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
                                   On CUDA (HIP) devices, one can choose cuda (hip) or kokkos with the default being kokkos. On other devices,
                                   the only available is kokkos.
 

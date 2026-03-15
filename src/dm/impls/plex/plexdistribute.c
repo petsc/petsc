@@ -2121,10 +2121,10 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
 - dmOverlap - The overlapping distributed `DMPLEX` object
 
   Options Database Keys:
-+ -dm_plex_overlap_labels <name1,name2,...> - List of overlap label names
-. -dm_plex_overlap_values <int1,int2,...>   - List of overlap label values
-. -dm_plex_overlap_exclude_label <name>     - Label used to exclude points from overlap
-- -dm_plex_overlap_exclude_value <int>      - Label value used to exclude points from overlap
++ -dm_plex_overlap_labels name1,name2,... - List of overlap label names
+. -dm_plex_overlap_values int1,int2,...   - List of overlap label values
+. -dm_plex_overlap_exclude_label label    - Label used to exclude points from overlap
+- -dm_plex_overlap_exclude_value value    - Label value used to exclude points from overlap
 
   Level: advanced
 

@@ -658,7 +658,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
 - type - either `PC_EXOTIC_FACE` or `PC_EXOTIC_WIREBASKET` (defaults to face)
 
   Options Database Keys:
-. -pc_exotic_type <face,wirebasket> - use a coarse grid point for each face, or edge and vertex
+. -pc_exotic_type (face|wirebasket) - use a coarse grid point for each face, or edge and vertex
 
   Notes:
   The face based interpolation has 1 degree of freedom per face and ignores the
@@ -801,7 +801,7 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems PetscOptio
    grid spaces.
 
    Options Database Keys:
-+  -pc_exotic_type <face,wirebasket> - use a coarse grid point for each face, or edge and vertex
++  -pc_exotic_type (face|wirebasket) - use a coarse grid point for each face, or edge and vertex
 -  -pc_exotic_direct_solver          - use a direct solver to construct interpolation instead of an iterative solver
 
    Level: advanced
@@ -822,7 +822,7 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems PetscOptio
    In this code the wirebasket includes a constant for each face, as well as the true "wirebasket". Other wirebasket algorithms exist that
    only have constants for edges and vertices.
 
-   The usual `PCMG` options are supported, such as `-mg_levels_pc_type` <type> `-mg_coarse_pc_type` <type> `-mg_fine_pc_type` <type> and `-pc_mg_type` <type>
+   The usual `PCMG` options are supported, such as `-mg_levels_pc_type` type, `-mg_coarse_pc_type` type, `-mg_fine_pc_type` type, and `-pc_mg_type` type
 
 .seealso: [](ch_ksp), `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/

@@ -304,15 +304,15 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 - name  - filter name
 
   Options Database Key:
-+ -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
++ -ts_adapt_dsp_filter name - Sets predefined controller by name; use -help for a list of available controllers
 
   Filter names\:
-. basic                       - similar to `TSADAPTBASIC` but with different criteria for step rejections.
-. PI30, PI42, PI33, PI34      - PI controllers.
-. PC11, PC47, PC36            - predictive controllers.
-. H0211, H211b, H211PI        - digital filters with orders dynamics=2, adaptivity=1, filter=1.
-. H0312, H312b, H312PID       - digital filters with orders dynamics=3, adaptivity=1, filter=2.
-- H0321, H321                 - digital filters with orders dynamics=3, adaptivity=2, filter=1.
+. basic                     - similar to `TSADAPTBASIC` but with different criteria for step rejections.
+. PI30, PI42, PI33, PI34    - PI controllers.
+. PC11, PC47, PC36          - predictive controllers.
+. H0211, H211b, H211PI      - digital filters with orders dynamics=2, adaptivity=1, filter=1.
+. H0312, H312b, H312PID     - digital filters with orders dynamics=3, adaptivity=1, filter=2.
+- H0321, H321               - digital filters with orders dynamics=3, adaptivity=2, filter=1.
 
   Level: intermediate
 
@@ -337,7 +337,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char name[])
 - kkD   - Derivative parameter
 
   Options Database Key:
-. -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
+. -ts_adapt_dsp_pid kkI,kkP,kkD - Sets PID controller parameters
 
   Level: intermediate
 
@@ -359,10 +359,10 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
    {cite}`soderlind2006adaptive`  {cite}`soderlind2003digital`
 
    Options Database Keys:
-+   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
-.   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
-.   -ts_adapt_dsp_kbeta <b1,b2,b2> - Sets general filter parameters
--   -ts_adapt_dsp_alpha <a2,a3> - Sets general filter parameters
++   -ts_adapt_dsp_filter name     - Sets predefined controller by name; use -help for a list of available controllers
+.   -ts_adapt_dsp_pid kkI,kkP,kkD - Sets PID controller parameters
+.   -ts_adapt_dsp_kbeta b1,b2,b2  - Sets general filter parameters
+-   -ts_adapt_dsp_alpha a2,a3     - Sets general filter parameters
 
    Level: intermediate
 

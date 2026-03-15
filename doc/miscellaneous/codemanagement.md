@@ -53,13 +53,14 @@ other advanced software development systems. See the {ref}`Users Manual<sec_deve
 ## Debugging
 
 Most code development for PETSc codes should be done on one processor;
-hence, using a standard debugger such as dbx, gdb, xdbx, etc. is fine.
+hence, using a standard debugger such as gdb, lldb, xdbx, etc. is fine.
 For debugging parallel runs we suggest **Totalview** if it is available
 on your machine. Otherwise, you can run each process in a separate
 debugger; this is not the same as using a parallel debugger, but in most
 cases it is not so bad. The PETSc run-time options
-`-start_in_debugger` [-display xdisplay:0] will open separate windows
-and debuggers for each process. You should debug using the debugging
+`-start_in_debugger`  will open separate windows
+and debuggers for each process; you can use `-display xdisplay:0` to indicate
+a particular X-Window display to use. You should debug using the debugging
 versions of the libraries (run ./configure with the additional option
 --with-debugging (the default)).
 

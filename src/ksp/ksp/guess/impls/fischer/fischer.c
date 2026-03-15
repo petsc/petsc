@@ -381,7 +381,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
 - size  - size of subspace used to generate initial guess
 
   Options Database Key:
-. -ksp_guess_fischer_model <model,size> - uses the Fischer initial guess generator for repeated linear solves
+. -ksp_guess_fischer_model model,size - uses the Fischer initial guess generator for repeated linear solves
 
   Level: advanced
 

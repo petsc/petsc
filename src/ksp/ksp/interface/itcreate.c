@@ -261,7 +261,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 .ve
 
   Options Database Key:
-. -ksp_norm_type <none,preconditioned,unpreconditioned,natural> - set `KSP` norm type
+. -ksp_norm_type (none|preconditioned|unpreconditioned|natural) - set `KSP` norm type
 
   Level: advanced
 
@@ -802,7 +802,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 - type - a known method
 
   Options Database Key:
-. -ksp_type  <method> - Sets the method; see `KSPType` or use `-help` for a list  of available methods (for instance, cg or gmres)
+. -ksp_type type - Sets the method; see `KSPType`
 
   Level: intermediate
 

@@ -20,7 +20,7 @@ typedef struct {
 - type - the interpolation to use, see `PCGAMGClassicalType()`
 
   Options Database Key:
-. -pc_gamg_classical_type <direct,standard> - set type of classical AMG prolongation
+. -pc_gamg_classical_type (direct|standard) - set type of classical AMG prolongation
 
   Level: intermediate
 

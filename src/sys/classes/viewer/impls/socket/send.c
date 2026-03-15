@@ -272,8 +272,8 @@ static PetscErrorCode PetscSocketListen(int listenport, int *t)
    For use with  `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`,
    `PETSC_VIEWER_SOCKET_()` or if
     `NULL` is passed for machine or PETSC_DEFAULT is passed for port
-+ -viewer_socket_machine <machine> - the machine where the socket is available
-- -viewer_socket_port <port>       - the socket to connect to
++ -viewer_socket_machine machine - the machine where the socket is available
+- -viewer_socket_port port       - the socket to connect to
 
   Environmental variables:
 +   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
@@ -476,8 +476,8 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
    Options Database Keys:
    For use with the default `PETSC_VIEWER_SOCKET_WORLD` or if
    `NULL` is passed for machine or `PETSC_DEFAULT` is passed for port
-+  -viewer_socket_machine <machine> - machine to connect to
--  -viewer_socket_port <port> - port to connect to
++  -viewer_socket_machine machine - machine to connect to
+-  -viewer_socket_port port       - port to connect to
 
    Environmental variables:
 +  `PETSC_VIEWER_SOCKET_PORT` - portnumber

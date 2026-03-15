@@ -104,7 +104,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
         exact same random numbers on any system.
 
    Options Database Key:
-. -random_type <rand,rand48,rander48,sprng> - select the random number generator at runtime
+. -random_type (rander48|rand|rand48|sprng|random123|curand) - set the random number generator from the options database, see `PetscRandomType`.
 
   Level: beginner
 

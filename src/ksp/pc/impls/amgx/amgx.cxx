@@ -552,23 +552,23 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer)
 }
 
 /*MC
-     PCAMGX - Interface to NVIDIA's AmgX algebraic multigrid
+  PCAMGX - Interface to NVIDIA's AmgX algebraic multigrid
 
-   Options Database Keys:
-+    -pc_amgx_amg_method <CLASSICAL,AGGREGATION> - set the AMG algorithm to use
-.    -pc_amgx_amg_cycle <V,W,F,CG> - set the AMG cycle type
-.    -pc_amgx_smoother <PCG,PCGF,PBICGSTAB,GMRES,FGMRES,JACOBI_L1,BLOCK_JACOBI,GS,MULTICOLOR_GS,MULTICOLOR_ILU,MULTICOLOR_DILU,CHEBYSHEV_POLY,NOSOLVER> - set the AMG pre/post smoother
-.    -pc_amgx_jacobi_relaxation_factor - set the relaxation factor for Jacobi smoothing
-.    -pc_amgx_gs_symmetric - enforce symmetric Gauss-Seidel smoothing (only applies if GS smoothing is selected)
-.    -pc_amgx_selector <SIZE_2,SIZE_4,SIZE_8,MULTI_PAIRWISE,PMIS,HMIS> - set the AMG coarse selector
-.    -pc_amgx_presweeps - set the number of AMG pre-sweeps
-.    -pc_amgx_postsweeps - set the number of AMG post-sweeps
-.    -pc_amgx_max_levels - set the maximum number of levels in the AMG level hierarchy
-.    -pc_amgx_strength_threshold - set the strength threshold for the AMG coarsening
-.    -pc_amgx_aggressive_levels - set the number of levels (from the finest) that should apply aggressive coarsening
-.    -pc_amgx_coarse_solver <DENSE_LU_SOLVER,NOSOLVER> - set the coarse solve
-.    -pc_amgx_print_grid_stats - output the AMG grid hierarchy to stdout
--    -pc_amgx_verbose - enable AmgX output
+  Options Database Keys:
++ -pc_amgx_amg_method (CLASSICAL|AGGREGATION)                       - set the AMG algorithm to use
+. -pc_amgx_amg_cycle (V|W|F|CG)                                     - set the AMG cycle type
+. -pc_amgx_jacobi_relaxation_factor                                 - set the relaxation factor for Jacobi smoothing
+. -pc_amgx_gs_symmetric                                             - enforce symmetric Gauss-Seidel smoothing (only applies if GS smoothing is selected)
+. -pc_amgx_selector (SIZE_2|SIZE_4|SIZE_8|MULTI_PAIRWISE|PMIS|HMIS) - set the AMG coarse selector
+. -pc_amgx_presweeps                                                - set the number of AMG pre-sweeps
+. -pc_amgx_postsweeps                                               - set the number of AMG post-sweeps
+. -pc_amgx_max_levels                                               - set the maximum number of levels in the AMG level hierarchy
+. -pc_amgx_strength_threshold                                       - set the strength threshold for the AMG coarsening
+. -pc_amgx_aggressive_levels                                        - set the number of levels (from the finest) that should apply aggressive coarsening
+. -pc_amgx_coarse_solver (DENSE_LU_SOLVER|NOSOLVER)                 - set the coarse solve
+. -pc_amgx_print_grid_stats                                         - output the AMG grid hierarchy to stdout
+. -pc_amgx_verbose                                                  - enable AmgX output
+- -pc_amgx_smoother (PCG|PCGF|PBICGSTAB|GMRES|FGMRES|JACOBI_L1|BLOCK_JACOBI|GS|MULTICOLOR_GS|MULTICOLOR_ILU|MULTICOLOR_DILU|CHEBYSHEV_POLY|NOSOLVER) - set the AMG pre/post smoother
 
    Level: intermediate
 

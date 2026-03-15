@@ -47,7 +47,7 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscR
 - delta - the trust region radius (Infinity is the default)
 
   Options Database Key:
-. -ksp_qcg_trustregionradius <delta> - trust region radius
+. -ksp_qcg_trustregionradius delta - trust region radius
 
   Level: advanced
 
@@ -376,7 +376,7 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptio
    KSPQCG - Code to run conjugate gradient method subject to a constraint on the solution norm  {cite}`steihaug:83`.
 
    Options Database Key:
-.      -ksp_qcg_trustregionradius <r> - Trust Region Radius
+.      -ksp_qcg_trustregionradius r - Trust Region Radius
 
    Level: developer
 

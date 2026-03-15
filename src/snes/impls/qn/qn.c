@@ -382,8 +382,8 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 - rtype - restart type, see `SNESQNRestartType`
 
   Options Database Keys:
-+ -snes_qn_restart_type <powell,periodic,none> - set the restart type
-- -snes_qn_m <m>                               - sets the number of stored updates and the restart period for periodic
++ -snes_qn_restart_type (powell|periodic|none) - set the restart type
+- -snes_qn_m m                                 - sets the number of stored updates and the restart period for periodic
 
   Level: intermediate
 
@@ -408,7 +408,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 - stype - scale type, see `SNESQNScaleType`
 
   Options Database Key:
-. -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
+. -snes_qn_scale_type (diagonal|none|scalar|jacobian) - Scaling type
 
   Level: intermediate
 
@@ -451,7 +451,7 @@ static PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype
 - qtype - variant type, see `SNESQNType`
 
   Options Database Key:
-. -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
+. -snes_qn_type (lbfgs|broyden|badbroyden) - quasi-Newton type
 
   Level: intermediate
 
@@ -478,13 +478,13 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
 
       Options Database Keys:
-+     -snes_qn_m <m>                                      - Number of past states saved for the L-Broyden methods.
-.     -snes_qn_restart_type <powell,periodic,none>        - set the restart type
-.     -snes_qn_powell_gamma                               - Angle condition for restart.
++     -snes_qn_m m                                        - Number of past states saved for the L-Broyden methods.
+.     -snes_qn_restart_type (powell|periodic|none)        - set the restart type
+.     -snes_qn_powell_gamma gamma                         - Angle condition for restart.
 .     -snes_qn_powell_descent                             - Descent condition for restart.
-.     -snes_qn_type <lbfgs,broyden,badbroyden>            - QN type
-.     -snes_qn_scale_type <diagonal,none,scalar,jacobian> - scaling performed on inner Jacobian
-.     -snes_linesearch_type <cp, l2, basic>               - Type of line search.
+.     -snes_qn_type (lbfgs|broyden|badbroyden)            - QN type
+.     -snes_qn_scale_type (diagonal|none|scalar|jacobian) - scaling performed on inner Jacobian
+.     -snes_linesearch_type (cp|l2|basic)                 - Type of line search.
 -     -snes_qn_monitor                                    - Monitors the quasi-newton Jacobian.
 
       Level: beginner

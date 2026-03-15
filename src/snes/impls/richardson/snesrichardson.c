@@ -138,8 +138,8 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
    SNESNRICHARDSON - Richardson nonlinear solver that uses successive substitutions, also sometimes known as Picard iteration.
 
    Options Database Keys:
-+  -snes_linesearch_type <l2,cp,basic> - Line search type.
--  -snes_linesearch_damping <1.0>      - Damping for the line search.
++  -snes_linesearch_type (l2|cp|basic) - Line search type, see `SNESLineSearchType`
+-  -snes_linesearch_damping damping    - Damping for the line search.
 
    Level: beginner
 
@@ -158,7 +158,7 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
    Only supports left non-linear preconditioning.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`,
-          `SNESLineSearchSetDamping()`
+          `SNESLineSearchSetDamping()`, `SNESLineSearchType`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {

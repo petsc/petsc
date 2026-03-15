@@ -1052,18 +1052,18 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 - viewer - visualization context
 
   Options Database Keys:
-+ -mat_view ::ascii_info           - Prints info on matrix at conclusion of `MatAssemblyEnd()`
-. -mat_view ::ascii_info_detail    - Prints more detailed info
-. -mat_view                        - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab         - Prints matrix in MATLAB format
-. -mat_view draw                   - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
-. -display <name>                  - Sets display name (default is host)
-. -draw_pause <sec>                - Sets number of seconds to pause after display
-. -mat_view socket                 - Sends matrix to socket, can be accessed from MATLAB (see Users-Manual: ch_matlab for details)
-. -viewer_socket_machine <machine> - -
-. -viewer_socket_port <port>       - -
-. -mat_view binary                 - save matrix to file in binary format
-- -viewer_binary_filename <name>   - -
++ -mat_view ::ascii_info         - Prints info on matrix at conclusion of `MatAssemblyEnd()`
+. -mat_view ::ascii_info_detail  - Prints more detailed info
+. -mat_view                      - Prints matrix in ASCII format
+. -mat_view ::ascii_matlab       - Prints matrix in MATLAB format
+. -mat_view draw                 - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
+. -display name                  - Sets display name (default is host)
+. -draw_pause sec                - Sets number of seconds to pause after display
+. -mat_view socket               - Sends matrix to socket, can be accessed from MATLAB (see Users-Manual: ch_matlab for details)
+. -viewer_socket_machine machine - -
+. -viewer_socket_port port       - -
+. -mat_view binary               - save matrix to file in binary format
+- -viewer_binary_filename name   - -
 
   Level: beginner
 
@@ -1266,7 +1266,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 - viewer - `PETSCVIEWERBINARY`/`PETSCVIEWERHDF5` file viewer
 
   Options Database Key:
-. -matload_block_size <bs> - set block size
+. -matload_block_size bs - set block size
 
   Level: beginner
 
@@ -4786,9 +4786,9 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 . f - the factor matrix used with MatXXFactorSymbolic,Numeric() calls. Can be `NULL` in some cases, see notes below.
 
   Options Database Keys:
-+ -pc_factor_mat_solver_type <type>    - choose the type at run time. When using `KSP` solvers
-. -pc_factor_mat_factor_on_host <bool> - do mat factorization on host (with device matrices). Default is doing it on device
-- -pc_factor_mat_solve_on_host <bool>  - do mat solve on host (with device matrices). Default is doing it on device
++ -pc_factor_mat_solver_type type            - choose the type at run time. When using `KSP` solvers
+. -pc_factor_mat_factor_on_host (true|false) - do mat factorization on host (with device matrices). Default is doing it on device
+- -pc_factor_mat_solve_on_host (true|false)  - do mat solve on host (with device matrices). Default is doing it on device
 
   Level: intermediate
 
@@ -5886,11 +5886,11 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 . -mat_view                          - Prints matrix in ASCII format
 . -mat_view ::ascii_matlab           - Prints matrix in MATLAB format
 . -mat_view draw                     - draws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
-. -display <name>                    - Sets display name (default is host)
-. -draw_pause <sec>                  - Sets number of seconds to pause after display
+. -display name                      - Sets display name (default is host)
+. -draw_pause sec                    - Sets number of seconds to pause after display
 . -mat_view socket                   - Sends matrix to socket, can be accessed from MATLAB (See [Using MATLAB with PETSc](ch_matlab))
-. -viewer_socket_machine <machine>   - Machine to use for socket
-. -viewer_socket_port <port>         - Port number to use for socket
+. -viewer_socket_machine machine     - Machine to use for socket
+. -viewer_socket_port port           - Port number to use for socket
 - -mat_view binary:filename[:append] - Save matrix to file in binary format
 
   Level: beginner
@@ -8646,8 +8646,8 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
 - bsize - the initial size of the block-stash(if used).
 
   Options Database Keys:
-+ -matstash_initial_size <size> or <size0,size1,...sizep-1>            - set initial size
-- -matstash_block_initial_size <bsize>  or <bsize0,bsize1,...bsizep-1> - set initial block size
++ -matstash_initial_size size or size0,size1,...,sizep-1            - set initial size
+- -matstash_block_initial_size bsize  or bsize0,bsize1,...,bsizep-1 - set initial block size
 
   Level: intermediate
 
@@ -11162,7 +11162,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 . A - the Galerkin coarse matrix
 
   Options Database Key:
-. -pc_mg_galerkin <both,pmat,mat,none> - for what matrices the Galerkin process should be used
+. -pc_mg_galerkin (both|pmat|mat|none) - for what matrices the Galerkin process should be used
 
   Level: developer
 

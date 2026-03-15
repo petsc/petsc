@@ -60,8 +60,8 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
 . A - the matrix
 
   Options Database Keys:
-+ -mat_block_size            - size of the blocks to use
-- -mat_use_hash_table <fact> - set hash table factor
++ -mat_block_size          - size of the blocks to use
+- -mat_use_hash_table fact - set hash table factor
 
   Level: intermediate
 

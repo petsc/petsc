@@ -23,7 +23,7 @@ static PetscErrorCode PCDeflationSetInitOnly_Deflation(PC pc, PetscBool flg)
 - flg - default `PETSC_FALSE`
 
   Options Database Key:
-. -pc_deflation_init_only <false> - if true computes only the special guess
+. -pc_deflation_init_only (true|false) - if true computes only the special guess
 
   Level: intermediate
 
@@ -58,7 +58,7 @@ static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc, PetscInt current, Pe
 - max - maximum deflation level
 
   Options Database Key:
-. -pc_deflation_max_lvl <0> - maximum number of levels for multilevel deflation
+. -pc_deflation_max_lvl max - maximum number of levels for multilevel deflation
 
   Level: intermediate
 
@@ -92,7 +92,7 @@ static PetscErrorCode PCDeflationSetReductionFactor_Deflation(PC pc, PetscInt re
 - red - reduction factor (or `PETSC_DETERMINE`)
 
   Options Database Key:
-. -pc_deflation_reduction_factor <\-1> - reduction factor on bottom level coarse problem for `PCDEFLATION`
+. -pc_deflation_reduction_factor red - reduction factor on bottom level coarse problem for `PCDEFLATION`
 
   Note:
   Default is computed based on the size of the coarse problem.
@@ -133,8 +133,8 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc, PetscScala
 - fact - correction factor
 
   Options Database Keys:
-+ -pc_deflation_correction        <false> - if true apply coarse problem correction
-- -pc_deflation_correction_factor <1.0>   - sets coarse problem correction factor
++ -pc_deflation_correction        (true|false) - if true apply coarse problem correction
+- -pc_deflation_correction_factor fact         - sets coarse problem correction factor
 
   Note:
   Any non-zero fact enables the coarse problem correction.
@@ -173,8 +173,8 @@ static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc, PCDeflationS
 - size - size of the space to compute (or `PETSC_DEFAULT`)
 
   Options Database Keys:
-+ -pc_deflation_compute_space      <haar> - compute `PCDeflationSpaceType` deflation space
-- -pc_deflation_compute_space_size <1>    - size of the deflation space
++ -pc_deflation_compute_space      type - compute `PCDeflationSpaceType` deflation space
+- -pc_deflation_compute_space_size size - size of the deflation space
 
   Notes:
   For wavelet-based deflation, size represents number of levels.
@@ -758,13 +758,13 @@ static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems PetscOp
    PCDEFLATION - Deflation preconditioner shifts (deflates) part of the spectrum to zero or to a predefined value.
 
    Options Database Keys:
-+    -pc_deflation_init_only          <false> - if true computes only the special guess
-.    -pc_deflation_max_lvl            <0>     - maximum number of levels for multilevel deflation
-.    -pc_deflation_reduction_factor <\-1>     - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
-.    -pc_deflation_correction         <false> - if true apply coarse problem correction
-.    -pc_deflation_correction_factor  <1.0>   - sets coarse problem correction factor
-.    -pc_deflation_compute_space      <haar>  - compute PCDeflationSpaceType deflation space
--    -pc_deflation_compute_space_size <1>     - size of the deflation space (corresponds to number of levels for wavelet-based deflation)
++    -pc_deflation_init_only (true|false)  - if true computes only the special guess
+.    -pc_deflation_max_lvl maxlevels       - maximum number of levels for multilevel deflation
+.    -pc_deflation_reduction_factor red    - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
+.    -pc_deflation_correction (true|false) - if true apply coarse problem correction
+.    -pc_deflation_correction_factor fact  - sets coarse problem correction factor
+.    -pc_deflation_compute_space type      - see `PCDEFLATIONSpacetype`
+-    -pc_deflation_compute_space_size 1    - size of the deflation space (corresponds to number of levels for wavelet-based deflation)
 
    Notes:
     Given a (complex - transpose is always Hermitian) full rank deflation matrix W, the deflation (introduced in [1,2])

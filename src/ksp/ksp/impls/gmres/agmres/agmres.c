@@ -579,14 +579,14 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems PetscOp
   KSPAGMRES - a Newton basis GMRES implementation with adaptive augmented eigenvectors.
 
   Options Database Keys:
-+   -ksp_gmres_restart <restart>    -  the number of Krylov directions
-.   -ksp_gmres_krylov_monitor       - plot the Krylov space generated
-.   -ksp_agmres_eigen <neig>        - Number of eigenvalues to deflate (Number of vectors to augment)
-.   -ksp_agmres_maxeigen <max_neig> - Maximum number of eigenvalues to deflate
-.   -ksp_agmres_MinRatio <1>        - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
-.   -ksp_agmres_MaxRatio <1>        - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
-.   -ksp_agmres_DeflPrecond         - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
--   -ksp_dgmres_force <0, 1>        - Force the deflation at each restart.
++   -ksp_gmres_restart restart     - the number of Krylov directions
+.   -ksp_gmres_krylov_monitor      - plot the Krylov space generated
+.   -ksp_agmres_eigen neig         - Number of eigenvalues to deflate (Number of vectors to augment)
+.   -ksp_agmres_maxeigen max_neig  - Maximum number of eigenvalues to deflate
+.   -ksp_agmres_MinRatio minr      - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
+.   -ksp_agmres_MaxRatio maxr      - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
+.   -ksp_agmres_DeflPrecond        - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
+-   -ksp_dgmres_force (true|false) - Force the deflation at each restart.
 
   Level: intermediate
 

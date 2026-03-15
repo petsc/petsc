@@ -256,10 +256,10 @@ static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
 nonlinear conjugate gradient solver for nonlinear optimization.
 
    Options Database Keys:
-+      -tao_cg_eta <r> - restart tolerance
-.      -tao_cg_type <taocg_type> - cg formula
-.      -tao_cg_delta_min <r> - minimum delta value
--      -tao_cg_delta_max <r> - maximum delta value
++      -tao_cg_eta r           - restart tolerance
+.      -tao_cg_type taocg_type - cg formula
+.      -tao_cg_delta_min r     - minimum delta value
+-      -tao_cg_delta_max r     - maximum delta value
 
   Notes:
      CG formulas are:

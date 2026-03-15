@@ -489,7 +489,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 - radius - the desired spectral radius
 
   Options Database Key:
-. -ts_alpha_radius <radius> - set alpha radius
+. -ts_alpha_radius radius - set alpha radius
 
   Level: intermediate
 
@@ -529,9 +529,9 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 - gamma   - algorithmic parameter
 
   Options Database Keys:
-+ -ts_alpha_alpha_m <alpha_m> - set alpha_m
-. -ts_alpha_alpha_f <alpha_f> - set alpha_f
-- -ts_alpha_gamma   <gamma>   - set gamma
++ -ts_alpha_alpha_m alpha_m - set alpha_m
+. -ts_alpha_alpha_f alpha_f - set alpha_f
+- -ts_alpha_gamma   gamma   - set gamma
 
   Level: advanced
 

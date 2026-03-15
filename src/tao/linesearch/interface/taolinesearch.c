@@ -366,7 +366,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 - type - the `TaoLineSearchType` selection
 
   Options Database Key:
-. -tao_ls_type <type> - select which method Tao should use at runtime
+. -tao_ls_type type - select which linesearch method Tao should use at runtime, see `TaoLineSearchType`
 
   Level: beginner
 
@@ -461,15 +461,15 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
 . ls - the `TaoLineSearch` context
 
   Options Database Keys:
-+ -tao_ls_type <type>     - The algorithm that `TaoLineSearch` uses (more-thuente, gpcg, unit)
-. -tao_ls_ftol <tol>      - tolerance for sufficient decrease
-. -tao_ls_gtol <tol>      - tolerance for curvature condition
-. -tao_ls_rtol <tol>      - relative tolerance for acceptable step
-. -tao_ls_stepinit <step> - initial steplength allowed
-. -tao_ls_stepmin <step>  - minimum steplength allowed
-. -tao_ls_stepmax <step>  - maximum steplength allowed
-. -tao_ls_max_funcs <n>   - maximum number of function evaluations allowed
-- -tao_ls_view            - display line-search results to standard output
++ -tao_ls_type type     - The algorithm that `TaoLineSearch` uses (more-thuente, gpcg, unit)
+. -tao_ls_ftol tol      - tolerance for sufficient decrease
+. -tao_ls_gtol tol      - tolerance for curvature condition
+. -tao_ls_rtol tol      - relative tolerance for acceptable step
+. -tao_ls_stepinit step - initial steplength allowed
+. -tao_ls_stepmin step  - minimum steplength allowed
+. -tao_ls_stepmax step  - maximum steplength allowed
+. -tao_ls_max_funcs n   - maximum number of function evaluations allowed
+- -tao_ls_view          - display line-search results to standard output
 
   Level: beginner
 

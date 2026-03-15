@@ -154,7 +154,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
 .ve
 
    Options Database Key:
-.  -fp_trap <off,on> - turn on or off trapping of floating point exceptions
+.  -fp_trap (off|on) - turn on or off trapping of floating point exceptions
 
    Level: advanced
 

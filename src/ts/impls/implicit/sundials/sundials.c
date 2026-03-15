@@ -863,14 +863,14 @@ PetscErrorCode TSSundialsSetUseDense(TS ts, PetscBool use_dense)
       TSSUNDIALS - ODE solver using a very old version of the LLNL CVODE/SUNDIALS package, version 2.5 (now called SUNDIALS). Requires ./configure --download-sundials
 
    Options Database Keys:
-+    -ts_sundials_type <bdf,adams> -
-.    -ts_sundials_gramschmidt_type <modified, classical> - type of orthogonalization inside GMRES
-.    -ts_sundials_atol <tol> - Absolute tolerance for convergence
-.    -ts_sundials_rtol <tol> - Relative tolerance for convergence
-.    -ts_sundials_linear_tolerance <tol> -
-.    -ts_sundials_maxl <maxl> - Max dimension of the Krylov subspace
-.    -ts_sundials_monitor_steps - Monitor SUNDIALS internal steps
--    -ts_sundials_use_dense - Use a dense linear solver within CVODE (serial only)
++    -ts_sundials_type (bdf|adams)                      - integrator type
+.    -ts_sundials_gramschmidt_type (modified|classical) - type of orthogonalization inside GMRES
+.    -ts_sundials_atol atol                             - Absolute tolerance for convergence
+.    -ts_sundials_rtol rtol                             - Relative tolerance for convergence
+.    -ts_sundials_linear_tolerance ltol                 - convergence tolerance for linear solver
+.    -ts_sundials_maxl maxl                             - Max dimension of the Krylov subspace
+.    -ts_sundials_monitor_steps                         - Monitor SUNDIALS internal steps
+-    -ts_sundials_use_dense                             - Use a dense linear solver within CVODE (serial only)
 
     Level: beginner
 

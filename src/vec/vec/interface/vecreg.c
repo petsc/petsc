@@ -36,8 +36,7 @@ static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBoo
 - newType - The name of the vector type
 
   Options Database Key:
-. -vec_type <type> - Sets the vector type; use -help for a list
-                     of available types
+. -vec_type type - Sets the vector type; see `VecType`
 
   Level: intermediate
 

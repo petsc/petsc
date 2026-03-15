@@ -1502,9 +1502,9 @@ PetscErrorCode MatCreateLMVMDDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 - type - scale type, see `MatLMVMDenseSetType`
 
   Options Database Keys:
-+ -mat_lqn_type   <reorder,inplace> - set the strategy
-. -mat_lbfgs_type <reorder,inplace> - set the strategy
-- -mat_ldfp_type  <reorder,inplace> - set the strategy
++ -mat_lqn_type   (reorder|inplace) - set the strategy
+. -mat_lbfgs_type (reorder|inplace) - set the strategy
+- -mat_ldfp_type  (reorder|inplace) - set the strategy
 
   Level: intermediate
 

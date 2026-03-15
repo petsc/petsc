@@ -1893,7 +1893,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 - tj_memory_type - Revolve or CAMS
 
   Options Database Key:
-. -ts_trajectory_memory_type <tj_memory_type> - petsc, revolve, cams
+. -ts_trajectory_memory_type tj_memory_type - petsc, revolve, cams
 
   Level: intermediate
 

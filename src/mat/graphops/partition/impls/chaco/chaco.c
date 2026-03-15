@@ -198,7 +198,7 @@ static PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewe
             `MP_CHACO_RANDOM` or `MP_CHACO_SCATTERED`
 
   Options Database Key:
-. -mat_partitioning_chaco_global <method> - the global method
+. -mat_partitioning_chaco_global method - the global method
 
   Level: advanced
 
@@ -279,7 +279,7 @@ static PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, 
 - method - one of `MP_CHACO_KERNIGHAN` or `MP_CHACO_NONE`
 
   Options Database Key:
-. -mat_partitioning_chaco_local <method> - the local method
+. -mat_partitioning_chaco_local method - the local method
 
   Level: advanced
 
@@ -358,7 +358,7 @@ static PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, M
 - level - the coarse level in range [0.0,1.0]
 
   Options Database Key:
-. -mat_partitioning_chaco_coarse <l> - Coarse level
+. -mat_partitioning_chaco_coarse l - Coarse level
 
   Level: advanced
 
@@ -394,7 +394,7 @@ static PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning p
 - method - one of `MP_CHACO_LANCZOS` or `MP_CHACO_RQI`
 
   Options Database Key:
-. -mat_partitioning_chaco_eigen_solver <method> - the eigensolver
+. -mat_partitioning_chaco_eigen_solver method - the eigensolver
 
   Level: advanced
 
@@ -472,7 +472,7 @@ static PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning p
 - tol  - the tolerance
 
   Options Database Key:
-. -mat_partitioning_chaco_eigen_tol <tol> - Tolerance for eigensolver
+. -mat_partitioning_chaco_eigen_tol tol - Tolerance for eigensolver
 
   Note:
   Must be positive. The default value is 0.001.
@@ -547,7 +547,7 @@ static PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part
 - num  - the number of eigenvectors
 
   Options Database Key:
-. -mat_partitioning_chaco_eigen_number <n> - Number of eigenvectors
+. -mat_partitioning_chaco_eigen_number n - Number of eigenvectors
 
   Note:
   Accepted values are 1, 2 or 3, indicating partitioning by bisection,

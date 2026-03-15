@@ -225,7 +225,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
 
  Options Database Keys:
 + -tao_nm_lambda - initial step length
-- -tao_nm_mu - expansion/contraction factor
+- -tao_nm_mu     - expansion/contraction factor
 
  Level: beginner
 M*/

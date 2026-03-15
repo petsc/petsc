@@ -336,7 +336,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
 - name - one of 'cusparse', 'hypre'
 
   Options Database Key:
-. -pc_mg_galerkin_mat_product_algorithm <cusparse,hypre> - Type of sparse matrix-matrix product to use in hypre
+. -pc_mg_galerkin_mat_product_algorithm (cusparse|hypre) - Type of sparse matrix-matrix product to use in hypre
 
   Level: intermediate
 

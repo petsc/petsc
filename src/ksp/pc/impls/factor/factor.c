@@ -119,7 +119,7 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 - zero - all pivots smaller than this will be considered zero
 
   Options Database Key:
-. -pc_factor_zeropivot <zero> - Sets tolerance for what is considered a zero pivot
+. -pc_factor_zeropivot zero - Sets tolerance for what is considered a zero pivot
 
   Level: intermediate
 
@@ -145,7 +145,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
 - shifttype - type of shift; one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, `MAT_SHIFT_INBLOCKS`
 
   Options Database Key:
-. -pc_factor_shift_type <shifttype> - Sets shift type; use '-help' for a list of available types
+. -pc_factor_shift_type shifttype - Sets shift type; see `MatFactorShiftType`
 
   Level: intermediate
 
@@ -171,7 +171,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 - shiftamount - amount of shift or `PETSC_DECIDE` for the default
 
   Options Database Key:
-. -pc_factor_shift_amount <shiftamount> - Sets shift amount or -1 for the default
+. -pc_factor_shift_amount shiftamount - Sets shift amount or -1 for the default
 
   Level: intermediate
 
@@ -200,7 +200,7 @@ PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
                  depends on the number of nonzeros in row of original matrix
 
   Options Database Key:
-. -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
+. -pc_factor_drop_tolerance dt,dtcol,maxrowcount - Sets drop tolerance
 
   Level: intermediate
 
@@ -322,7 +322,7 @@ PetscErrorCode PCFactorGetLevels(PC pc, PetscInt *levels)
 - levels - number of levels of fill
 
   Options Database Key:
-. -pc_factor_levels <levels> - Sets fill level
+. -pc_factor_levels levels - Sets fill level
 
   Level: intermediate
 
@@ -349,7 +349,7 @@ PetscErrorCode PCFactorSetLevels(PC pc, PetscInt levels)
 - flg - `PETSC_TRUE` to turn on, `PETSC_FALSE` to turn off
 
   Options Database Key:
-. -pc_factor_diagonal_fill <bool> - allow the diagonal fill
+. -pc_factor_diagonal_fill (true|false) - allow the diagonal fill
 
   Note:
   Does not apply with 0 fill.
@@ -403,7 +403,7 @@ PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 - rtol - diagonal entries smaller than this in absolute value are considered zero
 
   Options Database Key:
-. -pc_factor_nonzeros_along_diagonal <tol> - perform the reordering with the given tolerance
+. -pc_factor_nonzeros_along_diagonal tol - perform the reordering with the given tolerance
 
   Level: intermediate
 
@@ -428,7 +428,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 - stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 
   Options Database Key:
-. -pc_factor_mat_solver_type <stype> - petsc, superlu, superlu_dist, mumps, cusparse
+. -pc_factor_mat_solver_type stype - petsc, superlu, superlu_dist, mumps, cusparse
 
   Level: intermediate
 
@@ -488,7 +488,7 @@ PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 - fill - amount of expected fill
 
   Options Database Key:
-. -pc_factor_fill <fill> - Sets fill amount
+. -pc_factor_fill fill - Sets fill amount
 
   Level: intermediate
 
@@ -523,7 +523,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 - flg - `PETSC_TRUE` to enable, `PETSC_FALSE` to disable
 
   Options Database Key:
-. -pc_factor_in_place <true,false> - Activate/deactivate in-place factorization
+. -pc_factor_in_place (true|false) - Activate/deactivate in-place factorization
 
   Note:
   For dense matrices, this enables the solution of much larger problems.
@@ -585,7 +585,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
 - ordering - the matrix ordering name, for example, `MATORDERINGND` or `MATORDERINGRCM`
 
   Options Database Key:
-. -pc_factor_mat_ordering_type <nd,rcm,...,external> - Sets ordering routine
+. -pc_factor_mat_ordering_type ordering - Sets the ordering routine
 
   Level: intermediate
 
@@ -621,7 +621,7 @@ PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
 - dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
   Options Database Key:
-. -pc_factor_pivoting <dtcol> - perform the pivoting with the given tolerance
+. -pc_factor_pivoting dtcol - perform the pivoting with the given tolerance
 
   Level: intermediate
 
@@ -647,7 +647,7 @@ PetscErrorCode PCFactorSetColumnPivot(PC pc, PetscReal dtcol)
 - pivot - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Key:
-. -pc_factor_pivot_in_blocks <true,false> - Pivot inside matrix dense blocks for `MATBAIJ` and `MATSBAIJ`
+. -pc_factor_pivot_in_blocks (true|false) - Pivot inside matrix dense blocks for `MATBAIJ` and `MATSBAIJ`
 
   Level: intermediate
 

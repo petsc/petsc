@@ -383,7 +383,7 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
 - type - The name of the vector scatter type
 
   Options Database Key:
-. -sf_type <type> - Sets the `VecScatterType`
+. -sf_type type - Sets the `VecScatterType`
 
   Level: intermediate
 

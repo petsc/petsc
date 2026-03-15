@@ -1296,12 +1296,12 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems PetscOp
      KSPFETIDP - The FETI-DP method {cite}`farhat2001feti`
 
    Options Database Keys:
-+   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
-.   -ksp_fetidp_saddlepoint <false>      - activates support for saddle point problems, see {cite}`tu2015feti`
-.   -ksp_fetidp_saddlepoint_flip <false> - see note below
-.   -ksp_fetidp_pressure_field <-1>      - activates support for saddle point problems, and identifies the pressure field id.
-                                           If this information is not provided, the pressure field is detected by using `MatFindZeroDiagonals()`.
--   -ksp_fetidp_pressure_all <false>     - if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
++   -ksp_fetidp_fullyredundant (true|false)   - use a fully redundant set of Lagrange multipliers
+.   -ksp_fetidp_saddlepoint (true|false)      - activates support for saddle point problems, see {cite}`tu2015feti`
+.   -ksp_fetidp_saddlepoint_flip (true|false) - see note below
+.   -ksp_fetidp_pressure_field -1             - activates support for saddle point problems, and identifies the pressure field id.
+                                                If this information is not provided, the pressure field is detected by using `MatFindZeroDiagonals()`.
+-   -ksp_fetidp_pressure_all (true|false)     - if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
 
    Level: Advanced
 

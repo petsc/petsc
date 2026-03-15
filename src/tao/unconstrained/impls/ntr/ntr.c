@@ -501,34 +501,34 @@ static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems PetscOptio
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntr_init_type - "constant","direction","interpolation"
++ -tao_ntr_init_type   - "constant","direction","interpolation"
 . -tao_ntr_update_type - "reduction","interpolation"
-. -tao_ntr_min_radius - lower bound on trust region radius
-. -tao_ntr_max_radius - upper bound on trust region radius
-. -tao_ntr_epsilon - tolerance for accepting actual / predicted reduction
-. -tao_ntr_mu1_i - mu1 interpolation init factor
-. -tao_ntr_mu2_i - mu2 interpolation init factor
-. -tao_ntr_gamma1_i - gamma1 interpolation init factor
-. -tao_ntr_gamma2_i - gamma2 interpolation init factor
-. -tao_ntr_gamma3_i - gamma3 interpolation init factor
-. -tao_ntr_gamma4_i - gamma4 interpolation init factor
-. -tao_ntr_theta_i - theta1 interpolation init factor
-. -tao_ntr_eta1 - eta1 reduction update factor
-. -tao_ntr_eta2 - eta2 reduction update factor
-. -tao_ntr_eta3 - eta3 reduction update factor
-. -tao_ntr_eta4 - eta4 reduction update factor
-. -tao_ntr_alpha1 - alpha1 reduction update factor
-. -tao_ntr_alpha2 - alpha2 reduction update factor
-. -tao_ntr_alpha3 - alpha3 reduction update factor
-. -tao_ntr_alpha4 - alpha4 reduction update factor
-. -tao_ntr_alpha4 - alpha4 reduction update factor
-. -tao_ntr_mu1 - mu1 interpolation update
-. -tao_ntr_mu2 - mu2 interpolation update
-. -tao_ntr_gamma1 - gamma1 interpolcation update
-. -tao_ntr_gamma2 - gamma2 interpolcation update
-. -tao_ntr_gamma3 - gamma3 interpolcation update
-. -tao_ntr_gamma4 - gamma4 interpolation update
-- -tao_ntr_theta - theta interpolation update
+. -tao_ntr_min_radius  - lower bound on trust region radius
+. -tao_ntr_max_radius  - upper bound on trust region radius
+. -tao_ntr_epsilon     - tolerance for accepting actual / predicted reduction
+. -tao_ntr_mu1_i       - mu1 interpolation init factor
+. -tao_ntr_mu2_i       - mu2 interpolation init factor
+. -tao_ntr_gamma1_i    - gamma1 interpolation init factor
+. -tao_ntr_gamma2_i    - gamma2 interpolation init factor
+. -tao_ntr_gamma3_i    - gamma3 interpolation init factor
+. -tao_ntr_gamma4_i    - gamma4 interpolation init factor
+. -tao_ntr_theta_i     - theta1 interpolation init factor
+. -tao_ntr_eta1        - eta1 reduction update factor
+. -tao_ntr_eta2        - eta2 reduction update factor
+. -tao_ntr_eta3        - eta3 reduction update factor
+. -tao_ntr_eta4        - eta4 reduction update factor
+. -tao_ntr_alpha1      - alpha1 reduction update factor
+. -tao_ntr_alpha2      - alpha2 reduction update factor
+. -tao_ntr_alpha3      - alpha3 reduction update factor
+. -tao_ntr_alpha4      - alpha4 reduction update factor
+. -tao_ntr_alpha4      - alpha4 reduction update factor
+. -tao_ntr_mu1         - mu1 interpolation update
+. -tao_ntr_mu2         - mu2 interpolation update
+. -tao_ntr_gamma1      - gamma1 interpolcation update
+. -tao_ntr_gamma2      - gamma2 interpolcation update
+. -tao_ntr_gamma3      - gamma3 interpolcation update
+. -tao_ntr_gamma4      - gamma4 interpolation update
+- -tao_ntr_theta       - theta interpolation update
 
   Level: beginner
 M*/

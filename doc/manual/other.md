@@ -402,9 +402,9 @@ Also see the manual pages for `PetscSAWsBlock()`,
 
 PETSc programs may be debugged using one of the two options below.
 
-- `-start_in_debugger` `[noxterm,dbx,xxgdb,xdb,xldb,lldb]`
+- `-start_in_debugger [(noxterm)],[(gdb|lldb|...)]`
   `[-display name]` - start all processes in debugger
-- `-on_error_attach_debugger` `[noxterm,dbx,xxgdb,xdb,xldb,lldb]`
+- `-on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]`
   `[-display name]` - start debugger only on encountering an error
 
 Note that, in general, debugging MPI programs cannot be done in the
@@ -469,7 +469,7 @@ The function `PetscAbortErrorHandler()` calls abort on encountering an
 error, while `PetscAttachDebuggerErrorHandler()` attaches a debugger to the
 running process if an error is detected. At runtime, these error
 handlers can be set with the options `-on_error_abort` or
-`-on_error_attach_debugger` `[noxterm, dbx, xxgdb, xldb]`
+`-on_error_attach_debugger [noxterm,][(gdb|lldb)]`
 `[-display DISPLAY]`.
 
 All PETSc calls can be traced (useful for determining where a program is

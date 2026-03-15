@@ -160,11 +160,11 @@ static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
 . J - the matrix-free matrix
 
   Options Database Keys:
-+ -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
-. -snes_mf_umin <umin>     - see `MatCreateSNESMF()`
-. -snes_mf_compute_err     - compute the square root or relative error in function
-. -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
-- -snes_mf_jorge           - use the method of Jorge More
++ -snes_mf_err error_rel - see `MatCreateSNESMF()`
+. -snes_mf_umin umin     - see `MatCreateSNESMF()`
+. -snes_mf_compute_err   - compute the square root or relative error in function
+. -snes_mf_freq_err freq - set the frequency to recompute the parameters
+- -snes_mf_jorge         - use the method of Jorge More
 
   Level: advanced
 
@@ -269,11 +269,11 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
 - h     - differencing parameter
 
   Options Database Keys:
-+ -snes_mf_err <error_rel> - see `MatCreateSNESMF()`
-. -snes_mf_umin <umin>     - see `MatCreateSNESMF()`
-. -snes_mf_compute_err     - compute the square root or relative error in function
-. -snes_mf_freq_err <freq> - set the frequency to recompute the parameters
-- -snes_mf_jorge           - use the method of Jorge More
++ -snes_mf_err error_rel - see `MatCreateSNESMF()`
+. -snes_mf_umin umin     - see `MatCreateSNESMF()`
+. -snes_mf_compute_err   - compute the square root or relative error in function
+. -snes_mf_freq_err freq - set the frequency to recompute the parameters
+- -snes_mf_jorge         - use the method of Jorge More
 
   Level: advanced
 

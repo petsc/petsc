@@ -38,7 +38,7 @@ static EH eh = NULL;
 - ctx  - error handler context
 
   Options Database Key:
-. -on_error_emacs <machinename> - will contact machinename to open the Emacs client there
+. -on_error_emacs machinename - will contact machinename to open the Emacs client there
 
   Level: developer
 
@@ -105,8 +105,8 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 - ctx  - the error handler context
 
   Options Database Keys:
-+ -on_error_attach_debugger <noxterm,lldb or gdb> - starts up the debugger if an error occurs
-- -on_error_abort                                 - aborts the program if an error occurs
++ -on_error_attach_debugger [noxterm,][(gdb|lldb)] - starts up the debugger if an error occurs
+- -on_error_abort                                  - aborts the program if an error occurs
 
   Level: intermediate
 

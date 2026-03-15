@@ -1755,10 +1755,10 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
    Use `./configure --download-scalapack` to install PETSc to use ScaLAPACK
 
    Options Database Keys:
-+  -mat_type scalapack - sets the matrix type to `MATSCALAPACK`
++  -mat_type scalapack                  - sets the matrix type to `MATSCALAPACK`
 .  -pc_factor_mat_solver_type scalapack - to use this direct solver with the option `-pc_type lu`
-.  -mat_scalapack_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
--  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
+.  -mat_scalapack_grid_height           - sets Grid Height for 2D cyclic ordering of internal matrix
+-  -mat_scalapack_block_sizes           - size of the blocks to use (one or two integers separated by comma)
 
    Level: intermediate
 

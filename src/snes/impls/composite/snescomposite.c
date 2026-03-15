@@ -551,7 +551,7 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
 - type - `SNES_COMPOSITE_ADDITIVE` (default), `SNES_COMPOSITE_MULTIPLICATIVE`, or `SNES_COMPOSITE_ADDITIVEOPTIMAL`
 
   Options Database Key:
-. -snes_composite_type <type: one of multiplicative, additive, additiveoptimal> - Sets composite preconditioner type
+. -snes_composite_type (multiplicative|additive|additive_optimal) - Sets composite preconditioner type
 
   Level: developer
 
@@ -794,13 +794,13 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 }
 
 /*MC
-     SNESCOMPOSITE - Builds a nonlinear solver/preconditioner by composing together several `SNES` nonlinear solvers {cite}`bruneknepleysmithtu15`
+  SNESCOMPOSITE - Builds a nonlinear solver/preconditioner by composing together several `SNES` nonlinear solvers {cite}`bruneknepleysmithtu15`
 
-   Options Database Keys:
-+  -snes_composite_type <type: one of multiplicative, additive, additiveoptimal> - Sets composite preconditioner type
--  -snes_composite_sneses - <snes0,snes1,...> list of `SNES` to compose
+  Options Database Keys:
++ -snes_composite_type (multiplicative|additive|additiveoptimal) - Sets composite preconditioner type
+- -snes_composite_sneses snes0,snes1,...                         - list of `SNES` to compose
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
           `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_ADDITIVEOPTIMAL`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`,

@@ -411,7 +411,7 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
    Level: beginner
 
    Options Database Key:
-.   -mat_coarsen_misk_distance <k> - distance for MIS
+.   -mat_coarsen_misk_distance k - distance for MIS
 
    Note:
    When the coarsening is used inside `PCGAMG` then the options database key is `-pc_gamg_mat_coarsen_misk_distance`
@@ -439,7 +439,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
 - k   - the distance
 
   Options Database Key:
-. -mat_coarsen_misk_distance <k> - distance for MIS
+. -mat_coarsen_misk_distance k - distance for MIS
 
   Level: advanced
 

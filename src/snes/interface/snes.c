@@ -23,7 +23,7 @@ PetscLogEvent SNES_Solve, SNES_SetUp, SNES_FunctionEval, SNES_JacobianEval, SNES
 - flg  - `PETSC_TRUE` indicates you want the error generated
 
   Options Database Key:
-. -snes_error_if_not_converged <true,false> - cause an immediate error condition and stop the program if the solver does not converge
+. -snes_error_if_not_converged (true|false) - cause an immediate error condition and stop the program if the solver does not converge
 
   Level: intermediate
 
@@ -905,21 +905,23 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . snes - the `SNES` context
 
   Options Database Keys:
-+ -snes_type <type>                                                            - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
-. -snes_rtol <rtol>                                                            - relative decrease in tolerance norm from initial
-. -snes_atol <abstol>                                                          - absolute tolerance of residual norm
-. -snes_stol <stol>                                                            - convergence tolerance in terms of the norm of the change in the solution between steps
-. -snes_divergence_tolerance <divtol>                                          - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_max_it <max_it>                                                        - maximum number of iterations
-. -snes_max_funcs <max_funcs>                                                  - maximum number of function evaluations
-. -snes_force_iteration <force>                                                - force `SNESSolve()` to take at least one iteration
-. -snes_max_fail <max_fail>                                                    - maximum number of line search failures allowed before stopping, default is none
++ -snes_type type                                                              - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
+. -snes_rtol rtol                                                              - relative decrease in tolerance norm from initial
+. -snes_atol abstol                                                            - absolute tolerance of residual norm
+. -snes_stol stol                                                              - convergence tolerance in terms of the norm of the change in the solution between steps
+. -snes_divergence_tolerance divtol                                            - if the residual goes above divtol*rnorm0, exit with divergence
+. -snes_max_it max_it                                                          - maximum number of iterations
+. -snes_max_funcs max_funcs                                                    - maximum number of function evaluations
+. -snes_force_iteration force                                                  - force `SNESSolve()` to take at least one iteration
+. -snes_max_fail max_fail                                                      - maximum number of line search failures allowed before stopping, default is none
 . -snes_max_linear_solve_fail                                                  - number of linear solver failures before SNESSolve() stops
-. -snes_lag_preconditioner <lag>                                               - how often preconditioner is rebuilt (use -1 to never rebuild)
-. -snes_lag_preconditioner_persists <true,false>                               - retains the -snes_lag_preconditioner information across multiple SNESSolve()
-. -snes_lag_jacobian <lag>                                                     - how often Jacobian is rebuilt (use -1 to never rebuild)
-. -snes_lag_jacobian_persists <true,false>                                     - retains the -snes_lag_jacobian information across multiple SNESSolve()
-. -snes_convergence_test <default,skip,correct_pressure>                       - convergence test in nonlinear solver. default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue iterating until max_it or some other criterion is reached, saving expense of convergence test. correct_pressure `SNESConvergedCorrectPressure()` has special handling of a pressure null space.
+. -snes_lag_preconditioner lag                                                 - how often preconditioner is rebuilt (use -1 to never rebuild)
+. -snes_lag_preconditioner_persists (true|false)                               - retains the -snes_lag_preconditioner information across multiple SNESSolve()
+. -snes_lag_jacobian lag                                                       - how often Jacobian is rebuilt (use -1 to never rebuild)
+. -snes_lag_jacobian_persists (true|false)                                     - retains the -snes_lag_jacobian information across multiple SNESSolve()
+. -snes_convergence_test (default|skip|correct_pressure)                       - convergence test in nonlinear solver. default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue
+                                                                                 iterating until max_it or some other criterion is reached, saving expense of convergence test. correct_pressure
+                                                                                 `SNESConvergedCorrectPressure()` has special handling of a pressure null space.
 . -snes_monitor [ascii][:filename][:viewer format]                             - prints residual norm at each iteration. if no filename given prints to stdout
 . -snes_monitor_solution [ascii binary draw][:filename][:viewer format]        - plots solution at each iteration
 . -snes_monitor_residual [ascii binary draw][:filename][:viewer format]        - plots residual (not its norm) at each iteration
@@ -931,19 +933,21 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . -snes_fd_color                                                               - use finite differences with coloring to compute Jacobian
 . -snes_mf_ksp_monitor                                                         - if using matrix-free multiply then print h at each `KSP` iteration
 . -snes_converged_reason                                                       - print the reason for convergence/divergence after each solve
-. -npc_snes_type <type>                                                        - the `SNES` type to use as a nonlinear preconditioner
-. -snes_test_jacobian <optional threshold>                                     - compare the user provided Jacobian with one computed via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
-- -snes_test_jacobian_view                                                     - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian.
+. -npc_snes_type type                                                          - the `SNES` type to use as a nonlinear preconditioner
+. -snes_test_jacobian [threshold]                                              - compare the user provided Jacobian with one computed via finite differences to check for errors.
+                                                                                 If a threshold is given, display only those entries whose difference is greater than the threshold.
+- -snes_test_jacobian_view                                                     - display the user provided Jacobian, the finite difference Jacobian and the difference between them
+                                                                                 to help users detect the location of errors in the user provided Jacobian.
 
   Options Database Keys for Eisenstat-Walker method:
-+ -snes_ksp_ew                       - use Eisenstat-Walker method for determining linear system convergence
-. -snes_ksp_ew_version ver           - version of  Eisenstat-Walker method
-. -snes_ksp_ew_rtol0 <rtol0>         - Sets rtol0
-. -snes_ksp_ew_rtolmax <rtolmax>     - Sets rtolmax
-. -snes_ksp_ew_gamma <gamma>         - Sets gamma
-. -snes_ksp_ew_alpha <alpha>         - Sets alpha
-. -snes_ksp_ew_alpha2 <alpha2>       - Sets alpha2
-- -snes_ksp_ew_threshold <threshold> - Sets threshold
++ -snes_ksp_ew                     - use Eisenstat-Walker method for determining linear system convergence
+. -snes_ksp_ew_version ver         - version of  Eisenstat-Walker method
+. -snes_ksp_ew_rtol0 rtol0         - Sets rtol0
+. -snes_ksp_ew_rtolmax rtolmax     - Sets rtolmax
+. -snes_ksp_ew_gamma gamma         - Sets gamma
+. -snes_ksp_ew_alpha alpha         - Sets alpha
+. -snes_ksp_ew_alpha2 alpha2       - Sets alpha2
+- -snes_ksp_ew_threshold threshold - Sets threshold
 
   Level: beginner
 
@@ -1475,7 +1479,7 @@ PetscErrorCode SNESGetNonlinearStepFailures(SNES snes, PetscInt *nfails)
 - maxFails - maximum of unsuccessful steps allowed, use `PETSC_UNLIMITED` to have no limit on the number of failures
 
   Options Database Key:
-. -snes_max_fail <n> - maximum number of unsuccessful steps allowed
+. -snes_max_fail n - maximum number of unsuccessful steps allowed
 
   Level: intermediate
 
@@ -1573,7 +1577,7 @@ PetscErrorCode SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 . nfails - number of failed solves
 
   Options Database Key:
-. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
+. -snes_max_linear_solve_fail num - The number of failures before the solve is terminated
 
   Level: intermediate
 
@@ -1602,7 +1606,7 @@ PetscErrorCode SNESGetLinearSolveFailures(SNES snes, PetscInt *nfails)
 - maxFails - maximum allowed linear solve failures, use `PETSC_UNLIMITED` to have no limit on the number of failures
 
   Options Database Key:
-. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
+. -snes_max_linear_solve_fail num - The number of failures before the solve is terminated
 
   Level: intermediate
 
@@ -2010,7 +2014,7 @@ PetscErrorCode SNESSetInitialFunction(SNES snes, Vec f)
 - normschedule - the frequency of norm computation
 
   Options Database Key:
-. -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly> - set the schedule
+. -snes_norm_schedule (none|always|initialonly|finalonly|initialfinalonly) - set the schedule
 
   Level: advanced
 
@@ -2746,8 +2750,8 @@ PetscErrorCode SNESTestFunction(SNES snes)
 - diffNorm - the Frobenius norm of the difference of the computed and finite-difference Jacobians, or `NULL`
 
   Options Database Keys:
-+ -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
-- -snes_test_jacobian_view                 - display the user provided Jacobian, the finite difference Jacobian and the difference
++ -snes_test_jacobian [threshold] - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
+- -snes_test_jacobian_view        - display the user provided Jacobian, the finite difference Jacobian and the difference
 
   Level: developer
 
@@ -2909,21 +2913,22 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
 - B - optional matrix for building the preconditioner, usually the same as `A`
 
   Options Database Keys:
-+ -snes_lag_preconditioner <lag>           - how often to rebuild preconditioner
-. -snes_lag_jacobian <lag>                 - how often to rebuild Jacobian
-. -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
-. -snes_test_jacobian_view                 - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
-. -snes_compare_explicit                   - Compare the computed Jacobian to the finite difference Jacobian and output the differences
-. -snes_compare_explicit_draw              - Compare the computed Jacobian to the finite difference Jacobian and draw the result
-. -snes_compare_explicit_contour           - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
-. -snes_compare_operator                   - Make the comparison options above use the operator instead of the matrix used to construct the preconditioner
-. -snes_compare_coloring                   - Compute the finite difference Jacobian using coloring and display norms of difference
-. -snes_compare_coloring_display           - Compute the finite difference Jacobian using coloring and display verbose differences
-. -snes_compare_coloring_threshold         - Display only those matrix entries that differ by more than a given threshold
-. -snes_compare_coloring_threshold_atol    - Absolute tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
-. -snes_compare_coloring_threshold_rtol    - Relative tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
-. -snes_compare_coloring_draw              - Compute the finite difference Jacobian using coloring and draw differences
-- -snes_compare_coloring_draw_contour      - Compute the finite difference Jacobian using coloring and show contours of matrices and differences
++ -snes_lag_preconditioner lag          - how often to rebuild preconditioner
+. -snes_lag_jacobian lag                - how often to rebuild Jacobian
+. -snes_test_jacobian [threshold]       - compare the user provided Jacobian with one compute via finite differences to check for errors.
+                                          If a threshold is given, display only those entries whose difference is greater than the threshold.
+. -snes_test_jacobian_view [viewer]     - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
+. -snes_compare_explicit                - Compare the computed Jacobian to the finite difference Jacobian and output the differences
+. -snes_compare_explicit_draw           - Compare the computed Jacobian to the finite difference Jacobian and draw the result
+. -snes_compare_explicit_contour        - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
+. -snes_compare_operator                - Make the comparison options above use the operator instead of the matrix used to construct the preconditioner
+. -snes_compare_coloring                - Compute the finite difference Jacobian using coloring and display norms of difference
+. -snes_compare_coloring_display        - Compute the finite difference Jacobian using coloring and display verbose differences
+. -snes_compare_coloring_threshold      - Display only those matrix entries that differ by more than a given threshold
+. -snes_compare_coloring_threshold_atol - Absolute tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
+. -snes_compare_coloring_threshold_rtol - Relative tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
+. -snes_compare_coloring_draw           - Compute the finite difference Jacobian using coloring and draw differences
+- -snes_compare_coloring_draw_contour   - Compute the finite difference Jacobian using coloring and show contours of matrices and differences
 
   Level: developer
 
@@ -3575,10 +3580,10 @@ PetscErrorCode SNESDestroy(SNES *snes)
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
   Options Database Keys:
-+ -snes_lag_jacobian_persists <true,false>       - sets the persistence through multiple `SNESSolve()`
-. -snes_lag_jacobian <-2,1,2,...>                - sets the lag
-. -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple `SNESSolve()`
-- -snes_lag_preconditioner <-2,1,2,...>          - sets the lag
++ -snes_lag_jacobian_persists (true|false)       - sets the persistence through multiple `SNESSolve()`
+. -snes_lag_jacobian (-2|1|2|...)                - sets the lag
+. -snes_lag_preconditioner_persists (true|false) - sets the persistence through multiple `SNESSolve()`
+- -snes_lag_preconditioner (-2|1|2|...)          - sets the lag
 
   Level: intermediate
 
@@ -3613,7 +3618,7 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
 - steps - the number of refinements to do, defaults to 0
 
   Options Database Key:
-. -snes_grid_sequence <steps> - Use grid sequencing to generate initial guess
+. -snes_grid_sequence steps - Use grid sequencing to generate initial guess
 
   Level: intermediate
 
@@ -3698,10 +3703,10 @@ PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
          the Jacobian is built etc. -2 means rebuild at next chance but then never again
 
   Options Database Keys:
-+ -snes_lag_jacobian_persists <true,false>       - sets the persistence through multiple SNES solves
-. -snes_lag_jacobian <-2,1,2,...>                - sets the lag
-. -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
-- -snes_lag_preconditioner <-2,1,2,...>          - sets the lag.
++ -snes_lag_jacobian_persists (true|false)       - sets the persistence through multiple SNES solves
+. -snes_lag_jacobian (-2|1|2|...)                - sets the lag
+. -snes_lag_preconditioner_persists (true|false) - sets the persistence through multiple SNES solves
+- -snes_lag_preconditioner (-2|1|2|...)          - sets the lag.
 
   Level: intermediate
 
@@ -3766,10 +3771,10 @@ PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
 - flg  - jacobian lagging persists if true
 
   Options Database Keys:
-+ -snes_lag_jacobian_persists <true,false>       - sets the persistence through multiple SNES solves
-. -snes_lag_jacobian <-2,1,2,...>                - sets the lag
-. -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
-- -snes_lag_preconditioner <-2,1,2,...>          - sets the lag
++ -snes_lag_jacobian_persists (true|false)       - sets the persistence through multiple SNES solves
+. -snes_lag_jacobian (-2|1|2|...)                - sets the lag
+. -snes_lag_preconditioner_persists (true|false) - sets the persistence through multiple SNES solves
+- -snes_lag_preconditioner (-2|1|2|...)          - sets the lag
 
   Level: advanced
 
@@ -3801,10 +3806,10 @@ PetscErrorCode SNESSetLagJacobianPersists(SNES snes, PetscBool flg)
 - flg  - preconditioner lagging persists if true
 
   Options Database Keys:
-+ -snes_lag_jacobian_persists <true,false>       - sets the persistence through multiple SNES solves
-. -snes_lag_jacobian <-2,1,2,...>                - sets the lag
-. -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
-- -snes_lag_preconditioner <-2,1,2,...>          - sets the lag
++ -snes_lag_jacobian_persists (true|false)       - sets the persistence through multiple SNES solves
+. -snes_lag_jacobian (-2|1|2|...)                - sets the lag
+. -snes_lag_preconditioner_persists (true|false) - sets the persistence through multiple SNES solves
+- -snes_lag_preconditioner (-2|1|2|...)          - sets the lag
 
   Level: developer
 
@@ -3836,7 +3841,7 @@ PetscErrorCode SNESSetLagPreconditionerPersists(SNES snes, PetscBool flg)
 - force - `PETSC_TRUE` require at least one iteration
 
   Options Database Key:
-. -snes_force_iteration <force> - Sets forcing an iteration
+. -snes_force_iteration force - Sets forcing an iteration
 
   Level: intermediate
 
@@ -3890,11 +3895,11 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 - maxf   - the maximum number of function evaluations allowed in the solver (use `PETSC_UNLIMITED` indicates no limit), default 10,000
 
   Options Database Keys:
-+ -snes_atol <abstol>    - Sets `abstol`
-. -snes_rtol <rtol>      - Sets `rtol`
-. -snes_stol <stol>      - Sets `stol`
-. -snes_max_it <maxit>   - Sets `maxit`
-- -snes_max_funcs <maxf> - Sets `maxf` (use `unlimited` to have no maximum)
++ -snes_atol abstol    - Sets `abstol`
+. -snes_rtol rtol      - Sets `rtol`
+. -snes_stol stol      - Sets `stol`
+. -snes_max_it maxit   - Sets `maxit`
+- -snes_max_funcs maxf - Sets `maxf` (use `unlimited` to have no maximum)
 
   Level: intermediate
 
@@ -3973,7 +3978,7 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
            is stopped due to divergence.
 
   Options Database Key:
-. -snes_divergence_tolerance <divtol> - Sets `divtol`
+. -snes_divergence_tolerance divtol - Sets `divtol`
 
   Level: intermediate
 
@@ -4938,8 +4943,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 - type - a known method
 
   Options Database Key:
-. -snes_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, newtonls or newtontr)
+. -snes_type type - Sets the method; see `SNESType`
 
   Level: intermediate
 
@@ -5383,14 +5387,14 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 - flag - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Keys:
-+ -snes_ksp_ew                       - use Eisenstat-Walker method for determining linear system convergence
-. -snes_ksp_ew_version ver           - version of  Eisenstat-Walker method
-. -snes_ksp_ew_rtol0 <rtol0>         - Sets rtol0
-. -snes_ksp_ew_rtolmax <rtolmax>     - Sets rtolmax
-. -snes_ksp_ew_gamma <gamma>         - Sets gamma
-. -snes_ksp_ew_alpha <alpha>         - Sets alpha
-. -snes_ksp_ew_alpha2 <alpha2>       - Sets alpha2
-- -snes_ksp_ew_threshold <threshold> - Sets threshold
++ -snes_ksp_ew                     - use Eisenstat-Walker method for determining linear system convergence
+. -snes_ksp_ew_version ver         - version of  Eisenstat-Walker method
+. -snes_ksp_ew_rtol0 rtol0         - Sets rtol0
+. -snes_ksp_ew_rtolmax rtolmax     - Sets rtolmax
+. -snes_ksp_ew_gamma gamma         - Sets gamma
+. -snes_ksp_ew_alpha alpha         - Sets alpha
+. -snes_ksp_ew_alpha2 alpha2       - Sets alpha2
+- -snes_ksp_ew_threshold threshold - Sets threshold
 
   Level: advanced
 
@@ -5763,7 +5767,7 @@ PetscErrorCode SNESGetDM(SNES snes, DM *dm)
 - npc  - the `SNES` nonlinear preconditioner object
 
   Options Database Key:
-. -npc_snes_type <type> - set the type of the `SNES` to use as the nonlinear preconditioner
+. -npc_snes_type type - set the type of the `SNES` to use as the nonlinear preconditioner
 
   Level: developer
 
@@ -5798,7 +5802,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES npc)
 . pc - the `SNES` preconditioner context
 
   Options Database Key:
-. -npc_snes_type <type> - set the type of the `SNES` to use as the nonlinear preconditioner
+. -npc_snes_type type - set the type of the `SNES` to use as the nonlinear preconditioner
 
   Level: advanced
 
@@ -5880,7 +5884,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 .ve
 
   Options Database Key:
-. -snes_npc_side <right,left> - nonlinear preconditioner side
+. -snes_npc_side (right|left) - nonlinear preconditioner side
 
   Level: intermediate
 

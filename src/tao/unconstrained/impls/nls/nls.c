@@ -820,46 +820,46 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
               min_t f(xk + t d_k)
 
     Options Database Keys:
-+ -tao_nls_init_type - "constant","direction","interpolation"
++ -tao_nls_init_type   - "constant","direction","interpolation"
 . -tao_nls_update_type - "step","direction","interpolation"
-. -tao_nls_sval - perturbation starting value
-. -tao_nls_imin - minimum initial perturbation
-. -tao_nls_imax - maximum initial perturbation
-. -tao_nls_pmin - minimum perturbation
-. -tao_nls_pmax - maximum perturbation
-. -tao_nls_pgfac - growth factor
-. -tao_nls_psfac - shrink factor
-. -tao_nls_imfac - initial merit factor
-. -tao_nls_pmgfac - merit growth factor
-. -tao_nls_pmsfac - merit shrink factor
-. -tao_nls_eta1 - poor steplength; reduce radius
-. -tao_nls_eta2 - reasonable steplength; leave radius
-. -tao_nls_eta3 - good steplength; increase radius
-. -tao_nls_eta4 - excellent steplength; greatly increase radius
-. -tao_nls_alpha1 - alpha1 reduction
-. -tao_nls_alpha2 - alpha2 reduction
-. -tao_nls_alpha3 - alpha3 reduction
-. -tao_nls_alpha4 - alpha4 reduction
-. -tao_nls_alpha - alpha5 reduction
-. -tao_nls_mu1 - mu1 interpolation update
-. -tao_nls_mu2 - mu2 interpolation update
-. -tao_nls_gamma1 - gamma1 interpolation update
-. -tao_nls_gamma2 - gamma2 interpolation update
-. -tao_nls_gamma3 - gamma3 interpolation update
-. -tao_nls_gamma4 - gamma4 interpolation update
-. -tao_nls_theta - theta interpolation update
-. -tao_nls_omega1 - omega1 step update
-. -tao_nls_omega2 - omega2 step update
-. -tao_nls_omega3 - omega3 step update
-. -tao_nls_omega4 - omega4 step update
-. -tao_nls_omega5 - omega5 step update
-. -tao_nls_mu1_i -  mu1 interpolation init factor
-. -tao_nls_mu2_i -  mu2 interpolation init factor
-. -tao_nls_gamma1_i -  gamma1 interpolation init factor
-. -tao_nls_gamma2_i -  gamma2 interpolation init factor
-. -tao_nls_gamma3_i -  gamma3 interpolation init factor
-. -tao_nls_gamma4_i -  gamma4 interpolation init factor
-- -tao_nls_theta_i -  theta interpolation init factor
+. -tao_nls_sval        - perturbation starting value
+. -tao_nls_imin        - minimum initial perturbation
+. -tao_nls_imax        - maximum initial perturbation
+. -tao_nls_pmin        - minimum perturbation
+. -tao_nls_pmax        - maximum perturbation
+. -tao_nls_pgfac       - growth factor
+. -tao_nls_psfac       - shrink factor
+. -tao_nls_imfac       - initial merit factor
+. -tao_nls_pmgfac      - merit growth factor
+. -tao_nls_pmsfac      - merit shrink factor
+. -tao_nls_eta1        - poor steplength; reduce radius
+. -tao_nls_eta2        - reasonable steplength; leave radius
+. -tao_nls_eta3        - good steplength; increase radius
+. -tao_nls_eta4        - excellent steplength; greatly increase radius
+. -tao_nls_alpha1      - alpha1 reduction
+. -tao_nls_alpha2      - alpha2 reduction
+. -tao_nls_alpha3      - alpha3 reduction
+. -tao_nls_alpha4      - alpha4 reduction
+. -tao_nls_alpha       - alpha5 reduction
+. -tao_nls_mu1         - mu1 interpolation update
+. -tao_nls_mu2         - mu2 interpolation update
+. -tao_nls_gamma1      - gamma1 interpolation update
+. -tao_nls_gamma2      - gamma2 interpolation update
+. -tao_nls_gamma3      - gamma3 interpolation update
+. -tao_nls_gamma4      - gamma4 interpolation update
+. -tao_nls_theta       - theta interpolation update
+. -tao_nls_omega1      - omega1 step update
+. -tao_nls_omega2      - omega2 step update
+. -tao_nls_omega3      - omega3 step update
+. -tao_nls_omega4      - omega4 step update
+. -tao_nls_omega5      - omega5 step update
+. -tao_nls_mu1_i       - mu1 interpolation init factor
+. -tao_nls_mu2_i       - mu2 interpolation init factor
+. -tao_nls_gamma1_i    - gamma1 interpolation init factor
+. -tao_nls_gamma2_i    - gamma2 interpolation init factor
+. -tao_nls_gamma3_i    - gamma3 interpolation init factor
+. -tao_nls_gamma4_i    - gamma4 interpolation init factor
+- -tao_nls_theta_i     - theta interpolation init factor
 
   Level: beginner
 M*/

@@ -31,25 +31,25 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . ts - the `TS` context obtained from `TSCreate()`
 
   Options Database Keys:
-+ -ts_type <type>                                                    - EULER, BEULER, SUNDIALS, PSEUDO, CN, RK, THETA, ALPHA, GLLE,  SSP, GLEE, BSYMP, IRK, see `TSType`
++ -ts_type type                                                      - EULER, BEULER, SUNDIALS, PSEUDO, CN, RK, THETA, ALPHA, GLLE,  SSP, GLEE, BSYMP, IRK, see `TSType`
 . -ts_save_trajectory                                                - checkpoint the solution at each time-step
-. -ts_max_time <time>                                                - maximum time to compute to
-. -ts_time_span <t0,...tf>                                           - sets the time span, solutions are computed and stored for each indicated time, init_time and max_time are set
-. -ts_eval_times <t0,...tn>                                          - time points where solutions are computed and stored for each indicated time
-. -ts_max_steps <steps>                                              - maximum time-step number to execute until (possibly with nonzero starting value)
-. -ts_run_steps <steps>                                              - maximum number of time steps for `TSSolve()` to take on each call
-. -ts_init_time <time>                                               - initial time to start computation
-. -ts_final_time <time>                                              - final time to compute to (deprecated: use `-ts_max_time`)
-. -ts_time_step <dt>                                                 - initial time step (only a suggestion, the actual initial time step used differ)
-. -ts_exact_final_time <stepover,interpolate,matchstep>              - whether to stop at the exact given final time and how to compute the solution at that time
-. -ts_max_snes_failures <maxfailures>                                - Maximum number of nonlinear solve failures allowed
-. -ts_max_step_rejections <maxrejects>                               - Maximum number of step rejections before step fails
-. -ts_error_if_step_fails <true,false>                               - Error if no step succeeds
-. -ts_rtol <rtol>                                                    - relative tolerance for local truncation error
-. -ts_atol <atol>                                                    - Absolute tolerance for local truncation error
+. -ts_max_time time                                                  - maximum time to compute to
+. -ts_time_span t0,...,tf                                            - sets the time span, solutions are computed and stored for each indicated time, init_time and max_time are set
+. -ts_eval_times t0,...,tn                                           - time points where solutions are computed and stored for each indicated time
+. -ts_max_steps steps                                                - maximum time-step number to execute until (possibly with nonzero starting value)
+. -ts_run_steps steps                                                - maximum number of time steps for `TSSolve()` to take on each call
+. -ts_init_time time                                                 - initial time to start computation
+. -ts_final_time time                                                - final time to compute to (deprecated: use `-ts_max_time`)
+. -ts_time_step dt                                                   - initial time step (only a suggestion, the actual initial time step used differ)
+. -ts_exact_final_time (stepover,interpolate,matchstep)              - whether to stop at the exact given final time and how to compute the solution at that time
+. -ts_max_snes_failures maxfailures                                  - Maximum number of nonlinear solve failures allowed
+. -ts_max_step_rejections maxrejects                                 - Maximum number of step rejections before step fails
+. -ts_error_if_step_fails (true|false)                               - Error if no step succeeds
+. -ts_rtol rtol                                                      - relative tolerance for local truncation error
+. -ts_atol atol                                                      - Absolute tolerance for local truncation error
 . -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view               - test the Jacobian at each iteration against finite difference with RHS function
 . -ts_rhs_jacobian_test_mult_transpose                               - test the Jacobian at each iteration against finite difference with RHS function
-. -ts_adjoint_solve <yes,no>                                         - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
+. -ts_adjoint_solve (true|false)                                     - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
 . -ts_fd_color                                                       - Use finite differences with coloring to compute IJacobian
 . -ts_monitor                                                        - print information at each timestep
 . -ts_monitor_cancel                                                 - Cancel all monitors
@@ -63,13 +63,13 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_monitor_lg_ksp_iterations                                      - Monitor number nonlinear iterations for each timestep graphically
 . -ts_monitor_sp_eig                                                 - Monitor eigenvalues of linearized operator graphically
 . -ts_monitor_draw_solution                                          - Monitor solution graphically
-. -ts_monitor_draw_solution_phase  <xleft,yleft,xright,yright>       - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
+. -ts_monitor_draw_solution_phase  xleft,yleft,xright,yright         - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
 . -ts_monitor_draw_error                                             - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 . -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
-. -ts_monitor_solution_interval <interval>                           - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
+. -ts_monitor_solution_interval interval                             - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
 . -ts_monitor_solution_skip_initial                                  - skip writing of initial condition
-. -ts_monitor_solution_vtk <filename.vts,filename.vtu>               - Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts (filename-%%03" PetscInt_FMT ".vtu)
-. -ts_monitor_solution_vtk_interval <interval>                       - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
+. -ts_monitor_solution_vtk filename.vts,filename.vtu                 - Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts (filename-%%03" PetscInt_FMT ".vtu)
+. -ts_monitor_solution_vtk_interval interval                         - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
 - -ts_monitor_envelope                                               - determine maximum and minimum value of each component of the solution over the solution time
 
   Level: beginner
@@ -2143,7 +2143,7 @@ PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps)
 - time_step - the size of the timestep
 
   Options Database Key:
-. -ts_time_step <dt> - provide the initial time step
+. -ts_time_step dt - provide the initial time step
 
   Level: intermediate
 
@@ -2182,7 +2182,7 @@ PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
 .ve
 
   Options Database Key:
-. -ts_exact_final_time <stepover,interpolate,matchstep> - select the final step approach at runtime
+. -ts_exact_final_time stepover,interpolate,matchstep - select the final step approach at runtime
 
   Level: beginner
 
@@ -2810,7 +2810,7 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
 - maxsteps - maximum number of steps to use
 
   Options Database Key:
-. -ts_max_steps <maxsteps> - Sets maxsteps
+. -ts_max_steps maxsteps - Sets maxsteps
 
   Level: intermediate
 
@@ -2876,7 +2876,7 @@ PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps)
 - runsteps - maximum number of steps to take in each call to `TSSolve()`;
 
   Options Database Key:
-. -ts_run_steps <runsteps> - Sets runsteps
+. -ts_run_steps runsteps - Sets runsteps
 
   Level: intermediate
 
@@ -2933,7 +2933,7 @@ PetscErrorCode TSGetRunSteps(TS ts, PetscInt *runsteps)
 - maxtime - final time to step to
 
   Options Database Key:
-. -ts_max_time <maxtime> - Sets maxtime
+. -ts_max_time maxtime - Sets maxtime
 
   Level: intermediate
 
@@ -5133,8 +5133,8 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
 - vrtol - vector of relative tolerances or `NULL`, used in preference to `rtol` if present
 
   Options Database Keys:
-+ -ts_rtol <rtol> - relative tolerance for local truncation error
-- -ts_atol <atol> - Absolute tolerance for local truncation error
++ -ts_rtol rtol - relative tolerance for local truncation error
+- -ts_atol atol - Absolute tolerance for local truncation error
 
   Level: beginner
 
@@ -5230,7 +5230,7 @@ PetscErrorCode TSGetTolerances(TS ts, PetscReal *atol, Vec *vatol, PetscReal *rt
 - normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
 
   Options Database Key:
-. -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+. -ts_adapt_wnormtype wnormtype - 2, INFINITY
 
   Level: developer
 
@@ -5278,7 +5278,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, Pets
 - normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
 
   Options Database Key:
-. -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+. -ts_adapt_wnormtype wnormtype - 2, INFINITY
 
   Level: developer
 
@@ -5873,7 +5873,7 @@ PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg)
 - use_splitrhsfunction - `PETSC_TRUE` indicates that the split RHSFunction will be used
 
   Options Database Key:
-. -ts_use_splitrhsfunction - <true,false>
+. -ts_use_splitrhsfunction (true|false) - use the split RHS function for multirate solvers
 
   Level: intermediate
 
@@ -5948,7 +5948,7 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
 - time_points - array of the time points, must be increasing
 
   Options Database Key:
-. -ts_eval_times <t0,...tn> - Sets the evaluation times
+. -ts_eval_times t0,...,tn - Sets the evaluation times
 
   Level: intermediate
 
@@ -6089,7 +6089,7 @@ PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *
 - span_times - array of the time points, must be increasing. The first element and the last element are the initial time and the final time respectively.
 
   Options Database Key:
-. -ts_time_span <t0,...tf> - Sets the time span
+. -ts_time_span t0,...,tf - Sets the time span
 
   Level: intermediate
 

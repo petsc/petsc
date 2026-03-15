@@ -390,7 +390,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
 . -ts_monitor_lg_error           - monitor the error
 . -ts_monitor_lg_ksp_iterations  - monitor the number of `KSP` iterations needed for each timestep
 . -ts_monitor_lg_snes_iterations - monitor the number of `SNES` iterations needed for each timestep
-- -lg_use_markers <true,false>   - mark the data points (at each time step) on the plot; default is true
+- -lg_use_markers (true|false)   - mark the data points (at each time step) on the plot; default is true
 
   Level: intermediate
 
@@ -1413,10 +1413,10 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
 - dctx  - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorSPCtxCreate()`
 
   Options Database Keys:
-+ -ts_monitor_sp_swarm <n>                  - Monitor the solution every n steps, or -1 for plotting only the final solution
-. -ts_monitor_sp_swarm_retain <n>           - Retain n old points so we can see the history, or -1 for all points
-. -ts_monitor_sp_swarm_multi_species <bool> - Color each species differently
-- -ts_monitor_sp_swarm_phase <bool>         - Plot in phase space, as opposed to coordinate space
++ -ts_monitor_sp_swarm n                          - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_sp_swarm_retain n                   - Retain n old points so we can see the history, or -1 for all points
+. -ts_monitor_sp_swarm_multi_species (true|false) - Color each species differently
+- -ts_monitor_sp_swarm_phase (true|false)         - Plot in phase space, as opposed to coordinate space
 
   Level: intermediate
 
@@ -1506,10 +1506,10 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 - dctx  - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorHGCtxCreate()`
 
   Options Database Keys:
-+ -ts_monitor_hg_swarm <n>             - Monitor the solution every n steps, or -1 for plotting only the final solution
-. -ts_monitor_hg_swarm_species <num>   - Number of species to histogram
-. -ts_monitor_hg_swarm_bins <num>      - Number of histogram bins
-- -ts_monitor_hg_swarm_velocity <bool> - Plot in velocity space, as opposed to coordinate space
++ -ts_monitor_hg_swarm n                     - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_hg_swarm_species num           - Number of species to histogram
+. -ts_monitor_hg_swarm_bins num              - Number of histogram bins
+- -ts_monitor_hg_swarm_velocity (true|false) - Plot in velocity space, as opposed to coordinate space
 
   Level: intermediate
 

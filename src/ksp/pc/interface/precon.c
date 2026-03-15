@@ -316,7 +316,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
 - flg - `PETSC_TRUE` to use the Amat, `PETSC_FALSE` to use the Pmat (default is false)
 
   Options Database Key:
-. -pc_use_amat <true,false> - use the amat argument to `KSPSetOperators()` or `PCSetOperators()` to apply the operator
+. -pc_use_amat (true|false) - use the amat argument to `KSPSetOperators()` or `PCSetOperators()` to apply the operator
 
   Level: intermediate
 

@@ -126,10 +126,10 @@ static PetscErrorCode PCDestroy_NN(PC pc)
    PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
    Options Database Keys:
-+    -pc_nn_turn_off_first_balancing - do not balance the residual before solving the local Neumann problems
-                                       (this skips the first coarse grid solve in the preconditioner)
++    -pc_nn_turn_off_first_balancing  - do not balance the residual before solving the local Neumann problems
+                                        (this skips the first coarse grid solve in the preconditioner)
 .    -pc_nn_turn_off_second_balancing - do not balance the solution solving the local Neumann problems
-                                       (this skips the second coarse grid solve in the preconditioner)
+                                        (this skips the second coarse grid solve in the preconditioner)
 .    -pc_is_damp_fixed <fact> -
 .    -pc_is_remove_nullspace_fixed -
 .    -pc_is_set_damping_factor_floating <fact> -

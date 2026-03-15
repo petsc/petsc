@@ -30,8 +30,8 @@ static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, PetscCtx ctx)
 . G - Gradient Vector
 
   Options Database Key:
-+ -tao_fd_gradient      - activates TaoDefaultComputeGradient()
-- -tao_fd_delta <delta> - change in X used to calculate finite differences
++ -tao_fd_gradient    - activates TaoDefaultComputeGradient()
+- -tao_fd_delta delta - change in X used to calculate finite differences
 
   Level: advanced
 

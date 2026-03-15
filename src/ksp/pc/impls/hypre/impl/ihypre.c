@@ -2245,9 +2245,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems PetscOption
   PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre as PETSc `PC`
 
   Options Database Keys:
-+   -pc_hypre_type                           - One of `euclid`, `ilu`, `pilut`, `parasails`, `boomeramg`, `ams`, or `ads`
-. -pc_hypre_boomeramg_nodal_coarsen <n>      - where `n` is from 1 to 6 (see `HYPRE_BoomerAMGSetNodal()`)
-. -pc_hypre_boomeramg_vec_interp_variant <v> - where `v` is from 1 to 3 (see `HYPRE_BoomerAMGSetInterpVecVariant()`)
++   -pc_hypre_type                         - One of `euclid`, `ilu`, `pilut`, `parasails`, `boomeramg`, `ams`, or `ads`
+. -pc_hypre_boomeramg_nodal_coarsen n      - where `n` is from 1 to 6 (see `HYPRE_BoomerAMGSetNodal()`)
+. -pc_hypre_boomeramg_vec_interp_variant v - where `v` is from 1 to 3 (see `HYPRE_BoomerAMGSetInterpVecVariant()`)
 - Many others - run with `-pc_type hypre` `-pc_hypre_type XXX` `-help` to see options for the XXX preconditioner
 
   Level: intermediate
@@ -2515,14 +2515,14 @@ static PetscErrorCode PCSetUp_PFMG(PC pc)
   PCPFMG - the hypre PFMG multigrid solver
 
   Options Database Keys:
-+ -pc_pfmg_its <its>              - number of iterations of PFMG to use as preconditioner
-. -pc_pfmg_num_pre_relax <steps>  - number of smoothing steps before coarse grid solve
-. -pc_pfmg_num_post_relax <steps> - number of smoothing steps after coarse grid solve
-. -pc_pfmg_tol <tol>              - tolerance of PFMG
-. -pc_pfmg_relax_type             - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
-. -pc_pfmg_rap_type               - type of coarse matrix generation, one of Galerkin,non-Galerkin
-- -pc_pfmg_skip_relax             - skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations
-                                    when the underlying problem is isotropic, one of 0,1
++ -pc_pfmg_its its              - number of iterations of PFMG to use as preconditioner
+. -pc_pfmg_num_pre_relax steps  - number of smoothing steps before coarse grid solve
+. -pc_pfmg_num_post_relax steps - number of smoothing steps after coarse grid solve
+. -pc_pfmg_tol tol              - tolerance of PFMG
+. -pc_pfmg_relax_type type      - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
+. -pc_pfmg_rap_type type        - type of coarse matrix generation, one of Galerkin,non-Galerkin
+- -pc_pfmg_skip_relax (0|1)     - skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations
+                                  when the underlying problem is isotropic, one of 0,1
 
   Level: advanced
 
@@ -2757,11 +2757,11 @@ static PetscErrorCode PCSetUp_SysPFMG(PC pc)
    Level: advanced
 
    Options Database Keys:
-+ -pc_syspfmg_its <its>                                           - number of iterations of SysPFMG to use as preconditioner
-. -pc_syspfmg_num_pre_relax <steps>                               - number of smoothing steps before coarse grid
-. -pc_syspfmg_num_post_relax <steps>                              - number of smoothing steps after coarse grid
-. -pc_syspfmg_tol <tol>                                           - tolerance of SysPFMG
-- -pc_syspfmg_relax_type <Weighted-Jacobi,Red/Black-Gauss-Seidel> - relaxation type for the up and down cycles
++ -pc_syspfmg_its its                                             - number of iterations of SysPFMG to use as preconditioner
+. -pc_syspfmg_num_pre_relax steps                                 - number of smoothing steps before coarse grid
+. -pc_syspfmg_num_post_relax steps                                - number of smoothing steps after coarse grid
+. -pc_syspfmg_tol tol                                             - tolerance of SysPFMG
+- -pc_syspfmg_relax_type (Weighted-Jacobi|Red/Black-Gauss-Seidel) - relaxation type for the up and down cycles
 
    Notes:
    See `PCPFMG` for hypre's PFMG that works for a scalar PDE and `PCSMG`
@@ -2954,10 +2954,10 @@ static PetscErrorCode PCSetUp_SMG(PC pc)
   Level: advanced
 
   Options Database Keys:
-+ -pc_smg_its <its>              - number of iterations of SMG to use as preconditioner
-. -pc_smg_num_pre_relax <steps>  - number of smoothing steps before coarse grid
-. -pc_smg_num_post_relax <steps> - number of smoothing steps after coarse grid
-- -pc_smg_tol <tol>              - tolerance of SMG
++ -pc_smg_its its              - number of iterations of SMG to use as preconditioner
+. -pc_smg_num_pre_relax steps  - number of smoothing steps before coarse grid
+. -pc_smg_num_post_relax steps - number of smoothing steps after coarse grid
+- -pc_smg_tol tol              - tolerance of SMG
 
   Notes:
   This is for CELL-centered descretizations

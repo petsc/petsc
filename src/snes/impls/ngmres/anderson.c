@@ -173,12 +173,12 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
    Level: beginner
 
    Options Database Keys:
-+  -snes_anderson_m                - Number of stored previous solutions and residuals
-.  -snes_anderson_beta             - Anderson mixing parameter
-.  -snes_anderson_restart_type     - Type of restart (see `SNESNGMRES`)
-.  -snes_anderson_restart_it       - Number of iterations of restart conditions before restart
-.  -snes_anderson_restart          - Number of iterations before periodic restart
--  -snes_anderson_monitor          - Prints relevant information about the Anderson mixing iteration
++  -snes_anderson_m m               - Number of stored previous solutions and residuals
+.  -snes_anderson_beta beta         - Anderson mixing parameter
+.  -snes_anderson_restart_type type - Type of restart (see `SNESNGMRES`)
+.  -snes_anderson_restart_it its    - Number of iterations of restart conditions before restart
+.  -snes_anderson_restart restart   - Number of iterations before periodic restart
+-  -snes_anderson_monitor           - Prints relevant information about the Anderson mixing iteration
 
    Notes:
    The Anderson Mixing method combines m previous solutions into a minimum-residual solution by solving a small linearized

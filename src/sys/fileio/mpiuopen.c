@@ -212,7 +212,7 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 . machine - machine to run command on or `NULL` for the current machine
 
   Options Database Key:
-. -popen_machine <machine> - run the process on this machine
+. -popen_machine machine - run the process on this machine
 
   Level: intermediate
 

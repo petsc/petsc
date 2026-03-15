@@ -574,7 +574,7 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems PetscOp
    KSPNASH -   Code to run conjugate gradient method subject to a constraint on the solution norm in a trust region method {cite}`nash1984newton`
 
    Options Database Keys:
-.      -ksp_cg_radius <r> - Trust Region Radius
+.      -ksp_cg_radius radius - Trust Region Radius
 
    Level: developer
 

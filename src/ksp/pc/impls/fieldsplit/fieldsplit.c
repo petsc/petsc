@@ -2441,7 +2441,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
                of the matrix and `fields_col` provides the column indices for that block
 
   Options Database Key:
-. -pc_fieldsplit_%d_fields <a,b,..> - indicates the fields to be used in the `%d`'th split
+. -pc_fieldsplit_%d_fields a,b,... - indicates the fields to be used in the `%d`'th split
 
   Level: intermediate
 
@@ -2552,7 +2552,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 - flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
   Options Database Key:
-. -pc_fieldsplit_off_diag_use_amat <bool> - use the Amat to extract the off-diagonal blocks
+. -pc_fieldsplit_off_diag_use_amat (true|false) - use the Amat to extract the off-diagonal blocks
 
   Level: intermediate
 
@@ -2839,8 +2839,8 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 - pre   - matrix to use for preconditioning, or `NULL`
 
   Options Database Keys:
-+ -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is `a11`. See notes for meaning of various arguments
-- -fieldsplit_1_pc_type <pctype>                               - the preconditioner algorithm that is used to construct the preconditioner from the operator
++ -pc_fieldsplit_schur_precondition (self|selfp|user|a11|full) - default is `a11`. See notes for meaning of various arguments
+- -fieldsplit_1_pc_type pctype                                 - the preconditioner algorithm that is used to construct the preconditioner from the operator
 
   Level: intermediate
 
@@ -3007,7 +3007,7 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 - ftype - which blocks of factorization to retain, `PC_FIELDSPLIT_SCHUR_FACT_FULL` is default
 
   Options Database Key:
-. -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is `full`
+. -pc_fieldsplit_schur_fact_type (diag|lower|upper|full) - default is `full`
 
   Level: intermediate
 
@@ -3075,7 +3075,7 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc, PCFieldSpli
 - scale - scaling factor for the Schur complement
 
   Options Database Key:
-. -pc_fieldsplit_schur_scale <scale> - default is -1.0
+. -pc_fieldsplit_schur_scale scale - default is -1.0
 
   Level: intermediate
 
@@ -3144,7 +3144,7 @@ PetscErrorCode PCFieldSplitGetSchurBlocks(PC pc, Mat *A00, Mat *A01, Mat *A10, M
 - tolerance - the solver tolerance
 
   Options Database Key:
-. -pc_fieldsplit_gkb_tol <tolerance> - default is 1e-5
+. -pc_fieldsplit_gkb_tol tolerance - default is 1e-5
 
   Level: intermediate
 
@@ -3183,7 +3183,7 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc, PetscReal toleranc
 - maxit - the maximum number of iterations
 
   Options Database Key:
-. -pc_fieldsplit_gkb_maxit <maxit> - default is 100
+. -pc_fieldsplit_gkb_maxit maxit - default is 100
 
   Level: intermediate
 
@@ -3218,7 +3218,7 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
 - delay - the delay window in the lower bound estimate
 
   Options Database Key:
-. -pc_fieldsplit_gkb_delay <delay> - default is 5
+. -pc_fieldsplit_gkb_delay delay - default is 5
 
   Level: intermediate
 
@@ -3260,7 +3260,7 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
 - nu - the shift parameter
 
   Options Database Key:
-. -pc_fieldsplit_gkb_nu <nu> - default is 1
+. -pc_fieldsplit_gkb_nu nu - default is 1
 
   Level: intermediate
 
@@ -3401,7 +3401,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
          `PC_COMPOSITE_GKB`
 
   Options Database Key:
-. -pc_fieldsplit_type <one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
+. -pc_fieldsplit_type (multiplicative|additive|symmetric_multiplicative|special|schur) - Sets fieldsplit preconditioner type
 
   Level: intermediate
 
@@ -3453,7 +3453,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 - flg - boolean indicating whether to use field splits defined by the `DM`
 
   Options Database Key:
-. -pc_fieldsplit_dm_splits <bool> - use the field splits defined by the `DM`
+. -pc_fieldsplit_dm_splits (true|false) - use the field splits defined by the `DM`
 
   Level: intermediate
 
@@ -3544,7 +3544,7 @@ PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc, PetscBool *flg)
 . flg - boolean indicating whether to detect fields or not
 
   Options Database Key:
-. -pc_fieldsplit_detect_saddle_point <bool> - detect and use the saddle point
+. -pc_fieldsplit_detect_saddle_point (true|false) - detect and use the saddle point
 
   Level: intermediate
 
@@ -3574,17 +3574,17 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   See [the users manual section on "Solving Block Matrices"](sec_block_matrices) for more details.
 
   Options Database Keys:
-+   -pc_fieldsplit_%d_fields <a,b,..>                                                - indicates the fields to be used in the `%d`'th split
++   -pc_fieldsplit_%d_fields a,b,...                                                 - indicates the fields to be used in the `%d`'th split
 .   -pc_fieldsplit_default                                                           - automatically add any fields to additional splits that have not
                                                                                        been supplied explicitly by `-pc_fieldsplit_%d_fields`
-.   -pc_fieldsplit_block_size <bs>                                                   - size of block that defines fields (i.e. there are bs fields)
+.   -pc_fieldsplit_block_size bs                                                     - size of block that defines fields (i.e. there are bs fields)
                                                                                        when the matrix is not of `MatType` `MATNEST`
-.   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur,gkb> - type of relaxation or factorization splitting
-.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full>                     - default is `a11`; see `PCFieldSplitSetSchurPre()`
-.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full>                           - set factorization type when using `-pc_fieldsplit_type schur`;
+.   -pc_fieldsplit_type (additive|multiplicative|symmetric_multiplicative|schur|gkb) - type of relaxation or factorization splitting
+.   -pc_fieldsplit_schur_precondition (self|selfp|user|a11|full)                     - default is `a11`; see `PCFieldSplitSetSchurPre()`
+.   -pc_fieldsplit_schur_fact_type (diag|lower|upper|full)                           - set factorization type when using `-pc_fieldsplit_type schur`;
                                                                                        see `PCFieldSplitSetSchurFactType()`
-.   -pc_fieldsplit_dm_splits <true,false> (default is true)                          - Whether to use `DMCreateFieldDecomposition()` for splits
--   -pc_fieldsplit_detect_saddle_point                                               - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
+.   -pc_fieldsplit_dm_splits (true|false) (default is true)                          - Whether to use `DMCreateFieldDecomposition()` for splits
+-   -pc_fieldsplit_detect_saddle_point (true|false)                                  - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
   Options prefixes for inner solvers when using the Schur complement preconditioner are `-fieldsplit_0_` and `-fieldsplit_1_` .
   The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is `-fieldsplit_0_`

@@ -488,7 +488,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 - Viewers - a collection of viewers created with `PetscViewersCreate()`
 
   Options Database Key:
-. -ksp_gmres_krylov_monitor <bool> - Plot the Krylov directions
+. -ksp_gmres_krylov_monitor (true|false) - Plot the Krylov directions
 
   Level: intermediate
 
@@ -661,7 +661,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 .ve
 
   Options Database Key:
-. -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - refinement type
+. -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - refinement type
 
   Level: intermediate
 
@@ -719,7 +719,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 - restart - integer restart value, this corresponds to the number of iterations of GMRES to perform before restarting
 
   Options Database Key:
-. -ksp_gmres_restart <positive integer> - integer restart value
+. -ksp_gmres_restart restart - integer restart value
 
   Level: intermediate
 
@@ -784,7 +784,7 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 - tol - the tolerance for detecting a happy ending
 
   Options Database Key:
-. -ksp_gmres_haptol <positive real value> - set tolerance for determining happy breakdown
+. -ksp_gmres_haptol tol - set tolerance for determining happy breakdown
 
   Level: intermediate
 
@@ -815,7 +815,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 - tol - the tolerance
 
   Options Database Key:
-. -ksp_gmres_breakdown_tolerance <positive real value> - set tolerance for determining divergence breakdown
+. -ksp_gmres_breakdown_tolerance tol - set tolerance for determining divergence breakdown
 
   Level: intermediate
 
@@ -847,14 +847,14 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
    KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for happy ending (exact convergence) of `KSPGMRES`
++   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for happy ending (exact convergence) of `KSPGMRES`
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
                                                                                   vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
 .   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
                                                                                   the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
+.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
                                                                                   stability of the classical Gram-Schmidt  orthogonalization.
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 

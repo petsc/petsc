@@ -41,7 +41,7 @@ or with
 DMSetFromOptions(DM dm)
 ```
 
-and the options database option `-dm_mat_type <aij or baij or aijcusparse etc>` Matrices can be created for CPU usage, for GPU usage and for usage on
+and the options database option `-dm_mat_type (aij|baij|aijcusparse|...)` Matrices can be created for CPU usage, for GPU usage and for usage on
 both the CPUs and GPUs.
 
 The creation of `DM` objects is discussed in {any}`sec_struct`, {any}`sec_unstruct`, {any}`sec_network`.
@@ -249,7 +249,7 @@ The sequential and parallel AIJ matrix storage formats by default employ
 *i-nodes* (identical nodes) when possible. We search for consecutive
 rows with the same nonzero structure, thereby reusing matrix information
 for increased efficiency. Related options database keys are
-`-mat_no_inode` (do not use i-nodes) and `-mat_inode_limit <limit>`
+`-mat_no_inode` (do not use i-nodes) and `-mat_inode_limit limit`
 (set i-node limit (max limit=5)). Note that problems with a single degree
 of freedom per grid node will automatically not use i-nodes.
 
@@ -615,7 +615,7 @@ and `MatCopy()` operations.
 Restricted Broyden Family, DFP and BFGS methods, including their dense
 versions, additionally implement special Jacobian initialization and
 scaling options available via
-`-mat_lmvm_scale_type <none,scalar,diagonal>`. We describe these
+`-mat_lmvm_scale_type (none|scalar|diagonal)`. We describe these
 choices below:
 
 - `none` – Sets the initial Jacobian to be equal to the identity

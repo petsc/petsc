@@ -587,7 +587,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 - k  - coarsening ratio (H/h at the coarser level)
 
   Options Database Key:
-. -pc_bddc_coarsening_ratio <int> - Set the coarsening ratio used in multi-level coarsening
+. -pc_bddc_coarsening_ratio k - Set the coarsening ratio used in multi-level coarsening
 
   Level: intermediate
 
@@ -662,7 +662,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
 - levels - the maximum number of levels
 
   Options Database Key:
-. -pc_bddc_levels <int> - Set maximum number of levels for multilevel
+. -pc_bddc_levels levels - Set maximum number of levels for multilevel
 
   Level: intermediate
 
@@ -2760,20 +2760,20 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
 
    Options Database Keys:
-+    -pc_bddc_use_vertices <true>         - use or not vertices in primal space
-.    -pc_bddc_use_edges <true>            - use or not edges in primal space
-.    -pc_bddc_use_faces <false>           - use or not faces in primal space
-.    -pc_bddc_symmetric <true>            - symmetric computation of primal basis functions. Specify false for unsymmetric problems
-.    -pc_bddc_use_change_of_basis <false> - use change of basis approach (on edges only)
-.    -pc_bddc_use_change_on_faces <false> - use change of basis approach on faces if change of basis has been requested
-.    -pc_bddc_switch_static <false>       - switches from M_2 (default) to M_3 operator (see reference article [1])
-.    -pc_bddc_levels <0>                  - maximum number of levels for multilevel
-.    -pc_bddc_coarsening_ratio <8>        - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
-.    -pc_bddc_coarse_redistribute <0>     - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
-.    -pc_bddc_use_deluxe_scaling <false>  - use deluxe scaling
-.    -pc_bddc_schur_layers <\-1>          - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold <0.0>    - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
--    -pc_bddc_check_level <0>             - set verbosity level of debugging output
++    -pc_bddc_use_vertices (true|false)        - use or not vertices in primal space
+.    -pc_bddc_use_edges (true|false)           - use or not edges in primal space
+.    -pc_bddc_use_faces (true|false)           - use or not faces in primal space
+.    -pc_bddc_symmetric (true|false)           - symmetric computation of primal basis functions. Specify false for unsymmetric problems
+.    -pc_bddc_use_change_of_basis (true|false) - use change of basis approach (on edges only)
+.    -pc_bddc_use_change_on_faces (true|false) - use change of basis approach on faces if change of basis has been requested
+.    -pc_bddc_switch_static (true|false)       - switches from M_2 (default) to M_3 operator (see reference article [1])
+.    -pc_bddc_levels 0                         - maximum number of levels for multilevel
+.    -pc_bddc_coarsening_ratio 8               - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
+.    -pc_bddc_coarse_redistribute 0            - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
+.    -pc_bddc_use_deluxe_scaling (true|false)  - use deluxe scaling
+.    -pc_bddc_schur_layers \-1                 - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
+.    -pc_bddc_adaptive_threshold 0.0           - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
+-    -pc_bddc_check_level 0                    - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set using the appropriate options prefix
 .vb

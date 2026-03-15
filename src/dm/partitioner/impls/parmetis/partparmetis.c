@@ -245,10 +245,10 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
   Level: intermediate
 
   Options Database Keys:
-+  -petscpartitioner_parmetis_type <string> - ParMETIS partitioning type. Either "kway" or "rb" (recursive bisection)
-.  -petscpartitioner_parmetis_imbalance_ratio <value> - Load imbalance ratio limit
-.  -petscpartitioner_parmetis_debug <int> - Debugging flag passed to ParMETIS/METIS routines
--  -petscpartitioner_parmetis_seed <int> - Random seed
++  -petscpartitioner_parmetis_type (kway|rb)        - ParMETIS partitioning type.
+.  -petscpartitioner_parmetis_imbalance_ratio value - Load imbalance ratio limit
+.  -petscpartitioner_parmetis_debug level           - Debugging flag passed to ParMETIS/METIS routines
+-  -petscpartitioner_parmetis_seed seed             - Random seed
 
   Notes: when the graph is on a single process, this partitioner actually calls METIS and not ParMETIS
 

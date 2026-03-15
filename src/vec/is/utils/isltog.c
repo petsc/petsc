@@ -735,7 +735,7 @@ PetscFunctionList ISLocalToGlobalMappingList = NULL;
 . mapping - mapping data structure
 
   Options Database Key:
-. -islocaltoglobalmapping_type - <basic,hash> nonscalable and scalable versions
+. -islocaltoglobalmapping_type (basic|hash) - nonscalable and scalable versions
 
   Level: advanced
 
@@ -1852,7 +1852,7 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
 - type - a known method
 
   Options Database Key:
-. -islocaltoglobalmapping_type  <method> - Sets the method; use -help for a list of available methods (for instance, basic or hash)
+. -islocaltoglobalmapping_type (basic|hash) - Sets the method used for applying the mapping, see `ISLocalToGlobalMappingType`
 
   Level: intermediate
 

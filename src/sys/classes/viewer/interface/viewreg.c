@@ -531,7 +531,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
 - type   - for example, `PETSCVIEWERASCII`
 
   Options Database Key:
-. -viewer_type  <type> - Sets the type; use -help for a list of available methods (for instance, ascii)
+. -viewer_type  type - Sets the type; use -help for a list of available methods (for instance, ascii)
 
   Level: advanced
 

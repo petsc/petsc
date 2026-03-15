@@ -1149,7 +1149,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
 - mprktype - type of `TSMPRK` scheme
 
   Options Database Key:
-. -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
+. -ts_mprk_type (pm2|p2|p3) - select the specific scheme
 
   Level: intermediate
 

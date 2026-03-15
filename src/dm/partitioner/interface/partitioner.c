@@ -10,7 +10,7 @@
 - name - The kind of partitioner
 
   Options Database Key:
-. -petscpartitioner_type <type> - Sets the `PetscPartitioner` type
+. -petscpartitioner_type type - Sets the `PetscPartitionerType`
 
   Level: intermediate
 
@@ -162,7 +162,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 . part - the `PetscPartitioner` object to set options for
 
   Options Database Keys:
-+ -petscpartitioner_type <type>        - Sets the `PetscPartitioner` type; use -help for a list of available types
++ -petscpartitioner_type type          - Sets the `PetscPartitionerType`
 . -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
 - -petscpartitioner_view_graph         - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsCreateViewer()`
 

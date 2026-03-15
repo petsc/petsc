@@ -72,7 +72,7 @@ PetscErrorCode AOInitializePackage(void)
 - method - The name of the AO type
 
   Options Database Key:
-. -ao_type <type> - Sets the `AO` type; use -help for a list of available types
+. -ao_type type - Sets the `AO` type; see `AOType`
 
   Level: intermediate
 

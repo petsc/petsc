@@ -3,8 +3,8 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #include <petscsys.h>
 
 /* Usage:
-   mpiexec -n <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_view
-                         -view_randomvalues <view_rank>
+   mpiexec -n np ./ex1 -n num_of_random_numbers -random_type type -log_view
+                         -view_randomvalues view_rank
                          -random_view ascii -random_view :filename
 */
 

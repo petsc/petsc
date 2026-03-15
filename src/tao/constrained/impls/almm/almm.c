@@ -409,16 +409,16 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems PetscOpti
   TAOALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
 
   Options Database Keys:
-+ -tao_almm_mu_init <real>       - initial penalty parameter (default: 10.)
-. -tao_almm_mu_factor <real>     - increase factor for the penalty parameter (default: 100.)
-. -tao_almm_mu_max <real>        - maximum safeguard for penalty parameter updates (default: 1.e20)
-. -tao_almm_mu_power_good <real> - exponential for penalty parameter when multiplier update is accepted (default: 0.9)
-. -tao_almm_mu_power_bad <real>  - exponential for penalty parameter when multiplier update is rejected (default: 0.1)
-. -tao_almm_ye_min <real>        - minimum safeguard for equality multiplier updates (default: -1.e20)
-. -tao_almm_ye_max <real>        - maximum safeguard for equality multiplier updates (default: 1.e20)
-. -tao_almm_yi_min <real>        - minimum safeguard for inequality multiplier updates (default: -1.e20)
-. -tao_almm_yi_max <real>        - maximum safeguard for inequality multiplier updates (default: 1.e20)
-- -tao_almm_type <phr,classic>   - change formulation of the augmented Lagrangian merit function for the subproblem (default: phr)
++ -tao_almm_mu_init real       - initial penalty parameter (default: 10.)
+. -tao_almm_mu_factor real     - increase factor for the penalty parameter (default: 100.)
+. -tao_almm_mu_max real        - maximum safeguard for penalty parameter updates (default: 1.e20)
+. -tao_almm_mu_power_good real - exponential for penalty parameter when multiplier update is accepted (default: 0.9)
+. -tao_almm_mu_power_bad real  - exponential for penalty parameter when multiplier update is rejected (default: 0.1)
+. -tao_almm_ye_min real        - minimum safeguard for equality multiplier updates (default: -1.e20)
+. -tao_almm_ye_max real        - maximum safeguard for equality multiplier updates (default: 1.e20)
+. -tao_almm_yi_min real        - minimum safeguard for inequality multiplier updates (default: -1.e20)
+. -tao_almm_yi_max real        - maximum safeguard for inequality multiplier updates (default: 1.e20)
+- -tao_almm_type (phr|classic) - change formulation of the augmented Lagrangian merit function for the subproblem (default: phr)
 
   Level: beginner
 

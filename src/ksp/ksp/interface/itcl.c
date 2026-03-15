@@ -103,7 +103,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 - size  - size of subspace used to generate initial guess
 
   Options Database Key:
-. -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
+. -ksp_fischer_guess model,size - uses the Fischer initial guess generator for repeated linear solves
 
   Level: advanced
 
@@ -291,15 +291,13 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_atol abstol                                                        - absolute tolerance used in default convergence test, i.e. if residual
                                                                             norm is less than this then convergence is declared
 . -ksp_divtol tol                                                         - if residual norm increases by this factor than divergence is declared
-. -ksp_max_it                                                             - maximum number of linear iterations
-. -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
-
-. -ksp_reuse_preconditioner <true,false>                                  - reuse the previously computed preconditioner
-
+. -ksp_max_it maxits                                                      - maximum number of linear iterations
+. -ksp_min_it minits                                                      - minimum number of linear iterations to use, defaults to zero
+. -ksp_reuse_preconditioner (true|false)                                  - reuse the previously computed preconditioner
 . -ksp_converged_use_initial_residual_norm                                - see `KSPConvergedDefaultSetUIRNorm()`
 . -ksp_converged_use_min_initial_residual_norm                            - see `KSPConvergedDefaultSetUMIRNorm()`
 . -ksp_converged_maxits                                                   - see `KSPConvergedDefaultSetConvergedMaxits()`
-. -ksp_norm_type <none,preconditioned,unpreconditioned,natural>           - see `KSPSetNormType()`
+. -ksp_norm_type (none|preconditioned|unpreconditioned|natural)           - see `KSPSetNormType()`
 . -ksp_check_norm_iteration it                                            - do not compute residual norm until iteration number it (does compute at 0th iteration)
                                                                             works only for `KSPBCGS`, `KSPIBCGS`, and `KSPCG`
 . -ksp_lag_norm                                                           - compute the norm of the residual for the ith iteration on the i+1 iteration;
@@ -307,7 +305,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
                                                                             an extra `MPI_Allreduce()` limiting global synchronizations.
                                                                             This will require 1 more iteration of the solver than usual.
 . -ksp_guess_type                                                         - Type of initial guess generator for repeated linear solves
-. -ksp_fischer_guess <model,size>                                         - uses the Fischer initial guess generator for repeated linear solves
+. -ksp_fischer_guess model,size                                           - uses the Fischer initial guess generator for repeated linear solves
 . -ksp_constant_null_space                                                - assume the operator (matrix) has the constant vector in its null space
 . -ksp_test_null_space                                                    - tests the null space set with `MatSetNullSpace()` to see if it truly is a null space
 . -ksp_knoll                                                              - compute initial guess by applying the preconditioner to the right-hand side
@@ -315,7 +313,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_monitor                                                            - print residual norm at each iteration
 . -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration, see `KSPMonitorResidual()`
 . -ksp_monitor_true_residual                                              - print the true l2 residual norm at each iteration, see `KSPMonitorTrueResidual()`
-. -all_ksp_monitor <optional filename>                                    - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
+. -all_ksp_monitor optional_filename                                      - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
                                                                             useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and
                                                                             you wish to track the convergence of all the solvers
 . -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration

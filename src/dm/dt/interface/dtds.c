@@ -53,7 +53,7 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 - name - The `PetscDSType`
 
   Options Database Key:
-. -petscds_type <type> - Sets the PetscDS type; use -help for a list of available types
+. -petscds_type type - Sets the PetscDS type; use -help for a list of available types
 
   Level: intermediate
 
@@ -276,11 +276,11 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 . prob - the `PetscDS` object to set options for
 
   Options Database Keys:
-+ -petscds_type <type>     - Set the `PetscDS` type
-. -petscds_view <view opt> - View the `PetscDS`
-. -petscds_jac_pre         - Turn formation of a separate Jacobian preconditioner on or off
-. -bc_<name> <ids>         - Specify a list of label ids for a boundary condition
-- -bc_<name>_comp <comps>  - Specify a list of field components to constrain for a boundary condition
++ -petscds_type type            - Set the `PetscDS` type
+. -petscds_view                 - View the `PetscDS`
+. -petscds_jac_pre (true|false) - Turn formation of a separate Jacobian preconditioner on or off
+. -bc_NAME ids                  - comma separated list of label ids for the boundary condition NAME
+- -bc_NAME_comp comps           - comma separated list of field components to constrain for the boundary condition NAME
 
   Level: intermediate
 
@@ -3121,8 +3121,8 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . bd - The boundary number
 
   Options Database Keys:
-+ -bc_<boundary name> <num>      - Overrides the boundary ids
-- -bc_<boundary name>_comp <num> - Overrides the boundary components
++ -bc_NAME values     - comma separated list of values for the boundary condition NAME
+- -bc_NAME_comp comps - comma separated list of components for the boundary condition NAME
 
   Level: developer
 
@@ -3250,8 +3250,8 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . bd - The boundary number
 
   Options Database Keys:
-+ -bc_<boundary name> <num>      - Overrides the boundary ids
-- -bc_<boundary name>_comp <num> - Overrides the boundary components
++ -bc_NAME values     - comma separated list of values for the boundary condition NAME
+- -bc_NAME_comp comps - comma separated list of components for the boundary condition NAME
 
   Calling Sequence of `bcFunc` and `bcFunc_t`:
   If the type is `DM_BC_ESSENTIAL`
@@ -3467,10 +3467,6 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 . func   - A pointwise function giving boundary values
 . func_t - A pointwise function giving the time derivative of the boundary values
 - ctx    - An optional user context for `bcFunc`
-
-  Options Database Keys:
-+ -bc_<boundary name> <num>      - Overrides the boundary ids
-- -bc_<boundary name>_comp <num> - Overrides the boundary components
 
   Level: developer
 

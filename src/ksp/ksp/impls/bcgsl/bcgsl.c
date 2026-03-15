@@ -342,7 +342,7 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 - use_pinv - set to `PETSC_TRUE` when using pseudoinverse
 
   Options Database Key:
-. -ksp_bcgsl_pinv <true,false> - use pseudoinverse
+. -ksp_bcgsl_pinv (true|false) - use pseudoinverse
 
   Level: intermediate
 
@@ -530,11 +530,11 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
                out of the denominator in the formula for ghat.
 
    Options Database Keys:
-+  -ksp_bcgsl_ell <ell>         - Number of Krylov search directions to use, defaults to 2, cf. `KSPBCGSLSetEll()`
-.  -ksp_bcgsl_cxpol             - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
-.  -ksp_bcgsl_mrpoly            - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
-.  -ksp_bcgsl_xres <res>        - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
--  -ksp_bcgsl_pinv <true/false> - (de)activate use of pseudoinverse, cf. `KSPBCGSLSetUsePseudoinverse()`
++  -ksp_bcgsl_ell ell             - Number of Krylov search directions to use, defaults to 2, cf. `KSPBCGSLSetEll()`
+.  -ksp_bcgsl_cxpol (true|false)  - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
+.  -ksp_bcgsl_mrpoly (true|false) - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
+.  -ksp_bcgsl_xres res            - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
+-  -ksp_bcgsl_pinv (true|false)   - (de)activate use of pseudoinverse, cf. `KSPBCGSLSetUsePseudoinverse()`
 
    Level: intermediate
 

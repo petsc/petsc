@@ -3465,7 +3465,7 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar *array[])
    block sparse compressed row format.
 
    Options Database Keys:
-+ -mat_type seqbaij - sets the matrix type to `MATSEQBAIJ` during a call to `MatSetFromOptions()`
++ -mat_type seqbaij              - sets the matrix type to `MATSEQBAIJ` during a call to `MatSetFromOptions()`
 - -mat_baij_mult_version version - indicate the version of the matrix-vector product to use (0 often indicates using BLAS)
 
    Level: beginner

@@ -90,7 +90,7 @@ To choose a nonlinear solution method, the user can either call
 SNESSetType(SNES snes, SNESType method);
 ```
 
-or use the option `-snes_type <method>`, where details regarding the
+or use the option `-snes_type type`, where details regarding the
 available methods are presented in {any}`sec_nlsolvers`. The
 application code can take complete control of the linear and nonlinear
 techniques used in the Newton-like method by calling
@@ -411,9 +411,9 @@ The default line search for the line search Newton method,
 defaults that are reasonable for many applications. The user can
 override the defaults by using the following options:
 
-- `-snes_linesearch_alpha <alpha>`
-- `-snes_linesearch_maxstep <max>`
-- `-snes_linesearch_minlambda <tol>`
+- `-snes_linesearch_alpha alpha`
+- `-snes_linesearch_maxstep max`
+- `-snes_linesearch_minlambda tol`
 
 Besides the backtracking linesearch, there are `SNESLINESEARCHSECANT`,
 which uses a polynomial secant minimization of $||F(x)||_2$ or an objective function
@@ -477,7 +477,7 @@ $$
 \Delta = \Delta_0 \| F_0 \|_2,
 $$
 
-by setting $\Delta_0$ via the option `-snes_tr_delta0 <delta0>`.
+by setting $\Delta_0$ via the option `-snes_tr_delta0 delta0`.
 
 ### Newton with Arc Length Continuation
 
@@ -592,7 +592,7 @@ The main difference is whether the iterative solution falls on the constraint
 surface at every iteration, or only when fully converged.
 PETSc implements two approaches, set via
 `SNESNewtonALSetCorrectionType()` or
-`-snes_newtonal_correction_type <normal|exact>` on the command line.
+`-snes_newtonal_correction_type (normal|exact)` on the command line.
 
 **Corrections in the Normal Hyperplane.** The `SNES_NEWTONAL_CORRECTION_NORMAL`
 option is simpler and computationally less expensive, but may fail to converge, as
@@ -833,11 +833,11 @@ This routine also sets the maximum numbers of allowable nonlinear
 iterations, `its`, and function evaluations, `fcts`. The
 corresponding options database commands for setting these parameters are:
 
-- `-snes_atol <atol>`
-- `-snes_rtol <rtol>`
-- `-snes_stol <stol>`
-- `-snes_max_it <its>`
-- `-snes_max_funcs <fcts>` (use `unlimited` for no maximum)
+- `-snes_atol atol`
+- `-snes_rtol rtol`
+- `-snes_stol stol`
+- `-snes_max_it its`
+- `-snes_max_funcs fcts` (use `unlimited` for no maximum)
 
 A related routine is `SNESGetTolerances()`. `PETSC_CURRENT` may be used
 for any parameter to indicate the current value should be retained; use `PETSC_DETERMINE` to restore to the default value from when the object was created.
@@ -957,8 +957,8 @@ particular interest are Newton-Krylov methods, where the subsidiary
 iterative technique for solving the Newton system is chosen from the
 class of Krylov subspace projection methods. Note that at runtime the
 user can set any of the linear solver options discussed in {any}`ch_ksp`,
-such as `-ksp_type <ksp_method>` and
-`-pc_type <pc_method>`, to set the Krylov subspace and preconditioner
+such as `-ksp_type ksp_type` and
+`-pc_type pc_method`, to set the Krylov subspace and preconditioner
 methods.
 
 Two levels of iterations occur for the inexact techniques, where during
@@ -1054,12 +1054,12 @@ relative error in the function evaluations, $e_{rel}$; the default
 is the square root of machine epsilon (about $10^{-8}$ in double
 precision), which assumes that the functions are evaluated to full
 floating-point precision accuracy. This parameter can also be set from
-the options database with `-mat_mffd_err <err>`
+the options database with `-mat_mffd_err err`
 
 In addition, PETSc provides ways to register new routines to compute
 the differencing parameter ($h$); see the manual page for
 `MatMFFDSetType()` and `MatMFFDRegister()`. We currently provide two
-default routines accessible via `-mat_mffd_type <ds or wp>`. For
+default routines accessible via `-mat_mffd_type (ds|wp)`. For
 the default approach there is one “tuning” parameter, set with
 
 ```
@@ -1067,7 +1067,7 @@ MatMFFDDSSetUmin(Mat mat, PetscReal umin);
 ```
 
 This parameter, `umin` (or $u_{min}$), is a bit involved; its
-default is $10^{-6}$ . Its command line form is `-mat_mffd_umin <umin>`.
+default is $10^{-6}$ . Its command line form is `-mat_mffd_umin umin`.
 
 The Jacobian-vector product is approximated
 via the formula
@@ -1103,7 +1103,7 @@ information may be set with the options
 MatMFFDWPSetComputeNormU(Mat, PetscBool);
 ```
 
-or `-mat_mffd_compute_normu <true or false>`. This information is used
+or `-mat_mffd_compute_normu (true|false)`. This information is used
 to eliminate the redundant computation of these parameters, therefore
 reducing the number of collective operations and improving the
 efficiency of the application code. This takes place automatically for the PETSc GMRES solver with left preconditioning.
@@ -1319,9 +1319,9 @@ for `MATMFFD_WP` (default). These parameters may be set from the options
 database with
 
 ```
--mat_fd_coloring_err <err>
--mat_fd_coloring_umin <umin>
--mat_fd_type <htype>
+-mat_fd_coloring_err err
+-mat_fd_coloring_umin umin
+-mat_fd_type htype
 ```
 
 Note that `MatColoring` type `MATCOLORINGSL`, `MATCOLORINGLF`, and

@@ -223,19 +223,19 @@ static PetscErrorCode PCMatApplyTranspose_LU(PC pc, Mat X, Mat Y)
    PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
-.  -pc_factor_mat_solver_type - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
-.  -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
-.  -pc_factor_fill <fill> - Sets fill amount
-.  -pc_factor_in_place - Activates in-place factorization
-.  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-.  -pc_factor_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
-                                         stability of factorization.
-.  -pc_factor_shift_type <shifttype> - Sets shift type or -1 for the default; use '-help' for a list of available types
-.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or -1 for the default
-.  -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the diagonal.
-.  -pc_factor_mat_solver_type <packagename> - use an external package for the solve, see `MatSolverType` for possibilities
--  -mat_solvertype_optionname - options for a specific solver package, for example -mat_mumps_cntl_1
++  -pc_factor_reuse_ordering (true|false)          - Activate `PCFactorSetReuseOrdering()`
+.  -pc_factor_mat_solver_type type                 - Activates `PCFactorSetMatSolverType()` to choose the direct solver, see `MatSolverType`
+.  -pc_factor_reuse_fill (true|false)              - Activates `PCFactorSetReuseFill()`
+.  -pc_factor_fill fill                            - Sets fill amount
+.  -pc_factor_in_place (true|false)                - Activates in-place factorization
+.  -pc_factor_mat_ordering_type ordering           - Sets ordering routine, see `MatOrderingType`
+.  -pc_factor_pivot_in_blocks (true|false)         - allow pivoting within the small blocks during factorization (may increase
+                                                     stability of factorization.
+.  -pc_factor_shift_type shifttype                 - Sets shift type, see `MatFactorShiftType`
+.  -pc_factor_shift_amount shiftamount             - Sets shift amount or -1 for the default
+.  -pc_factor_nonzeros_along_diagonal (true|false) - permutes the rows and columns to try to put nonzero value along the diagonal.
+.  -pc_factor_mat_solver_type packagename          - use an external package for the solve, see `MatSolverType` for possibilities
+-  -mat_solvertype_optionname                      - options for a specific solver package, for example -mat_mumps_cntl_1
 
    Level: beginner
 

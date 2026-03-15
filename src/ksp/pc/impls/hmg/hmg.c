@@ -281,7 +281,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 - reuse - `PETSC_TRUE` indicates that `PCHMG` will reuse the interpolations
 
   Options Database Key:
-. -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
+. -pc_hmg_reuse_interpolation (true|false) - Whether or not to reuse the interpolations. If true, it potentially save the compute time.
 
   Level: beginner
 
@@ -318,7 +318,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 - subspace - `PETSC_TRUE` indicates that `PCHMG` will use the subspace coarsening
 
   Options Database Key:
-. -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
+. -pc_hmg_use_subspace_coarsening  (true|false) - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
 
   Level: beginner
 
@@ -353,7 +353,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 - type - `PCHYPRE` or `PCGAMG` coarsening algorithm
 
   Options Database Key:
-. -hmg_inner_pc_type <hypre, gamg> - What method is used to coarsen matrix
+. -hmg_inner_pc_type (hypre|gamg) - What method is used to coarsen matrix
 
   Level: beginner
 
@@ -387,7 +387,7 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
 - component - which component `PC` will coarsen
 
   Options Database Key:
-. -pc_hmg_coarsening_component <i> - Which component is chosen for the subspace-based coarsening algorithm
+. -pc_hmg_coarsening_component i - Which component is chosen for the subspace-based coarsening algorithm
 
   Level: beginner
 
@@ -424,7 +424,7 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
 - usematmaij - `PETSC_TRUE` (default) to use `MATMAIJ` for interpolations.
 
   Options Database Key:
-. -pc_hmg_use_matmaij - <true | false >
+. -pc_hmg_use_matmaij (true|false) - use `MATMAIJ` for interpolations
 
   Level: beginner
 
@@ -444,10 +444,10 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
    multigrid preconditioner. This results in a much more efficient to build and apply preconditioner than using `PCGAMG` on the entire system {cite}`kong2020highly`.
 
    Options Database Keys:
-+  -pc_hmg_reuse_interpolation <true | false>      - Whether or not to reuse the interpolations for new matrix values or rebuild the interpolation. This can save compute time.
-.  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix, or coarsen on the full matrix).
-.  -hmg_inner_pc_type <hypre, gamg, ...>           - What method to use to generate the hierarchy of restriction operators
--  -pc_hmg_use_matmaij <true | false>              - Whether or not to use `MATMAIJ` for multicomponent problems for saving memory
++  -pc_hmg_reuse_interpolation (true|false)      - Whether or not to reuse the interpolations for new matrix values or rebuild the interpolation. This can save compute time.
+.  -pc_hmg_use_subspace_coarsening  (true|false) - Whether or not to use subspace coarsening (that is, coarsen a submatrix, or coarsen on the full matrix).
+.  -hmg_inner_pc_type (hypre|gamg)               - What method to use to generate the hierarchy of restriction operators
+-  -pc_hmg_use_matmaij (true|false)              - Whether or not to use `MATMAIJ` for multicomponent problems for saving memory
 
    Level: intermediate
 

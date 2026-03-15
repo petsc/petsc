@@ -674,7 +674,7 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
 - irktype - type of `TSIRK` scheme
 
   Options Database Key:
-. -ts_irk_type <gauss> - set irk type
+. -ts_irk_type gauss - set irk type
 
   Level: intermediate
 
@@ -722,7 +722,7 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 - nstages - number of stages of `TSIRK` scheme
 
   Options Database Key:
-. -ts_irk_nstages <int> - set number of stages
+. -ts_irk_nstages int - set number of stages
 
   Level: intermediate
 

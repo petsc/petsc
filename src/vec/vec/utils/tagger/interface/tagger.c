@@ -58,8 +58,7 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm, VecTagger *tagger)
 - type   - a known method
 
   Options Database Key:
-. -vec_tagger_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, absolute, relative, cdf, or, and)
+. -vec_tagger_type type - Sets the method; see `VecTaggerType`
 
   Level: advanced
 

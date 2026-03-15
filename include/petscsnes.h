@@ -360,11 +360,11 @@ M*/
 M*/
 
 /*MC
-  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step $\le stol * ||x||$ where $x$ is the current
-  solution and $stol$ is the 4th argument to `SNESSetTolerances()`
+  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step $\le stol * ||x||$ where `x` is the current
+  solution and `stol` is the 4th argument to `SNESSetTolerances()`
 
   Options Database Key:
-  -snes_stol <stol> - the step tolerance
+  -snes_stol stol - the step tolerance
 
    Level: beginner
 
@@ -1092,8 +1092,8 @@ PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 -   `SNES_NGMRES_RESTART_PERIODIC`   - restart after a fixed number of iterations
 
   Options Database Keys:
-+ -snes_ngmres_restart_type <difference,periodic,none> - set the restart type
-- -snes_ngmres_restart <30>                            - sets the number of iterations before restart for periodic
++ -snes_ngmres_restart_type (difference|periodic|none) - set the restart type
+- -snes_ngmres_restart 30                              - sets the number of iterations before restart for periodic
 
    Level: intermediate
 
@@ -1117,7 +1117,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 -   `SNES_NGMRES_SELECT_LINESEARCH` - choose based upon line search combination
 
   Options Database Key:
-. -snes_ngmres_select_type<difference,none,linesearch> - select type
+. -snes_ngmres_select_type (difference|none|linesearch) - select how the next iterate is created
 
    Level: intermediate
 
@@ -1147,7 +1147,7 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
 -   `SNES_NCG_CD`  - Conjugate Descent update
 
   Options Database Key:
-. -snes_ncg_type<fr,prp,hs,dy,cd> - select type
+. -snes_ncg_type (fr|prp|hs|dy|cd) - select the type
 
    Level: intermediate
 
@@ -1175,7 +1175,7 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
                                computed at the first iteration of `SNESQN` and at ever restart.
 
     Options Database Key:
-. -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
+. -snes_qn_scale_type (diagonal|none|scalar|jacobian) - Select the scaling type
 
    Level: intermediate
 
@@ -1199,8 +1199,8 @@ PETSC_EXTERN const char *const SNESQNScaleTypes[];
 -   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
 
   Options Database Keys:
-+ -snes_qn_restart_type <powell,periodic,none> - set the restart type
-- -snes_qn_m <m>                               - sets the number of stored updates and the restart period for periodic
++ -snes_qn_restart_type (powell|periodic|none) - set the restart type
+- -snes_qn_m m                                 - sets the number of stored updates and the restart period for periodic
 
    Level: intermediate
 
@@ -1223,7 +1223,7 @@ PETSC_EXTERN const char *const SNESQNRestartTypes[];
 -   `SNES_QN_BADBROYDEN` - Bad Broyden variant
 
   Options Database Key:
-. -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
+. -snes_qn_type (lbfgs|broyden|badbroyden) - quasi-Newton type
 
    Level: intermediate
 
@@ -1378,11 +1378,11 @@ PETSC_EXTERN PetscErrorCode SNESNewtonALGetLoadParameter(SNES, PetscReal *);
    efficient and always yields a real correction and is the default.
 
    Values:
-+   `SNES_NEWTONAL_CORRECTION_EXACT` - choose the correction which exactly satisfies the constraint
++   `SNES_NEWTONAL_CORRECTION_EXACT`  - choose the correction which exactly satisfies the constraint
 -   `SNES_NEWTONAL_CORRECTION_NORMAL` - choose the correction in the updated normal hyper-surface to the constraint surface
 
    Options Database Key:
-. -snes_newtonal_correction_type <exact> - select type from <exact,normal>
+. -snes_newtonal_correction_type (exact|normal) - exactly satisfy the constraint or satisfy it on the normal hyper-surface
 
    Level: intermediate
 

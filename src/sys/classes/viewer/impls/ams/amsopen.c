@@ -13,9 +13,9 @@
 . lab - the `PetscViewer`
 
   Options Database Keys:
-+ -saws_port <port number> - port number where you are running SAWs client
-. -xxx_view saws           - publish the object xxx
-- -xxx_saws_block          - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
++ -saws_port port number - port number where you are running SAWs client
+. -xxx_view saws         - publish the object xxx
+- -xxx_saws_block        - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
                     the user unblocks the problem with an external tool that access the object with SAWS
 
   Level: advanced

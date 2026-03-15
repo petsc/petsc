@@ -373,7 +373,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
 - bsymptype - type of the symplectic scheme
 
   Options Database Key:
-. -ts_basicsymplectic_type <scheme> - select the scheme
+. -ts_basicsymplectic_type scheme - select the scheme
 
   Level: intermediate
 

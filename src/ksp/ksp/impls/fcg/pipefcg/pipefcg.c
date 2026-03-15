@@ -397,7 +397,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
 - mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
-. -ksp_pipefcg_mmax <N> - maximum number of previous directions
+. -ksp_pipefcg_mmax N - maximum number of previous directions
 
   Level: intermediate
 
@@ -453,7 +453,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
 - nprealloc - the number of vectors to preallocate
 
   Options Database Key:
-. -ksp_pipefcg_nprealloc <N> - the number of vectors to preallocate
+. -ksp_pipefcg_nprealloc N - the number of vectors to preallocate
 
   Level: advanced
 
@@ -509,7 +509,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 .ve
 
   Options Database Key:
-. -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
+. -ksp_pipefcg_truncation_type (standard|notay) - which stored search directions to orthogonalize against
 
   Level: intermediate
 
@@ -572,9 +572,9 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems PetscO
   KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method {cite}`sananschneppmay2016`. [](sec_pipelineksp). [](sec_flexibleksp)
 
   Options Database Keys:
-+   -ksp_pipefcg_mmax <N>                         - The number of previous search directions to store
-.   -ksp_pipefcg_nprealloc <N>                    - The number of previous search directions to preallocate
--   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
++   -ksp_pipefcg_mmax N                           - The number of previous search directions to store
+.   -ksp_pipefcg_nprealloc N                      - The number of previous search directions to preallocate
+-   -ksp_pipefcg_truncation_type (standard|notay) - which stored search directions to orthogonalize against
 
   Level: intermediate
 

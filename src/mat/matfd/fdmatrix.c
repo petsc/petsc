@@ -314,9 +314,9 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, MatFDColoringFn *f,
 . matfd - the coloring context
 
   Options Database Keys:
-+ -mat_fd_coloring_err <err>         - Sets <err> (square root of relative error in the function)
-. -mat_fd_coloring_umin <umin>       - Sets umin, the minimum allowable u-value magnitude
-. -mat_fd_type                       - "wp" or "ds" (see `MATMFFD_WP` or `MATMFFD_DS`)
++ -mat_fd_coloring_err err           - Sets err (square root of relative error in the function)
+. -mat_fd_coloring_umin umin         - Sets umin, the minimum allowable u-value magnitude
+. -mat_fd_type (wp|ds)               - See `MATMFFD_WP` and `MATMFFD_DS`
 . -mat_fd_coloring_view              - Activates basic viewing
 . -mat_fd_coloring_view ::ascii_info - Activates viewing info
 - -mat_fd_coloring_view draw         - Activates drawing

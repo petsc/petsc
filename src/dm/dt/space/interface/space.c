@@ -55,7 +55,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 - name - The kind of space
 
   Options Database Key:
-. -petscspace_type <type> - Sets the `PetscSpace` type; use -help for a list of available types
+. -petscspace_type type - Sets the `PetscSpace` type; use -help for a list of available types
 
   Level: intermediate
 
@@ -172,9 +172,9 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 . sp - the `PetscSpace` object to set options for
 
   Options Database Keys:
-+ -petscspace_degree <deg>   - the approximation order of the space
-. -petscspace_variables <n>  - the number of different variables, e.g. x and y
-- -petscspace_components <c> - the number of components, say d for a vector field
++ -petscspace_degree deg   - the degree of the space
+. -petscspace_variables n  - the number of different variables, e.g. x and y
+- -petscspace_components c - the number of components, say d for a vector field
 
   Level: intermediate
 

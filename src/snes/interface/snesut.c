@@ -715,14 +715,14 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 . reason - converged reason, see `SNESConvergedReason`
 
   Options Database Keys:
-+ -snes_convergence_test default      - see `SNESSetFromOptions()`
-. -snes_stol                          - convergence tolerance in terms of the norm of the change in the solution between steps
-. -snes_atol <abstol>                 - absolute tolerance of residual norm
-. -snes_rtol <rtol>                   - relative decrease in tolerance norm from the initial 2-norm of the solution
-. -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_max_funcs <max_funcs>         - maximum number of function evaluations, use `unlimited` for no maximum
-. -snes_max_fail <max_fail>           - maximum number of line search failures allowed before stopping, default is none
-- -snes_max_linear_solve_fail         - number of linear solver failures before `SNESSolve()` stops
++ -snes_convergence_test default    - see `SNESSetFromOptions()`
+. -snes_stol                        - convergence tolerance in terms of the norm of the change in the solution between steps
+. -snes_atol abstol                 - absolute tolerance of residual norm
+. -snes_rtol rtol                   - relative decrease in tolerance norm from the initial 2-norm of the solution
+. -snes_divergence_tolerance divtol - if the residual goes above divtol*rnorm0, exit with divergence
+. -snes_max_funcs max_funcs         - maximum number of function evaluations, use `unlimited` for no maximum
+. -snes_max_fail max_fail           - maximum number of line search failures allowed before stopping, default is none
+- -snes_max_linear_solve_fail       - number of linear solver failures before `SNESSolve()` stops
 
   Level: developer
 

@@ -159,7 +159,7 @@ static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewe
 - global - a string representing the method
 
   Options Database Key:
-. -mat_partitioning_party_global <method> - the global method
+. -mat_partitioning_party_global method - the global method
 
   Level: advanced
 
@@ -201,7 +201,7 @@ static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, 
 - local - a string representing the method
 
   Options Database Key:
-. -mat_partitioning_party_local <method> - the local method
+. -mat_partitioning_party_local method - the local method
 
   Level: advanced
 
@@ -242,7 +242,7 @@ static PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, c
 - level - the coarse level in range [0.0,1.0]
 
   Options Database Key:
-. -mat_partitioning_party_coarse <l> - Coarse level
+. -mat_partitioning_party_coarse l - Coarse level
 
   Level: advanced
 

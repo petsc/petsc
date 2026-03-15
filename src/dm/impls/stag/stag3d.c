@@ -32,16 +32,16 @@
 
   Options Database Keys:
 + -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
-. -stag_grid_x <nx>                             - number of elements in the x direction
-. -stag_grid_y <ny>                             - number of elements in the y direction
-. -stag_grid_z <nz>                             - number of elements in the z direction
-. -stag_ranks_x <rx>                            - number of ranks in the x direction
-. -stag_ranks_y <ry>                            - number of ranks in the y direction
-. -stag_ranks_z <rz>                            - number of ranks in the z direction
+. -stag_grid_x nx                               - number of elements in the x direction
+. -stag_grid_y ny                               - number of elements in the y direction
+. -stag_grid_z nz                               - number of elements in the z direction
+. -stag_ranks_x rx                              - number of ranks in the x direction
+. -stag_ranks_y ry                              - number of ranks in the y direction
+. -stag_ranks_z rz                              - number of ranks in the z direction
 . -stag_ghost_stencil_width                     - width of ghost region, in elements
-. -stag_boundary_type x <none,ghosted,periodic> - `DMBoundaryType` value
-. -stag_boundary_type y <none,ghosted,periodic> - `DMBoundaryType` value
-- -stag_boundary_type z <none,ghosted,periodic> - `DMBoundaryType` value
+. -stag_boundary_type x (none|ghosted|periodic) - `DMBoundaryType` value
+. -stag_boundary_type y (none|ghosted|periodic) - `DMBoundaryType` value
+- -stag_boundary_type z (none|ghosted|periodic) - `DMBoundaryType` value
 
   Level: beginner
 

@@ -430,7 +430,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   Level: intermediate
 
   Options Database Key:
-. -ksp_pipegcr_unroll_w <bool> - use unrolling
+. -ksp_pipegcr_unroll_w (true|false) - use unrolling
 
 .seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRGetUnrollW()`
 @*/
@@ -480,7 +480,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
 - mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
-. -ksp_pipegcr_mmax <mmax> - maximum number of previous directions
+. -ksp_pipegcr_mmax mmax - maximum number of previous directions
 
   Level: intermediate
 
@@ -539,7 +539,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax)
   Level: advanced
 
   Options Database Key:
-. -ksp_pipegcr_nprealloc <N> - number of vectors to preallocate
+. -ksp_pipegcr_nprealloc N - number of vectors to preallocate
 
 .seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`
 @*/
@@ -593,7 +593,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 .ve
 
   Options Database Key:
-. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
+. -ksp_pipegcr_truncation_type (standard|notay) - which stored basis vectors to orthogonalize against
 
   Level: intermediate
 
@@ -673,10 +673,10 @@ static PetscErrorCode KSPFlexibleSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyP
   KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method {cite}`sananschneppmay2016`. [](sec_flexibleksp). [](sec_pipelineksp)
 
   Options Database Keys:
-+   -ksp_pipegcr_mmax <N>                         - the max number of Krylov directions to orthogonalize against
-.   -ksp_pipegcr_unroll_w                         - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: `PETSC_TRUE`)
-.   -ksp_pipegcr_nprealloc <N>                    - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
--   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
++   -ksp_pipegcr_mmax N                           - the max number of Krylov directions to orthogonalize against
+.   -ksp_pipegcr_unroll_w (true|false)            - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: `PETSC_TRUE`)
+.   -ksp_pipegcr_nprealloc N                      - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
+-   -ksp_pipegcr_truncation_type (standard|notay) - which previous search directions to orthogonalize against
 
   Level: intermediate
 

@@ -80,7 +80,7 @@ static PetscErrorCode SNESNewtonALSetCorrectionType_NEWTONAL(SNES snes, SNESNewt
 - ctype - the type of correction to use
 
   Options Database Key:
-. -snes_newtonal_correction_type <type> - Set the type of correction to use; use -help for a list of available types
+. -snes_newtonal_correction_type type - Set the type of correction to use; use -help for a list of available types
 
   Level: intermediate
 
@@ -598,13 +598,13 @@ static PetscErrorCode SNESDestroy_NEWTONAL(SNES snes)
   SNESNEWTONAL - Newton based nonlinear solver that uses a arc-length continuation method to solve the nonlinear system.
 
   Options Database Keys:
-+   -snes_newtonal_step_size <1.0>              - Initial arc length increment step size
-.   -snes_newtonal_max_continuation_steps <100> - Maximum number of continuation steps, or negative for no limit (not recommended)
-.   -snes_newtonal_psisq <1.0>                  - Regularization parameter for arc length continuation, 0 for cylindrical. Larger values generally lead to more steps.
-.   -snes_newtonal_lambda_min <0.0>             - Minimum value of the load parameter lambda
-.   -snes_newtonal_lambda_max <1.0>             - Maximum value of the load parameter lambda
-.   -snes_newtonal_scale_rhs <true>             - Scale the constant vector passed to `SNESSolve` by the load parameter lambda
--   -snes_newtonal_correction_type <exact>      - Type of correction to use in the arc-length continuation method, `exact` or `normal`
++   -snes_newtonal_step_size step                 - Initial arc length increment step size
+.   -snes_newtonal_max_continuation_steps max     - Maximum number of continuation steps, or negative for no limit (not recommended)
+.   -snes_newtonal_psisq psisq                    - Regularization parameter for arc length continuation, 0 for cylindrical. Larger values generally lead to more steps.
+.   -snes_newtonal_lambda_min lambda_min          - Minimum value of the load parameter lambda
+.   -snes_newtonal_lambda_max lambda_max          - Maximum value of the load parameter lambda
+.   -snes_newtonal_scale_rhs (true|false)         - Scale the constant vector passed to `SNESSolve` by the load parameter `lambda`
+-   -snes_newtonal_correction_type (exact|normal) - Type of correction to use in the arc-length continuation method
 
   Level: intermediate
 

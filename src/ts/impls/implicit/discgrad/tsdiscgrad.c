@@ -621,7 +621,7 @@ PetscErrorCode TSDiscGradGetType(TS ts, TSDGType *dgtype)
 - dgtype - Discrete gradient type <none, gonzalez, average>
 
   Options Database Key:
-. -ts_discgrad_type <type> - flag to choose discrete gradient type
+. -ts_discgrad_type type - flag to choose discrete gradient type
 
   Level: intermediate
 

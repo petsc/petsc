@@ -228,12 +228,12 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
    $x$ is the current step and $y$ is the search direction.
 
    Options Database Keys:
-+  -snes_linesearch_max_it <1>         - maximum number of iterations within the line search
-.  -snes_linesearch_damping <1.0>      - initial `lambda` on entry to the line search
-.  -snes_linesearch_minlambda <1e\-12> - minimum allowable `lambda`
-.  -snes_linesearch_maxlambda <1.0>    - maximum `lambda` (scaling of solution update) allowed
-.  -snes_linesearch_atol <1e\-15>      - absolute tolerance for the secant method $ f'() < atol $
--  -snes_linesearch_ltol <1e\-8>       - minimum absolute change in `lambda` allowed
++  -snes_linesearch_max_it 1         - maximum number of iterations within the line search
+.  -snes_linesearch_damping 1.0      - initial `lambda` on entry to the line search
+.  -snes_linesearch_minlambda 1e\-12 - minimum allowable `lambda`
+.  -snes_linesearch_maxlambda 1.0    - maximum `lambda` (scaling of solution update) allowed
+.  -snes_linesearch_atol 1e\-15      - absolute tolerance for the secant method $ f'() < atol $
+-  -snes_linesearch_ltol 1e\-8       - minimum absolute change in `lambda` allowed
 
    Level: advanced
 

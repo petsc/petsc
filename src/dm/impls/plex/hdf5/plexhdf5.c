@@ -217,7 +217,7 @@ PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscViewer viewer,
 . version - The storage format version
 
   Options Database Keys:
-. -dm_plex_view_hdf5_storage_version <num> - Overrides the storage format version
+. -dm_plex_view_hdf5_storage_version num - Overrides the storage format version
 
   Level: advanced
 
@@ -331,7 +331,7 @@ PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionReading(PetscViewer viewer,
 . version - The storage format version
 
   Options Database Keys:
-. -dm_plex_view_hdf5_storage_version <num> - Overrides the storage format version
+. -dm_plex_view_hdf5_storage_version num - Overrides the storage format version
 
   Level: advanced
 

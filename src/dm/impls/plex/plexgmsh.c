@@ -1556,7 +1556,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 . -dm_plex_gmsh_mark_vertices        - Add vertices to generated labels
 . -dm_plex_gmsh_mark_vertices_strict - Add vertices included in a region to generated labels
 . -dm_plex_gmsh_multiple_tags        - Allow multiple tags for default labels
-- -dm_plex_gmsh_spacedim <d>         - Embedding space dimension, if different from topological dimension
+- -dm_plex_gmsh_spacedim d           - Embedding space dimension, if different from topological dimension
 
   Level: beginner
 

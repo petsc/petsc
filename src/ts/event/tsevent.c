@@ -78,7 +78,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 - dt1 - first post event step
 
   Options Database Key:
-. -ts_event_post_event_step <dt1> - first time step after the event
+. -ts_event_post_event_step dt1 - first time step after the event
 
   Level: advanced
 
@@ -152,7 +152,7 @@ PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt1)
 - dt2 - second post event step
 
   Options Database Key:
-. -ts_event_post_event_second_step <dt2> - second time step after the event
+. -ts_event_post_event_second_step dt2 - second time step after the event
 
   Level: advanced
 
@@ -216,7 +216,7 @@ PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
 - vtol - array of tolerances or `NULL`, used in preference to `tol` if present
 
   Options Database Key:
-. -ts_event_tol <tol> - tolerance for event (indicator function) zero crossing
+. -ts_event_tol tol - tolerance for event (indicator function) zero crossing
 
   Level: beginner
 
@@ -286,12 +286,12 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 - ctx          - the context passed as the final argument to `TSSetEventHandler()`
 
   Options Database Keys:
-+ -ts_event_tol <tol>                       - tolerance for zero crossing check of indicator functions
-. -ts_event_monitor                         - print choices made by event handler
-. -ts_event_recorder_initial_size <recsize> - initial size of event recorder
-. -ts_event_post_event_step <dt1>           - first time step after event
-. -ts_event_post_event_second_step <dt2>    - second time step after event
-- -ts_event_dt_min <dt>                     - minimum time step considered for TSEvent
++ -ts_event_tol tol                       - tolerance for zero crossing check of indicator functions
+. -ts_event_monitor                       - print choices made by event handler
+. -ts_event_recorder_initial_size recsize - initial size of event recorder
+. -ts_event_post_event_step dt1           - first time step after event
+. -ts_event_post_event_second_step dt2    - second time step after event
+- -ts_event_dt_min dt                     - minimum time step considered for TSEvent
 
   Level: intermediate
 

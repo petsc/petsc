@@ -19,12 +19,12 @@
 . edm - The volumetric mesh
 
   Options Database Keys:
-+ -dm_plex_transform_extrude_thickness <t>           - The total thickness of extruded layers
-. -dm_plex_transform_extrude_use_tensor <bool>       - Use tensor cells when extruding
-. -dm_plex_transform_extrude_symmetric <bool>        - Extrude layers symmetrically about the surface
-. -dm_plex_transform_extrude_periodic <bool>         - Extrude layers periodically
-. -dm_plex_transform_extrude_normal <n0,...,nd>      - Specify the extrusion direction
-- -dm_plex_transform_extrude_thicknesses <t0,...,tl> - Specify thickness of each layer
++ -dm_plex_transform_extrude_thickness t             - The total thickness of extruded layers
+. -dm_plex_transform_extrude_use_tensor (true|false) - Use tensor cells when extruding
+. -dm_plex_transform_extrude_symmetric (true|false)  - Extrude layers symmetrically about the surface
+. -dm_plex_transform_extrude_periodic (true|false)   - Extrude layers periodically
+. -dm_plex_transform_extrude_normal n0,...,nd        - Specify the extrusion direction
+- -dm_plex_transform_extrude_thicknesses t0,...,tl   - Specify thickness of each layer
 
   Level: intermediate
 

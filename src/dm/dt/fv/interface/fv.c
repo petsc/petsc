@@ -64,7 +64,7 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 - name - The kind of limiter
 
   Options Database Key:
-. -petsclimiter_type <type> - Sets the PetscLimiter type; use -help for a list of available types
+. -petsclimiter_type type - Sets the PetscLimiter type; use -help for a list of available types
 
   Level: intermediate
 
@@ -937,7 +937,7 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 - name - The type of FVM space
 
   Options Database Key:
-. -petscfv_type <type> - Sets the `PetscFVType`; use -help for a list of available types
+. -petscfv_type type - Sets the `PetscFVType`; use -help for a list of available types
 
   Level: intermediate
 
@@ -1043,7 +1043,7 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 . fvm - the `PetscFV` object to set options for
 
   Options Database Key:
-. -petscfv_compute_gradients <bool> - Determines whether cell gradients are calculated
+. -petscfv_compute_gradients (true|false) - Determines whether cell gradients are calculated
 
   Level: intermediate
 

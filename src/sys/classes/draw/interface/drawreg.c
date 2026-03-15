@@ -192,7 +192,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 - type - for example, `PETSC_DRAW_X`
 
   Options Database Key:
-. -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
+. -draw_type type - Sets the type; see `PetscDrawType`
 
   Level: intermediate
 
@@ -353,16 +353,16 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
 . draw - the graphics context
 
   Options Database Keys:
-+ -nox                                       - do not use X graphics (ignore graphics calls, but run program correctly)
-. -nox_warning                               - when X Windows support is not installed this prevents the warning message from being printed
-. -draw_pause <pause amount>                 - - -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
-. -draw_marker_type                          - <x,point>
-. -draw_save [optional filename]             - (X Windows only) saves each image before it is cleared to a file
-. -draw_save_final_image [optional filename] - (X Windows only) saves the final image displayed in a window
-. -draw_save_movie                           - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
-. -draw_save_single_file                     - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
-. -draw_save_on_clear                        - saves an image on each clear, mainly for debugging
-- -draw_save_on_flush                        - saves an image on each flush, mainly for debugging
++ -nox                              - do not use X graphics (ignore graphics calls, but run program correctly)
+. -nox_warning                      - when X Windows support is not installed this prevents the warning message from being printed
+. -draw_pause seconds               - -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
+. -draw_marker_type (x|point)       - set the marker type
+. -draw_save [filename]             - (X Windows only) saves each image before it is cleared to a file
+. -draw_save_final_image [filename] - (X Windows only) saves the final image displayed in a window
+. -draw_save_movie                  - converts image files to a movie  at the end of the run. See `PetscDrawSetSave()`
+. -draw_save_single_file            - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
+. -draw_save_on_clear               - saves an image on each clear, mainly for debugging
+- -draw_save_on_flush               - saves an image on each flush, mainly for debugging
 
   Level: intermediate
 

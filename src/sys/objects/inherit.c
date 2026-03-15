@@ -329,7 +329,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 - all - by default only tries to display objects created explicitly by the user, if all is `PETSC_TRUE` then lists all outstanding objects
 
   Options Database Key:
-. -objects_dump <all> - print information about all the objects that exist at the end of the programs run
+. -objects_dump all - print information about all the objects that exist at the end of the programs run
 
   Level: advanced
 

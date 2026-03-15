@@ -658,12 +658,12 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[], int *w
      PETSC_DRAW_X  - PETSc graphics device that uses either X windows or its virtual version Xvfb
 
    Options Database Keys:
-+  -display <display> - sets the display to use
-.  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work.
++  -display display    - sets the display to use
+.  -x_virtual          - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work.
                 Xvfb is automatically started up in PetscSetDisplay() with this option
-.  -draw_size w,h - percentage of screen (either 1, .5, .3, .25), or size in pixels
-.  -geometry x,y,w,h - set location and size in pixels
-.  -draw_virtual - do not open a window (draw on a pixmap), -draw_save will still work
+.  -draw_size w,h      - percentage of screen (either 1, .5, .3, .25), or size in pixels
+.  -geometry x,y,w,h   - set location and size in pixels
+.  -draw_virtual       - do not open a window (draw on a pixmap), -draw_save will still work
 -  -draw_double_buffer - avoid window flickering (draw on pixmap and flush to window)
 
    Level: beginner

@@ -232,7 +232,7 @@ PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag)
 . omega - relaxation coefficient (0 < omega < 2).
 
   Options Database Key:
-. -pc_sor_omega <omega> - Sets omega
+. -pc_sor_omega omega - Sets omega
 
   Level: intermediate
 
@@ -260,8 +260,8 @@ PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega)
 - its  - number of parallel iterations to use; each parallel iteration has lits local iterations
 
   Options Database Keys:
-+ -pc_sor_its <its>   - Sets number of iterations
-- -pc_sor_lits <lits> - Sets number of local iterations
++ -pc_sor_its its   - Sets number of iterations
+- -pc_sor_lits lits - Sets number of local iterations
 
   Level: intermediate
 
@@ -333,7 +333,7 @@ PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag)
 - omega - relaxation coefficient (0 < omega < 2).
 
   Options Database Key:
-. -pc_sor_omega <omega> - Sets omega
+. -pc_sor_omega omega - Sets omega
 
   Level: intermediate
 
@@ -363,8 +363,8 @@ PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega)
 - its  - number of parallel iterations to use; each parallel iteration has lits local iterations
 
   Options Database Keys:
-+ -pc_sor_its <its>   - Sets number of iterations
-- -pc_sor_lits <lits> - Sets number of local iterations
++ -pc_sor_its its   - Sets number of iterations
+- -pc_sor_lits lits - Sets number of local iterations
 
   Level: intermediate
 
@@ -386,16 +386,16 @@ PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits)
      PCSOR - (S)SOR (successive over relaxation, Gauss-Seidel) preconditioning
 
    Options Database Keys:
-+  -pc_sor_symmetric - Activates symmetric version
-.  -pc_sor_backward - Activates backward version
-.  -pc_sor_forward - Activates forward version
-.  -pc_sor_local_forward - Activates local forward version
-.  -pc_sor_local_symmetric - Activates local symmetric version  (default version)
-.  -pc_sor_local_backward - Activates local backward version
-.  -pc_sor_omega <omega> - Sets omega
-.  -pc_sor_diagonal_shift <shift> - shift the diagonal entries; useful if the matrix has zeros on the diagonal
-.  -pc_sor_its <its> - Sets number of iterations   (default 1)
--  -pc_sor_lits <lits> - Sets number of local iterations  (default 1)
++  -pc_sor_symmetric            - Activates symmetric version
+.  -pc_sor_backward             - Activates backward version
+.  -pc_sor_forward              - Activates forward version
+.  -pc_sor_local_forward        - Activates local forward version
+.  -pc_sor_local_symmetric      - Activates local symmetric version  (default version)
+.  -pc_sor_local_backward       - Activates local backward version
+.  -pc_sor_omega omega          - Sets omega
+.  -pc_sor_diagonal_shift shift - shift the diagonal entries; useful if the matrix has zeros on the diagonal
+.  -pc_sor_its its              - Sets number of iterations   (default 1)
+-  -pc_sor_lits lits            - Sets number of local iterations  (default 1)
 
    Level: beginner
 

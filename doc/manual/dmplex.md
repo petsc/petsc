@@ -727,9 +727,9 @@ DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max);
 or the command line arguments
 
 ```
--dm_plex_metric_h_min <h_min>
--dm_plex_metric_h_max <h_max>
--dm_plex_metric_a_max <a_max>
+-dm_plex_metric_h_min h_min
+-dm_plex_metric_h_max h_max
+-dm_plex_metric_a_max a_max
 ```
 
 One simple way to combine two metrics is by simply averaging them entry-by-entry.
@@ -763,8 +763,8 @@ DMPlexMetricSetTargetComplexity(DM dm, PetscReal target);
 or the command line arguments
 
 ```console
--dm_plex_metric_p <p>
--dm_plex_metric_target_complexity <target>
+-dm_plex_metric_p p
+-dm_plex_metric_target_complexity target
 ```
 
 Two different metric-based mesh adaptation tools are available in PETSc:
@@ -778,9 +778,7 @@ works only in three dimensions. Mmg can be used for both two and three dimension
 Pragmatic, Mmg and ParMmg may be specified by the command line arguments
 
 ```
--dm_adaptor pragmatic
--dm_adaptor mmg
--dm_adaptor parmmg
+-dm_adaptor (pragmatic|mmg|parmmg)
 ```
 
 Once a metric has been constructed, it can be used to perform metric-based

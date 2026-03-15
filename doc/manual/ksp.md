@@ -130,8 +130,8 @@ The application programmer can then directly call any of the `PC` or
 To solve a linear system with a direct solver (supported by
 PETSc for sequential matrices, and by several external solvers through
 PETSc interfaces, see {any}`sec_externalsol`) one may use
-the options `-ksp_type` `preonly` (or the equivalent `-ksp_type` `none`)
-`-pc_type` `lu` or `-pc_type` `cholesky` (see below).
+the options `-ksp_type preonly` (or the equivalent `-ksp_type none`)
+`-pc_type lu` or `-pc_type cholesky` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
 in-place. This approach prevents the user from the unexpected surprise
@@ -194,8 +194,8 @@ KSPGMRESSetRestart(KSP ksp,PetscInt max_steps);
 The default parameter values are
 `scale=1.0, emax=0.01, emin=100.0`, and `max_steps=30`. The
 GMRES restart and Richardson damping factor can also be set with the
-options `-ksp_gmres_restart <n>` and
-`-ksp_richardson_scale <factor>`.
+options `-ksp_gmres_restart n` and
+`-ksp_richardson_scale factor`.
 
 The default technique for orthogonalization of the Krylov vectors in
 GMRES is the unmodified (classical) Gram-Schmidt method, which can be
@@ -216,7 +216,7 @@ KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 or via the options database with
 
 ```
--ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
+-ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always)
 ```
 
 The values for `KSPGMRESCGSRefinementType()` are
@@ -497,8 +497,7 @@ specifying `PETSC_CURRENT` as the corresponding tolerance; the
 defaults are `rtol=1e-5`, `atol=1e-50`, `dtol=1e5`, and
 `maxits=1e4`. Using `PETSC_DETERMINE` will set the parameters back to their
 initial values when the object's type was set. These parameters can also be set from the options
-database with the commands `-ksp_rtol` `<rtol>`, `-ksp_atol`
-`<atol>`, `-ksp_divtol` `<dtol>`, and `-ksp_max_it` `<its>`.
+database with the commands `-ksp_rtol rtol`, `-ksp_atol atol`, `-ksp_divtol dtol`, and `-ksp_max_it maxit`.
 
 In addition to providing an interface to a simple convergence test,
 `KSP` allows the application programmer the flexibility to provide
@@ -688,7 +687,7 @@ operation.
 As discussed in {any}`sec_ksppc`, Krylov subspace methods
 are typically used in conjunction with a preconditioner. To employ a
 particular preconditioning method, the user can either select it from
-the options database using input of the form `-pc_type <methodname>`
+the options database using input of the form `-pc_type type`
 or set the method with the command
 
 ```
@@ -774,7 +773,8 @@ and `PCML`. See further discussion below.
 Each preconditioner may have associated with it a set of options, which
 can be set with routines and options database commands provided for this
 purpose. Such routine names and commands are all of the form
-`PC<TYPE><Option>` and `-pc_<type>_<option> [value]`. A complete
+`PCTYPEOPTION` and `-pc_TYPE_OPTION value`, where `TYPE` represents the type name of the object, for example `JACOBI` and `OPTION` represents the name
+of the option for that type. A complete
 list can be found by consulting the `PCType` manual page; we discuss
 just a few in the sections below.
 
@@ -793,6 +793,7 @@ PCFactorSetUseInPlace(PC pc,PetscBool flg);
 PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 ```
 
+Note here that all the factorization based preconditioners share some common options indicated by `PCFactorXXX()`.
 When repeatedly solving linear systems with the same `KSP` context,
 one can reuse some information computed during the first linear solve.
 In particular, `PCFactorSetReuseOrdering()` causes the ordering (for
@@ -805,7 +806,7 @@ Note that in-place factorization is not appropriate with any ordering
 besides natural and cannot be used with the drop tolerance
 factorization. These options may be set in the database with
 
-- `-pc_factor_levels <levels>`
+- `-pc_factor_levels levels`
 - `-pc_factor_reuse_ordering`
 - `-pc_factor_reuse_fill`
 - `-pc_factor_in_place`
@@ -848,8 +849,8 @@ Setting the type to be `SOR_SYMMETRIC_SWEEP` produces the SSOR method.
 In addition, each process can locally and independently perform the
 specified variant of SOR with the types `SOR_LOCAL_FORWARD_SWEEP`,
 `SOR_LOCAL_BACKWARD_SWEEP`, and `SOR_LOCAL_SYMMETRIC_SWEEP`. These
-variants can also be set with the options `-pc_sor_omega <omega>`,
-`-pc_sor_its <its>`, `-pc_sor_lits <lits>`, `-pc_sor_backward`,
+variants can also be set with the options `-pc_sor_omega omega`,
+`-pc_sor_its its`, `-pc_sor_lits lits`, `-pc_sor_backward`,
 `-pc_sor_symmetric`, `-pc_sor_local_forward`,
 `-pc_sor_local_backward`, and `-pc_sor_local_symmetric`.
 
@@ -861,7 +862,7 @@ about half of the floating-point operations for conventional SSOR. The
 option `-pc_eisenstat_no_diagonal_scaling` (or the routine
 `PCEisenstatSetNoDiagonalScaling()`) turns off diagonal scaling in
 conjunction with Eisenstat SSOR method, while the option
-`-pc_eisenstat_omega <omega>` (or the routine
+`-pc_eisenstat_omega omega` (or the routine
 `PCEisenstatSetOmega(PC pc,PetscReal omega)`) sets the SSOR relaxation
 coefficient, `omega`, as discussed above.
 
@@ -880,7 +881,7 @@ causes the factorization to be performed in-place and hence destroys the
 original matrix. The options database variant of this command is
 `-pc_factor_in_place`. Another direct preconditioner option is
 selecting the ordering of equations with the command
-`-pc_factor_mat_ordering_type <ordering>`. The possible orderings are
+`-pc_factor_mat_ordering_type ordering`. The possible orderings are
 
 - `MATORDERINGNATURAL` - Natural
 - `MATORDERINGND` - Nested Dissection
@@ -897,7 +898,7 @@ The sparse LU factorization provided in PETSc does not perform pivoting
 for numerical stability (since they are designed to preserve nonzero
 structure), and thus occasionally an LU factorization will fail with a
 zero pivot when, in fact, the matrix is non-singular. The option
-`-pc_factor_nonzeros_along_diagonal <tol>` will often help eliminate
+`-pc_factor_nonzeros_along_diagonal tol` will often help eliminate
 the zero pivot, by preprocessing the column ordering to remove small
 values from the diagonal. Here, `tol` is an optional tolerance to
 decide if a value is nonzero; by default it is `1.e-10`.
@@ -965,11 +966,10 @@ index sets that define the subdomains.
 
 The object `PCASMType` is one of `PC_ASM_BASIC`,
 `PC_ASM_INTERPOLATE`, `PC_ASM_RESTRICT`, or `PC_ASM_NONE` and may
-also be set with the options database `-pc_asm_type` `[basic`,
-`interpolate`, `restrict`, `none]`. The type `PC_ASM_BASIC` (or
-`-pc_asm_type` `basic`) corresponds to the standard additive Schwarz
+also be set with the options database `-pc_asm_type (basic|interpolate|restrict|none)`. The type `PC_ASM_BASIC` (or
+`-pc_asm_type basic`) corresponds to the standard additive Schwarz
 method that uses the full restriction and interpolation operators. The
-type `PC_ASM_RESTRICT` (or `-pc_asm_type` `restrict`) uses a full
+type `PC_ASM_RESTRICT` (or `-pc_asm_type restrict`) uses a full
 restriction operator, but during the interpolation process ignores the
 off-process values. Similarly, `PC_ASM_INTERPOLATE` (or
 `-pc_asm_type` `interpolate`) uses a limited restriction process in
@@ -1021,8 +1021,7 @@ The interface for `PCGASM` is similar to that of `PCASM`. In
 particular, `PCGASMType` is one of `PC_GASM_BASIC`,
 `PC_GASM_INTERPOLATE`, `PC_GASM_RESTRICT`, `PC_GASM_NONE`. These
 options have the same meaning as with `PCASM` and may also be set with
-the options database `-pc_gasm_type` `[basic`, `interpolate`,
-`restrict`, `none]`.
+the options database `-pc_gasm_type (basic|interpolate|restrict|none)`.
 
 Unlike `PCASM`, however, `PCGASM` allows the user to define
 subdomains that span multiple MPI processes. The simplest way to do this is
@@ -1101,70 +1100,70 @@ constructor (or the `-mat_type` from the command line). For instance,
 
 - Control the generation of the coarse grid
 
-  > - `-pc_gamg_aggressive_coarsening` \<n:int:1> Use aggressive coarsening on the finest n levels to construct the coarser mesh.
+  > - `-pc_gamg_aggressive_coarsening n` Use aggressive coarsening on the finest `n` levels to construct the coarser mesh. The default is only on the finest level.
   >   See `PCGAMGAGGSetNSmooths()`. The larger value produces a faster preconditioner to create and solve, but the convergence may be slower.
-  > - `-pc_gamg_low_memory_threshold_filter` \<bool:false> Filter small matrix entries before coarsening the mesh.
+  > - `-pc_gamg_low_memory_threshold_filter (true|false)` Filter small matrix entries before coarsening the mesh.
   >   See `PCGAMGSetLowMemoryFilter()`.
-  > - `-pc_gamg_threshold` \<tol:real:0.0> The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used. A
+  > - `-pc_gamg_threshold tol` The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used. A
   >   negative value means keeping even the locations with 0.0. See `PCGAMGSetThreshold()`
-  > - `-pc_gamg_threshold_scale` \<v>:real:1.0> Set a scale factor applied to each coarser level when `-pc_gamg_low_memory_threshold_filter` is used.
+  > - `-pc_gamg_threshold_scale scale` Set a scale factor applied to each coarser level when `-pc_gamg_low_memory_threshold_filter` is used.
   >   See `PCGAMGSetThresholdScale()`.
-  > - `-pc_gamg_mat_coarsen_type` \<mis|hem|misk:misk> Algorithm used to coarsen the matrix graph. See `MatCoarsenSetType()`.
-  > - `-pc_gamg_mat_coarsen_max_it` \<it:int:4> Maximum HEM iterations to use. See `MatCoarsenSetMaximumIterations()`.
-  > - `-pc_gamg_aggressive_mis_k` \<k:int:2> k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
+  > - `-pc_gamg_mat_coarsen_type (mis|hem|misk)` Algorithm used to coarsen the matrix graph. See `MatCoarsenSetType()`.
+  > - `-pc_gamg_mat_coarsen_max_it it` Maximum HEM iterations to use. See `MatCoarsenSetMaximumIterations()`.
+  > - `-pc_gamg_aggressive_mis_k k` the k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
   >   See `PCGAMGMISkSetAggressive()`. The larger value produces a preconditioner that is faster to create and solve with but the convergence may be slower.
   >   This option and the previous option work to determine how aggressively the grids are coarsened.
-  > - `-pc_gamg_mis_k_minimum_degree_ordering` \<bool:false> Use a minimum degree ordering in the greedy MIS algorithm used to coarsen.
+  > - `-pc_gamg_mis_k_minimum_degree_ordering (true|false)` Use a minimum degree ordering in the greedy MIS algorithm used to coarsen.
   >   See `PCGAMGMISkSetMinDegreeOrdering()`
 
 - Control the generation of the prolongation for `PCGAMGAGG`
 
-  > - `-pc_gamg_agg_nsmooths` \<n:int:1> Number of smoothing steps to be used in constructing the prolongation. For symmetric problems,
+  > - `-pc_gamg_agg_nsmooths n` Number of smoothing steps to be used in constructing the prolongation. For symmetric problems,
   >   generally, one or more is best. For some strongly nonsymmetric problems, 0 may be best. See `PCGAMGSetNSmooths()`.
 
 - Control the amount of parallelism on the levels
 
-  > - `-pc_gamg_process_eq_limit` \<n:int:50> Sets the minimum number of equations allowed per process when coarsening (otherwise, fewer MPI processes
+  > - `-pc_gamg_process_eq_limit n` Sets the minimum number of equations allowed per process when coarsening (otherwise, fewer MPI processes
   >   are used for the coarser mesh). A larger value will cause the coarser problems to be run on fewer MPI processes, resulting
   >   in less communication and possibly a faster time to solution. See `PCGAMGSetProcEqLim()`.
   >
-  > - `-pc_gamg_rank_reduction_factors` \<rn,rn-1,...,r1:int> Set a schedule for MPI rank reduction on coarse grids. `See PCGAMGSetRankReductionFactors()`
+  > - `-pc_gamg_rank_reduction_factors rn,rn-1,...,r1` Set a schedule for MPI rank reduction on coarse grids. `See PCGAMGSetRankReductionFactors()`
   >   This overrides the lessening of processes that would arise from `-pc_gamg_process_eq_limit`.
   >
-  > - `-pc_gamg_repartition` \<bool:false> Run a partitioner on each coarser mesh generated rather than using the default partition arising from the
+  > - `-pc_gamg_repartition (true|false)` Run a partitioner on each coarser mesh generated rather than using the default partition arising from the
   >   finer mesh. See `PCGAMGSetRepartition()`. This increases the preconditioner setup time but will result in less time per
   >   iteration of the solver.
   >
-  > - `-pc_gamg_parallel_coarse_grid_solver` \<bool:false> Allow the coarse grid solve to run in parallel, depending on the value of `-pc_gamg_coarse_eq_limit`.
+  > - `-pc_gamg_parallel_coarse_grid_solver (true|false)` Allow the coarse grid solve to run in parallel, depending on the value of `-pc_gamg_coarse_eq_limit`.
   >   See `PCGAMGSetParallelCoarseGridSolve()`. If the coarse grid problem is large then this can
   >   improve the time to solution.
   >
-  >   - `-pc_gamg_coarse_eq_limit` \<n:int:50> Sets the minimum number of equations allowed per process on the coarsest level when coarsening
+  >   - `-pc_gamg_coarse_eq_limit n` Sets the minimum number of equations allowed per process on the coarsest level when coarsening
   >     (otherwise fewer MPI processes will be used). A larger value will cause the coarse problems to be run on fewer MPI processes.
   >     This only applies if `-pc_gamg_parallel_coarse_grid_solver` is set to true. See `PCGAMGSetCoarseEqLim()`.
 
 - Control the smoothers
 
-  > - `-pc_mg_levels` \<n:int> Set the maximum number of levels to use.
-  > - `-mg_levels_ksp_type` \<KSPType:chebyshev> If `KSPCHEBYSHEV` or `KSPRICHARDSON` is not used, then the Krylov
+  > - `-pc_mg_levels n` Set the maximum number of levels to use.
+  > - `-mg_levels_ksp_type type` If `KSPCHEBYSHEV` or `KSPRICHARDSON` is not used, then the Krylov
   >   method for the entire multigrid solve has to be a flexible method such as `KSPFGMRES`. Generally, the
   >   stronger the Krylov method the faster the convergence, but with more cost per iteration. See `KSPSetType()`.
-  > - `-mg_levels_ksp_max_it` \<its:int:2> Sets the number of iterations to run the smoother on each level. Generally, the more iterations
+  > - `-mg_levels_ksp_max_it maxit` Sets the number of iterations to run the smoother on each level. Generally, the more iterations
   >   , the faster the convergence, but with more cost per multigrid iteration. See `PCMGSetNumberSmooth()`.
   > - `-mg_levels_ksp_xxx` Sets options for the `KSP` in the smoother on the levels.
-  > - `-mg_levels_pc_type` \<PCType:jacobi> Sets the smoother to use on each level. See `PCSetType()`. Generally, the
+  > - `-mg_levels_pc_type type` Sets the smoother to use on each level. See `PCSetType()`. Generally, the
   >   stronger the preconditioner the faster the convergence, but with more cost per iteration.
   > - `-mg_levels_pc_xxx` Sets options for the `PC` in the smoother on the levels.
-  > - `-mg_coarse_ksp_type` \<KSPType:none> Sets the solver `KSPType` to use on the coarsest level.
-  > - `-mg_coarse_pc_type` \<PCType:lu> Sets the solver `PCType` to use on the coarsest level.
-  > - `-pc_gamg_asm_use_agg` \<bool:false> Use `PCASM` as the smoother on each level with the aggregates defined by the coarsening process are
+  > - `-mg_coarse_ksp_type type` Sets the solver `KSPType` to use on the coarsest level.
+  > - `-mg_coarse_pc_type type` Sets the solver `PCType` to use on the coarsest level.
+  > - `-pc_gamg_asm_use_agg (true|false)` Use `PCASM` as the smoother on each level with the aggregates defined by the coarsening process are
   >   the subdomains. This option automatically switches the smoother on the levels to be `PCASM`.
-  > - `-mg_levels_pc_asm_overlap` \<n:int:0> Use non-zero overlap with `-pc_gamg_asm_use_agg`. See `PCASMSetOverlap()`.
+  > - `-mg_levels_pc_asm_overlap n` Use non-zero overlap with `-pc_gamg_asm_use_agg`. See `PCASMSetOverlap()`.
 
 - Control the multigrid algorithm
 
-  > - `-pc_mg_type` \<additive|multiplicative|full|kaskade:multiplicative> The type of multigrid to use. Usually, multiplicative is the fastest.
-  > - `-pc_mg_cycle_type` \<v|w:v> Use V- or W-cycle with `-pc_mg_type` `multiplicative`
+  > - `-pc_mg_type (additive|multiplicative|full|kaskade)` The type of multigrid to use. Usually, multiplicative is the fastest.
+  > - `-pc_mg_cycle_type (v|w)` Use V- or W-cycle with `-pc_mg_type multiplicative`
 
 `PCGAMG` provides unsmoothed aggregation (`-pc_gamg_agg_nsmooths 0`) and
 smoothed aggregation (`-pc_gamg_agg_nsmooths 1` or
@@ -1182,11 +1181,11 @@ is symmetric positive definite. One can specify CG with
 `-pc_gamg_esteig_ksp_max_it` is 10, which we have found is pretty safe
 with a (default) safety factor of 1.1. One can specify the range of real
 eigenvalues in the same way as with Chebyshev KSP solvers
-(smoothers), with `-pc_gamg_eigenvalues <emin,emax>`. GAMG sets the MG
+(smoothers), with `-pc_gamg_eigenvalues emin,emax`. GAMG sets the MG
 smoother type to chebyshev by default. By default, GAMG uses its eigen
 estimate, if it has one, for Chebyshev smoothers if the smoother uses
 Jacobi preconditioning. This can be overridden with
-`-pc_gamg_use_sa_esteig  <true,false>`.
+`-pc_gamg_use_sa_esteig  (true|false)`.
 
 AMG methods require knowledge of the number of degrees of freedom per
 vertex; the default is one (a scalar problem). Vector problems like
@@ -1216,18 +1215,18 @@ wishes to use a parallel coarse grid solver. GAMG generalizes this by
 reducing the active number of processes on other coarse grids.
 GAMG will select the number of active processors by fitting the desired
 number of equations per process (set with
-`-pc_gamg_process_eq_limit <50>,`) at each level given that size of
+`-pc_gamg_process_eq_limit n`) at each level given that size of
 each level. If $P_i < P$ processors are desired on a level
 $i$, then the first $P_i$ processes are populated with the grid
 and the remaining are empty on that grid. One can, and probably should,
-repartition the coarse grids with `-pc_gamg_repartition <true>`,
+repartition the coarse grids with `-pc_gamg_repartition true`,
 otherwise an integer process reduction factor ($q$) is selected
 and the equations on the first $q$ processes are moved to process
 0, and so on. As mentioned, multigrid generally coarsens the problem
 until it is small enough to be solved with an exact solver (e.g., LU or
 SVD) in a relatively short time. GAMG will stop coarsening when the
 number of the equation on a grid falls below the threshold given by
-`-pc_gamg_coarse_eq_limit <50>,`.
+`-pc_gamg_coarse_eq_limit 50`.
 
 **Coarse grid parameters:** There are several options to provide
 parameters to the coarsening algorithm and parallel data layout. Run a
@@ -1235,8 +1234,8 @@ code using `PCGAMG` with `-help` to get a full listing of GAMG
 parameters with short descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
-result in decrease in the convergence rate. `-pc_gamg_threshold <-1>`
-and `-pc_gamg_aggressive_coarsening <N>` are the primary parameters that
+result in decrease in the convergence rate. `-pc_gamg_threshold -1`
+and `-pc_gamg_aggressive_coarsening N` are the primary parameters that
 control coarsening rates, which is very important for AMG performance. A
 greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements MIS-2; the root vertex in an
@@ -1302,7 +1301,7 @@ discrete gradient, ADS also needs the specification of the discrete curl
 operator, which can be set using `PCHYPRESetDiscreteCurl()`.
 
 **I am converging slowly, what do I do?** AMG methods are sensitive to
-coarsening rates and methods; for GAMG use `-pc_gamg_threshold <x>`
+coarsening rates and methods; for GAMG use `-pc_gamg_threshold x`
 or `PCGAMGSetThreshold()` to regulate coarsening rates; higher values decrease
 the coarsening rate. A high threshold (e.g., $x=0.08$) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
@@ -1312,7 +1311,7 @@ cheaper solves, and generally worse convergence rates.
 Aggressive_coarsening is the second mechanism for
 increasing the coarsening rate and thereby decreasing the cost of the
 coarse grids and generally decreasing the solver convergence rate.
-Use `-pc_gamg_aggressive_coarsening <N>`, or
+Use `-pc_gamg_aggressive_coarsening N`, or
 `PCGAMGSetAggressiveLevels(pc,N)`, to aggressively coarsen the graph on the finest N
 levels. The default is $N=1$. There are two options for aggressive coarsening: 1) the
 default, square graph: use $A^T A$ in the MIS coarsening algorithm and 2) coarsen with MIS-2 (instead
@@ -1369,7 +1368,7 @@ Galerkin coarse grid construction (`MatPtAP()`) is not (much) more than
 the time spent in each solve (`KSPSolve()`). If the `MatPtAP()` time is
 too large, then one can increase the coarsening rate by decreasing the
 threshold and using aggressive coarsening
-(`-pc_gamg_aggressive_coarsening <N>`, squares the graph on the finest N
+(`-pc_gamg_aggressive_coarsening N`, squares the graph on the finest N
 levels). Likewise, if your `MatPtAP()` time is short and your convergence
 If the rate is not ideal, you could decrease the coarsening rate.
 
@@ -1819,8 +1818,8 @@ PCMGSetCycleType(PC pc,PCMGCycleType ctype);
 
 with a value of `PC_MG_CYCLE_W` for `ctype`. The commands above can
 also be set from the options database. The option names are
-`-pc_mg_type [multiplicative, additive, full, kaskade]`, and
-`-pc_mg_cycle_type` `<ctype>`.
+`-pc_mg_type (multiplicative|additive|full|kaskade)`, and
+`-pc_mg_cycle_type ctype`.
 
 The user can control the amount of smoothing by configuring the solvers
 on the levels. By default, the up and down smoothers are identical. If
@@ -2014,42 +2013,42 @@ have zeros on the diagonals and the rest.
 
 - Control the fields used
 
-  - `-pc_fieldsplit_detect_saddle_point` \<bool:false> Generate two fields, the first consists of all rows with a nonzero on the diagonal, and the second will be all rows
+  - `-pc_fieldsplit_detect_saddle_point (true|false)` Generate two fields, the first consists of all rows with a nonzero on the diagonal, and the second will be all rows
     with zero on the diagonal. See `PCFieldSplitSetDetectSaddlePoint()`.
 
-  - `-pc_fieldsplit_dm_splits` \<bool:true> Use the `DM` attached to the preconditioner to determine the fields. See `PCFieldSplitSetDMSplits()` and
+  - `-pc_fieldsplit_dm_splits (true|false)` Use the `DM` attached to the preconditioner to determine the fields. See `PCFieldSplitSetDMSplits()` and
     `DMCreateFieldDecomposition()`.
 
-  - `-pc_fieldsplit_%d_fields` \<f1,f2,...:int> Use f1, f2, .. to define field `d`. The `fn` are in the range of 0, ..., bs-1 where bs is the block size
+  - `-pc_fieldsplit_%d_fields f1,f2,...` Use f1, f2, ... to define field `d`. The `fn` are in the range of 0, ..., bs-1 where bs is the block size
     of the matrix or set with `PCFieldSplitSetBlockSize()`. See `PCFieldSplitSetFields()`.
 
-    - `-pc_fieldsplit_default` \<bool:true> Automatically add any fields needed that have not been supplied explicitly by `-pc_fieldsplit_%d_fields`.
+    - `-pc_fieldsplit_default (true|false)` Automatically add any fields needed that have not been supplied explicitly by `-pc_fieldsplit_%d_fields`.
 
   - `DMFieldsplitSetIS()` Provide the `IS` that defines a particular field.
 
 - Control the type of the block preconditioner
 
-  - `-pc_fieldsplit_type` \<additive|multiplicative|symmetric_multiplicative|schur|gkb:multiplicative> The order in which the field solves are applied.
+  - `-pc_fieldsplit_type (additive|multiplicative|symmetric_multiplicative|schur|gkb)` The order in which the field solves are applied.
     For symmetric problems where `KSPCG` is used `symmetric_multiplicative` must be used instead of `multiplicative`. `additive` is the least expensive
     to apply but provides the worst convergence. `schur` requires either a good preconditioner for the Schur complement or a naturally well-conditioned
     Schur complement, but when it works well can be extremely effective. See `PCFieldSplitSetType()`. `gkb` is for symmetric saddle-point problems (the lower-right
     the block is zero).
 
-  - `-pc_fieldsplit_diag_use_amat` \<bool:false> Use the first matrix that is passed to `KSPSetJacobian()` to construct the block-diagonal sub-matrices used in the algorithms,
+  - `-pc_fieldsplit_diag_use_amat (true|false)` Use the first matrix that is passed to `KSPSetJacobian()` to construct the block-diagonal sub-matrices used in the algorithms,
     by default, the second matrix is used.
 
   - Options for Schur preconditioner: `-pc_fieldsplit_type`
     `schur`
 
-    - `-pc_fieldsplit_schur_fact_type` \<diag|lower|upper|full:diag> See `PCFieldSplitSetSchurFactType()`. `full` reduces the iterations but each iteration requires additional
+    - `-pc_fieldsplit_schur_fact_type (diag|lower|upper|full)` See `PCFieldSplitSetSchurFactType()`. `full` reduces the iterations but each iteration requires additional
       field solves.
 
-    - `-pc_fieldsplit_schur_precondition` \<self|selfp|user|a11|full:user> How the Schur complement is preconditioned. See `PCFieldSplitSetSchurPre()`.
+    - `-pc_fieldsplit_schur_precondition (self|selfp|user|a11|full:user)` How the Schur complement is preconditioned. See `PCFieldSplitSetSchurPre()`.
 
-      - `-fieldsplit_1_mat_schur_complement_ainv_type` \<diag|lump:diag> Use the lumped diagonal of $A_{00}$ when `-pc_fieldsplit_schur_precondition`
+      - `-fieldsplit_1_mat_schur_complement_ainv_type (diag|lump)` Use the lumped diagonal of $A_{00}$ when `-pc_fieldsplit_schur_precondition`
         `selfp` is used.
 
-    - `-pc_fieldsplit_schur_scale` \<real:-1.0> Controls the sign flip of S for `-pc_fieldsplit_schur_fact_type` `diag`.
+    - `-pc_fieldsplit_schur_scale scale` Controls the sign flip of S for `-pc_fieldsplit_schur_fact_type` `diag`.
       See `PCFieldSplitSetSchurScale()`
 
     - `fieldsplit_1_xxx` controls the solver for the Schur complement system.
@@ -2069,11 +2068,11 @@ have zeros on the diagonals and the rest.
 
   - Options for GKB preconditioner: `-pc_fieldsplit_type` gkb
 
-    - `-pc_fieldsplit_gkb_tol` \<real:1e-5> See `PCFieldSplitSetGKBTol()`.
-    - `-pc_fieldsplit_gkb_delay` \<int:5> See `PCFieldSplitSetGKBDelay()`.
-    - `-pc_fieldsplit_gkb_nu` \<real:1.0> See `PCFieldSplitSetGKBNu()`.
-    - `-pc_fieldsplit_gkb_maxit` \<int:100> See `PCFieldSplitSetGKBMaxit()`.
-    - `-pc_fieldsplit_gkb_monitor` \<bool:false> Monitor the convergence of the inner solver.
+    - `-pc_fieldsplit_gkb_tol tol` See `PCFieldSplitSetGKBTol()`.
+    - `-pc_fieldsplit_gkb_delay delay` See `PCFieldSplitSetGKBDelay()`.
+    - `-pc_fieldsplit_gkb_nu nu` See `PCFieldSplitSetGKBNu()`.
+    - `-pc_fieldsplit_gkb_maxit maxit` See `PCFieldSplitSetGKBMaxit()`.
+    - `-pc_fieldsplit_gkb_monitor (true|false)` Monitor the convergence of the inner solver.
 
 - Options for additive and multiplication field solvers:
 
@@ -2190,7 +2189,7 @@ A_{00}^{-1}   & 0 \\
 $$
 
 These can be accessed with
-`-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>`
+`-pc_fieldsplit_type (additive|multiplicative|symmetric_multiplicative)`
 or the function `PCFieldSplitSetType()`. The option prefixes for the
 internal KSPs are given by `-fieldsplit_name_`.
 
@@ -2312,7 +2311,7 @@ the approximate Schur complement.
 
 There are several variants of the Schur complement preconditioner
 obtained by dropping some of the terms; these can be obtained with
-`-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>` or the
+`-pc_fieldsplit_schur_fact_type (diag|lower|upper|full)` or the
 function `PCFieldSplitSetSchurFactType()`. Note that the `diag` form
 uses the preconditioner
 
@@ -2432,7 +2431,7 @@ apply `MatNullSpaceRemove()` with the null space of `Amat` transpose to the righ
 If one chooses a direct solver (or an incomplete factorization) it may
 still detect a zero pivot. You can run with the additional options or
 `-pc_factor_shift_type NONZERO`
-`-pc_factor_shift_amount  <dampingfactor>` to prevent the zero pivot.
+`-pc_factor_shift_amount dampingfactor` to prevent the zero pivot.
 A good choice for the `dampingfactor` is 1.e-10.
 
 If the matrix is non-symmetric and you wish to solve the transposed linear system
@@ -2451,9 +2450,10 @@ To use these solvers, one may:
    `--download-mumps` `--download-scalapack` (MUMPS requires
    ScaLAPACK).
 2. Build the PETSc libraries.
-3. Use the runtime option: `-ksp_type preonly` (or equivalently `-ksp_type none`) `-pc_type <pctype>`
-   `-pc_factor_mat_solver_type <packagename>`. For eg:
-   `-ksp_type preonly` `-pc_type lu`
+3. Use the runtime option: `-ksp_type preonly` (or equivalently `-ksp_type none`) `-pc_type type`
+   `-pc_factor_mat_solver_type packagename`. For eg:
+   `-pc_factor_mat_solver_type packagename`. For e.g.:
+   `-ksp_type preonly -pc_type lu`
    `-pc_factor_mat_solver_type superlu_dist`.
 
 ```{eval-rst}

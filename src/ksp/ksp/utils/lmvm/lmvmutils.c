@@ -845,7 +845,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 - hist_size - number of past iterates (default 5)
 
   Options Database Key:
-. -mat_lmvm_hist_size <m> - set number of past iterates
+. -mat_lmvm_hist_size m - set number of past iterates
 
   Level: beginner
 

@@ -1656,7 +1656,7 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 . comm - the MPI communicator to share the `PETSCVIEWERHDF5` `PetscViewer`
 
   Options Database Key:
-. -viewer_hdf5_filename <name> - name of the HDF5 file
+. -viewer_hdf5_filename name - name of the HDF5 file
 
   Environmental variable:
 . `PETSC_VIEWER_HDF5_FILENAME` - name of the HDF5 file

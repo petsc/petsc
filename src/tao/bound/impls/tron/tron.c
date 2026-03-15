@@ -297,7 +297,7 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU)
 
   Options Database Keys:
 + -tao_tron_maxgpits - maximum number of gradient projections per TRON iterate
-- -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
+- -tao_subset_type   - "subvec","mask","matrix-free", strategies for handling active-sets
 
   Level: beginner
 M*/
