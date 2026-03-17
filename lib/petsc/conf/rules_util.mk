@@ -202,7 +202,7 @@ checkbadSource:
 .PHONY: branch-review
 branch-review:
 	@command -v claude >/dev/null 2>&1 || { echo "Claude Code not installed"; exit 1; }
-	@claude "/review-branch"
+	@claude $(CLAUDE_OPTS) "/review-branch"
 
 # Note that the LLM could run make checkbadSource, rm, and make clangformat from a larger prompt
 # We intentionally only use the LLM where it adds its unique value-added and otherwise use standard techniques

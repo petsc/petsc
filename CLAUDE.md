@@ -28,7 +28,7 @@ PETSc is a C library for parallel numerical computation using MPI. The codebase 
 - `make checkbadSource` — check style rules (CI runs this)
 - `make test search='<pattern>'` — run specific tests
 - `make alltests TIMEOUT=600` — run full test suite
-- `make branch-review` — run AI-assisted code review on the current branch
+- `make branch-review CLAUDE_OPTS='<options>'` — run AI-assisted code review on the current branch
 
 ## GitLab CI
 
