@@ -158,6 +158,7 @@ public:
   static PetscErrorCode ZeroEntries(Mat) noexcept;
   static PetscErrorCode Conjugate(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
+  static PetscErrorCode DiagonalScale(Mat, Vec, Vec) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
   static PetscErrorCode SetRandom(Mat, PetscRandom) noexcept;
@@ -1122,6 +1123,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, getcolumnvector, MatGetColumnVector_SeqDense, GetColumnVector);
   MatSetOp_CUPM(to_host, A, conjugate, MatConjugate_SeqDense, Conjugate);
   MatSetOp_CUPM(to_host, A, scale, MatScale_SeqDense, Scale);
+  MatSetOp_CUPM(to_host, A, diagonalscale, MatDiagonalScale_SeqDense, DiagonalScale);
   MatSetOp_CUPM(to_host, A, shift, MatShift_SeqDense, Shift);
   MatSetOp_CUPM(to_host, A, copy, MatCopy_SeqDense, Copy);
   MatSetOp_CUPM(to_host, A, zeroentries, MatZeroEntries_SeqDense, ZeroEntries);
@@ -1552,6 +1554,69 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
     }
   }
   PetscCall(PetscLogGpuFlops(N));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) noexcept
+{
+  PetscBool          iscupm;
+  PetscDeviceContext dctx;
+  cupmBlasHandle_t   handle;
+  auto               m = A->rmap->n, n = A->cmap->n;
+
+  PetscFunctionBegin;
+  if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscInfo(A, "Performing DiagonalScale %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
+  PetscCall(GetHandles_(&dctx, &handle));
+  {
+    Vec        lr;
+    const auto da  = DeviceArrayReadWrite(dctx, A);
+    const auto lda = MatIMPLCast(A)->lda;
+
+    if (l) {
+      PetscCall(VecGetSize(l, &m));
+      PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling Vec of wrong size");
+      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(l), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
+      if (!iscupm || l->boundtocpu) {
+        PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(l)), &lr));
+        PetscCall(VecSetLayout(lr, l->map));
+        PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
+        PetscCall(VecCopy(l, lr));
+      } else lr = l;
+      {
+        const auto     dlr  = VecSeq_CUPM::DeviceArrayRead(dctx, lr);
+        constexpr auto side = CUPMBLAS_SIDE_LEFT;
+
+        PetscCall(PetscLogGpuTimeBegin());
+        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, dlr.cupmdata(), 1, da.cupmdata(), lda));
+        PetscCall(PetscLogGpuTimeEnd());
+        PetscCall(PetscLogGpuFlops(1.0 * n * m));
+      }
+      if (!iscupm || l->boundtocpu) PetscCall(VecDestroy(&lr));
+    }
+    if (r) {
+      PetscCall(VecGetSize(r, &n));
+      PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling Vec of wrong size");
+      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(r), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
+      if (!iscupm || r->boundtocpu) {
+        PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(r)), &lr));
+        PetscCall(VecSetLayout(lr, r->map));
+        PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
+        PetscCall(VecCopy(r, lr));
+      } else lr = r;
+      {
+        const auto     dlr  = VecSeq_CUPM::DeviceArrayRead(dctx, lr);
+        constexpr auto side = CUPMBLAS_SIDE_RIGHT;
+
+        PetscCall(PetscLogGpuTimeBegin());
+        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, dlr.cupmdata(), 1, da.cupmdata(), lda));
+        PetscCall(PetscLogGpuTimeEnd());
+        PetscCall(PetscLogGpuFlops(1.0 * n * m));
+      }
+      if (!iscupm || r->boundtocpu) PetscCall(VecDestroy(&lr));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -81,6 +81,7 @@ PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat, PetscBool);
 PETSC_INTERN PetscErrorCode MatGetColumnVector_SeqDense(Mat, Vec, PetscInt);
 PETSC_INTERN PetscErrorCode MatConjugate_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatScale_SeqDense(Mat, PetscScalar);
+PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqDense(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatShift_SeqDense(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat, PetscInt, Vec *);
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVec_SeqDense(Mat, PetscInt, Vec *);
