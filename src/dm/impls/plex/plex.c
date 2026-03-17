@@ -10361,6 +10361,12 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *d
   Level: developer
 
   Notes:
+  The condition number $\kappa_c$ of a cell $c$ is given by
+  ```{math}
+  \kappa_c = \left\lVert J_c \right\rVert \left\lVert J^{-1}_c \right\rVert
+  ```
+  where $J_c$ is the Jacobian of the mapping from the reference cell to cell $c$.
+
   This is mainly intended for debugging/testing purposes.
 
   For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
@@ -10387,6 +10393,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(PetscMalloc2(PetscSqr(cdim), &J, PetscSqr(cdim), &invJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
