@@ -84,6 +84,9 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel,
 PETSC_EXTERN PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
 
+PETSC_EXTERN PetscErrorCode DMPlexRefineToSimplexGetReflect(DMPlexTransform, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexRefineToSimplexSetReflect(DMPlexTransform, PetscBool);
+
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform, PetscReal *);

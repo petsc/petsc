@@ -91,6 +91,7 @@ PetscErrorCode DMPlexTransformRegister(const char name[], PetscErrorCode (*creat
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Regular(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToBox(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToSimplex(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform);
@@ -116,6 +117,7 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
   PetscCall(DMPlexTransformRegister(DMPLEXTRANSFORMFILTER, DMPlexTransformCreate_Filter));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINEREGULAR, DMPlexTransformCreate_Regular));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINETOBOX, DMPlexTransformCreate_ToBox));
+  PetscCall(DMPlexTransformRegister(DMPLEXREFINETOSIMPLEX, DMPlexTransformCreate_ToSimplex));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINEALFELD, DMPlexTransformCreate_Alfeld));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINEBOUNDARYLAYER, DMPlexTransformCreate_BL));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINESBR, DMPlexTransformCreate_SBR));

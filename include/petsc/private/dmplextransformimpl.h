@@ -112,6 +112,10 @@ typedef struct {
 } DMPlexRefine_ToBox;
 
 typedef struct {
+  PetscBool reflect; /* Flag to reflect the transformation */
+} DMPlexRefine_ToSimplex;
+
+typedef struct {
   PetscInt dummy;
 } DMPlexRefine_Alfeld;
 
