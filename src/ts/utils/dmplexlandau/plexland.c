@@ -1636,9 +1636,10 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], con
             } else {
               idx = -idx - 1;
               for (PetscInt q = 0; q < maps[grid].num_face; q++) {
-                if (maps[grid].c_maps[idx][q].gid < 0) break;
-                cnt2++;
-                coo_elem_point_offsets[glb_elem_idx][f + 1]++; // inc
+                if (maps[grid].c_maps[idx][q].gid >= 0) { // skip zero-scale (gid=-1) entries; do not break - they may be non-contiguous in 3D AMR
+                  cnt2++;
+                  coo_elem_point_offsets[glb_elem_idx][f + 1]++; // inc
+                }
               }
             }
             PetscCheck(cnt2 <= fullNb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "wrong count %" PetscInt_FMT " < %" PetscInt_FMT, fullNb, cnt2);
