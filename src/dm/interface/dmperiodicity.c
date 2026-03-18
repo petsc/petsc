@@ -118,6 +118,17 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMLocalizeCoordinatePerDimension_Internal(DM dm, PetscInt d, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
+{
+  PetscFunctionBegin;
+  if ((dm->L[d] > 0.0) && (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d])) {
+    out[d] = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
+  } else {
+    out[d] = in[d];
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   DMLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
 
@@ -145,13 +156,7 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
   if (!dm->maxCell) {
     for (d = 0; d < dim; ++d) out[d] = in[d];
   } else {
-    for (d = 0; d < dim; ++d) {
-      if ((dm->L[d] > 0.0) && (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d])) {
-        out[d] = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
-      } else {
-        out[d] = in[d];
-      }
-    }
+    for (d = 0; d < dim; ++d) PetscCall(DMLocalizeCoordinatePerDimension_Internal(dm, d, anchor, in, out));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -441,19 +446,26 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       PetscCall(DMPlexVecGetClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
       PetscCall(PetscSectionGetOffset(csDG, c, &offDG));
       // TODO The coordinates are set in closure order, which might not be the tensor order
-      for (q = 0; q < dof / Nc; ++q) {
-        // Select a trial anchor
-        for (d = 0; d < Nc; ++d) anchor[d] = cellCoords[q * Nc + d];
-        for (p = 0; p < dof / Nc; ++p) {
-          PetscCall(DMLocalizeCoordinate_Internal(dm, Nc, anchor, &cellCoords[p * Nc], &coordsDG[offDG + p * Nc]));
-          // We need the cell to fit into the torus [lower, lower+L)
-          for (d = 0; d < Nc; ++d)
+      for (d = 0; d < Nc; ++d) {
+        for (q = 0; q < dof / Nc; ++q) {
+          anchor[d] = cellCoords[q * Nc + d];
+          // Map anchor into [Lstart, Lstart+L)
+          if (L[d] > 0.0) {
+            if (PetscRealPart(anchor[d]) < (Lstart ? Lstart[d] : 0.)) anchor[d] += L[d];
+            else if (PetscRealPart(anchor[d]) > (Lstart ? Lstart[d] : 0.) + L[d]) anchor[d] -= L[d];
+          }
+          for (p = 0; p < dof / Nc; ++p) {
+            PetscCall(DMLocalizeCoordinatePerDimension_Internal(dm, d, anchor, &cellCoords[p * Nc], &coordsDG[offDG + p * Nc]));
+            // We need the cell to fit into the torus [lower, lower+L)
             if (L[d] > 0. && ((PetscRealPart(coordsDG[offDG + p * Nc + d]) < (Lstart ? Lstart[d] : 0.)) || (PetscRealPart(coordsDG[offDG + p * Nc + d]) > (Lstart ? Lstart[d] : 0.) + L[d]))) break;
-          if (d < Nc) break;
+          }
+          // Suitable anchor found, continue
+          if (p == dof / Nc) break;
         }
-        if (p == dof / Nc) break;
+        // No suitable anchor found, abort
+        if (q == dof / Nc) break;
       }
-      PetscCheck(p == dof / Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " does not fit into the torus %s[0, L]", c, Lstart ? "Lstart + " : "");
+      PetscCheck(d == Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " does not fit into the torus %s[0, L]", c, Lstart ? "Lstart + " : "");
       PetscCall(DMPlexVecRestoreClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
     }
   }
