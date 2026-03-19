@@ -27,17 +27,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
   /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
   #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
-static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) PeNS
-{
-  size_t len;
-
-  PetscFunctionBegin;
-  *has = emptyIsRelative;
-  PetscCall(PetscStrlen(path, &len));
-  if (len) *has = (PetscBool)(path[0] != '/');
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
 {
   PetscFunctionBegin;
@@ -50,6 +39,19 @@ static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
 }
 PETSC_EXTERN PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType, hid_t *);
 PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t, PetscDataType *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
+#endif /* defined(PETSC_HAVE_HDF5) */
+
+static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) PeNS
+{
+  size_t len;
+
+  PetscFunctionBegin;
+  *has = emptyIsRelative;
+  PetscCall(PetscStrlen(path, &len));
+  if (len) *has = (PetscBool)(path[0] != '/');
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObject(PetscViewer, PetscObject, PetscBool *);
@@ -65,7 +67,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char[], const char *[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer, const char[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteGroup(PetscViewer, const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer, PetscBool);
@@ -88,4 +89,3 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer, PetscBool 
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCompress(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCompress(PetscViewer, PetscBool *);
-#endif /* defined(PETSC_HAVE_HDF5) */

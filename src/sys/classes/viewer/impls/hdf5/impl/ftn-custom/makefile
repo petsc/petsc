@@ -1,7 +1,5 @@
--include ../../../../../../petscdir.mk
-
-MANSEC    = Sys
-SUBMANSEC = Viewer
+-include ../../../../../../../../petscdir.mk
+#requirespackage  'PETSC_HAVE_HDF5'
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk
