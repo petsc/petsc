@@ -87,6 +87,7 @@ def bootstrap():
     PETSC_ARCH = 'arch-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
+    os.environ['PETSC_BUILDING_WHEEL'] = '1'
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
     sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc','conf'))
 
@@ -171,30 +172,25 @@ def config(prefix):
             raise RuntimeError(status)
 
     # Fix PETSc configuration
-    using_build_backend = any(
-        os.environ.get(prefix + '_BUILD_BACKEND')
-        for prefix in ('_PYPROJECT_HOOKS', 'PEP517')
-    )
-    if using_build_backend:
-        pdir = os.environ['PETSC_DIR']
-        parch = os.environ['PETSC_ARCH']
-        include = os.path.join(pdir, parch, 'include')
-        for filename in (
-            'petscconf.h',
-            'petscconfiginfo.h',
-            'petscmachineinfo.h',
-        ):
-            filename = os.path.join(include, filename)
-            with open(filename, 'r') as old_fh:
-                contents = old_fh.read()
-            contents = contents.replace(prefix, '${PETSC_DIR}')
-            contents = re.sub(
-                r'^(#define PETSC_PYTHON_EXE) "(.*)"$',
-                r'\1 "python%d"' % sys.version_info[0],
-                contents, flags=re.MULTILINE,
-            )
-            with open(filename, 'w') as new_fh:
-                new_fh.write(contents)
+    pdir = os.environ['PETSC_DIR']
+    parch = os.environ['PETSC_ARCH']
+    include = os.path.join(pdir, parch, 'include')
+    for filename in (
+        'petscconf.h',
+        'petscconfiginfo.h',
+        'petscmachineinfo.h',
+    ):
+        filename = os.path.join(include, filename)
+        with open(filename, 'r') as old_fh:
+            contents = old_fh.read()
+        contents = contents.replace(prefix, '${PETSC_DIR}')
+        contents = re.sub(
+            r'^(#define PETSC_PYTHON_EXE) "(.*)"$',
+            r'\1 "python%d"' % sys.version_info[0],
+            contents, flags=re.MULTILINE,
+        )
+        with open(filename, 'w') as new_fh:
+            new_fh.write(contents)
 
 
 def build():
