@@ -5234,7 +5234,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV) PeNS
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodyShells()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *numBodies) PeNS
 {
@@ -5278,7 +5278,7 @@ PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *num
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **shells, PetscInt *numShells) PeNS
 {
@@ -5318,7 +5318,7 @@ PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **s
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **faces, PetscInt *numFaces) PeNS
 {
@@ -5358,7 +5358,7 @@ PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **fa
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **loops, PetscInt *numLoops) PeNS
 {
@@ -5399,7 +5399,7 @@ PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **lo
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom shell, PetscGeom **faces, PetscInt *numFaces) PeNS
 {
@@ -5440,7 +5440,7 @@ PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom she
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face, PetscGeom **loops, PetscInt *numLoops) PeNS
 {
@@ -5481,7 +5481,7 @@ PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face, PetscGeom **edges, PetscInt *numEdges) PeNS
 {
@@ -5521,7 +5521,7 @@ PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **edges, PetscInt *numEdges) PeNS
 {
@@ -5561,7 +5561,7 @@ PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **ed
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **nodes, PetscInt *numNodes) PeNS
 {
@@ -5602,7 +5602,7 @@ PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **no
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge, PetscGeom **nodes, PetscInt *numNodes) PeNS
 {
@@ -5642,7 +5642,7 @@ PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscInt *id) PeNS
 {
@@ -5687,7 +5687,7 @@ PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscIn
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, PetscInt geomID, PetscGeom *geomObj) PeNS
 {
@@ -5727,7 +5727,7 @@ PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, Pet
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscInt *numCntrlPnts) PeNS
 {
@@ -5781,7 +5781,7 @@ PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscI
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize) PeNS
 {
@@ -5845,7 +5845,7 @@ PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscS
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
 {
@@ -5893,7 +5893,7 @@ PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
 
   Level: intermediate
 
-.seealso:
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
 PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable, PetscInt *cpCoordDataLength, PetscScalar **cpCoordData, PetscInt *maxNumEquiv, Mat *cpEquiv, PetscHMapI *wHashTable, PetscInt *wDataLength, PetscScalar **wData) PeNS
 {
@@ -5967,13 +5967,13 @@ PetscErrorCode DMPlexRestoreGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashT
 - gradVolW            - Array containing the Volume Gradient with respect to Control Point Weight. Data is arranged by Control Point ID.
 
   Notes:
-  Must Call DMPLexGeomDataAndGrads() before calling this function.
+  Must Call `DMPLexGeomDataAndGrads()` before calling this function.
 
-  gradVolCP and gradVolW are only available when DMPlexGeomDataAndGrads() is called with fullGeomGrad = PETSC_TRUE.
+  `gradVolCP` and `gradVolW` are only available when `DMPlexGeomDataAndGrads()` is called with fullGeomGrad = PETSC_TRUE.
 
   Level: intermediate
 
-.seealso: DMPlexGeomDataAndGrads
+.seealso: `DMPlexGeomDataAndGrads()`
 @*/
 PetscErrorCode DMPlexGetGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable, Mat *cpSurfGrad, PetscInt *cpArraySize, PetscScalar **gradSACP, PetscScalar **gradVolCP, PetscInt *wArraySize, PetscScalar **gradSAW, PetscScalar **gradVolW)
 {
@@ -6056,12 +6056,12 @@ PetscErrorCode DMPlexRestoreGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable,
 . cntrlPntVertexMap       - Array containing the VERTEX ID for the Control Point. Array index corresponds to Control Point ID.
 - cntrlPntWeightVertexMap - Array containing the VERTEX ID for the Control Point Weight. Array index corresponds to Control Point ID.
 
+  Level: intermediate
+
   Note:
   Arrays are initialized to -1. Array elements with a -1 value indicates that the Control Point or Control Point Weight not associated with the referenced Geometric entity in the array name.
 
-  Level: intermediate
-
-.seealso: DMPlexGeomDataAndGrads
+.seealso: `DMPlexGeomDataAndGrads()`
 @*/
 PetscErrorCode DMPlexGetGeomCntrlPntMaps(DM dm, PetscInt *numCntrlPnts, PetscInt **cntrlPntFaceMap, PetscInt **cntrlPntWeightFaceMap, PetscInt **cntrlPntEdgeMap, PetscInt **cntrlPntWeightEdgeMap, PetscInt **cntrlPntVertexMap, PetscInt **cntrlPntWeightVertexMap)
 {

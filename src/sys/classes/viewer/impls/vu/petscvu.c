@@ -134,7 +134,7 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
   Level: beginner
 
 .seealso: [](sec_viewers), `PetscViewerVUFlushDeferred()`, `PetscViewerVUGetPointer()`, `PetscViewerVUSetVecSeen()`, `PetscViewerVUGetVecSeen()`,
-          `PetscViewerVUPrintDeferred()`, `PetscViewerVUFlushDeferred()`
+          `PetscViewerVUPrintDeferred()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 {

@@ -121,8 +121,8 @@ PETSC_EXTERN const char *const PetscWeakFormKinds[];
 
   Level: beginner
 
-.seealso: `PetscPointFn`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, PetscDSGetResidual()`, `PetscDSSetResidual()`,
-          `PetscDSGetRHSResidual()`, `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`
+.seealso: `PetscPointFn`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, `PetscDSGetResidual()`, `PetscDSSetResidual()`,
+          `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscPointFn(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar result[]);
 
@@ -152,7 +152,7 @@ PETSC_EXTERN_TYPEDEF typedef void PetscPointFn(PetscInt dim, PetscInt Nf, PetscI
 
   Level: beginner
 
-.seealso: `PetscPointFn`, `PetscDSSetJacobian()`, `PetscDSGetJacobian()`, PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobianPreconditioner()`,
+.seealso: `PetscPointFn`, `PetscDSSetJacobian()`, `PetscDSGetJacobian()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobianPreconditioner()`,
           `PetscDSSetDynamicJacobian()`, `PetscDSGetDynamicJacobian()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscPointJacFn(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g[]);
@@ -183,8 +183,8 @@ PETSC_EXTERN_TYPEDEF typedef void PetscPointJacFn(PetscInt dim, PetscInt Nf, Pet
 
   Level: beginner
 
-.seealso: `PetscPointFn`, `PetscDSSetBdResidual()`, `PetscDSGetBdResidual()`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, PetscDSGetResidual()`,
-          `PetscDSGetRHSResidual()`, `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`,
+.seealso: `PetscPointFn`, `PetscDSSetBdResidual()`, `PetscDSGetBdResidual()`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, `PetscDSGetResidual()`,
+          `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`,
           `PetscDSSetResidual()`, `PetscPointJacFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscBdPointFn(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
@@ -216,9 +216,9 @@ PETSC_EXTERN_TYPEDEF typedef void PetscBdPointFn(PetscInt dim, PetscInt Nf, Pets
 
   Level: beginner
 
-.seealso: `PetscPointFn`, `PetscDSSetBdJacobian()`, PetscDSGetBdJacobian()`, `PetscDSSetBdJacobianPreconditioner()`, `PetscDSGetBdJacobianPreconditioner()`,
-          `PetscDSSetBdResidual()`, `PetscDSGetBdResidual()`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, PetscDSGetResidual()`,
-          `PetscDSGetRHSResidual()`, `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`,
+.seealso: `PetscPointFn`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`, `PetscDSSetBdJacobianPreconditioner()`, `PetscDSGetBdJacobianPreconditioner()`,
+          `PetscDSSetBdResidual()`, `PetscDSGetBdResidual()`, `PetscDSSetObjective()`, `PetscDSGetObjective()`, `PetscDSGetResidual()`,
+          `PetscDSGetRHSResidual()`, `PetscDSSetUpdate()`, `PetscDSGetUpdate()`, `DMPlexSetCoordinateMap()`,
           `PetscDSSetResidual()`, `PetscPointJacFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscBdPointJacFn(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]);

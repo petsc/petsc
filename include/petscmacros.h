@@ -559,6 +559,11 @@ M*/
 .seealso: `PetscLikely()`, `PetscUnlikelyDebug()`, `PetscCall()`, `PetscDefined()`, `PetscHasAttribute()`,
           `PETSC_ATTRIBUTE_COLD`
 M*/
+#if defined(PETSC_HAVE_BUILTIN_EXPECT)
+  #define PetscUnlikely(cond) __builtin_expect(!!(cond), 0)
+#else
+  #define PetscUnlikely(cond) (cond)
+#endif
 
 /*MC
   PetscLikely - Hints the compiler that the given condition is usually true
@@ -587,15 +592,12 @@ M*/
   }
 .ve
 
-.seealso: `PetscUnlikely()`, `PetscDefined()`, `PetscHasAttribute()`
-          `PETSC_ATTRIBUTE_COLD`
+.seealso: `PetscUnlikely()`, `PetscDefined()`, `PetscHasAttribute()`, `PETSC_ATTRIBUTE_COLD`
 M*/
 #if defined(PETSC_HAVE_BUILTIN_EXPECT)
-  #define PetscUnlikely(cond) __builtin_expect(!!(cond), 0)
-  #define PetscLikely(cond)   __builtin_expect(!!(cond), 1)
+  #define PetscLikely(cond) __builtin_expect(!!(cond), 1)
 #else
-  #define PetscUnlikely(cond) (cond)
-  #define PetscLikely(cond)   (cond)
+  #define PetscLikely(cond) (cond)
 #endif
 
 /*MC

@@ -85,7 +85,7 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
    See `KSPPREONLY` for more details
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPPREONLY`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`, `KSPGetPC()`, `KSPSetInitialGuessNonzero()`,
-          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`, `KSPPREONLY`
+          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`
 M*/
 
 /*MC

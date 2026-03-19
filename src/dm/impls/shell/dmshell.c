@@ -1262,6 +1262,16 @@ static PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+   DMSHELL - A `DM` object that allows users to provide the `DM` functionality
+
+   Level: intermediate
+
+.seealso: [](sec_struct), `DMType`, `DMCOMPOSITE`, `DMSTAG`, `DMDA`, `DMDACreate()`, `DMCreate()`, `DMSetType()`, `DMShellCreate()`,
+          `DMShellSetContext()`, `DMShellGetContext()`, `DMShellSetDestroyContext()`, `DMShellSetMatrix`, `DMShellSetCreateMatrix()`,
+          `DMShellSetCreateSubDM()`, `DMShellGetCreateSubDM()`, `DMShellSetCreateDomainDecomposition()`, `DMShellSetCreateDomainDecompositionScatters()`
+M*/
+
 PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 {
   DM_Shell *shell;

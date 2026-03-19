@@ -800,19 +800,16 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode             SNESLineSearchVIProjectF
 PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVIProjectFn *SNESLineSearchVIProjectFunc PETSC_DEPRECATED_TYPEDEF(3, 21, 0, "SNESLineSearchVIProjectFn*", );
 
 /*S
-  SNESLineSearchVIProjectFn - A prototype of a `SNES` function that computes the norm of the active set variables in a vector in a VI solve,
+  SNESLineSearchVINormFn - A prototype of a `SNES` function that computes the norm of the active set variables in a vector in a variational inequality (VI) solve,
   passed to `SNESLineSearchSetVIFunctions()`
 
   Calling Sequence:
 + snes  - `SNES` context
 . f     - the vector to compute the norm of
-. u     - the current solution, entries that are on the VI bounds are ignored
+. u     - the current solution, entries that are on the variational inequality (VI) bounds are ignored
 - fnorm - the resulting norm
 
   Level: advanced
-
-  Note:
-  The deprecated `SNESLineSearchVINormFunc` still works as a replacement for `SNESLineSearchVINormFn` *.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`
 S*/
@@ -831,7 +828,7 @@ PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVINormFn *SNESLineSearchVINormFunc PE
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchVIProjectFn`, `SNESLineSearchVIProjectFn`, `SNESLineSearchSetVIFunctions()`, `SNESLineSearchGetVIFunctions()`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchVINormFn`, `SNESLineSearchVIProjectFn`, `SNESLineSearchSetVIFunctions()`, `SNESLineSearchGetVIFunctions()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESLineSearchVIDirDerivFn(SNES snes, Vec f, Vec u, Vec y, PetscScalar *fty);
 
@@ -907,7 +904,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt);
    search failures.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`,
-          `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
+          `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`
 E*/
 typedef enum {
   SNES_LINESEARCH_SUCCEEDED,
@@ -1097,7 +1094,7 @@ PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 
    Level: intermediate
 
-.seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
+.seealso: `SNES`, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESGetRestartType()`, `SNESNGMRESSelectType`
 M*/
 typedef enum {
@@ -1121,7 +1118,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
    Level: intermediate
 
-.seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
+.seealso: `SNES`, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESGetRestartType()`, `SNESNGMRESRestartType`
 M*/
 typedef enum {
@@ -1151,7 +1148,7 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
 
    Level: intermediate
 
-.seealso: `SNES, `SNESNCG`, `SNESNCGSetType()`
+.seealso: `SNES`, `SNESNCG`, `SNESNCGSetType()`
 M*/
 typedef enum {
   SNES_NCG_FR  = 0,
@@ -1179,7 +1176,7 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
    Level: intermediate
 
-.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNRestartType`
+.seealso: `SNES`, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNRestartType`
 M*/
 typedef enum {
   SNES_QN_SCALE_DEFAULT  = 0,
@@ -1204,7 +1201,7 @@ PETSC_EXTERN const char *const SNESQNScaleTypes[];
 
    Level: intermediate
 
-.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNScaleType`
+.seealso: `SNES`, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNScaleType`
 M*/
 typedef enum {
   SNES_QN_RESTART_DEFAULT  = 0,
@@ -1227,7 +1224,7 @@ PETSC_EXTERN const char *const SNESQNRestartTypes[];
 
    Level: intermediate
 
-.seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNSetType()`, `SNESQNScaleType`, `SNESQNRestartType`, `SNESQNSetRestartType()`
+.seealso: `SNES`, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNSetType()`, `SNESQNScaleType`, `SNESQNRestartType`, `SNESQNSetRestartType()`
 M*/
 typedef enum {
   SNES_QN_LBFGS      = 0,

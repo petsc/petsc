@@ -228,6 +228,8 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
 - -tao_nm_mu     - expansion/contraction factor
 
  Level: beginner
+
+.seealso: `Tao`, `TAONLS`, `TAONTL`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)

@@ -103,7 +103,7 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
 .    `DMFIELDDS`    - a field defined by a discretization over a mesh set with `DMSetField()`
 -    `DMFIELDSHELL` - a field defined by arbitrary callbacks
 
-.seealso: `DMField`, `DMFieldGetType()`, `DMFieldType`,
+.seealso: `DMField`, `DMFieldGetType()`, `DMFieldType`
 @*/
 PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
 {

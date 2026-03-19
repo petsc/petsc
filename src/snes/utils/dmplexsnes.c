@@ -713,7 +713,7 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
 
   Level: developer
 
-.seealso: [](ch_snes),`DMPLEX`, `SNES`, `PetscDSAddBoundary()`, `PetscDSSetObjective()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`
+.seealso: [](ch_snes), `DMPLEX`, `SNES`, `PetscDSAddBoundary()`, `PetscDSSetObjective()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`
 @*/
 PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, PetscCtx ctx)
 {

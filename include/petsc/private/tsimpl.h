@@ -68,11 +68,6 @@ struct _TSOps {
   PetscErrorCode (*resizeregister)(TS, PetscBool);
 };
 
-/*
-   TSEvent - Abstract object to handle event monitoring
-*/
-typedef struct _n_TSEvent *TSEvent;
-
 typedef struct _TSTrajectoryOps *TSTrajectoryOps;
 
 struct _TSTrajectoryOps {
@@ -375,32 +370,6 @@ struct _p_TSAdapt {
   PetscReal   dt_eval_times_cached; /* time step before hitting a TS evaluation time point */
 };
 
-typedef struct _p_DMTS  *DMTS;
-typedef struct _DMTSOps *DMTSOps;
-struct _DMTSOps {
-  TSRHSFunctionFn *rhsfunction;
-  TSRHSJacobianFn *rhsjacobian;
-
-  TSIFunctionFn *ifunction;
-  PetscErrorCode (*ifunctionview)(void *, PetscViewer);
-  PetscErrorCode (*ifunctionload)(void **, PetscViewer);
-
-  TSIJacobianFn *ijacobian;
-  PetscErrorCode (*ijacobianview)(void *, PetscViewer);
-  PetscErrorCode (*ijacobianload)(void **, PetscViewer);
-
-  TSI2FunctionFn *i2function;
-  TSI2JacobianFn *i2jacobian;
-
-  TSTransientVariableFn *transientvar;
-
-  TSSolutionFn *solution;
-  TSForcingFn  *forcing;
-
-  PetscErrorCode (*destroy)(DMTS);
-  PetscErrorCode (*duplicate)(DMTS, DMTS);
-};
-
 /*S
    DMTS - Object held by a `DM` that contains all the callback functions and their contexts needed by a `TS`
 
@@ -430,6 +399,33 @@ struct _DMTSOps {
           `DMTSSetI2Function()`, `DMTSGetI2Function()`, `DMTSSetI2FunctionContextDestroy()`, `DMTSSetI2Jacobian()`,
           `DMTSGetI2Jacobian()`, `DMTSSetI2JacobianContextDestroy()`, `DMKSP`, `DMSNES`
 S*/
+typedef struct _p_DMTS *DMTS;
+
+typedef struct _DMTSOps *DMTSOps;
+struct _DMTSOps {
+  TSRHSFunctionFn *rhsfunction;
+  TSRHSJacobianFn *rhsjacobian;
+
+  TSIFunctionFn *ifunction;
+  PetscErrorCode (*ifunctionview)(void *, PetscViewer);
+  PetscErrorCode (*ifunctionload)(void **, PetscViewer);
+
+  TSIJacobianFn *ijacobian;
+  PetscErrorCode (*ijacobianview)(void *, PetscViewer);
+  PetscErrorCode (*ijacobianload)(void **, PetscViewer);
+
+  TSI2FunctionFn *i2function;
+  TSI2JacobianFn *i2jacobian;
+
+  TSTransientVariableFn *transientvar;
+
+  TSSolutionFn *solution;
+  TSForcingFn  *forcing;
+
+  PetscErrorCode (*destroy)(DMTS);
+  PetscErrorCode (*duplicate)(DMTS, DMTS);
+};
+
 struct _p_DMTS {
   PETSCHEADER(struct _DMTSOps);
   PetscContainer rhsfunctionctxcontainer;

@@ -510,16 +510,17 @@ static PetscErrorCode TaoComputeDual_BQPIP(Tao tao, Vec DXL, Vec DXU)
 
 /*MC
  TAOBQPIP - interior-point method for quadratic programs with
-    box constraints.
+            box constraints.
 
- Notes:
-    This algorithms solves quadratic problems only, the Hessian will
-        only be computed once.
-
- Options Database Keys:
+  Options Database Key:
 . -tao_bqpip_predcorr - use a predictor/corrector method
 
   Level: beginner
+
+  Note:
+  This algorithm solves quadratic problems only, the Hessian will only be computed once.
+
+.seealso: `Tao`, `TaoType`, `TAOGPCG`, `TAOTRON`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)

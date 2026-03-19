@@ -478,7 +478,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 
    Supports both distance one and distance two colorings.
 
-.seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
+.seealso: [](sec_fdmatrix), [](sec_matfactor), `MatColoringType`, `MatColoring`, `MatColoringCreate()`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
 {

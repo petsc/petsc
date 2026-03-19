@@ -1933,7 +1933,7 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
 
   `ISBlockGetIndices()` only works for `ISBLOCK`, not others.
 
-.seealso: `IS`, `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`,
+.seealso: `IS`, `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`
 @*/
 PetscErrorCode ISSetBlockSize(IS is, PetscInt bs)
 {

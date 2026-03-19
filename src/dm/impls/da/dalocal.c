@@ -228,7 +228,7 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
   Note:
   See `DMPlexGetHeightStratum()` for the meaning of these values
 
-.seealso: [](ch_unstructured), `DM`, `DMDA`,  `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
+.seealso: [](ch_unstructured), `DM`, `DMDA`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
           `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`, `DMDAGetDepthStratum()`
 @*/
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PeOp PetscInt *pStart, PeOp PetscInt *pEnd)
@@ -280,7 +280,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PeOp PetscInt *pStar
   Note:
   See `DMPlexGetDepthStratum()` for the meaning of these values
 
-.seealso: [](ch_unstructured), `DM`, `DMDA`,  `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
+.seealso: [](ch_unstructured), `DM`, `DMDA`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
           `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`, `DMDAGetHeightStratum()`
 @*/
 PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PeOp PetscInt *pStart, PeOp PetscInt *pEnd)

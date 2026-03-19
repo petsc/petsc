@@ -204,7 +204,7 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
   Note:
   This function is called BEFORE the function evaluation within the solver.
 
-.seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
+.seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`
 @*/
 PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES snes, Vec X, Vec Y, PetscBool *changed, PetscCtx ctx), PetscCtx ctx)
 {
@@ -1134,7 +1134,7 @@ PetscErrorCode SNESNewtonTRGetUpdateParameters(SNES snes, PetscReal *eta1, Petsc
 .  -snes_tr_t1 t1                                - trust region parameter, shrinking factor of trust region (default: 0.25)
 .  -snes_tr_t2 t2                                - trust region parameter, expanding factor of trust region (default: 2.0)
 .  -snes_tr_norm_type (1|2|infinity)             - Type of norm for trust region bounds (default: 2)
--  -snes_tr_fallback_type (newton|cauchy|dogleg) - Solution strategy to test reduction when step is outside of trust region.
+-  -snes_tr_fallback_type (newton,cauchy,dogleg) - Solution strategy to test reduction when step is outside of trust region.
                                                    Can use scaled Newton direction, Cauchy point (Steepest Descent direction) or dogleg method.
 
    Level: beginner
@@ -1144,12 +1144,12 @@ PetscErrorCode SNESNewtonTRGetUpdateParameters(SNES snes, PetscReal *eta1, Petsc
    Quasi-Newton models are also supported.
 
    Default step computation uses the Newton direction, but a dogleg type update is also supported.
-   The 1- and infinity-norms are also supported when computing the trust region bounds.
+   The 1- and infinity-norms are also supported, via `SNESNewtonTRSetNormType()`, when computing the trust region bounds.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetObjective()`,
-          `SNESNewtonTRSetTolerances()`, `SNESNewtonTRSetUpdateParameters()`
-          `SNESNewtonTRSetNormType()`, `SNESNewtonTRSetFallbackType()`, `SNESNewtonTRSetQNType()`
-          `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRSetPreCheck()`,
+          `SNESNewtonTRSetTolerances()`, `SNESNewtonTRSetUpdateParameters()`,
+          `SNESNewtonTRSetNormType()`, `SNESNewtonTRSetFallbackType()`, `SNESNewtonTRSetQNType()`,
+          `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRSetPreCheck()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
 {

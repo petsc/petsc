@@ -267,10 +267,10 @@ static const char *PetscErrorStrings[] = {
   Level: developer
 
 .seealso: `PetscErrorCode`, `PetscPushErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
-`PetscError()`, `SETERRQ()`, `PetscCall()` `PetscAbortErrorHandler()`,
-`PetscTraceBackErrorHandler()`
+          `PetscError()`, `SETERRQ()`, `PetscCall()`, `PetscAbortErrorHandler()`,
+          `PetscTraceBackErrorHandler()`
 @*/
-PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char *specific[])
+PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], const char *specific[])
 {
   PetscFunctionBegin;
   if (text) {

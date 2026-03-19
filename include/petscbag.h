@@ -30,8 +30,8 @@
    Note:
   `PetscBag` is a C struct, it is not a `PetscObject`
 
-.seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
-          `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
+.seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`,
+          `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`,
           `PetscBagSetFromOptions()`, `PetscBagRegisterVec()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 S*/
 typedef struct _n_PetscBag     *PetscBag;

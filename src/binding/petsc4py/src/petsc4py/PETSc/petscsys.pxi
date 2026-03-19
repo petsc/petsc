@@ -24,7 +24,7 @@ cdef extern from * nogil:
     PetscErrorHandlerFunction PetscTraceBackErrorHandler
     PetscErrorHandlerFunction PetscMPIAbortErrorHandler
     PetscErrorHandlerFunction PetscAbortErrorHandler
-    PetscErrorHandlerFunction PetscIgnoreErrorHandler
+    PetscErrorHandlerFunction PetscReturnErrorHandler
     PetscErrorCode PetscPushErrorHandler(PetscErrorHandlerFunction, void*)
     PetscErrorCode PetscPopErrorHandler()
     PetscErrorCode PetscPopSignalHandler()

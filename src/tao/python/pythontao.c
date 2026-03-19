@@ -38,7 +38,7 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
 
    Level: intermediate
 
-.seealso: `TaoCreate()`, `TaoSetType()`, `TaoPYTHON`, `PetscPythonInitialize()`, `TaoPythonSetType()`
+.seealso: `TaoCreate()`, `TaoSetType()`, `TAOPYTHON`, `PetscPythonInitialize()`, `TaoPythonSetType()`
 @*/
 PetscErrorCode TaoPythonGetType(Tao tao, const char *pyname[])
 {
@@ -48,3 +48,12 @@ PetscErrorCode TaoPythonGetType(Tao tao, const char *pyname[])
   PetscUseMethod(tao, "TaoPythonGetType_C", (Tao, const char *[]), (tao, pyname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+   TAOPYTHON - a `TAOType` that is implemented as a Python class using `TaoPythonSetType()`
+
+   Level: intermediate
+
+.seealso: [](ch_snes), `Tao`, `TaoCreate()`, `TAOSHELL`, `TaoSetType()`, `PetscPythonInitialize()`, `TaoPythonSetType()`,
+          `TaoPythonGetType()`, `TSPYTHON`, `SNESPYTHON`
+M*/

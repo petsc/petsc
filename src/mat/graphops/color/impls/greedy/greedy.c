@@ -551,7 +551,7 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOpti
 
    Supports both distance one and distance two colorings.
 
-.seealso: `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
+.seealso: [](sec_fdmatrix), [](sec_matfactor), `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
 {

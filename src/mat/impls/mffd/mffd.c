@@ -575,9 +575,9 @@ static PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], Pets
   Users should not MatShell... operations on this class, there is some error checking for that incorrect usage
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MatMFFDSetFunction()`, `MatMFFDSetType()`,
-          `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
-          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`,
-          `MatMFFDGetH()`,
+          `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`,
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`,
+          `MatMFFDGetH()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 {
@@ -700,7 +700,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   Use `MATSHELL` or `MatCreateShell()` to provide your own custom matrix-vector operation.
 
-.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
+.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`,
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`, `MatCreateShell()`, `MATSHELL`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`
 @*/

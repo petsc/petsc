@@ -89,7 +89,7 @@ PetscErrorCode PetscStackReset(void)
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
+/*@
   PetscStackView - Print the current (default) PETSc stack to an ASCII file
 
   Not Collective
@@ -110,7 +110,7 @@ PetscErrorCode PetscStackReset(void)
   The default stack is a global variable called `petscstack`.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
-*/
+@*/
 PetscErrorCode PetscStackView(FILE *file)
 {
   if (!file) file = PETSC_STDERR;
@@ -153,7 +153,7 @@ PetscErrorCode PetscStackView(FILE *file)
   return PETSC_SUCCESS;
 }
 
-/*
+/*@
   PetscStackCopy - Copy the information from one PETSc stack to another
 
   Not Collective
@@ -172,7 +172,7 @@ PetscErrorCode PetscStackView(FILE *file)
   recommended to use the debugger if extensive information is needed to help debug the problem.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackView()`
-*/
+@*/
 PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 {
   if (sint) {
@@ -190,7 +190,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
+/*@
   PetscStackPrint - Prints a given PETSc stack to an ASCII file
 
   Not Collective
@@ -212,7 +212,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
   `PetscStackPrint()` and `PetscStackView()` should be merged into a single API.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`
-*/
+@*/
 PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp)
 {
   if (sint) {

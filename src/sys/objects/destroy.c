@@ -191,7 +191,6 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
   Level: intermediate
 
 .seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
-
 @*/
 PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, PetscBool *same)
 {

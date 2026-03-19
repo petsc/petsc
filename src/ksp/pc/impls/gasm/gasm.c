@@ -899,7 +899,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems PetscOptions
 
   Level: beginner
 
-.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N)
@@ -1225,7 +1225,7 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
   Call `PCGASMRestoreSubKSP()` when the array of `KSP` is no longer needed
 
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
-          `PCGASMCreateSubdomains2D()`,
+          `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
 {
@@ -1260,7 +1260,7 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASM`, `PCGASMType`, `PCGASMSetType()`,
           `PCBJACOBI`, `PCGASMGetSubKSP()`, `PCGASMSetSubdomains()`,
-          `PCSetModifySubMatrices()`, `PCGASMSetOverlap()`, `PCGASMSetType()`
+          `PCSetModifySubMatrices()`, `PCGASMSetOverlap()`, `PCASMSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
@@ -1873,7 +1873,7 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
   so setting `PCGASMSetSubdomains()` with nontrivial subdomain ISs or any of `PCGASMSetTotalSubdomains()` and `PCGASMSetOverlap()`
   automatically turns the latter off.
 
-.seealso: [](ch_ksp), `PCGASM`, `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
@@ -1905,7 +1905,7 @@ PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMGetUseDMSubdomains(PC pc, PetscBool *flg)

@@ -447,7 +447,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
   When the coarsening is used inside `PCGAMG` then the options database key is `-pc_gamg_mat_coarsen_misk_distance`
 
 .seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarsenSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
-          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`,
           `MatCoarsenGetData()`
 @*/
 PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)

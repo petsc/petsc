@@ -791,7 +791,7 @@ PetscErrorCode TSSundialsGetPC(TS ts, PC *pc)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
+.seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`
 @*/
 PetscErrorCode TSSundialsSetMinTimeStep(TS ts, PetscReal mindt)
 {
@@ -809,7 +809,7 @@ PetscErrorCode TSSundialsSetMinTimeStep(TS ts, PetscReal mindt)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
+.seealso: [](ch_ts), `TSSundialsSetType()`, `TSSundialsSetTolerance()`
 @*/
 PetscErrorCode TSSundialsSetMaxTimeStep(TS ts, PetscReal maxdt)
 {

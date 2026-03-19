@@ -198,6 +198,9 @@ checkbadSource:
          fi
 	@test ! -s badSourceChar.out
 
+checkbadManualPages:
+	@${PYTHON} lib/petsc/bin/getAPI.py --package petsc ${PETSC_DIR}
+
 # Review the current branch's changes against main
 .PHONY: branch-review
 branch-review:

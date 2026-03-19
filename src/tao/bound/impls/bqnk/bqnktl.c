@@ -22,7 +22,12 @@ static PetscErrorCode TaoSetUp_BQNKTL(Tao tao)
 
   Level: beginner
 
-.seealso: `Tao`, `TaoType`, `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
+  Notes:
+  The base class for this method is `TAOBNK`
+
+  The various algorithmic factors can only be supplied via the options database
+
+.seealso: `Tao`, `TAOBNK`, `TAONLS`, `TAONTL`, `TAONM`, `TaoType`, `TaoCreate()`, `TAOBQNKTR`, `TAOBQNKLS`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTL(Tao tao)
 {

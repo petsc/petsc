@@ -1444,7 +1444,7 @@ static PetscErrorCode TSView_CN(TS ts, PetscViewer viewer)
 }
 
 /*MC
-      TSCN - ODE solver using the implicit Crank-Nicolson method.
+  TSCN - ODE solver using the implicit Crank-Nicolson method.
 
   Level: beginner
 
@@ -1456,7 +1456,7 @@ static PetscErrorCode TSView_CN(TS ts, PetscViewer viewer)
   -ts_theta_endpoint
 .ve
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {

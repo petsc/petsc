@@ -1659,8 +1659,7 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
 }
 
 /*MC
-
-     DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base `DM`
+  DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base `DM`
   (see `DMForestGetBaseDM()`), from which it is refined.  The refinement and partitioning of forests is considered
   immutable after `DMSetUp()` is called.  To adapt a mesh, one should call `DMForestTemplate()` to create a new mesh that
   will default to being identical to it, specify how that mesh should differ, and then calling `DMSetUp()` on the new

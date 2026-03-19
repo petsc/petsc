@@ -193,7 +193,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
    This method can be a good alternative to `KSPGMRES` in that it does not require explicitly storing the Krylov space as `KSPGMRES` requires
    and there is no acceptable restart value that can be set with `KSPGMRESSetRestart()` that balances cost per iteration and convergence rates with `KSPGMRES`.
 
-.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {

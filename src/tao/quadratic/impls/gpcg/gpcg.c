@@ -283,13 +283,15 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 
 /*MC
   TAOGPCG - gradient projected conjugate gradient algorithm is an active-set
-        conjugate-gradient based method for bound-constrained minimization
+            conjugate-gradient based method for bound-constrained minimization
 
   Options Database Keys:
 + -tao_gpcg_maxpgits - maximum number of gradient projections for GPCG iterate
 - -tao_subset_type   - "subvec","mask","matrix-free", strategies for handling active-sets
 
   Level: beginner
+
+.seealso: `Tao`, `TaoType`, `TAOTRON`, `TAOBQPIP`, `TAOLINESEARCHGPCG`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 {

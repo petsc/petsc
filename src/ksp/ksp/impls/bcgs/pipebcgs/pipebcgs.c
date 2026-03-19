@@ -217,7 +217,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     Siegfried Cools, Universiteit Antwerpen, {cite}`cools2017communication`
     EXA2CT European Project on EXascale Algorithms and Advanced Computational Techniques, 2016.
 
-.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPSetPCSide()`,
+.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPSetPCSide()`,
            [](sec_pipelineksp), [](doc_faq_pipelined)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)

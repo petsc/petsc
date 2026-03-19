@@ -216,6 +216,7 @@ typedef const char *TaoType;
 #define TAOBNLS     "bnls"
 #define TAOBNTR     "bntr"
 #define TAOBNTL     "bntl"
+#define TAOBNK      "bnk"
 #define TAOBQNKLS   "bqnkls"
 #define TAOBQNKTR   "bqnktr"
 #define TAOBQNKTL   "bqnktl"
@@ -441,7 +442,7 @@ PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch *);
 PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscInt, PetscBool);
 PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao, PetscReal **, PetscReal **, PetscReal **, PetscInt **, PetscInt *);
 PETSC_EXTERN PetscErrorCode TaoMonitorSet(Tao, PetscErrorCode (*)(Tao, PetscCtx), PetscCtx, PetscCtxDestroyFn *);
-PETSC_EXTERN PetscErrorCode TaoMonitorSetFromOptions(Tao tao, const char name[], const char help[], const char manual[], PetscErrorCode (*monitor)(Tao, PetscViewerAndFormat *));
+PETSC_EXTERN PetscErrorCode TaoMonitorSetFromOptions(Tao, const char[], const char[], const char[], PetscErrorCode (*)(Tao, PetscViewerAndFormat *));
 PETSC_EXTERN PetscErrorCode TaoMonitorCancel(Tao);
 PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TaoMonitorGlobalization(Tao, PetscViewerAndFormat *);

@@ -55,7 +55,7 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
 
   See also `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG` that use non-blocking reductions. [](sec_pipelineksp),
 
-.seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, `and KSPGROPPCG`
+.seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`
 @*/
 PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
 {

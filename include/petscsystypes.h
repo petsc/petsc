@@ -229,18 +229,6 @@ typedef enum {
 typedef short PetscShort;
 typedef float PetscFloat;
 
-/*MC
-  PetscInt - PETSc type that represents an integer, used primarily to
-             represent size of arrays and indexing into arrays. Its size can be configured with the option `--with-64-bit-indices` to be either 32-bit (default) or 64-bit.
-
-  Level: beginner
-
-  Notes:
-  For MPI calls that require datatypes, use `MPIU_INT` as the datatype for `PetscInt`. It will automatically work correctly regardless of the size of `PetscInt`.
-
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`
-M*/
-
 #if defined(PETSC_HAVE_STDINT_H)
   #include <stdint.h>
 #endif
@@ -254,6 +242,13 @@ M*/
   #endif
 #endif
 
+/*MC
+  PetscInt64 - PETSc type that represents a 64-bit integer. When PETSc is configured with the option `--with-64-bit-indices` then `PetscInt` is identical to `PetscInt64`
+
+  Level: beginner
+
+.seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt32`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`
+M*/
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 
@@ -284,10 +279,28 @@ typedef __int64 PetscInt64;
   #define PETSC_COUNT_MAX PETSC_INT64_MAX
 #endif
 
+/*MC
+  PetscInt32 - PETSc type that represents a 32-bit integer. When PETSc is not configured with the option `--with-64-bit-indices` then `PetscInt` is identical to `PetscInt32`
+
+  Level: beginner
+
+.seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt64`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`
+M*/
 typedef int32_t PetscInt32;
 #define PETSC_INT32_MIN INT32_MIN
 #define PETSC_INT32_MAX INT32_MAX
 
+/*MC
+  PetscInt - PETSc type that represents an integer, used primarily to
+             represent size of arrays and indexing into arrays. Its size can be configured with the option `--with-64-bit-indices` to be either 32-bit (default) or 64-bit.
+
+  Level: beginner
+
+  Notes:
+  For MPI calls that require datatypes, use `MPIU_INT` as the datatype for `PetscInt`. It will automatically work correctly regardless of the size of `PetscInt`.
+
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt32`, `PetscInt64`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`
+M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
 
@@ -497,7 +510,6 @@ PETSC_EXTERN const char *const PetscBool3s[];
 
 .seealso: `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
-
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
@@ -515,32 +527,6 @@ typedef __float128 PetscReal;
 typedef __fp16 PetscReal;
 #endif /* PETSC_USE_REAL_* */
 
-/*MC
-   PetscComplex - PETSc type that represents a complex number with precision matching that of `PetscReal`.
-
-   Synopsis:
-   #include <petscsys.h>
-   PetscComplex number = 1. + 2.*PETSC_i;
-
-   Level: beginner
-
-   Notes:
-   For MPI calls that require datatypes, use `MPIU_COMPLEX` as the datatype for `PetscComplex` and `MPIU_SUM` etc for operations.
-   They will automatically work correctly regardless of the size of `PetscComplex`.
-
-   See `PetscScalar` for details on how to ./configure the size of `PetscReal`
-
-   Complex numbers are automatically available if PETSc was able to find a working complex implementation
-
-    PETSc has a 'fix' for complex numbers to support expressions such as `std::complex<PetscReal>` + `PetscInt`, which are not supported by the standard
-    C++ library, but are convenient for PETSc users. If the C++ compiler is able to compile code in `petsccxxcomplexfix.h` (This is checked by
-    configure), we include `petsccxxcomplexfix.h` to provide this convenience.
-
-    If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define `PETSC_SKIP_CXX_COMPLEX_FIX`
-    at the beginning of the C++ file to skip the fix.
-
-.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
-M*/
 #if !defined(PETSC_SKIP_COMPLEX)
   #if defined(PETSC_CLANGUAGE_CXX)
     #if !defined(PETSC_USE_REAL___FP16) && !defined(PETSC_USE_REAL___FLOAT128)
@@ -595,10 +581,38 @@ typedef __complex128 PetscComplex;
   #else /* c99 complex support */
     #include <complex.h>
     #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
+
 typedef float _Complex PetscComplex;
     #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef double _Complex PetscComplex;
     #elif defined(PETSC_USE_REAL___FLOAT128)
+
+/*MC
+   PetscComplex - PETSc type that represents a complex number with precision matching that of `PetscReal`.
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscComplex number = 1. + 2.*PETSC_i;
+
+   Level: beginner
+
+   Notes:
+   For MPI calls that require datatypes, use `MPIU_COMPLEX` as the datatype for `PetscComplex` and `MPIU_SUM` etc for operations.
+   They will automatically work correctly regardless of the size of `PetscComplex`.
+
+   See `PetscScalar` for details on how to `./configure` the size of `PetscReal`
+
+   Complex numbers are automatically available if PETSc was able to find a working complex implementation
+
+    PETSc has a 'fix' for complex numbers to support expressions such as `std::complex<PetscReal>` + `PetscInt`, which are not supported by the standard
+    C++ library, but are convenient for PETSc users. If the C++ compiler is able to compile code in `petsccxxcomplexfix.h` (This is checked by
+    configure), we include `petsccxxcomplexfix.h` to provide this convenience.
+
+    If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define `PETSC_SKIP_CXX_COMPLEX_FIX`
+    at the beginning of the C++ file to skip the fix.
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
+M*/
 typedef __complex128 PetscComplex;
     #endif /* PETSC_USE_REAL_* */
   #endif   /* !__cplusplus */
@@ -616,7 +630,6 @@ typedef __complex128 PetscComplex;
 
 .seealso: `PetscReal`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscRealPart()`, `PetscImaginaryPart()`
 M*/
-
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
 typedef PetscComplex PetscScalar;
 #else  /* PETSC_USE_COMPLEX */
@@ -1055,6 +1068,7 @@ M*/
 .seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
 S*/
 typedef struct _n_PetscSubcomm *PetscSubcomm;
+
 typedef enum {
   PETSC_SUBCOMM_GENERAL    = 0,
   PETSC_SUBCOMM_CONTIGUOUS = 1,

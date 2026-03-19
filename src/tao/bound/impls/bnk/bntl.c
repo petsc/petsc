@@ -263,9 +263,10 @@ static PetscErrorCode TaoSetFromOptions_BNTL(Tao tao, PetscOptionItems PetscOpti
   Level: beginner
 
   Developer Note:
-  One should control the maximum number of cg iterations through the standard pc_max_it option not with a special
+  One should control the maximum number of cg iterations through the standard `-ksp_max_it` option not with a special
   ad hoc option
 
+.seealso: `Tao`, `TAONTR`, `TAONTL`, `TAONM`, `TAOCG`, `TaoType`, `TaoCreate()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {

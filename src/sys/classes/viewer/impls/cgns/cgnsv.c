@@ -337,7 +337,6 @@ PetscErrorCode PetscViewerCGNSOpen(MPI_Comm comm, const char name[], PetscFileMo
   This solution index is used by `VecLoad()` to determine which solution to load from the file
 
 .seealso: `PETSCVIEWERCGNS`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionInfo()`
-
 @*/
 PetscErrorCode PetscViewerCGNSSetSolutionIndex(PetscViewer viewer, PetscInt solution_id)
 {
@@ -369,7 +368,6 @@ PetscErrorCode PetscViewerCGNSSetSolutionIndex(PetscViewer viewer, PetscInt solu
   By default, solution_id is set to `-1` to mean the last solution available in the file
 
 .seealso: `PETSCVIEWERCGNS`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionInfo()`
-
 @*/
 PetscErrorCode PetscViewerCGNSGetSolutionIndex(PetscViewer viewer, PetscInt *solution_id)
 {

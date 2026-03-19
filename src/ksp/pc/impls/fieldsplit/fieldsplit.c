@@ -2685,8 +2685,7 @@ PetscErrorCode PCFieldSplitGetIS(PC pc, const char splitname[], IS *is)
 
   Level: intermediate
 
-.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitGetIS()`, `PCFieldSplitSetIS()`,
-
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitGetIS()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetISByIndex(PC pc, PetscInt index, IS *is)
 {
@@ -3671,7 +3670,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   The Schur complement functionality of `PCFIELDSPLIT` should likely be factored into its own `PC` thus simplifying the implementation of the preconditioners and their
   user API.
 
-.seealso: [](sec_block_matrices), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCLSC`,
+.seealso: [](sec_block_matrices), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCLSC`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSchurGetSubKSP()`, `PCFieldSplitSetFields()`,
           `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitSetSchurFactType()`,
           `MatSchurComplementSetAinvType()`, `PCFieldSplitSetSchurScale()`, `PCFieldSplitSetDetectSaddlePoint()`

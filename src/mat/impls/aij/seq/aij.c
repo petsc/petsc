@@ -4283,24 +4283,6 @@ M*/
 .seealso: [](ch_matrices), `Mat`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
-/*MC
-   MATAIJCRL - MATAIJCRL = "aijcrl" - A matrix type to be used for sparse matrices.
-
-   Options Database Key:
-. -mat_type aijcrl - sets the matrix type to "aijcrl" during a call to `MatSetFromOptions()`
-
-  Level: beginner
-
-   Note:
-   This matrix type is identical to `MATSEQAIJCRL` when constructed with a single process communicator,
-   and `MATMPIAIJCRL` otherwise.  As a result, for single process communicators,
-   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
-   for communicators controlling multiple processes.  It is recommended that you call both of
-   the above preallocation routines for simplicity.
-
-.seealso: [](ch_matrices), `Mat`, `MatCreateMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`
-M*/
-
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat, MatType, MatReuse, Mat *);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat, MatType, MatReuse, Mat *);

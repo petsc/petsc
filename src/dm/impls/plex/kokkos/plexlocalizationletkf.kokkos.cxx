@@ -40,14 +40,16 @@ static PetscReal GaspariCohn(PetscReal distance, PetscReal radius)
   Collective
 
   Input Parameters:
-+ n_obs_vertex - Number of nearest observations to use per vertex (eg, MAX_Q_NUM_LOCAL_OBSERVATIONS in LETKF)
-. n_obs_local - Number of local observations
-. n_dof - Number of degrees of freedom
-. Vecxyz - Array of vectors containing the coordinates
-- H - Observation operator matrix
++ n_obs_vertex - Number of nearest observations to use per vertex (eg, `MAX_Q_NUM_LOCAL_OBSERVATIONS` in LETKF)
+. n_obs_local  - Number of local observations
+. n_dof        - Number of degrees of freedom
+. Vecxyz       - Array of vectors containing the coordinates
+- H            - Observation operator matrix
 
   Output Parameter:
 . Q - Localization weight matrix (sparse, AIJ format)
+
+  Level: intermediate
 
   Notes:
   The output matrix Q has dimensions (n_vert_global x n_obs_global) where
@@ -62,9 +64,7 @@ static PetscReal GaspariCohn(PetscReal distance, PetscReal radius)
 
   Kokkos is required for this routine.
 
-  Level: intermediate
-
-.seealso:
+.seealso: `DMPLEX`
 @*/
 PetscErrorCode DMPlexGetLETKFLocalizationMatrix(const PetscInt n_obs_vertex, const PetscInt n_obs_local, const PetscInt n_dof, Vec Vecxyz[3], Mat H, Mat *Q)
 {

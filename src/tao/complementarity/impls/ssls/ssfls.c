@@ -105,13 +105,15 @@ static PetscErrorCode TaoDestroy_SSFLS(Tao tao)
 
 /*MC
    TAOSSFLS - Semi-smooth feasible linesearch algorithm for solving
-       complementarity constraints
+              complementarity constraints
 
    Options Database Keys:
 + -tao_ssls_delta - descent test fraction
 - -tao_ssls_rho   - descent test power
 
    Level: beginner
+
+.seealso: `Tao`, `TAOASILS`, `TAONTR`, `TAONTL`, `TAONM`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)

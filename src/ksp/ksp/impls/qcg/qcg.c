@@ -376,12 +376,12 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptio
    KSPQCG - Code to run conjugate gradient method subject to a constraint on the solution norm  {cite}`steihaug:83`.
 
    Options Database Key:
-.      -ksp_qcg_trustregionradius r - Trust Region Radius
+.  -ksp_qcg_trustregionradius r - Trust Region Radius
 
    Level: developer
 
    Notes:
-   This is rarely used directly, ir is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+   This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
    Uses preconditioned conjugate gradient to compute
    an approximate minimizer of the quadratic function $ q(s) = g^T * s + .5 * s^T * H * s $   subject to the Euclidean norm trust region constraint
@@ -405,7 +405,7 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptio
       `PCICC`:    D = L^T, implemented with forward and backward solves. Here L is an incomplete Cholesky factor of H.
 .ve
 
-.seealso: [](ch_ksp), `KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
+.seealso: [](ch_ksp), `KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`,
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 

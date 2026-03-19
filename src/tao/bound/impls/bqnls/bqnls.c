@@ -78,7 +78,12 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao, PetscOptionItems PetscOpt
 
   Level: beginner
 
-.seealso: `TAOBNK`
+  Notes:
+  The base class for this method is `TAOBNK`
+
+  The various algorithmic factors can only be supplied via the options database
+
+.seealso: `Tao`, `TAOBNK`, `TAONLS`, `TAONTL`, `TAONM`, `TaoType`, `TaoCreate()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
 {

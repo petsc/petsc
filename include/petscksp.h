@@ -328,8 +328,7 @@ PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP, PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP, PetscBool, PetscBool, PetscInt *, Vec[], PetscReal[], PetscReal[]);
 
 /*E
-
-  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate gradient/directions methods
+  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
 
   Values:
 + `KSP_FCD_TRUNC_TYPE_STANDARD` - uses all (up to `mmax`) stored directions
@@ -1218,7 +1217,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
   Options Database Keys:
 . -mat_lmvm_mult_algorithm (recursive|dense|compact_dense) - the algorithm to use for multiplication
 
-.seealso: [](ch_matrices), `MatLMVM`, `MatLMVMSetMultAlgorithm()`, `MatLMVMGetMultAlgorithm()`
+.seealso: [](ch_matrices), `MATLMVM`, `MatLMVMSetMultAlgorithm()`, `MatLMVMGetMultAlgorithm()`
 E*/
 typedef enum {
   MAT_LMVM_MULT_RECURSIVE,
@@ -1243,7 +1242,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMGetMultAlgorithm(Mat, MatLMVMMultAlgorithm *)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `MatLMVM`, `MatLMVMSymBroydenSetScaleType()`
+.seealso: [](ch_matrices), `MATLMVM`, `MatLMVMSymBroydenSetScaleType()`
 E*/
 typedef enum {
   MAT_LMVM_SYMBROYDEN_SCALE_NONE     = 0,

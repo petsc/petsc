@@ -388,7 +388,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 
   Level: developer
 
-.seealso: `Mat`, `VecFischer()`, `VecDFischer()`, `MatDFischer()`
+.seealso: `Mat`, `VecFischer()`, `VecSFischer()`, `MatDFischer()`
 @*/
 PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal mu, Vec T1, Vec T2, Vec Da, Vec Db, Vec Dm)
 {

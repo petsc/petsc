@@ -1876,7 +1876,6 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
   See <https://epubs.siam.org/doi/abs/10.1137/110855442>  <https://epubs.siam.org/doi/abs/10.1137/120889873> for better ways to compute GLL nodes
 
 .seealso: `PetscDTGaussQuadrature()`, `PetscGaussLobattoLegendreCreateType`
-
 @*/
 PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaussLobattoLegendreCreateType type, PetscReal x[], PetscReal w[])
 {

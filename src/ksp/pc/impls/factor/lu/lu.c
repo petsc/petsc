@@ -253,7 +253,7 @@ static PetscErrorCode PCMatApplyTranspose_LU(PC pc, Mat X, Mat Y)
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MatSolverType`, `MatGetFactor()`, `PCQR`, `PCSVD`,
           `PCILU`, `PCCHOLESKY`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetColumnPivot()`,
-          `PCFactorSetPivotInBlocks()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
+          `PCFactorSetPivotInBlocks()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,
           `PCFactorReorderForNonzeroDiagonal()`
 M*/
 

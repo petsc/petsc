@@ -66,7 +66,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
   Note:
   Using this coloring would be extremely inefficient but it is useful for testing
 
-.seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
+.seealso: [](sec_fdmatrix), [](sec_matfactor), `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {

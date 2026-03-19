@@ -6,14 +6,14 @@
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
 /*MC
-   VECVIENNACL - VECVIENNACL = "viennacl" - A VECSEQVIENNACL on a single-process communicator, and VECMPIVIENNACL otherwise.
+   VECVIENNACL - VECVIENNACL = "viennacl" - A `VECSEQVIENNACL` on a single-process communicator, and `VECMPIVIENNACL` otherwise.
 
    Options Database Keys:
-. -vec_type viennacl - sets the vector type to VECVIENNACL during a call to VecSetFromOptions()
+. -vec_type viennacl - sets the vector type to V`ECVIENNACL` during a call to `VecSetFromOptions()`
 
   Level: beginner
 
-.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQVIENNACL`, `VECMPIVIENNACL`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQVIENNACL`, `VECMPIVIENNACL`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`
 M*/
 
 static PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
@@ -104,7 +104,7 @@ static PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], P
 
   Level: beginner
 
-.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`
 M*/
 
 static PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
@@ -287,7 +287,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 
 .seealso: `VecCreateSeqViennaCLWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`
-
 @*/
 PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const ViennaCLVector *array, Vec *vv) PeNS
 {
@@ -331,7 +330,7 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
 
   Level: intermediate
 
-.seealso: `VecCreateSeqViennaCLWithArrays()`, `VecCreateMPIWithArray()`
+.seealso: `VecCreateSeqViennaCLWithArrays()`, `VecCreateMPIWithArray()`,
           `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`,
           `VecPlaceArray()`, `VecCreateMPICUDAWithArrays()`,

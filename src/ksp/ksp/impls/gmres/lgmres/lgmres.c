@@ -653,7 +653,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPLGMRESSetAugDim()`,
-          `KSPGMRESSetConstant()`, `KSPLGMRESSetConstant()`, `KSPLGMRESSetAugDim()`
+          `KSPGMRESSetConstant()`, `KSPLGMRESSetConstant()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)

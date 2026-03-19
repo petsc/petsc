@@ -898,7 +898,10 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox *[]
   Note:
   Relevant only in parallel: in serial it is directly computed.
 
-.seealso: [](ch_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
+  Developer Note:
+  In PETSc enums of this type are refered to with the term type, not method.
+
+.seealso: [](ch_vectors), `Vec`, `VecTagger`, `VecTaggerType`, `VecTaggerCreate()`, `VecTaggerCDFSetMethod()`
 E*/
 typedef enum {
   VECTAGGER_CDF_GATHER,

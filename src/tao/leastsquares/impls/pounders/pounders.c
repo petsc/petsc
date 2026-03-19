@@ -1156,6 +1156,7 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 
   Level: beginner
 
+.seealso: `Tao`, `TAONTR`, `TAONTL`, `TAONM`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)

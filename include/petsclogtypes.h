@@ -13,7 +13,7 @@
   This is the data structure that describes profiling statsitics collected for an event from
   the default log handler (`PetscLogDefaultBegin()`) using `PetscLogEventGetPerfInfo()`.
 
-.seealso(): [](ch_profiling)
+.seealso: [](ch_profiling)
 S*/
 typedef struct {
   int            id;                  /* The integer identifying this event / stage */
@@ -121,7 +121,7 @@ int main() {
           `PetscLogHandlerObjectCreate()`, `PetscLogHandlerObjectDestroy()`,
           `PetscLogHandlerStagePush()`, `PetscLogHandlerStagePop()`,
           `PetscLogHandlerView()`,
-          `PetscLogHandlerDestroy()`,
+          `PetscLogHandlerDestroy()`
 S*/
 typedef struct _p_PetscLogHandler *PetscLogHandler;
 

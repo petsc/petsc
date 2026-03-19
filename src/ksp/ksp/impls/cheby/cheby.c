@@ -162,7 +162,7 @@ static PetscErrorCode KSPChebyshevGetKind_Chebyshev(KSP ksp, KSPChebyshevKind *k
   the largest eigenvalue of the actual operator (for safety) and greatly overestimate the smallest eigenvalue to
   improve the smoothing properties of Chebyshev iteration on the higher frequencies in the spectrum.
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`,
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emin)
 {
@@ -901,7 +901,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
    See `MatIsSPDKnown()` for how to indicate a `Mat`, matrix is SPD.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`
+          `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`,
           `KSPRICHARDSON`, `KSPCG`, `PCMG`
 M*/
 

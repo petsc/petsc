@@ -3630,7 +3630,7 @@ static PetscErrorCode MatSetBlockSizes_IS(Mat A, PetscInt rbs, PetscInt cbs)
   You can do matrix preallocation on the local matrix after you obtain it with
   `MatISGetLocalMat()`; otherwise, you could use `MatISSetPreallocation()` or `MatXAIJSetPreallocation()`
 
-.seealso: [](ch_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 {

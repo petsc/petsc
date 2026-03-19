@@ -599,7 +599,7 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
 
   Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
 
-.seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`,
+.seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`,
           `MATNORMALHERMITIAN`, `MATNORMAL`
 M*/
 

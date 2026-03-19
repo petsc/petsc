@@ -6,7 +6,7 @@
   #define petscpusherrorhandler_           PETSCPUSHERRORHANDLER
   #define petsctracebackerrorhandler_      PETSCTRACEBACKERRORHANDLER
   #define petscaborterrorhandler_          PETSCABORTERRORHANDLER
-  #define petscignoreerrorhandler_         PETSCIGNOREERRORHANDLER
+  #define petscreturnerrorhandler_         PETSCRETURNERRORHANDLER
   #define petscemacsclienterrorhandler_    PETSCEMACSCLIENTERRORHANDLER
   #define petscattachdebuggererrorhandler_ PETSCATTACHDEBUGGERERRORHANDLER
   #define petscerror_                      PETSCERROR
@@ -16,7 +16,7 @@
   #define petscpusherrorhandler_           petscpusherrorhandler
   #define petsctracebackerrorhandler_      petsctracebackerrorhandler
   #define petscaborterrorhandler_          petscaborterrorhandler
-  #define petscignoreerrorhandler_         petscignoreerrorhandler
+  #define petscreturnerrorhandler_         petscreturnerrorhandler
   #define petscemacsclienterrorhandler_    petscemacsclienterrorhandler
   #define petscattachdebuggererrorhandler_ petscattachdebuggererrorhandler
   #define petscerror_                      petscerror
@@ -45,30 +45,11 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, 
         These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
 */
-PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
-{
-  *ierr = PetscTraceBackErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
-}
-
-PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
-{
-  *ierr = PetscAbortErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
-}
-
-PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
-{
-  *ierr = PetscAttachDebuggerErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
-}
-
-PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
-{
-  *ierr = PetscEmacsClientErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
-}
-
-PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr)
-{
-  *ierr = PetscIgnoreErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
-}
+PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr);
+PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr);
+PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr);
+PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr);
+PETSC_EXTERN void petscreturnerrorhandler_(MPI_Comm *comm, int *line, const char *fun, const char *file, PetscErrorCode *n, PetscErrorType *p, const char *mess, PetscCtx ctx, PetscErrorCode *ierr);
 
 PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3), PetscCtx ctx, PetscErrorCode *ierr)
 {

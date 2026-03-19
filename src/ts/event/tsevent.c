@@ -132,7 +132,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   Event processing starts after visiting point t3, which means ts->adapt->dt_span_cached has been set to whatever value is required
   when planning the step t3 -> t4.
 
-.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventSecondStep()`
+.seealso: [](ch_ts), [](sec_ts_event), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventSecondStep()`
 @*/
 PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt1)
 {
@@ -196,7 +196,7 @@ PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt1)
 
   The default value is `PETSC_DECIDE`.
 
-.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventStep()`
+.seealso: [](ch_ts), [](sec_ts_event), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventStep()`
 @*/
 PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
 {
@@ -228,7 +228,7 @@ PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
   This function can be also called from the `postevent()` callback set with `TSSetEventHandler()`,
   to adjust the tolerances on the fly.
 
-.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), [](sec_ts_event), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 {
@@ -304,7 +304,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   However, the `postevent()` callback invocation is performed synchronously on all processes, including
   those processes which have not currently triggered any events.
 
-.seealso: [](ch_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
+.seealso: [](ch_ts), [](sec_ts_event), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
 PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*indicator)(TS ts, PetscReal t, Vec U, PetscReal fvalue[], PetscCtx ctx), PetscErrorCode (*postevent)(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, PetscCtx ctx), PetscCtx ctx)
 {
@@ -689,8 +689,10 @@ static inline PetscBool Not_PETSC_DECIDE(PetscReal dt)
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 // PetscClangLinter pragma disable: -fdoc-synopsis-missing-description
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
+/*@
   TSEventHandler - the main function to perform a single iteration of event detection.
+
+  Level: developer
 
   Developer notes:
   A) The 'event->iterctr > 0' is used as an indicator that Anderson-Bjorck refinement has started.
@@ -747,7 +749,7 @@ static inline PetscBool Not_PETSC_DECIDE(PetscReal dt)
   This situation is avoided by reporting the event at t1 in the first place.
 
   =Revisiting=
-  When handling the situation with small bracket size, the TS solver may happen to visit the same point twice,
+  When handling the situation with small bracket size, the `TS` solver may happen to visit the same point twice,
   but with different results.
 
   E.g. originally it discovered a bracket with sign change [t0, t10], and started resolving the zero-crossing,
@@ -770,7 +772,9 @@ static inline PetscBool Not_PETSC_DECIDE(PetscReal dt)
   If the solution is then changed by the postevent(), the indicator-function-signs will be recalculated.
 
   Whether the algorithm is revisiting a point in the current TSEventHandler() call is flagged by 'event->revisit_right'.
-*/
+
+.seealso: [](sec_ts_event), `TS`, `TSEvent`, `TSSetEventHandler()`
+@*/
 PetscErrorCode TSEventHandler(TS ts)
 {
   TSEvent   event;
@@ -976,7 +980,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), [](sec_ts_event), `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
 {

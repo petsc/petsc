@@ -66,20 +66,20 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
 }
 
 /*MC
-      TSTRAJECTORYVISUALIZATION - Stores each solution of the ODE/DAE in a file
+  TSTRAJECTORYVISUALIZATION - Stores each solution of the ODE/DAE in a file for later visualization
 
-      Saves each timestep into a separate file in Visualization-data/SA-%06d.bin
+  Saves each timestep into a separate file in `Visualization-data/SA-%06d.bin`
 
-      This version saves only the solutions at each timestep, it does not save the solution at each stage,
-      see `TSTRAJECTORYBASIC` that saves all stages
+  This version saves only the solutions at each timestep, it does not save the solution at each stage,
+  see `TSTRAJECTORYBASIC` that saves all stages
 
-      $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m and $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py
-      can read in files created with this format into MATLAB and Python.
+  $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m and $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py
+  can read in files created with this format into MATLAB and Python.
 
   Level: intermediate
 
 .seealso: [](ch_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`,
-          `TSTrajectoryType`, `TSTrajectory`
+          `TSTrajectory`
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts)
 {

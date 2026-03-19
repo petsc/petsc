@@ -1059,7 +1059,7 @@ PetscErrorCode DMCreateGlobalVector(DM dm, Vec *vec)
   Note:
   A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
 
-.seealso: [](ch_dmbase), `DM`, `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+.seealso: [](ch_dmbase), `DM`, `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 @*/
 PetscErrorCode DMCreateLocalVector(DM dm, Vec *vec)
@@ -2247,7 +2247,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS *is[], DM *superdm)
   The names are inconsistent, the hooks use `DMSubDomainHook` which is nothing like `DMCreateDomainDecomposition()` while `DMRefineHook` is used for `DMRefine()`.
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateFieldDecomposition()`, `DMDestroy()`, `DMCreateDomainDecompositionScatters()`, `DMView()`, `DMCreateInterpolation()`,
-          `DMSubDomainHookAdd()`, `DMSubDomainHookRemove()`,`DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`
+          `DMSubDomainHookAdd()`, `DMSubDomainHookRemove()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMRefine()`, `DMCoarsen()`
 @*/
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char **namelist[], IS *innerislist[], IS *outerislist[], DM *dmlist[])
 {
@@ -2854,8 +2854,8 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
   `DMGlobalToLocalHookAdd()` may be used to provide additional operations that are performed during the update process.
 
 .seealso: [](ch_dmbase), `DM`, `DMGlobalToLocalHookAdd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`,
-          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalEnd()`,
-          `DMGlobalToLocalBegin()` `DMGlobalToLocalEnd()`
+          `DMLocalToGlobalBegin()`, `DMLocalToGlobal()`, `DMLocalToGlobalEnd()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 @*/
 PetscErrorCode DMGlobalToLocal(DM dm, Vec g, InsertMode mode, Vec l)
 {
@@ -7499,7 +7499,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
   If the `DM` has an exclusive reference to the label, the label gets destroyed and
   *label nullified.
 
-.seealso: [](ch_dmbase), `DM`, `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()` `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabel()`
+.seealso: [](ch_dmbase), `DM`, `DMLabel`, `DMCreateLabel()`, `DMHasLabel()`, `DMGetLabel()`, `DMGetLabelValue()`, `DMSetLabelValue()`, `DMLabelDestroy()`, `DMRemoveLabel()`
 @*/
 PetscErrorCode DMRemoveLabelBySelf(DM dm, DMLabel *label, PetscBool failNotFound)
 {
@@ -9127,7 +9127,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
   Level: developer
 
 .seealso: [](ch_dmbase), `DM`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
-          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,

@@ -300,7 +300,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
                                                                                 Requires either that a `DM` that can compute a coloring
                                                                                 is available or a Jacobian sparse matrix is provided (from which to get the coloring).
 .    -snes_ngs_secant_h h                                                     - Differencing parameter for secant approximation
-.    -snes_ngs_secant_mat_coloring                                            - Use the graph coloring of the Jacobian for the secant GS even if a `DM` is available.
+.    -snes_ngs_secant_mat_coloring                                            - Use the graph (matrix) coloring of the Jacobian for the secant GS even if a `DM` is available.
 -    -snes_norm_schedule (none|always|initialonly|finalonly|initialfinalonly) - how often the residual norms are computed
 
   Notes:
@@ -311,7 +311,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
   or `-snes_norm_schedule none`
 
 .seealso: [](ch_snes), `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
-          `SNESSetNormSchedule()`, `SNESNGSGetTolerances()`, `SNESNGSSetSweeps()`
+          `SNESSetNormSchedule()`, `SNESNGSGetTolerances()`, `SNESNGSGetSweeps()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)

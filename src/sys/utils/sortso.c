@@ -1266,7 +1266,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
   significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
   recommended that the user benchmark their code to see which routine is fastest.
 
-.seealso: `PetscTimSortWithArray()`, `PetscSortMPIIntWithArray()`, `PetscSortMPIIntWithPermutation()`
+.seealso: `PetscTimSortWithArray()`, `PetscSortMPIIntWithArray()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[], PetscMPIInt arr2[])
 {

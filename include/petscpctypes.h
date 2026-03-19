@@ -316,7 +316,7 @@ typedef enum {
 
      Level: intermediate
 
-.seealso: [](sec_pc), `PCGAMG`, `PCMG`, `PC`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
+.seealso: [](sec_pc), `PCGAMG`, `PCMG`, `PC`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
 J*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG       "agg"
@@ -371,7 +371,7 @@ typedef enum {
 } PCMGCycleType;
 
 /*E
-    PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process with the `PCType` of `PCMG`
+    PCMGGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process with the `PCType` of `PCMG`
 
    Values:
 +  `PC_MG_GALERKIN_PMAT` - computes the `pmat` (matrix from which the preconditioner is built) via the Galerkin process from the finest grid

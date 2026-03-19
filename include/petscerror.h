@@ -1303,9 +1303,8 @@ __attribute__((analyzer_noreturn))
 PETSC_EXTERN PetscErrorCode PetscError(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, ...) PETSC_ATTRIBUTE_COLD PETSC_ATTRIBUTE_FORMAT(7, 8);
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfInitialize(void);
-PETSC_EXTERN PetscErrorCode PetscErrorMessage(PetscErrorCode, const char *[], char **);
+PETSC_EXTERN PetscErrorCode PetscErrorMessage(PetscErrorCode, const char *[], const char **);
 PETSC_EXTERN PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *) PETSC_ATTRIBUTE_COLD;
-PETSC_EXTERN PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *) PETSC_ATTRIBUTE_COLD;
 PETSC_EXTERN PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *) PETSC_ATTRIBUTE_COLD;
 PETSC_EXTERN PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *) PETSC_ATTRIBUTE_COLD;
 PETSC_EXTERN PetscErrorCode PetscAbortErrorHandler(MPI_Comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *) PETSC_ATTRIBUTE_COLD;
@@ -1634,7 +1633,7 @@ M*/
 
   /*MC
    PetscFunctionBegin - First executable line of each PETSc function,  used for error handling. Final
-   line of PETSc functions should be `PetscFunctionReturn`(0);
+   line of PETSc functions should be `PetscFunctionReturn`(PETSC_SUCCESS);
 
    Synopsis:
    #include <petscsys.h>
@@ -1799,7 +1798,7 @@ M*/
    This routine is a macro, so while it does not "return" anything itself, it does return from
    the function in the literal sense.
 
-   Usually the return value is the integer literal `0` (for example in any function returning
+   Usually the return value is `PETSC_SUCCESS` (for example in any function returning
    `PetscErrorCode`), however it is possible to return any arbitrary type. The arguments of
    this macro are placed before the `return` statement as-is.
 
@@ -1870,7 +1869,7 @@ M*/
   }
 .ve
 
-.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, PetscFunctionBeginUser`
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, `PetscFunctionBeginUser`
 M*/
   #define PetscFunctionReturnVoid() \
     do { \

@@ -353,8 +353,8 @@ cdef class Sys:
             handler = PetscEmacsClientErrorHandler
         elif errhandler == "traceback":
             handler = PetscTraceBackErrorHandler
-        elif errhandler == "ignore":
-            handler = PetscIgnoreErrorHandler
+        elif errhandler == "return":
+            handler = PetscReturnErrorHandler
         elif errhandler == "mpiabort":
             handler = PetscMPIAbortErrorHandler
         elif errhandler == "abort":

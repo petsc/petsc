@@ -228,6 +228,8 @@ static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems PetscOpti
 - -tao_bnk_as_type     - active-set estimation method ("none", "bertsekas")
 
   Level: beginner
+
+.seealso: `Tao`, `TAONTR`, `TAONTL`, `TAONM`, `TAOCG`, `TaoType`, `TaoCreate()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
 {

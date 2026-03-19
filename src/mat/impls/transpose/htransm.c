@@ -591,7 +591,7 @@ static PetscErrorCode MatConvert_HT(Mat N, MatType newtype, MatReuse reuse, Mat 
 
   Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
 
-.seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
 
 /*@

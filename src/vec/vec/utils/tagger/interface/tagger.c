@@ -184,7 +184,6 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
   Level: advanced
 
 .seealso: `VecTagger`, `VecTaggerCreate()`, `VecTaggerSetUp()`
-
 @*/
 PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 {

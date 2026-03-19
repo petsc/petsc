@@ -229,7 +229,7 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 
   Level: developer
 
-.seealso: `TaoLineSearchCreate()`, `TaoLineSearchSolve()`
+.seealso: `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchApple()`
 @*/
 PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 {
@@ -264,7 +264,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 + x          - On input the current solution, on output `x` contains the new solution determined by the line search
 . f          - On input the objective function value at current solution, on output contains the objective function value at new solution
 . g          - On input the gradient evaluated at `x`, on output contains the gradient at new solution
-. steplength - scalar multiplier of s used ( x = x0 + steplength * x)
+. steplength - scalar multiplier of `s` used ( $x = x_0 + steplength * x)
 - reason     - `TaoLineSearchConvergedReason` reason why the line-search stopped
 
   Level: advanced

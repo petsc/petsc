@@ -367,7 +367,7 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
   If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
   likely want to use this routine since it will save you some unneeded flops.
 
-.seealso: , `PCEISENSTAT`, `PCEisenstatGetOmega()`
+.seealso: `PCEISENSTAT`, `PCEisenstatGetOmega()`
 @*/
 PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg)
 {

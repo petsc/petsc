@@ -108,14 +108,6 @@ module petscsysdef
 !
   external PETSC_NULL_FUNCTION
 !
-! Possible arguments to PetscPushErrorHandler()
-!
-  external PETSCTRACEBACKERRORHANDLER
-  external PETSCABORTERRORHANDLER
-  external PETSCEMACSCLIENTERRORHANDLER
-  external PETSCATTACHDEBUGGERERRORHANDLER
-  external PETSCIGNOREERRORHANDLER
-!
   external PetscIsInfOrNanScalar
   external PetscIsInfOrNanReal
   PetscBool PetscIsInfOrNanScalar

@@ -285,11 +285,13 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 }
 
 /*MC
-  TAOOWLQN - orthant-wise limited memory quasi-newton algorithm
+  TAOOWLQN - orthant-wise limited memory quasi-Newton algorithm
 
 . - tao_owlqn_lambda - regulariser weight
 
   Level: beginner
+
+.seealso: `Tao`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)

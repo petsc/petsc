@@ -87,11 +87,13 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 
    Level: beginner
 
-   Note:
+   Notes:
    The main purpose of this solver is to solve linear problems using the `SNES` interface, without
    any additional overhead in the form of vector norm operations.
 
-.seealso: [](ch_snes), `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESKSPTRANSPOSEONLY`
+   Use `SNESKSPTRANSPOSEONLY` for solving tranposed systems.
+
+.seealso: [](ch_snes), `SNES`, `SNESType`, `SNESKSPTRANSPOSEONLY`, `SNESCreate()`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 {
@@ -118,15 +120,17 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 }
 
 /*MC
-   SNESKSPTRANSPOSEONLY - Nonlinear solver that performs one Newton step with `KSPSolveTranspose()` and does not compute any norms.
+   SNESKSPTRANSPOSEONLY - Nonlinear solver that performs one linear solve with `KSPSolveTranspose()` and does not compute any norms.
 
    Level: beginner
 
-   Note:
+   Notes:
    The main purpose of this solver is to solve transposed linear problems using the `SNES` interface, without
    any additional overhead in the form of vector operations within adjoint solvers.
 
-.seealso: [](ch_snes), `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESKS`, `SNESNEWTONLS`, `SNESNEWTONTR`
+   Use `SNESKSPONLY` for solving non-transposed systems.
+
+.seealso: [](ch_snes), `SNES`, `SNESType`, `SNESKSPONLY`, `SNESCreate()`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
 {

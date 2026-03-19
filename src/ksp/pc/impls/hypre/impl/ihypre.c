@@ -2292,10 +2292,10 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems PetscOption
     export CALI_CONFIG=runtime-report,max_column_width=200,calc.inclusive,mpi-report,output=stdout
   .ve
 
-  Then run a hypre code, and you will see profiling results on stdout. See https://software.llnl.gov/Caliper/#guides for more options.
+  Then run a hypre code, and you will see profiling results on `stdout`. See https://software.llnl.gov/Caliper/#guides for more options.
 
   GPU Notes:
-  To configure hypre BoomerAMG so that it can utilize NVIDIA GPUs run ./configure --download-hypre --with-cuda
+  To configure hypre BoomerAMG so that it can utilize NVIDIA GPUs run `./configure --download-hypre --with-cuda`
   Then pass `VECCUDA` vectors and `MATAIJCUSPARSE` matrices to the solvers and PETSc will automatically utilize hypre's GPU solvers.
 
   To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
@@ -2303,7 +2303,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems PetscOption
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRESetType()`, `PCPFMG`, `PCGAMG`, `PCSYSPFMG`, `PCSMG`, `PCHYPRESetDiscreteGradient()`,
           `PCHYPRESetDiscreteCurl()`, `PCHYPRESetInterpolations()`, `PCHYPRESetAlphaPoissonMatrix()`, `PCHYPRESetBetaPoissonMatrix()`, `PCHYPRESetEdgeConstantVectors()`,
-          PCHYPREAMSSetInteriorNodes()
+          `PCHYPREAMSSetInteriorNodes()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)

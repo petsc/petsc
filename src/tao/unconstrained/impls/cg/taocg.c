@@ -252,23 +252,26 @@ static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
 }
 
 /*MC
-     TAOCG -   Nonlinear conjugate gradient method is an extension of the
-nonlinear conjugate gradient solver for nonlinear optimization.
+   TAOCG -   Nonlinear conjugate gradient method is an extension of the
+               nonlinear conjugate gradient solver for nonlinear optimization.
 
    Options Database Keys:
 +      -tao_cg_eta r           - restart tolerance
-.      -tao_cg_type taocg_type - cg formula
+.      -tao_cg_type taocg_type - cg formula, one of `fr`, `pr`, `prp`, `hs`, `dy`
 .      -tao_cg_delta_min r     - minimum delta value
 -      -tao_cg_delta_max r     - maximum delta value
 
-  Notes:
-     CG formulas are:
-         "fr" - Fletcher-Reeves
-         "pr" - Polak-Ribiere
-         "prp" - Polak-Ribiere-Plus
-         "hs" - Hestenes-Steifel
-         "dy" - Dai-Yuan
   Level: beginner
+
+   Note:
+   The cg formulas are:
++  `fr`  - Fletcher-Reeves
+.  `pr`  - Polak-Ribiere
+.  `prp` - Polak-Ribiere-Plus
+.  `hs`  - Hestenes-Steifel
+-  `dy`  - Dai-Yuan
+
+.seealso: `Tao`, `TAONTR`, `TAONLS`, `TaoType`, `TaoCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)

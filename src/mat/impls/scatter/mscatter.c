@@ -244,7 +244,7 @@ static struct _MatOps MatOps_Values = {NULL,
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)

@@ -3237,7 +3237,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`,
           `PetscDualSpaceLagrangeSetMomentOrder()`, `PetscDualSpaceLagrangeGetMomentOrder()`, `PetscDualSpaceLagrangeSetUseMoments()`, `PetscDualSpaceLagrangeGetUseMoments()`,
-          `PetscDualSpaceLagrangeSetNodeType, PetscDualSpaceLagrangeGetNodeType, PetscDualSpaceLagrangeGetContinuity, PetscDualSpaceLagrangeSetContinuity,
+          `PetscDualSpaceLagrangeSetNodeType()`, `PetscDualSpaceLagrangeGetNodeType()`, `PetscDualSpaceLagrangeGetContinuity()`, `PetscDualSpaceLagrangeSetContinuity()`,
           `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceLagrangeSetTrimmed()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)

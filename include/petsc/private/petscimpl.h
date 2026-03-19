@@ -15,7 +15,7 @@
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
-PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
+PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
 PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #else
   #define PetscStackSetCheck(check)         PETSC_SUCCESS

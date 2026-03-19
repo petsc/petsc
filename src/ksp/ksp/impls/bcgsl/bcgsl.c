@@ -550,7 +550,7 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
    All the BLAS and LAPACK calls in the source should be removed and replaced with loops and the macros for block solvers converted from LINPACK.
 
-.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPPIPEBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`,
+.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPPIPEBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPSetPCSide()`,
           `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`, `KSPBCGSLSetUsePseudoinverse()`, `KSPBCGSLSetPol()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
