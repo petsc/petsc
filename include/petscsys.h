@@ -2673,7 +2673,7 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 -    set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
      Options Database Key:
-.     -citations [filename]   - print out the bibtex entries for the given computation
+.    -citations [filename] - print out the bibtex entries for the given computation
 
      Level: intermediate
 @*/

@@ -140,8 +140,8 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 . -vec_view ::ascii_matlab  - Prints vector in `PETSC_VIEWER_ASCII_MATLAB` format to stdout
 . -vec_view matlab:filename - Prints vector in MATLAB .mat file to filename (requires PETSc configured with --with-matlab)
 . -vec_view draw            - Activates vector viewing using drawing tools
-. -display <name>           - Sets display name (default is host)
-. -draw_pause <sec>         - Sets number of seconds to pause after display
+. -display name             - Sets display name (default is host)
+. -draw_pause sec           - Sets number of seconds to pause after display
 - -vec_view socket          - Activates vector viewing using a socket
 
   Level: beginner
@@ -1277,8 +1277,8 @@ PetscErrorCode VecSetOperation(Vec vec, VecOperation op, PetscErrorCodeFn *f)
 - bsize - the initial size of the block-stash(if used).
 
   Options Database Keys:
-+ -vecstash_initial_size <size> or <size0,size1,...sizep-1>           - set initial size
-- -vecstash_block_initial_size <bsize> or <bsize0,bsize1,...bsizep-1> - set initial block size
++ -vecstash_initial_size size or size0,size1,...,sizep-1           - set initial size
+- -vecstash_block_initial_size bsize or bsize0,bsize1,...,bsizep-1 - set initial block size
 
   Level: intermediate
 
@@ -2243,7 +2243,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
 - mbytes - minimum data size in bytes
 
   Options Database Key:
-. -vec_pinned_memory_min <size> - minimum size (in bytes) for an allocation to use pinned memory on host.
+. -vec_pinned_memory_min size - minimum size (in bytes) for an allocation to use pinned memory on host.
 
   Level: developer
 

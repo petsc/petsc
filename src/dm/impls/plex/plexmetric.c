@@ -871,7 +871,7 @@ static PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt si
 . metric - The metric
 
   Options Database Key:
-. -dm_adaptor <pragmatic/mmg/parmmg> - specify dm adaptor to use
+. -dm_adaptor (pragmatic|mmg|parmmg) - specify `DMAdapterType` to use
 
   Options Database Keys for Mmg and ParMmg:
 + -dm_plex_metric_gradation_factor - Maximum ratio by which edge lengths may grow during gradation

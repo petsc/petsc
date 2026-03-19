@@ -146,8 +146,8 @@ static PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 - flag - `PETSC_TRUE` causes it to compute $||U||$, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
-. -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
-              must be sure that $||U||$ has not changed in the mean time.
+. -mat_mffd_compute_normu (true|false) - true by default, false can save calculations but you
+                                         must be sure that $||U||$ has not changed in the mean time.
 
   Level: advanced
 

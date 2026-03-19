@@ -444,7 +444,7 @@ PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, Vec 
 - inc - the scaling factor >= 1.0
 
   Options Database Key:
-. -ts_pseudo_increment <increment> - set pseudo increment
+. -ts_pseudo_increment increment - set pseudo increment
 
   Level: advanced
 
@@ -470,7 +470,7 @@ PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc)
 - maxdt - the maximum time step, use a non-positive value to deactivate
 
   Options Database Key:
-. -ts_pseudo_max_dt <increment> - set pseudo max dt
+. -ts_pseudo_max_dt increment - set pseudo max dt
 
   Level: advanced
 
@@ -495,7 +495,7 @@ PetscErrorCode TSPseudoSetMaxTimeStep(TS ts, PetscReal maxdt)
 . ts - the timestep context
 
   Options Database Key:
-. -ts_pseudo_increment_dt_from_initial_dt <true,false> - use the initial $dt$ to determine increment
+. -ts_pseudo_increment_dt_from_initial_dt (true|false) - use the initial $dt$ to determine increment
 
   Level: advanced
 
@@ -635,12 +635,12 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, PetscCtx ctx)
   For either method, an upper limit on the timestep can be set by `-ts_pseudo_max_dt`.
 
   Options Database Keys:
-+  -ts_pseudo_increment <real>                     - ratio of increase dt
-.  -ts_pseudo_increment_dt_from_initial_dt <truth> - Increase dt as a ratio from original dt
-.  -ts_pseudo_max_dt                               - Maximum dt for adaptive timestepping algorithm
-.  -ts_pseudo_monitor                              - Monitor convergence of the function norm
-.  -ts_pseudo_fatol <atol>                         - stop iterating when the function norm is less than `atol`
--  -ts_pseudo_frtol <rtol>                         - stop iterating when the function norm divided by the initial function norm is less than `rtol`
++  -ts_pseudo_increment real                            - ratio of increase dt
+.  -ts_pseudo_increment_dt_from_initial_dt (true|false) - Increase dt as a ratio from original dt
+.  -ts_pseudo_max_dt                                    - Maximum `dt` for adaptive timestepping algorithm
+.  -ts_pseudo_monitor                                   - Monitor convergence of the function norm
+.  -ts_pseudo_fatol atol                                - stop iterating when the function norm is less than `atol`
+-  -ts_pseudo_frtol rtol                                - stop iterating when the function norm divided by the initial function norm is less than `rtol`
 
   Level: beginner
 

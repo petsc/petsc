@@ -78,7 +78,7 @@ PetscInt PetscNumBLASThreads = 1;
 . nt - the number of threads
 
   Options Database Key:
-. -blas_num_threads <nt> - set the number of threads when PETSc is initialized
+. -blas_num_threads nt - set the number of threads when PETSc is initialized
 
   Level: intermediate
 

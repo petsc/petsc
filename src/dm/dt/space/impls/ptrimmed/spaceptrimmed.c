@@ -241,7 +241,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
 - formDegree - the form degree
 
   Options Database Key:
-. -petscspace_ptrimmed_form_degree <int> - The trimmed polynomial form degree
+. -petscspace_ptrimmed_form_degree degree - The trimmed polynomial form degree
 
   Level: intermediate
 

@@ -261,7 +261,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 - type - the type of update, `PC_ASM_BASIC` or `PC_ASM_RESTRICT`
 
   Options Database Key:
-. -snes_nasm_type <basic,restrict> - type of subdomain update used
+. -snes_nasm_type (basic|restrict) - type of subdomain update used
 
   Level: intermediate
 
@@ -518,7 +518,7 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 - dmp  - damping
 
   Options Database Key:
-. -snes_nasm_damping <dmp> - the new solution is obtained as old solution plus `dmp` times (sum of the solutions on the subdomains)
+. -snes_nasm_damping dmp - the new solution is obtained as old solution plus `dmp` times (sum of the solutions on the subdomains)
 
   Level: intermediate
 
@@ -800,10 +800,10 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
    Options Database Keys:
 +  -snes_nasm_log                                                - enable logging events for the communication and solve stages
-.  -snes_nasm_type <basic,restrict>                              - type of subdomain update used
-.  -snes_nasm_damping <dmp>                                      - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+.  -snes_nasm_type (basic|restrict)                              - type of subdomain update used
+.  -snes_nasm_damping dmp                                        - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
 .  -snes_nasm_finaljacobian                                      - compute the local and global Jacobians of the final iterate
-.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the Jacobian is calculated at
+.  -snes_nasm_finaljacobian_type (finalinner|finalouter|initial) - pick state the Jacobian is calculated at
 .  -sub_snes_                                                    - options prefix of the subdomain nonlinear solves
 .  -sub_ksp_                                                     - options prefix of the subdomain Krylov solver
 -  -sub_pc_                                                      - options prefix of the subdomain preconditioner

@@ -250,7 +250,7 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 .  comm - the MPI communicator to share the MATLAB `PetscViewer`
 
    Options Database Key:
-.    -viewer_matlab_filename <name> - name of the MATLAB file
+.    -viewer_matlab_filename name - name of the MATLAB file
 
    Environmental variable:
 .  `PETSC_VIEWER_MATLAB_FILENAME` - name of the MATLAB file

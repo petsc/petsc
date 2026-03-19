@@ -143,7 +143,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 - type - a known method
 
   Options Database Key:
-. -characteristic_type <method> - Sets the method; use -help for a list
+. -characteristic_type method - Sets the method; use -help for a list
     of available methods
 
   Level: intermediate

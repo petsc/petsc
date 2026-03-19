@@ -21,7 +21,7 @@ PetscFunctionList PCList = NULL;
 - type - a known method, see `PCType` for possible values
 
   Options Database Key:
-. -pc_type <type> - Sets `PC` type
+. -pc_type type - Sets `PC` type
 
   Notes:
   Normally, it is best to use the `KSPSetFromOptions()` command and

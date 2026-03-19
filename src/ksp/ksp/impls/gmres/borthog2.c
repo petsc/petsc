@@ -18,9 +18,9 @@
 - it  - one less than the current GMRES restart iteration, i.e. the size of the Krylov space
 
   Options Database Keys:
-+ -ksp_gmres_classicalgramschmidt                                             - Activates `KSPGMRESClassicalGramSchmidtOrthogonalization()`
-- -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is
-                                   used to increase the stability of the classical Gram-Schmidt  orthogonalization.
++ -ksp_gmres_classicalgramschmidt (true|false)                                - Activates `KSPGMRESClassicalGramSchmidtOrthogonalization()`
+- -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is
+                                                                                used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
   Level: intermediate
 

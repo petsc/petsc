@@ -149,11 +149,11 @@ running any PETSc program with the option `-help`.
 - `-malloc_debug` - enable memory debugging (by default, this is
   activated for the debugging version of PETSc), see
   {any}`detecting_memory_problems`,
-- `-start_in_debugger` `[noxterm,gdb,lldb]`
+- `-start_in_debugger [(noxterm)],[(gdb|lldb|...)]`
   `[-display name]` - start all (or a subset of the) processes in a debugger. See
   {any}`sec_debugging`, for more information on
   debugging PETSc programs.
-- `-on_error_attach_debugger` `[noxterm,gdb,lldb]`
+- `-on_error_attach_debugger` `[(noxterm)],[(gdb|lldb|...)]`
   `[-display name]` - start debugger only on encountering an error
 - `-info` - print a great deal of information about what the program
   is doing as it runs
@@ -606,7 +606,7 @@ using four OpenMP threads per MPI process will slow the code down since now one 
 
 For application codes that use certain external packages, including BLAS/LAPACK, SuperLU_DIST, MUMPS, MKL, and SuiteSparse, one can build PETSc and these
 packages to take advantage of OpenMP by using the configure option `--with-openmp`. The number of OpenMP threads used in the application can be controlled with
-the PETSc command line option `-omp_num_threads <num>` or the environmental variable `OMP_NUM_THREADS`. Running a PETSc program with `-omp_view` will display the
+the PETSc command line option `-omp_num_threads num` or the environmental variable `OMP_NUM_THREADS`. Running a PETSc program with `-omp_view` will display the
 number of threads used. The default number is often absurdly high for the given hardware, so we recommend always setting it appropriately.
 
 Users can also put OpenMP pragmas into their own code. However, since standard PETSc is not thread-safe, they should not, in general,

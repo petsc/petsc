@@ -3783,8 +3783,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 . A - the matrix
 
   Options Database Keys:
-+ -mat_no_inode            - Do not use inodes
-- -mat_inode_limit <limit> - Sets inode limit (max limit=5)
++ -mat_no_inode          - Do not use inodes
+- -mat_inode_limit limit - Sets inode limit (max limit=5)
 
   Level: intermediate
 
@@ -3834,8 +3834,8 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt n
          (possibly different for each row) or NULL
 
   Options Database Keys:
-+ -mat_no_inode            - Do not use inodes
-- -mat_inode_limit <limit> - Sets inode limit (max limit=5)
++ -mat_no_inode          - Do not use inodes
+- -mat_inode_limit limit - Sets inode limit (max limit=5)
 
   Level: intermediate
 
@@ -5374,7 +5374,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 - matype - matrix type
 
   Options Database Key:
-. -mat_seqaij_type  <method> - for example seqaijcrl
+. -mat_seqaij_type  method - for example seqaijcrl
 
   Level: intermediate
 

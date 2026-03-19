@@ -385,8 +385,8 @@ static PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *fl
 - rtype - restart type, see `SNESNGMRESRestartType`
 
   Options Database Keys:
-+ -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
-- -snes_ngmres_restart <30>                           - sets the number of iterations before restart for periodic
++ -snes_ngmres_restart_type (difference|periodic|none) - set the restart type
+- -snes_ngmres_restart restart                         - sets the number of iterations before restart for periodic
 
   Level: intermediate
 
@@ -412,7 +412,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 - stype - selection type, see `SNESNGMRESSelectType`
 
   Options Database Key:
-. -snes_ngmres_select_type<difference,none,linesearch> - select type
+. -snes_ngmres_select_typedifference,none,linesearch - select type
 
   Level: intermediate
 
@@ -455,19 +455,19 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
    Level: beginner
 
    Options Database Keys:
-+  -snes_ngmres_select_type<difference,none,linesearch> - choose the select between candidate and combined solution
-.  -snes_ngmres_restart_type<difference,none,periodic>  - choose the restart conditions
-.  -snes_ngmres_candidate                               - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
-.  -snes_ngmres_m                                       - Number of stored previous solutions and residuals
-.  -snes_ngmres_restart_it                              - Number of iterations the restart conditions hold before restart
-.  -snes_ngmres_gammaA                                  - Residual tolerance for solution select between the candidate and combination
-.  -snes_ngmres_gammaC                                  - Residual tolerance for restart
-.  -snes_ngmres_epsilonB                                - Difference tolerance between subsequent solutions triggering restart
-.  -snes_ngmres_deltaB                                  - Difference tolerance between residuals triggering restart
-.  -snes_ngmres_restart_fm_rise                         - Restart on residual rise from $x_M$ step
-.  -snes_ngmres_monitor                                 - Prints relevant information about the nonlinear GNMRES iterations
-.  -snes_linesearch_type <basic,l2,cp>                  - Line search type used for the default smoother
--  -snes_ngmres_additive_snes_linesearch_type           - line search type used to select between the candidate and combined solution with additive select type
++  -snes_ngmres_select_type (difference|none|linesearch) - choose the select between candidate and combined solution
+.  -snes_ngmres_restart_type (difference|none|periodic)  - choose the restart conditions
+.  -snes_ngmres_candidate                                - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
+.  -snes_ngmres_m m                                      - Number of stored previous solutions and residuals
+.  -snes_ngmres_restart_it it                            - Number of iterations the restart conditions hold before restart
+.  -snes_ngmres_gammaA gammaA                            - Residual tolerance for solution select between the candidate and combination
+.  -snes_ngmres_gammaC gammaB                            - Residual tolerance for restart
+.  -snes_ngmres_epsilonB epsilonB                        - Difference tolerance between subsequent solutions triggering restart
+.  -snes_ngmres_deltaB deltaB                            - Difference tolerance between residuals triggering restart
+.  -snes_ngmres_restart_fm_rise (true|false)             - Restart on residual rise from $x_M$ step
+.  -snes_ngmres_monitor                                  - Prints relevant information about the nonlinear GNMRES iterations
+.  -snes_linesearch_type (basic|l2|cp)                   - Line search type used for the default smoother
+-  -snes_ngmres_additive_snes_linesearch_type type       - line search type used to select between the candidate and combined solution with additive select type
 
    Notes:
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized

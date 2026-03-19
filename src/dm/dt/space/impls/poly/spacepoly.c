@@ -233,7 +233,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 - tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space
 
   Options Database Key:
-. -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
+. -petscspace_poly_tensor (true|false) - Whether to use tensor product polynomials in higher dimension
 
   Level: intermediate
 

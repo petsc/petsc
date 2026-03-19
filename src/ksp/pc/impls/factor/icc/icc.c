@@ -147,11 +147,11 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems PetscOptionsO
      PCICC - Incomplete Cholesky factorization preconditioners {cite}`chan1997approximate`
 
    Options Database Keys:
-+  -pc_factor_levels <k>                                 - number of levels of fill for ICC(k)
-.  -pc_factor_in_place                                   - only for ICC(0) with natural ordering, reuses the space of the matrix for
-                                                         its factorization (overwrites original matrix)
-.  -pc_factor_fill <nfill>                               - expected amount of fill in factored matrix compared to original matrix, nfill > 1
--  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
++  -pc_factor_levels k                                   - number of levels of fill for ICC(k)
+.  -pc_factor_in_place (true|false)                      - only for ICC(0) with natural ordering, reuses the space of the matrix for
+                                                           its factorization (overwrites original matrix)
+.  -pc_factor_fill nfill                                 - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+-  -pc_factor_mat_ordering_type (natural|nd|1wd|rcm|qmd) - set the row/column ordering of the factored matrix
 
    Level: beginner
 

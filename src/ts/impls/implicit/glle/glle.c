@@ -614,7 +614,7 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 - type - a method
 
   Options Database Key:
-. -ts_gl_type <type> - sets the method, use -help for a list of available method (e.g. irks)
+. -ts_gl_type type - sets the method, use -help for a list of available method (e.g. irks)
 
   Level: intermediate
 
@@ -651,7 +651,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 - type - the type
 
   Options Database Key:
-. -ts_gl_accept_type <type> - sets the method used to determine whether to accept or reject a step
+. -ts_gl_accept_type type - sets the method used to determine whether to accept or reject a step
 
   Level: intermediate
 
@@ -1320,14 +1320,14 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   TSGLLE - DAE solver using implicit General Linear methods {cite}`butcher_2007` {cite}`butcher2016numerical`
 
   Options Database Keys:
-+  -ts_gl_type <type> - the class of general linear method (irks)
-.  -ts_gl_rtol <tol>  - relative error
-.  -ts_gl_atol <tol>  - absolute error
-.  -ts_gl_min_order <p> - minimum order method to consider (default=1)
-.  -ts_gl_max_order <p> - maximum order method to consider (default=3)
-.  -ts_gl_start_order <p> - order of starting method (default=1)
-.  -ts_gl_complete <method> - method to use for completing the step (rescale-and-modify or rescale)
--  -ts_adapt_type <method> - adaptive controller to use (none step both)
++  -ts_gl_type type       - the class of general linear method (irks)
+.  -ts_gl_rtol tol        - relative error
+.  -ts_gl_atol tol        - absolute error
+.  -ts_gl_min_order p     - minimum order method to consider (default=1)
+.  -ts_gl_max_order p     - maximum order method to consider (default=3)
+.  -ts_gl_start_order p   - order of starting method (default=1)
+.  -ts_gl_complete method - method to use for completing the step (rescale-and-modify or rescale)
+-  -ts_adapt_type type    - adaptive controller to use (none step both)
 
   Level: beginner
 

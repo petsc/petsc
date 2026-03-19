@@ -194,7 +194,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes)
 - n    - the number of smoothing steps to use
 
   Options Database Key:
-. -snes_fas_smoothup <n> - Sets number of pre-smoothing steps
+. -snes_fas_smoothup n - Sets number of pre-smoothing steps
 
   Level: advanced
 
@@ -225,7 +225,7 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 - n    - the number of smoothing steps to use
 
   Options Database Key:
-. -snes_fas_smoothdown <n> - Sets number of pre-smoothing steps
+. -snes_fas_smoothdown n - Sets number of pre-smoothing steps
 
   Level: advanced
 
@@ -297,7 +297,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation)
 - cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
   Options Database Key:
-. -snes_fas_cycles <1,2> - 1 for V-cycle, 2 for W-cycle
+. -snes_fas_cycles (1|2) - 1 for V-cycle, 2 for W-cycle
 
   Level: advanced
 

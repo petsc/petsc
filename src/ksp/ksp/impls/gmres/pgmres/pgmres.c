@@ -342,15 +342,15 @@ static PetscErrorCode KSPReset_PGMRES(KSP ksp)
    KSPPGMRES - Implements the Pipelined Generalized Minimal Residual method {cite}`ghyselsashbymeerbergenvanroose2013`. [](sec_pipelineksp)
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
-                                                                                (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize
-                                                                                against the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
-                                                                                stability of the classical Gram-Schmidt  orthogonalization.
++   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate (true|false)                                         - preallocate all the Krylov search directions initially
+                                                                                  (otherwise groups of vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize
+                                                                                  against the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt (true|false)                                 - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
+                                                                                  stability of the classical Gram-Schmidt  orthogonalization.
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    Level: beginner

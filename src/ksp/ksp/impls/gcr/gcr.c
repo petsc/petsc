@@ -230,7 +230,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
 - restart - integer restart value
 
   Options Database Key:
-. -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
+. -ksp_gcr_restart restart - the number of stored vectors to orthogonalize against
 
   Level: intermediate
 
@@ -305,7 +305,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
    KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual (GCR) method {cite}`eisenstat1983variational`. [](sec_flexibleksp)
 
    Options Database Key:
-.   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
+.   -ksp_gcr_restart restart - the number of stored vectors to orthogonalize against
 
    Level: beginner
 

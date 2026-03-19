@@ -27,7 +27,7 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls, Vec x, PetscReal
    TAOLINESEARCHUNIT - Line-search type that disables line search and accepts the unit step length every time
 
   Options Database Keys:
-. -tao_ls_stepinit <step> - steplength
+. -tao_ls_stepinit step - steplength
 
    Level: developer
 

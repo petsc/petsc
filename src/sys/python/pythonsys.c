@@ -167,7 +167,7 @@ PetscErrorCode PetscPythonFinalize(void)
 -  pylib - full path to the Python dynamic library, or `NULL`.
 
   Options Database Key:
-. -python <exe> - Initializes Python, and optionally takes a Python executable name
+. -python exe - Initializes Python, and optionally takes a Python executable name
 
   Level: intermediate
 

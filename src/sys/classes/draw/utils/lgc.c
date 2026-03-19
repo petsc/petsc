@@ -437,7 +437,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
 - flg - should mark each data point
 
   Options Database Key:
-. -lg_use_markers  <true,false> - true means it draws a marker for each point
+. -lg_use_markers (true|false) - true means it draws a marker for each point
 
   Level: intermediate
 
@@ -626,7 +626,7 @@ PetscErrorCode PetscDrawLGSetOptionsPrefix(PetscDrawLG lg, const char prefix[])
 . lg - the line graph context
 
   Options Database Key:
-. -lg_use_markers  <true,false> - true means it draws a marker for each point
+. -lg_use_markers (true|false) - true means it draws a marker for each point
 
   Level: intermediate
 

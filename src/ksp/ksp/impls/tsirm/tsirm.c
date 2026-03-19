@@ -148,14 +148,14 @@ static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
    KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method {cite}`couturier2016tsirm`
 
    Options Database Keys:
-+  -ksp_ksp_type <solver>        - the type of the inner solver (GMRES or any of its variants for instance)
-.  -ksp_pc_type <preconditioner> - the type of the preconditioner applied to the inner solver
-.  -ksp_ksp_max_it <maxits>      - the maximum number of inner iterations (iterations of the inner solver)
-.  -ksp_ksp_rtol <tol>           - sets the relative convergence tolerance of the inner solver
-.  -ksp_tsirm_cgls <number>      - if 1 use CGLS solver in the minimization step, otherwise use LSQR solver
-.  -ksp_tsirm_max_it_ls <maxits> - the maximum number of iterations for the least-squares minimization solver
-.  -ksp_tsirm_tol_ls <tol>       - sets the convergence tolerance of the least-squares minimization solver
--  -ksp_tsirm_size_ls <size>     - the number of residuals for the least-squares minimization step
++  -ksp_ksp_type solver        - the type of the inner solver (GMRES or any of its variants for instance)
+.  -ksp_pc_type preconditioner - the type of the preconditioner applied to the inner solver
+.  -ksp_ksp_max_it maxits      - the maximum number of inner iterations (iterations of the inner solver)
+.  -ksp_ksp_rtol tol           - sets the relative convergence tolerance of the inner solver
+.  -ksp_tsirm_cgls number      - if 1 use CGLS solver in the minimization step, otherwise use LSQR solver
+.  -ksp_tsirm_max_it_ls maxits - the maximum number of iterations for the least-squares minimization solver
+.  -ksp_tsirm_tol_ls tol       - sets the convergence tolerance of the least-squares minimization solver
+-  -ksp_tsirm_size_ls size     - the number of residuals for the least-squares minimization step
 
    Level: advanced
 

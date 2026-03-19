@@ -151,8 +151,8 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 . mesh - The `DMPLEX` object
 
   Options Database Keys:
-+ -dm_plex_generate <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
-- -dm_generator <name>     - package to generate mesh, for example, triangle, ctetgen or tetgen
++ -dm_plex_generate name - package to generate mesh, for example, triangle, ctetgen or tetgen
+- -dm_generator name     - package to generate mesh, for example, triangle, ctetgen or tetgen
 
   Level: intermediate
 

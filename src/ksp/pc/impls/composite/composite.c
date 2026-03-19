@@ -434,7 +434,7 @@ static PetscErrorCode PCCompositeGetPC_Composite(PC pc, PetscInt n, PC *subpc)
 - type - `PC_COMPOSITE_ADDITIVE` (default), `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`
 
   Options Database Key:
-. -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
+. -pc_composite_type (multiplicative|additive|symmetric_multiplicative|special) - Sets composite preconditioner type
 
   Level: advanced
 
@@ -603,12 +603,12 @@ PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc)
 }
 
 /*MC
-     PCCOMPOSITE - Build a preconditioner by composing together several preconditioners
+   PCCOMPOSITE - Build a preconditioner by composing together several preconditioners
 
    Options Database Keys:
-+  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_use_amat                                                                                  - activates `PCSetUseAmat()`
--  -pc_composite_pcs                                                                             - <pc0,pc1,...> list of PCs to compose
++  -pc_composite_type (multiplicative|additive|symmetric_multiplicative|special) - Sets composite preconditioner type
+.  -pc_use_amat (true|false)                                                     - activates `PCSetUseAmat()`
+-  -pc_composite_pcs pc0,pc1,...                                                 - list of `PC`s to compose
 
    Level: intermediate
 

@@ -95,7 +95,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 - matype - matrix type
 
   Options Database Key:
-. -mat_type  <method> - Sets the type; see `MatType`
+. -mat_type type - Sets the type; see `MatType`
 
   Level: intermediate
 

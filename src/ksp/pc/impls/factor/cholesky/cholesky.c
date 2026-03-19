@@ -282,13 +282,12 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
    PCCHOLESKY - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_factor_reuse_ordering                 - Activate `PCFactorSetReuseOrdering()`
-.  -pc_factor_mat_solver_type                - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
-.  -pc_factor_reuse_fill                     - Activates `PCFactorSetReuseFill()`
-.  -pc_factor_fill <fill>                    - Sets the explected fill amount
-.  -pc_factor_in_place                       - Activates in-place factorization
--  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine used to determine the order the rows are used in the factorization to reduce fill
-                                               and thus be more effective
++  -pc_factor_reuse_ordering (true|false) - Activate `PCFactorSetReuseOrdering()`
+.  -pc_factor_mat_solver_type type        - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
+.  -pc_factor_reuse_fill (true|false)     - Activates `PCFactorSetReuseFill()`
+.  -pc_factor_fill fill                   - Sets the explected fill amount
+.  -pc_factor_in_place (true|false)       - Activates in-place factorization
+-  -pc_factor_mat_ordering_type type      - Sets ordering routine used to determine the order the rows are used in the factorization to reduce fill, see `MatOrderingType`
 
    Level: beginner
 

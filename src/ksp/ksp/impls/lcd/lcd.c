@@ -182,7 +182,7 @@ static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems PetscOptio
 
    Options Database Keys:
 +  -ksp_lcd_restart - number of vectors conjugate
--  -ksp_lcd_haptol - tolerance for exact convergence (happy ending)
+-  -ksp_lcd_haptol  - tolerance for exact convergence (happy ending)
 
    Level: beginner
 

@@ -94,7 +94,7 @@ static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 PETSC_EXTERN PetscBool use_gpu_aware_mpi;
 /*
   Options Database Keys:
-. -hypre_umpire_device_pool_size <n>  - set the Umpire device memory pool size (in MiB). HYPRE uses 4 GiB by default.
+. -hypre_umpire_device_pool_size n - set the Umpire device memory pool size (in MiB). HYPRE uses 4 GiB by default.
 */
 static inline PetscErrorCode PetscHYPREInitialize(void)
 {

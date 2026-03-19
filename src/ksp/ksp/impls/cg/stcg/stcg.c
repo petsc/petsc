@@ -594,7 +594,7 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems PetscOp
    {cite}`steihaug:83`, {cite}`toint1981towards`
 
    Options Database Key:
-.      -ksp_cg_radius <r> - Trust Region Radius
+.      -ksp_cg_radius radius - Trust Region Radius
 
    Level: developer
 

@@ -524,7 +524,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 
   Options Database Keys:
 + -mat_product_clear                 - Clear intermediate data structures after `MatProductNumeric()` has been called
-. -mat_product_algorithm <algorithm> - Sets the algorithm, see `MatProductAlgorithm` for possible values
+. -mat_product_algorithm algorithm   - Sets the algorithm, see `MatProductAlgorithm` for possible values
 - -mat_product_algorithm_backend_cpu - Use the CPU to perform the computation even if the matrix is a GPU matrix
 
   Level: intermediate
@@ -896,7 +896,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 - alg - particular implementation algorithm of the matrix product, e.g., `MATPRODUCTALGORITHMDEFAULT`.
 
   Options Database Key:
-. -mat_product_algorithm <algorithm> - Sets the algorithm, see `MatProductAlgorithm`
+. -mat_product_algorithm algorithm - Sets the algorithm, see `MatProductAlgorithm`
 
   Level: intermediate
 

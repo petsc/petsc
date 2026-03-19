@@ -434,10 +434,10 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer)
     KSPGUESSPOD - Implements a proper orthogonal decomposition based Galerkin scheme for repeated linear system solves.
 
   Options Database Keys:
-+  -ksp_guess_pod_size <size> - Number of snapshots
-.  -ksp_guess_pod_monitor <true or false> - Monitor initial guess generator
-.  -ksp_guess_pod_tol <tol> - Tolerance to retain eigenvectors
--  -ksp_guess_pod_Ainner <true> - Use the operator as inner product (must be SPD)
++  -ksp_guess_pod_size size            - Number of snapshots
+.  -ksp_guess_pod_monitor (true|false) - Monitor initial guess generator
+.  -ksp_guess_pod_tol tol              - Tolerance to retain eigenvectors
+-  -ksp_guess_pod_Ainner (true|false)  - Use the operator as inner product (must be SPD)
 
   Level: intermediate
 

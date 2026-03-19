@@ -1014,7 +1014,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 - n  - the number of equations
 
   Options Database Key:
-. -pc_gamg_process_eq_limit <limit> - set the limit
+. -pc_gamg_process_eq_limit limit - set the limit
 
   Level: intermediate
 
@@ -1055,7 +1055,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 - n  - maximum number of equations to aim for
 
   Options Database Key:
-. -pc_gamg_coarse_eq_limit <limit> - set the limit
+. -pc_gamg_coarse_eq_limit limit - set the limit
 
   Level: intermediate
 
@@ -1094,7 +1094,7 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 - n  - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Key:
-. -pc_gamg_repartition <true,false> - turn on the repartitioning
+. -pc_gamg_repartition (true|false) - turn on the repartitioning
 
   Level: intermediate
 
@@ -1132,7 +1132,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 - b  - flag
 
   Options Database Key:
-. -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
+. -pc_gamg_use_sa_esteig (true|false) - use the eigen estimate
 
   Level: advanced
 
@@ -1174,7 +1174,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool b)
 - b  - flag, default is `PETSC_TRUE`
 
   Options Database Key:
-. -pc_gamg_recompute_esteig <true> - use the eigen estimate
+. -pc_gamg_recompute_esteig (true|false) - use the eigen estimate
 
   Level: advanced
 
@@ -1213,7 +1213,7 @@ static PetscErrorCode PCGAMGSetRecomputeEstEig_GAMG(PC pc, PetscBool b)
 - emin - min eigenvalue
 
   Options Database Key:
-. -pc_gamg_eigenvalues <emin,emax> - estimates of the eigenvalues
+. -pc_gamg_eigenvalues emin,emax - estimates of the eigenvalues
 
   Level: intermediate
 
@@ -1250,7 +1250,7 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc, PetscReal emax, PetscReal
 - n  - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Key:
-. -pc_gamg_reuse_interpolation <true,false> - reuse the previous interpolation
+. -pc_gamg_reuse_interpolation (true|false) - reuse the previous interpolation
 
   Level: intermediate
 
@@ -1289,7 +1289,7 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 - flg - `PETSC_TRUE` to use aggregates, `PETSC_FALSE` to not
 
   Options Database Key:
-. -pc_gamg_asm_use_agg <true,false> - use aggregates to define the additive Schwarz subdomains
+. -pc_gamg_asm_use_agg (true|false) - use aggregates to define the additive Schwarz subdomains
 
   Level: intermediate
 
@@ -1428,7 +1428,7 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
 - n  - the maximum number of levels to use
 
   Options Database Key:
-. -pc_mg_levels <n> - set the maximum number of levels to allow
+. -pc_mg_levels n - set the maximum number of levels to allow
 
   Level: intermediate
 
@@ -1465,7 +1465,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 - n  - number of HEM matching passed to construct ASM subdomains
 
   Options Database Key:
-. -pc_gamg_asm_hem <n> - set the number of HEM matching passed
+. -pc_gamg_asm_hem n - set the number of HEM matching passed
 
   Level: intermediate
 
@@ -1503,7 +1503,7 @@ static PetscErrorCode PCGAMGASMSetHEM_GAMG(PC pc, PetscInt n)
 - n  - number of threshold values provided in array
 
   Options Database Key:
-. -pc_gamg_threshold <threshold> - the threshold to drop edges
+. -pc_gamg_threshold threshold - the threshold to drop edges
 
   Level: intermediate
 
@@ -1549,7 +1549,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 - n  - number of values provided in array
 
   Options Database Key:
-. -pc_gamg_rank_reduction_factors <factors> - provide the schedule
+. -pc_gamg_rank_reduction_factors factors - provide the schedule
 
   Level: intermediate
 
@@ -1586,7 +1586,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 - v  - the threshold value reduction, usually < 1.0
 
   Options Database Key:
-. -pc_gamg_threshold_scale <v> - set the relative threshold reduction on each level
+. -pc_gamg_threshold_scale v - set the relative threshold reduction on each level
 
   Level: advanced
 
@@ -1624,7 +1624,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 - type - `PCGAMGAGG`, `PCGAMGGEO`, or `PCGAMGCLASSICAL`
 
   Options Database Key:
-. -pc_gamg_type <agg,geo,classical> - type of algebraic multigrid to apply - only agg is supported
+. -pc_gamg_type (agg|geo|classical) - type of algebraic multigrid to apply - only agg is supported
 
   Level: intermediate
 
@@ -1872,30 +1872,30 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
   PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
   Options Database Keys:
-+ -pc_gamg_type <type,default=agg>                 - one of agg, geo, or classical (only smoothed aggregation, agg, supported)
-. -pc_gamg_repartition  <bool,default=false>       - repartition the degrees of freedom across the coarse grids as they are determined
-. -pc_gamg_asm_use_agg <bool,default=false>        - use the aggregates from the coasening process to defined the subdomains on each level for the `PCASM` smoother.
-                                                     That is using `-mg_levels_pc_type asm`
-. -pc_gamg_process_eq_limit <limit, default=50>    - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around <limit>
-                                                     equations on each process that has degrees of freedom
-. -pc_gamg_coarse_eq_limit <limit, default=50>     - Set maximum number of equations on coarsest grid to aim for.
-. -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
-. -pc_gamg_threshold[] <thresh,default=[-1,...]>   - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
-- -pc_gamg_threshold_scale <scale,default=1>       - Scaling of threshold on each coarser grid if not specified
++ -pc_gamg_type type (agg|geo|classical)     - see `PCGAMGType`
+. -pc_gamg_repartition  (true|false)         - repartition the degrees of freedom across the coarse grids as they are determined
+. -pc_gamg_asm_use_agg (true|false)          - use the aggregates from the coasening process to defined the subdomains on each level for the `PCASM` smoother.
+                                               That is using `-mg_levels_pc_type asm`
+. -pc_gamg_process_eq_limit limit            - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around limit
+                                               equations on each process that has degrees of freedom
+. -pc_gamg_coarse_eq_limit limit             - Set maximum number of equations on coarsest grid to aim for.
+. -pc_gamg_reuse_interpolation (true|false)  - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
+. -pc_gamg_threshold l0,l1,...               - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
+- -pc_gamg_threshold_scale scale             - Scaling of threshold on each coarser grid if not specified
 
   Options Database Keys for Aggregation:
-+ -pc_gamg_agg_nsmooths <nsmooth, default=1>                 - number of smoothing steps to use with smooth aggregation to construct prolongation
-. -pc_gamg_aggressive_coarsening <n,default=1>               - number of aggressive coarsening (MIS-2) levels from finest.
-. -pc_gamg_aggressive_square_graph <bool,default=true>       - Use square graph $ A^T A$ for coarsening. Otherwise, MIS-k (k=2) is used, see `PCGAMGMISkSetAggressive()`.
-. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=false>- Use minimum degree ordering in greedy MIS algorithm
-. -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0>                - Number of HEM aggregation steps for `PCASM` smoother
-- -pc_gamg_aggressive_mis_k <n,default=2>                    - Number (k) distance in MIS coarsening (>2 is 'aggressive')
++ -pc_gamg_agg_nsmooths nsmooth                       - number of smoothing steps to use with smooth aggregation to construct prolongation
+. -pc_gamg_aggressive_coarsening n                    - number of aggressive coarsening (MIS-2) levels from finest.
+. -pc_gamg_aggressive_square_graph (true|false)       - Use square graph $ A^T A$ for coarsening. Otherwise, MIS-k (k=2) is used, see `PCGAMGMISkSetAggressive()`.
+. -pc_gamg_mis_k_minimum_degree_ordering (true|false) - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_pc_gamg_asm_hem_aggs n                      - Number of HEM aggregation steps for `PCASM` smoother
+- -pc_gamg_aggressive_mis_k n                          - Number (k) distance in MIS coarsening (>2 is 'aggressive')
 
   Options Database Keys for Multigrid:
-+ -pc_mg_cycle_type <v>        - v or w, see `PCMGSetCycleType()`
-. -pc_mg_distinct_smoothup     - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
-. -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
-- -pc_mg_levels <levels>       - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
++ -pc_mg_cycle_type (v|w)                              - see `PCMGSetCycleType()`
+. -pc_mg_distinct_smoothup                             - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
+. -pc_mg_type (additive|multiplicative|full|kascade)   - see `PCMGType`
+- -pc_mg_levels levels                                 - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
 
   Level: intermediate
 

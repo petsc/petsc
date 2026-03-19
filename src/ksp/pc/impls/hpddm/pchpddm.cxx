@@ -3037,7 +3037,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 - type - `PC_HPDDM_COARSE_CORRECTION_DEFLATED`, `PC_HPDDM_COARSE_CORRECTION_ADDITIVE`, `PC_HPDDM_COARSE_CORRECTION_BALANCED`, or `PC_HPDDM_COARSE_CORRECTION_NONE`
 
   Options Database Key:
-. -pc_hpddm_coarse_correction <deflated, additive, balanced, none> - type of coarse correction to apply
+. -pc_hpddm_coarse_correction (deflated|additive|balanced|none) - type of coarse correction to apply
 
   Level: intermediate
 
@@ -3239,10 +3239,10 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.
 
    Options Database Keys:
-+   -pc_hpddm_define_subdomains <true, default=false>    - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
-                                                         (not relevant with an unassembled Pmat)
-.   -pc_hpddm_has_neumann <true, default=false>          - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
--   -pc_hpddm_coarse_correction <type, default=deflated> - determines the `PCHPDDMCoarseCorrectionType` when calling `PCApply()`
++   -pc_hpddm_define_subdomains (true|false) - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
+                                               (not relevant with an unassembled Pmat)
+.   -pc_hpddm_has_neumann (true|false)       - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
+-   -pc_hpddm_coarse_correction type         - determines the `PCHPDDMCoarseCorrectionType` when calling `PCApply()` default is `deflated`
 
    Options for subdomain solvers, subdomain eigensolvers (for computing deflation vectors), and the coarse solver can be set using the following options database prefixes.
 .vb

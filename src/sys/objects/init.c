@@ -602,15 +602,15 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, " -help: prints example description, PETSc version, and available options for used routines\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -on_error_abort: cause an abort when an error is detected. Useful \n "));
     PetscCall((*PetscHelpPrintf)(comm, "       only when run in the debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
     PetscCall((*PetscHelpPrintf)(comm, "       start the debugger in new xterm\n"));
     PetscCall((*PetscHelpPrintf)(comm, "       unless noxterm is given\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -start_in_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
     PetscCall((*PetscHelpPrintf)(comm, "       start all processes in the debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_emacs <machinename>\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -on_error_emacs machinename\n"));
     PetscCall((*PetscHelpPrintf)(comm, "    emacs jumps to error file\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -debugger_ranks [n1,n2,..] Ranks to start in debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -debugger_pause [m] : delay (in seconds) to attach debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -debugger_ranks n1,n2,.. Ranks to start in debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -debugger_pause secs : delay (in seconds) to attach debugger\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -stop_for_debugger : prints message on how to attach debugger manually\n"));
     PetscCall((*PetscHelpPrintf)(comm, "                      waits the delay for you to attach\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -display display: Location where X window graphics and debuggers are displayed\n"));
@@ -618,22 +618,19 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, " -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -fp_trap: stop on floating point exceptions\n"));
     PetscCall((*PetscHelpPrintf)(comm, "           note on IBM RS6000 this slows run greatly\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_malloc_dump <optional filename>: dump list of unfreed memory on memory error\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump [filename]: dump list of unfreed memory at conclusion\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug (true|false): enables or disables extended checking for memory corruption\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_view: dump list of options inputted\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_left: dump list of unused options\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_left no: don't dump list of unused options\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -tmp tmpdir: alternative /tmp directory\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -shared_tmp: tmp directory is shared by all processors\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -not_shared_tmp: each processor has separate tmp directory\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -memory_view: print memory usage at end of run\n"));
 #if defined(PETSC_USE_LOG)
     PetscCall((*PetscHelpPrintf)(comm, " -get_total_flops: total flops over all processors\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -log_view [:filename:[format]]: logging objects and events\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -log_trace [filename]: prints trace of all PETSc calls\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_exclude <list,of,classnames>: exclude given classes from logging\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -log_exclude classname1,classname2,...: exclude given classes from logging\n"));
   #if defined(PETSC_HAVE_DEVICE)
     PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_time: log the GPU time for each event\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_energy: log the GPU energy (estimated) for each event\n"));
@@ -650,9 +647,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   #endif
 #endif
 #if defined(PETSC_USE_INFO)
-    PetscCall((*PetscHelpPrintf)(comm, " -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names\n"));
 #endif
-    PetscCall((*PetscHelpPrintf)(comm, " -options_file <file>: reads options from file\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -options_file filename: reads options from file\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_monitor_cancel: cancels all hardwired option monitors\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -petsc_sleep n: sleeps n seconds before running program\n"));

@@ -269,9 +269,6 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
   Output Parameter:
 . ksp - the linear solver object
 
-  Options Database Key:
-. -fieldsplit_<splitname_0>_XXX - sets `KSP` and `PC` options for the 0-split solver inside the Schur complement used in `PCFIELDSPLIT`; default <splitname_0> is 0.
-
   Level: intermediate
 
 .seealso: [](ch_ksp), `Mat`, `MatSchurComplementSetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`
@@ -709,7 +706,7 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
              `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
 
   Options Database Key:
-. -mat_schur_complement_ainv_type diag | lump | blockdiag | full - set schur complement type
+. -mat_schur_complement_ainv_type (diag|lump|blockdiag|full) - set Schur complement type
 
   Level: advanced
 

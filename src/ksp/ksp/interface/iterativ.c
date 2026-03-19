@@ -1083,7 +1083,7 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 . ctx - a void pointer
 
   Options Database Key:
-. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+. -sub_ksp_dynamic_tolerance coef - coefficient of dynamic tolerance for inner solver, default is 1.0
 
   Level: advanced
 
@@ -1116,7 +1116,7 @@ PetscErrorCode KSPMonitorDynamicToleranceCreate(PetscCtx ctx)
 - coeff - the coefficient, default is 1.0
 
   Options Database Key:
-. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+. -sub_ksp_dynamic_tolerance coef - coefficient of dynamic tolerance for inner solver, default is 1.0
 
   Level: advanced
 
@@ -1146,7 +1146,7 @@ PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(PetscCtx ctx, PetscReal 
 - ctx   - context used by monitor
 
   Options Database Key:
-. -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+. -sub_ksp_dynamic_tolerance coef - coefficient of dynamic tolerance for inner solver, default is 1.0
 
   Level: advanced
 
@@ -1288,7 +1288,7 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
 - flg - the Boolean value
 
   Options Database Key:
-. -ksp_converged_neg_curve <bool> - Declare convergence if negative curvature is detected
+. -ksp_converged_neg_curve (true|false) - Declare convergence if negative curvature is detected
 
   Level: advanced
 
@@ -1365,7 +1365,7 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx) PeNS
 . ksp - iterative context
 
   Options Database Key:
-. -ksp_converged_use_initial_residual_norm <bool> - Use initial residual norm for computing relative convergence
+. -ksp_converged_use_initial_residual_norm (true|false) - Use initial residual norm for computing relative convergence
 
   Level: intermediate
 
@@ -1396,9 +1396,9 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
 }
 
 /*@
-  KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
+  KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use $\min(|| B*(b - A*(initial guess))||,|| B*b ||)$
   In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
-  is used there is no B in the above formula.
+  is used there is no $B$ in the above formula.
 
   Collective
 
@@ -1406,7 +1406,7 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
 . ksp - iterative context
 
   Options Database Key:
-. -ksp_converged_use_min_initial_residual_norm <bool> - Use minimum of initial residual norm and b for computing relative convergence
+. -ksp_converged_use_min_initial_residual_norm (true|false) - Use minimum of initial residual norm and b for computing relative convergence
 
   Level: intermediate
 
@@ -1439,7 +1439,7 @@ PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 - flg - boolean flag
 
   Options Database Key:
-. -ksp_converged_maxits <bool> - Declare convergence if the maximum number of iterations is reached
+. -ksp_converged_maxits (true|false) - Declare convergence if the maximum number of iterations is reached
 
   Level: intermediate
 

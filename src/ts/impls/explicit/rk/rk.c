@@ -1417,7 +1417,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
 - use_multirate - `PETSC_TRUE` enables the multirate `TSRK` method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 
   Options Database Key:
-. -ts_rk_multirate - <true,false>
+. -ts_rk_multirate (true|false) - enable the multirate RK method
 
   Level: intermediate
 

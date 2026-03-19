@@ -59,8 +59,8 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
    well-behaved problems. Also named `SNESLINESEARCHNONE`.
 
    Options Database Keys:
-+  -snes_linesearch_damping <1.0>     - step length is scaled by this factor
--  -snes_linesearch_norms <true>      - whether to compute norms or not (`SNESLineSearchSetComputeNorms()`)
++  -snes_linesearch_damping damp        - step length is scaled by this factor
+-  -snes_linesearch_norms (true|false)  - whether to compute norms or not (`SNESLineSearchSetComputeNorms()`)
 
    Note:
    For methods with ill-scaled updates (`SNESNRICHARDSON`, `SNESNCG`), a small

@@ -285,8 +285,8 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
 . partitioning - the partitioning. For each local node this tells the MPI rank that that node is assigned to.
 
   Options Database Keys:
-+ -mat_partitioning_type <type> - set the partitioning package or algorithm to use
-- -mat_partitioning_view        - display information about the partitioning object
++ -mat_partitioning_type type - set the partitioning package or algorithm to use
+- -mat_partitioning_view      - display information about the partitioning object
 
   Level: beginner
 
@@ -703,7 +703,7 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 - type - a known method
 
   Options Database Key:
-. -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods or see  `MatPartitioningType`
+. -mat_partitioning_type type - (for instance, parmetis), see `MatPartitioningType`
 
   Level: intermediate
 
@@ -747,8 +747,8 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
 . part - the partitioning context.
 
   Options Database Keys:
-+ -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods
-- -mat_partitioning_nparts       - number of subgraphs
++ -mat_partitioning_type type - (for instance, parmetis), use -help for a list of available methods
+- -mat_partitioning_nparts    - number of subgraphs
 
   Level: beginner
 

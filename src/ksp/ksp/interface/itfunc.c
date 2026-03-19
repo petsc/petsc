@@ -240,7 +240,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
 - flag - `PETSC_TRUE` to reuse the current preconditioner, or `PETSC_FALSE` to construct a new preconditioner
 
   Options Database Key:
-. -ksp_reuse_preconditioner <true,false> - reuse the previously computed preconditioner
+. -ksp_reuse_preconditioner (true|false) - reuse the previously computed preconditioner
 
   Level: intermediate
 
@@ -1559,7 +1559,7 @@ PetscErrorCode KSPDestroy(KSP *ksp)
 .ve
 
   Options Database Key:
-. -ksp_pc_side <right,left,symmetric> - `KSP` preconditioner side
+. -ksp_pc_side (right|left|symmetric) - `KSP` preconditioner side
 
   Level: intermediate
 
@@ -1663,10 +1663,10 @@ PetscErrorCode KSPGetTolerances(KSP ksp, PeOp PetscReal *rtol, PeOp PetscReal *a
 - maxits - maximum number of iterations to use
 
   Options Database Keys:
-+ -ksp_atol <abstol>   - Sets `abstol`
-. -ksp_rtol <rtol>     - Sets `rtol`
-. -ksp_divtol <dtol>   - Sets `dtol`
-- -ksp_max_it <maxits> - Sets `maxits`
++ -ksp_atol abstol   - Sets `abstol`
+. -ksp_rtol rtol     - Sets `rtol`
+. -ksp_divtol dtol   - Sets `dtol`
+- -ksp_max_it maxits - Sets `maxits`
 
   Level: intermediate
 
@@ -1740,7 +1740,7 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
 - minit - minimum number of iterations to use
 
   Options Database Key:
-. -ksp_min_it <minits> - Sets `minit`
+. -ksp_min_it minit - Sets `minit`
 
   Level: intermediate
 
@@ -1804,7 +1804,7 @@ PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
 - flg - ``PETSC_TRUE`` indicates the guess is non-zero, `PETSC_FALSE` indicates the guess is zero
 
   Options Database Key:
-. -ksp_initial_guess_nonzero <true,false> - use nonzero initial guess
+. -ksp_initial_guess_nonzero (true|false) - use nonzero initial guess
 
   Level: beginner
 
@@ -1855,7 +1855,7 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 - flg - `PETSC_TRUE` indicates you want the error generated
 
   Options Database Key:
-. -ksp_error_if_not_converged <true,false> - generate an error and stop the program
+. -ksp_error_if_not_converged (true|false) - generate an error and stop the program
 
   Level: intermediate
 

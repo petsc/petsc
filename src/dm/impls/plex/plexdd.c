@@ -300,7 +300,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *s
 
    Options Database Keys:
 +   -dm_plex_view_neumann_original - view the DM without overlap
--   -dm_plex_view_neumann_overlap - view the DM with overlap as needed by PCHPDDM
+-   -dm_plex_view_neumann_overlap  - view the DM with overlap as needed by `PCHPDDM`
 
    Level: advanced
 

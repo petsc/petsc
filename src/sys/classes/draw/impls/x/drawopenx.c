@@ -23,10 +23,10 @@
 
   Options Database Keys:
 + -nox                    - Disables all x-windows output
-. -display <name>         - Sets name of machine for the X display
-. -draw_pause <pause>     - Sets time (in seconds) that the program pauses after `PetscDrawPause()` has been called
+. -display name           - Sets name of machine for the X display
+. -draw_pause pause       - Sets time (in seconds) that the program pauses after `PetscDrawPause()` has been called
                             (0 is default, -1 implies until user input).
-. -draw_cmap <name>       - Sets the colormap to use.
+. -draw_cmap name         - Sets the colormap to use.
 . -draw_cmap_reverse      - Reverses the colormap.
 . -draw_cmap_brighten     - Brighten (0 < beta < 1) or darken (-1 < beta < 0) the colormap.
 . -draw_x_shared_colormap - Causes PETSc to use a shared colormap. By default PETSc creates a separate color

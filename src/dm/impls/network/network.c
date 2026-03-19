@@ -1747,7 +1747,7 @@ static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF,
   Options Database Keys:
 + -dmnetwork_view              - Calls `DMView()` at the conclusion of `DMSetUp()`
 . -dmnetwork_view_distributed  - Calls `DMView()` at the conclusion of `DMNetworkDistribute()`
-. -dmnetwork_view_tmpdir       - Sets the temporary directory to use when viewing with the `draw` option
+. -dmnetwork_view_tmpdir dir   - Sets the temporary directory to use when viewing with the `draw` option
 . -dmnetwork_view_all_ranks    - Displays all of the subnetworks for each MPI rank
 . -dmnetwork_view_rank_range   - Displays the subnetworks for the ranks in a comma-separated list
 . -dmnetwork_view_no_vertices  - Disables displaying the vertices in the network visualization
@@ -1756,7 +1756,7 @@ static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF,
   Level: intermediate
 
   Note:
-  Distributes the network with <overlap>-overlapping partitioning of the edges.
+  Distributes the network with overlapping partitioning of the edges.
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`
 @*/

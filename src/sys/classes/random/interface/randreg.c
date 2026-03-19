@@ -13,8 +13,7 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 - type - The name of the random type
 
   Options Database Key:
-. -random_type <type> - Sets the random type; use -help for a list
-                     of available types
+. -random_type (rander48|rand|rand48|sprng|random123|curand) - set the random number generator from the options database, see `PetscRandomType`.
 
   Level: intermediate
 

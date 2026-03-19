@@ -15,7 +15,7 @@
 - ival  - value of MUMPS `ICNTL(icntl)`
 
   Options Database Key:
-. -mat_mumps_icntl_<icntl> <ival> - change the option numbered `icntl` to `ival`
+. -mat_mumps_icntl_ICNTL ival - change the option numbered `icntl` to `ival`, here ICNTL denotes an integer value
 
   Level: beginner
 
@@ -73,7 +73,7 @@ PetscErrorCode MatMumpsGetIcntl(Mat F, PetscInt icntl, PetscInt *ival)
 - val   - value of MUMPS `CNTL(icntl)`
 
   Options Database Key:
-. -mat_mumps_cntl_<icntl> <val> - change the option numbered icntl to ival
+. -mat_mumps_cntl_icntl val - change the option numbered icntl to ival
 
   Level: beginner
 

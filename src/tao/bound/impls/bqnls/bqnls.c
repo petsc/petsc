@@ -71,10 +71,10 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao, PetscOptionItems PetscOpt
 
   Options Database Keys:
 + -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-. -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
-. -tao_bnk_epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance
-. -tao_bnk_as_tol - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
-- -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
+. -tao_bnk_as_type    - active-set estimation method ("none", "bertsekas")
+. -tao_bnk_epsilon    - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance
+. -tao_bnk_as_tol     - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
+- -tao_bnk_as_step    - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
 
   Level: beginner
 

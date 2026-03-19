@@ -766,7 +766,7 @@ PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
   Level: beginner
 
   Options Database Key:
-. -ksp_minres_radius <real> - maximum allowed solution norm
+. -ksp_minres_radius radius - maximum allowed solution norm
 
   Developer Note:
   Perhaps the KSPXXXSetRadius() should be unified
@@ -811,11 +811,11 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
    {cite}`liu2022newton` for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_minres_qlp <bool>      - activates QLP code
-.   -ksp_minres_radius <real>   - maximum allowed solution norm
-.   -ksp_minres_trancond <real> - threshold on condition number to dynamically switch to QLP iterations when QLP has been activated
-.   -ksp_minres_monitor         - monitors convergence quantities
--   -ksp_minres_nutol <real>    - inexactness tolerance (see https://arxiv.org/pdf/2208.07095.pdf)
++   -ksp_minres_qlp (true|false)       - activates QLP code
+.   -ksp_minres_radius maxnorm         - maximum allowed solution norm
+.   -ksp_minres_trancond condthreshold - threshold on condition number to dynamically switch to QLP iterations when QLP has been activated
+.   -ksp_minres_monitor                - monitors convergence quantities
+-   -ksp_minres_nutol tol              - inexactness tolerance (see https://arxiv.org/pdf/2208.07095.pdf)
 
    Level: beginner
 

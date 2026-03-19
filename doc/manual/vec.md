@@ -53,7 +53,7 @@ VecSetFromOptions(Vec v);
 ```
 
 which automatically generates the appropriate vector type (sequential or
-parallel) over all processes in `comm`. The option `-vec_type <type>`
+parallel) over all processes in `comm`. The option `-vec_type type`
 can be used in conjunction with
 `VecSetFromOptions()` to specify the use of a particular type of vector. For example, for NVIDIA GPU CUDA, use `cuda`.
 The GPU-based vectors allow
@@ -96,7 +96,7 @@ manages creating the correctly sized parallel vectors efficiently. One controls 
 DMSetVecType(DM dm, VecType vt)
 ```
 
-or by calling `DMSetFromOptions(DM dm)` and using the option `-dm_vec_type <standard or cuda or kokkos etc>`
+or by calling `DMSetFromOptions(DM dm)` and using the option `-dm_vec_type (standard|cuda|kokkos|hip)`
 
 (sec_struct)=
 

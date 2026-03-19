@@ -515,8 +515,8 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts, PetscInt *order)
   Level: beginner
 
   Options Database Keys:
-+  -ts_bdf_order <n>                               - Order of the BDF method
--  -ts_bdf_initial_guess_extrapolate <true, false> - Extrapolate the initial guess of the nonlinear solve from previous time steps, defaults to true
++  -ts_bdf_order n                                - Order of the BDF method
+-  -ts_bdf_initial_guess_extrapolate (true|false) - Extrapolate the initial guess of the nonlinear solve from previous time steps, defaults to true
 
 .seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`, `TSBDFSetOrder()`
 M*/
@@ -563,7 +563,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 - order - order of the method
 
   Options Database Key:
-. -ts_bdf_order <order> - select the order
+. -ts_bdf_order order - select the order
 
   Level: intermediate
 

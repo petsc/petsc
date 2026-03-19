@@ -117,6 +117,7 @@
 - Correct option `-ts_max_reject` to `-ts_max_step_rejections`
 - Correct option `-ts_dt` to `-ts_time_step`
 - Change `TSAdaptCheckStage()` to call function set by `TSAdaptSetCheckStage()` before other checks
+- Fix `-ts_ssp_nstages` to `-ts_ssp_num_stages`
 
 ```{rubric} TAO:
 ```

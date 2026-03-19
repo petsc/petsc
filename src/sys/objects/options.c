@@ -812,13 +812,13 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options, con
 . argc    - count of number of command line arguments
 . args    - the command line arguments
 - file    - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
-          Use `NULL` or empty string to not check for code specific file.
-          Also checks ~/.petscrc, .petscrc and petscrc.
-          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
+            Use `NULL` or empty string to not check for code specific file.
+            Also checks ~/.petscrc, .petscrc and petscrc.
+            Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 
   Options Database Keys:
-+ -options_file <filename>      - read options from a file
-- -options_file_yaml <filename> - read options from a YAML file
++ -options_file filename      - read options from a file
+- -options_file_yaml filename - read options from a YAML file
 
   Level: advanced
 
@@ -1037,8 +1037,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 - prefix  - The string to append to the existing prefix
 
   Options Database Keys:
-+ -prefix_push <some_prefix_> - push the given prefix
-- -prefix_pop                 - pop the last prefix
++ -prefix_push some_prefix_ - push the given prefix
+- -prefix_pop               - pop the last prefix
 
   Level: advanced
 
@@ -2107,8 +2107,8 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 - mctx   - optional monitoring context, as set by `PetscOptionsMonitorSet()`
 
   Options Database Keys:
-+ -options_monitor <viewer> - turn on default monitoring of changes to the options database
-- -options_monitor_cancel   - turn off any option monitors except the default monitor obtained with `-options_monitor`
++ -options_monitor viewer - turn on default monitoring of changes to the options database
+- -options_monitor_cancel - turn off any option monitors except the default monitor obtained with `-options_monitor`
 
   Level: intermediate
 
@@ -2117,7 +2117,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 
   The default is to do no monitoring.  To print the name and value of options
   being inserted into the database, use `PetscOptionsMonitorDefault()` as the monitoring routine,
-  with a `NULL` monitoring context. Or use the option `-options_monitor` <viewer>.
+  with a `NULL` monitoring context. Or use the option `-options_monitor viewer`.
 
   Several different monitoring routines may be set by calling
   `PetscOptionsMonitorSet()` multiple times; all will be called in the

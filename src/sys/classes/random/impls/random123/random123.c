@@ -170,7 +170,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    PETSCRANDOM123 - access to Random123 counter based pseudorandom number generators (currently threefry4x64)
 
    Options Database Key:
-. -random_type <rand,rand48,sprng,random123> - select the random number generator at runtim
+. -random_type (rander48|rand|rand48|sprng|random123|curand) - set the random number generator from the options database, see `PetscRandomType`.
 
   Level: beginner
 

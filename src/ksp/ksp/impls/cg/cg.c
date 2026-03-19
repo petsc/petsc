@@ -644,9 +644,8 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method {cite}`hs:52` and {cite}`malek2014preconditioning` for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see `KSPCGSetType()`
-.   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
--   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
++   -ksp_cg_type (hermitian|symmetric) - (for complex matrices only) indicates the matrix is Hermitian or symmetric, see `KSPCGSetType()`
+-   -ksp_cg_single_reduction           - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
 
    Level: beginner
 

@@ -790,23 +790,23 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Multistage(PetscPartitioner
 }
 
 /*MC
-  PETSCPARTITIONERMULTISTAGE = "multistage" - A PetscPartitioner object using a multistage distribution strategy
+  PETSCPARTITIONERMULTISTAGE = "multistage" - A `PetscPartitioner` object using a multistage distribution strategy
 
   Level: intermediate
 
   Options Database Keys:
-+  -petscpartitioner_multistage_strategy <strategy> - Either `PETSCPARTITIONER_MS_STRATEGY_NODE`, or `PETSCPARTITIONER_MS_STRATEGY_MSECTION`
-.  -petscpartitioner_multistage_node_size <int> - Number of processes per computing node (or `PETSC_DECIDE`)
-.  -petscpartitioner_multistage_node_interleaved <bool> - Assign ranks round-robin.
-.  -petscpartitioner_multistage_msection <int> - Number of splits per level in recursive m-section splits (use `2` for bisection)
--  -petscpartitioner_multistage_tpwgts <bool> - Use target partition weights in stage partitioner
++  -petscpartitioner_multistage_strategy strategy             - Either `PETSCPARTITIONER_MS_STRATEGY_NODE`, or `PETSCPARTITIONER_MS_STRATEGY_MSECTION`
+.  -petscpartitioner_multistage_node_size nranks              - Number of processes per computing node (or `PETSC_DECIDE`)
+.  -petscpartitioner_multistage_node_interleaved (true|false) - Assign ranks round-robin.
+.  -petscpartitioner_multistage_msection splits               - Number of splits per level in recursive m-section splits (use `2` for bisection)
+-  -petscpartitioner_multistage_tpwgts (true|false)           - Use target partition weights in stage partitioner
 
   Notes:
   The default multistage strategy use `PETSCPARTITIONER_MS_STRATEGY_NODE` and automatically discovers node information using `MPI_Comm_split_type`.
   `PETSCPARTITIONER_MS_STRATEGY_MSECTION` is more for testing purposes.
+
   Options for single stage partitioners are prefixed by `-petscpartitioner_multistage_levels_`.
   For example, to use parmetis in all stages, `-petscpartitioner_multistage_levels_petscpartitioner_type parmetis`
-  Finer grained control is also possible: `-petscpartitioner_multistage_levels_0_petscpartitioner_type parmetis`, `-petscpartitioner_multistage_levels_1_petscpartitioner_type simple`
 
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/

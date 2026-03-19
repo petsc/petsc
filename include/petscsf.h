@@ -20,7 +20,7 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 .  `PETSCSF_PATTERN_ALLGATHER` - A graph that every MPI process gathers all roots from all MPI processes (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
 .  `PETSCSF_PATTERN_GATHER`    - A graph that MPI rank 0 gathers all roots from all MPI processes (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
 -  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every MPI process gathers different roots from all MPI processes (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-                                 We assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
+                                 We assume each process has `size` leaves and `size` roots, with each leaf connecting to a remote root. Here `size` is
                                  the size of the communicator. This does not mean one can not communicate multiple data items between a pair of processes. One just needs to
                                  create a new MPI datatype for the multiple data items, e.g., by `MPI_Type_contiguous`.
    Level: beginner

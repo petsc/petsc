@@ -345,7 +345,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
 - ctx  - optional type dependent context
 
   Options Database Key:
-. -pf_type <type> - Sets PF type
+. -pf_type type - Sets PF type
 
   Level: intermediate
 

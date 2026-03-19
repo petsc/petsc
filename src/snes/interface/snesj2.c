@@ -30,13 +30,13 @@ static PetscErrorCode SNESComputeMFFunctionCtx(void *snes, Vec x, Vec f, PetscCt
 - B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
   Options Database Keys:
-+ -snes_fd_color_use_mat       - use a matrix coloring from the explicit matrix nonzero pattern instead of from the `DM` providing the matrix
-. -snes_fd_color               - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
-. -mat_fd_coloring_err <err>   - Sets <err> (square root of relative error in the function)
-. -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
-. -mat_fd_type                 - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
-. -snes_mf_operator            - Use matrix-free application of Jacobian
-- -snes_mf                     - Use matrix-free Jacobian with no explicit Jacobian representation
++ -snes_fd_color_use_mat     - use a matrix coloring from the explicit matrix nonzero pattern instead of from the `DM` providing the matrix
+. -snes_fd_color             - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
+. -mat_fd_coloring_err err   - Sets err (square root of relative error in the function)
+. -mat_fd_coloring_umin umin - Sets umin, the minimum allowable u-value magnitude
+. -mat_fd_type               - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
+. -snes_mf_operator          - Use matrix-free application of Jacobian
+- -snes_mf                   - Use matrix-free Jacobian with no explicit Jacobian representation
 
   Notes:
 

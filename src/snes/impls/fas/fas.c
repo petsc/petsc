@@ -900,14 +900,14 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
    solution of the fine problem elicits no correction from the coarse problem.
 
    Options Database Keys and Prefixes:
-+   -snes_fas_levels <l>                                  - The number of levels
-.   -snes_fas_cycles <c>                                  - The number of cycles -- 1 for V, 2 for W
-.   -snes_fas_type<additive,multiplicative,full,kaskade>  - Additive or multiplicative cycle
-.   -snes_fas_galerkin <false,true>                       - Form coarse problems by projection back upon the fine problem
-.   -snes_fas_smoothup <u>                                - The number of iterations of the post-smoother
-.   -snes_fas_smoothdown <d>                              - The number of iterations of the pre-smoother
++   -snes_fas_levels l                                    - The number of levels
+.   -snes_fas_cycles (1|2)                                - The number of cycles -- 1 for V, 2 for W
+.   -snes_fas_type (additive|multiplicative|full|kaskade) - Additive or multiplicative cycle
+.   -snes_fas_galerkin (true|false)                       - Form coarse problems by projection back upon the fine problem
+.   -snes_fas_smoothup u                                  - The number of iterations of the post-smoother
+.   -snes_fas_smoothdown d                                - The number of iterations of the pre-smoother
 .   -snes_fas_monitor                                     - Monitor progress of all of the levels
-.   -snes_fas_full_downsweep <false,true>                 - call the downsmooth on the initial downsweep of full FAS
+.   -snes_fas_full_downsweep (true|false)                 - call the downsmooth on the initial downsweep of full FAS
 .   -fas_levels_snes_                                     - prefix for `SNES` options for all smoothers
 .   -fas_levels_cycle_snes_                               - prefix for `SNES` options for all cycles
 .   -fas_levels_i_snes_                                   - prefix `SNES` options for the smoothers on level i

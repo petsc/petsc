@@ -164,7 +164,7 @@ PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin)
      MATMFFD_DS - algorithm for compute the "h" used in the finite difference matrix-free matrix vector product, `MatMult()`.
 
    Options Database Keys:
-.  -mat_mffd_umin <umin> - see `MatMFFDDSSetUmin()`
+.  -mat_mffd_umin umin - see `MatMFFDDSSetUmin()`
 
    Level: intermediate
 

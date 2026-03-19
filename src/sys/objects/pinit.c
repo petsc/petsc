@@ -1236,30 +1236,27 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
    if different subcommunicators of the job are doing different things with PETSc.
 
   Options Database Keys:
-+ -help [intro]                                       - prints help method for each option; if `intro` is given the program stops after printing the introductory help message
-. -start_in_debugger [noxterm,dbx,xdb,gdb,...]        - Starts program in debugger
-. -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
-. -on_error_emacs <machinename>                       - causes `emacsclient` to jump to error file if an error is detected
-. -on_error_abort                                     - calls `abort()` when error detected (no traceback)
-. -on_error_mpiabort                                  - calls `MPI_abort()` when error detected
-. -error_output_stdout                                - prints PETSc error messages to `stdout` instead of the default `stderr`
-. -error_output_none                                  - does not print the error messages (but handles errors in the same way as if this was not called)
-. -debugger_ranks [rank1,rank2,...]                   - Indicates MPI ranks to start in debugger
-. -debugger_pause [sleeptime] (in seconds)            - Pauses debugger, use if it takes a long time for the debugger to start up on your system
-. -stop_for_debugger                                  - Print message on how to attach debugger manually to
-                                                        process and wait (`-debugger_pause`) seconds for attachment
-. -malloc_dump                                        - prints a list of all unfreed memory at the end of the run
-. -malloc_test                                        - like `-malloc_dump` `-malloc_debug`, only active for debugging build, ignored in optimized build. Often set in `PETSC_OPTIONS` environmental variable
-. -malloc_view                                        - show a list of all allocated memory during `PetscFinalize()`
-. -malloc_view_threshold <t>                          - only list memory allocations of size greater than t with `-malloc_view`
-. -malloc_requested_size                              - malloc logging will record the requested size rather than (possibly large) size after alignment
-. -fp_trap                                            - Stops on floating point exceptions
-. -no_signal_handler                                  - Indicates not to trap error signals
-. -shared_tmp                                         - indicates `/tmp` directory is known to be shared by all processors
-. -not_shared_tmp                                     - indicates each processor has own `/tmp`
-. -tmp                                                - alternative directory to use instead of `/tmp`
-. -python <exe>                                       - Initializes Python, and optionally takes a Python executable name
-- -mpiuni-allow-multiprocess-launch                   - allow `mpiexec` to launch multiple independent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
++ -help [intro]                                          - prints help method for each option; if `intro` is given the program stops after printing the introductory help message
+. -start_in_debugger [(noxterm)],[(gdb|lldb|...)]        - Starts program in debugger
+. -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)] - Starts debugger when error detected
+. -on_error_emacs machinename                            - causes `emacsclient` to jump to error file if an error is detected
+. -on_error_abort                                        - calls `abort()` when error detected (no traceback)
+. -on_error_mpiabort                                     - calls `MPI_abort()` when error detected
+. -error_output_stdout                                   - prints PETSc error messages to `stdout` instead of the default `stderr`
+. -error_output_none                                     - does not print the error messages (but handles errors in the same way as if this was not called)
+. -debugger_ranks rank1,rank2,...                        - Indicates MPI ranks to start in debugger
+. -debugger_pause secs                                   - Pauses debugger, use if it takes a long time for the debugger to start up on your system, `sleeptime` is number of seconds to sleep
+. -stop_for_debugger                                     - Print message on how to attach debugger manually to
+                                                           process and wait (`-debugger_pause`) seconds for attachment
+. -malloc_dump                                           - prints a list of all unfreed memory at the end of the run
+. -malloc_test                                           - like `-malloc_dump` `-malloc_debug`, only active for debugging build, ignored in optimized build. Often set in `PETSC_OPTIONS` environmental variable
+. -malloc_view [filename]                                - show a list of all allocated memory during `PetscFinalize()`
+. -malloc_view_threshold t                               - only list memory allocations of size greater than t with `-malloc_view`
+. -malloc_requested_size                                 - malloc logging will record the requested size rather than (possibly large) size after alignment
+. -fp_trap                                               - Stops on floating point exceptions
+. -no_signal_handler                                     - Indicates not to trap error signals
+. -python exe                                            - Initializes Python, and optionally takes a Python executable name
+- -mpiuni-allow-multiprocess-launch                      - allow `mpiexec` to launch multiple independent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
 
   Options Database Keys for Option Database:
 + -skip_petscrc           - skip the default option files `~/.petscrc`, `.petscrc`, `petscrc`
@@ -1274,7 +1271,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 
   Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
-+ -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See `PetscInfo()`.
++ -info [filename][:[~]c1,c2,...[:[~]self]]            - Prints verbose information for classes c1, c2, etc. See `PetscInfo()`.
 . -log_sync                                            - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
                                                          however it slows things down and gives a distorted view of the overall runtime.
 . -log_trace [filename]                                - Print traces of all PETSc calls to the screen (useful to determine where a program
@@ -1284,7 +1281,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
 . -log_view_gpu_energy                                 - Includes in the summary from -log_view the energy (estimated with power*gtime) consumed in each GPU kernel, see `PetscLogView()`.
 . -log_view_gpu_energy_meter                           - Includes in the summary from -log_view the energy (readings from meters) consumed in each GPU kernel, see `PetscLogView()`.
-. -log_exclude: <vec,mat,pc,ksp,snes>                  - excludes subset of object classes from logging
+. -log_exclude: c1,c2,...                              - excludes subset of object classes from logging, for example vec,ksp would exclude the `Vec` and `KSP` classes
 . -log [filename]                                      - Logs profiling information in a dump file, see `PetscLogDump()`.
 . -log_all [filename]                                  - Same as `-log`.
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
@@ -1297,12 +1294,12 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
   Options Database Keys for SAWs:
-+ -saws_port <portnumber>        - port number to publish SAWs data, default is 8080
-. -saws_port_auto_select         - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
-                                   this is useful when you are running many jobs that utilize SAWs at the same time
-. -saws_log <filename>           - save a log of all SAWs communication
-. -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
-- -saws_root <directory>         - allow SAWs to have access to the given directory to search for requested resources and files
++ -saws_port portnumber        - port number to publish SAWs data, default is 8080
+. -saws_port_auto_select       - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
+                                 this is useful when you are running many jobs that utilize SAWs at the same time
+. -saws_log filename           - save a log of all SAWs communication
+. -saws_https certificate_file - have SAWs use HTTPS instead of HTTP
+- -saws_root directory         - allow SAWs to have access to the given directory to search for requested resources and files
 
   Environmental Variables:
 +   `PETSC_TMP`                   - alternative directory to use instead of `/tmp`
@@ -1422,13 +1419,13 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char
   Collective on `PETSC_COMM_WORLD`
 
   Options Database Keys:
-+ -options_view                    - Calls `PetscOptionsView()` to display all options in the database
-. -options_left                    - Prints unused options that remain in the database (default value is `true`)
-. -objects_dump [all]              - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
-. -mpidump                         - Calls PetscMPIDump()
-. -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
-. -memory_view                     - Prints total memory usage
-- -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
++ -options_view           - Calls `PetscOptionsView()` to display all options in the database
+. -options_left           - Prints unused options that remain in the database (default value is `true`)
+. -objects_dump [all]     - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
+. -mpidump                - Calls PetscMPIDump()
+. -malloc_dump [filename] - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
+. -memory_view            - Prints total memory usage
+- -malloc_view [filename] - Prints list of all memory allocated and in what functions
 
   Level: beginner
 

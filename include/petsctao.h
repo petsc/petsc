@@ -476,7 +476,7 @@ PETSC_EXTERN PetscErrorCode          TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx 
 - TAOBRGN_REGULARIZATION_LM     - Levenberg-Marquardt, $\tfrac{1}{2} x^T \mathrm{diag}(J^T J) x$, where $J$ is the Jacobian of the least-squares residual
 
   Options database Key:
-. -tao_brgn_regularization_type <user,l2prox,l2pure,l1dict,lm> - one of the above regularization types
+. -tao_brgn_regularization_type (l2prox|l2pure|l1dict|lm|user) - select one of the regularization types
 
   Level: advanced
 

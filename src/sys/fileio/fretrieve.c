@@ -48,11 +48,6 @@ static PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, 
   Output Parameter:
 . dir - directory name
 
-  Options Database Keys:
-+ -shared_tmp     - indicates the directory is known to be shared among the MPI processes
-. -not_shared_tmp - indicates the directory is known to be not shared among the MPI processes
-- -tmp tmpdir     - name of the directory you wish to use as tmp
-
   Environmental Variables:
 + `PETSC_SHARED_TMP`     - indicates the directory is known to be shared among the MPI processes
 . `PETSC_NOT_SHARED_TMP` - indicates the directory is known to be not shared among the MPI processes

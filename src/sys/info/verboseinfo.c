@@ -268,7 +268,7 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 - classIDs   - Array containing all of the `PetscClassId`s associated with `classname`
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, see `PetscInfo()`.
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed, see `PetscInfo()`.
 
   Level: developer
 
@@ -322,7 +322,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
 . commSelfFlag - Enum value indicating method with which to filter `PetscInfo()` based on the size of the communicator of the object calling `PetscInfo()`
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: advanced
 
@@ -344,7 +344,7 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
 . options - Options database, use `NULL` for default global database
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: advanced
 
@@ -471,7 +471,7 @@ static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, 
 . classid - The object class,  e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: developer
 
@@ -496,7 +496,7 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid)
 . classid - The object class, e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: developer
 
@@ -534,7 +534,7 @@ PETSC_INTERN PetscErrorCode PetscVFPrintf_Internal(FILE *, const char[], ...);
 - message - logging message using standard "printf" format
 
   Options Database Key:
-. -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed
+. -info [filename][:[~]list,of,classnames[:[~]self]] - specify which informative messages are printed
 
   Level: intermediate
 

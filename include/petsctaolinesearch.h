@@ -60,7 +60,7 @@ PETSC_EXTERN const char *const *TaoLineSearchConvergedReasons;
 -   `TAOLINESEARCHIPM`      - "ipm"
 
    Options Database Key:
-.  -tao_ls_type <type> - select which method Tao should use at runtime
+.  -tao_ls_type type - select which method Tao should use at runtime
 
    Level: beginner
 

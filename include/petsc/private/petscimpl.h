@@ -234,9 +234,8 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectViewFn *PetscObjectViewFunction;
      information.
 
   Example Usage:
-  Existing `PetscObject`s may be easily created as shown. Unless otherwise stated, a particular
-  objects `destroy` and `view` functions are exactly `<OBJECT_TYPE>Destroy()` and
-  `<OBJECT_TYPE>View()`.
+  Existing `PetscObject`s may be easily created as shown. An object of type `Name` has
+  `destroy` and `view` functions named `NameDestroy()` and `NameView()`.
 .vb
   Vec v;
 

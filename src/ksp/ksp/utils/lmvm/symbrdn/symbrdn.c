@@ -1098,7 +1098,7 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 - stype - scale type, see `MatLMVMSymBroydenScaleType`
 
   Options Database Key:
-. -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
+. -mat_lmvm_scale_type (none|scalar|diagonal) - set the scaling type
 
   Level: intermediate
 

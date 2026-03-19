@@ -981,30 +981,30 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
    Options Database Keys:
    GMRES Options (inherited):
-+   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for "happy ending" (exact convergence)
++   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy ending" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
+.   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize against
                                                                                   the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
+.   -ksp_gmres_modifiedgramschmidt (true|false)                                 - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
                                                                                   stability of the classical Gram-Schmidt orthogonalization.
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    DGMRES Options Database Keys:
-+   -ksp_dgmres_eigen <neig>                     - number of smallest eigenvalues to extract at each restart
-.   -ksp_dgmres_max_eigen <max_neig>             - maximum number of eigenvalues that can be extracted during the iterative process
-.   -ksp_dgmres_force                            - use the deflation at each restart; switch off the adaptive strategy.
--   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
-                                                   parsed by `PetscOptionsCreateViewer()`.  If neig > 1, viewerspec should
-                                                   end with ":append".  No vectors will be viewed if the adaptive
-                                                   strategy chooses not to deflate, so -ksp_dgmres_force should also
-                                                   be given.
-                                                   The deflation vectors span a subspace that may be a good
-                                                   approximation of the subspace of smallest eigenvectors of the
-                                                   preconditioned operator, so this option can aid in understanding
-                                                   the performance of a preconditioner.
++   -ksp_dgmres_eigen neig                     - number of smallest eigenvalues to extract at each restart
+.   -ksp_dgmres_max_eigen max_neig             - maximum number of eigenvalues that can be extracted during the iterative process
+.   -ksp_dgmres_force                          - use the deflation at each restart; switch off the adaptive strategy.
+-   -ksp_dgmres_view_deflation_vecs viewerspec - View the deflation vectors, where viewerspec is a key that can be
+                                                 parsed by `PetscOptionsCreateViewer()`.  If neig > 1, viewerspec should
+                                                 end with ":append".  No vectors will be viewed if the adaptive
+                                                 strategy chooses not to deflate, so -ksp_dgmres_force should also
+                                                 be given.
+                                                 The deflation vectors span a subspace that may be a good
+                                                 approximation of the subspace of smallest eigenvectors of the
+                                                 preconditioned operator, so this option can aid in understanding
+                                                 the performance of a preconditioner.
 
    Level: beginner
 

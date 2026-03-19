@@ -940,7 +940,7 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
              (not the `IS` in the array) after this call
 
   Options Database Key:
-. -pc_asm_local_blocks <blks> - Sets number of local blocks
+. -pc_asm_local_blocks blks - Sets number of local blocks
 
   Level: advanced
 
@@ -983,7 +983,7 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
              The values of the `is_local` array are copied so you can free the array (not the `IS` in the array) after this call
 
   Options Database Key:
-. -pc_asm_blocks <blks> - Sets total blocks
+. -pc_asm_blocks blks - Sets total blocks
 
   Level: advanced
 
@@ -1021,7 +1021,7 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
 - ovl - the amount of overlap between subdomains (ovl >= 0, default value = 1)
 
   Options Database Key:
-. -pc_asm_overlap <ovl> - Sets overlap
+. -pc_asm_overlap ovl - Sets overlap
 
   Level: intermediate
 
@@ -1252,11 +1252,11 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
            its own `KSP` object, {cite}`dryja1987additive` and {cite}`1sbg`
 
    Options Database Keys:
-+  -pc_asm_blocks <blks>                          - Sets total blocks. Defaults to one block per MPI process.
-.  -pc_asm_overlap <ovl>                          - Sets overlap
-.  -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
-.  -pc_asm_dm_subdomains <bool>                   - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
--  -pc_asm_local_type [additive, multiplicative]  - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
++  -pc_asm_blocks blks                            - Sets total blocks. Defaults to one block per MPI process.
+.  -pc_asm_overlap ovl                            - Sets overlap
+.  -pc_asm_type (basic|restrict|interpolate|none) - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
+.  -pc_asm_dm_subdomains (true|false)             - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
+-  -pc_asm_local_type (additive|multiplicative)   - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
 
    Level: beginner
 
@@ -1720,7 +1720,7 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 - flg - boolean indicating whether to use subdomains defined by the `DM`
 
   Options Database Key:
-. -pc_asm_dm_subdomains <bool> - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
+. -pc_asm_dm_subdomains (true|false) - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
 
   Level: intermediate
 
@@ -1814,8 +1814,8 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
 - sub_mat_type - the `MatType`
 
   Options Database Key:
-. -pc_asm_sub_mat_type  <sub_mat_type> - Sets the matrix type used for subsolves, for example, seqaijviennacl.
-   If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
+. -pc_asm_sub_mat_type sub_mat_type - Sets the matrix type used for subsolves, for example, seqaijviennacl.
+                                      If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
 
   Note:
   See `MatType` for available types

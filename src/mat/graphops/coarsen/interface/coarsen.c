@@ -255,7 +255,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
 - type    - a known coarsening method
 
   Options Database Key:
-. -mat_coarsen_type  <type> - maximal independent set based; distance k MIS; heavy edge matching
+. -mat_coarsen_type  type - maximal independent set based; distance k MIS; heavy edge matching
 
   Level: advanced
 
@@ -347,8 +347,8 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 . coarser - the coarsen context.
 
   Options Database Key:
-+ -mat_coarsen_type  <type>                                                       - mis: maximal independent set based; misk: distance k MIS; hem: heavy edge matching
-- -mat_coarsen_max_it <its> number of iterations to use in the coarsening process - see `MatCoarsenSetMaximumIterations()`
++ -mat_coarsen_type  type - see `MatCoarsenType`
+- -mat_coarsen_max_it its - number of iterations to use in the coarsening process, see `MatCoarsenSetMaximumIterations()`
 
   Level: advanced
 
@@ -400,7 +400,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 - n      - number of HEM iterations
 
   Options Database Key:
-. -mat_coarsen_max_it <default=4> - Maximum `MATCOARSENHEM` iterations to use
+. -mat_coarsen_max_it n - Maximum `MATCOARSENHEM` iterations to use
 
   Level: intermediate
 
@@ -469,10 +469,10 @@ static PetscErrorCode MatCoarsenSetStrengthIndex_MATCOARSEN(MatCoarsen coarse, P
 
   Input Parameters:
 + coarse - the coarsen context
-- b      - threshold value
+- b      - threshold value, default is -1
 
   Options Database Key:
-. -mat_coarsen_threshold <-1> - threshold
+. -mat_coarsen_threshold b - threshold
 
   Level: intermediate
 

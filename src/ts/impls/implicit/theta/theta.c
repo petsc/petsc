@@ -1188,9 +1188,9 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
    Level: beginner
 
    Options Database Keys:
-+  -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
-.  -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
--  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
++  -ts_theta_theta Theta                   - Location of stage (0<Theta<=1)
+.  -ts_theta_endpoint flag                 - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
+-  -ts_theta_initial_guess_extrapolate flg - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
 .vb
@@ -1321,7 +1321,7 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 - theta - stage abscissa
 
   Options Database Key:
-. -ts_theta_theta <theta> - set theta
+. -ts_theta_theta theta - set theta
 
   Level: intermediate
 
@@ -1369,7 +1369,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 - flg - `PETSC_TRUE` to use the endpoint variant
 
   Options Database Key:
-. -ts_theta_endpoint <flg> - use the endpoint variant
+. -ts_theta_endpoint flg - use the endpoint variant
 
   Level: intermediate
 

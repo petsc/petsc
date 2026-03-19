@@ -239,7 +239,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 - fromdata  - packed data from each rank, each with count entries of type dtype (length `nfrom`, caller responsible for `PetscFree()`)
 
   Options Database Key:
-. -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
+. -build_twosided (allreduce|ibarrier|redscatter) - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
                                                     otherwise ibarrier.
 
   Level: developer

@@ -2860,7 +2860,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 - continuous - flag for element continuity
 
   Options Database Key:
-. -petscdualspace_lagrange_continuity <bool> - use a continuous element
+. -petscdualspace_lagrange_continuity (true|false) - use a continuous element
 
   Level: intermediate
 

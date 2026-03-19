@@ -393,15 +393,15 @@ PetscErrorCode TaoMonitorSetFromOptions(Tao tao, const char name[], const char h
 . tao - the `Tao` solver context
 
   Options Database Keys:
-+ -tao_type <type>             - The algorithm that Tao uses (lmvm, nls, etc.)
-. -tao_gatol <gatol>           - absolute error tolerance for ||gradient||
-. -tao_grtol <grtol>           - relative error tolerance for ||gradient||
-. -tao_gttol <gttol>           - reduction of ||gradient|| relative to initial gradient
-. -tao_max_it <max>            - sets maximum number of iterations
-. -tao_max_funcs <max>         - sets maximum number of function evaluations
-. -tao_fmin <fmin>             - stop if function value reaches fmin
-. -tao_steptol <tol>           - stop if trust region radius less than <tol>
-. -tao_trust0 <t>              - initial trust region radius
++ -tao_type type               - The algorithm that Tao uses (lmvm, nls, etc.). See `TAOType`
+. -tao_gatol gatol             - absolute error tolerance for ||gradient||
+. -tao_grtol grtol             - relative error tolerance for ||gradient||
+. -tao_gttol gttol             - reduction of ||gradient|| relative to initial gradient
+. -tao_max_it max              - sets maximum number of iterations
+. -tao_max_funcs max           - sets maximum number of function evaluations
+. -tao_fmin fmin               - stop if function value reaches fmin
+. -tao_steptol tol             - stop if trust region radius less than `tol`
+. -tao_trust0 radius           - initial trust region radius
 . -tao_view_solution           - view the solution at the end of the optimization process
 . -tao_monitor                 - prints function value and residual norm at each iteration
 . -tao_monitor_short           - same as `-tao_monitor`, but truncates very small values
@@ -763,7 +763,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 - recycle - boolean flag
 
   Options Database Key:
-. -tao_recycle_history <true,false> - reuse the history
+. -tao_recycle_history (true|false) - reuse the history
 
   Level: intermediate
 
@@ -828,9 +828,9 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 - gttol - stop if norm of gradient is reduced by this factor
 
   Options Database Keys:
-+ -tao_gatol <gatol> - Sets gatol
-. -tao_grtol <grtol> - Sets grtol
-- -tao_gttol <gttol> - Sets gttol
++ -tao_gatol gatol - Sets gatol
+. -tao_grtol grtol - Sets grtol
+- -tao_gttol gttol - Sets gttol
 
   Stopping Criteria\:
 .vb
@@ -893,8 +893,8 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 - crtol - relative constraint tolerance, constraint norm must be less than `crtol` for used for `gatol`, `gttol` convergence criteria
 
   Options Database Keys:
-+ -tao_catol <catol> - Sets catol
-- -tao_crtol <crtol> - Sets crtol
++ -tao_catol catol - Sets catol
+- -tao_crtol crtol - Sets crtol
 
   Level: intermediate
 
@@ -968,7 +968,7 @@ PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *
 - fmin - the tolerance
 
   Options Database Key:
-. -tao_fmin <fmin> - sets the minimum function value
+. -tao_fmin fmin - sets the minimum function value
 
   Level: intermediate
 
@@ -1019,7 +1019,7 @@ PetscErrorCode TaoGetFunctionLowerBound(Tao tao, PetscReal *fmin)
 - nfcn - the maximum number of function evaluations (>=0), use `PETSC_UNLIMITED` to have no bound
 
   Options Database Key:
-. -tao_max_funcs <nfcn> - sets the maximum number of function evaluations
+. -tao_max_funcs nfcn - sets the maximum number of function evaluations
 
   Level: intermediate
 
@@ -1105,7 +1105,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao, PetscInt *nfuncs)
 - maxits - the maximum number of iterates (>=0), use `PETSC_UNLIMITED` to have no bound
 
   Options Database Key:
-. -tao_max_it <its> - sets the maximum number of iterations
+. -tao_max_it its - sets the maximum number of iterations
 
   Level: intermediate
 
@@ -1167,7 +1167,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao, PetscInt *maxits)
 - radius - the trust region radius
 
   Options Database Key:
-. -tao_trust0 <t0> - sets initial trust region radius
+. -tao_trust0 radius - sets initial trust region radius
 
   Level: intermediate
 
@@ -2156,8 +2156,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 - type - a known method
 
   Options Database Key:
-. -tao_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, "-tao_type lmvm" or "-tao_type tron")
+. -tao_type type - Sets the method; see `TaoType`
 
   Level: intermediate
 

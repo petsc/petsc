@@ -46,7 +46,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 - method - The name of the index set type
 
   Options Database Key:
-. -is_type <type> - Sets the index set type; use `-help` for a list of available types
+. -is_type type - Sets the index set type; see `ISType`
 
   Level: intermediate
 

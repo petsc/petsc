@@ -483,8 +483,8 @@ PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat)
      PCREDUNDANT - Runs a `KSP` solver with preconditioner for the entire problem on subgroups of processors
 
   Options Database Key:
-.  -pc_redundant_number <n> - number of redundant solves, for example if you are using 64 MPI processes and
-                              use an n of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
+.  -pc_redundant_number n - number of redundant solves, for example if you are using 64 MPI processes and
+                            use an n of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
 
    Level: intermediate
 

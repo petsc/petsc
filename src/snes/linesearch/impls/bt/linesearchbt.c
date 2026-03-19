@@ -391,11 +391,11 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
    and the fit is reattempted at most `max_it` times or until $\lambda$ is below `minlambda`.
 
    Options Database Keys:
-+  -snes_linesearch_alpha <1e\-4>      - slope descent parameter
-.  -snes_linesearch_damping <1.0>      - initial `lambda` on entry to the line search
-.  -snes_linesearch_max_it <40>        - maximum number of shrinking iterations in the line search
-.  -snes_linesearch_minlambda <1e\-12> - minimum `lambda` (scaling of solution update) allowed
--  -snes_linesearch_order <3>          - order of the polynomial fit, must be 1, 2, or 3. With order 1, it performs a simple backtracking without any curve fitting
++  -snes_linesearch_alpha 1e\-4      - slope descent parameter
+.  -snes_linesearch_damping 1.0      - initial `lambda` on entry to the line search
+.  -snes_linesearch_max_it 40        - maximum number of shrinking iterations in the line search
+.  -snes_linesearch_minlambda 1e\-12 - minimum `lambda` (scaling of solution update) allowed
+-  -snes_linesearch_order 3          - order of the polynomial fit, must be 1, 2, or 3. With order 1, it performs a simple backtracking without any curve fitting
 
    Level: advanced
 

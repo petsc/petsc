@@ -2826,10 +2826,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
    MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
    Options Database Keys:
-+ -mat_type mpibaij - sets the matrix type to `MATMPIBAIJ` during a call to `MatSetFromOptions()`
-. -mat_block_size <bs> - set the blocksize used to store the matrix
++ -mat_type mpibaij              - sets the matrix type to `MATMPIBAIJ` during a call to `MatSetFromOptions()`
+. -mat_block_size bs             - set the blocksize used to store the matrix
 . -mat_baij_mult_version version - indicate the version of the matrix-vector product to use  (0 often indicates using BLAS)
-- -mat_use_hash_table <fact> - set hash table factor
+- -mat_use_hash_table fact       - set hash table factor
 
    Level: beginner
 
@@ -2961,8 +2961,8 @@ M*/
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
   Options Database Keys:
-+ -mat_block_size            - size of the blocks to use
-- -mat_use_hash_table <fact> - set hash table factor
++ -mat_block_size          - size of the blocks to use
+- -mat_use_hash_table fact - set hash table factor
 
   Level: intermediate
 
@@ -3061,8 +3061,8 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
 . A - the matrix
 
   Options Database Keys:
-+ -mat_block_size            - size of the blocks to use
-- -mat_use_hash_table <fact> - set hash table factor
++ -mat_block_size          - size of the blocks to use
+- -mat_use_hash_table fact - set hash table factor
 
   Level: intermediate
 
@@ -3344,7 +3344,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat mat, PetscViewer viewer)
 - fact - factor
 
   Options Database Key:
-. -mat_use_hash_table <fact> - provide the factor
+. -mat_use_hash_table fact - provide the factor
 
   Level: advanced
 

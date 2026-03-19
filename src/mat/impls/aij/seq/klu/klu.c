@@ -245,10 +245,10 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *ty
   Consult KLU documentation for more information on the options database keys below.
 
   Options Database Keys:
-+ -mat_klu_pivot_tol <0.001>                  - Partial pivoting tolerance
-. -mat_klu_use_btf <1>                        - Use BTF preordering
-. -mat_klu_ordering <AMD>                     - KLU reordering scheme to reduce fill-in (choose one of) `AMD`, `COLAMD`, `PETSC`
-- -mat_klu_row_scale <NONE>                   - Matrix row scaling (choose one of) `NONE`, `SUM`, `MAX`
++ -mat_klu_pivot_tol 0.001 - Partial pivoting tolerance
+. -mat_klu_use_btf 1       - Use BTF preordering
+. -mat_klu_ordering AMD    - KLU reordering scheme to reduce fill-in (choose one of) `AMD`, `COLAMD`, `PETSC`
+- -mat_klu_row_scale NONE  - Matrix row scaling (choose one of) `NONE`, `SUM`, `MAX`
 
    Level: beginner
 

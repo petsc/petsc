@@ -103,7 +103,7 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
 - name - The kind of FEM space
 
   Options Database Key:
-. -petscfe_type <type> - Sets the `PetscFE` type; use -help for a list of available types
+. -petscfe_type type - Sets the `PetscFE` type; use -help for a list of available types
 
   Level: intermediate
 

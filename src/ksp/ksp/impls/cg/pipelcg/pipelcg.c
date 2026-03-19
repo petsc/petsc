@@ -437,10 +437,10 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     of the method. [](sec_pipelineksp)
 
     Options Database Keys:
-+   -ksp_pipelcg_pipel - pipelined length
-.   -ksp_pipelcg_lmin - approximation to the smallest eigenvalue of the preconditioned operator (default: 0.0)
-.   -ksp_pipelcg_lmax - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
--   -ksp_pipelcg_monitor - output where/why the method restarts when a sqrt breakdown occurs
++   -ksp_pipelcg_pipel pipel - pipelined length
+.   -ksp_pipelcg_lmin min    - approximation to the smallest eigenvalue of the preconditioned operator (default: 0.0)
+.   -ksp_pipelcg_lmax max    - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
+-   -ksp_pipelcg_monitor     - output where/why the method restarts when a square-root breakdown occurs
 
     Example usage:
 .vb

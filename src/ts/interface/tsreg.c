@@ -13,7 +13,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 - type - A known method
 
   Options Database Key:
-. -ts_type <type> - Sets the method; use -help for a list of available methods (for instance, euler)
+. -ts_type type - Sets the method; use -help for a list of available methods (for instance, euler)
 
   Level: intermediate
 

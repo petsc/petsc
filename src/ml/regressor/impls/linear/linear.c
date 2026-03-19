@@ -224,7 +224,7 @@ static PetscErrorCode PetscRegressorDestroy_Linear(PetscRegressor regressor)
   Level: intermediate
 
   Options Database Key:
-. regressor_linear_fit_intercept <true,false> - fit the intercept
+. regressor_linear_fit_intercept (true|false) - fit the intercept
 
   Note:
   If the user indicates that the intercept should not be calculated, the intercept will be set to zero.
@@ -252,7 +252,7 @@ PetscErrorCode PetscRegressorLinearSetFitIntercept(PetscRegressor regressor, Pet
 - flg       - `PETSC_TRUE` to use a `KSP`, `PETSC_FALSE` to use a `Tao` object (default is false)
 
   Options Database Key:
-. regressor_linear_use_ksp <true,false> - use `KSP`
+. regressor_linear_use_ksp (true|false) - use `KSP`
 
   Level: intermediate
 

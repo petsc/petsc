@@ -356,7 +356,7 @@ PetscErrorCode PetscBenchGetSize(PetscBench bm, PetscInt *n)
 - type - a known method
 
   Options Database Key:
-. -bm_type <type> - Sets `PetscBench` type
+. -bm_type type - Sets `PetscBench` type
 
   Level: advanced
 

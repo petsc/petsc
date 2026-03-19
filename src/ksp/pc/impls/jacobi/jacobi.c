@@ -485,10 +485,10 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
      PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Keys:
-+    -pc_jacobi_type <diagonal,rowl1,rowmax,rowsum> - approach for forming the preconditioner
-.    -pc_jacobi_abs - use the absolute value of the diagonal entry
-.    -pc_jacobi_rowl1_scale - scaling of off-diagonal terms
--    -pc_jacobi_fixdiag - fix for zero diagonal terms by placing 1.0 in those locations
++    -pc_jacobi_type (diagonal|rowl1|rowmax|rowsum) - approach for forming the preconditioner
+.    -pc_jacobi_abs (true|false)                    - use the absolute value of the diagonal entry
+.    -pc_jacobi_rowl1_scale (true|false)            - scaling of off-diagonal terms
+-    -pc_jacobi_fixdiag (true|false)                - fix for zero diagonal terms by placing 1.0 in those locations
 
    Level: beginner
 
@@ -570,7 +570,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 - flg - whether to use absolute values or not
 
   Options Database Key:
-. -pc_jacobi_abs <bool> - use absolute values
+. -pc_jacobi_abs (true|false) - use absolute values
 
   Note:
   This takes affect at the next construction of the preconditioner
@@ -622,7 +622,7 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
 - scale - scaling
 
   Options Database Key:
-. -pc_jacobi_rowl1_scale <real> - use absolute values
+. -pc_jacobi_rowl1_scale scale - scaling of off diagonal values
 
   Level: intermediate
 
@@ -669,7 +669,7 @@ PetscErrorCode PCJacobiGetRowl1Scale(PC pc, PetscReal *scale)
 - flg - the boolean flag
 
   Options Database Key:
-. -pc_jacobi_fixdiagonal <bool> - check for zero values on the diagonal
+. -pc_jacobi_fixdiagonal (true|false) - check for zero values on the diagonal
 
   Note:
   This takes affect at the next construction of the preconditioner
@@ -698,7 +698,7 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
 . flg - the boolean flag
 
   Options Database Key:
-. -pc_jacobi_fixdiagonal <bool> - Fix 0 terms on diagonal by using 1
+. -pc_jacobi_fixdiagonal (true|false) - Fix 0 terms on diagonal by using 1
 
   Level: intermediate
 
@@ -747,7 +747,7 @@ PetscErrorCode PCJacobiGetDiagonal(PC pc, Vec diagonal, Vec diagonal_sqrt)
 - type - `PC_JACOBI_DIAGONAL`, `PC_JACOBI_ROWL1`, `PC_JACOBI_ROWMAX`, `PC_JACOBI_ROWSUM`
 
   Options Database Key:
-. -pc_jacobi_type <diagonal,rowl1,rowmax,rowsum> - the type of diagonal matrix to use for Jacobi
+. -pc_jacobi_type [diagonal, rowl1, rowmax, rowsum] - the type of diagonal matrix to use for Jacobi
 
   Level: intermediate
 

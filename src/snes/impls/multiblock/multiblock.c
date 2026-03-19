@@ -758,7 +758,7 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 - type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 
   Options Database Key:
-. -snes_multiblock_type <type: one of multiplicative, additive, symmetric_multiplicative> - Sets block combination type
+. -snes_multiblock_type (multiplicative|additive|symmetric_multiplicative) - Sets block combination type
 
   Level: advanced
 

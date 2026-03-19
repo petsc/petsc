@@ -180,7 +180,7 @@ M*/
    TS_CONVERGED_PSEUDO_FRTOL - stops when function norm decreased by a set amount, used only for `TSPSEUDO`
 
    Options Database Key:
-.   -ts_pseudo_frtol <rtol> - use specified rtol
+.   -ts_pseudo_frtol rtol - use specified rtol
 
    Level: beginner
 
@@ -191,7 +191,7 @@ M*/
    TS_CONVERGED_PSEUDO_FATOL - stops when function norm decreases below a set amount, used only for `TSPSEUDO`
 
    Options Database Key:
-.   -ts_pseudo_fatol <atol> - use specified atol
+.   -ts_pseudo_fatol atol - use specified atol
 
    Level: beginner
 

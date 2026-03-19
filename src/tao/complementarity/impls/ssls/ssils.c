@@ -100,7 +100,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
 
    Options Database Keys:
 + -tao_ssls_delta - descent test fraction
-- -tao_ssls_rho - descent test power
+- -tao_ssls_rho   - descent test power
 
    Level: beginner
 M*/

@@ -665,7 +665,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 . -mat_mffd_err              - square root of estimated relative error in function evaluation
 . -mat_mffd_period           - how often h is recomputed, defaults to 1, every time
 . -mat_mffd_check_positivity - possibly decrease `h` until U + h*a has only positive values
-. -mat_mffd_umin <umin>      - Sets umin (for default PETSc routine that computes h only)
+. -mat_mffd_umin umin        - Sets umin (for default PETSc routine that computes h only)
 . -mat_mffd_complex          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
                                (requires real valued functions but that PETSc be configured for complex numbers)
 . -snes_mf                   - use the finite difference based matrix-free matrix with `SNESSolve()` and no preconditioner
@@ -835,7 +835,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, MatMFFDiBaseFn *func)
 - period - 1 for every time, 2 for every second etc
 
   Options Database Key:
-. -mat_mffd_period <period> - Sets how often `h` is recomputed
+. -mat_mffd_period period - Sets how often `h` is recomputed
 
   Level: advanced
 
@@ -861,7 +861,7 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period)
 - error - relative error (should be set to the square root of the relative error in the function evaluations)
 
   Options Database Key:
-. -mat_mffd_err <error_rel> - Sets error_rel
+. -mat_mffd_err error_rel - Sets error_rel
 
   Level: advanced
 
@@ -984,7 +984,7 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
 - ctx - any context needed by the function
 
   Options Database Keys:
-. -mat_mffd_check_positivity <bool> - Ensure that $U + h*a $ is non-negative
+. -mat_mffd_check_positivity (true|false) - Ensure that $U + h*a $ is non-negative
 
   Level: advanced
 
@@ -1017,7 +1017,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, MatMFFDCheckhFn *fun, PetscCtx ctx)
 - h     - scaling factor on `a`, may be changed on output
 
   Options Database Keys:
-. -mat_mffd_check_positivity <bool> - Ensure that $U + h*a$ is nonnegative
+. -mat_mffd_check_positivity (true|false) - Ensure that $U + h*a$ is nonnegative
 
   Level: advanced
 

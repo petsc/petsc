@@ -94,8 +94,8 @@ static PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
      PCKACZMARZ - Kaczmarz iteration {cite}`kaczmarz1937angenaherte`
 
    Options Database Keys:
-+  -pc_kaczmarz_lambda <lambda> - Sets damping parameter defaults to 1.0
--  -pc_kaczmarz_symmetric       - Apply the row projections symmetrically
++  -pc_kaczmarz_lambda lambda - Sets damping parameter defaults to 1.0
+-  -pc_kaczmarz_symmetric     - Apply the row projections symmetrically
 
    Level: beginner
 

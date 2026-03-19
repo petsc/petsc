@@ -11,7 +11,7 @@
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
-.  -viewer_python_type <pyname> - python class
+.  -viewer_python_type pyname - python class
 
    Level: intermediate
 

@@ -790,7 +790,7 @@ static PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl,
 - ival  - value of MKL Cluster PARDISO parameter
 
   Options Database Key:
-. -mat_mkl_cpardiso_<icntl> <ival> - set the option numbered icntl to ival
+. -mat_mkl_cpardiso_icntl ival - set the option numbered icntl to ival
 
   Level: intermediate
 

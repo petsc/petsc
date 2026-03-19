@@ -1175,55 +1175,55 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
-+ -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-. -tao_bnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
++ -tao_bnk_max_cg_its  - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+. -tao_bnk_init_type   - trust radius initialization method ("constant", "direction", "interpolation")
 . -tao_bnk_update_type - trust radius update method ("step", "direction", "interpolation")
-. -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
-. -tao_bnk_as_tol - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
-. -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
-. -tao_bnk_sval - (developer) Hessian perturbation starting value
-. -tao_bnk_imin - (developer) minimum initial Hessian perturbation
-. -tao_bnk_imax - (developer) maximum initial Hessian perturbation
-. -tao_bnk_pmin - (developer) minimum Hessian perturbation
-. -tao_bnk_pmax - (developer) aximum Hessian perturbation
-. -tao_bnk_pgfac - (developer) Hessian perturbation growth factor
-. -tao_bnk_psfac - (developer) Hessian perturbation shrink factor
-. -tao_bnk_imfac - (developer) initial merit factor for Hessian perturbation
-. -tao_bnk_pmgfac - (developer) merit growth factor for Hessian perturbation
-. -tao_bnk_pmsfac - (developer) merit shrink factor for Hessian perturbation
-. -tao_bnk_eta1 - (developer) threshold for rejecting step (-update_type reduction)
-. -tao_bnk_eta2 - (developer) threshold for accepting marginal step (-update_type reduction)
-. -tao_bnk_eta3 - (developer) threshold for accepting reasonable step (-update_type reduction)
-. -tao_bnk_eta4 - (developer) threshold for accepting good step (-update_type reduction)
-. -tao_bnk_alpha1 - (developer) radius reduction factor for rejected step (-update_type reduction)
-. -tao_bnk_alpha2 - (developer) radius reduction factor for marginally accepted bad step (-update_type reduction)
-. -tao_bnk_alpha3 - (developer) radius increase factor for reasonable accepted step (-update_type reduction)
-. -tao_bnk_alpha4 - (developer) radius increase factor for good accepted step (-update_type reduction)
-. -tao_bnk_alpha5 - (developer) radius increase factor for very good accepted step (-update_type reduction)
-. -tao_bnk_epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance (-update_type reduction)
-. -tao_bnk_mu1 - (developer) threshold for accepting very good step (-update_type interpolation)
-. -tao_bnk_mu2 - (developer) threshold for accepting good step (-update_type interpolation)
-. -tao_bnk_gamma1 - (developer) radius reduction factor for rejected very bad step (-update_type interpolation)
-. -tao_bnk_gamma2 - (developer) radius reduction factor for rejected bad step (-update_type interpolation)
-. -tao_bnk_gamma3 - (developer) radius increase factor for accepted good step (-update_type interpolation)
-. -tao_bnk_gamma4 - (developer) radius increase factor for accepted very good step (-update_type interpolation)
-. -tao_bnk_theta - (developer) trust region interpolation factor (-update_type interpolation)
-. -tao_bnk_nu1 - (developer) threshold for small line-search step length (-update_type step)
-. -tao_bnk_nu2 - (developer) threshold for reasonable line-search step length (-update_type step)
-. -tao_bnk_nu3 - (developer) threshold for large line-search step length (-update_type step)
-. -tao_bnk_nu4 - (developer) threshold for very large line-search step length (-update_type step)
-. -tao_bnk_omega1 - (developer) radius reduction factor for very small line-search step length (-update_type step)
-. -tao_bnk_omega2 - (developer) radius reduction factor for small line-search step length (-update_type step)
-. -tao_bnk_omega3 - (developer) radius factor for decent line-search step length (-update_type step)
-. -tao_bnk_omega4 - (developer) radius increase factor for large line-search step length (-update_type step)
-. -tao_bnk_omega5 - (developer) radius increase factor for very large line-search step length (-update_type step)
-. -tao_bnk_mu1_i -  (developer) threshold for accepting very good step (-init_type interpolation)
-. -tao_bnk_mu2_i -  (developer) threshold for accepting good step (-init_type interpolation)
-. -tao_bnk_gamma1_i - (developer) radius reduction factor for rejected very bad step (-init_type interpolation)
-. -tao_bnk_gamma2_i - (developer) radius reduction factor for rejected bad step (-init_type interpolation)
-. -tao_bnk_gamma3_i - (developer) radius increase factor for accepted good step (-init_type interpolation)
-. -tao_bnk_gamma4_i - (developer) radius increase factor for accepted very good step (-init_type interpolation)
-- -tao_bnk_theta_i - (developer) trust region interpolation factor (-init_type interpolation)
+. -tao_bnk_as_type     - active-set estimation method ("none", "bertsekas")
+. -tao_bnk_as_tol      - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
+. -tao_bnk_as_step     - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
+. -tao_bnk_sval        - (developer) Hessian perturbation starting value
+. -tao_bnk_imin        - (developer) minimum initial Hessian perturbation
+. -tao_bnk_imax        - (developer) maximum initial Hessian perturbation
+. -tao_bnk_pmin        - (developer) minimum Hessian perturbation
+. -tao_bnk_pmax        - (developer) aximum Hessian perturbation
+. -tao_bnk_pgfac       - (developer) Hessian perturbation growth factor
+. -tao_bnk_psfac       - (developer) Hessian perturbation shrink factor
+. -tao_bnk_imfac       - (developer) initial merit factor for Hessian perturbation
+. -tao_bnk_pmgfac      - (developer) merit growth factor for Hessian perturbation
+. -tao_bnk_pmsfac      - (developer) merit shrink factor for Hessian perturbation
+. -tao_bnk_eta1        - (developer) threshold for rejecting step (-update_type reduction)
+. -tao_bnk_eta2        - (developer) threshold for accepting marginal step (-update_type reduction)
+. -tao_bnk_eta3        - (developer) threshold for accepting reasonable step (-update_type reduction)
+. -tao_bnk_eta4        - (developer) threshold for accepting good step (-update_type reduction)
+. -tao_bnk_alpha1      - (developer) radius reduction factor for rejected step (-update_type reduction)
+. -tao_bnk_alpha2      - (developer) radius reduction factor for marginally accepted bad step (-update_type reduction)
+. -tao_bnk_alpha3      - (developer) radius increase factor for reasonable accepted step (-update_type reduction)
+. -tao_bnk_alpha4      - (developer) radius increase factor for good accepted step (-update_type reduction)
+. -tao_bnk_alpha5      - (developer) radius increase factor for very good accepted step (-update_type reduction)
+. -tao_bnk_epsilon     - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance (-update_type reduction)
+. -tao_bnk_mu1         - (developer) threshold for accepting very good step (-update_type interpolation)
+. -tao_bnk_mu2         - (developer) threshold for accepting good step (-update_type interpolation)
+. -tao_bnk_gamma1      - (developer) radius reduction factor for rejected very bad step (-update_type interpolation)
+. -tao_bnk_gamma2      - (developer) radius reduction factor for rejected bad step (-update_type interpolation)
+. -tao_bnk_gamma3      - (developer) radius increase factor for accepted good step (-update_type interpolation)
+. -tao_bnk_gamma4      - (developer) radius increase factor for accepted very good step (-update_type interpolation)
+. -tao_bnk_theta       - (developer) trust region interpolation factor (-update_type interpolation)
+. -tao_bnk_nu1         - (developer) threshold for small line-search step length (-update_type step)
+. -tao_bnk_nu2         - (developer) threshold for reasonable line-search step length (-update_type step)
+. -tao_bnk_nu3         - (developer) threshold for large line-search step length (-update_type step)
+. -tao_bnk_nu4         - (developer) threshold for very large line-search step length (-update_type step)
+. -tao_bnk_omega1      - (developer) radius reduction factor for very small line-search step length (-update_type step)
+. -tao_bnk_omega2      - (developer) radius reduction factor for small line-search step length (-update_type step)
+. -tao_bnk_omega3      - (developer) radius factor for decent line-search step length (-update_type step)
+. -tao_bnk_omega4      - (developer) radius increase factor for large line-search step length (-update_type step)
+. -tao_bnk_omega5      - (developer) radius increase factor for very large line-search step length (-update_type step)
+. -tao_bnk_mu1_i       - (developer) threshold for accepting very good step (-init_type interpolation)
+. -tao_bnk_mu2_i       - (developer) threshold for accepting good step (-init_type interpolation)
+. -tao_bnk_gamma1_i    - (developer) radius reduction factor for rejected very bad step (-init_type interpolation)
+. -tao_bnk_gamma2_i    - (developer) radius reduction factor for rejected bad step (-init_type interpolation)
+. -tao_bnk_gamma3_i    - (developer) radius increase factor for accepted good step (-init_type interpolation)
+. -tao_bnk_gamma4_i    - (developer) radius increase factor for accepted very good step (-init_type interpolation)
+- -tao_bnk_theta_i     - (developer) trust region interpolation factor (-init_type interpolation)
 
   Level: beginner
 M*/

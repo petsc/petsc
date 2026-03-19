@@ -1216,7 +1216,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
   Level: advanced
 
   Options Database Keys:
-. -mat_lmvm_mult_algorithm  - the algorithm to use for multiplication (recursive, dense, compact_dense)
+. -mat_lmvm_mult_algorithm (recursive|dense|compact_dense) - the algorithm to use for multiplication
 
 .seealso: [](ch_matrices), `MatLMVM`, `MatLMVMSetMultAlgorithm()`, `MatLMVMGetMultAlgorithm()`
 E*/

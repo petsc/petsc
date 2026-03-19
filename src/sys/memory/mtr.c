@@ -666,7 +666,7 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 . fp - file pointer.  If `fp` is `NULL`, `stdout` is assumed.
 
   Options Database Key:
-. -malloc_dump <optional filename> - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
+. -malloc_dump optional filename - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
 
   Level: intermediate
 
@@ -729,9 +729,9 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 . logmin - minimum allocation size to log, or `PETSC_DEFAULT` to log all memory allocations
 
   Options Database Keys:
-+ -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
-. -malloc_view_threshold <min>     - Sets a minimum size if `-malloc_view` is used
-- -log_view_memory                 - view the memory usage also with the -log_view option
++ -malloc_view optional filename - Activates `PetscMallocView()` in `PetscFinalize()`
+. -malloc_view_threshold min     - Sets a minimum size if `-malloc_view` is used
+- -log_view_memory               - view the memory usage also with the -log_view option
 
   Level: advanced
 
@@ -762,7 +762,7 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 . logging - `PETSC_TRUE` if logging is active
 
   Options Database Key:
-. -malloc_view <optional filename> - Activates `PetscMallocView()`
+. -malloc_view optional filename - Activates `PetscMallocView()`
 
   Level: advanced
 
@@ -820,7 +820,7 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 . logging - `PETSC_TRUE` if logging is active
 
   Options Database Key:
-. -malloc_view <optional filename> - Activates `PetscMallocView()`
+. -malloc_view optional filename - Activates `PetscMallocView()`
 
   Level: advanced
 
@@ -844,7 +844,7 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 . fp - file pointer; or `NULL`
 
   Options Database Key:
-. -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
+. -malloc_view optional filename - Activates `PetscMallocView()` in `PetscFinalize()`
 
   Level: advanced
 
@@ -931,10 +931,10 @@ PetscErrorCode PetscMallocView(FILE *fp)
 - initializenan - initializes all memory with `NaN` to catch use of uninitialized floating point arrays
 
   Options Database Keys:
-+ -malloc_debug <true or false> - turns on or off debugging
-. -malloc_test                  - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
-. -malloc_view_threshold t      - log only allocations larger than t
-- -malloc_dump <filename>       - print a list of all memory that has not been freed, in `PetscFinalize()`
++ -malloc_debug (true|false) - turns on or off debugging
+. -malloc_test               - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
+. -malloc_view_threshold t   - log only allocations larger than t
+- -malloc_dump filename      - print a list of all memory that has not been freed, in `PetscFinalize()`
 
   Level: developer
 
@@ -996,7 +996,7 @@ PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscB
 . flg - `PETSC_TRUE` to log the requested memory size
 
   Options Database Key:
-. -malloc_requested_size <bool> - Sets this flag
+. -malloc_requested_size (true|false) - Sets this flag
 
   Level: developer
 

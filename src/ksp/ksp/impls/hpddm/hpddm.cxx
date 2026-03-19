@@ -635,22 +635,21 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
    See also {cite}`o1980block`, {cite}`ji2017breakdown` and {cite}`calandra2013modified`
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart, default=30>                  - see `KSPGMRES`
-.   -ksp_hpddm_type <type, default=gmres>                     - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly, see `KSPHPDDMType`
-.   -ksp_hpddm_precision <value, default=same as PetscScalar> - any of __fp16, single, double or __float128, see `PetscPrecision`
-.   -ksp_hpddm_deflation_tol <eps, default=\-1.0>             - tolerance when deflating right-hand sides inside block methods (no deflation by default,
-                                                              only relevant with block methods)
-.   -ksp_hpddm_enlarge_krylov_subspace <p, default=1>         - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
-.   -ksp_hpddm_orthogonalization <type, default=cgs>          - any of cgs or mgs, see KSPGMRES
-.   -ksp_hpddm_qr <type, default=cholqr>                      - distributed QR factorizations with any of cholqr, cgs, or mgs (only relevant with block methods)
-.   -ksp_hpddm_variant <type, default=left>                   - any of left, right, or flexible (this option is superseded by `KSPSetPCSide()`)
-.   -ksp_hpddm_recycle <n, default=0>                         - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
-.   -ksp_hpddm_recycle_target <type, default=SM>              - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI
-                                                              (only relevant with GCRODR or BGCRODR). For BGCRODR, if PETSc is compiled with SLEPc,
-                                                              this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
-.   -ksp_hpddm_recycle_strategy <type, default=A>             - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
--   -ksp_hpddm_recycle_symmetric <true, default=false>        - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like
-                                                              `EPSELEMENTAL` or `EPSSCALAPACK` (only relevant when PETSc is compiled with SLEPc)
++   -ksp_gmres_restart restart                             - see `KSPGMRES`, default is 30
+.   -ksp_hpddm_type type                                   - See `KSPHPDDMType`, default is gmres
+.   -ksp_hpddm_precision (__fp16|single|double|__float128) - See `PetscPrecision`, default is the same as `PetscScalar`
+.   -ksp_hpddm_deflation_tol eps                           - tolerance when deflating right-hand sides inside block methods (only relevant with block methods), default is -1.0
+.   -ksp_hpddm_enlarge_krylov_subspace p                   - split the initial right-hand side into multiple vectors (only relevant with nonblock methods), default is 1
+.   -ksp_hpddm_orthogonalization (cgs|mgs)                 - See `KSPGMRES`, default is `cgs`
+.   -ksp_hpddm_qr (cholqr|cgs|mgs)                         - distributed QR factorizations, only relevant with block methods, default is `cholqr`
+.   -ksp_hpddm_variant (left|right|flexible)               - This option is superseded by `KSPSetPCSide()`, default is `left`
+.   -ksp_hpddm_recycle n                                   - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR), default is 0
+.   -ksp_hpddm_recycle_target (SM|LM|SR|LR|SI|LI)          - criterion to select harmonic Ritz vectors, default is `SM`
+                                                             (only relevant with GCRODR or BGCRODR). For BGCRODR, if PETSc is compiled with SLEPc,
+                                                             this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
+.   -ksp_hpddm_recycle_strategy (A|B)                      - generalized eigenvalue problem to solve for recycling (only relevant with flexible GCRODR or BGCRODR), default is `A`
+-   -ksp_hpddm_recycle_symmetric (true|false)              - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like
+                                                             `EPSELEMENTAL` or `EPSSCALAPACK` (only relevant when PETSc is compiled with SLEPc), default is `false`
 
    Level: intermediate
 

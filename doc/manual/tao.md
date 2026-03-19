@@ -1104,7 +1104,7 @@ conjugate gradient method, Nash conjugate gradient method,
 Steihaug-Toint conjugate gradient method, generalized Lanczos method, or
 an alternative Krylov subspace method supplied by PETSc. The method used
 to solve the systems of equations is specified with the command line
-argument `-tao_nls_ksp_type <cg,nash,stcg,gltr,gmres,...>`; `stcg`
+argument `-tao_nls_ksp_type (cg|nash|stcg|gltr|gmres)` where `stcg`
 is the default. See the PETSc manual for further information on changing
 the behavior of the linear system solvers.
 
@@ -1116,7 +1116,7 @@ the absolute value of the diagonal of the Hessian matrix, a
 limited-memory BFGS approximation to the Hessian matrix, or one of the
 other preconditioners provided by the PETSc package. These
 preconditioners are specified by the command line arguments
-`-tao_nls_pc_type <none,jacobi,icc,ilu,lmvm>`, respectively. The
+`-tao_nls_pc_type (none|jacobi|icc|ilu|lmvm)`, respectively. The
 default is the `lmvm` preconditioner, which uses a BFGS approximation
 of the inverse Hessian. See the PETSc manual for further information on
 changing the behavior of the preconditioners.
@@ -1142,7 +1142,7 @@ perturbation. These cases are described below.
 
    where $g(x_k)$ is the gradient of the objective function and
    `imin` is set with the command line argument
-   `-tao_nls_imin <real>` with a default value of $10^{-4}$,
+   `-tao_nls_imin imin` with a default value of $10^{-4}$,
    `imfac` by `-tao_nls_imfac` with a default value of 0.1, and
    `imax` by `-tao_nls_imax` with a default value of 100. When using
    the `gltr` method to solve the system of equations, an estimate of
@@ -1192,7 +1192,7 @@ This trust-region radius simultaneously limits the size of the step
 computed and reduces the number of iterations of the conjugate gradient
 method. The method for initializing the trust-region radius is set with
 the command line argument
-`-tao_nls_init_type <constant,direction,interpolation>`;
+`-tao_nls_init_type (constant|direction|interpolation)`;
 `interpolation`, which chooses an initial value based on the
 interpolation scheme found in {cite}`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
@@ -1201,14 +1201,14 @@ model along the gradient direction coincides with the actual reduction
 in the nonlinear function. The iterate obtaining the best objective
 function value is used as the starting point for the main line search
 algorithm. The `constant` method initializes the trust-region radius
-by using the value specified with the `-tao_trust0 <real>` command
+by using the value specified with the `-tao_trust0 radius` command
 line argument, where the default value is 100. The `direction`
 technique solves the first quadratic optimization problem by using a
 standard conjugate gradient method and initializes the trust region to
 $\|s_0\|$.
 
 The method for updating the trust-region radius is set with the command
-line argument `-tao_nls_update_type <step,reduction,interpolation>`;
+line argument `-tao_nls_update_type (step|reduction|interpolation)`;
 `step` is the default. The `step` method updates the trust-region
 radius based on the value of $\tau_k$. In particular,
 
@@ -1449,7 +1449,7 @@ the Nash or Steihaug-Toint conjugate gradient methods or the generalized
 Lanczos method to the symmetric system of equations
 $H_k d = -g_k$. The method used to solve the system of equations
 is specified with the command line argument
-`-tao_ntr_ksp_type <nash,stcg,gltr>`; `stcg` is the default. See the
+`-tao_ntr_ksp_type (nash|stcg|gltr)` where `stcg` is the default. See the
 PETSc manual for further information on changing the behavior of these
 linear system solvers.
 
@@ -1461,13 +1461,13 @@ use no preconditioner, the absolute value of the diagonal of the Hessian
 matrix, a limited-memory BFGS approximation to the Hessian matrix, or
 one of the other preconditioners provided by the PETSc package. These
 preconditioners are specified by the command line argument
-`-tao_ntr_pc_type <none,jacobi,icc,ilu,lmvm>`, respectively. The
+`-tao_ntr_pc_type (none|jacobi|icc|ilu|lmvm)`, respectively. The
 default is the `lmvm` preconditioner. See the PETSc manual for further
 information on changing the behavior of the preconditioners.
 
 The method for computing an initial trust-region radius is set with the
 command line arguments
-`-tao_ntr_init_type <constant,direction,interpolation>`;
+`-tao_ntr_init_type (constant|direction|interpolation)`;
 `interpolation`, which chooses an initial value based on the
 interpolation scheme found in {cite}`cgt`, is the default.
 This scheme performs a number of function and gradient evaluations to
@@ -1476,14 +1476,14 @@ model along the gradient direction coincides with the actual reduction
 in the nonlinear function. The iterate obtaining the best objective
 function value is used as the starting point for the main trust-region
 algorithm. The `constant` method initializes the trust-region radius
-by using the value specified with the `-tao_trust0 <real>` command
+by using the value specified with the `-tao_trust0 radius` command
 line argument, where the default value is 100. The `direction`
 technique solves the first quadratic optimization problem by using a
 standard conjugate gradient method and initializes the trust region to
 $\|s_0\|$.
 
 The method for updating the trust-region radius is set with the command
-line arguments `-tao_ntr_update_type <reduction,interpolation>`;
+line arguments `-tao_ntr_update_type (reduction|interpolation)`;
 `reduction` is the default. The `reduction` method computes the
 ratio of the actual reduction in the objective function to the reduction
 predicted by the quadratic model for the full step,
@@ -1596,7 +1596,7 @@ Five variations are currently supported by the TAO implementation: the
 Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
 method {cite}`nocedal2006numerical`, the Hestenes-Stiefel method, and the
 Dai-Yuan method. These conjugate gradient methods can be specified by
-using the command line argument `-tao_cg_type <fr,pr,prp,hs,dy>`,
+using the command line argument `-tao_cg_type (fr|pr|prp|hs|dy)`,
 respectively. The default value is `prp`.
 
 The conjugate gradient method incorporates automatic restarts when
@@ -1606,7 +1606,7 @@ current point and the gradient at the previous point by the square of
 the Euclidean norm of the gradient at the current point. When the
 absolute value of this ratio is greater than $\eta$, the algorithm
 restarts using the gradient direction. The parameter $\eta$ can be
-set by using the command line argument `-tao_cg_eta <real>`; 0.1 is
+set by using the command line argument `-tao_cg_eta eta`; where 0.1 is
 the default value.
 
 This algorithm will be deprecated in the next version and replaced by
@@ -1645,12 +1645,12 @@ impacted at each iteration.
 
 Two options can be set specifically for the Nelder-Mead algorithm:
 
-`-tao_nm_lambda <value>`
+`-tao_nm_lambda min_lambda`
 
 : sets the initial set of vectors ($x_0$ plus `value` in each
   coordinate direction); the default value is $1$.
 
-`-tao_nm_mu <value>`
+`-tao_nm_mu mu`
 
 : sets the value of $\mu_0$; the default is $\mu_0=1$.
 
@@ -1768,7 +1768,7 @@ A special option is available to *accelerate* the convergence of the BNK
 algorithms by taking a finite number of BNCG iterations at each Newton
 iteration. By default, the number of BNCG iterations is set to zero and
 the algorithms do not take any BNCG steps. This can be changed using the
-option flag `-tao_bnk_max_cg_its <i>`. While this reduces the number
+option flag `-tao_bnk_max_cg_its its`. While this reduces the number
 of Newton iterations, in practice it simply trades off the Hessian
 evaluations in the BNK solver for more function and gradient evaluations
 in the BNCG solver. However, it may be useful for certain types of
@@ -1848,7 +1848,7 @@ Similar to the full Newton-Krylov counterpart, BQNK algorithms come in
 three forms separated by the globalization technique: line search
 (BQNKLS), trust region (BQNKTR) and trust region w/ line search
 fall-back (BQNKTL). These algorithms are available via
-`tao_type <bqnkls, bqnktr, bqnktl>`.
+`tao_type (bqnkls|bqnktr|bqnktl)`.
 
 (sec_tao_bncg)=
 
@@ -1864,7 +1864,7 @@ Polak-Ribiére-Plus, Hestenes-Stiefel, Dai-Yuan, Hager-Zhang, Dai-Kou,
 Kou-Dai, and the Self-Scaling Memoryless (SSML) BFGS, DFP, and Broyden
 methods. These methods can be specified by using the command line
 argument
-`-tao_bncg_type <gd,fr,pr,prp,hs,dy,hz,dk,kd,ssml_bfgs,ssml_dfp,ssml_brdn>`,
+`-tao_bncg_type (gd|fr|pr|prp|hs|dy|hz|dk|kd|ssml_bfgs|ssml_dfp|ssml_brdn)`,
 respectively. The default value is `ssml_bfgs`. We have scalar
 preconditioning for these methods, and it is controlled by the flag
 `tao_bncg_alpha`. To disable rescaling, use $\alpha = -1.0$,
@@ -1996,7 +1996,7 @@ In certain formulation of ADMM, solution of $z^{k+1}$ may have
 closed-form solution. Currently ADMM provides one default implementation
 for $z^{k+1}$, which is soft-threshold. It can be used with either
 `TaoADMMSetRegularizerType_ADMM()` or
-`-tao_admm_regularizer_type <regularizer_soft_thresh>`. User can also
+`-tao_admm_regularizer_type regularizer_soft_thresh`. User can also
 pass spectral penalty value, $\rho$, with either
 `TaoADMMSetSpectralPenalty()` or `-tao_admm_spectral_penalty`.
 Currently, user can use
@@ -2012,7 +2012,7 @@ set via `TaoADMMSetMisfitHessianChangeStatus()`, and
 `TaoADMMSetRegularizerHessianChangeStatus()`. Also, it may appear in
 certain cases where augmented Lagrangian’s Hessian may become nearly
 singular depending on the $\rho$, which may change in the case of
-`-tao_admm_dual_update <update_adaptive>, <update_adaptive_relaxed>`.
+`-tao_admm_dual_update (update_basic|update_adaptive|update_adaptive_relaxed)`.
 This issue can be prevented by `TaoADMMSetMinimumSpectralPenalty()`.
 
 #### Augmented Lagrangian Method of Multipliers (ALMM)
@@ -2428,7 +2428,7 @@ dictionary is provided, the dictionary is assumed to be an identity
 matrix and the regularizer reduces to a sparse solution term.
 
 The regularization selection can be made using the command line option
-`-tao_brgn_regularization_type <l2pure, l2prox, l1dict, user>` where the `user` option allows
+`-tao_brgn_regularization_type (l2pure|l2prox|l1dict|user)` where the `user` option allows
 the user to define a custom $\mathcal{C}2$-continuous
 regularization term. This custom term can be defined by using the
 interface functions:
@@ -2567,13 +2567,13 @@ The process of forming these models also computes the indicator
 POUNDERS supports the following parameters that can be set from the
 command line or PETSc options file:
 
-`-tao_pounders_delta <delta>`
+`-tao_pounders_delta delta`
 
 : The initial trust-region radius ($>0$, real). This is used to
   determine the size of the initial neighborhood within which the
   algorithm should look.
 
-`-tao_pounders_npmax <npmax>`
+`-tao_pounders_npmax npmax`
 
 : The maximum number of interpolation points used ($n+2\leq$
   `npmax` $\leq 0.5(n+1)(n+2)$). This input is made available
@@ -2749,8 +2749,8 @@ $$
 $$
 
 Both $\delta > 0$ and $\rho > 2$ can be modified by using
-the runtime options `-tao_ssils_delta <delta>` and
-`-tao_ssils_rho <rho>`, respectively. By default,
+the runtime options `-tao_ssils_delta delta` and
+`-tao_ssils_rho rho`, respectively. By default,
 $\delta = 10^{-10}$ and $\rho = 2.1$.
 
 An alternative is to remain feasible with respect to the bounds by using
@@ -2759,8 +2759,8 @@ the `tao_ssfls` solver. The descent test used is the same as above
 where the direction in this case corresponds to the first part of the
 piecewise linear arc searched by the projected line search. Both
 $\delta > 0$ and $\rho > 2$ can be modified by using the
-runtime options `-tao_ssfls_delta <delta>` and
-`-tao_ssfls_rho <rho>` respectively. By default,
+runtime options `-tao_ssfls_delta delta` and
+`-tao_ssfls_rho rho` respectively. By default,
 $\delta = 10^{-10}$ and $\rho = 2.1$.
 
 The recommended algorithm is the infeasible semismooth method,
@@ -2982,12 +2982,12 @@ The line search routines involve several parameters, which are set to
 defaults that are reasonable for many applications. The user can
 override the defaults by using the following options
 
-- `-tao_ls_max_funcs <max>`
-- `-tao_ls_stepmin <min>`
-- `-tao_ls_stepmax <max>`
-- `-tao_ls_ftol <ftol>`
-- `-tao_ls_gtol <gtol>`
-- `-tao_ls_rtol <rtol>`
+- `-tao_ls_max_funcs max`
+- `-tao_ls_stepmin min`
+- `-tao_ls_stepmax max`
+- `-tao_ls_ftol ftol`
+- `-tao_ls_gtol gtol`
+- `-tao_ls_rtol rtol`
 
 One should run a TAO program with the option `-help` for details.
 Users may write their own customized line search codes by modeling them

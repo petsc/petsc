@@ -2496,11 +2496,11 @@ PetscErrorCode DMLabelRegisterDestroy(void)
 - method - The name of the label type
 
   Options Database Key:
-. -dm_label_type <type> - Sets the label type; use -help for a list of available types or see `DMLabelType`
+. -dm_label_type type - Sets the label type; see `DMLabelType`
 
   Level: intermediate
 
-.seealso: `DMLabel`, `DM`, `DMLabelGetType()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetType()`, `DMLabelCreate()`, `DMLabelType`
 @*/
 PetscErrorCode DMLabelSetType(DMLabel label, DMLabelType method)
 {

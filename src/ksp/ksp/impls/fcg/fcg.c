@@ -330,7 +330,7 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
 - mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
-. -ksp_fcg_mmax <N> - maximum number of search directions
+. -ksp_fcg_mmax N - maximum number of search directions
 
   Level: intermediate
 
@@ -389,7 +389,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
 - nprealloc - the number of vectors to preallocate
 
   Options Database Key:
-. -ksp_fcg_nprealloc <N> - number of directions to preallocate
+. -ksp_fcg_nprealloc N - number of directions to preallocate
 
   Level: advanced
 
@@ -446,7 +446,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 .ve
 
   Options Database Key:
-. -ksp_fcg_truncation_type <standard, notay> - specify how many of its stored previous directions `KSPFCG` uses during orthogonalization
+. -ksp_fcg_truncation_type (standard|notay) - specify how many of its stored previous directions `KSPFCG` uses during orthogonalization
 
   Level: intermediate
 
@@ -511,9 +511,9 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems PetscOptio
   Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
 
   Options Database Keys:
-+ -ksp_fcg_mmax <N>                         - maximum number of search directions, similar to the restart in `KSPGMRES` and `KSPFGMRES`
-. -ksp_fcg_nprealloc <N>                    - number of directions to preallocate
-- -ksp_fcg_truncation_type <standard,notay> - truncation approach for directions
++ -ksp_fcg_mmax N                            - maximum number of search directions, similar to the restart in `KSPGMRES` and `KSPFGMRES`
+. -ksp_fcg_nprealloc N                       - number of directions to preallocate
+- -ksp_fcg_truncation_type (standard|notay) - truncation approach for directions
 
   Level: beginner
 

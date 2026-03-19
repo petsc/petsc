@@ -24,7 +24,7 @@ typedef struct {
 - imb  - the load imbalance ratio
 
   Options Database Key:
-. -mat_partitioning_ptscotch_imbalance <imb> - set load imbalance ratio
+. -mat_partitioning_ptscotch_imbalance imb - set load imbalance ratio
 
   Note:
   Must be in the range [0,1]. The default value is 0.01.

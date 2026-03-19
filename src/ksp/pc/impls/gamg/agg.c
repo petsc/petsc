@@ -25,10 +25,10 @@ typedef struct {
 
   Input Parameters:
 + pc - the preconditioner context
-- n  - the number of smooths
+- n  - the number of smooths, default is 1
 
   Options Database Key:
-. -pc_gamg_agg_nsmooths <nsmooth, default=1> - the flag
+. -pc_gamg_agg_nsmooths nsmooth - number of smooths
 
   Level: intermediate
 
@@ -68,10 +68,10 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
   Input Parameters:
 + pc - the preconditioner context
-- n  - 0, 1 or more
+- n  - 0, 1 or more, the default is 1
 
   Options Database Key:
-. -pc_gamg_aggressive_coarsening <n,default = 1> - the flag
+. -pc_gamg_aggressive_coarsening n - the number of coarsenings
 
   Level: intermediate
 
@@ -99,7 +99,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 - n  - 1 or more (default = 2)
 
   Options Database Key:
-. -pc_gamg_aggressive_mis_k <n,default=2> - the flag
+. -pc_gamg_aggressive_mis_k n - the distance to use
 
   Level: intermediate
 
@@ -124,7 +124,7 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 - b  - default true
 
   Options Database Key:
-. -pc_gamg_aggressive_square_graph <bool,default=true> - the flag
+. -pc_gamg_aggressive_square_graph (true|false) - whether to use the graph square to aggressively coarsen
 
   Level: intermediate
 
@@ -155,7 +155,7 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 - b  - default false
 
   Options Database Key:
-. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=false> - the flag
+. -pc_gamg_mis_k_minimum_degree_ordering (true|false) - use the minimum degree ordering
 
   Level: intermediate
 
@@ -180,7 +180,7 @@ PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 - b  - default false
 
   Options Database Key:
-. -pc_gamg_low_memory_threshold_filter <bool,default=false> - the flag
+. -pc_gamg_low_memory_threshold_filter (true|false) - use the low memory filter
 
   Level: intermediate
 
@@ -206,7 +206,7 @@ PetscErrorCode PCGAMGSetLowMemoryFilter(PC pc, PetscBool b)
 - b  - default true
 
   Options Database Key:
-. -pc_gamg_graph_symmetrize <bool,default=true> - the flag
+. -pc_gamg_graph_symmetrize (true|false) - symmetrize the graph
 
   Level: intermediate
 
@@ -1541,12 +1541,12 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   PCGAMGAGG - Smooth aggregation, {cite}`vanek1996algebraic`, {cite}`vanek2001convergence`, variant of PETSc's algebraic multigrid (`PCGAMG`) preconditioner
 
   Options Database Keys:
-+ -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation to construct prolongation
-. -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
-. -pc_gamg_aggressive_square_graph <bool,default=true> - Use square graph (A'A), alternative is MIS-k (k=2), for aggressive coarsening
-. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=false> - Use minimum degree ordering in greedy MIS algorithm
-. -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0> - Number of HEM aggregation steps for ASM smoother
-- -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
++ -pc_gamg_agg_nsmooths nsmooth                       - number of smoothing steps to use with smooth aggregation to construct prolongation
+. -pc_gamg_aggressive_coarsening n                    - number of aggressive coarsening (MIS-2) levels from finest.
+. -pc_gamg_aggressive_square_graph (true|false)       - Use square graph (A'A), alternative is MIS-k (k=2), for aggressive coarsening
+. -pc_gamg_mis_k_minimum_degree_ordering (true|false) - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_pc_gamg_asm_hem_aggs n                     - Number of HEM aggregation steps for ASM smoother
+- -pc_gamg_aggressive_mis_k n                         - Number (k) distance in MIS coarsening (>2 is 'aggressive')
 
   Level: intermediate
 

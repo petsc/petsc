@@ -464,7 +464,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
            should participate in each level of problem.
 
   Options Database Key:
-. -pc_mg_levels <levels> - set the number of levels to use
+. -pc_mg_levels levels - set the number of levels to use
 
   Level: intermediate
 
@@ -1350,7 +1350,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 - form - multigrid form, one of `PC_MG_MULTIPLICATIVE`, `PC_MG_ADDITIVE`, `PC_MG_FULL`, `PC_MG_KASKADE`
 
   Options Database Key:
-. -pc_mg_type <form> - Sets <form>, one of multiplicative, additive, full, kaskade
+. -pc_mg_type form - Sets form, one of multiplicative, additive, full, kaskade
 
   Level: advanced
 
@@ -1405,7 +1405,7 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
 - n  - either `PC_MG_CYCLE_V` or `PC_MG_CYCLE_W`
 
   Options Database Key:
-. -pc_mg_cycle_type <v,w> - provide the cycle desired
+. -pc_mg_cycle_type (v|w) - provide the cycle desired
 
   Level: advanced
 
@@ -1501,7 +1501,7 @@ static PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
 - use - one of `PC_MG_GALERKIN_BOTH`, `PC_MG_GALERKIN_PMAT`, `PC_MG_GALERKIN_MAT`, or `PC_MG_GALERKIN_NONE`
 
   Options Database Key:
-. -pc_mg_galerkin <both,pmat,mat,none> - set the matrices to form via the Galerkin process
+. -pc_mg_galerkin (both|pmat|mat|none) - set the matrices to form via the Galerkin process
 
   Level: intermediate
 
@@ -1612,8 +1612,8 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 - ctype - the type of coarse space
 
   Options Database Keys:
-+ -pc_mg_adapt_interp_n <int>             - The number of modes to use
-- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: none, `polynomial`, `harmonic`, `eigenvector`, `generalized_eigenvector`, `gdsw`
++ -pc_mg_adapt_interp_n nmodes          - The number of modes to use
+- -pc_mg_adapt_interp_coarse_space type - The type of coarse space: none, `polynomial`, `harmonic`, `eigenvector`, `generalized_eigenvector`, `gdsw`
 
   Level: intermediate
 
@@ -1666,9 +1666,9 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
 - adapt - flag for adaptation of the interpolator
 
   Options Database Keys:
-+ -pc_mg_adapt_interp                     - Turn on adaptation
-. -pc_mg_adapt_interp_n <int>             - The number of modes to use, should be divisible by dimension
-- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector
++ -pc_mg_adapt_interp                   - Turn on adaptation
+. -pc_mg_adapt_interp_n nmodes          - The number of modes to use, should be divisible by dimension
+- -pc_mg_adapt_interp_coarse_space type - The type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector
 
   Level: intermediate
 
@@ -1767,7 +1767,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
 - n  - the number of smoothing steps
 
   Options Database Key:
-. -mg_levels_ksp_max_it <n> - Sets number of pre and post-smoothing steps
+. -mg_levels_ksp_max_it n - Sets number of pre and post-smoothing steps
 
   Level: advanced
 
@@ -1807,7 +1807,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
 . pc - the preconditioner context
 
   Options Database Key:
-. -pc_mg_distinct_smoothup <bool> - use distinct smoothing objects
+. -pc_mg_distinct_smoothup (true|false) - use distinct smoothing objects
 
   Level: advanced
 
@@ -1930,16 +1930,16 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
    operators using `PCMGSetInterpolation()` and/or `PCMGSetRestriction()`(and possibly the coarser grid matrices) or a `DM` that can provide such information.
 
    Options Database Keys:
-+  -pc_mg_levels <nlevels>                            - number of levels including finest
-.  -pc_mg_cycle_type <v,w>                            - provide the cycle desired
-.  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
++  -pc_mg_levels nlevels                              - number of levels including finest
+.  -pc_mg_cycle_type (v|w)                            - provide the cycle desired
+.  -pc_mg_type (additive|multiplicative|full|kaskade) - multiplicative is the default
 .  -pc_mg_log                                         - log information about time spent on each level of the solver
 .  -pc_mg_distinct_smoothup                           - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
-.  -pc_mg_galerkin <both,pmat,mat,none>               - use the Galerkin process to compute coarser operators, i.e., $A_{coarse} = R A_{fine} R^T$
-.  -pc_mg_multiplicative_cycles                        - number of cycles to use as the preconditioner (defaults to 1)
-.  -pc_mg_dump_matlab                                  - dumps the matrices for each level and the restriction/interpolation matrices
-                                                         to a `PETSCVIEWERSOCKET` for reading from MATLAB.
--  -pc_mg_dump_binary                                  -dumps the matrices for each level and the restriction/interpolation matrices
+.  -pc_mg_galerkin (both|pmat|mat|none)               - use the Galerkin process to compute coarser operators, i.e., $A_{coarse} = R A_{fine} R^T$
+.  -pc_mg_multiplicative_cycles ncycles               - number of cycles to use as the preconditioner (defaults to 1)
+.  -pc_mg_dump_matlab                                 - dumps the matrices for each level and the restriction/interpolation matrices
+                                                        to a `PETSCVIEWERSOCKET` for reading from MATLAB.
+-  -pc_mg_dump_binary                                 - dumps the matrices for each level and the restriction/interpolation matrices
                                                         to the binary output file called binaryoutput
 
    Level: intermediate

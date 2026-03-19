@@ -999,7 +999,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOp
    KSPGLTR -   Code to run conjugate gradient method subject to a constraint on the solution norm, used within trust region methods {cite}`gould1999solving`
 
    Options Database Key:
-.  -ksp_cg_radius <r> - Trust Region Radius
+.  -ksp_cg_radius radius - Trust Region Radius
 
    Level: developer
 

@@ -368,7 +368,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
 - lens   - [optional] integer array containing the size of each block
 
   Options Database Key:
-. -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
+. -pc_bjacobi_blocks blocks - Sets the number of global blocks
 
   Level: intermediate
 
@@ -425,7 +425,7 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 - lens   - [optional] integer array containing size of each block
 
   Options Database Key:
-. -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
+. -pc_bjacobi_local_blocks blocks - Sets the number of local blocks
 
   Level: intermediate
 
@@ -471,12 +471,11 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 }
 
 /*MC
-   PCBJACOBI - Use block Jacobi preconditioning, each block is (approximately) solved with
-           its own `KSP` object.
+   PCBJACOBI - Use block Jacobi preconditioning, each block is (approximately) solved with its own `KSP` object.
 
    Options Database Keys:
-+  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
--  -pc_bjacobi_blocks <n> - use n total blocks
++  -pc_use_amat (true|false) - use `Amat` to apply block of operator in inner Krylov method
+-  -pc_bjacobi_blocks n      - use n total blocks
 
    Level: beginner
 

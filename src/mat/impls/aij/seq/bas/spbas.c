@@ -6,9 +6,8 @@
 
   Works with `MATAIJ`  matrices
 
-  Options Database Keys:
-+ -pc_factor_levels <l> - number of levels of fill
-- -pc_factor_drop_tolerance - is not currently hooked up to do anything
+  Options Database Key:
+. -pc_factor_levels l - number of levels of fill
 
   Level: intermediate
 

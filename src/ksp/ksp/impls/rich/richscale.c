@@ -10,7 +10,7 @@
 - scale - the damping factor
 
   Options Database Key:
-. -ksp_richardson_scale <scale> - Set the scale factor
+. -ksp_richardson_scale scale - Set the scale factor
 
   Level: intermediate
 

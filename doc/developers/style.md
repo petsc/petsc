@@ -666,9 +666,66 @@ where noted, add a newline after the section headings.
     . arg - the integer argument description
     ```
 
-08. If documenting a function that interacts with the options database, a
+08. When documenting a function or object that interacts with the options database, a
     list of options database keys in an `Options Database Key(s):`
     section.
+
+    The standard format is
+
+    ```
+    -objectname_optionname variablename - text explaining the option
+    ```
+
+    When possible `variablename` should match the string used for declaring
+    the variable in the manual pages. The default value may be provided at the end
+    of the text.
+
+    Optional arguments are indicated with
+
+    ```
+    -objectname_optionname [optionalvariablename] - text explaining the option
+    ```
+
+    When the option accepts a comma separated list of values this may be indicated
+    with
+
+    ```
+    -objectname_optionname variablename1,variablename2 - text explaining the option
+    ```
+
+    Note there should be no spaces between the commas.
+
+    For options with a small set of possible values one may use, for example,
+
+    ```
+    -objectname_optionname (true|false) - text explaining the option
+    ```
+
+    Note that in this situation a `variablename` is never provided and there
+    should be no spaces around the pipes.
+
+    Three periods may be used to indicate any number of additional possibilities, for example,
+
+    ```
+    -objectname_optionname p1,p2,...,pn - text explaining the option
+    ```
+
+    Never use etc to indicate more possibilities.
+
+    Examples of a more complex form:
+
+    ```
+    -start_in_debugger [(noxterm)],[(gdb|lldb|...)]
+    ```
+
+    indicates one may use, for example, `-start_in_debugger`, or `-start_in_debugger noxterm`,
+    or `-start_in_debugger gdb`, or `-start_in_debugger noxterm,gdb`.
+
+    ```
+    -objects_dump [(all)]
+    ```
+
+    indicates one may use either, `-objects_dump` or `-objects_dump all`.
 
 09. `Level:` (no newline) followed by `beginner`,
     `intermediate`, `advanced`, `developer`, or `deprecated`. This

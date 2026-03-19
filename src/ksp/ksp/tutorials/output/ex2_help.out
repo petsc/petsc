@@ -16,15 +16,15 @@ Options for all PETSc programs:
  -help: prints example description, PETSc version, and available options for used routines
  -on_error_abort: cause an abort when an error is detected. Useful 
         only when run in the debugger
- -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]
+ -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]
        start the debugger in new xterm
        unless noxterm is given
- -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]
+ -start_in_debugger [(noxterm)],[(gdb|lldb|...)]
        start all processes in the debugger
- -on_error_emacs <machinename>
+ -on_error_emacs machinename
     emacs jumps to error file
- -debugger_ranks [n1,n2,..] Ranks to start in debugger
- -debugger_pause [m] : delay (in seconds) to attach debugger
+ -debugger_ranks n1,n2,.. Ranks to start in debugger
+ -debugger_pause secs : delay (in seconds) to attach debugger
  -stop_for_debugger : prints message on how to attach debugger manually
                       waits the delay for you to attach
  -display display: Location where X window graphics and debuggers are displayed
@@ -32,23 +32,20 @@ Options for all PETSc programs:
  -mpi_return_on_error: MPI returns error code, rather than abort on internal error
  -fp_trap: stop on floating point exceptions
            note on IBM RS6000 this slows run greatly
- -malloc_dump <optional filename>: dump list of unfreed memory at conclusion
- -on_error_malloc_dump <optional filename>: dump list of unfreed memory on memory error
- -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()
- -malloc_debug <true or false>: enables or disables extended checking for memory corruption
+ -malloc_dump [filename]: dump list of unfreed memory at conclusion
+ -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error
+ -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()
+ -malloc_debug (true|false): enables or disables extended checking for memory corruption
  -options_view: dump list of options inputted
  -options_left: dump list of unused options
  -options_left no: don't dump list of unused options
- -tmp tmpdir: alternative /tmp directory
- -shared_tmp: tmp directory is shared by all processors
- -not_shared_tmp: each processor has separate tmp directory
  -memory_view: print memory usage at end of run
  -get_total_flops: total flops over all processors
  -log_view [:filename:[format]]: logging objects and events
  -log_trace [filename]: prints trace of all PETSc calls
- -log_exclude <list,of,classnames>: exclude given classes from logging
- -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information
- -options_file <file>: reads options from file
+ -log_exclude classname1,classname2,...: exclude given classes from logging
+ -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names
+ -options_file filename: reads options from file
  -options_monitor: monitor options to standard output, including that set previously e.g. in option files
  -options_monitor_cancel: cancels all hardwired option monitors
  -petsc_sleep n: sleeps n seconds before running program

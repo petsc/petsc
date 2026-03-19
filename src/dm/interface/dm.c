@@ -326,7 +326,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 - ctype - the matrix type
 
   Options Database Key:
-. -dm_is_coloring_type - global or local
+. -dm_is_coloring_type (global|local) - see `ISColoringType`
 
   Level: intermediate
 
@@ -352,9 +352,6 @@ PetscErrorCode DMSetISColoringType(DM dm, ISColoringType ctype)
   Output Parameter:
 . ctype - the matrix type
 
-  Options Database Key:
-. -dm_is_coloring_type - global or local
-
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatrixPreallocateOnly()`, `MatType`, `DMGetMatType()`,
@@ -378,7 +375,7 @@ PetscErrorCode DMGetISColoringType(DM dm, ISColoringType *ctype)
 - ctype - the matrix type, for example `MATMPIAIJ`
 
   Options Database Key:
-. -dm_mat_type ctype - the type of the matrix to create, for example mpiaij
+. -dm_mat_type ctype - the type of the matrix to create, see `MatType`
 
   Level: intermediate
 
@@ -818,61 +815,61 @@ PetscErrorCode DMSetUp(DM dm)
 . dm - the `DM` object to set options for
 
   Options Database Keys:
-+ -dm_preallocate_only                               - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill it with zeros
-. -dm_vec_type <type>                                - type of vector to create inside `DM`
-. -dm_mat_type <type>                                - type of matrix to create inside `DM`
-. -dm_is_coloring_type                               - <global or local>
-. -dm_bind_below <n>                                 - bind (force execution on CPU) for `Vec` and `Mat` objects with local size (number of vector entries or matrix rows) below n; currently only supported for `DMDA`
-. -dm_plex_option_phases <ph0_, ph1_, ...>           - List of prefixes for option processing phases
-. -dm_plex_filename <str>                            - File containing a mesh
-. -dm_plex_boundary_filename <str>                   - File containing a mesh boundary
-. -dm_plex_name <str>                                - Name of the mesh in the file
-. -dm_plex_shape <shape>                             - The domain shape, such as `BOX`, `SPHERE`, etc.
-. -dm_plex_cell <ct>                                 - Cell shape
-. -dm_plex_reference_cell_domain <bool>              - Use a reference cell domain
-. -dm_plex_dim <dim>                                 - Set the topological dimension
-. -dm_plex_simplex <bool>                            - `PETSC_TRUE` for simplex elements, `PETSC_FALSE` for tensor elements
-. -dm_plex_interpolate <bool>                        - `PETSC_TRUE` turns on topological interpolation (creating edges and faces)
-. -dm_plex_orient <bool>                             - `PETSC_TRUE` turns on topological orientation (flipping edges and faces)
-. -dm_plex_scale <sc>                                - Scale factor for mesh coordinates
-. -dm_coord_remap <bool>                             - Map coordinates using a function
-. -dm_plex_coordinate_dim <dim>                      - Change the coordinate dimension of a mesh (usually given with cdm_ prefix)
-. -dm_coord_map <mapname>                            - Select a builtin coordinate map
-. -dm_coord_map_params <p0,p1,p2,...>                - Set coordinate mapping parameters
-. -dm_plex_box_faces <m,n,p>                         - Number of faces along each dimension
-. -dm_plex_box_lower <x,y,z>                         - Specify lower-left-bottom coordinates for the box
-. -dm_plex_box_upper <x,y,z>                         - Specify upper-right-top coordinates for the box
-. -dm_plex_box_bd <bx,by,bz>                         - Specify the `DMBoundaryType` for each direction
-. -dm_plex_sphere_radius <r>                         - The sphere radius
-. -dm_plex_ball_radius <r>                           - Radius of the ball
-. -dm_plex_cylinder_bd <bz>                          - Boundary type in the z direction
-. -dm_plex_cylinder_num_wedges <n>                   - Number of wedges around the cylinder
-. -dm_plex_reorder <order>                           - Reorder the mesh using the specified algorithm
-. -dm_refine_pre <n>                                 - The number of refinements before distribution
-. -dm_refine_uniform_pre <bool>                      - Flag for uniform refinement before distribution
-. -dm_refine_volume_limit_pre <v>                    - The maximum cell volume after refinement before distribution
-. -dm_refine <n>                                     - The number of refinements after distribution
-. -dm_extrude <l>                                    - Activate extrusion and specify the number of layers to extrude
-. -dm_plex_save_transform <bool>                     - Save the `DMPlexTransform` that produced this mesh
-. -dm_plex_transform_extrude_thickness <t>           - The total thickness of extruded layers
-. -dm_plex_transform_extrude_use_tensor <bool>       - Use tensor cells when extruding
-. -dm_plex_transform_extrude_symmetric <bool>        - Extrude layers symmetrically about the surface
-. -dm_plex_transform_extrude_normal <n0,...,nd>      - Specify the extrusion direction
-. -dm_plex_transform_extrude_thicknesses <t0,...,tl> - Specify thickness of each layer
++ -dm_preallocate_only (true|false)                  - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill it with zeros
+. -dm_vec_type type                                  - type of vector to create inside `DM`
+. -dm_mat_type type                                  - type of matrix to create inside `DM`
+. -dm_is_coloring_type (global|local)                - see `ISColoringType`
+. -dm_bind_below n                                   - bind (force execution on CPU) for `Vec` and `Mat` objects with local size (number of vector entries or matrix rows) below n; currently only supported for `DMDA`
+. -dm_plex_option_phases ph0_, ph1_, ...             - List of prefixes for option processing phases
+. -dm_plex_filename str                              - File containing a mesh
+. -dm_plex_boundary_filename str                     - File containing a mesh boundary
+. -dm_plex_name str                                  - Name of the mesh in the file
+. -dm_plex_shape shape                               - The domain shape, such as `BOX`, `SPHERE`, etc.
+. -dm_plex_cell ct                                   - Cell shape
+. -dm_plex_reference_cell_domain (true|false)        - Use a reference cell domain
+. -dm_plex_dim dim                                   - Set the topological dimension
+. -dm_plex_simplex (true|false)                      - `PETSC_TRUE` for simplex elements, `PETSC_FALSE` for tensor elements
+. -dm_plex_interpolate (true|false)                  - `PETSC_TRUE` turns on topological interpolation (creating edges and faces)
+. -dm_plex_orient (true|false)                       - `PETSC_TRUE` turns on topological orientation (flipping edges and faces)
+. -dm_plex_scale sc                                  - Scale factor for mesh coordinates
+. -dm_coord_remap (true|false)                       - Map coordinates using a function
+. -dm_plex_coordinate_dim dim                        - Change the coordinate dimension of a mesh (usually given with cdm_ prefix)
+. -dm_coord_map mapname                              - Select a builtin coordinate map
+. -dm_coord_map_params p0,p1,p2,...                  - Set coordinate mapping parameters
+. -dm_plex_box_faces m,n,p                           - Number of faces along each dimension
+. -dm_plex_box_lower x,y,z                           - Specify lower-left-bottom coordinates for the box
+. -dm_plex_box_upper x,y,z                           - Specify upper-right-top coordinates for the box
+. -dm_plex_box_bd bx,by,bz                           - Specify the `DMBoundaryType` for each direction
+. -dm_plex_sphere_radius r                           - The sphere radius
+. -dm_plex_ball_radius r                             - Radius of the ball
+. -dm_plex_cylinder_bd bz                            - Boundary type in the z direction
+. -dm_plex_cylinder_num_wedges n                     - Number of wedges around the cylinder
+. -dm_plex_reorder order                             - Reorder the mesh using the specified algorithm
+. -dm_refine_pre n                                   - The number of refinements before distribution
+. -dm_refine_uniform_pre (true|false)                - Flag for uniform refinement before distribution
+. -dm_refine_volume_limit_pre v                      - The maximum cell volume after refinement before distribution
+. -dm_refine n                                       - The number of refinements after distribution
+. -dm_extrude l                                      - Activate extrusion and specify the number of layers to extrude
+. -dm_plex_save_transform (true|false)               - Save the `DMPlexTransform` that produced this mesh
+. -dm_plex_transform_extrude_thickness t             - The total thickness of extruded layers
+. -dm_plex_transform_extrude_use_tensor (true|false) - Use tensor cells when extruding
+. -dm_plex_transform_extrude_symmetric (true|false)  - Extrude layers symmetrically about the surface
+. -dm_plex_transform_extrude_normal n0,...,nd        - Specify the extrusion direction
+. -dm_plex_transform_extrude_thicknesses t0,...,tl   - Specify thickness of each layer
 . -dm_plex_create_fv_ghost_cells                     - Flag to create finite volume ghost cells on the boundary
-. -dm_plex_fv_ghost_cells_label <name>               - Label name for ghost cells boundary
-. -dm_distribute <bool>                              - Flag to redistribute a mesh among processes
-. -dm_distribute_overlap <n>                         - The size of the overlap halo
-. -dm_plex_adj_cone <bool>                           - Set adjacency direction
-. -dm_plex_adj_closure <bool>                        - Set adjacency size
-. -dm_plex_use_ceed <bool>                           - Use LibCEED as the FEM backend
-. -dm_plex_check_symmetry                            - Check that the adjacency information in the mesh is symmetric - `DMPlexCheckSymmetry()`
-. -dm_plex_check_skeleton                            - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - `DMPlexCheckSkeleton()`
-. -dm_plex_check_faces                               - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - `DMPlexCheckFaces()`
-. -dm_plex_check_geometry                            - Check that cells have positive volume - `DMPlexCheckGeometry()`
-. -dm_plex_check_pointsf                             - Check some necessary conditions for `PointSF` - `DMPlexCheckPointSF()`
-. -dm_plex_check_interface_cones                     - Check points on inter-partition interfaces have conforming order of cone points - `DMPlexCheckInterfaceCones()`
-- -dm_plex_check_all                                 - Perform all the checks above
+. -dm_plex_fv_ghost_cells_label name                 - Label name for ghost cells boundary
+. -dm_distribute (true|false)                        - Flag to redistribute a mesh among processes
+. -dm_distribute_overlap n                           - The size of the overlap halo
+. -dm_plex_adj_cone (true|false)                     - Set adjacency direction
+. -dm_plex_adj_closure (true|false)                  - Set adjacency size
+. -dm_plex_use_ceed (true|false)                     - Use LibCEED as the FEM backend
+. -dm_plex_check_symmetry (true|false)               - Check that the adjacency information in the mesh is symmetric - `DMPlexCheckSymmetry()`
+. -dm_plex_check_skeleton (true|false)               - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - `DMPlexCheckSkeleton()`
+. -dm_plex_check_faces (true|false)                  - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type - `DMPlexCheckFaces()`
+. -dm_plex_check_geometry (true|false)               - Check that cells have positive volume - `DMPlexCheckGeometry()`
+. -dm_plex_check_pointsf (true|false)                - Check some necessary conditions for `PointSF` - `DMPlexCheckPointSF()`
+. -dm_plex_check_interface_cones (true|false)        - Check points on inter-partition interfaces have conforming order of cone points - `DMPlexCheckInterfaceCones()`
+- -dm_plex_check_all (true|false)                    - Perform all the checks above
 
   Level: intermediate
 
@@ -947,11 +944,11 @@ PetscErrorCode DMViewFromOptions(DM dm, PeOp PetscObject obj, const char name[])
 - v  - the viewer
 
   Options Database Keys:
-+ -view_pyvista_warp <f>                 - Warps the mesh by the active scalar with factor f
-. -view_pyvista_clip <xl,xu,yl,yu,zl,zu> - Defines the clipping box
-. -dm_view_draw_line_color <int>         - Specify the X-window color for cell borders
-. -dm_view_draw_cell_color <int>         - Specify the X-window color for cells
-- -dm_view_draw_affine <bool>            - Flag to ignore high-order edges
++ -view_pyvista_warp f                 - Warps the mesh by the active scalar with factor f
+. -view_pyvista_clip xl,xu,yl,yu,zl,zu - Defines the clipping box
+. -dm_view_draw_line_color color       - Specify the X-window color for cell borders
+. -dm_view_draw_cell_color color       - Specify the X-window color for cells
+- -dm_view_draw_affine (true|false)    - Flag to ignore high-order edges
 
   Level: beginner
 
@@ -1647,7 +1644,7 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
 - btype - block by topological point or field node
 
   Options Database Key:
-. -dm_blocking_type [topological_point, field_node] - use topological point blocking or field node blocking
+. -dm_blocking_type (topological_point|field_node) - use topological point blocking or field node blocking
 
   Level: advanced
 
@@ -2353,7 +2350,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm, PetscInt n, DM subdms[
 . dmf - the refined `DM`, or `NULL`
 
   Options Database Key:
-. -dm_plex_cell_refiner <strategy> - chooses the refinement strategy, e.g. regular, tohex
+. -dm_plex_cell_refiner strategy - chooses the refinement strategy, e.g. regular, tohex
 
   Level: developer
 
@@ -4041,7 +4038,7 @@ PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 - method - The name of the `DMType`, for example `DMDA`, `DMPLEX`
 
   Options Database Key:
-. -dm_type <type> - Sets the `DM` type; use -help for a list of available types
+. -dm_type type - Sets the `DM` type; use -help for a list of available types
 
   Level: intermediate
 
@@ -8077,8 +8074,8 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 . bd - (Optional) Boundary number
 
   Options Database Keys:
-+ -bc_<boundary name> <num>      - Overrides the boundary ids
-- -bc_<boundary name>_comp <num> - Overrides the boundary components
++ -bc_NAME values     - Overrides the boundary ids for boundary named NAME
+- -bc_NAME_comp comps - Overrides the boundary components for boundary named NAME
 
   Level: intermediate
 
