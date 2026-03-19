@@ -350,6 +350,7 @@ PetscErrorCode Fill_mat(PetscReal coeff, PetscInt m, Mat A)
 
   test:
     suffix: fin
+    requires: !defined(PETSCTEST_VALGRIND)
     output_file: output/ex3span_fin.out
     args: -ts_max_time {{8.21 8.99 9 9.04 9.05 9.06 9.21 9.99 12}}
     args: -ts_event_dt_min 1e-6
