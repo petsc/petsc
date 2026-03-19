@@ -129,6 +129,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   MatOrderingType      otype;
   DMReorderDefaultFlag flg;
   PetscInt             dim, cdim, i;
+  PetscBool            sparse;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -187,6 +188,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     PetscCall(DMGetCoordinates(dm, &coords));
     if (coords) PetscCall(DMSetCoordinates(*newdm, coords));
   }
+  PetscCall(DMGetSparseLocalize(dm, &sparse));
+  PetscCall(DMSetSparseLocalize(*newdm, sparse));
   PetscCall(DMGetCellCoordinatesLocal(dm, &coords));
   if (coords) {
     PetscCall(DMSetCellCoordinatesLocal(*newdm, coords));
