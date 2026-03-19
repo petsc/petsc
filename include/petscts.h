@@ -1300,7 +1300,7 @@ typedef const char *TSRKType;
 PETSC_EXTERN PetscErrorCode TSRKGetOrder(TS, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS, TSRKType *);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS, TSRKType);
-PETSC_EXTERN PetscErrorCode TSRKGetTableau(TS, PetscInt *, const PetscReal **, const PetscReal **, const PetscReal **, const PetscReal **, PetscInt *, const PetscReal **, PetscBool *);
+PETSC_EXTERN PetscErrorCode TSRKGetTableau(TS, PetscInt *, const PetscReal *[], const PetscReal *[], const PetscReal *[], const PetscReal *[], PetscInt *, const PetscReal *[], PetscBool *);
 PETSC_EXTERN PetscErrorCode TSRKSetMultirate(TS, PetscBool);
 PETSC_EXTERN PetscErrorCode TSRKGetMultirate(TS, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType, PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);

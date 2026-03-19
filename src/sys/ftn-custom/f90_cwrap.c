@@ -220,6 +220,7 @@ PetscErrorCode F90Array1dDestroy(F90Array1d *ptr, MPI_Datatype type PETSC_F90_2P
   } else if (type == MPIU_FORTRANADDR) {
     f90array1ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
+  *(void **)ptr = (void *)1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
