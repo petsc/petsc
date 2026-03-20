@@ -1187,6 +1187,7 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscSection     originalCoordSection, newCoordSection;
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
+  PetscBool        sparse;
   const char      *name;
   const PetscReal *maxCell, *Lstart, *L;
 
@@ -1216,6 +1217,8 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(dmParallel, maxCell, Lstart, L));
+  PetscCall(DMGetSparseLocalize(dm, &sparse));
+  PetscCall(DMSetSparseLocalize(dmParallel, sparse));
   PetscCall(DMGetCellCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscCall(DMClone(dmParallel, &cdmParallel));
