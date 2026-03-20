@@ -392,12 +392,14 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType
 . -mat_umfpack_scale NONE                - (choose one of) NONE SUM MAX
 . -mat_umfpack_alloc_init delta          - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
 . -mat_umfpack_droptol 0                 - Control[UMFPACK_DROPTOL]
-- -mat_umfpack_irstep maxit              - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
+- -mat_umfpack_irstep 0                  - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
 
    Level: beginner
 
-   Note:
+   Notes:
    UMFPACK is part of SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>
+
+   Control[UMFPACK_IRSTEP] default in UMFPACK is 2, PETSc uses 0, i.e. iterative refinement is disabled
 
 .seealso: [](ch_matrices), `Mat`, `PCLU`, `MATSOLVERSUPERLU`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
