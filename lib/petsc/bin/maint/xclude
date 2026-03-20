@@ -11,7 +11,11 @@ petsc-dist/.gitignore
 petsc-dist/.nagged
 petsc-dist/.hg
 petsc-dist/.hgignore
-petsc-dist/.hgtags
+petsc-dist/.editorconfig
+petsc-dist/.claude
+petsc-dist/.clang-format
+petsc-dist/CLAUDE.md
+petsc-dist/configtest.mod
 petsc-dist/bitbucket-pipelines.yml
 petsc-dist/README.md
 petsc-dist/CMakeLists.txt
