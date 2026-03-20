@@ -155,7 +155,8 @@ program ex62f90
 
   !   Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files
   do step = 1, numstep
-    PetscCallA(exptim(exoid, step, real(step, kind=PETSC_REAL_KIND), ierr))
+    time = real(step, kind=PETSC_REAL_KIND)
+    PetscCallA(exptim(exoid, step, time, ierr))
   end do
 
   PetscCallA(DMSetUseNatural(dm, PETSC_TRUE, ierr))
