@@ -1727,6 +1727,7 @@ int main(int argc, char **argv)
 
      test:
        suffix: landau_damping_3d
+       requires: !defined(PETSCTEST_VALGRIND)
        args: -xdm_plex_dim 3 -xdm_plex_box_faces 6,3,3 -xdm_plex_box_lower 0.,-1,-1 -xdm_plex_box_upper 12.5664,1,1 -xdm_plex_box_bd periodic,periodic,periodic -vdm_plex_dim 3 -vdm_plex_box_faces 4,4,4 \
        -vdm_plex_box_lower -6,-6,-6 -vdm_plex_box_upper 6,6,6 -vdm_plex_hash_location -vdm_plex_simplex 0 -vdm_plex_box_bd none,none,none
 
