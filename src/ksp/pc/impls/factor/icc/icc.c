@@ -163,6 +163,8 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems PetscOptionsO
    By default, the Manteuffel shift {cite}`manteuffel1979shifted` is applied, for matrices with block size 1 only. Call `PCFactorSetShiftType`(pc,`MAT_SHIFT_POSITIVE_DEFINITE`);
    to turn off the shift.
 
+   The options prefix of the factored matrix is set to be the same as the `PC` options prefix.
+
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCILU`, `PCLU`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,
           `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,

@@ -283,11 +283,12 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
 
    Options Database Keys:
 +  -pc_factor_reuse_ordering (true|false) - Activate `PCFactorSetReuseOrdering()`
-.  -pc_factor_mat_solver_type type        - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
+.  -pc_factor_mat_solver_type type        - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like `superlu`
 .  -pc_factor_reuse_fill (true|false)     - Activates `PCFactorSetReuseFill()`
 .  -pc_factor_fill fill                   - Sets the explected fill amount
 .  -pc_factor_in_place (true|false)       - Activates in-place factorization
--  -pc_factor_mat_ordering_type type      - Sets ordering routine used to determine the order the rows are used in the factorization to reduce fill, see `MatOrderingType`
+.  -pc_factor_mat_ordering_type type      - Sets ordering routine used to determine the order the rows are used in the factorization to reduce fill, see `MatOrderingType`
+-  -mat_solvertype_optionname             - options for a specific solver package, for example `-mat_mumps_cntl_1`
 
    Level: beginner
 
@@ -300,6 +301,8 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
    Usually this will compute an "exact" solution in one iteration and does
    not need a Krylov method (i.e. you can use -ksp_type preonly, or
    `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
+
+   The options prefix of the factored matrix is set to be the same as the `PC` options prefix.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCILU`, `PCLU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
