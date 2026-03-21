@@ -20,7 +20,7 @@ static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const Pe
 #if !PetscDefined(HAVE_OPENMP)
   PetscFunctionReturn(PETSC_SUCCESS);
 #else
-  return 0;
+  return PETSC_SUCCESS;
 #endif
 }
 
