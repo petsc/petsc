@@ -160,7 +160,7 @@ checkbadSource:
 	-@git --no-pager grep -n -Po ' ([^()\ ]+) \? (?1) \+ (.)* : NULL' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Wrong PETSc capitalization -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '[^a-zA-Z_*>{.]petsc [^+=]' -- ${GITSRC} | grep -v 'mat_solver_type petsc' | grep -v ' PETSc ' >> checkbadSource.out;true
-	-@echo "----- Fortran: Semi-colon at end of line ---------------------------" >> checkbadSource.out
+	-@echo "----- Semi-colon at end of line ------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ";$$" -- ${GITFSRC} >> checkbadSource.out;true
 	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
 	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
@@ -180,7 +180,9 @@ checkbadSource:
 	-@git --no-pager grep -n "#if[n]def " -- ${GITFSRC} ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Use of the .cpp file extension instead of .cxx ---------------" >> checkbadSource.out
 	-@git ls-files *.cpp >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 43` ;\
+	-@echo "----- Fortran: use of dble -----------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n "dble(" -- ${GITFSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 44` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
