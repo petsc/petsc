@@ -22,6 +22,8 @@ if __name__ == '__main__':
     '--with-mpi-ftn-module=mpi_f08',
     '--with-strict-petscerrorcode',
     '--with-coverage',
+    '--download-slepc',
+    '--download-hpddm',
   ]
 
   configure.petsc_configure(configure_options)
