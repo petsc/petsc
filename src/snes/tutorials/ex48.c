@@ -117,7 +117,7 @@ static const PetscReal HexQDeriv_Lobatto[8][8][3] = {
   {{0, 0, 0},        {0, M *L, 0},     {P * L, P *L, M}, {M * L, 0, 0},    {0, 0, 0},        {0, M *H, 0},     {P * H, P *H, P}, {M * H, 0, 0}   },
   {{0, M *L, 0},     {0, 0, 0},        {P * L, 0, 0},    {M * L, P *L, M}, {0, M *H, 0},     {0, 0, 0},        {P * H, 0, 0},    {M * H, P *H, P}}
 };
-/* Stanndard Gauss */
+/* Standard Gauss */
 static const PetscReal HexQInterp_Gauss[8][8] = {
   {H * H * H, L * H * H, L * L * H, H * L * H, H * H * L, L * H * L, L * L * L, H * L * L},
   {L * H * H, H * H * H, H * L * H, L * L * H, L * H * L, H * H * L, H * L * L, L * L * L},
