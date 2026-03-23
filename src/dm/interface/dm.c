@@ -6499,6 +6499,7 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
+  if (dm->dim != dim) PetscCall(DMSetPeriodicity(dm, NULL, NULL, NULL));
   dm->dim = dim;
   if (dm->dim >= 0) {
     PetscCall(DMGetNumDS(dm, &Nds));

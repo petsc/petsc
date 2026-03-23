@@ -349,7 +349,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscSection     cs, csDG;
   Vec              coordinates, cVec;
   PetscScalar     *coordsDG, *anchor, *localized;
-  const PetscReal *Lstart, *L;
+  const PetscReal *Lstart, *L, *maxCell;
   PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_INT_MAX, newEnd = PETSC_INT_MIN, bs, coordSize;
   PetscBool        isLocalized, sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
   PetscInt         maxHeight = 0, h;
@@ -358,7 +358,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   PetscCall(DMGetSparseLocalize(dm, &sparseLocalize));
   /* Cannot automatically localize without L and maxCell right now */
   if (!L) PetscFunctionReturn(PETSC_SUCCESS);
@@ -393,6 +393,9 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscCall(PetscSectionSetFieldComponents(csDG, 0, Nc));
   PetscCall(PetscSectionSetChart(csDG, newStart, newEnd));
   PetscCheck(bs == Nc, comm, PETSC_ERR_ARG_INCOMP, "Coordinate block size %" PetscInt_FMT " != %" PetscInt_FMT " number of components", bs, Nc);
+  for (PetscInt d = 0; d < Nc; ++d) {
+    PetscCheck(L[d] < 0. || (maxCell[d] > 0. && maxCell[d] < L[d]), comm, PETSC_ERR_ARG_INCOMP, "Periodic length %g > max cell size %g in dimension %" PetscInt_FMT, (double)L[d], (double)maxCell[d], d);
+  }
 
   PetscCall(DMGetWorkArray(dm, 2 * Nc, MPIU_SCALAR, &anchor));
   localized = &anchor[Nc];
@@ -445,19 +448,23 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       if (!cdof) continue;
       PetscCall(DMPlexVecGetClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
       PetscCall(PetscSectionGetOffset(csDG, c, &offDG));
+      // Select an anchor for each dimension
       // TODO The coordinates are set in closure order, which might not be the tensor order
       for (d = 0; d < Nc; ++d) {
+        const PetscReal start = Lstart ? Lstart[d] : 0.;
+
         for (q = 0; q < dof / Nc; ++q) {
           anchor[d] = cellCoords[q * Nc + d];
           // Map anchor into [Lstart, Lstart+L)
           if (L[d] > 0.0) {
-            if (PetscRealPart(anchor[d]) < (Lstart ? Lstart[d] : 0.)) anchor[d] += L[d];
-            else if (PetscRealPart(anchor[d]) > (Lstart ? Lstart[d] : 0.) + L[d]) anchor[d] -= L[d];
+            if (PetscRealPart(anchor[d]) < start) anchor[d] += L[d];
+            else if (PetscRealPart(anchor[d]) > start + L[d]) anchor[d] -= L[d];
+            PetscCheck(PetscRealPart(anchor[d]) >= start && PetscRealPart(anchor[d]) < start + L[d], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Anchor %g out of bounds for dimension %" PetscInt_FMT, (double)PetscRealPart(anchor[d]), d);
           }
           for (p = 0; p < dof / Nc; ++p) {
             PetscCall(DMLocalizeCoordinatePerDimension_Internal(dm, d, anchor, &cellCoords[p * Nc], &coordsDG[offDG + p * Nc]));
             // We need the cell to fit into the torus [lower, lower+L)
-            if (L[d] > 0. && ((PetscRealPart(coordsDG[offDG + p * Nc + d]) < (Lstart ? Lstart[d] : 0.)) || (PetscRealPart(coordsDG[offDG + p * Nc + d]) > (Lstart ? Lstart[d] : 0.) + L[d]))) break;
+            if (L[d] > 0. && ((PetscRealPart(coordsDG[offDG + p * Nc + d]) < start) || (PetscRealPart(coordsDG[offDG + p * Nc + d]) > start + L[d]))) break;
           }
           // Suitable anchor found, continue
           if (p == dof / Nc) break;

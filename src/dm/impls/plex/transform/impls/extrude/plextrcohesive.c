@@ -1061,6 +1061,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Cohesive(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCall(PetscNew(&ex));
+  tr->redFactor = 1.0;
   tr->data      = ex;
   ex->useTensor = PETSC_TRUE;
   PetscCall(DMPlexTransformInitialize_Cohesive(tr));
