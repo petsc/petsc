@@ -22,7 +22,7 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags     = framework.require('config.compilerFlags', self)
     self.mpi4py            = framework.require('config.packages.mpi4py',self)
     self.petsc4py          = framework.require('config.packages.petsc4py',self)
-    self.boost             = framework.require('config.packages.boost',self)
+    self.boost             = framework.require('config.packages.Boost',self)
     self.basix             = framework.require('config.packages.fenics-basix',self)
     self.ffcx              = framework.require('config.packages.fenics_ffcx',self)
     self.scikit_build_core = framework.require('config.packages.scikit_build_core',self)
