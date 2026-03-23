@@ -256,7 +256,8 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 . -mat_type seqdense - `MATSEQDENSE` type, uses `MatCreateSeqDense()`
 . -mat_type mpidense - `MATMPIDENSE`, uses `MatCreateDense()`
 . -mat_type seqbaij  - `MATSEQBAIJ`, uses `MatCreateSeqBAIJ()`
-- -mat_type mpibaij  - `MATMPIBAIJ`, uses `MatCreateBAIJ()`
+. -mat_type mpibaij  - `MATMPIBAIJ`, uses `MatCreateBAIJ()`
+- -mat_vec_type      - the `VecType` used by `MatCreateVecs()`, see `MatSetVecType()`
 
    See the manpages for particular formats (e.g., `MATSEQAIJ`)
    for additional format-specific options.
@@ -295,6 +296,8 @@ PetscErrorCode MatSetFromOptions(Mat B)
   PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, PETSC_STATIC_ARRAY_LENGTH(type), &flg));
   if (flg) PetscCall(MatSetType(B, type));
   else if (!((PetscObject)B)->type_name) PetscCall(MatSetType(B, deft));
+  PetscCall(PetscOptionsFList("-mat_vec_type", "Vec type used by MatCreateVecs()", "MatSetVecType", VecList, B->defaultvectype, type, PETSC_STATIC_ARRAY_LENGTH(type), &flg));
+  if (flg) PetscCall(MatSetVecType(B, type));
 
   if (newbs > 0) PetscTryTypeMethod(B, setblocksizes, newbs, newbs);
 

@@ -207,6 +207,11 @@ struct _MatOps {
   PetscErrorCode (*copyhashtoxaij)(Mat, Mat);
   PetscErrorCode (*getcurrentmemtype)(Mat, PetscMemType *);
   PetscErrorCode (*zerorowscolumnslocal)(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
+  /*144*/
+  PetscErrorCode (*adot)(Mat, Vec, Vec, PetscScalar *); /* induced vector inner product */
+  PetscErrorCode (*anorm)(Mat, Vec, PetscReal *);       /* induced vector norm */
+  PetscErrorCode (*adot_local)(Mat, Vec, Vec, PetscScalar *);
+  PetscErrorCode (*anorm_local)(Mat, Vec, PetscReal *);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -509,6 +514,7 @@ struct _p_Mat {
   PetscBool            transupdated;            /* whether or not the explicitly generated transpose is up-to-date */
   char                *factorprefix;            /* the prefix to use with factored matrix that is created */
   PetscBool            hash_active;             /* indicates MatSetValues() is being handled by hashing */
+  Vec                  dot_vec;                 /* work vector used by MatADot_Default() */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat, PetscScalar, Mat, MatStructure);
@@ -866,6 +872,9 @@ static inline PetscErrorCode MatPivotCheck(Mat fact, Mat mat, const MatFactorInf
   else PetscCall(MatPivotCheck_none(fact, mat, info, sctx, row));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+PETSC_INTERN PetscErrorCode MatADot_Default(Mat, Vec, Vec, PetscScalar *);
+PETSC_INTERN PetscErrorCode MatANorm_Default(Mat, Vec, PetscReal *);
 
 #include <petscbt.h>
 /*
@@ -1674,12 +1683,37 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const 
 
 PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatFDColoringApply_AIJ(Mat, MatFDColoring, Vec, void *);
 
+typedef struct {
+  Vec              diag;
+  PetscBool        diag_valid;
+  Vec              inv_diag;
+  PetscBool        inv_diag_valid;
+  PetscObjectState diag_state, inv_diag_state;
+  PetscInt        *col;
+  PetscScalar     *val;
+} Mat_Diagonal;
+
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode MatADot_Diagonal_SeqCUDA(Mat, Vec, Vec, PetscScalar *);
+PETSC_INTERN PetscErrorCode MatANormSq_Diagonal_SeqCUDA(Mat, Vec, PetscReal *);
+#endif
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatADot_Diagonal_SeqHIP(Mat, Vec, Vec, PetscScalar *);
+PETSC_INTERN PetscErrorCode MatANormSq_Diagonal_SeqHIP(Mat, Vec, PetscReal *);
+#endif
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+PETSC_INTERN PetscErrorCode MatADot_Diagonal_SeqKokkos(Mat, Vec, Vec, PetscScalar *);
+PETSC_INTERN PetscErrorCode MatANormSq_Diagonal_SeqKokkos(Mat, Vec, PetscReal *);
+#endif
+
 PETSC_EXTERN PetscLogEvent MAT_Mult;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultHermitianTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultHermitianTransposeAdd;
+PETSC_EXTERN PetscLogEvent MAT_ADot;
+PETSC_EXTERN PetscLogEvent MAT_ANorm;
 PETSC_EXTERN PetscLogEvent MAT_Solve;
 PETSC_EXTERN PetscLogEvent MAT_Solves;
 PETSC_EXTERN PetscLogEvent MAT_SolveAdd;

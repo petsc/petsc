@@ -88,12 +88,12 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 
   Level: intermediate
 
-  Notes for Users of Complex Numbers:
+  Note:
   For complex vectors, `VecDot()` computes
 .vb
   val = (x,y) = y^H x,
 .ve
-  where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
+  where $y^H$ denotes the conjugate transpose of `y`. Note that this corresponds to the usual "mathematicians" complex
   inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
   first argument we call the `BLASdot()` with the arguments reversed.
 
@@ -101,7 +101,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 .vb
   val = (x,y) = y^T x,
 .ve
-  where y^T denotes the transpose of y.
+  where $y^T$ denotes the transpose of `y`.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
 @*/
