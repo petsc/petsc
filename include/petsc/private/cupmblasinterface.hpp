@@ -250,6 +250,7 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::CU
   static const auto CUPMBLAS_FILL_MODE_LOWER        = CUBLAS_FILL_MODE_LOWER;
   static const auto CUPMBLAS_FILL_MODE_UPPER        = CUBLAS_FILL_MODE_UPPER;
   static const auto CUPMBLAS_SIDE_LEFT              = CUBLAS_SIDE_LEFT;
+  static const auto CUPMBLAS_SIDE_RIGHT             = CUBLAS_SIDE_RIGHT;
   static const auto CUPMBLAS_DIAG_NON_UNIT          = CUBLAS_DIAG_NON_UNIT;
 
   // utility functions
@@ -286,6 +287,7 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::CU
 
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
+  PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, dgmm)
 
   PETSC_NODISCARD static const char *cupmBlasGetErrorName(cupmBlasError_t status) noexcept { return PetscCUBLASGetErrorName(status); }
 };
@@ -322,6 +324,7 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::HI
   static const auto CUPMBLAS_FILL_MODE_LOWER        = HIPBLAS_FILL_MODE_LOWER;
   static const auto CUPMBLAS_FILL_MODE_UPPER        = HIPBLAS_FILL_MODE_UPPER;
   static const auto CUPMBLAS_SIDE_LEFT              = HIPBLAS_SIDE_LEFT;
+  static const auto CUPMBLAS_SIDE_RIGHT             = HIPBLAS_SIDE_RIGHT;
   static const auto CUPMBLAS_DIAG_NON_UNIT          = HIPBLAS_DIAG_NON_UNIT;
 
   // utility functions
@@ -358,6 +361,7 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::HI
 
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
+  PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, dgmm)
 
   PETSC_NODISCARD static const char *cupmBlasGetErrorName(cupmBlasError_t status) noexcept { return PetscHIPBLASGetErrorName(status); }
 };
@@ -389,6 +393,7 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::HI
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_FILL_MODE_LOWER; \
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_FILL_MODE_UPPER; \
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_SIDE_LEFT; \
+  using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_SIDE_RIGHT; \
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_DIAG_NON_UNIT; \
   /* utility functions */ \
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasCreate; \
@@ -419,7 +424,8 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::HI
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgemm; \
   using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXtrsm; \
   /* BLAS extensions */ \
-  using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgeam
+  using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgeam; \
+  using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXdgmm
 
 // The actual interface class
 template <DeviceType T>

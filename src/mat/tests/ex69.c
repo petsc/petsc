@@ -1,7 +1,27 @@
-static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatDenseCUDAReplaceArray(), MatDenseCUDAResetArray()\n";
+static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatDenseCUDAReplaceArray(), and MatDenseCUDAResetArray()\n\
+  or MatCreateDenseHIP(), MatDenseHIPPlaceArray(), MatDenseHIPReplaceArray(), and MatDenseHIPResetArray(),\n\
+  as well as MatDiagonalScale() on device.\n";
 
 #include <petscmat.h>
 #include <petscpkg_version.h>
+
+#if !defined(PETSC_PKG_CUDA_VERSION_GE)
+  #define PETSC_PKG_CUDA_VERSION_GE(MAJ, MIN, PAT) 0
+#endif
+#define PetscConcat3(a, b, c) PetscConcat(PetscConcat(a, b), c)
+#if PetscDefined(HAVE_CUDA)
+  #define DEVICE_TAG CUDA
+#elif PetscDefined(HAVE_HIP)
+  #define DEVICE_TAG HIP
+#else
+  #define DEVICE_TAG
+#endif
+#define VecDeviceGetArray          PetscConcat3(Vec, DEVICE_TAG, GetArray)
+#define VecDeviceRestoreArray      PetscConcat3(Vec, DEVICE_TAG, RestoreArray)
+#define MatCreateDenseDevice       PetscConcat(MatCreateDense, DEVICE_TAG)
+#define MatDenseDeviceReplaceArray PetscConcat3(MatDense, DEVICE_TAG, ReplaceArray)
+#define MatDenseDevicePlaceArray   PetscConcat3(MatDense, DEVICE_TAG, PlaceArray)
+#define MatDenseDeviceResetArray   PetscConcat3(MatDense, DEVICE_TAG, ResetArray)
 
 static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y)
 {
@@ -32,7 +52,7 @@ static PetscErrorCode MatMultTranspose_S(Mat S, Vec x, Vec y)
 int main(int argc, char **argv)
 {
   Mat          A, B, C, S;
-  Vec          t, v;
+  Vec          t, v, ll, rr;
   PetscScalar *vv, *aa;
   // We met a mysterious cudaErrorMisalignedAddress error on some systems with cuda-12.0,1 but not
   // with prior cuda-11.2,3,7,8 versions. Making nloc an even number somehow 'fixes' the problem.
@@ -60,12 +80,12 @@ int main(int argc, char **argv)
   /* sparse matrix */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, n, n));
-  PetscCall(MatSetType(A, MATAIJCUSPARSE));
+  PetscCall(MatSetType(A, PetscDefined(HAVE_CUDA) ? MATAIJCUSPARSE : MATAIJHIPSPARSE));
   PetscCall(MatSetOptionsPrefix(A, "A_"));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
 
-  /* test special case for SeqAIJCUSPARSE to generate explicit transpose (not default) */
+  /* test special case for MATSEQAIJCUSPARSE and MATSEQAIJHIPSPARSE to generate explicit transpose (not default) */
   PetscCall(MatSetOption(A, MAT_FORM_EXPLICIT_TRANSPOSE, PETSC_TRUE));
 
   PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
@@ -91,32 +111,32 @@ int main(int argc, char **argv)
   PetscCall(VecSetRandom(v, NULL));
 
   /* dense matrix that contains the columns of v */
-  PetscCall(VecCUDAGetArray(v, &vv));
+  PetscCall(VecDeviceGetArray(v, &vv));
 
-  /* test few cases for MatDenseCUDA handling pointers */
+  /* test few cases for MATDENSECUDA and MATDENSEHIP handling pointers */
   switch (test) {
   case 1:
-    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv, &B)); /* pass a pointer to avoid allocation of storage */
-    PetscCall(MatDenseCUDAReplaceArray(B, NULL));                                                         /* replace with a null pointer, the value after BVRestoreMat */
-    PetscCall(MatDenseCUDAPlaceArray(B, vv + l * nloc));                                                  /* set the actual pointer */
+    PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv, &B)); /* pass a pointer to avoid allocation of storage */
+    PetscCall(MatDenseDeviceReplaceArray(B, NULL));                                                         /* replace with a null pointer, the value after BVRestoreMat */
+    PetscCall(MatDenseDevicePlaceArray(B, vv + l * nloc));                                                  /* set the actual pointer */
     reset = PETSC_TRUE;
     break;
   case 2:
-    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, NULL, &B));
-    PetscCall(MatDenseCUDAPlaceArray(B, vv + l * nloc)); /* set the actual pointer */
+    PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, NULL, &B));
+    PetscCall(MatDenseDevicePlaceArray(B, vv + l * nloc)); /* set the actual pointer */
     reset = PETSC_TRUE;
     break;
   default:
-    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv + l * nloc, &B));
+    PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv + l * nloc, &B));
     reset = PETSC_FALSE;
     break;
   }
 
-  /* Test MatMatMult */
+  /* test MatMatMult() */
   if (use_shell) {
     /* we could have called the general converter below, but we explicitly set the operations
        ourselves to test MatProductSymbolic_X_Dense, MatProductNumeric_X_Dense code */
-    /* PetscCall(MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S)); */
+    /* PetscCall(MatConvert(A, MATSHELL, MAT_INITIAL_MATRIX, &S)); */
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)v), nloc, nloc, n, n, A, &S));
     PetscCall(MatShellSetOperation(S, MATOP_MULT, (PetscErrorCodeFn *)MatMult_S));
     PetscCall(MatShellSetOperation(S, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_S));
@@ -126,35 +146,50 @@ int main(int argc, char **argv)
     S = A;
   }
 
-  PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, NULL, &C));
+  PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, NULL, &C));
 
-  /* test MatMatMult */
+  /* test MatMatMult() */
   PetscCall(MatProductCreateWithMat(S, B, NULL, C));
   PetscCall(MatProductSetType(C, MATPRODUCT_AB));
   PetscCall(MatProductSetFromOptions(C));
   PetscCall(MatProductSymbolic(C));
   PetscCall(MatProductNumeric(C));
   PetscCall(MatMatMultEqual(S, B, C, 10, &flg));
-  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMatMult\n"));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatMatMult()\n"));
 
-  /* test MatTransposeMatMult */
+  /* test MatTransposeMatMult() */
   PetscCall(MatProductCreateWithMat(S, B, NULL, C));
   PetscCall(MatProductSetType(C, MATPRODUCT_AtB));
   PetscCall(MatProductSetFromOptions(C));
   PetscCall(MatProductSymbolic(C));
   PetscCall(MatProductNumeric(C));
   PetscCall(MatTransposeMatMultEqual(S, B, C, 10, &flg));
-  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatTransposeMatMult\n"));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatTransposeMatMult()\n"));
 
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&S));
+
+  /* test MatDiagonalScale() */
+  PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &C));
+  PetscCall(MatBindToCPU(C, PETSC_TRUE));
+  PetscCall(MatCreateVecs(B, &rr, &ll));
+  PetscCall(VecSetRandom(ll, NULL));
+  PetscCall(VecSetRandom(rr, NULL));
+  PetscCall(MatDiagonalScale(C, ll, rr));
+  PetscCall(MatDiagonalScale(B, ll, rr));
+  PetscCall(MatMultEqual(B, C, 10, &flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error MatDiagonalScale()\n"));
+
+  PetscCall(VecDestroy(&ll));
+  PetscCall(VecDestroy(&rr));
+  PetscCall(MatDestroy(&C));
 
   /* finished using B */
   PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
   PetscCheck(vv == aa - l * nloc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong array");
   PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
-  if (reset) PetscCall(MatDenseCUDAResetArray(B));
-  PetscCall(VecCUDARestoreArray(v, &vv));
+  if (reset) PetscCall(MatDenseDeviceResetArray(B));
+  PetscCall(VecDeviceRestoreArray(v, &vv));
 
   if (test == 1) {
     PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
@@ -174,13 +209,19 @@ int main(int argc, char **argv)
 /*TEST
 
   build:
-    requires: cuda
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
 
-  test:
-    requires: cuda
-    suffix: 1
+  testset:
     nsize: {{1 2}}
-    args: -A_mat_type {{aij aijcusparse}} -test {{0 1 2}} -k 6 -l {{0 5}} -use_shell {{0 1}}
+    args: -test {{0 1 2}} -k 6 -l {{0 5}} -use_shell {{0 1}}
     output_file: output/empty.out
+    test:
+      requires: cuda
+      suffix: 1_cuda
+      args: -A_mat_type {{aij aijcusparse}}
+    test:
+      requires: hip
+      suffix: 1_hip
+      args: -A_mat_type aijhipsparse
 
 TEST*/
