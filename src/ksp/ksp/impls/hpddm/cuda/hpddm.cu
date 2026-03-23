@@ -28,7 +28,13 @@ PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *data, const PetscScalar *b
     thrust::copy_n(thrust::cuda::par.on(PetscDefaultCudaStream), db, N, dptr[0]);
     thrust::copy_n(thrust::cuda::par.on(PetscDefaultCudaStream), dx, N, dptr[1]);
     PetscCallCUDA(cudaMemcpy(host_ptr, ptr, 2 * N * sizeof(K), cudaMemcpyDeviceToHost));
+#if PetscDefined(USE_COMPLEX)
+    /* reinterpret thrust::complex<> as std::complex<> so that HPDDM deduces a type with BLAS/LAPACK and MPI support */
+    std::complex<HPDDM::underlying_type<K>> *const hb = reinterpret_cast<std::complex<HPDDM::underlying_type<K>> *>(host_ptr);
+    PetscCall(HPDDM::IterativeMethod::solve(*data->op, hb, hb + N, n, comm));
+#else
     PetscCall(HPDDM::IterativeMethod::solve(*data->op, host_ptr, host_ptr + N, n, comm));
+#endif
     PetscCallCUDA(cudaMemcpy(ptr + N, host_ptr + N, N * sizeof(K), cudaMemcpyHostToDevice));
     thrust::copy_n(thrust::cuda::par.on(PetscDefaultCudaStream), dptr[1], N, dx);
     PetscCallCUDA(cudaFree(ptr));
@@ -41,7 +47,12 @@ PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *data, const PetscScalar *b
     PetscCall(PetscMalloc1(2 * N, &host_ptr));
     PetscCallCUDA(cudaMemcpy(host_ptr, b, N * sizeof(PetscScalar), cudaMemcpyDeviceToHost));
     PetscCallCUDA(cudaMemcpy(host_ptr + N, x, N * sizeof(PetscScalar), cudaMemcpyDeviceToHost));
+#if PetscDefined(USE_COMPLEX)
+    std::complex<PetscReal> *const hb = reinterpret_cast<std::complex<PetscReal> *>(host_ptr);
+    PetscCall(HPDDM::IterativeMethod::solve(*data->op, hb, hb + N, n, comm));
+#else
     PetscCall(HPDDM::IterativeMethod::solve(*data->op, host_ptr, host_ptr + N, n, comm));
+#endif
     PetscCallCUDA(cudaMemcpy(x, host_ptr + N, N * sizeof(PetscScalar), cudaMemcpyHostToDevice));
     PetscCall(PetscFree(host_ptr));
     PetscCall(PetscLogGpuToCpu(2 * N * sizeof(PetscScalar)));
