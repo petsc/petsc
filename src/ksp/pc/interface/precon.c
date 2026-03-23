@@ -254,11 +254,8 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(in, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(out, VEC_CLASSID, 3);
-  if (pc->diagonalscale) {
-    PetscCall(VecPointwiseMult(out, pc->diagonalscaleleft, in));
-  } else if (in != out) {
-    PetscCall(VecCopy(in, out));
-  }
+  if (pc->diagonalscale) PetscCall(VecPointwiseMult(out, pc->diagonalscaleleft, in));
+  else if (in != out) PetscCall(VecCopy(in, out));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

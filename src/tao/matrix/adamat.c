@@ -270,9 +270,8 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat, MatType newtype, Mat *NewMat
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIDENSE, &isdense));
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATSEQDENSE, &isseqdense));
 
-  if (sametype || issame) {
-    PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, NewMat));
-  } else if (isdense) {
+  if (sametype || issame) PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, NewMat));
+  else if (isdense) {
     PetscInt           i, j, low, high, m, n, M, N;
     const PetscScalar *dptr;
     Vec                X;

@@ -225,14 +225,11 @@ static PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, 
   key.field = f;
   key.part  = part;
   PetscCall(PetscHMapFormGet(ht, key, &chunk));
-  if (chunk.size < 0) {
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else if (!ind && chunk.size == 1) {
+  if (chunk.size < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  else if (!ind && chunk.size == 1) {
     PetscCall(PetscHMapFormDel(ht, key));
     PetscFunctionReturn(PETSC_SUCCESS);
-  } else if (chunk.size <= ind) {
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  } else if (chunk.size <= ind) PetscFunctionReturn(PETSC_SUCCESS);
   ((PetscVoidFn **)&wf->funcs->array[chunk.start])[ind] = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -103,9 +103,8 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
   if (PCTFS_my_id < PCTFS_floor_num_nodes) {
     for (mask = 1, edge = 0; edge < PCTFS_i_log2_num_nodes; edge++, mask <<= 1) {
       dest = PCTFS_my_id ^ mask;
-      if (PCTFS_my_id > dest) {
-        PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
-      } else {
+      if (PCTFS_my_id > dest) PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
+      else {
         PetscCallMPI(MPI_Recv(work, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG2 + dest, MPI_COMM_WORLD, &status));
         PetscCall((*fp)(vals, work, n, oprs));
       }
@@ -116,11 +115,8 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
       if (PCTFS_my_id % mask) continue;
 
       dest = PCTFS_my_id ^ mask;
-      if (PCTFS_my_id < dest) {
-        PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
-      } else {
-        PetscCallMPI(MPI_Recv(vals, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
-      }
+      if (PCTFS_my_id < dest) PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
+      else PetscCallMPI(MPI_Recv(vals, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
     }
   }
 
@@ -179,9 +175,8 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   if (PCTFS_my_id < PCTFS_floor_num_nodes) {
     for (mask = 1, edge = 0; edge < PCTFS_i_log2_num_nodes; edge++, mask <<= 1) {
       dest = PCTFS_my_id ^ mask;
-      if (PCTFS_my_id > dest) {
-        PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
-      } else {
+      if (PCTFS_my_id > dest) PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
+      else {
         PetscCallMPI(MPI_Recv(work, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG2 + dest, MPI_COMM_WORLD, &status));
         PetscCall((*fp)(vals, work, n, oprs));
       }
@@ -192,11 +187,8 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
       if (PCTFS_my_id % mask) continue;
 
       dest = PCTFS_my_id ^ mask;
-      if (PCTFS_my_id < dest) {
-        PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
-      } else {
-        PetscCallMPI(MPI_Recv(vals, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
-      }
+      if (PCTFS_my_id < dest) PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
+      else PetscCallMPI(MPI_Recv(vals, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
     }
   }
 
@@ -248,9 +240,8 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
 
   for (mask = 1, edge = 0; edge < dim; edge++, mask <<= 1) {
     dest = PCTFS_my_id ^ mask;
-    if (PCTFS_my_id > dest) {
-      PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
-    } else {
+    if (PCTFS_my_id > dest) PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
+    else {
       PetscCallMPI(MPI_Recv(work, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG2 + dest, MPI_COMM_WORLD, &status));
       PetscCall((*fp)(vals, work, n, oprs));
     }
@@ -265,11 +256,8 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
     if (PCTFS_my_id % mask) continue;
 
     dest = PCTFS_my_id ^ mask;
-    if (PCTFS_my_id < dest) {
-      PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
-    } else {
-      PetscCallMPI(MPI_Recv(vals, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
-    }
+    if (PCTFS_my_id < dest) PetscCallMPI(MPI_Send(vals, n, MPIU_SCALAR, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
+    else PetscCallMPI(MPI_Recv(vals, n, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -293,9 +281,8 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt le
     if (stage_n && !(PCTFS_my_id & mask)) {
       dest = edge_node[edge];
       type = MSGTAG3 + PCTFS_my_id + (PCTFS_num_nodes * edge);
-      if (PCTFS_my_id > dest) {
-        PetscCallMPI(MPI_Send(vals + segs[edge], stage_n, MPIU_SCALAR, dest, type, MPI_COMM_WORLD));
-      } else {
+      if (PCTFS_my_id > dest) PetscCallMPI(MPI_Send(vals + segs[edge], stage_n, MPIU_SCALAR, dest, type, MPI_COMM_WORLD));
+      else {
         type = type - PCTFS_my_id + dest;
         PetscCallMPI(MPI_Recv(work, stage_n, MPIU_SCALAR, MPI_ANY_SOURCE, type, MPI_COMM_WORLD, &status));
         PetscCall(PCTFS_rvec_add(vals + segs[edge], work, stage_n));
@@ -312,9 +299,8 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt le
       PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &maxval, &iflg));
       PetscCheck(iflg, PETSC_COMM_SELF, PETSC_ERR_LIB, "MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
       PetscCheck(*maxval > type, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_TAG_UB for your current MPI implementation is not large enough to use PCTFS");
-      if (PCTFS_my_id < dest) {
-        PetscCallMPI(MPI_Send(vals + segs[level - 1 - edge], stage_n, MPIU_SCALAR, dest, type, MPI_COMM_WORLD));
-      } else {
+      if (PCTFS_my_id < dest) PetscCallMPI(MPI_Send(vals + segs[level - 1 - edge], stage_n, MPIU_SCALAR, dest, type, MPI_COMM_WORLD));
+      else {
         type = type - PCTFS_my_id + dest;
         PetscCallMPI(MPI_Recv(vals + segs[level - 1 - edge], stage_n, MPIU_SCALAR, MPI_ANY_SOURCE, type, MPI_COMM_WORLD, &status));
       }
@@ -361,9 +347,8 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
 
   for (mask = 1, edge = 0; edge < dim; edge++, mask <<= 1) {
     dest = PCTFS_my_id ^ mask;
-    if (PCTFS_my_id > dest) {
-      PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
-    } else {
+    if (PCTFS_my_id > dest) PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG2 + PCTFS_my_id, MPI_COMM_WORLD));
+    else {
       PetscCallMPI(MPI_Recv(work, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG2 + dest, MPI_COMM_WORLD, &status));
       PetscCall((*fp)(vals, work, n, oprs));
     }
@@ -378,11 +363,8 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
     if (PCTFS_my_id % mask) continue;
 
     dest = PCTFS_my_id ^ mask;
-    if (PCTFS_my_id < dest) {
-      PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
-    } else {
-      PetscCallMPI(MPI_Recv(vals, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
-    }
+    if (PCTFS_my_id < dest) PetscCallMPI(MPI_Send(vals, n, MPIU_INT, dest, MSGTAG4 + PCTFS_my_id, MPI_COMM_WORLD));
+    else PetscCallMPI(MPI_Recv(vals, n, MPIU_INT, MPI_ANY_SOURCE, MSGTAG4 + dest, MPI_COMM_WORLD, &status));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

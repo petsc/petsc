@@ -94,11 +94,8 @@ int main(int argc, char **argv)
   PetscCall(FormStartingPoint(x));
   PetscCall(TaoSetSolution(tao, x));
   PetscCall(TaoSetResidualRoutine(tao, f, EvaluateFunction, (void *)&user));
-  if (wtype == 1) {
-    PetscCall(TaoSetResidualWeights(tao, w, 0, NULL, NULL, NULL));
-  } else if (wtype == 2) {
-    PetscCall(TaoSetResidualWeights(tao, NULL, NOBSERVATIONS, w_row, w_col, w_vals));
-  }
+  if (wtype == 1) PetscCall(TaoSetResidualWeights(tao, w, 0, NULL, NULL, NULL));
+  else if (wtype == 2) PetscCall(TaoSetResidualWeights(tao, NULL, NOBSERVATIONS, w_row, w_col, w_vals));
   PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void *)&user));
   PetscCall(TaoSetTolerances(tao, 1e-5, 0.0, PETSC_CURRENT));
 

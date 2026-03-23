@@ -73,9 +73,8 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     }
     if (mglevels->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels->eventinterprestrict, 0, 0, 0, 0));
     if (matapp) {
-      if (!mgc->X) {
-        PetscCall(MatDuplicate(mgc->B, MAT_DO_NOT_COPY_VALUES, &mgc->X));
-      } else {
+      if (!mgc->X) PetscCall(MatDuplicate(mgc->B, MAT_DO_NOT_COPY_VALUES, &mgc->X));
+      else {
         PetscCall(MatZeroEntries(mgc->X));
       }
     } else {
@@ -403,11 +402,8 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
         PetscCall(KSPSetType(mglevels[0]->smoothd, KSPPREONLY));
         PetscCall(KSPGetPC(mglevels[0]->smoothd, &ipc));
         PetscCallMPI(MPI_Comm_size(comm, &size));
-        if (size > 1) {
-          PetscCall(PCSetType(ipc, PCREDUNDANT));
-        } else {
-          PetscCall(PCSetType(ipc, PCLU));
-        }
+        if (size > 1) PetscCall(PCSetType(ipc, PCREDUNDANT));
+        else PetscCall(PCSetType(ipc, PCLU));
         PetscCall(PCFactorSetShiftType(ipc, MAT_SHIFT_INBLOCKS));
       } else {
         char tprefix[128];
@@ -589,11 +585,8 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
         PetscCall(PetscObjectTypeCompare((PetscObject)mglevels[levels - 1]->B, ((PetscObject)B)->type_name, &flg));
         if (N1 != N2 || !flg) PetscCall(MatDestroy(&mglevels[levels - 1]->B));
       }
-      if (!mglevels[levels - 1]->B) {
-        PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &mglevels[levels - 1]->B));
-      } else {
-        PetscCall(MatCopy(B, mglevels[levels - 1]->B, SAME_NONZERO_PATTERN));
-      }
+      if (!mglevels[levels - 1]->B) PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &mglevels[levels - 1]->B));
+      else PetscCall(MatCopy(B, mglevels[levels - 1]->B, SAME_NONZERO_PATTERN));
     } else {
       if (!mglevels[levels - 1]->b) {
         Vec *vec;

@@ -23,14 +23,9 @@ PetscErrorCode PCMGACycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
   /* solve separately on each level */
   for (i = 0; i < l; i++) {
     if (matapp) {
-      if (!mglevels[i]->X) {
-        PetscCall(MatDuplicate(mglevels[i]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[i]->X));
-      } else {
-        PetscCall(MatZeroEntries(mglevels[i]->X));
-      }
-    } else {
-      PetscCall(VecZeroEntries(mglevels[i]->x));
-    }
+      if (!mglevels[i]->X) PetscCall(MatDuplicate(mglevels[i]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[i]->X));
+      else PetscCall(MatZeroEntries(mglevels[i]->X));
+    } else PetscCall(VecZeroEntries(mglevels[i]->x));
     if (mglevels[i]->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsolve, 0, 0, 0, 0));
     if (!transpose) {
       if (matapp) {

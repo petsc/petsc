@@ -19,14 +19,9 @@ PetscErrorCode PCMGFCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
 
     /* work our way up through the levels */
     if (matapp) {
-      if (!mglevels[0]->X) {
-        PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
-      } else {
-        PetscCall(MatZeroEntries(mglevels[0]->X));
-      }
-    } else {
-      PetscCall(VecZeroEntries(mglevels[0]->x));
-    }
+      if (!mglevels[0]->X) PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
+      else PetscCall(MatZeroEntries(mglevels[0]->X));
+    } else PetscCall(VecZeroEntries(mglevels[0]->x));
     for (i = 0; i < l - 1; i++) {
       PetscCall(PCMGMCycle_Private(pc, &mglevels[i], transpose, matapp, NULL));
       if (mglevels[i + 1]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i + 1]->eventinterprestrict, 0, 0, 0, 0));
@@ -69,9 +64,8 @@ PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
 
   /* work our way up through the levels */
   if (matapp) {
-    if (!mglevels[0]->X) {
-      PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
-    } else {
+    if (!mglevels[0]->X) PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
+    else {
       PetscCall(MatZeroEntries(mglevels[0]->X));
     }
   } else {

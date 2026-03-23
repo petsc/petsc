@@ -326,11 +326,8 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         PetscMPIInt count;
 
         if (--frame[i].pendings > 0) continue;
-        if (x->use_status) {
-          PetscCallMPI(MPI_Get_count(&some_statuses[ii], intmsg ? MPIU_INT : MPIU_SCALAR, &count));
-        } else {
-          PetscCall(PetscMPIIntCast(x->recvhdr[i].count, &count));
-        }
+        if (x->use_status) PetscCallMPI(MPI_Get_count(&some_statuses[ii], intmsg ? MPIU_INT : MPIU_SCALAR, &count));
+        else PetscCall(PetscMPIIntCast(x->recvhdr[i].count, &count));
         for (j = 0, recvint = frame[i].ints, recvscalar = frame[i].scalars; j < count; j++, recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
 
@@ -671,11 +668,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
-  if (size == 1) {
-    PetscCall(VecSetType(v, VECSEQ));
-  } else {
-    PetscCall(VecSetType(v, VECMPI));
-  }
+  if (size == 1) PetscCall(VecSetType(v, VECSEQ));
+  else PetscCall(VecSetType(v, VECMPI));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

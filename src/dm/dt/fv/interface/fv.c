@@ -1063,11 +1063,8 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 
   PetscObjectOptionsBegin((PetscObject)fvm);
   PetscCall(PetscOptionsFList("-petscfv_type", "Finite volume discretization", "PetscFVSetType", PetscFVList, defaultType, name, 256, &flg));
-  if (flg) {
-    PetscCall(PetscFVSetType(fvm, name));
-  } else if (!((PetscObject)fvm)->type_name) {
-    PetscCall(PetscFVSetType(fvm, defaultType));
-  }
+  if (flg) PetscCall(PetscFVSetType(fvm, name));
+  else if (!((PetscObject)fvm)->type_name) PetscCall(PetscFVSetType(fvm, defaultType));
   PetscCall(PetscOptionsBool("-petscfv_compute_gradients", "Compute cell gradients", "PetscFVSetComputeGradients", fvm->computeGradients, &fvm->computeGradients, NULL));
   PetscTryTypeMethod(fvm, setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

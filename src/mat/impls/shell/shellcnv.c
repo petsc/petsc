@@ -46,9 +46,8 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat
     PetscInt j;
 
     PetscCall(VecZeroEntries(in));
-    if (in->ops->setvalues) {
-      PetscCall(VecSetValue(in, i, 1., INSERT_VALUES));
-    } else {
+    if (in->ops->setvalues) PetscCall(VecSetValue(in, i, 1., INSERT_VALUES));
+    else {
       if (i >= cst && i < cen) {
         PetscCall(VecGetArray(in, &array));
         array[i - cst] = 1.0;

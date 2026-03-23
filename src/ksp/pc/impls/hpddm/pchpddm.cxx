@@ -1169,9 +1169,8 @@ static PetscErrorCode PCApply_Schur(PC pc, Type x, Type y)
 #endif
   }
   PetscCall(PCApply_Schur_Private<Type, T>(p, factor, x, y));
-  if (flg) {
-    PetscCall(MatMumpsSetIcntl(A, 26, -1));
-  } else {
+  if (flg) PetscCall(MatMumpsSetIcntl(A, 26, -1));
+  else {
 #if PetscDefined(HAVE_MKL_PARDISO)
     PetscCall(MatMkl_PardisoSetCntl(A, 70, 0));
 #endif

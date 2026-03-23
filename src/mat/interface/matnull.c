@@ -399,11 +399,8 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp, Mat mat, PetscBool *isNull)
   PetscCall(PetscOptionsGetBool(((PetscObject)sp)->options, ((PetscObject)mat)->prefix, "-mat_null_space_test_view", &flg1, NULL));
   PetscCall(PetscOptionsGetBool(((PetscObject)sp)->options, ((PetscObject)mat)->prefix, "-mat_null_space_test_view_draw", &flg2, NULL));
 
-  if (n) {
-    PetscCall(VecDuplicate(sp->vecs[0], &l));
-  } else {
-    PetscCall(MatCreateVecs(mat, &l, NULL));
-  }
+  if (n) PetscCall(VecDuplicate(sp->vecs[0], &l));
+  else PetscCall(MatCreateVecs(mat, &l, NULL));
 
   PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &viewer));
   if (sp->has_cnst) {

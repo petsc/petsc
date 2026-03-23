@@ -276,11 +276,8 @@ static PetscErrorCode MatDiagonalSet_MPIAIJ(Mat Y, Vec D, InsertMode is)
 
   PetscFunctionBegin;
   PetscCall(MatHasCongruentLayouts(Y, &cong));
-  if (Y->assembled && cong) {
-    PetscCall(MatDiagonalSet(aij->A, D, is));
-  } else {
-    PetscCall(MatDiagonalSet_Default(Y, D, is));
-  }
+  if (Y->assembled && cong) PetscCall(MatDiagonalSet(aij->A, D, is));
+  else PetscCall(MatDiagonalSet_Default(Y, D, is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1472,11 +1469,8 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
       PetscCall(MatGetDiagonal(matin, mat->diag));
     }
     PetscCall(MatHasOperation(matin, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
-    if (hasop) {
-      PetscCall(MatMultDiagonalBlock(matin, xx, bb1));
-    } else {
-      PetscCall(VecPointwiseMult(bb1, mat->diag, xx));
-    }
+    if (hasop) PetscCall(MatMultDiagonalBlock(matin, xx, bb1));
+    else PetscCall(VecPointwiseMult(bb1, mat->diag, xx));
     PetscCall(VecAYPX(bb1, (omega - 2.0) / omega, bb));
 
     PetscCall(MatMultAdd(mat->B, mat->lvec, bb1, bb1));
@@ -2975,9 +2969,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
 
   PetscCall(PetscLayoutReference(matin->rmap, &mat->rmap));
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
-  if (matin->hash_active) {
-    PetscCall(MatSetUp(mat));
-  } else {
+  if (matin->hash_active) PetscCall(MatSetUp(mat));
+  else {
     mat->preallocated = matin->preallocated;
     if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
@@ -4965,11 +4958,8 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   /* create symbolic parallel matrix B_mpi */
   PetscCall(MatGetBlockSizes(seqmat, &bs, &cbs));
   PetscCall(MatCreate(comm, &B_mpi));
-  if (n == PETSC_DECIDE) {
-    PetscCall(MatSetSizes(B_mpi, m, n, PETSC_DETERMINE, N));
-  } else {
-    PetscCall(MatSetSizes(B_mpi, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
-  }
+  if (n == PETSC_DECIDE) PetscCall(MatSetSizes(B_mpi, m, n, PETSC_DETERMINE, N));
+  else PetscCall(MatSetSizes(B_mpi, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSizes(B_mpi, bs, cbs));
   PetscCall(MatSetType(B_mpi, MATMPIAIJ));
   PetscCall(MatMPIAIJSetPreallocation(B_mpi, 0, dnz, 0, onz));
@@ -5033,11 +5023,8 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
     PetscCall(PetscLogEventBegin(MAT_Seqstompi, seqmat, 0, 0, 0));
-    if (scall == MAT_INITIAL_MATRIX) {
-      PetscCall(MatDuplicate(seqmat, MAT_COPY_VALUES, mpimat));
-    } else {
-      PetscCall(MatCopy(seqmat, *mpimat, SAME_NONZERO_PATTERN));
-    }
+    if (scall == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(seqmat, MAT_COPY_VALUES, mpimat));
+    else PetscCall(MatCopy(seqmat, *mpimat, SAME_NONZERO_PATTERN));
     PetscCall(PetscLogEventEnd(MAT_Seqstompi, seqmat, 0, 0, 0));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -5080,9 +5067,8 @@ PetscErrorCode MatAIJGetLocalMat(Mat A, Mat *A_loc)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &mpi));
-  if (mpi) {
-    PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, A_loc));
-  } else {
+  if (mpi) PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, A_loc));
+  else {
     *A_loc = A;
     PetscCall(PetscObjectReference((PetscObject)*A_loc));
   }
@@ -5266,9 +5252,8 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A
   }
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJGetLocalMatMerge_C", &f));
   PetscCall(PetscLogEventBegin(MAT_Getlocalmat, A, 0, 0, 0));
-  if (f) {
-    PetscCall((*f)(A, scall, glob, A_loc));
-  } else {
+  if (f) PetscCall((*f)(A, scall, glob, A_loc));
+  else {
     Mat_SeqAIJ        *a = (Mat_SeqAIJ *)Ad->data;
     Mat_SeqAIJ        *b = (Mat_SeqAIJ *)Ao->data;
     Mat_SeqAIJ        *c;
@@ -7006,9 +6991,8 @@ static PetscErrorCode MatSeqAIJCopySubArray(Mat A, PetscInt n, const PetscInt id
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJCopySubArray_C", &f));
-  if (f) {
-    PetscCall((*f)(A, n, idx, v));
-  } else {
+  if (f) PetscCall((*f)(A, n, idx, v));
+  else {
     const PetscScalar *vv;
 
     PetscCall(MatSeqAIJGetArrayRead(A, &vv));

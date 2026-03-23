@@ -441,11 +441,8 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
     double gops, time, perf, dev;
     HLibProfile::getHgemvPerf(gops, time, perf, dev);
   #if defined(PETSC_H2OPUS_USE_GPU)
-    if (boundtocpu) {
-      PetscCall(PetscLogFlops(1e9 * gops));
-    } else {
-      PetscCall(PetscLogGpuFlops(1e9 * gops));
-    }
+    if (boundtocpu) PetscCall(PetscLogFlops(1e9 * gops));
+    else PetscCall(PetscLogGpuFlops(1e9 * gops));
   #else
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif
@@ -626,11 +623,8 @@ static PetscErrorCode MatMultKernel_H2OPUS(Mat A, Vec x, PetscScalar sy, Vec y, 
     double gops, time, perf, dev;
     HLibProfile::getHgemvPerf(gops, time, perf, dev);
   #if defined(PETSC_H2OPUS_USE_GPU)
-    if (boundtocpu) {
-      PetscCall(PetscLogFlops(1e9 * gops));
-    } else {
-      PetscCall(PetscLogGpuFlops(1e9 * gops));
-    }
+    if (boundtocpu) PetscCall(PetscLogFlops(1e9 * gops));
+    else PetscCall(PetscLogGpuFlops(1e9 * gops));
   #else
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif
@@ -1402,11 +1396,8 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
     double gops, time, perf, dev;
     HLibProfile::getHorthogPerf(gops, time, perf, dev);
   #if defined(PETSC_H2OPUS_USE_GPU)
-    if (boundtocpu) {
-      PetscCall(PetscLogFlops(1e9 * gops));
-    } else {
-      PetscCall(PetscLogGpuFlops(1e9 * gops));
-    }
+    if (boundtocpu) PetscCall(PetscLogFlops(1e9 * gops));
+    else PetscCall(PetscLogGpuFlops(1e9 * gops));
   #else
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif
@@ -1509,11 +1500,8 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
     double gops, time, perf, dev;
     HLibProfile::getHcompressPerf(gops, time, perf, dev);
   #if defined(PETSC_H2OPUS_USE_GPU)
-    if (boundtocpu) {
-      PetscCall(PetscLogFlops(1e9 * gops));
-    } else {
-      PetscCall(PetscLogGpuFlops(1e9 * gops));
-    }
+    if (boundtocpu) PetscCall(PetscLogFlops(1e9 * gops));
+    else PetscCall(PetscLogGpuFlops(1e9 * gops));
   #else
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif

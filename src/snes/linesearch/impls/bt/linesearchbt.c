@@ -137,9 +137,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscFunctionReturn(PETSC_SUCCESS);
     }
 
-    if (objective) {
-      PetscCall(SNESComputeObjective(snes, W, &g));
-    } else {
+    if (objective) PetscCall(SNESComputeObjective(snes, W, &g));
+    else {
       PetscCall((*linesearch->ops->snesfunc)(snes, W, G));
       if (linesearch->ops->vinorm) {
         gnorm = fnorm;

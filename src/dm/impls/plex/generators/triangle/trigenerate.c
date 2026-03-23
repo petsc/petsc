@@ -200,9 +200,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     }
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
-      if (out.pointmarkerlist[v]) {
-        if (glabel) PetscCall(DMLabelSetValue(glabel, v + numCells, out.pointmarkerlist[v]));
-      }
+      if (out.pointmarkerlist[v] && glabel) PetscCall(DMLabelSetValue(glabel, v + numCells, out.pointmarkerlist[v]));
     }
     if (interpolate) {
       for (e = 0; e < out.numberofedges; e++) {
@@ -363,9 +361,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     if (sizeof(PetscInt) != sizeof(out.trianglelist[0])) PetscCall(PetscFree(cells));
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
-      if (out.pointmarkerlist[v]) {
-        if (rlabel) PetscCall(DMLabelSetValue(rlabel, v + numCells, out.pointmarkerlist[v]));
-      }
+      if (out.pointmarkerlist[v] && rlabel) PetscCall(DMLabelSetValue(rlabel, v + numCells, out.pointmarkerlist[v]));
     }
     if (interpolate) {
       PetscInt e;

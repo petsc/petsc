@@ -446,11 +446,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscObjectOptionsBegin((PetscObject)tao);
   /* Check for type from options */
   PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, 256, &flg));
-  if (flg) {
-    PetscCall(TaoSetType(tao, type));
-  } else if (!((PetscObject)tao)->type_name) {
-    PetscCall(TaoSetType(tao, default_type));
-  }
+  if (flg) PetscCall(TaoSetType(tao, type));
+  else if (!((PetscObject)tao)->type_name) PetscCall(TaoSetType(tao, default_type));
 
   /* Tao solvers do not set the prefix, set it here if not yet done
      We do it after SetType since solver may have been changed */

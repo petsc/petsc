@@ -427,9 +427,8 @@ static PetscErrorCode PostStep(TS ts)
       PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&wp));
       for (PetscInt pp = 0; pp < NN; pp++) {
         PetscReal fact = (dim == 2) ? 2.0 * PETSC_PI * coords[pp * dim + 0] : 1, w = fact * wp[pp] * ctx->n_0 * ctx->masses[ctx->species_offset[grid]], ww = w * N_inv;
-        if (w > PETSC_REAL_MIN) {
-          moments[3] -= ww * PetscLogReal(ww);
-        } else moments[4] -= w;
+        if (w > PETSC_REAL_MIN) moments[3] -= ww * PetscLogReal(ww);
+        else moments[4] -= w;
       }
       PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
       PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void **)&wp));

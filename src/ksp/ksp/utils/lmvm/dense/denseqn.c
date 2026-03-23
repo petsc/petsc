@@ -194,11 +194,8 @@ static PetscErrorCode MatAllocate_LMVMDQN_Internal(Mat B)
         PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lqn->PQ));
         PetscCall(VecDuplicate(lmvm->Xprev, &lqn->column_work2));
         PetscCall(PetscMalloc1(lmvm->m, &lqn->yts));
-        if (is_dbfgs) {
-          PetscCall(PetscMalloc1(lmvm->m, &lqn->stp));
-        } else if (is_ddfp) {
-          PetscCall(PetscMalloc1(lmvm->m, &lqn->ytq));
-        }
+        if (is_dbfgs) PetscCall(PetscMalloc1(lmvm->m, &lqn->stp));
+        else if (is_ddfp) PetscCall(PetscMalloc1(lmvm->m, &lqn->ytq));
       }
       PetscCall(VecDuplicate(lqn->rwork2, &lqn->cyclic_work_vec));
       PetscCall(VecZeroEntries(lqn->rwork1));

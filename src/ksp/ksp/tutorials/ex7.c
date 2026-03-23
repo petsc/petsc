@@ -195,9 +195,8 @@ int main(int argc, char **args)
     for (i = 0; i < nlocal; i++) {
       PetscCall(KSPGetPC(subksp[i], &subpc));
       if (rank == 0) {
-        if (i % 2) {
-          PetscCall(PCSetType(subpc, PCILU));
-        } else {
+        if (i % 2) PetscCall(PCSetType(subpc, PCILU));
+        else {
           PetscCall(PCSetType(subpc, PCNONE));
           PetscCall(KSPSetType(subksp[i], KSPBCGS));
           PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));

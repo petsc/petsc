@@ -122,11 +122,8 @@ static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalTo
   PetscCall(ISGetIndices(is, &idx));
   PetscCall(ISGetBlockSize(is, &bs));
   PetscCall(PetscMalloc1(m, &idxm));
-  if (ltog) {
-    PetscCall(ISLocalToGlobalMappingApply(ltog, m, idx, idxm));
-  } else {
-    PetscCall(PetscArraycpy(idxm, idx, m));
-  }
+  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, m, idx, idxm));
+  else PetscCall(PetscArraycpy(idxm, idx, m));
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is), bs, m, idxm, PETSC_OWN_POINTER, cltog));
   PetscCall(ISRestoreIndices(is, &idx));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -145,11 +142,8 @@ static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLo
   PetscCall(ISBlockGetIndices(is, &idx));
   PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog, &bs));
   PetscCall(PetscMalloc1(m, &idxm));
-  if (ltog) {
-    PetscCall(ISLocalToGlobalMappingApplyBlock(ltog, m, idx, idxm));
-  } else {
-    PetscCall(PetscArraycpy(idxm, idx, m));
-  }
+  if (ltog) PetscCall(ISLocalToGlobalMappingApplyBlock(ltog, m, idx, idxm));
+  else PetscCall(PetscArraycpy(idxm, idx, m));
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is), bs, m, idxm, PETSC_OWN_POINTER, cltog));
   PetscCall(ISBlockRestoreIndices(is, &idx));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1246,11 +1246,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         PetscInt conDof;
 
         if (p < conStart || p >= conEnd) continue;
-        if (numFields) {
-          PetscCall(PetscSectionGetFieldDof(cSec, p, f, &conDof));
-        } else {
-          PetscCall(PetscSectionGetDof(cSec, p, &conDof));
-        }
+        if (numFields) PetscCall(PetscSectionGetFieldDof(cSec, p, f, &conDof));
+        else PetscCall(PetscSectionGetDof(cSec, p, &conDof));
         if (conDof) break;
       }
       if (i == closureSize) {
@@ -1276,11 +1273,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         PetscInt p = closure[2 * i];
         PetscInt dof;
 
-        if (numFields) {
-          PetscCall(PetscSectionGetFieldDof(section, p, f, &dof));
-        } else {
-          PetscCall(PetscSectionGetDof(section, p, &dof));
-        }
+        if (numFields) PetscCall(PetscSectionGetFieldDof(section, p, f, &dof));
+        else PetscCall(PetscSectionGetDof(section, p, &dof));
         childOffsets[i + 1] = childOffsets[i] + dof;
       }
       parentOffsets[0] = 0;
@@ -1288,11 +1282,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         PetscInt p = closureP[2 * i];
         PetscInt dof;
 
-        if (numFields) {
-          PetscCall(PetscSectionGetFieldDof(section, p, f, &dof));
-        } else {
-          PetscCall(PetscSectionGetDof(section, p, &dof));
-        }
+        if (numFields) PetscCall(PetscSectionGetFieldDof(section, p, f, &dof));
+        else PetscCall(PetscSectionGetDof(section, p, &dof));
         parentOffsets[i + 1] = parentOffsets[i] + dof;
       }
       for (i = 0; i < closureSize; i++) {
@@ -2963,12 +2954,10 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       /* determine the offset of p's shape functions within parentCell's shape functions */
       PetscCall(PetscDSGetDiscretization(ds, f, &disc));
       PetscCall(PetscObjectGetClassId(disc, &classId));
-      if (classId == PETSCFE_CLASSID) {
-        PetscCall(PetscFEGetDualSpace((PetscFE)disc, &dsp));
-      } else if (classId == PETSCFV_CLASSID) {
+      if (classId == PETSCFE_CLASSID) PetscCall(PetscFEGetDualSpace((PetscFE)disc, &dsp));
+      else {
+        PetscCheck(classId == PETSCFV_CLASSID, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported discretization object");
         PetscCall(PetscFVGetDualSpace((PetscFV)disc, &dsp));
-      } else {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported discretization object");
       }
       PetscCall(PetscDualSpaceGetNumDof(dsp, &depthNumDof));
       PetscCall(PetscDualSpaceGetNumComponents(dsp, &Nc));

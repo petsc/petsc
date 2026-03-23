@@ -82,11 +82,8 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
       tau = tau * psi * cm;
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
-      if (!m) {
-        PetscCall(VecAYPX(D, cf, U));
-      } else {
-        PetscCall(VecAYPX(D, cf, Q));
-      }
+      if (!m) PetscCall(VecAYPX(D, cf, U));
+      else PetscCall(VecAYPX(D, cf, Q));
       PetscCall(VecAXPY(X, eta, D));
 
       dpest = PetscSqrtReal(2 * i + m + 2.0) * tau;

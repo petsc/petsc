@@ -457,9 +457,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
   PetscFunctionBegin;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isseqaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
-  if (ismpiaij) {
-    PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, &Aloc));
-  } else if (isseqaij) {
+  if (ismpiaij) PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, &Aloc));
+  else if (isseqaij) {
     PetscCall(PetscObjectReference((PetscObject)A));
     Aloc = A;
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);

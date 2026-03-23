@@ -395,11 +395,8 @@ skipoptions:
 
     /* Test MatMatSolve(), A X = B, where B can be dense or sparse */
     if (testMatMatSolve) {
-      if (!nfact) {
-        PetscCall(MatMatMult(Ae, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
-      } else {
-        PetscCall(MatMatMult(Ae, C, MAT_REUSE_MATRIX, 2.0, &RHS));
-      }
+      if (!nfact) PetscCall(MatMatMult(Ae, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
+      else PetscCall(MatMatMult(Ae, C, MAT_REUSE_MATRIX, 2.0, &RHS));
       for (nsolve = 0; nsolve < 2; nsolve++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatMatSolve \n", nsolve));
         PetscCall(MatMatSolve(F, RHS, X));

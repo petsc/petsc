@@ -228,9 +228,8 @@ PetscErrorCode VecAXPY_SeqKokkos(Vec yin, PetscScalar alpha, Vec xin)
 {
   PetscFunctionBegin;
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (yin == xin) {
-    PetscCall(VecScale_SeqKokkos(yin, alpha + 1));
-  } else {
+  if (yin == xin) PetscCall(VecScale_SeqKokkos(yin, alpha + 1));
+  else {
     PetscBool xiskok, yiskok;
 
     PetscCall(PetscObjectTypeCompareAny((PetscObject)xin, &xiskok, VECSEQKOKKOS, VECMPIKOKKOS, ""));
@@ -1434,11 +1433,8 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v, PetscScalar **)
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
 
   PetscFunctionBegin;
-  if (PetscMemTypeHost(PETSC_MEMTYPE_KOKKOS)) {
-    PetscCallCXX(veckok->v_dual.modify_host());
-  } else {
-    PetscCallCXX(veckok->v_dual.modify_device());
-  }
+  if (PetscMemTypeHost(PETSC_MEMTYPE_KOKKOS)) PetscCallCXX(veckok->v_dual.modify_host());
+  else PetscCallCXX(veckok->v_dual.modify_device());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1463,11 +1459,8 @@ static PetscErrorCode VecCopySyncState_Kokkos_Private(Vec xin, Vec yout)
 
   PetscFunctionBegin;
   PetscCallCXX(ykok->v_dual.clear_sync_state());
-  if (xkok->v_dual.need_sync_host()) {
-    PetscCallCXX(ykok->v_dual.modify_device());
-  } else if (xkok->v_dual.need_sync_device()) {
-    PetscCallCXX(ykok->v_dual.modify_host());
-  }
+  if (xkok->v_dual.need_sync_host()) PetscCallCXX(ykok->v_dual.modify_device());
+  else if (xkok->v_dual.need_sync_device()) PetscCallCXX(ykok->v_dual.modify_host());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

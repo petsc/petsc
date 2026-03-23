@@ -225,11 +225,8 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &VEC_VV(0)));
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TEMP, VEC_TEMP_MATOP));
   /* add solution to previous solution */
-  if (vdest == vguess) {
-    PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
-  } else {
-    PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
-  }
+  if (vdest == vguess) PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
+  else PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

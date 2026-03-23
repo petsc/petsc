@@ -331,11 +331,8 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscDevice
 
   if (dctx) PetscCall(PetscObjectQueryFunction((PetscObject)w, async_name, &async_fn));
   if (event) PetscCall(PetscLogEventBegin(event, x, y, w, 0));
-  if (async_fn) {
-    PetscCall((*async_fn)(w, x, y, dctx));
-  } else {
-    PetscCall((*pointwise_op)(w, x, y));
-  }
+  if (async_fn) PetscCall((*async_fn)(w, x, y, dctx));
+  else PetscCall((*pointwise_op)(w, x, y));
   if (event) PetscCall(PetscLogEventEnd(event, x, y, w, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1408,11 +1405,8 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec, PetscOptionItems Pe
 
   PetscCall(VecRegisterAll());
   PetscCall(PetscOptionsFList("-vec_type", "Vector type", "VecSetType", VecList, defaultType, typeName, 256, &opt));
-  if (opt) {
-    PetscCall(VecSetType(vec, typeName));
-  } else {
-    PetscCall(VecSetType(vec, defaultType));
-  }
+  if (opt) PetscCall(VecSetType(vec, typeName));
+  else PetscCall(VecSetType(vec, defaultType));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1687,11 +1681,8 @@ PetscErrorCode VecSetUp(Vec v)
   PetscCheck(v->map->n >= 0 || v->map->N >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Sizes not set");
   if (!((PetscObject)v)->type_name) {
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
-    if (size == 1) {
-      PetscCall(VecSetType(v, VECSEQ));
-    } else {
-      PetscCall(VecSetType(v, VECMPI));
-    }
+    if (size == 1) PetscCall(VecSetType(v, VECSEQ));
+    else PetscCall(VecSetType(v, VECMPI));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2062,9 +2053,8 @@ PetscErrorCode VecFlag(Vec xin, PetscInt flg)
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     inf = one / zero;
     PetscCall(PetscFPTrapPop());
-    if (xin->ops->set) {
-      PetscUseTypeMethod(xin, set, inf);
-    } else {
+    if (xin->ops->set) PetscUseTypeMethod(xin, set, inf);
+    else {
       PetscInt     n;
       PetscScalar *xx;
 
@@ -2110,9 +2100,8 @@ PetscErrorCode VecSetInf(Vec xin)
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   inf = one / zero;
   PetscCall(PetscFPTrapPop());
-  if (xin->ops->set) {
-    PetscUseTypeMethod(xin, set, inf);
-  } else {
+  if (xin->ops->set) PetscUseTypeMethod(xin, set, inf);
+  else {
     PetscInt     n;
     PetscScalar *xx;
 

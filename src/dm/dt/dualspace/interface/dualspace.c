@@ -289,20 +289,14 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  if (!((PetscObject)sp)->type_name) {
-    defaultType = PETSCDUALSPACELAGRANGE;
-  } else {
-    defaultType = ((PetscObject)sp)->type_name;
-  }
+  if (!((PetscObject)sp)->type_name) defaultType = PETSCDUALSPACELAGRANGE;
+  else defaultType = ((PetscObject)sp)->type_name;
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)sp);
   PetscCall(PetscOptionsFList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg));
-  if (flg) {
-    PetscCall(PetscDualSpaceSetType(sp, name));
-  } else if (!((PetscObject)sp)->type_name) {
-    PetscCall(PetscDualSpaceSetType(sp, defaultType));
-  }
+  if (flg) PetscCall(PetscDualSpaceSetType(sp, name));
+  else if (!((PetscObject)sp)->type_name) PetscCall(PetscDualSpaceSetType(sp, defaultType));
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL, 0));
   PetscCall(PetscOptionsInt("-petscdualspace_form_degree", "The form degree of the dofs", "PetscDualSpaceSetFormDegree", sp->k, &sp->k, NULL));
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL, 1));

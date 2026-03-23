@@ -824,11 +824,8 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
         PetscCall(MatScale(AdB, scale));
       }
       PetscCall(MatCreateVecs(A00, &diag, NULL));
-      if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
-        PetscCall(MatGetRowSum(A00, diag));
-      } else {
-        PetscCall(MatGetDiagonal(A00, diag));
-      }
+      if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) PetscCall(MatGetRowSum(A00, diag));
+      else PetscCall(MatGetDiagonal(A00, diag));
       PetscCall(VecReciprocal(diag));
       PetscCall(MatDiagonalScale(AdB, diag, NULL));
       PetscCall(VecDestroy(&diag));

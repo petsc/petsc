@@ -180,9 +180,8 @@ int main(int argc, char **args)
     PetscInt  ival, icntl;
     PetscReal val;
     PetscCall(KSPGetPC(ksp, &pc));
-    if (flg_mumps) {
-      PetscCall(PCSetType(pc, PCLU));
-    } else if (flg_mumps_ch) {
+    if (flg_mumps) PetscCall(PCSetType(pc, PCLU));
+    else if (flg_mumps_ch) {
       PetscCall(MatSetOption(A, MAT_SPD, PETSC_TRUE)); /* set MUMPS id%SYM=1 */
       PetscCall(PCSetType(pc, PCCHOLESKY));
     }

@@ -105,9 +105,8 @@ static PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
     PetscCall(PetscGetDate(date, 64));
     PetscCall(PetscGetVersion(version, 256));
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-    if (filename) {
-      PetscCall(PetscFixFilename(filename, fname));
-    } else {
+    if (filename) PetscCall(PetscFixFilename(filename, fname));
+    else {
       PetscCall(PetscGetHomeDirectory(pfile, sizeof(pfile)));
       PetscCall(PetscStrlcat(pfile, "/.petschistory", sizeof(pfile)));
       PetscCall(PetscFixFilename(pfile, fname));

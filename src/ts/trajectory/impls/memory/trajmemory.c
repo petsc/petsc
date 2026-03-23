@@ -788,9 +788,8 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLNR(TSTrajectory tj, TS ts, TJSched
     /* fill stack with info */
     if (localstepnum == 0 && tjsch->total_steps - stepnum >= laststridesize) {
       id = stepnum / tjsch->stride;
-      if (tjsch->save_stack) {
-        PetscCall(StackLoadAll(tj, ts, stack, id));
-      } else {
+      if (tjsch->save_stack) PetscCall(StackLoadAll(tj, ts, stack, id));
+      else {
         PetscCall(LoadSingle(tj, ts, stack, id));
         PetscCall(ElementCreate(ts, cptype, stack, &e));
         PetscCall(ElementSet(ts, stack, &e, (id - 1) * tjsch->stride + 1, ts->ptime, ts->vec_sol));
@@ -1578,9 +1577,8 @@ static PetscErrorCode TSTrajectoryMemorySet_AOF(TSTrajectory tj, TS ts, TJSchedu
   /* skip if no checkpoint to use. This also avoids an error when num_units_avail=0  */
   if (tjsch->actx->nextcheckpointstep == -1) PetscFunctionReturn(PETSC_SUCCESS);
   if (stepnum == 0) { /* When placing the first checkpoint, no need to change the units available */
-    if (stack->solution_only) {
-      PetscCallExternal(offline_ca, tjsch->actx->lastcheckpointstep, tjsch->actx->num_units_avail, tjsch->actx->endstep, &tjsch->actx->nextcheckpointstep);
-    } else {
+    if (stack->solution_only) PetscCallExternal(offline_ca, tjsch->actx->lastcheckpointstep, tjsch->actx->num_units_avail, tjsch->actx->endstep, &tjsch->actx->nextcheckpointstep);
+    else {
       /* First two arguments must be -1 when first time calling cams */
       PetscCallExternal(offline_cams, tjsch->actx->lastcheckpointstep, tjsch->actx->lastcheckpointtype, tjsch->actx->num_units_avail, tjsch->actx->endstep, tjsch->actx->num_stages, &tjsch->actx->nextcheckpointstep, &tjsch->actx->nextcheckpointtype);
     }
@@ -1664,18 +1662,14 @@ static PetscErrorCode TSTrajectoryMemoryGet_AOF(TSTrajectory tj, TS ts, TJSchedu
   }
   /* Discard the checkpoint if not needed, decrease the number of available checkpoints if it still stays in stack */
   if (HaveStages(e->cptype)) {
-    if (estepnum == stepnum) {
-      PetscCall(StackPop(stack, &e));
-    } else {
+    if (estepnum == stepnum) PetscCall(StackPop(stack, &e));
+    else {
       if (e->cptype == STAGESONLY) tjsch->actx->num_units_avail -= tjsch->actx->num_stages;
       if (e->cptype == SOLUTION_STAGES) tjsch->actx->num_units_avail -= tjsch->actx->num_stages + 1;
     }
   } else {
-    if (estepnum + 1 == stepnum) {
-      PetscCall(StackPop(stack, &e));
-    } else {
-      tjsch->actx->num_units_avail--;
-    }
+    if (estepnum + 1 == stepnum) PetscCall(StackPop(stack, &e));
+    else tjsch->actx->num_units_avail--;
   }
   /* Recompute from the restored checkpoint */
   if (stack->solution_only || (!stack->solution_only && estepnum < stepnum)) {

@@ -1380,11 +1380,8 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionBegin;
   /* add solution removed in presolve */
   if (x && pcbddc->rhs_change) {
-    if (pcbddc->temp_solution_used) {
-      PetscCall(VecAXPY(x, 1.0, pcbddc->temp_solution));
-    } else if (pcbddc->benign_compute_correction && pcbddc->benign_vec) {
-      PetscCall(VecAXPY(x, -1.0, pcbddc->benign_vec));
-    }
+    if (pcbddc->temp_solution_used) PetscCall(VecAXPY(x, 1.0, pcbddc->temp_solution));
+    else if (pcbddc->benign_compute_correction && pcbddc->benign_vec) PetscCall(VecAXPY(x, -1.0, pcbddc->benign_vec));
     /* restore to original state (not for FETI-DP) */
     if (ksp) pcbddc->temp_solution_used = PETSC_FALSE;
   }
@@ -1752,9 +1749,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
         PetscCall(VecSet(pcis->vec1_N, 0.));
         PetscCall(VecScatterBegin(pcis->N_to_D, pcis->vec2_D, pcis->vec1_N, INSERT_VALUES, SCATTER_REVERSE));
         PetscCall(VecScatterEnd(pcis->N_to_D, pcis->vec2_D, pcis->vec1_N, INSERT_VALUES, SCATTER_REVERSE));
-        if (!pcbddc->switch_static_change) {
-          PetscCall(MatMult(lA, pcis->vec1_N, pcis->vec2_N));
-        } else {
+        if (!pcbddc->switch_static_change) PetscCall(MatMult(lA, pcis->vec1_N, pcis->vec2_N));
+        else {
           PetscCall(MatMult(pcbddc->switch_static_change, pcis->vec1_N, pcis->vec2_N));
           PetscCall(MatMult(lA, pcis->vec2_N, pcis->vec1_N));
           PetscCall(MatMultTranspose(pcbddc->switch_static_change, pcis->vec1_N, pcis->vec2_N));
@@ -1802,9 +1798,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
       PetscCall(VecScatterEnd(pcis->N_to_D, pcis->vec1_D, pcis->vec1_N, INSERT_VALUES, SCATTER_REVERSE));
       PetscCall(VecScatterBegin(pcis->N_to_B, pcis->vec1_B, pcis->vec1_N, INSERT_VALUES, SCATTER_REVERSE));
       PetscCall(VecScatterEnd(pcis->N_to_B, pcis->vec1_B, pcis->vec1_N, INSERT_VALUES, SCATTER_REVERSE));
-      if (!pcbddc->switch_static_change) {
-        PetscCall(MatMult(lA, pcis->vec1_N, pcis->vec2_N));
-      } else {
+      if (!pcbddc->switch_static_change) PetscCall(MatMult(lA, pcis->vec1_N, pcis->vec2_N));
+      else {
         PetscCall(MatMult(pcbddc->switch_static_change, pcis->vec1_N, pcis->vec2_N));
         PetscCall(MatMult(lA, pcis->vec2_N, pcis->vec1_N));
         PetscCall(MatMultTranspose(pcbddc->switch_static_change, pcis->vec1_N, pcis->vec2_N));
@@ -1815,9 +1810,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
       PetscCall(MatMult(pcis->A_IB, pcis->vec1_B, pcis->vec3_D));
     }
   } else if (pcbddc->switch_static) { /* n_B is zero */
-    if (!pcbddc->switch_static_change) {
-      PetscCall(MatMult(lA, pcis->vec1_D, pcis->vec3_D));
-    } else {
+    if (!pcbddc->switch_static_change) PetscCall(MatMult(lA, pcis->vec1_D, pcis->vec3_D));
+    else {
       PetscCall(MatMult(pcbddc->switch_static_change, pcis->vec1_D, pcis->vec1_N));
       PetscCall(MatMult(lA, pcis->vec1_N, pcis->vec2_N));
       PetscCall(MatMultTranspose(pcbddc->switch_static_change, pcis->vec2_N, pcis->vec3_D));
@@ -1829,19 +1823,13 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
   PetscCall(KSPCheckSolve(pcbddc->ksp_D, pc, pcis->vec4_D));
 
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
-    if (pcbddc->switch_static) {
-      PetscCall(VecAXPBYPCZ(pcis->vec2_D, m_one, one, m_one, pcis->vec4_D, pcis->vec1_D));
-    } else {
-      PetscCall(VecAXPBY(pcis->vec2_D, m_one, m_one, pcis->vec4_D));
-    }
+    if (pcbddc->switch_static) PetscCall(VecAXPBYPCZ(pcis->vec2_D, m_one, one, m_one, pcis->vec4_D, pcis->vec1_D));
+    else PetscCall(VecAXPBY(pcis->vec2_D, m_one, m_one, pcis->vec4_D));
     PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
   } else {
-    if (pcbddc->switch_static) {
-      PetscCall(VecAXPBY(pcis->vec4_D, one, m_one, pcis->vec1_D));
-    } else {
-      PetscCall(VecScale(pcis->vec4_D, m_one));
-    }
+    if (pcbddc->switch_static) PetscCall(VecAXPBY(pcis->vec4_D, one, m_one, pcis->vec1_D));
+    else PetscCall(VecScale(pcis->vec4_D, m_one));
     PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec4_D, z, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec4_D, z, INSERT_VALUES, SCATTER_REVERSE));
   }
@@ -1973,19 +1961,13 @@ static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
   PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
   PetscCall(KSPCheckSolve(pcbddc->ksp_D, pc, pcis->vec4_D));
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
-    if (pcbddc->switch_static) {
-      PetscCall(VecAXPBYPCZ(pcis->vec2_D, m_one, one, m_one, pcis->vec4_D, pcis->vec1_D));
-    } else {
-      PetscCall(VecAXPBY(pcis->vec2_D, m_one, m_one, pcis->vec4_D));
-    }
+    if (pcbddc->switch_static) PetscCall(VecAXPBYPCZ(pcis->vec2_D, m_one, one, m_one, pcis->vec4_D, pcis->vec1_D));
+    else PetscCall(VecAXPBY(pcis->vec2_D, m_one, m_one, pcis->vec4_D));
     PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
   } else {
-    if (pcbddc->switch_static) {
-      PetscCall(VecAXPBY(pcis->vec4_D, one, m_one, pcis->vec1_D));
-    } else {
-      PetscCall(VecScale(pcis->vec4_D, m_one));
-    }
+    if (pcbddc->switch_static) PetscCall(VecAXPBY(pcis->vec4_D, one, m_one, pcis->vec1_D));
+    else PetscCall(VecScale(pcis->vec4_D, m_one));
     PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec4_D, z, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec4_D, z, INSERT_VALUES, SCATTER_REVERSE));
   }

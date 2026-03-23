@@ -481,11 +481,8 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
     // perform the copy
     if (dctx->ops->memcopy) {
       PetscUseTypeMethod(dctx, memcopy, dest, src, n, mode);
-      if (mode == PETSC_DEVICE_COPY_HTOD) {
-        PetscCall(PetscLogCpuToGpu(n));
-      } else if (mode == PETSC_DEVICE_COPY_DTOH) {
-        PetscCall(PetscLogGpuToCpu(n));
-      }
+      if (mode == PETSC_DEVICE_COPY_HTOD) PetscCall(PetscLogCpuToGpu(n));
+      else if (mode == PETSC_DEVICE_COPY_DTOH) PetscCall(PetscLogGpuToCpu(n));
     } else {
       // REVIEW ME: we might potentially need to sync here if the memory is device-allocated
       // (pinned) but being copied by a host dctx

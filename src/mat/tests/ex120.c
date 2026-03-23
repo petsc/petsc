@@ -114,11 +114,8 @@ int main(int argc, char **args)
 
   /* Convert aij matrix to MatSeqDense for LAPACK */
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &flg));
-  if (flg) {
-    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A_dense));
-  } else {
-    PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &A_dense));
-  }
+  if (flg) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A_dense));
+  else PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &A_dense));
 
   PetscCall(MatCreate(PETSC_COMM_SELF, &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, dim, dim));

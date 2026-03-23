@@ -98,11 +98,8 @@ int main(int argc, char *argv[])
         irow[k] = i * row_bs + k;
       }
       for (l = 0; l < col_bs; l++) icol[l] = j * col_bs + l;
-      if (blocked) {
-        PetscCall(MatSetValuesBlockedLocal(B, 1, &i, 1, &j, vals, ADD_VALUES));
-      } else {
-        PetscCall(MatSetValuesLocal(B, row_bs, irow, col_bs, icol, vals, ADD_VALUES));
-      }
+      if (blocked) PetscCall(MatSetValuesBlockedLocal(B, 1, &i, 1, &j, vals, ADD_VALUES));
+      else PetscCall(MatSetValuesLocal(B, row_bs, irow, col_bs, icol, vals, ADD_VALUES));
     }
   }
   PetscCall(PetscFree3(irow, icol, vals));

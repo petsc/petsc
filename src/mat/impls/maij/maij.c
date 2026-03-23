@@ -163,11 +163,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   b->ctx  = NULL;
   b->w    = NULL;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
-  if (size == 1) {
-    PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQMAIJ));
-  } else {
-    PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIMAIJ));
-  }
+  if (size == 1) PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQMAIJ));
+  else PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIMAIJ));
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);

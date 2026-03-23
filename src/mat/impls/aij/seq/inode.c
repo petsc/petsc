@@ -3361,11 +3361,8 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           }
         }
       }
-      if (xb == b) {
-        PetscCall(PetscLogFlops(2.0 * a->nz));
-      } else {
-        PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper, undercounts diag inverse */
-      }
+      if (xb == b) PetscCall(PetscLogFlops(2.0 * a->nz));
+      else PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper, undercounts diag inverse */
     }
   }
   if (flag & SOR_EISENSTAT) {

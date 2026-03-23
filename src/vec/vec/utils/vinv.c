@@ -1548,9 +1548,8 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(sum, 2);
-  if (v->ops->sum) {
-    PetscUseTypeMethod(v, sum, &tmp);
-  } else {
+  if (v->ops->sum) PetscUseTypeMethod(v, sum, &tmp);
+  else {
     const PetscScalar *x;
     PetscInt           n;
 
@@ -1602,11 +1601,9 @@ PetscErrorCode VecShiftAsync_Private(Vec v, PetscScalar shift, PetscDeviceContex
 
     PetscCall(PetscObjectQueryFunction((PetscObject)v, VecAsyncFnName(Shift), &shift_async));
   }
-  if (shift_async) {
-    PetscCall((*shift_async)(v, shift, dctx));
-  } else if (v->ops->shift) {
-    PetscUseTypeMethod(v, shift, shift);
-  } else {
+  if (shift_async) PetscCall((*shift_async)(v, shift, dctx));
+  else if (v->ops->shift) PetscUseTypeMethod(v, shift, shift);
+  else {
     PetscInt     n;
     PetscScalar *x;
 

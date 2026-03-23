@@ -50,10 +50,10 @@ PetscErrorCode MatReorderingSeqSBAIJ(Mat A, IS perm)
   PetscCall(ISRestoreIndices(iperm,&riip));
   PetscCall(ISDestroy(&iperm));
 
-  if (!a->inew) {
-    PetscCall(PetscMalloc2(mbs+1,&ai, 2*a->i[mbs],&aj));
-  } else {
-    ai = a->inew; aj = a->jnew;
+  if (!a->inew) PetscCall(PetscMalloc2(mbs+1,&ai, 2*a->i[mbs],&aj));
+  else {
+    ai = a->inew;
+    aj = a->jnew;
   }
   PetscCall(PetscArraycpy(ai,a->i,mbs+1));
   PetscCall(PetscArraycpy(aj,a->j,a->i[mbs]));

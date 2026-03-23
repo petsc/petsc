@@ -108,11 +108,9 @@ static PetscErrorCode DiagonalUpdate(SymBroydenRescale ldb, Vec D, Vec s, Vec y,
     PetscCall(VecAXPBY(DFP, stDs / yts, -1.0, V));
   }
 
-  if (theta == 0.0) {
-    PetscCall(VecAXPY(D, 1.0, BFGS));
-  } else if (theta == 1.0) {
-    PetscCall(VecAXPY(D, 1.0 / yts, DFP));
-  } else {
+  if (theta == 0.0) PetscCall(VecAXPY(D, 1.0, BFGS));
+  else if (theta == 1.0) PetscCall(VecAXPY(D, 1.0 / yts, DFP));
+  else {
     /*  Broyden update Dkp1 = Dk + (1-theta)*P + theta*Q + y_i^2/yts*/
     PetscCall(VecAXPBYPCZ(D, 1.0 - theta, theta / yts, 1.0, BFGS, DFP));
   }

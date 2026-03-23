@@ -660,11 +660,8 @@ static PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   PetscInt           n, i, jrow, j, l, p = b->p, q = b->q, k;
 
   PetscFunctionBegin;
-  if (!yy) {
-    PetscCall(VecSet(zz, 0.0));
-  } else {
-    PetscCall(VecCopy(yy, zz));
-  }
+  if (!yy) PetscCall(VecSet(zz, 0.0));
+  else PetscCall(VecCopy(yy, zz));
   if ((!s) && (!t) && (!b->isTI)) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(xx, &x));
@@ -1145,11 +1142,8 @@ static PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   Mat_MPIKAIJ *b = (Mat_MPIKAIJ *)A->data;
 
   PetscFunctionBegin;
-  if (!yy) {
-    PetscCall(VecSet(zz, 0.0));
-  } else {
-    PetscCall(VecCopy(yy, zz));
-  }
+  if (!yy) PetscCall(VecSet(zz, 0.0));
+  else PetscCall(VecCopy(yy, zz));
   PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
   /* start the scatter */
   PetscCall(VecScatterBegin(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));

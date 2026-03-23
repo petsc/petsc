@@ -1283,11 +1283,11 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
     PetscOptionsEnd();
   }
 
-  if (type == 0 || type == 1 || type == 2) {
-    PetscCall(MatSetType(C, MATAIJ));
-  } else if (type == 3) {
+  if (type == 0 || type == 1 || type == 2) PetscCall(MatSetType(C, MATAIJ));
+  else {
+    PetscCheck(type == 3, PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatPtAP outtype is not supported");
     PetscCall(MatSetType(C, MATHYPRE));
-  } else SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatPtAP outtype is not supported");
+  }
   C->ops->productsymbolic = MatProductSymbolic_PtAP_HYPRE;
   C->ops->ptapnumeric     = MatPtAPNumeric_AIJ_HYPRE;
   PetscFunctionReturn(PETSC_SUCCESS);

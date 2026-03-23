@@ -238,14 +238,10 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       V[0] = temp;
 
       /* Recurrence V vectors */
-      if (l == 1) {
-        PetscCall(VecCopy(Z[1], V[0]));
-      } else {
-        PetscCall(VecCopy(Q[0], V[0]));
-      }
-      if (it == l) {
-        PetscCall(VecAXPY(V[0], sigma(0) - gamma(it - l), V[1]));
-      } else {
+      if (l == 1) PetscCall(VecCopy(Z[1], V[0]));
+      else PetscCall(VecCopy(Q[0], V[0]));
+      if (it == l) PetscCall(VecAXPY(V[0], sigma(0) - gamma(it - l), V[1]));
+      else {
         alpha(0) = sigma(0) - gamma(it - l);
         alpha(1) = -delta(it - l - 1);
         PetscCall(VecMAXPY(V[0], 2, &alpha(0), &V[1]));
@@ -259,14 +255,10 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         for (i = 2; i > 0; i--) Q[3 * j + i] = Q[3 * j + i - 1];
         Q[3 * j] = temp;
 
-        if (j < l - 2) {
-          PetscCall(VecCopy(Q[3 * (j + 1)], Q[3 * j]));
-        } else {
-          PetscCall(VecCopy(Z[1], Q[3 * j]));
-        }
-        if (it == l) {
-          PetscCall(VecAXPY(Q[3 * j], sigma(j + 1) - gamma(it - l), Q[3 * j + 1]));
-        } else {
+        if (j < l - 2) PetscCall(VecCopy(Q[3 * (j + 1)], Q[3 * j]));
+        else PetscCall(VecCopy(Z[1], Q[3 * j]));
+        if (it == l) PetscCall(VecAXPY(Q[3 * j], sigma(j + 1) - gamma(it - l), Q[3 * j + 1]));
+        else {
           alpha(0) = sigma(j + 1) - gamma(it - l);
           alpha(1) = -delta(it - l - 1);
           PetscCall(VecMAXPY(Q[3 * j], 2, &alpha(0), &Q[3 * j + 1]));

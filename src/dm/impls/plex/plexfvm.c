@@ -33,11 +33,8 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     ncell = cell == fcells[0] ? fcells[1] : fcells[0];
-    if (field >= 0) {
-      PetscCall(DMPlexPointLocalFieldRead(dm, ncell, field, x, &ncx));
-    } else {
-      PetscCall(DMPlexPointLocalRead(dm, ncell, x, &ncx));
-    }
+    if (field >= 0) PetscCall(DMPlexPointLocalFieldRead(dm, ncell, field, x, &ncx));
+    else PetscCall(DMPlexPointLocalRead(dm, ncell, x, &ncx));
     PetscCall(DMPlexPointLocalRead(dmCell, ncell, cellgeom, &ncg));
     DMPlex_WaxpyD_Internal(dim, -1, cg->centroid, ncg->centroid, v);
     for (d = 0; d < dof; ++d) {
@@ -99,11 +96,8 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     PetscCall(DMPlexGetSupport(dm, face, &cells));
     PetscCall(DMPlexPointLocalRead(dmFace, face, facegeom, &fg));
     for (c = 0; c < 2; ++c) {
-      if (nFields > 1) {
-        PetscCall(DMPlexPointLocalFieldRead(dm, cells[c], field, x, &cx[c]));
-      } else {
-        PetscCall(DMPlexPointLocalRead(dm, cells[c], x, &cx[c]));
-      }
+      if (nFields > 1) PetscCall(DMPlexPointLocalFieldRead(dm, cells[c], field, x, &cx[c]));
+      else PetscCall(DMPlexPointLocalRead(dm, cells[c], x, &cx[c]));
       PetscCall(DMPlexPointGlobalRef(dmGrad, cells[c], gr, &cgrad[c]));
     }
     for (pd = 0; pd < dof; ++pd) {
@@ -128,11 +122,8 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
 
     PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
     PetscCall(DMPlexGetCone(dm, cell, &faces));
-    if (nFields > 1) {
-      PetscCall(DMPlexPointLocalFieldRead(dm, cell, field, x, &cx));
-    } else {
-      PetscCall(DMPlexPointLocalRead(dm, cell, x, &cx));
-    }
+    if (nFields > 1) PetscCall(DMPlexPointLocalFieldRead(dm, cell, field, x, &cx));
+    else PetscCall(DMPlexPointLocalRead(dm, cell, x, &cx));
     PetscCall(DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg));
     PetscCall(DMPlexPointGlobalRef(dmGrad, cell, gr, &cgrad));
     if (!cgrad) continue; /* Unowned overlap cell, we do not compute */

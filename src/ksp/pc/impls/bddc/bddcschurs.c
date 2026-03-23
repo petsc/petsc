@@ -362,9 +362,8 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
     } else {
       Dd = D;
     }
-    if (n_I) {
-      PetscCall(MatAYPX(*S, -1.0, Dd, SAME_NONZERO_PATTERN));
-    } else {
+    if (n_I) PetscCall(MatAYPX(*S, -1.0, Dd, SAME_NONZERO_PATTERN));
+    else {
       if (reuse == MAT_INITIAL_MATRIX) {
         PetscCall(MatDuplicate(Dd, MAT_COPY_VALUES, S));
       } else {
@@ -2088,9 +2087,8 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
   for (i = 0; i < n_faces; i++) {
     PetscCall(ISGetSize(faces[i], &s));
     if (!s) continue;
-    if (copycc) {
-      PetscCall(ISDuplicate(faces[i], &all_cc[n_all_cc]));
-    } else {
+    if (copycc) PetscCall(ISDuplicate(faces[i], &all_cc[n_all_cc]));
+    else {
       PetscCall(PetscObjectReference((PetscObject)faces[i]));
       all_cc[n_all_cc] = faces[i];
     }
@@ -2099,9 +2097,8 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
   for (i = 0; i < n_edges; i++) {
     PetscCall(ISGetSize(edges[i], &s));
     if (!s) continue;
-    if (copycc) {
-      PetscCall(ISDuplicate(edges[i], &all_cc[n_all_cc]));
-    } else {
+    if (copycc) PetscCall(ISDuplicate(edges[i], &all_cc[n_all_cc]));
+    else {
       PetscCall(PetscObjectReference((PetscObject)edges[i]));
       all_cc[n_all_cc] = edges[i];
     }

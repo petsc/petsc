@@ -1923,9 +1923,9 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
     /* coupling vertices: use gidx = header->index to check if v is a coupling vertex */
     PetscCall(PetscHMapIGetWithDefault(newDMnetwork->cloneshared->svtable, header->index + 1, 0, &svtx_idx));
     svtx_idx--;
-    if (svtx_idx < 0) {
-      newDMnetwork->cloneshared->subnet[header->subnetid].vertices[newDMnetwork->cloneshared->subnet[header->subnetid].nvtx++] = v;
-    } else { /* a shared vertex */
+    if (svtx_idx < 0) newDMnetwork->cloneshared->subnet[header->subnetid].vertices[newDMnetwork->cloneshared->subnet[header->subnetid].nvtx++] = v;
+    else {
+      /* a shared vertex */
       newDMnetwork->cloneshared->svertices[nv++] = v;
 
       /* Setup a lookup btable for this v's owning subnetworks */
@@ -2314,11 +2314,8 @@ static inline PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju, PetscI
 static inline PetscErrorCode MatSetPreallocationblock_private(Mat Ju, PetscInt nrows, PetscInt *rows, PetscInt ncols, PetscBool ghost, Vec vdnz, Vec vonz)
 {
   PetscFunctionBegin;
-  if (Ju) {
-    PetscCall(MatSetPreallocationUserblock_private(Ju, nrows, rows, ncols, ghost, vdnz, vonz));
-  } else {
-    PetscCall(MatSetPreallocationDenseblock_private(nrows, rows, ncols, ghost, vdnz, vonz));
-  }
+  if (Ju) PetscCall(MatSetPreallocationUserblock_private(Ju, nrows, rows, ncols, ghost, vdnz, vonz));
+  else PetscCall(MatSetPreallocationDenseblock_private(nrows, rows, ncols, ghost, vdnz, vonz));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2359,11 +2356,8 @@ static inline PetscErrorCode MatSetUserblock_private(Mat Ju, PetscInt nrows, Pet
 static inline PetscErrorCode MatSetblock_private(Mat Ju, PetscInt nrows, PetscInt *rows, PetscInt ncols, PetscInt cstart, Mat *J)
 {
   PetscFunctionBegin;
-  if (Ju) {
-    PetscCall(MatSetUserblock_private(Ju, nrows, rows, ncols, cstart, J));
-  } else {
-    PetscCall(MatSetDenseblock_private(nrows, rows, ncols, cstart, J));
-  }
+  if (Ju) PetscCall(MatSetUserblock_private(Ju, nrows, rows, ncols, cstart, J));
+  else PetscCall(MatSetDenseblock_private(nrows, rows, ncols, cstart, J));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2523,18 +2517,16 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
       for (v = 0; v < 2; v++) {
         PetscCall(PetscSectionGetDof(network->DofSection, cone[v], &ncols));
 
-        if (network->Je) {
-          Juser = network->Je[3 * e + 1 + v]; /* Jacobian(e,v) */
-        } else Juser = NULL;
+        if (network->Je) Juser = network->Je[3 * e + 1 + v]; /* Jacobian(e,v) */
+        else Juser = NULL;
         PetscCall(DMNetworkIsGhostVertex(dm, cone[v], &ghost));
         PetscCall(MatSetPreallocationblock_private(Juser, nrows, rows, ncols, ghost, vd_nz, vo_nz));
       }
 
       /* Set preallocation for edge self */
       cstart = rstart;
-      if (network->Je) {
-        Juser = network->Je[3 * e]; /* Jacobian(e,e) */
-      } else Juser = NULL;
+      if (network->Je) Juser = network->Je[3 * e]; /* Jacobian(e,e) */
+      else Juser = NULL;
       PetscCall(MatSetPreallocationblock_private(Juser, nrows, rows, nrows, PETSC_FALSE, vd_nz, vo_nz));
     }
   }
@@ -2550,11 +2542,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
     if (!nrows) continue;
 
     PetscCall(DMNetworkIsGhostVertex(dm, v, &ghost));
-    if (ghost) {
-      PetscCall(PetscMalloc1(nrows, &rows_v));
-    } else {
-      rows_v = rows;
-    }
+    if (ghost) PetscCall(PetscMalloc1(nrows, &rows_v));
+    else rows_v = rows;
 
     for (j = 0; j < nrows; j++) rows_v[j] = j + rstart;
 
@@ -2566,9 +2555,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
       PetscCall(DMNetworkGetGlobalVecOffset(dm, edges[e], ALL_COMPONENTS, &cstart));
       PetscCall(PetscSectionGetDof(network->DofSection, edges[e], &ncols));
 
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart] + 2 * e + 1]; /* Jacobian(v,e) */
-      } else Juser = NULL;
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart] + 2 * e + 1]; /* Jacobian(v,e) */
+      else Juser = NULL;
       PetscCall(MatSetPreallocationblock_private(Juser, nrows, rows_v, ncols, ghost, vd_nz, vo_nz));
 
       /* Connected vertices */
@@ -2578,14 +2566,10 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
 
       PetscCall(PetscSectionGetDof(network->DofSection, vc, &ncols));
 
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart] + 2 * e + 2]; /* Jacobian(v,vc) */
-      } else Juser = NULL;
-      if (ghost_vc || ghost) {
-        ghost2 = PETSC_TRUE;
-      } else {
-        ghost2 = PETSC_FALSE;
-      }
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart] + 2 * e + 2]; /* Jacobian(v,vc) */
+      else Juser = NULL;
+      if (ghost_vc || ghost) ghost2 = PETSC_TRUE;
+      else ghost2 = PETSC_FALSE;
       PetscCall(MatSetPreallocationblock_private(Juser, nrows, rows_v, ncols, ghost2, vd_nz, vo_nz));
     }
 
@@ -2593,9 +2577,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
     PetscCall(DMNetworkIsGhostVertex(dm, v, &ghost));
     if (!ghost) {
       PetscCall(DMNetworkGetGlobalVecOffset(dm, v, ALL_COMPONENTS, &cstart));
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart]]; /* Jacobian(v,v) */
-      } else Juser = NULL;
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart]]; /* Jacobian(v,v) */
+      else Juser = NULL;
       PetscCall(MatSetPreallocationblock_private(Juser, nrows, rows_v, nrows, PETSC_FALSE, vd_nz, vo_nz));
     }
     if (ghost) PetscCall(PetscFree(rows_v));
@@ -2640,17 +2623,15 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
         PetscCall(DMNetworkGetGlobalVecOffset(dm, cone[v], ALL_COMPONENTS, &cstart));
         PetscCall(PetscSectionGetDof(network->DofSection, cone[v], &ncols));
 
-        if (network->Je) {
-          Juser = network->Je[3 * e + 1 + v]; /* Jacobian(e,v) */
-        } else Juser = NULL;
+        if (network->Je) Juser = network->Je[3 * e + 1 + v]; /* Jacobian(e,v) */
+        else Juser = NULL;
         PetscCall(MatSetblock_private(Juser, nrows, rows, ncols, cstart, J));
       }
 
       /* Set matrix entries for edge self */
       cstart = rstart;
-      if (network->Je) {
-        Juser = network->Je[3 * e]; /* Jacobian(e,e) */
-      } else Juser = NULL;
+      if (network->Je) Juser = network->Je[3 * e]; /* Jacobian(e,e) */
+      else Juser = NULL;
       PetscCall(MatSetblock_private(Juser, nrows, rows, nrows, cstart, J));
     }
   }
@@ -2663,11 +2644,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
     if (!nrows) continue;
 
     PetscCall(DMNetworkIsGhostVertex(dm, v, &ghost));
-    if (ghost) {
-      PetscCall(PetscMalloc1(nrows, &rows_v));
-    } else {
-      rows_v = rows;
-    }
+    if (ghost) PetscCall(PetscMalloc1(nrows, &rows_v));
+    else rows_v = rows;
     for (j = 0; j < nrows; j++) rows_v[j] = j + rstart;
 
     /* Get supporting edges and connected vertices */
@@ -2678,9 +2656,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
       PetscCall(DMNetworkGetGlobalVecOffset(dm, edges[e], ALL_COMPONENTS, &cstart));
       PetscCall(PetscSectionGetDof(network->DofSection, edges[e], &ncols));
 
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart] + 2 * e + 1]; /* Jacobian(v,e) */
-      } else Juser = NULL;
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart] + 2 * e + 1]; /* Jacobian(v,e) */
+      else Juser = NULL;
       PetscCall(MatSetblock_private(Juser, nrows, rows_v, ncols, cstart, J));
 
       /* Connected vertices */
@@ -2690,18 +2667,16 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
       PetscCall(DMNetworkGetGlobalVecOffset(dm, vc, ALL_COMPONENTS, &cstart));
       PetscCall(PetscSectionGetDof(network->DofSection, vc, &ncols));
 
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart] + 2 * e + 2]; /* Jacobian(v,vc) */
-      } else Juser = NULL;
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart] + 2 * e + 2]; /* Jacobian(v,vc) */
+      else Juser = NULL;
       PetscCall(MatSetblock_private(Juser, nrows, rows_v, ncols, cstart, J));
     }
 
     /* Set matrix entries for vertex self */
     if (!ghost) {
       PetscCall(DMNetworkGetGlobalVecOffset(dm, v, ALL_COMPONENTS, &cstart));
-      if (network->Jv) {
-        Juser = network->Jv[vptr[v - vStart]]; /* Jacobian(v,v) */
-      } else Juser = NULL;
+      if (network->Jv) Juser = network->Jv[vptr[v - vStart]]; /* Jacobian(v,v) */
+      else Juser = NULL;
       PetscCall(MatSetblock_private(Juser, nrows, rows_v, nrows, cstart, J));
     }
     if (ghost) PetscCall(PetscFree(rows_v));

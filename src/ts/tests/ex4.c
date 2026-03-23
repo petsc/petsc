@@ -95,9 +95,8 @@ int main(int argc, char **argv)
   PetscCall(MatMPIAIJSetPreallocation(J, 5, NULL, 5, NULL));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-ts_fd", &flg));
-  if (!flg) {
-    PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, &data));
-  } else {
+  if (!flg) PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, &data));
+  else {
     PetscCall(TSGetSNES(ts, &snes));
     PetscCall(PetscOptionsHasName(NULL, NULL, "-fd_color", &fd_jacobian_coloring));
     if (fd_jacobian_coloring) { /* Use finite differences with coloring */

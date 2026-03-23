@@ -89,11 +89,8 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Diagonal of C:\n"));
     PetscCall(VecView(d, PETSC_VIEWER_STDOUT_WORLD));
   }
-  if (m > n) {
-    PetscCall(MatDiagonalScale(C, NULL, d));
-  } else {
-    PetscCall(MatDiagonalScale(C, d, NULL));
-  }
+  if (m > n) PetscCall(MatDiagonalScale(C, NULL, d));
+  else PetscCall(MatDiagonalScale(C, d, NULL));
   if (mats_view) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Diagonal Scaled C:\n"));
     PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));

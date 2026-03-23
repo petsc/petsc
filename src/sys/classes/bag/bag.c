@@ -589,9 +589,8 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
       PetscCall(PetscOptionsString(name, nitem->help, "", value, value, nitem->msize, NULL));
     } else if (nitem->dtype == PETSC_REAL) {
       PetscReal *value = (PetscReal *)(((char *)bag) + nitem->offset);
-      if (nitem->msize == 1) {
-        PetscCall(PetscOptionsReal(name, nitem->help, "", *value, value, NULL));
-      } else {
+      if (nitem->msize == 1) PetscCall(PetscOptionsReal(name, nitem->help, "", *value, value, NULL));
+      else {
         n = nitem->msize;
         PetscCall(PetscOptionsRealArray(name, nitem->help, "", value, &n, NULL));
       }
@@ -600,9 +599,8 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
       PetscCall(PetscOptionsScalar(name, nitem->help, "", *value, value, NULL));
     } else if (nitem->dtype == PETSC_INT) {
       PetscInt *value = (PetscInt *)(((char *)bag) + nitem->offset);
-      if (nitem->msize == 1) {
-        PetscCall(PetscOptionsInt(name, nitem->help, "", *value, value, NULL));
-      } else {
+      if (nitem->msize == 1) PetscCall(PetscOptionsInt(name, nitem->help, "", *value, value, NULL));
+      else {
         n = nitem->msize;
         PetscCall(PetscOptionsIntArray(name, nitem->help, "", value, &n, NULL));
       }
@@ -613,9 +611,8 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
       PetscCall(PetscOptionsEnum(name, nitem->help, nitem->list[i - 3], (const char *const *)nitem->list, *value, value, NULL));
     } else if (nitem->dtype == PETSC_BOOL) {
       PetscBool *value = (PetscBool *)(((char *)bag) + nitem->offset);
-      if (nitem->msize == 1) {
-        PetscCall(PetscOptionsBool(name, nitem->help, "", *value, value, NULL));
-      } else {
+      if (nitem->msize == 1) PetscCall(PetscOptionsBool(name, nitem->help, "", *value, value, NULL));
+      else {
         n = nitem->msize;
         PetscCall(PetscOptionsBoolArray(name, nitem->help, "", value, &n, NULL));
       }

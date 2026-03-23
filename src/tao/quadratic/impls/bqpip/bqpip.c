@@ -341,11 +341,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     tao->ksp_tot_its += its;
 
     /* Restore the true diagonal of the Hessian matrix */
-    if (getdiagop) {
-      PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES));
-    } else {
-      PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, ADD_VALUES));
-    }
+    if (getdiagop) PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES));
+    else PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, ADD_VALUES));
     PetscCall(MatAssemblyBegin(tao->hessian, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(tao->hessian, MAT_FINAL_ASSEMBLY));
     PetscCall(QPIPComputeStepDirection(qp, tao));
@@ -405,11 +402,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       tao->ksp_its += its;
       tao->ksp_tot_its += its;
 
-      if (getdiagop) {
-        PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES));
-      } else {
-        PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, ADD_VALUES));
-      }
+      if (getdiagop) PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES));
+      else PetscCall(MatDiagonalSet(tao->hessian, qp->HDiag, ADD_VALUES));
       PetscCall(MatAssemblyBegin(tao->hessian, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(tao->hessian, MAT_FINAL_ASSEMBLY));
       PetscCall(QPIPComputeStepDirection(qp, tao));

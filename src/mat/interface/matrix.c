@@ -2095,9 +2095,8 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
     mat->assembled     = PETSC_FALSE;
   }
   PetscCall(PetscLogEventBegin(MAT_SetValues, mat, 0, 0, 0));
-  if (mat->ops->setvaluesblocked) {
-    PetscUseTypeMethod(mat, setvaluesblocked, m, idxm, n, idxn, v, addv);
-  } else {
+  if (mat->ops->setvaluesblocked) PetscUseTypeMethod(mat, setvaluesblocked, m, idxm, n, idxn, v, addv);
+  else {
     PetscInt buf[8192], *bufr = NULL, *bufc = NULL, *iidxm, *iidxn;
     PetscInt i, j, bs, cbs;
 
@@ -2960,11 +2959,8 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
     PetscCall(MatMultTranspose(mat, w, z));
     PetscCall(VecDestroy(&w));
     PetscCall(VecConjugate(z));
-    if (v2 != v3) {
-      PetscCall(VecWAXPY(v3, 1.0, v2, z));
-    } else {
-      PetscCall(VecAXPY(v3, 1.0, z));
-    }
+    if (v2 != v3) PetscCall(VecWAXPY(v3, 1.0, v2, z));
+    else PetscCall(VecAXPY(v3, 1.0, z));
     PetscCall(VecDestroy(&z));
   }
   PetscCall(VecLockReadPop(v1));
@@ -5234,9 +5230,8 @@ PetscErrorCode MatGetRowSumAbs(Mat mat, Vec v)
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
 
-  if (!mat->cmap->N) {
-    PetscCall(VecSet(v, 0.0));
-  } else {
+  if (!mat->cmap->N) PetscCall(VecSet(v, 0.0));
+  else {
     MatCheckPreallocated(mat, 1);
     PetscUseTypeMethod(mat, getrowsumabs, v);
   }
@@ -5649,11 +5644,8 @@ PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
   PetscCheck(B->assembled, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(A->rmap->N == B->rmap->N && A->cmap->N == B->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Mat A,Mat B: global dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, A->rmap->N, B->rmap->N, A->cmap->N,
              B->cmap->N);
-  if (A->ops->equal && A->ops->equal == B->ops->equal) {
-    PetscUseTypeMethod(A, equal, B, flg);
-  } else {
-    PetscCall(MatMultEqual(A, B, 10, flg));
-  }
+  if (A->ops->equal && A->ops->equal == B->ops->equal) PetscUseTypeMethod(A, equal, B, flg);
+  else PetscCall(MatMultEqual(A, B, 10, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8716,11 +8708,8 @@ PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
   PetscValidHeaderSpecific(w, VEC_CLASSID, 4);
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(VecGetSize(y, &Ny));
-  if (M == Ny) {
-    PetscCall(MatMultAdd(A, x, y, w));
-  } else {
-    PetscCall(MatMultTransposeAdd(A, x, y, w));
-  }
+  if (M == Ny) PetscCall(MatMultAdd(A, x, y, w));
+  else PetscCall(MatMultTransposeAdd(A, x, y, w));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8755,11 +8744,8 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(VecGetSize(y, &Ny));
-  if (M == Ny) {
-    PetscCall(MatMult(A, x, y));
-  } else {
-    PetscCall(MatMultTranspose(A, x, y));
-  }
+  if (M == Ny) PetscCall(MatMult(A, x, y));
+  else PetscCall(MatMultTranspose(A, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8793,11 +8779,8 @@ PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(VecGetSize(x, &Nx));
-  if (M == Nx) {
-    PetscCall(MatMultTranspose(A, x, y));
-  } else {
-    PetscCall(MatMult(A, x, y));
-  }
+  if (M == Nx) PetscCall(MatMultTranspose(A, x, y));
+  else PetscCall(MatMult(A, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8842,9 +8825,8 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
   Mo = trans ? N : M;
   if (*y) {
     PetscCall(MatGetSize(*y, &My, &Ny));
-    if (Mo == My && Nx == Ny) {
-      reuse = MAT_REUSE_MATRIX;
-    } else {
+    if (Mo == My && Nx == Ny) reuse = MAT_REUSE_MATRIX;
+    else {
       PetscCheck(w || *y != w, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot reuse y and w, size mismatch: A %" PetscInt_FMT "x%" PetscInt_FMT ", X %" PetscInt_FMT "x%" PetscInt_FMT ", Y %" PetscInt_FMT "x%" PetscInt_FMT, M, N, Mx, Nx, My, Ny);
       PetscCall(MatDestroy(y));
     }
@@ -8866,15 +8848,10 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
       PetscCall(MatDuplicate(*y, MAT_COPY_VALUES, &w));
       PetscCall(PetscObjectCompose((PetscObject)*y, "__MatMatIntAdd_w", (PetscObject)w));
       PetscCall(PetscObjectDereference((PetscObject)w));
-    } else {
-      PetscCall(MatCopy(*y, w, UNKNOWN_NONZERO_PATTERN));
-    }
+    } else PetscCall(MatCopy(*y, w, UNKNOWN_NONZERO_PATTERN));
   }
-  if (!trans) {
-    PetscCall(MatMatMult(A, x, reuse, PETSC_DETERMINE, y));
-  } else {
-    PetscCall(MatTransposeMatMult(A, x, reuse, PETSC_DETERMINE, y));
-  }
+  if (!trans) PetscCall(MatMatMult(A, x, reuse, PETSC_DETERMINE, y));
+  else PetscCall(MatTransposeMatMult(A, x, reuse, PETSC_DETERMINE, y));
   if (w) PetscCall(MatAXPY(*y, 1.0, w, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -9271,9 +9248,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat, Vec diag)
     PetscCall(MatGetSize(mat, NULL, &m));
     PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supported for sequential matrices when no ghost points/periodic conditions");
     PetscCall(MatDiagonalScale(mat, NULL, diag));
-  } else {
-    PetscUseMethod(mat, "MatDiagonalScaleLocal_C", (Mat, Vec), (mat, diag));
-  }
+  } else PetscUseMethod(mat, "MatDiagonalScaleLocal_C", (Mat, Vec), (mat, diag));
   PetscCall(PetscLogEventEnd(MAT_Scale, mat, 0, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -9456,9 +9431,7 @@ PetscErrorCode MatIsSymmetricKnown(Mat A, PetscBool *set, PetscBool *flg)
   if (A->symmetric != PETSC_BOOL3_UNKNOWN) {
     *set = PETSC_TRUE;
     *flg = PetscBool3ToBool(A->symmetric);
-  } else {
-    *set = PETSC_FALSE;
-  }
+  } else *set = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9493,9 +9466,7 @@ PetscErrorCode MatIsSPDKnown(Mat A, PetscBool *set, PetscBool *flg)
   if (A->spd != PETSC_BOOL3_UNKNOWN) {
     *set = PETSC_TRUE;
     *flg = PetscBool3ToBool(A->spd);
-  } else {
-    *set = PETSC_FALSE;
-  }
+  } else *set = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9531,9 +9502,7 @@ PetscErrorCode MatIsHermitianKnown(Mat A, PetscBool *set, PetscBool *flg)
   if (A->hermitian != PETSC_BOOL3_UNKNOWN) {
     *set = PETSC_TRUE;
     *flg = PetscBool3ToBool(A->hermitian);
-  } else {
-    *set = PETSC_FALSE;
-  }
+  } else *set = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9563,9 +9532,8 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 2);
-  if (A->structurally_symmetric != PETSC_BOOL3_UNKNOWN) {
-    *flg = PetscBool3ToBool(A->structurally_symmetric);
-  } else {
+  if (A->structurally_symmetric != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->structurally_symmetric);
+  else {
     PetscUseTypeMethod(A, isstructurallysymmetric, flg);
     PetscCall(MatSetOption(A, MAT_STRUCTURALLY_SYMMETRIC, *flg));
   }
@@ -9603,9 +9571,7 @@ PetscErrorCode MatIsStructurallySymmetricKnown(Mat A, PetscBool *set, PetscBool 
   if (A->structurally_symmetric != PETSC_BOOL3_UNKNOWN) {
     *set = PETSC_TRUE;
     *flg = PetscBool3ToBool(A->structurally_symmetric);
-  } else {
-    *set = PETSC_FALSE;
-  }
+  } else *set = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9799,11 +9765,8 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F, Mat *S, MatFactorSchurStatu
     PetscErrorCode (*f)(Mat, Mat *);
 
     PetscCall(PetscObjectQueryFunction((PetscObject)F, "MatFactorCreateSchurComplement_C", &f));
-    if (f) {
-      PetscCall((*f)(F, S));
-    } else {
-      PetscCall(MatDuplicate(F->schur, MAT_COPY_VALUES, S));
-    }
+    if (f) PetscCall((*f)(F, S));
+    else PetscCall(MatDuplicate(F->schur, MAT_COPY_VALUES, S));
   }
   if (status) *status = F->schur_status;
   PetscFunctionReturn(PETSC_SUCCESS);

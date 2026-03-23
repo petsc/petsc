@@ -632,11 +632,8 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
       char sawslog[PETSC_MAX_PATH_LEN];
 
       PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_log", sawslog, sizeof(sawslog), NULL));
-      if (sawslog[0]) {
-        PetscCallSAWs(SAWs_Set_Use_Logfile, (sawslog));
-      } else {
-        PetscCallSAWs(SAWs_Set_Use_Logfile, (NULL));
-      }
+      if (sawslog[0]) PetscCallSAWs(SAWs_Set_Use_Logfile, (sawslog));
+      else PetscCallSAWs(SAWs_Set_Use_Logfile, (NULL));
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_https", cert, sizeof(cert), &flg));
     if (flg) PetscCallSAWs(SAWs_Set_Use_HTTPS, (cert));

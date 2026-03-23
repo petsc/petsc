@@ -101,9 +101,9 @@ static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, PetscCtx c
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetDMTS(dm, &tsdm));
   PetscCall(DMTSGetIFunction(dm, &ifunction, NULL));
-  if (!ifunction) {
-    PetscCall(TSComputeRHSFunction(ts, t, yy, yyd));
-  } else { /* If rhsfunction is also set, this computes both parts and shifts them to the right */
+  if (!ifunction) PetscCall(TSComputeRHSFunction(ts, t, yy, yyd));
+  else {
+    /* If rhsfunction is also set, this computes both parts and shifts them to the right */
     PetscCall(VecZeroEntries(yydot));
     PetscCallAbort(comm, TSComputeIFunction(ts, t, yy, yydot, yyd, PETSC_FALSE));
     PetscCall(VecScale(yyd, -1.));
@@ -353,9 +353,8 @@ static PetscErrorCode TSSetUp_Sundials(TS ts)
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   PetscCallExternal(CVodeSetMaxNumSteps, cvode->mem, ts->max_steps);
 
-  if (cvode->use_dense) {
-    PetscCallExternal(CVDense, cvode->mem, locsize);
-  } else {
+  if (cvode->use_dense) PetscCallExternal(CVDense, cvode->mem, locsize);
+  else {
     /* call CVSpgmr to use GMRES as the linear solver.        */
     /* setup the ode integrator with the given preconditioner */
     PetscCall(TSSundialsGetPC(ts, &pc));

@@ -123,11 +123,8 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   /*
      Setup code depends on the number of blocks
   */
-  if (jac->n_local == 1) {
-    PetscCall(PCSetUp_BJacobi_Singleblock(pc, mat, pmat));
-  } else {
-    PetscCall(PCSetUp_BJacobi_Multiblock(pc, mat, pmat));
-  }
+  if (jac->n_local == 1) PetscCall(PCSetUp_BJacobi_Singleblock(pc, mat, pmat));
+  else PetscCall(PCSetUp_BJacobi_Multiblock(pc, mat, pmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

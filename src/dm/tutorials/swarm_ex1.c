@@ -486,15 +486,13 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_mode", &test_mode, NULL));
-  if (test_mode == 1) {
-    PetscCall(ex1_1());
-  } else if (test_mode == 2) {
-    PetscCall(ex1_2());
-  } else if (test_mode == 3) {
-    PetscCall(ex1_3());
-  } else if (test_mode == 4) {
+  if (test_mode == 1) PetscCall(ex1_1());
+  else if (test_mode == 2) PetscCall(ex1_2());
+  else if (test_mode == 3) PetscCall(ex1_3());
+  else {
+    PetscCheck(test_mode == 4, PETSC_COMM_SELF, PETSC_ERR_USER, "Unknown test_mode value, should be 1,2,3,4");
     PetscCall(ex1_4());
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Unknown test_mode value, should be 1,2,3,4");
+  }
   PetscCall(PetscFinalize());
   return 0;
 }

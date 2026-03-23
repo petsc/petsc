@@ -89,18 +89,6 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &gpcg->DXFree));
   PetscCall(VecDuplicate(tao->solution, &gpcg->R));
   PetscCall(VecDuplicate(tao->solution, &gpcg->PG));
-  /*
-    if (gpcg->ksp_type == GPCG_KSP_NASH) {
-        PetscCall(KSPSetType(tao->ksp,KSPNASH));
-      } else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-        PetscCall(KSPSetType(tao->ksp,KSPSTCG));
-      } else {
-        PetscCall(KSPSetType(tao->ksp,KSPGLTR));
-      }
-      if (tao->ksp->ops->setfromoptions) (*tao->ksp->ops->setfromoptions)(tao->ksp);
-
-    }
-  */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

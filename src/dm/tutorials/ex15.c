@@ -222,9 +222,8 @@ int main(int argc, char **args)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-usempiio", &usempiio, NULL));
-  if (!usempiio) {
-    PetscCall(TestDMDAVec(PETSC_FALSE));
-  } else {
+  if (!usempiio) PetscCall(TestDMDAVec(PETSC_FALSE));
+  else {
 #if defined(PETSC_HAVE_MPIIO)
     PetscCall(TestDMDAVec(PETSC_TRUE));
 #else

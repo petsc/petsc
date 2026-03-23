@@ -133,11 +133,8 @@ int main(int argc, char **argv)
     /* Test D*x = A^T*C*A*x, where C is in AIJ format */
     PetscCall(MatGetLocalSize(A, &am, &an));
     PetscCall(MatCreate(PETSC_COMM_WORLD, &C));
-    if (size == 1) {
-      PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, am, am));
-    } else {
-      PetscCall(MatSetSizes(C, am, am, PETSC_DECIDE, PETSC_DECIDE));
-    }
+    if (size == 1) PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, am, am));
+    else PetscCall(MatSetSizes(C, am, am, PETSC_DECIDE, PETSC_DECIDE));
     PetscCall(MatSetFromOptions(C));
     PetscCall(MatSetUp(C));
     PetscCall(MatGetOwnershipRange(C, &rstart, &rend));

@@ -1017,9 +1017,8 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
 
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(ISGetIndices(is, &idxin));
-  if (type == IS_GTOLM_MASK) {
-    PetscCall(PetscMalloc1(n, &idxout));
-  } else {
+  if (type == IS_GTOLM_MASK) PetscCall(PetscMalloc1(n, &idxout));
+  else {
     PetscCall(ISGlobalToLocalMappingApply(mapping, type, n, idxin, &nout, NULL));
     PetscCall(PetscMalloc1(nout, &idxout));
   }

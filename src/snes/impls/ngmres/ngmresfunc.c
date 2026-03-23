@@ -100,11 +100,8 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   PetscCall(VecWAXPY(Y, -1.0, X, XA));
   PetscCall(SNESLineSearchPostCheck(snes->linesearch, X, Y, XA, &changed_y, &changed_w));
   if (!ngmres->approxfunc) {
-    if (snes->npc && snes->npcside == PC_LEFT) {
-      PetscCall(SNESApplyNPC(snes, XA, NULL, FA));
-    } else {
-      PetscCall(SNESComputeFunction(snes, XA, FA));
-    }
+    if (snes->npc && snes->npcside == PC_LEFT) PetscCall(SNESApplyNPC(snes, XA, NULL, FA));
+    else PetscCall(SNESComputeFunction(snes, XA, FA));
   } else {
     PetscCall(VecAXPBY(FA, 1.0 - alph_total, 0.0, FM));
     PetscCall(VecMAXPY(FA, l, beta, Fdot));

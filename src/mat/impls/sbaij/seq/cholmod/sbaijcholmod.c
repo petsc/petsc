@@ -279,11 +279,8 @@ PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat F)
   PetscFunctionBegin;
   if (chol->spqrfact) PetscCallExternal(!SuiteSparseQR_C_free, &chol->spqrfact, chol->common);
   if (chol->factor) PetscCallExternal(!cholmod_X_free_factor, &chol->factor, chol->common);
-  if (chol->common->itype == CHOLMOD_INT) {
-    PetscCallExternal(!cholmod_finish, chol->common);
-  } else {
-    PetscCallExternal(!cholmod_l_finish, chol->common);
-  }
+  if (chol->common->itype == CHOLMOD_INT) PetscCallExternal(!cholmod_finish, chol->common);
+  else PetscCallExternal(!cholmod_l_finish, chol->common);
   PetscCall(PetscFree(chol->common));
   PetscCall(PetscFree(chol->matrix));
   PetscCall(PetscObjectComposeFunction((PetscObject)F, "MatFactorGetSolverType_C", NULL));

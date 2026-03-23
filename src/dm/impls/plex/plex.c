@@ -6330,11 +6330,8 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
       PetscCall(DMLabelGetNumValues(label, &depth));
       PetscCall(DMLabelGetValue(label, point, &h));
       h = depth - 1 - h;
-      if (h) {
-        PetscCall(PetscDualSpaceGetHeightSubspace(dsp, h, dspace));
-      } else {
-        *dspace = dsp;
-      }
+      if (h) PetscCall(PetscDualSpaceGetHeightSubspace(dsp, h, dspace));
+      else *dspace = dsp;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -8008,11 +8005,8 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
         PetscInt bDof = 0, bSecDof = 0, bOff;
 
         if (b >= sStart && b < sEnd) {
-          if (numFields) {
-            PetscCall(PetscSectionGetFieldDof(section, b, f, &bSecDof));
-          } else {
-            PetscCall(PetscSectionGetDof(section, b, &bSecDof));
-          }
+          if (numFields) PetscCall(PetscSectionGetFieldDof(section, b, f, &bSecDof));
+          else PetscCall(PetscSectionGetDof(section, b, &bSecDof));
         }
         if (!bSecDof) continue;
         if (b >= aStart && b < aEnd) PetscCall(PetscSectionGetDof(aSec, b, &bDof));
@@ -8022,11 +8016,8 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
             PetscInt a = anchors[bOff + q], aDof = 0;
 
             if (a >= sStart && a < sEnd) {
-              if (numFields) {
-                PetscCall(PetscSectionGetFieldDof(section, a, f, &aDof));
-              } else {
-                PetscCall(PetscSectionGetDof(section, a, &aDof));
-              }
+              if (numFields) PetscCall(PetscSectionGetFieldDof(section, a, f, &aDof));
+              else PetscCall(PetscSectionGetDof(section, a, &aDof));
             }
             if (aDof) {
               PetscCall(MatGetValues(cMat, bSecDof, &indices[o], aDof, &newIndices[oNew], tmpMat));
@@ -9791,11 +9782,8 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
       PetscCall(DMPlexGetCone(dm, point, &cone));
       for (c = 0; c < coneSize; ++c) {
         if (!rootdegree[cone[c]]) {
-          if (locals) {
-            PetscCall(PetscFindInt(cone[c], nleaves, locals, &idx));
-          } else {
-            idx = (cone[c] < nleaves) ? cone[c] : -1;
-          }
+          if (locals) PetscCall(PetscFindInt(cone[c], nleaves, locals, &idx));
+          else idx = (cone[c] < nleaves) ? cone[c] : -1;
           PetscCheck(idx >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " but not %" PetscInt_FMT " from its cone", point, cone[c]);
         }
       }

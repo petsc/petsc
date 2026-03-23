@@ -242,9 +242,8 @@ PetscErrorCode BLASCyclic<T>::hemv(PetscDeviceContext dctx, PetscInt m, PetscInt
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCUPMBLAS(cupmBlasGetPointerMode(handle, &pointer_mode));
   PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, CUPMBLAS_POINTER_MODE_HOST));
-  if (n > 0) {
-    PetscCallCUPMBLAS(cupmBlasXhemv(handle, CUPMBLAS_FILL_MODE_UPPER, n, calpha, &A_[i_oldest * (lda + 1)], lda, &x_[i_oldest], 1, cbeta, &y_[i_oldest], 1));
-  } else {
+  if (n > 0) PetscCallCUPMBLAS(cupmBlasXhemv(handle, CUPMBLAS_FILL_MODE_UPPER, n, calpha, &A_[i_oldest * (lda + 1)], lda, &x_[i_oldest], 1, cbeta, &y_[i_oldest], 1));
+  else {
     if (n_new > 0) PetscCallCUPMBLAS(cupmBlasXhemv(handle, CUPMBLAS_FILL_MODE_UPPER, n_new, calpha, A_, lda, x_, 1, cbeta, y_, 1));
     if (n_old > 0) PetscCallCUPMBLAS(cupmBlasXhemv(handle, CUPMBLAS_FILL_MODE_UPPER, n_old, calpha, &A_[i_oldest * (lda + 1)], lda, &x_[i_oldest], 1, cbeta, &y_[i_oldest], 1));
     if (n_new > 0 && n_old > 0) {

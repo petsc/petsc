@@ -741,11 +741,8 @@ static PetscErrorCode MatGetDiagonal_Nest(Mat A, Vec v)
   for (i = 0; i < bA->nr; i++) {
     Vec bv;
     PetscCall(VecGetSubVector(v, bA->isglobal.row[i], &bv));
-    if (bA->m[i][i]) {
-      PetscCall(MatGetDiagonal(bA->m[i][i], bv));
-    } else {
-      PetscCall(VecSet(bv, 0.0));
-    }
+    if (bA->m[i][i]) PetscCall(MatGetDiagonal(bA->m[i][i], bv));
+    else PetscCall(VecSet(bv, 0.0));
     PetscCall(VecRestoreSubVector(v, bA->isglobal.row[i], &bv));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1040,11 +1037,8 @@ static PetscErrorCode MatDuplicate_Nest(Mat A, MatDuplicateOption op, Mat *B)
   PetscCall(PetscMalloc1(nr * nc, &b));
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
-      if (bA->m[i][j]) {
-        PetscCall(MatDuplicate(bA->m[i][j], op, &b[i * nc + j]));
-      } else {
-        b[i * nc + j] = NULL;
-      }
+      if (bA->m[i][j]) PetscCall(MatDuplicate(bA->m[i][j], op, &b[i * nc + j]));
+      else b[i * nc + j] = NULL;
     }
   }
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)A), nr, bA->isglobal.row, nc, bA->isglobal.col, b, B));
@@ -1529,11 +1523,8 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A, PetscInt n, const
       PetscCall(MatNestFindNonzeroSubMatCol(A, i, &sub));
     }
     if (sub) {
-      if (!colflg) {
-        PetscCall(MatGetLocalToGlobalMapping(sub, &smap, NULL));
-      } else {
-        PetscCall(MatGetLocalToGlobalMapping(sub, NULL, &smap));
-      }
+      if (!colflg) PetscCall(MatGetLocalToGlobalMapping(sub, &smap, NULL));
+      else PetscCall(MatGetLocalToGlobalMapping(sub, NULL, &smap));
     }
     /*
        Now we need to extract the monolithic global indices that correspond to the given split global indices.
