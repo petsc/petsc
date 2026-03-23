@@ -2990,7 +2990,7 @@ PetscErrorCode MatEliminateZeros_SeqBAIJ(Mat A, PetscBool keep)
   PetscFunctionBegin;
   PetscCheck(A->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot eliminate zeros for unassembled matrix");
   if (m) rmax = ailen[0];
-  for (i = 1; i <= mbs; i++) {
+  for (i = 1, a->nonzerorowcnt = 0; i <= mbs; i++) {
     for (k = ai[i - 1]; k < ai[i]; k++) {
       zero = PETSC_TRUE;
       ap   = aa + bs2 * k;
