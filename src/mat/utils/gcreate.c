@@ -714,11 +714,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSetPreallocationCOO_C", &f));
 
   PetscCall(PetscLogEventBegin(MAT_PreallCOO, A, 0, 0, 0));
-  if (f) {
-    PetscCall((*f)(A, ncoo, coo_i, coo_j));
-  } else { /* allow fallback, very slow */
-    PetscCall(MatSetPreallocationCOO_Basic(A, ncoo, coo_i, coo_j));
-  }
+  if (f) PetscCall((*f)(A, ncoo, coo_i, coo_j));
+  else PetscCall(MatSetPreallocationCOO_Basic(A, ncoo, coo_i, coo_j)); /* allow fallback, very slow */
   PetscCall(PetscLogEventEnd(MAT_PreallCOO, A, 0, 0, 0));
   A->preallocated = PETSC_TRUE;
   A->nonzerostate++;

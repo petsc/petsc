@@ -1104,11 +1104,8 @@ PETSC_INTERN PetscErrorCode MatLMVMBasisGetVecRead(Mat B, MatLMVMBasisType type,
 
       PetscCall(LMBasisGetVecRead(orig_basis, i, &w));
       PetscCall(LMBasisGetWorkVec(size_basis, &tmp));
-      if (type == LMBASIS_B0S) {
-        PetscCall(MatLMVMApplyJ0Fwd(B, w, tmp));
-      } else {
-        PetscCall(MatLMVMApplyJ0Inv(B, w, tmp));
-      }
+      if (type == LMBASIS_B0S) PetscCall(MatLMVMApplyJ0Fwd(B, w, tmp));
+      else PetscCall(MatLMVMApplyJ0Inv(B, w, tmp));
       PetscCall(LMBasisRestoreVecRead(orig_basis, i, &w));
       *scale = 1.0;
       *y     = tmp;

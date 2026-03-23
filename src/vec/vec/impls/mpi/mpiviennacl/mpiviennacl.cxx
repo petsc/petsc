@@ -249,11 +249,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
-  if (size == 1) {
-    PetscCall(VecSetType(v, VECSEQVIENNACL));
-  } else {
-    PetscCall(VecSetType(v, VECMPIVIENNACL));
-  }
+  if (size == 1) PetscCall(VecSetType(v, VECSEQVIENNACL));
+  else PetscCall(VecSetType(v, VECMPIVIENNACL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

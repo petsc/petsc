@@ -78,25 +78,16 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
   PetscCheck(R || P, PetscObjectComm((PetscObject)S), PETSC_ERR_PLIB, "Missing projectors");
   PetscCheck(!R || !P, PetscObjectComm((PetscObject)S), PETSC_ERR_PLIB, "Both projectors");
   PetscCall(MatCreateVecs(A, &Ax, &Ay));
-  if (R) {
-    PetscCall(MatCreateVecs(R, &Py, &Px));
-  } else {
-    PetscCall(MatCreateVecs(P, &Px, &Py));
-  }
+  if (R) PetscCall(MatCreateVecs(R, &Py, &Px));
+  else PetscCall(MatCreateVecs(P, &Px, &Py));
   PetscCall(VecCopy(X, Px));
-  if (P) {
-    PetscCall(MatMult(P, Px, Py));
-  } else {
-    PetscCall(MatMultTranspose(R, Px, Py));
-  }
+  if (P) PetscCall(MatMult(P, Px, Py));
+  else PetscCall(MatMultTranspose(R, Px, Py));
   PetscCall(VecCopy(Py, Ax));
   PetscCall(MatMult(A, Ax, Ay));
   PetscCall(VecCopy(Ay, Py));
-  if (P) {
-    PetscCall(MatMultTranspose(P, Py, Px));
-  } else {
-    PetscCall(MatMult(R, Py, Px));
-  }
+  if (P) PetscCall(MatMultTranspose(P, Py, Px));
+  else PetscCall(MatMult(R, Py, Px));
   PetscCall(VecCopy(Px, Y));
   PetscCall(VecDestroy(&Px));
   PetscCall(VecDestroy(&Py));
@@ -713,11 +704,8 @@ int main(int argc, char **args)
     PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AB));
     PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(B, X, aB, aX));
-    if (M == N && N == K) {
-      PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
-    } else {
-      PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
-    }
+    if (M == N && N == K) PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
+    else PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatDestroy(&AB));
   }

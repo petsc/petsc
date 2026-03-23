@@ -26,9 +26,8 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
   PetscCall(PetscRandomSetFromOptions(rand));
   PetscCall(MatSetRandom(RHS, rand));
 
-  if (m == n) {
-    PetscCall(MatDuplicate(RHS, MAT_DO_NOT_COPY_VALUES, &SOLU));
-  } else {
+  if (m == n) PetscCall(MatDuplicate(RHS, MAT_DO_NOT_COPY_VALUES, &SOLU));
+  else {
     PetscCall(MatCreate(PETSC_COMM_WORLD, &SOLU));
     PetscCall(MatSetSizes(SOLU, PETSC_DECIDE, PETSC_DECIDE, n, nrhs));
     PetscCall(MatSetType(SOLU, MATDENSE));

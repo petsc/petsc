@@ -126,9 +126,8 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
     PetscObjectOptionsBegin((PetscObject)M);
     PetscCall(PetscOptionsBool("-overwrite_hessian", "modify the existing hessian matrix when computing submatrices", "TaoSubsetType", flg, &flg, NULL));
     PetscOptionsEnd();
-    if (flg) {
-      PetscCall(MatDuplicate(M, MAT_COPY_VALUES, Msub));
-    } else {
+    if (flg) PetscCall(MatDuplicate(M, MAT_COPY_VALUES, Msub));
+    else {
       /* Act on hessian directly (default) */
       PetscCall(PetscObjectReference((PetscObject)M));
       *Msub = M;

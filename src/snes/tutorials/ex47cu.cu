@@ -164,9 +164,8 @@ PetscErrorCode ComputeJacobian(SNES, Vec x, Mat J, Mat, PetscCtx ctx)
   PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   for (i = xs; i < xs + xm; i++) {
-    if (i == 0 || i == Mx - 1) {
-      PetscCall(MatSetValue(J, i, i, 1.0 / hx, INSERT_VALUES));
-    } else {
+    if (i == 0 || i == Mx - 1) PetscCall(MatSetValue(J, i, i, 1.0 / hx, INSERT_VALUES));
+    else {
       PetscCall(MatSetValue(J, i, i - 1, -1.0 / hx, INSERT_VALUES));
       PetscCall(MatSetValue(J, i, i, 2.0 / hx - hx * PetscExpScalar(xx[i]), INSERT_VALUES));
       PetscCall(MatSetValue(J, i, i + 1, -1.0 / hx, INSERT_VALUES));

@@ -3717,11 +3717,8 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
   } catch (char *ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "CUSPARSE error: %s", ex);
   }
-  if (yy) {
-    PetscCall(PetscLogGpuFlops(2.0 * a->nz));
-  } else {
-    PetscCall(PetscLogGpuFlops(2.0 * a->nz - a->nonzerorowcnt));
-  }
+  if (yy) PetscCall(PetscLogGpuFlops(2.0 * a->nz));
+  else PetscCall(PetscLogGpuFlops(2.0 * a->nz - a->nonzerorowcnt));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

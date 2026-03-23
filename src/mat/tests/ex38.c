@@ -76,11 +76,8 @@ int main(int argc, char **args)
       v[0]    = i + 0.5;
       cols[1] = i - 1;
       v[1]    = 0.5;
-      if (i) {
-        PetscCall(MatSetValues(C, 1, &i, 2, cols, v, ADD_VALUES));
-      } else {
-        PetscCall(MatSetValues(C, 1, &i, 1, &i, v, ADD_VALUES));
-      }
+      if (i) PetscCall(MatSetValues(C, 1, &i, 2, cols, v, ADD_VALUES));
+      else PetscCall(MatSetValues(C, 1, &i, 1, &i, v, ADD_VALUES));
     }
   }
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));

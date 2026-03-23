@@ -866,15 +866,13 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
 
-    if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
-      PetscCall(SNESFASCycle_Multiplicative(snes, X));
-    } else if (fas->fastype == SNES_FAS_ADDITIVE) {
-      PetscCall(SNESFASCycle_Additive(snes, X));
-    } else if (fas->fastype == SNES_FAS_FULL) {
-      PetscCall(SNESFASCycle_Full(snes, X));
-    } else if (fas->fastype == SNES_FAS_KASKADE) {
+    if (fas->fastype == SNES_FAS_MULTIPLICATIVE) PetscCall(SNESFASCycle_Multiplicative(snes, X));
+    else if (fas->fastype == SNES_FAS_ADDITIVE) PetscCall(SNESFASCycle_Additive(snes, X));
+    else if (fas->fastype == SNES_FAS_FULL) PetscCall(SNESFASCycle_Full(snes, X));
+    else {
+      PetscCheck(fas->fastype == SNES_FAS_KASKADE, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Unsupported FAS type");
       PetscCall(SNESFASCycle_Kaskade(snes, X));
-    } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Unsupported FAS type");
+    }
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);

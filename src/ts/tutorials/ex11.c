@@ -1407,9 +1407,8 @@ int main(int argc, char **argv)
     for (f = 0, dof = 0; f < phys->nfields; f++) {
       PetscInt newDof = phys->field_desc[f].dof;
 
-      if (newDof == 1) {
-        PetscCall(PetscFVSetComponentName(fvm, dof, phys->field_desc[f].name));
-      } else {
+      if (newDof == 1) PetscCall(PetscFVSetComponentName(fvm, dof, phys->field_desc[f].name));
+      else {
         PetscInt j;
 
         for (j = 0; j < newDof; j++) {

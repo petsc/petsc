@@ -365,11 +365,8 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer,
 static PetscErrorCode DMPlexGetHDF5Name_Private(DM dm, const char *name[])
 {
   PetscFunctionBegin;
-  if (((PetscObject)dm)->name) {
-    PetscCall(PetscObjectGetName((PetscObject)dm, name));
-  } else {
-    *name = "plex";
-  }
+  if (((PetscObject)dm)->name) PetscCall(PetscObjectGetName((PetscObject)dm, name));
+  else *name = "plex";
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

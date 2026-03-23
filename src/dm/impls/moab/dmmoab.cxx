@@ -140,9 +140,8 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   dmmoab->write_mode             = WRITE_PART;
 
   /* set global ID tag handle */
-  if (ltog_tag && *ltog_tag) {
-    PetscCall(DMMoabSetLocalToGlobalTag(dmmb, *ltog_tag));
-  } else {
+  if (ltog_tag && *ltog_tag) PetscCall(DMMoabSetLocalToGlobalTag(dmmb, *ltog_tag));
+  else {
     merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);
     MBERRNM(merr);
     if (ltog_tag) *ltog_tag = dmmoab->ltog_tag;

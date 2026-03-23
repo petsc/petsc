@@ -110,9 +110,8 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   PetscCall(VecZeroEntries(F));
   PetscCall(DMLocalToGlobalBegin(dm, locF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(dm, locF, ADD_VALUES, F));
-  if (dmlocalts->lumpedmassinv) {
-    PetscCall(VecPointwiseMult(F, dmlocalts->lumpedmassinv, F));
-  } else if (dmlocalts->kspmass) {
+  if (dmlocalts->lumpedmassinv) PetscCall(VecPointwiseMult(F, dmlocalts->lumpedmassinv, F));
+  else if (dmlocalts->kspmass) {
     Vec tmp;
 
     PetscCall(DMGetGlobalVector(dm, &tmp));

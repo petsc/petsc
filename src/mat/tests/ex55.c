@@ -48,11 +48,8 @@ int main(int argc, char **args)
 
     /* Load a baij matrix, then destroy the viewer. */
     PetscCall(MatCreate(PETSC_COMM_WORLD, &C));
-    if (size == 1) {
-      PetscCall(MatSetType(C, MATSEQBAIJ));
-    } else {
-      PetscCall(MatSetType(C, MATMPIBAIJ));
-    }
+    if (size == 1) PetscCall(MatSetType(C, MATSEQBAIJ));
+    else PetscCall(MatSetType(C, MATMPIBAIJ));
     PetscCall(MatSetFromOptions(C));
     PetscCall(MatLoad(C, fd));
     PetscCall(PetscViewerDestroy(&fd));

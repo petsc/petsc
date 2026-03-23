@@ -129,9 +129,8 @@ static PetscErrorCode assembled_system(void)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Evaluate initial guess; then solve nonlinear system
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (!flg) {
-    PetscCall(VecSet(x, pfive));
-  } else {
+  if (!flg) PetscCall(VecSet(x, pfive));
+  else {
     PetscCall(VecGetArray(x, &xx));
     xx[0] = 2.0;
     xx[1] = 3.0;
@@ -459,9 +458,8 @@ static PetscErrorCode block_system(void)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Evaluate initial guess; then solve nonlinear system
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (!flg) {
-    PetscCall(VecSet(x, pfive));
-  } else {
+  if (!flg) PetscCall(VecSet(x, pfive));
+  else {
     Vec *vecs;
     PetscCall(VecNestGetSubVecs(x, NULL, &vecs));
     bv = vecs[0];

@@ -62,15 +62,11 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
   DM           cda;
 
   PetscFunctionBeginUser;
-  if (idx == 0) {
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else if (idx == 1) { /* dam break */
-    PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0));
-  } else if (idx == 2) { /* stagnation in a corner */
-    PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, 0.0, 1.0, -1.0, 1.0));
-  } else if (idx == 3) { /* nautilis */
-    PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0));
-  } else if (idx == 4) PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0));
+  if (idx == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  else if (idx == 1) PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0)); /* dam break */
+  else if (idx == 2) PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, 0.0, 1.0, -1.0, 1.0));  /* stagnation in a corner */
+  else if (idx == 3) PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0)); /* nautilis */
+  else if (idx == 4) PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0));
 
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinates(da, &Gcoords));

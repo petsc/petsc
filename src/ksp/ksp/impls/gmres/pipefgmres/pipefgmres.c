@@ -367,11 +367,8 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
   PetscCall(VecMAXPBY(VEC_TEMP, it + 1, nrs, 0, &PREVEC(0)));
 
   /* add solution to previous solution */
-  if (vdest == vguess) {
-    PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
-  } else {
-    PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
-  }
+  if (vdest == vguess) PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
+  else PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

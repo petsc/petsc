@@ -36,13 +36,9 @@ int main(int argc, char **args)
       col[0] = i - 1;
       col[1] = i;
       col[2] = i + 1;
-      if (i == 0) {
-        PetscCall(MatSetValues(A[k], 1, &i, 2, col + 1, value + 1, INSERT_VALUES));
-      } else if (i == N - 1) {
-        PetscCall(MatSetValues(A[k], 1, &i, 2, col, value, INSERT_VALUES));
-      } else {
-        PetscCall(MatSetValues(A[k], 1, &i, 3, col, value, INSERT_VALUES));
-      }
+      if (i == 0) PetscCall(MatSetValues(A[k], 1, &i, 2, col + 1, value + 1, INSERT_VALUES));
+      else if (i == N - 1) PetscCall(MatSetValues(A[k], 1, &i, 2, col, value, INSERT_VALUES));
+      else PetscCall(MatSetValues(A[k], 1, &i, 3, col, value, INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(A[k], MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A[k], MAT_FINAL_ASSEMBLY));

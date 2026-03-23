@@ -3158,9 +3158,8 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin, MatDuplicateOption cpvalue
 
   PetscCall(PetscLayoutReference(matin->rmap, &mat->rmap));
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
-  if (matin->hash_active) {
-    PetscCall(MatSetUp(mat));
-  } else {
+  if (matin->hash_active) PetscCall(MatSetUp(mat));
+  else {
     mat->factortype   = matin->factortype;
     mat->preallocated = PETSC_TRUE;
     mat->assembled    = PETSC_TRUE;

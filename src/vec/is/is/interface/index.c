@@ -546,9 +546,8 @@ static PetscErrorCode ISGetInfo_Unique_Private(IS is, ISInfoType type, PetscBool
   comm = PetscObjectComm((PetscObject)is);
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (type == IS_GLOBAL && is->ops->uniqueglobal) {
-    PetscUseTypeMethod(is, uniqueglobal, flg);
-  } else {
+  if (type == IS_GLOBAL && is->ops->uniqueglobal) PetscUseTypeMethod(is, uniqueglobal, flg);
+  else {
     PetscBool uniqueLocal;
     PetscInt  n   = -1;
     PetscInt *idx = NULL;
@@ -1099,9 +1098,8 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
     PetscCallMPI(MPIU_Allreduce(&issame, &isallsame, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
     issame = isallsame;
   }
-  if (issame) {
-    PetscCall(ISDuplicate(is, isout));
-  } else {
+  if (issame) PetscCall(ISDuplicate(is, isout));
+  else {
     PetscUseTypeMethod(is, invertpermutation, nlocal, isout);
     PetscCall(ISSetPermutation(*isout));
   }
@@ -1288,9 +1286,8 @@ PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
 PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 {
   PetscFunctionBegin;
-  if (is->ops->locate) {
-    PetscUseTypeMethod(is, locate, key, location);
-  } else {
+  if (is->ops->locate) PetscUseTypeMethod(is, locate, key, location);
+  else {
     PetscInt        numIdx;
     PetscBool       sorted;
     const PetscInt *idx;
@@ -1406,9 +1403,8 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscAssertPointer(indices, 2);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
-  if (size == 1) {
-    PetscUseTypeMethod(is, getindices, indices);
-  } else {
+  if (size == 1) PetscUseTypeMethod(is, getindices, indices);
+  else {
     if (!is->total) PetscCall(ISGatherTotal_Private(is));
     *indices = is->total;
   }

@@ -225,9 +225,8 @@ static PetscErrorCode TSStep_Theta(TS ts)
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, th->X, &stageok));
     if (!stageok) goto reject_step;
 
-    if (th->endpoint) {
-      PetscCall(VecCopy(th->X, ts->vec_sol));
-    } else {
+    if (th->endpoint) PetscCall(VecCopy(th->X, ts->vec_sol));
+    else {
       PetscCall(VecAXPBYPCZ(th->Xdot, -th->shift, th->shift, 0, th->X0, th->X)); /* th->Xdot is needed by TSInterpolate_Theta */
       if (th->Theta == 1.0) PetscCall(VecCopy(th->X, ts->vec_sol));              /* BEULER, stage already checked */
       else {
@@ -451,11 +450,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   /* Build RHS for first-order adjoint */
   /* Cost function has an integral term */
   if (quadts) {
-    if (th->endpoint) {
-      PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, ts->vec_sol, quadJ, NULL));
-    } else {
-      PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, th->X, quadJ, NULL));
-    }
+    if (th->endpoint) PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, ts->vec_sol, quadJ, NULL));
+    else PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, th->X, quadJ, NULL));
   }
 
   for (nadj = 0; nadj < ts->numcost; nadj++) {
@@ -951,11 +947,8 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes, Vec x, Vec y, TS ts)
   PetscCall(SNESGetDM(snes, &dm));
   /* When using the endpoint variant, this is actually 1/Theta * Xdot */
   PetscCall(TSThetaGetX0AndXdot(ts, dm, &X0, &Xdot));
-  if (x != X0) {
-    PetscCall(VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x));
-  } else {
-    PetscCall(VecZeroEntries(Xdot));
-  }
+  if (x != X0) PetscCall(VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x));
+  else PetscCall(VecZeroEntries(Xdot));
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;

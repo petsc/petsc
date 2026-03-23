@@ -97,9 +97,7 @@ static void f0_ve_shift(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 {
   PetscReal vz = numConstants > 0 ? PetscRealPart(constants[0]) : 0;
   if (dim == 2) *f0 = u[0] * 2. * PETSC_PI * x[0] * PetscSqrtReal(x[0] * x[0] + (x[1] - vz) * (x[1] - vz)); /* n r v */
-  else {
-    *f0 = u[0] * PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + (x[2] - vz) * (x[2] - vz)); /* n v */
-  }
+  else *f0 = u[0] * PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + (x[2] - vz) * (x[2] - vz));                   /* n v */
 }
 
 /* CalculateE - Calculate the electric field  */

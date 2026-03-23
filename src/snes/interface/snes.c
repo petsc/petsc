@@ -978,11 +978,8 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   PetscObjectOptionsBegin((PetscObject)snes);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
   PetscCall(PetscOptionsFList("-snes_type", "Nonlinear solver method", "SNESSetType", SNESList, deft, type, 256, &flg));
-  if (flg) {
-    PetscCall(SNESSetType(snes, type));
-  } else if (!((PetscObject)snes)->type_name) {
-    PetscCall(SNESSetType(snes, deft));
-  }
+  if (flg) PetscCall(SNESSetType(snes, type));
+  else if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, deft));
 
   abstol    = snes->abstol;
   rtol      = snes->rtol;
@@ -3304,11 +3301,8 @@ static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
     PetscCall(SNESGetDM(snes, &dm));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)snes->jacobian_pre, &isdense, MATSEQDENSE, MATMPIDENSE, MATDENSE, NULL));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)snes->jacobian_pre, &ismf, MATMFFD, MATSHELL, NULL));
-    if (isdense) {
-      PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobianDefault, NULL));
-    } else if (!ismf) {
-      PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobianDefaultColor, NULL));
-    }
+    if (isdense) PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobianDefault, NULL));
+    else if (!ismf) PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobianDefaultColor, NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -317,9 +317,8 @@ static PetscErrorCode GmshReadPetscInt(GmshFile *gmsh, PetscInt *buf, PetscCount
   size_t     dataSize = (size_t)gmsh->dataSize;
 
   PetscFunctionBegin;
-  if (dataSize == sizeof(PetscInt)) {
-    PetscCall(GmshRead(gmsh, buf, count, PETSC_INT));
-  } else if (dataSize == sizeof(int)) {
+  if (dataSize == sizeof(PetscInt)) PetscCall(GmshRead(gmsh, buf, count, PETSC_INT));
+  else if (dataSize == sizeof(int)) {
     int *ibuf = NULL;
     PetscCall(GmshBufferSizeGet(gmsh, count, &ibuf));
     PetscCall(GmshRead(gmsh, ibuf, count, PETSC_ENUM));
@@ -347,9 +346,8 @@ static PetscErrorCode GmshReadPetscCount(GmshFile *gmsh, PetscCount *buf, PetscC
   size_t     dataSize = (size_t)gmsh->dataSize;
 
   PetscFunctionBegin;
-  if (dataSize == sizeof(PetscCount)) {
-    PetscCall(GmshRead(gmsh, buf, count, PETSC_COUNT));
-  } else if (dataSize == sizeof(int)) {
+  if (dataSize == sizeof(PetscCount)) PetscCall(GmshRead(gmsh, buf, count, PETSC_COUNT));
+  else if (dataSize == sizeof(int)) {
     int *ibuf = NULL;
     PetscCall(GmshBufferSizeGet(gmsh, count, &ibuf));
     PetscCall(GmshRead(gmsh, ibuf, count, PETSC_ENUM));

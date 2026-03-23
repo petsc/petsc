@@ -54,11 +54,8 @@ static PetscErrorCode MatMultAdd_ConstantDiagonal(Mat mat, Vec v1, Vec v2, Vec v
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)mat->data;
 
   PetscFunctionBegin;
-  if (v2 == v3) {
-    PetscCall(VecAXPBY(v3, ctx->diag, 1.0, v1));
-  } else {
-    PetscCall(VecAXPBYPCZ(v3, ctx->diag, 1.0, 0.0, v1, v2));
-  }
+  if (v2 == v3) PetscCall(VecAXPBY(v3, ctx->diag, 1.0, v1));
+  else PetscCall(VecAXPBYPCZ(v3, ctx->diag, 1.0, 0.0, v1, v2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -67,11 +64,8 @@ static PetscErrorCode MatMultHermitianTransposeAdd_ConstantDiagonal(Mat mat, Vec
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)mat->data;
 
   PetscFunctionBegin;
-  if (v2 == v3) {
-    PetscCall(VecAXPBY(v3, PetscConj(ctx->diag), 1.0, v1));
-  } else {
-    PetscCall(VecAXPBYPCZ(v3, PetscConj(ctx->diag), 1.0, 0.0, v1, v2));
-  }
+  if (v2 == v3) PetscCall(VecAXPBY(v3, PetscConj(ctx->diag), 1.0, v1));
+  else PetscCall(VecAXPBYPCZ(v3, PetscConj(ctx->diag), 1.0, 0.0, v1, v2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

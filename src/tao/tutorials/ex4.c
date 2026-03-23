@@ -295,9 +295,8 @@ static PetscErrorCode GradientRegularization(Tao tao, Vec x, Vec V, void *_ctx)
   PetscReal eps = ctx->eps;
 
   PetscFunctionBegin;
-  if (ctx->p == NORM_2) {
-    PetscCall(VecCopy(x, V));
-  } else if (ctx->p == NORM_1) {
+  if (ctx->p == NORM_2) PetscCall(VecCopy(x, V));
+  else if (ctx->p == NORM_1) {
     PetscCall(VecCopy(x, ctx->workRight[1]));
     PetscCall(VecAbs(ctx->workRight[1]));
     PetscCall(VecShift(ctx->workRight[1], eps));

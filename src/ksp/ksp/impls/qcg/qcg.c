@@ -229,11 +229,8 @@ static PetscErrorCode KSPSolve_QCG(KSP ksp)
         PetscCall(VecCopy(W, X));
         q1 = step1 * (bstp + wtasp + .5 * step1 * ptasp);
         q2 = step2 * (bstp + wtasp + .5 * step2 * ptasp);
-        if (q1 <= q2) {
-          PetscCall(VecAXPY(X, step1, P));
-        } else {
-          PetscCall(VecAXPY(X, step2, P));
-        }
+        if (q1 <= q2) PetscCall(VecAXPY(X, step1, P));
+        else PetscCall(VecAXPY(X, step2, P));
       }
       pcgP->ltsnrm = pcgP->delta; /* convergence in direction of */
       ksp->reason  = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;

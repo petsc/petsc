@@ -470,9 +470,8 @@ static PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems PetscOpt
 
   /* Set polynomial type */
   PetscCall(PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga, &flga, NULL));
-  if (flga) {
-    PetscCall(KSPBCGSLSetPol(ksp, PETSC_TRUE));
-  } else {
+  if (flga) PetscCall(KSPBCGSLSetPol(ksp, PETSC_TRUE));
+  else {
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg, &flg, NULL));
     PetscCall(KSPBCGSLSetPol(ksp, PETSC_FALSE));

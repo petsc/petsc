@@ -256,11 +256,8 @@ int main(int argc, char **args)
       }
     }
     PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &AD));
-    if (!nfact) {
-      PetscCall(MatMatMult(AD, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
-    } else {
-      PetscCall(MatMatMult(AD, C, MAT_REUSE_MATRIX, 2.0, &RHS));
-    }
+    if (!nfact) PetscCall(MatMatMult(AD, C, MAT_INITIAL_MATRIX, 2.0, &RHS));
+    else PetscCall(MatMatMult(AD, C, MAT_REUSE_MATRIX, 2.0, &RHS));
     PetscCall(MatDestroy(&AD));
     for (nsolve = 0; nsolve < 2; nsolve++) {
       PetscCall(MatMatSolve(F, RHS, X));

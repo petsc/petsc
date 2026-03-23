@@ -576,22 +576,16 @@ static PetscErrorCode VecMultiDot_Seq_GEMV(PetscBool conjugate, Vec xin, PetscIn
 PetscErrorCode VecMDot_Seq_GEMV(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscFunctionBegin;
-  if (xin->map->n > PETSC_BLAS_INT_MAX) {
-    PetscCall(VecMDot_Seq(xin, nv, yin, z));
-  } else {
-    PetscCall(VecMultiDot_Seq_GEMV(PETSC_TRUE, xin, nv, yin, z));
-  }
+  if (xin->map->n > PETSC_BLAS_INT_MAX) PetscCall(VecMDot_Seq(xin, nv, yin, z));
+  else PetscCall(VecMultiDot_Seq_GEMV(PETSC_TRUE, xin, nv, yin, z));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMTDot_Seq_GEMV(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscFunctionBegin;
-  if (xin->map->n > PETSC_BLAS_INT_MAX) {
-    PetscCall(VecMTDot_Seq(xin, nv, yin, z));
-  } else {
-    PetscCall(VecMultiDot_Seq_GEMV(PETSC_FALSE, xin, nv, yin, z));
-  }
+  if (xin->map->n > PETSC_BLAS_INT_MAX) PetscCall(VecMTDot_Seq(xin, nv, yin, z));
+  else PetscCall(VecMultiDot_Seq_GEMV(PETSC_FALSE, xin, nv, yin, z));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

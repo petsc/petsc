@@ -79,9 +79,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIADJ, &flg));
   if (size > 1) {
-    if (flg) {
-      PetscCall(MatMPIAdjToSeq(mat, &matSeq));
-    } else {
+    if (flg) PetscCall(MatMPIAdjToSeq(mat, &matSeq));
+    else {
       PetscCall(PetscInfo(part, "Converting distributed matrix to sequential: this could be a performance loss\n"));
       PetscCall(MatGetSize(mat, &M, &N));
       PetscCall(ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow));

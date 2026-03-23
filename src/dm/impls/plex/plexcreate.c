@@ -1019,9 +1019,8 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
   PetscCheck((dim == 2) || (dim == 3), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlex box labeling only supports 2D and 3D meshes, received DM of dimension %" PetscInt_FMT, dim);
   // Get Face Sets label
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
-  if (label) {
-    PetscCall(DMLabelReset(label));
-  } else {
+  if (label) PetscCall(DMLabelReset(label));
+  else {
     PetscCall(DMCreateLabel(dm, "Face Sets"));
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
   }
@@ -5118,9 +5117,8 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
     PetscBool all = PETSC_FALSE;
 
     PetscCall(PetscOptionsBool("-dm_plex_check_all", "Perform all basic checks", "DMPlexCheck", PETSC_FALSE, &all, NULL));
-    if (all) {
-      PetscCall(DMPlexCheck(dm));
-    } else {
+    if (all) PetscCall(DMPlexCheck(dm));
+    else {
       PetscCall(PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2));
       if (flg && flg2) PetscCall(DMPlexCheckSymmetry(dm));
       PetscCall(PetscOptionsBool("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes)", "DMPlexCheckSkeleton", PETSC_FALSE, &flg, &flg2));

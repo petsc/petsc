@@ -2019,11 +2019,8 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, Pe
           x[i] = (1. - omega) * x[i] + sum * idiag[i]; /* omega in idiag */
         }
       }
-      if (xb == b) {
-        PetscCall(PetscLogFlops(2.0 * a->nz));
-      } else {
-        PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
-      }
+      if (xb == b) PetscCall(PetscLogFlops(2.0 * a->nz));
+      else PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
     }
   }
   PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));

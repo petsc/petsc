@@ -426,11 +426,8 @@ PetscErrorCode AOSetFromOptions(AO ao)
 
   PetscObjectOptionsBegin((PetscObject)ao);
   PetscCall(PetscOptionsFList("-ao_type", "AO type", "AOSetType", AOList, def, type, 256, &flg));
-  if (flg) {
-    PetscCall(AOSetType(ao, type));
-  } else if (!((PetscObject)ao)->type_name) {
-    PetscCall(AOSetType(ao, def));
-  }
+  if (flg) PetscCall(AOSetType(ao, type));
+  else if (!((PetscObject)ao)->type_name) PetscCall(AOSetType(ao, def));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

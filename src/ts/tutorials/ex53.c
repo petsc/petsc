@@ -785,9 +785,8 @@ static PetscErrorCode mandel_2d_u(PetscInt dim, PetscReal time, const PetscReal 
   AppCtx *user = (AppCtx *)ctx;
 
   PetscCall(PetscBagGetData(user->bag, &param));
-  if (time <= 0.0) {
-    PetscCall(mandel_initial_u(dim, time, x, Nc, u, ctx));
-  } else {
+  if (time <= 0.0) PetscCall(mandel_initial_u(dim, time, x, Nc, u, ctx));
+  else {
     PetscInt    NITER = user->niter;
     PetscScalar alpha = param->alpha;
     PetscScalar K_u   = param->K_u;
@@ -828,9 +827,8 @@ static PetscErrorCode mandel_2d_eps(PetscInt dim, PetscReal time, const PetscRea
   AppCtx *user = (AppCtx *)ctx;
 
   PetscCall(PetscBagGetData(user->bag, &param));
-  if (time <= 0.0) {
-    PetscCall(mandel_initial_eps(dim, time, x, Nc, u, ctx));
-  } else {
+  if (time <= 0.0) PetscCall(mandel_initial_eps(dim, time, x, Nc, u, ctx));
+  else {
     PetscInt    NITER = user->niter;
     PetscScalar alpha = param->alpha;
     PetscScalar K_u   = param->K_u;

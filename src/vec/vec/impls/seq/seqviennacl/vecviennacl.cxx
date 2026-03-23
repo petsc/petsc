@@ -396,9 +396,8 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win, PetscScalar alpha, Vec xin, Vec yin
   ViennaCLVector       *wgpu;
 
   PetscFunctionBegin;
-  if (alpha == 0.0 && xin->map->n > 0) {
-    PetscCall(VecCopy_SeqViennaCL(yin, win));
-  } else {
+  if (alpha == 0.0 && xin->map->n > 0) PetscCall(VecCopy_SeqViennaCL(yin, win));
+  else {
     PetscCall(VecViennaCLGetArrayRead(xin, &xgpu));
     PetscCall(VecViennaCLGetArrayRead(yin, &ygpu));
     PetscCall(VecViennaCLGetArrayWrite(win, &wgpu));
@@ -675,13 +674,10 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin, PetscScalar alpha, PetscScalar beta
   ViennaCLVector       *ygpu;
 
   PetscFunctionBegin;
-  if (a == 0.0 && xin->map->n > 0) {
-    PetscCall(VecScale_SeqViennaCL(yin, beta));
-  } else if (b == 1.0 && xin->map->n > 0) {
-    PetscCall(VecAXPY_SeqViennaCL(yin, alpha, xin));
-  } else if (a == 1.0 && xin->map->n > 0) {
-    PetscCall(VecAYPX_SeqViennaCL(yin, beta, xin));
-  } else if (b == 0.0 && xin->map->n > 0) {
+  if (a == 0.0 && xin->map->n > 0) PetscCall(VecScale_SeqViennaCL(yin, beta));
+  else if (b == 1.0 && xin->map->n > 0) PetscCall(VecAXPY_SeqViennaCL(yin, alpha, xin));
+  else if (a == 1.0 && xin->map->n > 0) PetscCall(VecAYPX_SeqViennaCL(yin, beta, xin));
+  else if (b == 0.0 && xin->map->n > 0) {
     PetscCall(VecViennaCLGetArrayRead(xin, &xgpu));
     PetscCall(VecViennaCLGetArray(yin, &ygpu));
     PetscCall(PetscLogGpuTimeBegin());

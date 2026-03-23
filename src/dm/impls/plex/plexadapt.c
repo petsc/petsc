@@ -216,9 +216,8 @@ gotit:
   case 1:
   case 2:
   case 3:
-    if (adapt) {
-      PetscCall((*adapt)(dm, NULL, adaptLabel, NULL, dmRefined));
-    } else {
+    if (adapt) PetscCall((*adapt)(dm, NULL, adaptLabel, NULL, dmRefined));
+    else {
       PetscCall(PetscMalloc1(cEnd - cStart, &maxVolumes));
       if (adaptLabel) {
         PetscCall(DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes));

@@ -217,12 +217,8 @@ template <typename BinaryFuncT>
 inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinaryDispatch_(PetscErrorCode (*VecSeqFunction)(Vec, Vec, Vec), BinaryFuncT &&binary, Vec wout, Vec xin, Vec yin, PetscDeviceContext dctx) noexcept
 {
   PetscFunctionBegin;
-  if (xin->boundtocpu || yin->boundtocpu) {
-    PetscCall((*VecSeqFunction)(wout, xin, yin));
-  } else {
-    // note order of arguments! xin and yin are read, wout is written!
-    PetscCall(PointwiseBinary_(std::forward<BinaryFuncT>(binary), xin, yin, wout, dctx));
-  }
+  if (xin->boundtocpu || yin->boundtocpu) PetscCall((*VecSeqFunction)(wout, xin, yin));
+  else PetscCall(PointwiseBinary_(std::forward<BinaryFuncT>(binary), xin, yin, wout, dctx)); // note order of arguments! xin and yin are read, wout is written!
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

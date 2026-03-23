@@ -612,9 +612,8 @@ PetscErrorCode TaskWorker(AppCtx *user)
   while (tag != DIE_TAG) {
     PetscCallMPI(MPI_Recv(x, NPARAMETERS, MPIU_REAL, 0, MPI_ANY_TAG, PETSC_COMM_WORLD, &status));
     tag = status.MPI_TAG;
-    if (tag == IDLE_TAG) {
-      PetscCallMPI(MPI_Send(&f, 1, MPIU_REAL, 0, IDLE_TAG, PETSC_COMM_WORLD));
-    } else if (tag != DIE_TAG) {
+    if (tag == IDLE_TAG) PetscCallMPI(MPI_Send(&f, 1, MPIU_REAL, 0, IDLE_TAG, PETSC_COMM_WORLD));
+    else if (tag != DIE_TAG) {
       index = (PetscInt)tag;
       PetscCall(RunSimulation(x, index, &f, user));
       PetscCallMPI(MPI_Send(&f, 1, MPIU_REAL, 0, tag, PETSC_COMM_WORLD));

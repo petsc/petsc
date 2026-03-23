@@ -271,9 +271,8 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
   PetscValidHeaderSpecific(DU, VEC_CLASSID, 3);
   PetscCheckSameComm(tao, 1, DL, 2);
   PetscCheckSameComm(tao, 1, DU, 3);
-  if (tao->ops->computedual) {
-    PetscUseTypeMethod(tao, computedual, DL, DU);
-  } else {
+  if (tao->ops->computedual) PetscUseTypeMethod(tao, computedual, DL, DU);
+  else {
     PetscCall(VecSet(DL, 0.0));
     PetscCall(VecSet(DU, 0.0));
   }

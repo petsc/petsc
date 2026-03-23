@@ -1232,11 +1232,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     }
     if (found != 2) {
       PetscInt e;
-      if (fl2g) {
-        PetscCall(ISLocalToGlobalMappingApply(fl2g, 1, idxs, &e));
-      } else {
-        e = idxs[0];
-      }
+      if (fl2g) PetscCall(ISLocalToGlobalMappingApply(fl2g, 1, idxs, &e));
+      else e = idxs[0];
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found %" PetscInt_FMT " corners for edge %" PetscInt_FMT " (astart %" PetscInt_FMT ", estart %" PetscInt_FMT ")", found, i, e, idxs[0]);
     }
 
@@ -1372,9 +1369,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscInt               cnv, cne;
 
     PetscCall(ISCreateGeneral(comm, nee, cedges, PETSC_COPY_VALUES, &wis));
-    if (fl2g) {
-      PetscCall(ISLocalToGlobalMappingApplyIS(fl2g, wis, &pcbddc->nedclocal));
-    } else {
+    if (fl2g) PetscCall(ISLocalToGlobalMappingApplyIS(fl2g, wis, &pcbddc->nedclocal));
+    else {
       PetscCall(PetscObjectReference((PetscObject)wis));
       pcbddc->nedclocal = wis;
     }
@@ -1601,9 +1597,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscInt    ncc, *idxs;
 
     /* find first primal edge */
-    if (pcbddc->nedclocal) {
-      PetscCall(ISGetIndices(pcbddc->nedclocal, (const PetscInt **)&idxs));
-    } else {
+    if (pcbddc->nedclocal) PetscCall(ISGetIndices(pcbddc->nedclocal, (const PetscInt **)&idxs));
+    else {
       if (fl2g) PetscCall(ISLocalToGlobalMappingApply(fl2g, nee, cedges, cedges));
       idxs = cedges;
     }
@@ -2118,11 +2113,8 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   PetscCall(PetscSFReduceEnd(matis->sf, MPIU_INT, matis->sf_leafdata, matis->sf_rootdata, mop));
   PetscCall(PetscSFBcastBegin(matis->sf, MPIU_INT, matis->sf_rootdata, matis->sf_leafdata, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(matis->sf, MPIU_INT, matis->sf_rootdata, matis->sf_leafdata, MPI_REPLACE));
-  if (mop == MPI_LAND) {
-    PetscCall(PetscMalloc1(nd, &nidxs));
-  } else {
-    PetscCall(PetscMalloc1(n, &nidxs));
-  }
+  if (mop == MPI_LAND) PetscCall(PetscMalloc1(nd, &nidxs));
+  else PetscCall(PetscMalloc1(n, &nidxs));
   for (i = 0, nnd = 0; i < n; i++)
     if (matis->sf_leafdata[i]) nidxs[nnd++] = i;
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)*is), nnd, nidxs, PETSC_OWN_POINTER, &nis));
@@ -6013,11 +6005,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       PetscCall(KSPSetOptionsPrefix(pcbddc->ksp_D, dir_prefix));
       PetscCall(PetscObjectTypeCompare((PetscObject)pcis->pA_II, MATSEQSBAIJ, &issbaij));
       PetscCall(KSPGetPC(pcbddc->ksp_D, &pc_temp));
-      if (issbaij) {
-        PetscCall(PCSetType(pc_temp, PCCHOLESKY));
-      } else {
-        PetscCall(PCSetType(pc_temp, PCLU));
-      }
+      if (issbaij) PetscCall(PCSetType(pc_temp, PCCHOLESKY));
+      else PetscCall(PCSetType(pc_temp, PCLU));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->ksp_D, pc->erroriffailure));
     }
     PetscCall(MatSetOptionsPrefix(pcis->pA_II, ((PetscObject)pcbddc->ksp_D)->prefix));
@@ -6160,11 +6149,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       PetscCall(KSPSetOptionsPrefix(pcbddc->ksp_R, neu_prefix));
       PetscCall(KSPGetPC(pcbddc->ksp_R, &pc_temp));
       PetscCall(PetscObjectTypeCompare((PetscObject)A_RR, MATSEQSBAIJ, &issbaij));
-      if (issbaij) {
-        PetscCall(PCSetType(pc_temp, PCCHOLESKY));
-      } else {
-        PetscCall(PCSetType(pc_temp, PCLU));
-      }
+      if (issbaij) PetscCall(PCSetType(pc_temp, PCCHOLESKY));
+      else PetscCall(PCSetType(pc_temp, PCLU));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->ksp_R, pc->erroriffailure));
     }
     PetscCall(MatSetOptionsPrefix(A_RR, ((PetscObject)pcbddc->ksp_R)->prefix));
@@ -8300,11 +8286,8 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     PetscCall(MatCreateIS(comm_n, bs, PETSC_DECIDE, PETSC_DECIDE, rows, cols, l2gmap, l2gmap, mat_n));
   } else {
     /* it also destroys the local matrices */
-    if (*mat_n) {
-      PetscCall(MatSetLocalToGlobalMapping(*mat_n, l2gmap, l2gmap));
-    } else { /* this is a fake object */
-      PetscCall(MatCreateIS(comm_n, bs, PETSC_DECIDE, PETSC_DECIDE, rows, cols, l2gmap, l2gmap, mat_n));
-    }
+    if (*mat_n) PetscCall(MatSetLocalToGlobalMapping(*mat_n, l2gmap, l2gmap));
+    else PetscCall(MatCreateIS(comm_n, bs, PETSC_DECIDE, PETSC_DECIDE, rows, cols, l2gmap, l2gmap, mat_n)); /* this is a fake object */
   }
   PetscCall(MatISGetLocalMat(*mat_n, &local_mat));
   PetscCall(MatSetType(local_mat, new_local_type));

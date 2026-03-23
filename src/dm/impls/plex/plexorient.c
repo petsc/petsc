@@ -154,11 +154,11 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
 
   if (mismatch ^ (flippedA ^ flippedB)) {
     PetscCheck(!seenA || !seenB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %" PetscInt_FMT " and %" PetscInt_FMT " do not match: Fault mesh is non-orientable", supp[indS[0]], supp[indS[1]]);
-    if (!seenA && !flippedA) {
-      PetscCall(PetscBTSet(flippedCells, indC[0]));
-    } else if (!seenB && !flippedB) {
+    if (!seenA && !flippedA) PetscCall(PetscBTSet(flippedCells, indC[0]));
+    else {
+      PetscCheck(!seenB && !flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
       PetscCall(PetscBTSet(flippedCells, indC[1]));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+    }
   } else PetscCheck(!mismatch || !flippedA || !flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
   PetscCall(PetscBTSet(seenCells, indC[0]));
   PetscCall(PetscBTSet(seenCells, indC[1]));

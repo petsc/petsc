@@ -1015,9 +1015,8 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   PetscCall(ISView(is, NULL));
   PetscCall(MatGetLocalToGlobalMapping(A, &l2gr, &l2gc));
   /* tests MatDuplicate and MatCopy */
-  if (diag == 0.) {
-    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
-  } else {
+  if (diag == 0.) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+  else {
     PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
     PetscCall(MatCopy(A, B, SAME_NONZERO_PATTERN));
   }

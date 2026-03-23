@@ -2981,9 +2981,8 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE)obj;
 
-      if (isRefined) {
-        PetscCall(PetscFERefine(fe, &feRef[f]));
-      } else {
+      if (isRefined) PetscCall(PetscFERefine(fe, &feRef[f]));
+      else {
         PetscCall(PetscObjectReference((PetscObject)fe));
         feRef[f] = fe;
       }
@@ -2993,9 +2992,8 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
       PetscFV        fv = (PetscFV)obj;
       PetscDualSpace Q;
 
-      if (isRefined) {
-        PetscCall(PetscFVRefine(fv, &fvRef[f]));
-      } else {
+      if (isRefined) PetscCall(PetscFVRefine(fv, &fvRef[f]));
+      else {
         PetscCall(PetscObjectReference((PetscObject)fv));
         fvRef[f] = fv;
       }

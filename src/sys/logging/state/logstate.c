@@ -213,11 +213,8 @@ PetscErrorCode PetscLogStateStageRegister(PetscLogState state, const char sname[
   PetscCall(PetscBTSet(state->active, s)); // stages are by default active
   for (PetscInt e = 1; e < state->bt_num_events; e++) {
     // copy "Main Stage" activities
-    if (PetscBTLookup(state->active, 0 + e * state->bt_num_stages)) {
-      PetscCall(PetscBTSet(state->active, s + e * state->bt_num_stages));
-    } else {
-      PetscCall(PetscBTClear(state->active, s + e * state->bt_num_stages));
-    }
+    if (PetscBTLookup(state->active, 0 + e * state->bt_num_stages)) PetscCall(PetscBTSet(state->active, s + e * state->bt_num_stages));
+    else PetscCall(PetscBTClear(state->active, s + e * state->bt_num_stages));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -188,20 +188,14 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (!((PetscObject)sp)->type_name) {
-    defaultType = PETSCSPACEPOLYNOMIAL;
-  } else {
-    defaultType = ((PetscObject)sp)->type_name;
-  }
+  if (!((PetscObject)sp)->type_name) defaultType = PETSCSPACEPOLYNOMIAL;
+  else defaultType = ((PetscObject)sp)->type_name;
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)sp);
   PetscCall(PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg));
-  if (flg) {
-    PetscCall(PetscSpaceSetType(sp, name));
-  } else if (!((PetscObject)sp)->type_name) {
-    PetscCall(PetscSpaceSetType(sp, defaultType));
-  }
+  if (flg) PetscCall(PetscSpaceSetType(sp, name));
+  else if (!((PetscObject)sp)->type_name) PetscCall(PetscSpaceSetType(sp, defaultType));
   {
     PetscCall(PetscOptionsDeprecated("-petscspace_order", "-petscspace_degree", "3.11", NULL));
   }

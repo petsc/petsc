@@ -4947,13 +4947,9 @@ static PetscErrorCode DMSetDefaultAdjacency_Private(DM dm, PetscInt f, PetscObje
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetClassId(disc, &id));
-  if (id == PETSCFE_CLASSID) {
-    PetscCall(DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE));
-  } else if (id == PETSCFV_CLASSID) {
-    PetscCall(DMSetAdjacency(dm, f, PETSC_TRUE, PETSC_FALSE));
-  } else {
-    PetscCall(DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE));
-  }
+  if (id == PETSCFE_CLASSID) PetscCall(DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE));
+  else if (id == PETSCFV_CLASSID) PetscCall(DMSetAdjacency(dm, f, PETSC_TRUE, PETSC_FALSE));
+  else PetscCall(DMSetAdjacency(dm, f, PETSC_FALSE, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -7032,9 +7028,8 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscAssertPointer(ids, 3);
   PetscCall(DMGetLabel(dm, name, &label));
   *ids = NULL;
-  if (label) {
-    PetscCall(DMLabelGetValueIS(label, ids));
-  } else {
+  if (label) PetscCall(DMLabelGetValueIS(label, ids));
+  else {
     /* returning an empty IS */
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_USE_POINTER, ids));
   }
@@ -7665,11 +7660,8 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
         SETERRQ(PetscObjectComm((PetscObject)dmA), PETSC_ERR_ARG_OUTOFRANGE, "Unhandled DMCopyLabelsMode %d", (int)emode);
       }
     }
-    if (mode == PETSC_COPY_VALUES) {
-      PetscCall(DMLabelDuplicate(label, &labelNew));
-    } else {
-      labelNew = label;
-    }
+    if (mode == PETSC_COPY_VALUES) PetscCall(DMLabelDuplicate(label, &labelNew));
+    else labelNew = label;
     PetscCall(DMAddLabel(dmB, labelNew));
     if (mode == PETSC_COPY_VALUES) PetscCall(DMLabelDestroy(&labelNew));
   }

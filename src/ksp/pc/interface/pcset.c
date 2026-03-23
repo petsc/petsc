@@ -140,11 +140,8 @@ PetscErrorCode PCSetFromOptions(PC pc)
   PetscObjectOptionsBegin((PetscObject)pc);
 
   PetscCall(PetscOptionsFList("-pc_type", "Preconditioner", "PCSetType", PCList, def, type, 256, &flg));
-  if (flg) {
-    PetscCall(PCSetType(pc, type));
-  } else if (!((PetscObject)pc)->type_name && def) {
-    PetscCall(PCSetType(pc, def));
-  }
+  if (flg) PetscCall(PCSetType(pc, type));
+  else if (!((PetscObject)pc)->type_name && def) PetscCall(PCSetType(pc, def));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCNONE, &flg));
   if (flg) goto skipoptions;

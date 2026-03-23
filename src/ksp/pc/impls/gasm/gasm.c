@@ -1886,9 +1886,7 @@ PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
   PetscValidLogicalCollectiveBool(pc, flg, 2);
   PetscCheck(!pc->setupcalled, ((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Not for a setup PC.");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCGASM, &match));
-  if (match) {
-    if (!osm->user_subdomains && osm->N == PETSC_DETERMINE && osm->overlap < 0) osm->dm_subdomains = flg;
-  }
+  if (match && !osm->user_subdomains && osm->N == PETSC_DETERMINE && osm->overlap < 0) osm->dm_subdomains = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

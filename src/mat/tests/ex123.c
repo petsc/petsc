@@ -33,14 +33,9 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-localapi", &localapi, NULL));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   if (loc) {
-    if (locdiag) {
-      PetscCall(MatSetSizes(A, m, N, PETSC_DECIDE, PETSC_DECIDE));
-    } else {
-      PetscCall(MatSetSizes(A, m, m + N, PETSC_DECIDE, PETSC_DECIDE));
-    }
-  } else {
-    PetscCall(MatSetSizes(A, m, PETSC_DECIDE, PETSC_DECIDE, N));
-  }
+    if (locdiag) PetscCall(MatSetSizes(A, m, N, PETSC_DECIDE, PETSC_DECIDE));
+    else PetscCall(MatSetSizes(A, m, m + N, PETSC_DECIDE, PETSC_DECIDE));
+  } else PetscCall(MatSetSizes(A, m, PETSC_DECIDE, PETSC_DECIDE, N));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatGetLayouts(A, &rmap, &cmap));
   PetscCall(PetscLayoutSetUp(rmap));

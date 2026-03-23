@@ -218,11 +218,8 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
         const PetscInt p = idx[i];
         PetscInt       numConst;
 
-        if (Nf) {
-          PetscCall(PetscSectionGetFieldDof(section, p, field, &numConst));
-        } else {
-          PetscCall(PetscSectionGetDof(section, p, &numConst));
-        }
+        if (Nf) PetscCall(PetscSectionGetFieldDof(section, p, field, &numConst));
+        else PetscCall(PetscSectionGetDof(section, p, &numConst));
         /* If Nc <= 0, constrain every dof on the point */
         if (cNc > 0) {
           /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,

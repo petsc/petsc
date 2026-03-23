@@ -967,9 +967,8 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   if (const auto device = dctx->device) PetscCall(PetscDeviceGetType(device, &dtype.first));
   PetscCall(PetscDeviceContextGetStreamType(dctx, &stype.first));
 
-  if (comm == MPI_COMM_NULL) {
-    PetscCall(PetscObjectGetComm(pobj, &comm));
-  } else {
+  if (comm == MPI_COMM_NULL) PetscCall(PetscObjectGetComm(pobj, &comm));
+  else {
     // briefly set the communicator for dctx (it is always PETSC_COMM_SELF) so
     // PetscObjectOptionsBegin() behaves as if dctx had comm
     old_comm = Petsc::util::exchange(pobj->comm, comm);

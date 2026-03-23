@@ -208,11 +208,8 @@ int main(int argc, char **argv)
      Set Jacobian
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (!implicitform) {
-    if (!byhand) {
-      PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobianAdolc, &appctx));
-    } else {
-      PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobianByHand, &appctx));
-    }
+    if (!byhand) PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobianAdolc, &appctx));
+    else PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobianByHand, &appctx));
   } else {
     if (appctx.aijpc) {
       Mat A, B;
@@ -221,19 +218,13 @@ int main(int argc, char **argv)
       PetscCall(DMCreateMatrix(da, &A));
       PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &B));
       /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */
-      if (!byhand) {
-        PetscCall(TSSetIJacobian(ts, A, B, IJacobianAdolc, &appctx));
-      } else {
-        PetscCall(TSSetIJacobian(ts, A, B, IJacobianByHand, &appctx));
-      }
+      if (!byhand) PetscCall(TSSetIJacobian(ts, A, B, IJacobianAdolc, &appctx));
+      else PetscCall(TSSetIJacobian(ts, A, B, IJacobianByHand, &appctx));
       PetscCall(MatDestroy(&A));
       PetscCall(MatDestroy(&B));
     } else {
-      if (!byhand) {
-        PetscCall(TSSetIJacobian(ts, NULL, NULL, IJacobianAdolc, &appctx));
-      } else {
-        PetscCall(TSSetIJacobian(ts, NULL, NULL, IJacobianByHand, &appctx));
-      }
+      if (!byhand) PetscCall(TSSetIJacobian(ts, NULL, NULL, IJacobianAdolc, &appctx));
+      else PetscCall(TSSetIJacobian(ts, NULL, NULL, IJacobianByHand, &appctx));
     }
   }
 

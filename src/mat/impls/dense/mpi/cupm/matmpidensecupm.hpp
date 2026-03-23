@@ -140,11 +140,8 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::Convert_Dispatch_(Mat M, MatType, Ma
     const auto B    = *newmat;
     const auto pobj = PetscObjectCast(B);
 
-    if (to_host) {
-      PetscCall(BindToCPU(B, PETSC_TRUE));
-    } else {
-      PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUPM()));
-    }
+    if (to_host) PetscCall(BindToCPU(B, PETSC_TRUE));
+    else PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUPM()));
 
     PetscCall(PetscStrFreeAllocpy(to_host ? VECSTANDARD : VecMPI_CUPM::VECCUPM(), &B->defaultvectype));
     PetscCall(PetscObjectChangeTypeName(pobj, to_host ? MATMPIDENSE : MATMPIDENSECUPM()));

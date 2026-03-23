@@ -1770,11 +1770,8 @@ PetscErrorCode MatSOR_SeqSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, P
           x[i] = (1. - omega) * x[i] + sum * idiag[i]; /* omega in idiag */
         }
       }
-      if (xb == b) {
-        PetscCall(PetscLogFlops(2.0 * a->nz));
-      } else {
-        PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
-      }
+      if (xb == b) PetscCall(PetscLogFlops(2.0 * a->nz));
+      else PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
     }
   }
   PetscCall(VecRestoreArray(xx, &x));

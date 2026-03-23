@@ -357,11 +357,8 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->mat, MATNEST, &mnest));
-  if (mnest) {
-    PetscCall(MatNestGetSize(pc->pmat, &bs, NULL));
-  } else {
-    bs = jac->bs;
-  }
+  if (mnest) PetscCall(MatNestGetSize(pc->pmat, &bs, NULL));
+  else bs = jac->bs;
   PetscCall(PetscMalloc2(bs, &ifields, bs, &ifields_col));
   for (i = 0, flg = PETSC_TRUE;; i++) {
     PetscCall(PetscSNPrintf(splitname, sizeof(splitname), "%" PetscInt_FMT, i));
@@ -426,9 +423,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         if (!flg) break;
         PetscCheck(numFields <= 128, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot currently support %" PetscInt_FMT " > 128 fields", numFields);
         PetscCall(DMCreateSubDM(pc->dm, nfields, ifields, &compField, &subdm[i]));
-        if (nfields == 1) {
-          PetscCall(PCFieldSplitSetIS(pc, fieldNames[ifields[0]], compField));
-        } else {
+        if (nfields == 1) PetscCall(PCFieldSplitSetIS(pc, fieldNames[ifields[0]], compField));
+        else {
           PetscCall(PetscSNPrintf(splitname, sizeof(splitname), "%" PetscInt_FMT, i));
           PetscCall(PCFieldSplitSetIS(pc, splitname, compField));
         }

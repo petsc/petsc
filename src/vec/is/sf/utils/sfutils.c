@@ -792,9 +792,8 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscSFBcastEnd(sf1, MPIU_SF_NODE, buffer, owners, MPI_REPLACE));
   for (i = 0; i < numLeafIndices; ++i) PetscCheck(owners[i].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %" PetscInt_FMT " was unclaimed", leafIndices[i]);
   PetscCall(PetscFree(buffer));
-  if (sfA) {
-    *sfA = sf1;
-  } else PetscCall(PetscSFDestroy(&sf1));
+  if (sfA) *sfA = sf1;
+  else PetscCall(PetscSFDestroy(&sf1));
   /* Create sf */
   if (areIndicesSame && rootLocalIndices == leafLocalIndices && leafLocalOffset == rootLocalOffset) {
     /* leaf space == root space */

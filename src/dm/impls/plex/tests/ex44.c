@@ -102,11 +102,8 @@ int main(int argc, char **argv)
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   PetscCall(CreateAdaptLabel(dm, &ctx, &adaptLabel));
-  if (adaptLabel) {
-    PetscCall(DMAdaptLabel(dm, adaptLabel, &dma));
-  } else {
-    PetscCall(DMExtrude(dm, 3, &dma));
-  }
+  if (adaptLabel) PetscCall(DMAdaptLabel(dm, adaptLabel, &dma));
+  else PetscCall(DMExtrude(dm, 3, &dma));
   PetscCall(PetscObjectSetName((PetscObject)dma, "Adapted Mesh"));
   PetscCall(DMLabelDestroy(&adaptLabel));
   PetscCall(DMDestroy(&dm));

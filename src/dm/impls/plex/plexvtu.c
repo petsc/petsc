@@ -587,11 +587,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                   PetscCall(DMGetLabelValue(dmX, "vtk", c, &value));
                   if (value != 1) continue;
                 }
-                if (nfields) {
-                  PetscCall(PetscSectionGetFieldOffset(section, c, field, &off));
-                } else {
-                  PetscCall(PetscSectionGetOffset(section, c, &off));
-                }
+                if (nfields) PetscCall(PetscSectionGetFieldOffset(section, c, field, &off));
+                else PetscCall(PetscSectionGetOffset(section, c, &off));
                 xpoint = &x[off];
                 for (j = 0; j < fbs; j++) y[cnt++] = (PetscVTUReal)(l ? PetscImaginaryPart(xpoint[j]) : PetscRealPart(xpoint[j]));
                 for (; j < 3; j++) y[cnt++] = 0.;
@@ -612,11 +609,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                     PetscCall(DMGetLabelValue(dmX, "vtk", c, &value));
                     if (value != 1) continue;
                   }
-                  if (nfields) {
-                    PetscCall(PetscSectionGetFieldOffset(section, c, field, &off));
-                  } else {
-                    PetscCall(PetscSectionGetOffset(section, c, &off));
-                  }
+                  if (nfields) PetscCall(PetscSectionGetFieldOffset(section, c, field, &off));
+                  else PetscCall(PetscSectionGetOffset(section, c, &off));
                   xpoint   = &x[off];
                   y[cnt++] = (PetscVTUReal)(l ? PetscImaginaryPart(xpoint[i]) : PetscRealPart(xpoint[i]));
                 }
@@ -665,11 +659,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                   PetscInt           off;
                   const PetscScalar *xpoint;
 
-                  if (nfields) {
-                    PetscCall(PetscSectionGetFieldOffset(section, v, field, &off));
-                  } else {
-                    PetscCall(PetscSectionGetOffset(section, v, &off));
-                  }
+                  if (nfields) PetscCall(PetscSectionGetFieldOffset(section, v, field, &off));
+                  else PetscCall(PetscSectionGetOffset(section, v, &off));
                   xpoint = &x[off];
                   for (j = 0; j < fbs; j++) y[cnt++] = (PetscVTUReal)(l ? PetscImaginaryPart(xpoint[j]) : PetscRealPart(xpoint[j]));
                   for (; j < 3; j++) y[cnt++] = 0.;
@@ -711,11 +702,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                     PetscInt           off;
                     const PetscScalar *xpoint;
 
-                    if (nfields) {
-                      PetscCall(PetscSectionGetFieldOffset(section, v, field, &off));
-                    } else {
-                      PetscCall(PetscSectionGetOffset(section, v, &off));
-                    }
+                    if (nfields) PetscCall(PetscSectionGetFieldOffset(section, v, field, &off));
+                    else PetscCall(PetscSectionGetOffset(section, v, &off));
                     xpoint   = &x[off];
                     y[cnt++] = (PetscVTUReal)(l ? PetscImaginaryPart(xpoint[i]) : PetscRealPart(xpoint[i]));
                   }
@@ -730,11 +718,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                         PetscInt           voff;
                         const PetscScalar *xpoint;
 
-                        if (nfields) {
-                          PetscCall(PetscSectionGetFieldOffset(section, closure[v], field, &voff));
-                        } else {
-                          PetscCall(PetscSectionGetOffset(section, closure[v], &voff));
-                        }
+                        if (nfields) PetscCall(PetscSectionGetFieldOffset(section, closure[v], field, &voff));
+                        else PetscCall(PetscSectionGetOffset(section, closure[v], &voff));
                         xpoint         = &x[voff];
                         y[cnt + off++] = (l ? PetscImaginaryPart(xpoint[i]) : PetscRealPart(xpoint[i]));
                       }

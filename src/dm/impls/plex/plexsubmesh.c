@@ -840,9 +840,8 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
       PetscInt numCells;
 
       PetscCall(DMPlexGetSupportSize(dmNew, f, &numCells));
-      if (numCells < 2) {
-        PetscCall(DMLabelSetValue(ghostLabel, f, 1));
-      } else {
+      if (numCells < 2) PetscCall(DMLabelSetValue(ghostLabel, f, 1));
+      else {
         const PetscInt *cells = NULL;
         PetscInt        vA, vB;
 

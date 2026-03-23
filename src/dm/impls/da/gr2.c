@@ -184,11 +184,8 @@ static PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
     PetscCall(PetscObjectCompose((PetscObject)da, "GraphicsGhosted", (PetscObject)xlocal));
     PetscCall(PetscObjectDereference((PetscObject)xlocal));
   } else {
-    if (bx != DM_BOUNDARY_NONE || by != DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
-      PetscCall(VecGetDM(xlocal, &dac));
-    } else {
-      dac = da;
-    }
+    if (bx != DM_BOUNDARY_NONE || by != DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) PetscCall(VecGetDM(xlocal, &dac));
+    else dac = da;
   }
 
   /*

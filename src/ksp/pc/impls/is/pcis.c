@@ -302,9 +302,8 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     PetscScalar *a;
     PetscInt     i, n;
 
-    if (pcis->A_BB) {
-      PetscCall(MatGetDiagonal(pcis->A_BB, pcis->D));
-    } else {
+    if (pcis->A_BB) PetscCall(MatGetDiagonal(pcis->A_BB, pcis->D));
+    else {
       PetscCall(MatGetDiagonal(matis->A, pcis->vec1_N));
       PetscCall(VecScatterBegin(pcis->N_to_B, pcis->vec1_N, pcis->D, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(pcis->N_to_B, pcis->vec1_N, pcis->D, INSERT_VALUES, SCATTER_FORWARD));

@@ -40,11 +40,8 @@ static PetscErrorCode LMBasisGetVec_Internal(LMBasis basis, PetscInt idx, PetscM
     PetscCheck(idx >= earliest, PetscObjectComm((PetscObject)basis->vecs), PETSC_ERR_ARG_OUTOFRANGE, "Asked for index %" PetscInt_FMT " < the earliest retained index % " PetscInt_FMT, idx, earliest);
   }
   PetscAssert(mode == PETSC_MEMORY_ACCESS_READ || mode == PETSC_MEMORY_ACCESS_WRITE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "READ_WRITE access not implemented");
-  if (mode == PETSC_MEMORY_ACCESS_READ) {
-    PetscCall(MatDenseGetColumnVecRead(basis->vecs, idx % basis->m, single));
-  } else {
-    PetscCall(MatDenseGetColumnVecWrite(basis->vecs, idx % basis->m, single));
-  }
+  if (mode == PETSC_MEMORY_ACCESS_READ) PetscCall(MatDenseGetColumnVecRead(basis->vecs, idx % basis->m, single));
+  else PetscCall(MatDenseGetColumnVecWrite(basis->vecs, idx % basis->m, single));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

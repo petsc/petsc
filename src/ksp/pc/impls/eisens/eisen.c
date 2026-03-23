@@ -46,11 +46,8 @@ static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   if (eis->usediag) {
     PetscCall(MatHasOperation(pc->pmat, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
-    if (hasop) {
-      PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
-    } else {
-      PetscCall(VecPointwiseMult(y, x, eis->diag));
-    }
+    if (hasop) PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
+    else PetscCall(VecPointwiseMult(y, x, eis->diag));
   } else PetscCall(VecCopy(x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -65,11 +62,8 @@ static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y)
   PetscCheck(set && sym, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Can only apply transpose of Eisenstat if matrix is symmetric");
   if (eis->usediag) {
     PetscCall(MatHasOperation(pc->pmat, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
-    if (hasop) {
-      PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
-    } else {
-      PetscCall(VecPointwiseMult(y, x, eis->diag));
-    }
+    if (hasop) PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
+    else PetscCall(VecPointwiseMult(y, x, eis->diag));
   } else PetscCall(VecCopy(x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

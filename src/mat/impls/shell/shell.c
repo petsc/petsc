@@ -527,11 +527,8 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
     PetscCheck(!shell->zcols && !shell->zrows, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProduct not supported with zeroed rows/columns");
     if (shell->right || shell->left) {
       useBmdata = PETSC_TRUE;
-      if (!mdata->B) {
-        PetscCall(MatDuplicate(B, MAT_SHARE_NONZERO_PATTERN, &mdata->B));
-      } else {
-        newB = PETSC_FALSE;
-      }
+      if (!mdata->B) PetscCall(MatDuplicate(B, MAT_SHARE_NONZERO_PATTERN, &mdata->B));
+      else newB = PETSC_FALSE;
       PetscCall(MatCopy(B, mdata->B, SAME_NONZERO_PATTERN));
     }
     switch (product->type) {
@@ -729,11 +726,8 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   PetscCall(PetscNew(&mdata));
   mdata->numeric = matmat->numeric;
   mdata->destroy = matmat->destroy;
-  if (matmat->symbolic) {
-    PetscCall((*matmat->symbolic)(A, B, D, &mdata->ctx));
-  } else { /* call general setup if symbolic operation not provided */
-    PetscCall(MatSetUp(D));
-  }
+  if (matmat->symbolic) PetscCall((*matmat->symbolic)(A, B, D, &mdata->ctx));
+  else PetscCall(MatSetUp(D)); /* call general setup if symbolic operation not provided */
   PetscCheck(D->product, PetscObjectComm((PetscObject)D), PETSC_ERR_COR, "Product disappeared after user symbolic phase");
   PetscCheck(!D->product->data, PetscObjectComm((PetscObject)D), PETSC_ERR_COR, "Product data not empty after user symbolic phase");
   D->product->data    = mdata;

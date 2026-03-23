@@ -47,11 +47,8 @@ int main(int argc, char **argv)
   if (world2sub) {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
     PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
-    if (iscuda) {
-      PetscCall(VecSetType(x, VECCUDA));
-    } else {
-      PetscCall(VecSetType(x, VECSTANDARD));
-    }
+    if (iscuda) PetscCall(VecSetType(x, VECCUDA));
+    else PetscCall(VecSetType(x, VECSTANDARD));
     PetscCall(VecSetUp(x));
     PetscCall(PetscObjectSetName((PetscObject)x, "x_commworld")); /* Give a name to view x clearly */
 
@@ -70,11 +67,8 @@ int main(int argc, char **argv)
       PetscScalar *yvalue;
       PetscCall(VecCreate(subcomm, &y));
       PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
-      if (iscuda) {
-        PetscCall(VecSetType(y, VECCUDA));
-      } else {
-        PetscCall(VecSetType(y, VECSTANDARD));
-      }
+      if (iscuda) PetscCall(VecSetType(y, VECCUDA));
+      else PetscCall(VecSetType(y, VECSTANDARD));
       PetscCall(VecSetUp(y));
       PetscCall(PetscObjectSetName((PetscObject)y, "y_subcomm_0")); /* Give a name to view y clearly */
       PetscCall(VecGetLocalSize(y, &n));
@@ -185,11 +179,8 @@ int main(int argc, char **argv)
       /* x is on subcomm */
       PetscCall(VecCreate(subcomm, &x));
       PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
-      if (iscuda) {
-        PetscCall(VecSetType(x, VECCUDA));
-      } else {
-        PetscCall(VecSetType(x, VECSTANDARD));
-      }
+      if (iscuda) PetscCall(VecSetType(x, VECCUDA));
+      else PetscCall(VecSetType(x, VECSTANDARD));
       PetscCall(VecSetUp(x));
       PetscCall(VecGetOwnershipRange(x, &low, &high));
 
@@ -289,11 +280,8 @@ int main(int argc, char **argv)
 
       PetscCall(VecCreate(subcomm, &y));
       PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
-      if (iscuda) {
-        PetscCall(VecSetType(y, VECCUDA));
-      } else {
-        PetscCall(VecSetType(y, VECSTANDARD));
-      }
+      if (iscuda) PetscCall(VecSetType(y, VECCUDA));
+      else PetscCall(VecSetType(y, VECSTANDARD));
       PetscCall(VecSetUp(y));
 
       PetscCall(PetscObjectSetName((PetscObject)y, "y_subcomm_1")); /* Give a name to view y clearly */
@@ -367,11 +355,8 @@ int main(int argc, char **argv)
     /* Initialize x to [0, 1, 2, 3, ..., N-1] */
     PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
     PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
-    if (iscuda) {
-      PetscCall(VecSetType(x, VECCUDA));
-    } else {
-      PetscCall(VecSetType(x, VECSTANDARD));
-    }
+    if (iscuda) PetscCall(VecSetType(x, VECCUDA));
+    else PetscCall(VecSetType(x, VECSTANDARD));
     PetscCall(VecSetUp(x));
     PetscCall(VecGetOwnershipRange(x, &low, &high));
     for (i = low; i < high; i++) PetscCall(VecSetValue(x, i, (PetscScalar)i, INSERT_VALUES));
@@ -381,11 +366,8 @@ int main(int argc, char **argv)
     /* Every subcomm has a y as long as x */
     PetscCall(VecCreate(subcomm, &y));
     PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
-    if (iscuda) {
-      PetscCall(VecSetType(y, VECCUDA));
-    } else {
-      PetscCall(VecSetType(y, VECSTANDARD));
-    }
+    if (iscuda) PetscCall(VecSetType(y, VECCUDA));
+    else PetscCall(VecSetType(y, VECSTANDARD));
     PetscCall(VecSetUp(y));
     PetscCall(VecGetLocalSize(y, &n));
 
