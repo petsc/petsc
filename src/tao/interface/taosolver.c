@@ -315,7 +315,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 }
 
 /*@
-  TaoKSPSetUseEW - Sets `SNES` to use Eisenstat-Walker method {cite}`ew96`for computing relative tolerance for linear solvers.
+  TaoKSPSetUseEW - Sets `SNES` to use Eisenstat-Walker method {cite}`ew96` for computing relative tolerance for linear solvers.
 
   Logically Collective
 
@@ -353,7 +353,7 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
 
   Level: developer
 
-.seealso: [](ch_ts), `Tao`, `TaoMonitorSet()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -1110,7 +1110,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao, PetscInt *nfuncs)
   Use `PETSC_DETERMINE` to use the default maximum number of iterations that was set when the object's type was set.
 
   Developer Note:
-  DeprAlso accepts the deprecated negative values to indicate no limit
+  Also accepts the deprecated negative values to indicate no limit
 
 .seealso: [](ch_tao), `Tao`, `TaoSetTolerances()`, `TaoSetMaximumFunctionEvaluations()`
 @*/
@@ -2156,6 +2156,11 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 . -tao_type type - Sets the method; see `TaoType`
 
   Level: intermediate
+
+  Note:
+  Calling this function resets the convergence test to `TaoDefaultConvergenceTest()`.
+  If a custom convergence test has been set with `TaoSetConvergenceTest()`, it must
+  be set again after calling `TaoSetType()`.
 
 .seealso: [](ch_tao), `Tao`, `TaoCreate()`, `TaoGetType()`, `TaoType`
 @*/
