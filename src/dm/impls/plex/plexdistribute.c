@@ -1318,8 +1318,26 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   {
     DMLabel ctLabel;
 
-    // Reset label for fast lookup
     PetscCall(DMPlexGetCellTypeLabel(dmParallel, &ctLabel));
+    // Check that each point has a valid cell type
+    if (PetscDefined(USE_DEBUG)) {
+      PetscInt  pStart, pEnd;
+      PetscBool defined = PETSC_TRUE, gdefined;
+
+      PetscCall(DMPlexGetChart(dmParallel, &pStart, &pEnd));
+      for (PetscInt p = pStart; p < pEnd; ++p) {
+        PetscInt val;
+
+        PetscCall(DMLabelGetValue(ctLabel, p, &val));
+        if (val < 0) {
+          defined = PETSC_FALSE;
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Point %" PetscInt_FMT " has no cell type\n", rank, p));
+        }
+      }
+      PetscCallMPI(MPIU_Allreduce(&defined, &gdefined, 1, MPI_C_BOOL, MPI_LAND, comm));
+      PetscCheck(gdefined, comm, PETSC_ERR_PLIB, "Not all points have a valid cell type");
+    }
+    // Reset label for fast lookup
     PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeLabels, dm, 0, 0, 0));
