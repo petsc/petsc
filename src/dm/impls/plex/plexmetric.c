@@ -1568,7 +1568,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
           M2[i * dim + m] = 0.0;
           for (j = 0; j < dim; ++j) {
             for (k = 0; k < dim; ++k) {
-              for (l = 0; l < dim; ++l) M2[i * dim + m] += sqrtM1[j * dim + i] * evecs[j * dim + k] * evals[k] * evecs[l * dim + k] * sqrtM1[l * dim + m];
+              for (l = 0; l < dim; ++l) M2[i * dim + m] += sqrtM1[j * dim + i] * evecs[k * dim + j] * evals[k] * evecs[k * dim + l] * sqrtM1[l * dim + m];
             }
           }
         }

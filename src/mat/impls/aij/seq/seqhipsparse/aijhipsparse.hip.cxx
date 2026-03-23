@@ -3098,7 +3098,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
     }
     /* csr_spmv does y = alpha op(A) x + beta y */
     if (hipsparsestruct->format == MAT_HIPSPARSE_CSR) {
-#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0) && !PETSC_PKG_HIP_VERSION_EQ(7, 2, 0)
+#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0) && !(PETSC_PKG_HIP_VERSION_GT(6, 4, 3) && PETSC_PKG_HIP_VERSION_LE(7, 2, 0))
       PetscCheck(opA >= 0 && opA <= 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE API on hipsparseOperation_t has changed and PETSc has not been updated accordingly");
       if (!matstruct->hipSpMV[opA].initialized) { /* built on demand */
         PetscCallHIPSPARSE(hipsparseCreateDnVec(&matstruct->hipSpMV[opA].vecXDescr, nx, xptr, hipsparse_scalartype));
