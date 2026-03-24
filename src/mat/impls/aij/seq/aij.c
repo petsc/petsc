@@ -5436,7 +5436,7 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A, PetscBool keep)
   PetscFunctionBegin;
   PetscCheck(A->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot eliminate zeros for unassembled matrix");
   if (m) rmax = ailen[0]; /* determine row with most nonzeros */
-  for (i = 1; i <= m; i++) {
+  for (i = 1, a->nonzerorowcnt = 0; i <= m; i++) {
     /* move each nonzero entry back by the amount of zero slots (fshift) before it*/
     for (k = ai[i - 1]; k < ai[i]; k++) {
       if (aa[k] == 0 && (aj[k] != i - 1 || !keep)) fshift++;
