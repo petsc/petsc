@@ -245,8 +245,9 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToSimplex(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCall(PetscNew(&ts));
-  tr->data    = ts;
-  ts->reflect = PETSC_FALSE;
+  tr->redFactor = 1.0;
+  tr->data      = ts;
+  ts->reflect   = PETSC_FALSE;
   PetscCall(DMPlexTransformInitialize_ToSimplex(tr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
