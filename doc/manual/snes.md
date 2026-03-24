@@ -1364,9 +1364,15 @@ SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, V
 are used to indicate that one is solving a variational inequality. Problems with box constraints can be solved with
 the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
+Reduced space methods are also known as active set methods to capture the idea that at each Newton step a linear
+problem on a reduced space (the active set of variables) is solved to produce an update. See `SNESVINEWTONRSLS`
+for a concise definition of the (in)active set used by the algorithms.
+
 The
-option `-snes_vi_monitor` turns on extra monitoring of the active set
-associated with the bounds and `-snes_vi_type` allows selecting from
+options `-snes_vi_monitor`, `-snes_vi_monitor_residual`, and `-snes_vi_monitor_active` turn on extra monitoring of the active set
+associated with the bounds.
+
+The option `-snes_vi_type` allows selecting from
 several VI solvers, the default is preferred.
 
 `SNESLineSearchSetPreCheck()` and `SNESLineSearchSetPostCheck()` can also be used to control properties

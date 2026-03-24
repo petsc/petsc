@@ -26,6 +26,8 @@
   If you have associated a `DM` with the `SNES` and provided a function to the `DM` via `DMSetVariableBounds()` that will be used automatically
   to provide the bounds and you need not use this function.
 
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
+
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `DMSetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
           `SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
@@ -267,6 +269,9 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes, Vec X)
 
   Level: developer
 
+  Note:
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
+
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
 @*/
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
@@ -318,6 +323,9 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
 
   Level: developer
 
+  Note:
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
+
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `SNESLineSearchSetVIFunctions()`
 @*/
 PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal *fnorm)
@@ -361,6 +369,9 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal 
 . fty - the directional derivative
 
   Level: developer
+
+  Note:
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
 
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
 @*/
@@ -498,6 +509,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
   `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
   sequencing and need bounds set for a variety of vectors
+
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
 
 .seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
