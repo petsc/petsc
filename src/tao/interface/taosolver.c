@@ -1810,7 +1810,7 @@ PetscErrorCode TaoMonitorSolution(Tao tao, PetscViewerAndFormat *vf)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (vf->view_interval > 0 && tao->niter % vf->view_interval) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
-  PetscCall(VecView(tao->gradient, vf->viewer));
+  PetscCall(VecView(tao->solution, vf->viewer));
   PetscCall(PetscViewerPopFormat(vf->viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
