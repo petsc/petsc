@@ -1864,8 +1864,13 @@ PetscErrorCode ISShift(IS is, PetscInt offset, IS isy)
   PetscCheck(is->map->n == isy->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different local size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->n, isy->map->n);
   PetscCheck(is->map->bs == isy->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Index sets have different block size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->bs, isy->map->bs);
   PetscCall(ISCopyInfo_Private(is, isy));
-  isy->max = is->max + offset;
-  isy->min = is->min + offset;
+  if (offset > 0) {
+    isy->max = is->max < PETSC_INT_MAX - offset ? is->max + offset : PETSC_INT_MAX;
+    isy->min = is->min < PETSC_INT_MAX - offset ? is->min + offset : PETSC_INT_MAX;
+  } else {
+    isy->max = is->max > PETSC_INT_MIN - offset ? is->max + offset : PETSC_INT_MIN;
+    isy->min = is->min > PETSC_INT_MIN - offset ? is->min + offset : PETSC_INT_MIN;
+  }
   PetscUseMethod(is, "ISShift_C", (IS, PetscInt, IS), (is, offset, isy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
