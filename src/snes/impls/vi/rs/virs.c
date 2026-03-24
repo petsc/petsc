@@ -14,6 +14,9 @@
 
   Level: advanced
 
+  Note:
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
+
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`
 @*/
 PetscErrorCode SNESVIGetInactiveSet(SNES snes, IS *inact)
@@ -608,6 +611,8 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   Sometimes the inactive set will result in a singular sub-Jacobian problem that needs to be solved, this allows the user,
   when they know more about their specific problem to provide a function that removes the redundancy that results in the singular linear system
 
+  See `SNESVINEWTONRSLS` for a concise description of the active and inactive sets
+
 .seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
  @*/
 PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES snes, IS is_act, IS *is_redact, PetscCtx ctx), PetscCtx ctx)
@@ -718,19 +723,28 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 }
 
 /*MC
-      SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
+   SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database Keys:
-+   -snes_type (vinewtonssls|vinewtonrsls) - a semi-smooth solver or a reduced space active set method
--   -snes_vi_monitor                       - prints the number of active constraints at each iteration.
++  -snes_type (vinewtonssls|vinewtonrsls) - A semi-smooth solver or a reduced space active set method
+.  -snes_vi_zero_tolerance                - Tolerance for considering $u_i$ value to be on a bound.
+.  -snes_vi_monitor                       - Prints the number of active constraints (inactive set points) at each iteration.
+.  -snes_vi_monitor_residual              - View the residual vector at each iteration, using zero for active constraints (i.e. the inactive variables).
+-  -snes_vi_monitor_active                - View the active set by outputting a one for vector components in the active set and zero for the inactive.
 
    Level: beginner
 
    Note:
-   At each set of this methods the algorithm produces an inactive set of variables that are constrained to their current values
-   (because changing these values would result in those variables no longer satisfying the inequality constraints)
-   and produces a step direction by solving the linear system arising from the Jacobian with the inactive variables removed. In other
-   words on a reduced space of the solution space. Based on the Newton update it then adjusts the inactive set for the next iteration.
+   Reduced-space (active set methods) work as follows at each iteration\:
+   - The algorithm produces an inactive set of variables, that is a list of variables whose values will not be changed in the current iteration, i.e. they
+     are to be constrained to their current values. These are all the variables that are on the lower bound, that is $u_i = L_i$ with also $[F(u)]_i \ge 0$ or
+     the upper bound $u_i = U_i$ with also $[F(u)]_i \le 0.$
+   - A step direction is obtained by solving the linear system arising from the Jacobian used in Newton's method but with the inactive variables removed
+     from both the rows and columns.
+   - A line search is then used to update the active variables (the inactive set of variables are not changed).
+
+   The inactive set is chosen based on the sign of $[F(u)]_i$ because this gives exactly the set of points that would be moved outside of the domain given
+   an infinitesimal Newton (or even Richardson) step and our goal is to remain within the bounds, that is, to continue to satisfy the inequality constraints.
 
    See {cite}`benson2006flexible`
 
