@@ -95,6 +95,13 @@ cdef extern from * nogil:
     PetscErrorCode ISGlobalToLocalMappingApplyBlock(PetscLGMap, PetscGLMapMode, PetscInt, PetscInt[], PetscInt*, PetscInt[])
 
 
+cdef extern from * nogil:
+
+    struct _n_ISColoring
+    ctypedef _n_ISColoring* ISColoring "ISColoring"
+
+    PetscErrorCode ISColoringGetIS(ISColoring, PetscCopyMode, PetscInt*, PetscIS*[])
+
 # --------------------------------------------------------------------
 
 cdef inline IS ref_IS(PetscIS iset):

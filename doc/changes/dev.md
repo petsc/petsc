@@ -164,6 +164,7 @@
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
 - Add `DMPlexGetLETKFLocalizationMatrix` to compute localization weight matrix for LETKF
 - Change `verticesAdjSaved` parameter in `DMPlexCreateFromCell*Parallel*()` functions to be allocated by function rather than by user
+- Add `DMPlexCreateColoring()`
 
 ```{rubric} FE/FV:
 ```
