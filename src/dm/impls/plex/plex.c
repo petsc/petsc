@@ -10997,3 +10997,219 @@ PetscErrorCode DMPlexMonitorThroughput(DM dm, void *unused)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+static inline PetscInt DMPlex_GlobalID(PetscInt point)
+{
+  return point >= 0 ? point : -(point + 1);
+}
+
+/*
+   Computes the graph laplacian L at the given depth.
+      L = D - A, with D = degree matrix and A = adjacency matrix
+*/
+static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, Mat *oL)
+{
+  Mat             L, preall;
+  Vec             x, y;
+  IS              pointNumbering;
+  const PetscInt *pointNum;
+  PetscInt       *i, *j, numVertices, numEdges, shift, maxnnzrow, dim, *numDof, numFields;
+  PetscInt        pStart, pEnd;
+  PetscBool       useCone, useClosure;
+  PetscScalar    *vals;
+  PetscSection    s;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetDimension(dm, &dim));
+  if (depth == dim) {
+    /* FIXME this code only works for depth == dim and FVM adjacency */
+    /* Access CSR graph of local partition */
+    PetscCall(DMPlexCreatePartitionerGraph(dm, dim - depth, &numVertices, &i, &j, NULL));
+  } else {
+    /* FEM adjacency */
+    PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
+    PetscCall(DMSetBasicAdjacency(dm, PETSC_FALSE, PETSC_TRUE));
+    PetscCall(DMPlexGetDepthStratum(dm, depth, &pStart, &pEnd));
+    PetscCall(DMPlexCreatePointNumbering(dm, &pointNumbering));
+    PetscCall(ISGetIndices(pointNumbering, &pointNum));
+    shift = DMPlex_GlobalID(pointNum[pStart]);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &shift, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    /* Determine sizes */
+    numVertices = 0;
+    for (PetscInt p = pStart; p < pEnd; p++) {
+      /* Skip non-owned cells in parallel */
+      if (pointNum[p] < 0) continue;
+      numVertices++;
+    }
+    numEdges = 0;
+    for (PetscInt p = pStart; p < pEnd; p++) {
+      PetscInt  nadj = PETSC_DETERMINE;
+      PetscInt *adj  = NULL;
+      /* Skip non-owned cells in parallel */
+      if (pointNum[p] < 0) continue;
+      PetscCall(DMPlexGetAdjacency(dm, p, &nadj, &adj));
+      for (PetscInt a = 0; a < nadj; a++)
+        if (adj[a] != p && pStart <= adj[a] && adj[a] < pEnd) numEdges++;
+      PetscCall(PetscFree(adj));
+    }
+    /* Determine adjacency */
+    PetscCall(PetscMalloc1(numVertices + 1, &i));
+    PetscCall(PetscMalloc1(numEdges, &j));
+    PetscInt iptr = 0;
+    i[0]          = iptr;
+    for (PetscInt p = pStart; p < pEnd; p++) {
+      PetscInt  nadj = PETSC_DETERMINE;
+      PetscInt *adj  = NULL;
+      /* Skip non-owned cells in parallel */
+      if (pointNum[p] < 0) continue;
+      PetscCall(DMPlexGetAdjacency(dm, p, &nadj, &adj));
+      for (PetscInt a = 0; a < nadj; a++)
+        if (adj[a] != p && pStart <= adj[a] && adj[a] < pEnd) j[iptr++] = DMPlex_GlobalID(pointNum[adj[a]]) - shift;
+      PetscCall(PetscFree(adj));
+      i[p - pStart + 1] = iptr;
+      /* Sort adjacencies (not strictly necessary) */
+      PetscCall(PetscSortInt(iptr - i[p - pStart], &j[i[p - pStart]]));
+    }
+    PetscCall(DMSetBasicAdjacency(dm, useCone, useClosure));
+    PetscCall(ISRestoreIndices(pointNumbering, &pointNum));
+    PetscCall(ISDestroy(&pointNumbering));
+  }
+  /* First create a matrix object */
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), &L));
+  PetscCall(MatSetSizes(L, numVertices, numVertices, PETSC_DECIDE, PETSC_DECIDE));
+  PetscCall(MatSetOptionsPrefix(L, "dm_plex_laplacian_"));
+  PetscCall(MatSetFromOptions(L));
+  /* Preallocation */
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), &preall));
+  PetscCall(MatSetSizes(preall, numVertices, numVertices, PETSC_DECIDE, PETSC_DECIDE));
+  PetscCall(MatSetType(preall, MATPREALLOCATOR));
+  PetscCall(MatSetUp(preall));
+  PetscCall(MatGetOwnershipRange(preall, &shift, NULL));
+  maxnnzrow = 0;
+  for (PetscInt k = 0; k < numVertices; k++) {
+    PetscInt  nnzrow = i[k + 1] - i[k];
+    PetscInt  row    = shift + k;
+    PetscInt *col    = j + i[k];
+    maxnnzrow        = PetscMax(maxnnzrow, nnzrow);
+    /* Add adjacency connection */
+    PetscCall(MatSetValues(preall, 1, &row, nnzrow, col, NULL, INSERT_VALUES));
+    /* The graph CSR does not represent self-to-self connections, we need them
+       for the graph laplacian */
+    PetscCall(MatSetValues(preall, 1, &row, 1, &row, NULL, INSERT_VALUES));
+  }
+  PetscCall(MatAssemblyBegin(preall, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(preall, MAT_FINAL_ASSEMBLY));
+  /* Preallocate the graph laplacian matrix */
+  PetscCall(MatPreallocatorPreallocate(preall, PETSC_TRUE, L));
+  PetscCall(MatDestroy(&preall));
+  /* Set values. We first set all values to -1.0 to obtain -A,
+     and then use matrix API to modify for our needs and add the diagonal D matrix */
+  PetscCall(PetscMalloc1(maxnnzrow, &vals));
+  for (PetscInt k = 0; k < maxnnzrow; k++) vals[k] = -1.0;
+  for (PetscInt k = 0; k < numVertices; k++) {
+    PetscInt  nnzrow = i[k + 1] - i[k];
+    PetscInt  row    = shift + k;
+    PetscInt *col    = j + i[k];
+    PetscCall(MatSetValues(L, 1, &row, nnzrow, col, vals, INSERT_VALUES));
+  }
+  PetscCall(MatAssemblyBegin(L, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(L, MAT_FINAL_ASSEMBLY));
+  /* Add D. Here we use the fact that D = rowsum(A) */
+  PetscCall(MatCreateVecs(L, &x, &y));
+  PetscCall(VecSet(x, -1.0));
+  PetscCall(MatMult(L, x, y));
+  PetscCall(MatDiagonalSet(L, y, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(L, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(L, MAT_FINAL_ASSEMBLY));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  /* Clean up */
+  PetscCall(PetscFree(vals));
+  PetscCall(PetscFree(i));
+  PetscCall(PetscFree(j));
+  /* Allow command line view via -laplacian_view */
+  PetscCall(MatViewFromOptions(L, NULL, "-view"));
+  /*
+    For visualization purposes, we attach a DM to the matrix.
+    Cloning makes a shallow (pointer) copy of the mesh topology and geometry,
+    and allows us to consider different discretization spaces.
+    In this case, we specify a one-field discretization with a PetscSection object.
+  */
+  PetscCall(DMClone(dm, &dm));
+  numFields = 1;
+  PetscCall(DMSetNumFields(dm, numFields));
+  PetscCall(PetscCalloc1(dim + 1, &numDof));
+  numDof[depth] = 1;
+  PetscCall(DMPlexCreateSection(dm, NULL, &numFields, numDof, 0, NULL, NULL, NULL, NULL, &s));
+  PetscCall(DMSetLocalSection(dm, s));
+  PetscCall(PetscSectionDestroy(&s));
+  PetscCall(PetscFree(numDof));
+  /* Attach the DM to the matrix */
+  PetscCall(MatSetDM(L, dm));
+  /* the matrix holds a reference to the DM, we can decrease reference counting */
+  PetscCall(DMDestroy(&dm));
+  /* Return matrix to caller */
+  *oL = L;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexCreateColoring - Gets coloring of the connectivity graph of the `DMPlex` points at a given depth.
+
+  Collective
+
+  Input Parameters:
++ dm       - the `DMPlex` object
+. depth    - the dimension of the entities in the connectivity graph.
+- distance - the distance of the coloring (either 1 or 2).
+
+  Output Parameter:
+. coloring - the coloring
+
+  Level: developer
+
+  Notes:
+  Unlike `DMCreateColoring`, the graph used for the coloring does not represent the operator matrix associated with the discretization of a PDE on the `DM`.
+  Here the coloring is computed from the connectivity graph of the mesh entities, defined with FEM adjacency if `depth < dim`, and with FVM adjacency if `depth == dim`.
+
+  Coloring of matrices can also be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
+  matrix comes from (what this function provides). In general using the mesh produces a more optimal coloring (fewer colors).
+
+  Mesh colorings are useful for additive and multiplicative Schwarz methods.
+  In particular, they mitigate overhead costs associated with setting up individual KSPs and PCs on many subdomains per process.
+  A coloring of the vertices (`depth=0`) with `distance=1` can be use can be used to group non-overlapping vertex-star patches into multi-patch subdomains.
+  Similarly, a vertex coloring with `distance=2` can be used to group non-overlapping Vanka patches into multi-patch subdomains.
+
+.seealso: [](ch_unstructured), `DMPlex`, `ISColoring`, `MatColoring`, `DMCreateColoring()`
+@*/
+PetscErrorCode DMPlexCreateColoring(DM dm, PetscInt depth, PetscInt distance, ISColoring *coloring)
+{
+  Mat         L        = NULL;
+  MatColoring mc       = NULL;
+  IS         *iscolors = NULL;
+  PetscInt    pStart = 0, offset = 0, ncolors = 0;
+
+  PetscFunctionBegin;
+  /* Create a graph Laplacian */
+  PetscCall(DMPlexCreateGraphLaplacian_Private(dm, depth, &L));
+  /* Compute offset */
+  PetscCall(MatGetOwnershipRange(L, &offset, NULL));
+  PetscCall(DMPlexGetDepthStratum(dm, depth, &pStart, NULL));
+  offset = pStart - offset;
+  /* Obtain ISColoring via MatColoring */
+  PetscCall(MatColoringCreate(L, &mc));
+  PetscCall(MatColoringSetType(mc, MATCOLORINGGREEDY));
+  PetscCall(MatColoringSetDistance(mc, distance));
+  PetscCall(MatColoringSetFromOptions(mc));
+  PetscCall(MatColoringApply(mc, coloring));
+  PetscCall(MatColoringDestroy(&mc));
+  /* Destroy the graph Laplacian */
+  PetscCall(MatDestroy(&L));
+  /* Shift ISColoring to align with the DMPlex numbering */
+  PetscCall(ISColoringGetIS(*coloring, PETSC_USE_POINTER, &ncolors, &iscolors));
+  for (PetscInt c = 0; c < ncolors; c++) {
+    PetscCall(ISShift(iscolors[c], offset, iscolors[c]));
+  }
+  PetscCall(ISColoringRestoreIS(*coloring, PETSC_USE_POINTER, &iscolors));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

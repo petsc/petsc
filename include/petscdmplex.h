@@ -304,6 +304,9 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM, PetscInt, con
 PETSC_EXTERN PetscErrorCode DMPlexCreateOverlapMigrationSF(DM, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexStratifyMigrationSF(DM, PetscSF, PetscSF *);
 
+/* Mesh coloring */
+PETSC_EXTERN PetscErrorCode DMPlexCreateColoring(DM, PetscInt, PetscInt, ISColoring *);
+
 /* Submesh Support */
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, DMLabel, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateHybridMesh(DM, DMLabel, DMLabel, PetscInt, DMLabel *, DMLabel *, DM *, DM *);
