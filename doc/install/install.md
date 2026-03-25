@@ -489,8 +489,8 @@ This installs gfortran, gcc, and g++ with the compiler names
 After upgrading macOS, you generally need to update the Xcode GUI development system (using the standard Apple software update system),
 and the Xcode Command Line tools (run `xcode-select --install` again).
 
-Its best to update `brew` after all macOS or Xcode upgrades (use `brew upgrade`). Sometimes gfortran will not work correctly after an upgrade. If this happens
-it is best to reinstall all `brew` packages using, for example,
+It is best to update `brew` after all macOS or Xcode upgrades (use `brew upgrade`). Sometimes gfortran will not work correctly after an upgrade.
+If this happens, it is best to reinstall all `brew` packages using, for example,
 
 ```console
 $ brew leaves > list.txt         # save list of formulae to re-install

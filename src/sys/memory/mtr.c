@@ -47,7 +47,6 @@ typedef union
 
 #define MAXTRMAXMEMS 50
 static size_t    TRallocated           = 0;
-static int       TRfrags               = 0;
 static TRSPACE  *TRhead                = NULL;
 static int       TRid                  = 0;
 static PetscBool TRdebug               = PETSC_FALSE;
@@ -198,7 +197,6 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
       if (TRallocated > TRMaxMems[i]) TRMaxMems[i] = TRallocated;
     }
   }
-  TRfrags++;
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
@@ -304,7 +302,6 @@ static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char functi
   asize = TRrequestedSize ? head->rsize : head->size;
   PetscCheck(TRallocated >= asize, PETSC_COMM_SELF, PETSC_ERR_MEMC, "TRallocate is smaller than memory just freed");
   TRallocated -= asize;
-  TRfrags--;
   if (head->prev) head->prev->next = head->next;
   else TRhead = head->next;
 
@@ -374,7 +371,6 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
 
   /* remove original reference to the memory allocated from the PETSc debugging heap */
   TRallocated -= TRrequestedSize ? head->rsize : head->size;
-  TRfrags--;
   if (head->prev) head->prev->next = head->next;
   else TRhead = head->next;
   if (head->next) head->next->prev = head->prev;
@@ -406,7 +402,6 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
       if (TRallocated > TRMaxMems[i]) TRMaxMems[i] = TRallocated;
     }
   }
-  TRfrags++;
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
@@ -950,7 +945,6 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
   PetscCall(PetscMallocSet(PetscTrMallocDefault, PetscTrFreeDefault, PetscTrReallocDefault));
 
   TRallocated           = 0;
-  TRfrags               = 0;
   TRhead                = NULL;
   TRid                  = 0;
   TRdebug               = eachcall;

@@ -47,8 +47,7 @@ struct xxt_CDT {
   mv_info  *mvi;
 };
 
-static PetscInt n_xxt         = 0;
-static PetscInt n_xxt_handles = 0;
+static PetscInt n_xxt = 0;
 
 /* prototypes */
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
@@ -64,7 +63,6 @@ xxt_ADT XXT_new(void)
   xxt_ADT xxt_handle;
 
   /* rolling count on n_xxt ... pot. problem here */
-  n_xxt_handles++;
   xxt_handle       = (xxt_ADT)malloc(sizeof(struct xxt_CDT));
   xxt_handle->id   = ++n_xxt;
   xxt_handle->info = NULL;
@@ -121,7 +119,6 @@ PetscErrorCode XXT_free(xxt_ADT xxt_handle)
   PetscFunctionBegin;
   PetscCall(PCTFS_comm_init());
   PetscCall(check_handle(xxt_handle));
-  n_xxt_handles--;
 
   free(xxt_handle->info->nsep);
   free(xxt_handle->info->lnsep);
