@@ -496,6 +496,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   tao->ops->view           = TaoView_BMRM;
   tao->ops->setfromoptions = TaoSetFromOptions_BMRM;
   tao->ops->destroy        = TaoDestroy_BMRM;
+  tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(PetscNew(&bmrm));
   bmrm->lambda = 1.0;

@@ -1726,6 +1726,72 @@ cdef class TAO(Object):
         CHKERR(PetscINCREF(ksp.obj))
         return ksp
 
+    # TaoTerm related routines
+
+    def getTerm(self) -> tuple[float, TAOTerm, Vec, Mat]:
+        """Return the entire objective term of the solver.
+
+        Not collective.
+
+        Returns
+        -------
+        scale : float
+            The scale of the term.
+        term : TAOTerm
+            The term of the whole objective.
+        params : Vec
+            The parameters vector.
+        mapmat : Mat
+            The mapping matrix of the term.
+
+        See Also
+        --------
+        petsc.TaoGetTerm
+
+        """
+        cdef TAOTerm term = TAOTerm()
+        cdef Vec params = Vec()
+        cdef Mat mapmat = Mat()
+        cdef PetscReal _scale=1
+        CHKERR(TaoGetTerm(self.tao, &_scale, &term.taoterm, &params.vec, &mapmat.mat))
+        CHKERR(PetscINCREF(term.obj))
+        if params.vec != NULL: CHKERR(PetscINCREF(params.obj))
+        if mapmat.mat != NULL: CHKERR(PetscINCREF(mapmat.obj))
+        return (toReal(_scale), term, params, mapmat)
+
+    def addTerm(self, prefix: str | None, scale: float, term: TAOTerm, Vec params=None, Mat mapmat=None) -> None:
+        """Add an objective term to the solver.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        prefix
+            The prefix used for configuring the new term.
+        scale
+            The scale of the term.
+        term
+            The objective term to be added to the solver.
+        params
+            The parameter vector.
+        mapmat
+            The mapping matrix.
+
+        See Also
+        --------
+        petsc.TaoAddTerm
+
+        """
+        cdef const char *cprefix = NULL
+        prefix = str2bytes(prefix, &cprefix)
+        cdef TAOTerm ctype = term
+        cdef PetscVec p = NULL
+        if params is not None: p = params.vec
+        cdef PetscMat m = NULL
+        if mapmat is not None: m = mapmat.mat
+        cdef PetscReal cscale = asReal(scale)
+        CHKERR(TaoAddTerm(self.tao, cprefix, cscale, ctype.taoterm, p, m))
+
     # ALMM routines
 
     def getALMMSubsolver(self) -> TAO:
@@ -2423,3 +2489,157 @@ cdef class TAOLineSearch(Object):
 
 del TAOLineSearchType
 del TAOLineSearchConvergedReason
+
+
+# --------------------------------------------------------------------
+
+
+class TAOTermType:
+    """TAO Term Types."""
+    SHELL         = S_(TAOTERMSHELL)
+    CALLBACKS     = S_(TAOTERMCALLBACKS)
+    SUM           = S_(TAOTERMSUM)
+    HALFL2SQUARED = S_(TAOTERMHALFL2SQUARED)
+    L1            = S_(TAOTERML1)
+    QUADRATIC     = S_(TAOTERMQUADRATIC)
+
+# --------------------------------------------------------------------
+
+
+cdef class TAOTerm(Object):
+    """TAO Term."""
+
+    Type   = TAOTermType
+
+    def __cinit__(self):
+        self.obj = <PetscObject*> &self.taoterm
+        self.taoterm = NULL
+
+    def view(self, Viewer viewer=None) -> None:
+        """View the term object.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        petsc.TaoTermView
+
+        """
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR(TaoTermView(self.taoterm, vwr))
+
+    def destroy(self) -> Self:
+        """Destroy the term object.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoTermDestroy
+
+        """
+        CHKERR(TaoTermDestroy(&self.taoterm))
+        return self
+
+    def create(self, comm=None) -> Self:
+        """Create a TAO Term.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        Sys.getDefaultComm, petsc.TaoTermCreate
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscTAOTerm newtaoterm = NULL
+        CHKERR(TaoTermCreate(ccomm, &newtaoterm))
+        CHKERR(PetscCLEAR(self.obj)); self.taoterm = newtaoterm
+        return self
+
+    def setType(self, term_type: Type | str) -> None:
+        """Set the type of the term.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        term_type
+            The type of the term.
+
+        See Also
+        --------
+        getType, petsc.TaoTermSetType
+
+        """
+        cdef PetscTAOTermType ctype = NULL
+        term_type = str2bytes(term_type, &ctype)
+        CHKERR(TaoTermSetType(self.taoterm, ctype))
+
+    def getType(self) -> str:
+        """Return the type of the term.
+
+        Not collective.
+
+        See Also
+        --------
+        setType, petsc.TaoTermGetType
+
+        """
+        cdef PetscTAOTermType ctype = NULL
+        CHKERR(TaoTermGetType(self.taoterm, &ctype))
+        return bytes2str(ctype)
+
+    def setFromOptions(self) -> None:
+        """Configure the term from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.TaoTermSetFromOptions
+
+        """
+        CHKERR(TaoTermSetFromOptions(self.taoterm))
+
+    def setUp(self) -> None:
+        """Set up the internal data structures for using the term.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoTermSetUp
+
+        """
+        CHKERR(TaoTermSetUp(self.taoterm))
+
+    def setSolutionTemplate(self, Vec x) -> None:
+        """Set the solution vector template.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.TaoTermSetSolutionTemplate
+
+        """
+        CHKERR(TaoTermSetSolutionTemplate(self.taoterm, x.vec))
+
+
+# --------------------------------------------------------------------
+
+del TAOTermType
+
+# --------------------------------------------------------------------

@@ -541,10 +541,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   PetscFunctionBegin;
   PetscCall(PetscNew(&tr));
 
-  tao->ops->setup          = TaoSetUp_NTR;
-  tao->ops->solve          = TaoSolve_NTR;
-  tao->ops->setfromoptions = TaoSetFromOptions_NTR;
-  tao->ops->destroy        = TaoDestroy_NTR;
+  tao->ops->setup            = TaoSetUp_NTR;
+  tao->ops->solve            = TaoSolve_NTR;
+  tao->ops->setfromoptions   = TaoSetFromOptions_NTR;
+  tao->ops->destroy          = TaoDestroy_NTR;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));

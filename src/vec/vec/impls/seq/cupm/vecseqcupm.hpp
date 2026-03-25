@@ -87,6 +87,7 @@ public:
   static PetscErrorCode PointwiseMaxAbsAsync(Vec, Vec, Vec, PetscDeviceContext) noexcept;
   static PetscErrorCode PointwiseMin(Vec, Vec, Vec) noexcept;
   static PetscErrorCode PointwiseMinAsync(Vec, Vec, Vec, PetscDeviceContext) noexcept;
+  static PetscErrorCode PointwiseSignAsync(Vec, Vec, VecSignMode, PetscDeviceContext) noexcept;
   static PetscErrorCode Reciprocal(Vec) noexcept;
   static PetscErrorCode ReciprocalAsync(Vec, PetscDeviceContext) noexcept;
   static PetscErrorCode Abs(Vec) noexcept;

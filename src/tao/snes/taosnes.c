@@ -122,11 +122,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SNES(Tao tao)
   Tao_SNES *taosnes;
 
   PetscFunctionBegin;
-  tao->ops->destroy        = TaoDestroy_SNES;
-  tao->ops->setup          = TaoSetUp_SNES;
-  tao->ops->setfromoptions = TaoSetFromOptions_SNES;
-  tao->ops->view           = TaoView_SNES;
-  tao->ops->solve          = TaoSolve_SNES;
+  tao->ops->destroy          = TaoDestroy_SNES;
+  tao->ops->setup            = TaoSetUp_SNES;
+  tao->ops->setfromoptions   = TaoSetFromOptions_SNES;
+  tao->ops->view             = TaoView_SNES;
+  tao->ops->solve            = TaoSolve_SNES;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   PetscCall(TaoParametersInitialize(tao));
 

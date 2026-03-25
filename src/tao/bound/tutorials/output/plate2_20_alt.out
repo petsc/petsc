@@ -27,7 +27,7 @@ Tao Object: 1 MPI process
         total number of function/gradient evaluations=0
         Termination reason: CONTINUE_ITERATING
       Active Set subset type: subvec
-      convergence tolerances: gatol=1e-08,       grtol=1e-08,   steptol=0.,       gttol=0.
+      convergence tolerances: gatol=1e-08,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
       Objective value=0.
       total number of iterations=0,                              (max: 2000)

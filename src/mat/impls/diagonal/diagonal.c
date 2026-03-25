@@ -621,6 +621,7 @@ static PetscErrorCode MatProductNumeric_Diagonal_Dense(Mat C)
   MatCheckProduct(C, 1);
   A = C->product->A;
   B = C->product->B;
+  PetscCall(MatDiagonalSetUpDiagonal(A));
   a = (Mat_Diagonal *)A->data;
   PetscCall(VecGetArrayRead(a->diag, &alpha));
   PetscCall(MatDenseGetLDA(B, &ldb));
@@ -646,7 +647,6 @@ static PetscErrorCode MatProductSymbolic_Diagonal_Dense(Mat C)
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A = C->product->A;
   B = C->product->B;
-  PetscCall(MatDiagonalSetUpDiagonal(A));
   PetscCall(MatGetLocalSize(C, &m, &n));
   PetscCall(MatGetSize(C, &M, &N));
   if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {

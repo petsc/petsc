@@ -161,11 +161,12 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
 
   PetscFunctionBegin;
   PetscCall(TaoCreate_BNK(tao));
-  tao->ops->solve          = TaoSolve_BQNK;
-  tao->ops->setfromoptions = TaoSetFromOptions_BQNK;
-  tao->ops->destroy        = TaoDestroy_BQNK;
-  tao->ops->view           = TaoView_BQNK;
-  tao->ops->setup          = TaoSetUp_BQNK;
+  tao->ops->solve            = TaoSolve_BQNK;
+  tao->ops->setfromoptions   = TaoSetFromOptions_BQNK;
+  tao->ops->destroy          = TaoDestroy_BQNK;
+  tao->ops->view             = TaoView_BQNK;
+  tao->ops->setup            = TaoSetUp_BQNK;
+  tao->uses_hessian_matrices = PETSC_FALSE;
 
   bnk                 = (TAO_BNK *)tao->data;
   bnk->computehessian = TaoBQNKComputeHessian;

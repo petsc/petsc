@@ -1,0 +1,4 @@
+# Objective Function Terms (TaoTerm)
+
+`TaoTerm` provides an interface to constructing and manipulating multiple separate terms in the objective function of an optimization problem solved with a `Tao` solver.
+

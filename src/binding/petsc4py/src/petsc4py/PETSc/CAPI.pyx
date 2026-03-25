@@ -294,6 +294,16 @@ cdef api PetscTAOLineSearch PyPetscTAOLineSearch_Get(object arg) except ? NULL:
     retv = ob.taols
     return retv
 
+cdef api object PyPetscTAOTerm_New(PetscTAOTerm arg):
+    cdef TAOTerm retv = TAOTerm()
+    setref(&retv.taoterm, arg)
+    return retv
+
+cdef api PetscTAOTerm PyPetscTAOTerm_Get(object arg) except ? NULL:
+    cdef PetscTAOTerm retv = NULL
+    cdef TAOTerm ob = <TAOTerm?> arg
+    retv = ob.taoterm
+    return retv
 
 # -- AO --
 

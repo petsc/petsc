@@ -249,8 +249,10 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscCall(PetscFree(mat->defaultvectype));
-  PetscCall(PetscStrallocpy(vtype, &mat->defaultvectype));
+  if (vtype != mat->defaultvectype) {
+    PetscCall(PetscFree(mat->defaultvectype));
+    PetscCall(PetscStrallocpy(vtype, &mat->defaultvectype));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

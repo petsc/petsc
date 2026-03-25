@@ -1,0 +1,95 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:6, bmx:3, bmy:3, height:0.2
+iter =   0, Function value 1.67039, Residual: 0.47529
+iter =   1, Function value 1.50978, Residual: 0.128026
+iter =   2, Function value 1.5058, Residual: 0.0448655
+iter =   3, Function value 1.50566, Residual: 0.000115801
+iter =   4, Function value 1.50566, Residual: < 1.0e-6
+Tao Object: 1 MPI process
+  type: bnls
+    Tao Object: (tao_bnk_cg_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 0
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Matrix has not been preallocated yet
+      TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=0
+        Termination reason: CONTINUE_ITERATING
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-08,       grtol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.
+      Objective value=0.
+      total number of iterations=0,                              (max: 2000)
+      Solver never run
+    Rejected BFGS updates: 0
+    CG steps: 0
+    Newton steps: 4
+    BFGS steps: 0
+    Scaled gradient steps: 0
+    Gradient steps: 0
+    KSP termination reasons:
+      atol: 0
+      rtol: 4
+      ctol: 0
+      negc: 0
+      dtol: 0
+      iter: 0
+      othr: 0
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: SUCCESS
+  KSP Object: (tao_bnk_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_bnk_) 1 MPI process
+    type: lmvm
+    Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
+      type: lmvmbfgs
+      rows=48, cols=48
+        Max. storage: 5
+        Used storage: 3
+        Number of updates: 3
+        Number of rejects: 0
+        Number of resets: 0
+        J0:
+          Mat Object: (tao_bnk_pc_lmvm_mat_lmvm_J0_) 1 MPI process
+            type: diagonal
+            rows=48, cols=48
+              Vec Object: 1 MPI process
+                type: seq
+        Rescale type: diagonal
+        Rescale history: 1
+        Rescale params: alpha=1., beta=0.5, rho=1.
+        Rescale convex factor: theta=0.125
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: submatrix
+      rows=40, cols=40
+  total KSP iterations: 79
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-05,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=9.00342e-09
+  Objective value=1.50566
+  total number of iterations=4,                          (max: 50)
+  total number of function/gradient evaluations=89,      (max: unlimited)
+  total number of Hessian evaluations=4
+  Solution converged:    ||g(X)|| <= gatol

@@ -377,11 +377,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     bnk->bncg_ctx->f = bnk->f;
     /* Take some small finite number of BNCG iterations */
     PetscCall(TaoSolve(bnk->bncg));
-    /* Add the number of gradient and function evaluations to the total */
-    tao->nfuncs += bnk->bncg->nfuncs;
-    tao->nfuncgrads += bnk->bncg->nfuncgrads;
-    tao->ngrads += bnk->bncg->ngrads;
-    tao->nhess += bnk->bncg->nhess;
+    /* Add the number of gradient and function evaluations to the total     *
+     * Note: nfuncs are not copied as tao and subsolvers share same TaoTerm */
     bnk->tot_cg_its += bnk->bncg->niter;
     /* Extract the BNCG function value out and save it into BNK */
     bnk->f = bnk->bncg_ctx->f;
@@ -993,6 +990,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (!bnk->unprojected_gradient_old) PetscCall(VecDuplicate(tao->solution, &bnk->unprojected_gradient_old));
   if (!bnk->Diag_min) PetscCall(VecDuplicate(tao->solution, &bnk->Diag_min));
   if (!bnk->Diag_max) PetscCall(VecDuplicate(tao->solution, &bnk->Diag_max));
+  PetscCall(TaoSetSolution(bnk->bncg, tao->solution));
   if (bnk->max_cg_its > 0) {
     /* Ensure that the important common vectors are shared between BNK and embedded BNCG */
     bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
@@ -1011,15 +1009,21 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     PetscCall(PetscObjectReference((PetscObject)tao->stepdirection));
     PetscCall(VecDestroy(&bnk->bncg->stepdirection));
     bnk->bncg->stepdirection = tao->stepdirection;
-    PetscCall(TaoSetSolution(bnk->bncg, tao->solution));
     /* Copy over some settings from BNK into BNCG */
     PetscCall(TaoSetMaximumIterations(bnk->bncg, bnk->max_cg_its));
     PetscCall(TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol));
     PetscCall(TaoSetFunctionLowerBound(bnk->bncg, tao->fmin));
     PetscCall(TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP));
-    PetscCall(TaoSetObjective(bnk->bncg, tao->ops->computeobjective, tao->user_objP));
-    PetscCall(TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP));
-    PetscCall(TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP));
+    {
+      TaoTerm   term;
+      Vec       params;
+      PetscReal scale;
+      Mat       map;
+
+      // Note: tao->objective_term.term and bnk->bncg->objective_term.term will point to same address
+      PetscCall(TaoGetTerm(tao, &scale, &term, &params, &map));
+      PetscCall(TaoAddTerm(bnk->bncg, NULL, scale, term, params, map));
+    }
     PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)bnk->bncg));
   }
   bnk->X_inactive    = NULL;
@@ -1240,10 +1244,12 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   PetscFunctionBegin;
   PetscCall(PetscNew(&bnk));
 
-  tao->ops->setup          = TaoSetUp_BNK;
-  tao->ops->view           = TaoView_BNK;
-  tao->ops->setfromoptions = TaoSetFromOptions_BNK;
-  tao->ops->destroy        = TaoDestroy_BNK;
+  tao->ops->setup            = TaoSetUp_BNK;
+  tao->ops->view             = TaoView_BNK;
+  tao->ops->setfromoptions   = TaoSetFromOptions_BNK;
+  tao->ops->destroy          = TaoDestroy_BNK;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   /*  Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));

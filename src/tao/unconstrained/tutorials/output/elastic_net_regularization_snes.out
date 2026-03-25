@@ -1,0 +1,109 @@
+iter =   0, Function value 153.798, Residual: 132.652
+iter =   1, Function value 19.6011, Residual: 1.73952
+iter =   2, Function value 19.561, Residual: 0.0251996
+iter =   3, Function value 19.561, Residual: 2.02571e-05
+iter =   4, Function value 19.561, Residual: < 1.0e-6
+Tao Object: 1 MPI process
+  type: snes
+  SNES Object: 1 MPI process
+    type: newtonls
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=4
+    total number of function evaluations=5
+    norm schedule ALWAYS
+    SNESLineSearch Object: 1 MPI process
+      type: bt
+        interpolation: cubic
+        alpha=1.000000e-04
+      maxlambda=1.000000e+00, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=40
+    KSP Object: 1 MPI process
+      type: gmres
+        restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+        happy breakdown tolerance=1e-30
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: 1 MPI process
+      type: icc
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        using Manteuffel shift [POSITIVE_DEFINITE]
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix:
+            Mat Object: 1 MPI process
+              type: seqsbaij
+              rows=20, cols=20
+              package used to perform factorization: petsc
+              total: nonzeros=210, allocated nonzeros=210
+      linear system matrix, which is also used to construct the preconditioner:
+      Mat Object: 1 MPI process
+        type: seqaij
+        rows=20, cols=20
+        total: nonzeros=400, allocated nonzeros=400
+        total number of mallocs used during MatSetValues calls=0
+          using I-node routines: found 4 nodes, limit used is 5
+  Objective function:
+    TaoTerm Object: 1 MPI process
+      type: sum
+      solution vector space: N = 20
+      parameter vector space: (optional) K = 130
+      Sum of 3 terms: f_{data_}(A_{Amat_} x; [p_0]) + 0.1 f_{ridge_}(x; [p_1]) + 0.1 f_{lasso_}(A_{Dmat_} x; [p_2])
+      f_{data_}:
+        TaoTerm Object: (data_) 1 MPI process
+          type: quadratic
+          solution vector space: N = 100
+          parameter vector space: (optional) K = 100
+          Mat Object: 1 MPI process
+            type: diagonal
+            rows=100, cols=100
+              Vec Object: 1 MPI process
+                type: seq
+          total number of function evaluations=13
+          total number of gradient evaluations=5
+          total number of Hessian evaluations=4
+      A_{Amat_}:
+        Mat Object: (Amat_) 1 MPI process
+          type: seqdense
+          rows=100, cols=20
+          total: nonzeros=2000, allocated nonzeros=2000
+          total number of mallocs used during MatSetValues calls=0
+      f_{ridge_}:
+        TaoTerm Object: (ridge_) 1 MPI process
+          type: halfl2squared
+          solution vector space: N = 20
+          parameter vector space: (optional) K = 20
+          total number of function evaluations=13
+          total number of gradient evaluations=5
+          total number of Hessian evaluations=4
+      f_{lasso_}:
+        TaoTerm Object: (lasso_) 1 MPI process
+          type: l1
+          solution vector space: N = 10
+          parameter vector space: (optional) K = 10
+          epsilon (tao_term_l1_epsilon): 0.1
+          total number of function evaluations=13
+          total number of gradient evaluations=5
+          total number of Hessian evaluations=4
+      A_{Dmat_}:
+        Mat Object: (Dmat_) 1 MPI process
+          type: seqdense
+          rows=10, cols=20
+          total: nonzeros=200, allocated nonzeros=200
+          total number of mallocs used during MatSetValues calls=0
+      total number of function evaluations=13
+      total number of gradient evaluations=5
+      total number of Hessian evaluations=4
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.33258e-11
+  Objective value=19.561
+  total number of iterations=4,                          (max: 10000)
+  total number of function evaluations=13,                  (max: unlimited)
+  total number of gradient evaluations=5,                  (max: unlimited)
+  total number of Hessian evaluations=4
+  Solution converged:    User Terminated

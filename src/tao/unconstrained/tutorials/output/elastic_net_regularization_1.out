@@ -1,0 +1,122 @@
+Tao Object: 1 MPI process
+  type: nls
+    Newton steps: 2
+    BFGS steps: 0
+    Gradient steps: 0
+    nls ksp atol: 0
+    nls ksp rtol: 2
+    nls ksp ctol: 0
+    nls ksp negc: 0
+    nls ksp dtol: 0
+    nls ksp iter: 0
+    nls ksp othr: 0
+  Objective function:
+    Scale (tao_objective_scale): 1.
+    Function:
+      TaoTerm Object: 1 MPI process
+        type: sum
+        solution vector space: N = 20 [VecType standard (tao_term_solution_vec_type)]
+        parameter vector space: (optional) K = 130 [VecType nest (tao_term_parameters_vec_type)]
+        Hessian MatType (tao_term_hessian_mat_type): aij
+        Sum of 3 terms:
+          Summand 0:
+            Scale (tao_term_sum_data_scale): 1.
+            Term:
+              TaoTerm Object: (data_) 1 MPI process
+                type: quadratic
+                solution vector space: N = 100 [VecType seq (tao_term_solution_vec_type)]
+                parameter vector space: (optional) K = 100 [VecType seq (tao_term_parameters_vec_type)]
+                Hessian MatType (tao_term_hessian_mat_type): diagonal
+                Mat Object: 1 MPI process
+                  type: diagonal
+                  rows=100, cols=100
+                    Vec Object: 1 MPI process
+                      type: seq
+                      length=100
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
+            Map:
+              Mat Object: (Amat_) 1 MPI process
+                type: seqdense
+                rows=100, cols=20
+                total: nonzeros=2000, allocated nonzeros=2000
+                total number of mallocs used during MatSetValues calls=0
+          Summand 1:
+            Scale (tao_term_sum_ridge_scale): 0.1
+            Term:
+              TaoTerm Object: (ridge_) 1 MPI process
+                type: halfl2squared
+                solution vector space: N = 20 [VecType standard (tao_term_solution_vec_type)]
+                parameter vector space: (optional) K = 20 [VecType standard (tao_term_parameters_vec_type)]
+                Hessian MatType (tao_term_hessian_mat_type): diagonal
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
+            Map: unmapped
+          Summand 2:
+            Scale (tao_term_sum_lasso_scale): 0.1
+            Term:
+              TaoTerm Object: (lasso_) 1 MPI process
+                type: l1
+                solution vector space: N = 10 [VecType standard (tao_term_solution_vec_type)]
+                parameter vector space: (optional) K = 10 [VecType standard (tao_term_parameters_vec_type)]
+                Hessian MatType (tao_term_hessian_mat_type): diagonal
+                epsilon (tao_term_l1_epsilon): 0.
+                total number of function evaluations=5
+                total number of function/gradient evaluations=3
+                total number of Hessian evaluations=2
+            Map:
+              Mat Object: (Dmat_) 1 MPI process
+                type: seqdense
+                rows=10, cols=20
+                total: nonzeros=200, allocated nonzeros=200
+                total number of mallocs used during MatSetValues calls=0
+        total number of function evaluations=5
+        total number of function/gradient evaluations=3
+        total number of Hessian evaluations=2
+    Map: unmapped
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: SUCCESS
+  KSP Object: (tao_nls_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_nls_) 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix:
+          Mat Object: (tao_nls_) 1 MPI process
+            type: seqaij
+            rows=20, cols=20
+            package used to perform factorization: petsc
+            total: nonzeros=400, allocated nonzeros=400
+              using I-node routines: found 4 nodes, limit used is 5
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=20, cols=20
+      total: nonzeros=400, allocated nonzeros=400
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 4 nodes, limit used is 5
+  total KSP iterations: 2
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=6.84424e-15
+  Objective value=19.64
+  total number of iterations=2,                          (max: 50)
+  total number of function evaluations=5,                  (max: unlimited)
+  total number of function/gradient evaluations=3,      (max: unlimited)
+  total number of Hessian evaluations=2
+  Solution converged:    ||g(X)|| <= gatol

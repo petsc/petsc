@@ -1429,11 +1429,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
   PC         pc;
 
   PetscFunctionBegin;
-  tao->ops->setup          = TaoSetup_PDIPM;
-  tao->ops->solve          = TaoSolve_PDIPM;
-  tao->ops->setfromoptions = TaoSetFromOptions_PDIPM;
-  tao->ops->view           = TaoView_PDIPM;
-  tao->ops->destroy        = TaoDestroy_PDIPM;
+  tao->ops->setup            = TaoSetup_PDIPM;
+  tao->ops->solve            = TaoSolve_PDIPM;
+  tao->ops->setfromoptions   = TaoSetFromOptions_PDIPM;
+  tao->ops->view             = TaoView_PDIPM;
+  tao->ops->destroy          = TaoDestroy_PDIPM;
+  tao->uses_gradient         = PETSC_TRUE;
+  tao->uses_hessian_matrices = PETSC_TRUE;
 
   PetscCall(PetscNew(&pdipm));
   tao->data = (void *)pdipm;

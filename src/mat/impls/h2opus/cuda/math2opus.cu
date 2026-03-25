@@ -17,7 +17,6 @@
 
 /* math2opusutils */
 PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat, PetscSF, PetscSF *);
-PETSC_INTERN PetscErrorCode VecSign(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecSetDelta(Vec, PetscInt);
 PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat, NormType, PetscInt, PetscReal *);
 

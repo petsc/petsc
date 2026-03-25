@@ -1,0 +1,147 @@
+Tao Object: 1 MPI process
+  type: nls
+    Newton steps: 19
+    BFGS steps: 0
+    Gradient steps: 8
+    nls ksp atol: 0
+    nls ksp rtol: 19
+    nls ksp ctol: 0
+    nls ksp negc: 0
+    nls ksp dtol: 0
+    nls ksp iter: 0
+    nls ksp othr: 0
+  Objective function:
+    TaoTerm Object: 1 MPI process
+      type: sum
+      solution vector space: N = 2
+      parameter vector space: K = 1
+      Sum of 2 terms: f_{callbacks_}(x) + 0.1 f_{Regularizer TaoTerm}(A_{Regularizer TaoTerm Map} x; p_1)
+      f_{callbacks_}:
+        TaoTerm Object: (callbacks_) 1 MPI process
+          type: callbacks
+          solution vector space: N = 2
+          attached to Tao [name omitted]
+          total number of function/gradient evaluations=313
+          total number of Hessian evaluations=20
+      f_{Regularizer TaoTerm}:
+        TaoTerm Object: Regularizer TaoTerm (reg1_) 1 MPI process
+          type: l1
+          solution vector space: N = 1
+          parameter vector space: K = 1
+          epsilon (tao_term_l1_epsilon): 0.
+          total number of function evaluations=5
+          total number of gradient evaluations=1
+          total number of function/gradient evaluations=307
+          total number of Hessian evaluations=20
+      A_{Regularizer TaoTerm Map}:
+        Mat Object: Regularizer TaoTerm Map (A1_) 1 MPI process
+          type: seqaij
+          rows=1, cols=2
+          total: nonzeros=2, allocated nonzeros=2
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node routines
+      total number of function evaluations=5
+      total number of gradient evaluations=1
+      total number of function/gradient evaluations=307
+      total number of Hessian evaluations=20
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=30
+    Termination reason: HALTED_OTHER
+  KSP Object: (tao_nls_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_nls_) 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix:
+          Mat Object: (tao_nls_) 1 MPI process
+            type: seqaij
+            rows=2, cols=2
+            package used to perform factorization: petsc
+            total: nonzeros=4, allocated nonzeros=4
+              using I-node routines: found 1 nodes, limit used is 5
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=2, cols=2
+      total: nonzeros=4, allocated nonzeros=4
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 1 nodes, limit used is 5
+  total KSP iterations: 19
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=0.0279628
+  Objective value=0.00175895
+  total number of iterations=19,                          (max: 50)
+  total number of function evaluations=5,                  (max: unlimited)
+  total number of gradient evaluations=1,                  (max: unlimited)
+  total number of function/gradient evaluations=307,      (max: unlimited)
+  total number of Hessian evaluations=20
+  Solver failed:    Line Search Failure
+Tao Object: 1 MPI process
+  type: nls
+    Newton steps: 19
+    BFGS steps: 0
+    Gradient steps: 8
+    nls ksp atol: 0
+    nls ksp rtol: 19
+    nls ksp ctol: 0
+    nls ksp negc: 0
+    nls ksp dtol: 0
+    nls ksp iter: 0
+    nls ksp othr: 0
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=30
+    Termination reason: HALTED_OTHER
+  KSP Object: (tao_nls_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_nls_) 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix:
+          Mat Object: (tao_nls_) 1 MPI process
+            type: seqaij
+            rows=2, cols=2
+            package used to perform factorization: petsc
+            total: nonzeros=4, allocated nonzeros=4
+              using I-node routines: found 1 nodes, limit used is 5
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=2, cols=2
+      total: nonzeros=4, allocated nonzeros=4
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 1 nodes, limit used is 5
+  total KSP iterations: 19
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=0.0279628
+  Objective value=0.00175895
+  total number of iterations=19,                          (max: 50)
+  total number of function/gradient evaluations=313,      (max: unlimited)
+  total number of Hessian evaluations=20
+  Solver failed:    Line Search Failure
+Solutions match (relative difference < 1e-12)

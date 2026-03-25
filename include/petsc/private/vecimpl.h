@@ -430,6 +430,7 @@ static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, Pet
 #define VEC_PointwiseMaxAbs_ASYNC_FN_NAME VEC_ASYNC_FN_NAME("PointwiseMaxAbs")
 #define VEC_PointwiseMin_ASYNC_FN_NAME    VEC_ASYNC_FN_NAME("PointwiseMin")
 #define VEC_PointwiseMult_ASYNC_FN_NAME   VEC_ASYNC_FN_NAME("PointwiseMult")
+#define VEC_PointwiseSign_ASYNC_FN_NAME   VEC_ASYNC_FN_NAME("PointwiseSign")
 #define VEC_Reciprocal_ASYNC_FN_NAME      VEC_ASYNC_FN_NAME("Reciprocal")
 #define VEC_Scale_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("Scale")
 #define VEC_Set_ASYNC_FN_NAME             VEC_ASYNC_FN_NAME("Set")
@@ -453,6 +454,7 @@ PETSC_INTERN PetscErrorCode VecPointwiseMaxAsync_Private(Vec, Vec, Vec, PetscDev
 PETSC_INTERN PetscErrorCode VecPointwiseMaxAbsAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecPointwiseMinAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecPointwiseMultAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseSignAsync_Private(Vec, Vec, VecSignMode, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecReciprocalAsync_Private(Vec, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecScaleAsync_Private(Vec, PetscScalar, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecSetAsync_Private(Vec, PetscScalar, PetscDeviceContext);
@@ -479,3 +481,9 @@ PETSC_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScalar, Vec, Vec, Pe
     const size_t s = (alignment) / sizeof(PetscScalar); \
     *(lda)         = ((n + s - 1) / s) * s; \
   } while (0)
+
+#define VecSignZeroToZero_Private(y) (((y) > 0) - ((y) < 0))
+
+#define VecSignZeroToSignedUnit_Private(y) PetscCopysignReal(1.0, (y))
+
+#define VecSignZeroToSignedZero_Private(y) (PetscCopysignReal(1.0, (y)) * ((y) != 0.0))

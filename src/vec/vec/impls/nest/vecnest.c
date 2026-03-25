@@ -38,6 +38,8 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
   PetscCall(PetscFree(vs->is));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestGetSubVec_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestGetSubVecs_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestGetSubVecsRead_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestRestoreSubVecsRead_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestSetSubVec_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestSetSubVecs_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "VecNestGetSize_C", NULL));
@@ -898,7 +900,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
   Fortran Notes:
   The caller must allocate the array to hold the subvectors and pass it in.
 
-.seealso: `VECNEST`, [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
+.seealso: `VECNEST`, [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`, `VecNestGetSubVecsRead()`
 @*/
 PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec *sx[])
 {
@@ -980,6 +982,85 @@ static PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
   PetscFunctionBegin;
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecNestSetSubVec_Private(X, idxm, sx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecNestGetSubVecsRead - Access the subvecs of a `VECNEST` vector for read-only access
+
+  Logically collective
+
+  Input Parameter:
+. X - nest vector
+
+  Output Parameters:
++ N  - number of nested vecs
+- sx - array of read-locked vectors
+
+  Level: advanced
+
+  Notes:
+  Each of the subvecs will be read locked (`VecLockReadPush()`), which is a logically collective operation.
+  When access is complete, you must call `VecNestRestoreSubVecsRead()` to release the locks.
+
+  Developer Note:
+  This function does not increase the state of `X` (`PetscObjectStateIncrease()`).
+
+.seealso: `VECNEST`, [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`, `VecNestRestoreSubVecsRead()`
+@*/
+PetscErrorCode VecNestGetSubVecsRead(Vec X, PetscInt *N, Vec *sx[])
+{
+  PetscFunctionBegin;
+  PetscUseMethod(X, "VecNestGetSubVecsRead_C", (Vec, PetscInt *, Vec **), (X, N, sx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode VecNestGetSubVecsRead_Nest(Vec X, PetscInt *N, Vec **sx)
+{
+  Vec_Nest *b = (Vec_Nest *)X->data;
+
+  PetscFunctionBegin;
+  for (PetscInt i = 0; i < b->nb; i++) PetscCall(VecLockReadPush(b->v[i]));
+  if (N) *N = b->nb;
+  if (sx) *sx = b->v;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecNestRestoreSubVecsRead - Restore access the subvecs of a `VECNEST` vector obtained with `VecNestGetSubVecsRead()`
+
+  Logically collective
+
+  Input Parameters:
++ X  - nest vector
+. N  - number of nested vecs
+- sx - array of read-locked vectors
+
+  Level: advanced
+
+  Note:
+  The same arguments to `VecNestGetSubVecsRead()` should be the argument to `VecNestRestoreSubVecsRead()`.
+
+.seealso: `VECNEST`, [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`, `VecNestGetSubVecsRead()`
+@*/
+PetscErrorCode VecNestRestoreSubVecsRead(Vec X, PetscInt *N, Vec *sx[])
+{
+  PetscFunctionBegin;
+  PetscUseMethod(X, "VecNestRestoreSubVecsRead_C", (Vec, PetscInt *, Vec **), (X, N, sx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode VecNestRestoreSubVecsRead_Nest(Vec X, PetscInt *N, Vec **sx)
+{
+  Vec_Nest *b = (Vec_Nest *)X->data;
+
+  PetscFunctionBegin;
+  if (N) *N = 0;
+  if (sx) {
+    PetscCheck(*sx == b->v, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONG, "Restoring incorrect array of vectors");
+    *sx = NULL;
+  }
+  for (PetscInt i = 0; i < b->nb; i++) PetscCall(VecLockReadPop(b->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1204,6 +1285,8 @@ PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *
   /* expose block api's */
   PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestGetSubVec_C", VecNestGetSubVec_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestGetSubVecs_C", VecNestGetSubVecs_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestGetSubVecsRead_C", VecNestGetSubVecsRead_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestRestoreSubVecsRead_C", VecNestRestoreSubVecsRead_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestSetSubVec_C", VecNestSetSubVec_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestSetSubVecs_C", VecNestSetSubVecs_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)V, "VecNestGetSize_C", VecNestGetSize_Nest));

@@ -285,6 +285,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   tao->ops->view           = TaoView_CG;
   tao->ops->setfromoptions = TaoSetFromOptions_CG;
   tao->ops->destroy        = TaoDestroy_CG;
+  tao->uses_gradient       = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
   PetscCall(TaoParametersInitialize(tao));
