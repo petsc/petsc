@@ -1723,47 +1723,64 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
 
   Developer Notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
-$$
+
+  $$
   \dot{u} = f(u)
-$$
+  $$
+
   by the stage equations
-$$
+
+  $$
   k_i = h f(u_0 + \sum_j \alpha_{ij} k_j) + h J \sum_j \gamma_{ij} k_j
-$$
+  $$
+
   and step completion formula
-$$
+
+  $$
   u_1 = u_0 + \sum_j b_j k_j
-$$
+  $$
+
   with step size $h$ and coefficients $\alpha_{ij}$, $\gamma_{ij}$, and $b_i$. Implementing the method in this form would require $f(u)$
   and the Jacobian $J$ to be available, in addition to the shifted matrix $I - h \gamma_{ii} J$. Following Hairer and Wanner,
   we define new variables for the stage equations
-$$
+
+  $$
   y_i = \gamma_{ij} k_j
-$$
-  The $ k_j $ can be recovered because $\Gamma$ is invertible. Let $C$ be the lower triangular part of $\Gamma^{-1}$ and define
-$$
-  A = \Alpha \Gamma^{-1}, bt^T = b^T \Gamma^{-1}
-$$
+  $$
+
+  The $k_j$ can be recovered because $\Gamma$ is invertible. Let $C$ be the strictly lower triangular part of $\Gamma^{-1}$ and define
+
+  $$
+  A = \Alpha \Gamma^{-1}, \quad \hat{b}^T = b^T \Gamma^{-1}
+  $$
+
   to rewrite the method as
-$$
-  [M/(h \gamma_ii) - J] y_i = f(u_0 + \sum_j a_{ij} y_j) + M \sum_j (c_{ij}/h) y_j \\
-  u_1 = u_0 + \sum_j bt_j y_j
-$$
+
+  $$
+  [M/(h \gamma_{ii}) - J] y_i = f(u_0 + \sum_j a_{ij} y_j) + M \sum_j (c_{ij}/h) y_j \\
+  u_1 = u_0 + \sum_j \hat{b}_j y_j
+  $$
 
    where we have introduced the mass matrix $M$. Continue by defining
-$$
-  \dot{y}_i = 1/(h \gamma_ii) y_i - \sum_j (c_{ij}/h) y_j
-$$
+
+  $$
+  \dot{y}_i = 1/(h \gamma_{ii}) y_i - \sum_j (c_{ij}/h) y_j
+  $$
+
    or, more compactly in tensor notation
-$$
-  \dot{Y} = 1/h (Gamma^{-1} \otimes I) Y .
-$$
-   Note that $\Gamma^{-1}$ is lower triangular. With this definition of $\dot{Y} in terms of known quantities and the current
+
+  $$
+  \dot{Y} = 1/h (\Gamma^{-1} \otimes I) Y .
+  $$
+
+   Note that $\Gamma^{-1}$ is lower triangular. With this definition of $\dot{Y}$ in terms of known quantities and the current
    stage $y_i$, the stage equations reduce to performing one Newton step (typically with a lagged Jacobian) on the
    equation
-$$
+
+  $$
   g(u_0 + \sum_j a_{ij} y_j + y_i, \dot{y}_i) = 0
-$$
+  $$
+
    with initial guess $y_i = 0$.
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`,
