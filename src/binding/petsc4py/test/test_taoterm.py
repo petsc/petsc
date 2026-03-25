@@ -31,6 +31,30 @@ class BaseTestTAOTerm:
         taoterm.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
         taoterm.setFromOptions()
 
+    def testGetType(self):
+        if self.taoterm.getComm().Get_size() > 1:
+            return
+        taoterm = self.taoterm
+        taoterm.setType(PETSc.TAOTerm.Type.L1)
+        self.assertEqual(taoterm.getType(), PETSc.TAOTerm.Type.L1)
+        taoterm.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
+        self.assertEqual(taoterm.getType(), PETSc.TAOTerm.Type.HALFL2SQUARED)
+
+    def testSetUp(self):
+        if self.taoterm.getComm().Get_size() > 1:
+            return
+        taoterm = self.taoterm
+        taoterm.setType(PETSc.TAOTerm.Type.L1)
+        x = PETSc.Vec().createSeq(3, comm=self.COMM)
+        taoterm.setSolutionTemplate(x)
+        taoterm.setUp()
+        x.destroy()
+
+    def testDestroy(self):
+        taoterm = PETSc.TAOTerm().create(comm=self.COMM)
+        taoterm.setType(PETSc.TAOTerm.Type.L1)
+        taoterm.destroy()
+
 # --------------------------------------------------------------------
 
 
