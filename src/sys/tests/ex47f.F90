@@ -6,7 +6,7 @@ program main
   implicit none
   PetscErrorCode                    :: ierr
   character(len=PETSC_MAX_PATH_LEN) :: filename
-  PetscBool                         ::  flg
+  PetscBool                         :: flg
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-f', filename, flg, ierr))

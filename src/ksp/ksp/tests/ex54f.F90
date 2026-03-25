@@ -11,33 +11,34 @@ program main
 
   PetscInt:: IR(1), IC(1), I, J, DMS = 4 ! Set DMS=3 for a 3x3 squared system
   PetscErrorCode ierr
-  PetscReal :: MV(12), X(3), B(4), BI(1)
+  PetscReal, parameter :: MV(12) = [1., 1., 1., 1., -1., 1., 1., 1., -1., 1., 1., 2.]
+  PetscReal, parameter :: B(4) = [6., 2., 0., 9.]
+  PetscReal :: X(3), BI(1)
   Mat:: MTX
   Vec:: PTCB, PTCX
   KSP:: KK
-  PetscInt one, three
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1
-  three = 3
+
   PetscCallA(MatCreate(PETSC_COMM_WORLD, mtx, ierr))
-  PetscCallA(MatSetSizes(mtx, PETSC_DECIDE, PETSC_DECIDE, DMS, three, ierr))
+  PetscCallA(MatSetSizes(mtx, PETSC_DECIDE, PETSC_DECIDE, DMS, 3_PETSC_INT_KIND, ierr))
   PetscCallA(MatSetFromOptions(mtx, ierr))
   PetscCallA(MatSetUp(mtx, ierr))
   PetscCallA(MatSetOption(mtx, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE, ierr))
-  MV = (/1., 1., 1., 1., -1., 1., 1., 1., -1., 1., 1., 2./)
 
   do J = 1, 3
     do I = 1, DMS
-      IR(1) = I - 1; IC(1) = J - 1; X(1) = MV(J + (I - 1)*3)
-      PetscCallA(MatSetValues(MTX, one, IR, one, IC, X, INSERT_VALUES, ierr))
+      IR(1) = I - 1
+      IC(1) = J - 1
+      X(1) = MV(J + (I - 1)*3)
+      PetscCallA(MatSetValues(MTX, 1_PETSC_INT_KIND, IR, 1_PETSC_INT_KIND, IC, X, INSERT_VALUES, ierr))
     end do
   end do
 
   PetscCallA(MatAssemblyBegin(MTX, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(MTX, MAT_FINAL_ASSEMBLY, ierr))
 
-  X = 0.; B = (/6., 2., 0., 9./)
+  X = 0.
   PetscCallA(VecCreate(PETSC_COMM_WORLD, PTCB, ierr))   ! RHS vector
   PetscCallA(VecSetSizes(PTCB, PETSC_DECIDE, DMS, ierr))
   PetscCallA(VecSetFromOptions(PTCB, ierr))
@@ -45,14 +46,14 @@ program main
   do I = 1, DMS
     IR(1) = I - 1
     BI(1) = B(i)
-    PetscCallA(VecSetValues(PTCB, one, IR, BI, INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(PTCB, 1_PETSC_INT_KIND, IR, BI, INSERT_VALUES, ierr))
   end do
 
   PetscCallA(vecAssemblyBegin(PTCB, ierr))
   PetscCallA(vecAssemblyEnd(PTCB, ierr))
 
   PetscCallA(VecCreate(PETSC_COMM_WORLD, PTCX, ierr))   ! Solution vector
-  PetscCallA(VecSetSizes(PTCX, PETSC_DECIDE, three, ierr))
+  PetscCallA(VecSetSizes(PTCX, PETSC_DECIDE, 3_PETSC_INT_KIND, ierr))
   PetscCallA(VecSetFromOptions(PTCX, ierr))
   PetscCallA(vecAssemblyBegin(PTCX, ierr))
   PetscCallA(vecAssemblyEnd(PTCX, ierr))

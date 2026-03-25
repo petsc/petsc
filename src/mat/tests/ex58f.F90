@@ -9,12 +9,13 @@ program main
 
   Mat A
   PetscErrorCode ierr
-  PetscInt M, N, row, ncol
+  PetscInt M, N, ncol
+  PetscInt, parameter :: row = 1
   PetscViewer v
   Vec rowmax
   PetscBool flg
   IS isrow, iscol
-  character*(256) f
+  character(len=256) f
   PetscInt, pointer :: cols(:)
   PetscScalar, pointer :: vals(:)
 
@@ -29,7 +30,6 @@ program main
 
   PetscCallA(MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
-  row = 1
   PetscCallA(MatGetRow(A, row, ncol, cols, vals, ierr))
   !print*,cols,vals
   PetscCallA(MatRestoreRow(A, row, ncol, cols, vals, ierr))
@@ -42,8 +42,7 @@ program main
   PetscCallA(MatGetRow(A, row, ncol, PETSC_NULL_INTEGER_POINTER, PETSC_NULL_SCALAR_POINTER, ierr))
   PetscCallA(MatRestoreRow(A, row, ncol, PETSC_NULL_INTEGER_POINTER, PETSC_NULL_SCALAR_POINTER, ierr))
 
-!
-!     Test MatGetRowMaxAbs()
+! Test MatGetRowMaxAbs()
   PetscCallA(MatGetSize(A, M, N, ierr))
   PetscCallA(VecCreate(PETSC_COMM_WORLD, rowmax, ierr))
   PetscCallA(VecSetSizes(rowmax, M, M, ierr))

@@ -11,16 +11,16 @@ program main
   PetscMPIInt rank
   PetscViewer v
   PetscInt i, j
-  PetscInt n, rstart
-  PetscInt zero, one, rend
-  PetscBool done, bb
+  PetscInt n, rstart, rend
+  PetscInt, parameter :: zero = 0, one = 1
+  PetscBool done
   PetscScalar, pointer :: aa(:)
   PetscInt, pointer :: ia(:), ja(:), icol(:)
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, '${PETSC_DIR}/share/petsc/datafiles/matrices/'//'ns-real-int32-float64', FILE_MODE_READ, v, ierr))
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, '${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64', FILE_MODE_READ, v, ierr))
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
   PetscCallA(MatSetType(A, MATMPIAIJ, ierr))
   PetscCallA(MatLoad(A, v, ierr))
@@ -32,10 +32,7 @@ program main
 !   Print diagonal portion of matrix
 !
   PetscCallA(PetscSequentialPhaseBegin(PETSC_COMM_WORLD, 1, ierr))
-  zero = 0
-  one = 1
-  bb = .true.
-  PetscCallA(MatGetRowIJ(Ad, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatGetRowIJ(Ad, one, PETSC_TRUE, PETSC_TRUE, n, ia, ja, done, ierr))
   PetscCallA(MatSeqAIJGetArray(Ad, aa, ierr))
   do i = 1, n
     write (7 + rank, *) 'row ', i + rstart, ' number nonzeros ', ia(i + 1) - ia(i)
@@ -43,12 +40,12 @@ program main
       write (7 + rank, *) '  ', j, ja(j) + rstart, aa(j)
     end do
   end do
-  PetscCallA(MatRestoreRowIJ(Ad, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatRestoreRowIJ(Ad, one, PETSC_TRUE, PETSC_TRUE, n, ia, ja, done, ierr))
   PetscCallA(MatSeqAIJRestoreArray(Ad, aa, ierr))
 !
 !   Print off-diagonal portion of matrix
 !
-  PetscCallA(MatGetRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatGetRowIJ(Ao, one, PETSC_TRUE, PETSC_TRUE, n, ia, ja, done, ierr))
   PetscCallA(MatSeqAIJGetArray(Ao, aa, ierr))
   do i = 1, n
     write (7 + rank, *) 'row ', i + rstart, ' number nonzeros ', ia(i + 1) - ia(i)
@@ -57,7 +54,7 @@ program main
     end do
   end do
   PetscCallA(MatMPIAIJRestoreSeqAIJ(A, Ad, Ao, icol, ierr))
-  PetscCallA(MatRestoreRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatRestoreRowIJ(Ao, one, PETSC_TRUE, PETSC_TRUE, n, ia, ja, done, ierr))
   PetscCallA(MatSeqAIJRestoreArray(Ao, aa, ierr))
 
   PetscCallA(PetscSequentialPhaseEnd(PETSC_COMM_WORLD, 1, ierr))

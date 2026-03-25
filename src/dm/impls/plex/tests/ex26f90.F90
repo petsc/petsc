@@ -1,41 +1,34 @@
 #include "petsc/finclude/petscdmplex.h"
-program ex62f90
+program ex26f90
   use petscdmplex
   implicit none
 #include "exodusII.inc"
 
-  ! Get the Fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
-  PetscInt                           :: dummyPetscInt
-  PetscReal                          :: dummyPetscreal
-  integer, parameter                  :: kPI = kind(dummyPetscInt)
-  integer, parameter                  :: kPR = kind(dummyPetscReal)
+  type(tDM)                           :: dm, dmU, dmA, dmS, dmUA, dmUA2, pDM
+  type(tDM), dimension(:), pointer    :: dmList
+  type(tVec)                          :: X, U, A, S, UA, UA2
+  type(tIS)                           :: isU, isA, isS, isUA
+  type(tPetscSection)                 :: section
+  PetscInt, parameter                 :: fieldU = 0, fieldS = 1, fieldA = 2
+  PetscInt, parameter, dimension(2)   :: fieldUA = [0, 2]
+  character(len=PETSC_MAX_PATH_LEN)   :: ifilename, ofilename, IOBuffer
+  integer                             :: exoid = -1
+  type(tIS)                           :: csIS
+  PetscInt, dimension(:), pointer     :: csID
+  PetscInt, dimension(:), pointer     :: pStartDepth, pEndDepth
+  PetscInt                            :: order = 1
+  integer                             :: i
+  PetscInt                            :: sdim, d, pStart, pEnd, p, numCS, set, j, k
+  PetscMPIInt                         :: rank, numProc
+  PetscBool                           :: flg
+  PetscErrorCode                      :: ierr
+  MPIU_Comm                           :: comm
+  type(tPetscViewer)                  :: viewer
 
-  type(tDM)                          :: dm, dmU, dmA, dmS, dmUA, dmUA2, pDM
-  type(tDM), dimension(:), pointer     :: dmList
-  type(tVec)                         :: X, U, A, S, UA, UA2
-  type(tIS)                          :: isU, isA, isS, isUA
-  type(tPetscSection)                :: section
-  PetscInt                           :: fieldU = 0
-  PetscInt                           :: fieldA = 2
-  PetscInt                           :: fieldS = 1
-  PetscInt, dimension(2)              :: fieldUA = [0, 2]
-  character(len=PETSC_MAX_PATH_LEN)  :: ifilename, ofilename, IOBuffer
-  integer                            :: exoid = -1
-  type(tIS)                          :: csIS
-  PetscInt, dimension(:), pointer      :: csID
-  PetscInt, dimension(:), pointer      :: pStartDepth, pEndDepth
-  PetscInt                           :: order = 1
-  integer                            :: i
-  PetscInt                           :: sdim, d, pStart, pEnd, p, numCS, set, j
-  PetscMPIInt                        :: rank, numProc
-  PetscBool                          :: flg
-  PetscErrorCode                     :: ierr
-  MPIU_Comm                          :: comm
-  type(tPetscViewer)                 :: viewer
-
-  character(len=MXSTLN)              :: sJunk
-  PetscInt                           :: numstep = 3, step
-  integer                            :: numNodalVar, numZonalVar
+  character(len=MXSTLN)               :: sJunk
+  PetscInt, parameter                 :: numstep = 3
+  PetscInt                            :: step
+  integer                             :: numNodalVar, numZonalVar
   character(len=MXNAME), dimension(4) :: nodalVarName2D = ["U_x  ", &
                                                            "U_y  ", &
                                                            "Alpha", &
@@ -54,38 +47,38 @@ program ex62f90
                                                            "Sigma_23", &
                                                            "Sigma_13", &
                                                            "Sigma_12"]
-  logical, dimension(:, :), pointer     :: truthtable
+  logical, dimension(:, :), pointer   :: truthtable
 
-  type(tIS)                          :: cellIS
-  PetscInt, dimension(:), pointer      :: cellID
-  PetscInt                           :: numCells, cell, closureSize
-  PetscInt, dimension(:), pointer      :: closureA, closure
+  type(tIS)                           :: cellIS
+  PetscInt, dimension(:), pointer     :: cellID
+  PetscInt                            :: numCells, cell, closureSize
+  PetscInt, dimension(:), pointer     :: closureA, closure
 
-  type(tPetscSection)                :: sectionUA, coordSection
-  type(tVec)                         :: UALoc, coord
-  PetscScalar, dimension(:), pointer   :: cval, xyz
-  PetscInt                           :: dofUA, offUA, c
+  type(tPetscSection)                 :: sectionUA, coordSection
+  type(tVec)                          :: UALoc, coord
+  PetscScalar, dimension(:), pointer  :: cval, xyz
+  PetscInt                            :: dofUA, offUA, c
 
   ! dof layout ordered by increasing height in the DAG: cell, face, edge, vertex
-  PetscInt, dimension(3), target        :: dofS2D = [0, 0, 3]
-  PetscInt, dimension(3), target        :: dofUP1Tri = [2, 0, 0]
-  PetscInt, dimension(3), target        :: dofAP1Tri = [1, 0, 0]
-  PetscInt, dimension(3), target        :: dofUP2Tri = [2, 2, 0]
-  PetscInt, dimension(3), target        :: dofAP2Tri = [1, 1, 0]
-  PetscInt, dimension(3), target        :: dofUP1Quad = [2, 0, 0]
-  PetscInt, dimension(3), target        :: dofAP1Quad = [1, 0, 0]
-  PetscInt, dimension(3), target        :: dofUP2Quad = [2, 2, 2]
-  PetscInt, dimension(3), target        :: dofAP2Quad = [1, 1, 1]
-  PetscInt, dimension(4), target        :: dofS3D = [0, 0, 0, 6]
-  PetscInt, dimension(4), target        :: dofUP1Tet = [3, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP1Tet = [1, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP2Tet = [3, 3, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP2Tet = [1, 1, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP1Hex = [3, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofAP1Hex = [1, 0, 0, 0]
-  PetscInt, dimension(4), target        :: dofUP2Hex = [3, 3, 3, 3]
-  PetscInt, dimension(4), target        :: dofAP2Hex = [1, 1, 1, 1]
-  PetscInt, dimension(:), pointer       :: dofU, dofA, dofS
+  PetscInt, dimension(3), target      :: dofS2D = [0, 0, 3]
+  PetscInt, dimension(3), target      :: dofUP1Tri = [2, 0, 0]
+  PetscInt, dimension(3), target      :: dofAP1Tri = [1, 0, 0]
+  PetscInt, dimension(3), target      :: dofUP2Tri = [2, 2, 0]
+  PetscInt, dimension(3), target      :: dofAP2Tri = [1, 1, 0]
+  PetscInt, dimension(3), target      :: dofUP1Quad = [2, 0, 0]
+  PetscInt, dimension(3), target      :: dofAP1Quad = [1, 0, 0]
+  PetscInt, dimension(3), target      :: dofUP2Quad = [2, 2, 2]
+  PetscInt, dimension(3), target      :: dofAP2Quad = [1, 1, 1]
+  PetscInt, dimension(4), target      :: dofS3D = [0, 0, 0, 6]
+  PetscInt, dimension(4), target      :: dofUP1Tet = [3, 0, 0, 0]
+  PetscInt, dimension(4), target      :: dofAP1Tet = [1, 0, 0, 0]
+  PetscInt, dimension(4), target      :: dofUP2Tet = [3, 3, 0, 0]
+  PetscInt, dimension(4), target      :: dofAP2Tet = [1, 1, 0, 0]
+  PetscInt, dimension(4), target      :: dofUP1Hex = [3, 0, 0, 0]
+  PetscInt, dimension(4), target      :: dofAP1Hex = [1, 0, 0, 0]
+  PetscInt, dimension(4), target      :: dofUP2Hex = [3, 3, 3, 3]
+  PetscInt, dimension(4), target      :: dofAP2Hex = [1, 1, 1, 1]
+  PetscInt, dimension(:), pointer     :: dofU, dofA, dofS
 
   type(tPetscSF)                      :: migrationSF
   PetscPartitioner                    :: part
@@ -93,7 +86,7 @@ program ex62f90
 
   type(tVec)                          :: tmpVec
   PetscReal                           :: norm
-  PetscReal                           :: time = 1.234_kPR
+  PetscReal                           :: time
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
   if (ierr /= 0) then
@@ -121,7 +114,6 @@ program ex62f90
   PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT, '-dm_view', ierr))
 
   ! Create the exodus result file
-
   ! enable exodus debugging information
   PetscCallA(exopts(EXVRBS + EXDEBG, ierr))
   ! Create the exodus file
@@ -186,14 +178,15 @@ program ex62f90
   PetscCallA(expvtt(exoid, numCS, numZonalVar, truthtable, ierr))
   deallocate (truthtable)
 
-  !   Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files */
+  !   Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) file
   do step = 1, numstep
-    PetscCallA(exptim(exoid, step, real(step, kind=kPR), ierr))
+    time = real(step, kind=PETSC_REAL_KIND)
+    PetscCallA(exptim(exoid, step, time, ierr))
   end do
 
   PetscCallA(PetscObjectGetComm(dm, comm, ierr))
   PetscCallA(PetscSectionCreate(comm, section, ierr))
-  PetscCallA(PetscSectionSetNumFields(section, 3_kPI, ierr))
+  PetscCallA(PetscSectionSetNumFields(section, 3_PETSC_INT_KIND, ierr))
   PetscCallA(PetscSectionSetFieldName(section, fieldU, 'U', ierr))
   PetscCallA(PetscSectionSetFieldName(section, fieldA, 'Alpha', ierr))
   PetscCallA(PetscSectionSetFieldName(section, fieldS, 'Sigma', ierr))
@@ -208,7 +201,7 @@ program ex62f90
 
   ! Vector field U, Scalar field Alpha, Tensor field Sigma
   PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim, ierr))
-  PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI, ierr))
+  PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_PETSC_INT_KIND, ierr))
   PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim + 1)/2, ierr))
 
   ! Going through cell sets then cells, and setting up storage for the sections
@@ -308,7 +301,7 @@ program ex62f90
   PetscCallA(DMSetUseNatural(dm, PETSC_TRUE, ierr))
   PetscCallA(DMPlexGetPartitioner(dm, part, ierr))
   PetscCallA(PetscPartitionerSetFromOptions(part, ierr))
-  PetscCallA(DMPlexDistribute(dm, 0_kPI, migrationSF, pdm, ierr))
+  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, migrationSF, pdm, ierr))
 
   if (numProc > 1) then
     PetscCallA(DMPlexSetMigrationSF(pdm, migrationSF, ierr))
@@ -319,16 +312,16 @@ program ex62f90
   PetscCallA(DMViewFromOptions(pdm, PETSC_NULL_OBJECT, '-dm_view', ierr))
 
   ! Get DM and IS for each field of dm
-  PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldU], isU, dmU, ierr))
-  PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldA], isA, dmA, ierr))
-  PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldS], isS, dmS, ierr))
-  PetscCallA(DMCreateSubDM(pdm, 2_kPI, fieldUA, isUA, dmUA, ierr))
+  PetscCallA(DMCreateSubDM(pdm, 1_PETSC_INT_KIND, [fieldU], isU, dmU, ierr))
+  PetscCallA(DMCreateSubDM(pdm, 1_PETSC_INT_KIND, [fieldA], isA, dmA, ierr))
+  PetscCallA(DMCreateSubDM(pdm, 1_PETSC_INT_KIND, [fieldS], isS, dmS, ierr))
+  PetscCallA(DMCreateSubDM(pdm, 2_PETSC_INT_KIND, fieldUA, isUA, dmUA, ierr))
 
   !Create the exodus result file
   allocate (dmList(2))
   dmList(1) = dmU
   dmList(2) = dmA
-  PetscCallA(DMCreateSuperDM(dmList, 2_kPI, PETSC_NULL_IS_POINTER, dmUA2, ierr))
+  PetscCallA(DMCreateSuperDM(dmList, 2_PETSC_INT_KIND, PETSC_NULL_IS_POINTER, dmUA2, ierr))
   deallocate (dmList)
 
   PetscCallA(DMGetGlobalVector(pdm, X, ierr))
@@ -343,7 +336,7 @@ program ex62f90
   PetscCallA(PetscObjectSetName(S, 'Sigma', ierr))
   PetscCallA(PetscObjectSetName(UA, 'UAlpha', ierr))
   PetscCallA(PetscObjectSetName(UA2, 'UAlpha2', ierr))
-  PetscCallA(VecSet(X, -111.0_kPR, ierr))
+  PetscCallA(VecSet(X, -111.0_PETSC_REAL_KIND, ierr))
 
   ! Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
   PetscCallA(DMGetLocalSection(dmUA, sectionUA, ierr))
@@ -359,12 +352,12 @@ program ex62f90
       PetscCallA(PetscSectionGetOffset(sectionUA, p, offUA, ierr))
       PetscCallA(DMPlexVecGetClosure(dmUA, coordSection, coord, p, PETSC_NULL_INTEGER, xyz, ierr))
       closureSize = size(xyz)
-      do i = 1, sdim
+      do k = 1, sdim
         do j = 0, closureSize - 1, sdim
-          cval(offUA + i) = cval(offUA + i) + xyz(j/sdim + i)
+          cval(offUA + k) = cval(offUA + k) + xyz(j/sdim + k)
         end do
-        cval(offUA + i) = cval(offUA + i)*sdim/closureSize
-        cval(offUA + sdim + 1) = cval(offUA + sdim + 1) + cval(offUA + i)**2
+        cval(offUA + k) = cval(offUA + k)*sdim/closureSize
+        cval(offUA + sdim + 1) = cval(offUA + sdim + 1) + cval(offUA + k)**2
       end do
       PetscCallA(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, PETSC_NULL_INTEGER, xyz, ierr))
     end if
@@ -388,8 +381,8 @@ program ex62f90
   PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OBJECT, '-ua2_vec_view', ierr))
 
   ! Getting Natural Vec
-  PetscCallA(DMSetOutputSequenceNumber(dmU, 0_kPI, time, ierr))
-  PetscCallA(DMSetOutputSequenceNumber(dmA, 0_kPI, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dmU, 0_PETSC_INT_KIND, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dmA, 0_PETSC_INT_KIND, time, ierr))
 
   PetscCallA(VecView(U, viewer, ierr))
   PetscCallA(VecView(A, viewer, ierr))
@@ -398,16 +391,16 @@ program ex62f90
   !For this, we need to cheat and change the Vec's name
   !Note that in the end we write variables one component at a time,
   !so that there is no real value in doing this
-  PetscCallA(DMSetOutputSequenceNumber(dmUA, 1_kPI, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dmUA, 1_PETSC_INT_KIND, time, ierr))
   PetscCallA(DMGetGlobalVector(dmUA, tmpVec, ierr))
   PetscCallA(VecCopy(UA, tmpVec, ierr))
   PetscCallA(PetscObjectSetName(tmpVec, 'U', ierr))
   PetscCallA(VecView(tmpVec, viewer, ierr))
 
   ! Reading nodal variables in Exodus file
-  PetscCallA(VecSet(tmpVec, -1000.0_kPR, ierr))
+  PetscCallA(VecSet(tmpVec, -1000.0_PETSC_REAL_KIND, ierr))
   PetscCallA(VecLoad(tmpVec, viewer, ierr))
-  PetscCallA(VecAXPY(UA, -1.0_kPR, tmpVec, ierr))
+  PetscCallA(VecAXPY(UA, -1.0_PETSC_REAL_KIND, tmpVec, ierr))
   PetscCallA(VecNorm(UA, NORM_INFINITY, norm, ierr))
   if (norm > PETSC_SQRT_MACHINE_EPSILON) then
     write (IOBuffer, '("UAlpha ||Vin - Vout|| = ",ES12.5)') norm
@@ -418,13 +411,13 @@ program ex62f90
   PetscCallA(DMGetGlobalVector(dmUA2, tmpVec, ierr))
   PetscCallA(VecCopy(UA2, tmpVec, ierr))
   PetscCallA(PetscObjectSetName(tmpVec, 'U', ierr))
-  PetscCallA(DMSetOutputSequenceNumber(dmUA2, 2_kPI, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dmUA2, 2_PETSC_INT_KIND, time, ierr))
   PetscCallA(VecView(tmpVec, viewer, ierr))
 
   ! Reading nodal variables in Exodus file
-  PetscCallA(VecSet(tmpVec, -1000.0_kPR, ierr))
+  PetscCallA(VecSet(tmpVec, -1000.0_PETSC_REAL_KIND, ierr))
   PetscCallA(VecLoad(tmpVec, viewer, ierr))
-  PetscCallA(VecAXPY(UA2, -1.0_kPR, tmpVec, ierr))
+  PetscCallA(VecAXPY(UA2, -1.0_PETSC_REAL_KIND, tmpVec, ierr))
   PetscCallA(VecNorm(UA2, NORM_INFINITY, norm, ierr))
   if (norm > PETSC_SQRT_MACHINE_EPSILON) then
     write (IOBuffer, '("UAlpha2 ||Vin - Vout|| = ",ES12.5)') norm
@@ -450,7 +443,7 @@ program ex62f90
       PetscCallA(DMPlexVecGetClosure(dmS, coordSection, coord, cellID(cell), PETSC_NULL_INTEGER, xyz, ierr))
       cval(1) = rank
       cval(2) = csID(set)
-      cval(3) = 0.0_kPR
+      cval(3) = 0.0_PETSC_REAL_KIND
       do c = 1, size(xyz), sdim
         cval(3) = cval(3) + xyz(c)
       end do
@@ -467,15 +460,15 @@ program ex62f90
   PetscCallA(VecViewFromOptions(S, PETSC_NULL_OBJECT, '-s_vec_view', ierr))
 
   ! Writing zonal variables in Exodus file
-  PetscCallA(DMSetOutputSequenceNumber(dmS, 0_kPI, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dmS, 0_PETSC_INT_KIND, time, ierr))
   PetscCallA(VecView(S, viewer, ierr))
 
   ! Reading zonal variables in Exodus file */
   PetscCallA(DMGetGlobalVector(dmS, tmpVec, ierr))
-  PetscCallA(VecSet(tmpVec, -1000.0_kPR, ierr))
+  PetscCallA(VecSet(tmpVec, -1000.0_PETSC_REAL_KIND, ierr))
   PetscCallA(PetscObjectSetName(tmpVec, 'Sigma', ierr))
   PetscCallA(VecLoad(tmpVec, viewer, ierr))
-  PetscCallA(VecAXPY(S, -1.0_kPR, tmpVec, ierr))
+  PetscCallA(VecAXPY(S, -1.0_PETSC_REAL_KIND, tmpVec, ierr))
   PetscCallA(VecNorm(S, NORM_INFINITY, norm, ierr))
   if (norm > PETSC_SQRT_MACHINE_EPSILON) then
     write (IOBuffer, '("Sigma ||Vin - Vout|| = ",ES12.5)') norm
@@ -507,7 +500,7 @@ program ex62f90
 
   PetscCallA(PetscViewerDestroy(viewer, ierr))
   PetscCallA(PetscFinalize(ierr))
-end program ex62f90
+end program ex26f90
 
 ! /*TEST
 !

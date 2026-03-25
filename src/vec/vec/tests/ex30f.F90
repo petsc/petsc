@@ -8,17 +8,16 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt nlocal, n, row, i1
-  PetscInt nlocal2, n2, eight
+  PetscInt, parameter :: nlocal = 2, n = 8
+  PetscInt row
   PetscMPIInt rank, size
-  PetscInt from(10), to(10)
-
+  PetscInt, parameter, dimension(8) :: &
+    from = [1, 5, 9, 13, 3, 7, 11, 15], &
+    to = [0, 0, 0, 0, 7, 7, 7, 7]
   PetscScalar num
   Vec v1, v2, v3
   VecScatter scat1, scat2
   IS fromis, tois
-  n = 8
-  nlocal = 2
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_COMM_RANK(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_COMM_SIZE(PETSC_COMM_WORLD, size, ierr))
@@ -27,11 +26,8 @@ program main
     stop
   end if
 
-  nlocal2 = 2*nlocal
-  n2 = 2*n
-  i1 = 1
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, nlocal2, n2, v1, ierr))
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, nlocal, n, v2, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, nlocal*2, n*2, v1, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, nlocal, n, v2, ierr))
   PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, v3, ierr))
 
   num = 2.0
@@ -60,26 +56,8 @@ program main
   PetscCallA(VecScale(v2, num, ierr))
   PetscCallA(VecScale(v3, num, ierr))
 
-  from(1) = 1
-  from(2) = 5
-  from(3) = 9
-  from(4) = 13
-  from(5) = 3
-  from(6) = 7
-  from(7) = 11
-  from(8) = 15
-  to(1) = 0
-  to(2) = 0
-  to(3) = 0
-  to(4) = 0
-  to(5) = 7
-  to(6) = 7
-  to(7) = 7
-  to(8) = 7
-
-  eight = 8
-  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, eight, from, PETSC_COPY_VALUES, fromis, ierr))
-  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, eight, to, PETSC_COPY_VALUES, tois, ierr))
+  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, 8_PETSC_INT_KIND, from, PETSC_COPY_VALUES, fromis, ierr))
+  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, 8_PETSC_INT_KIND, to, PETSC_COPY_VALUES, tois, ierr))
   PetscCallA(VecScatterCreate(v1, fromis, v2, tois, scat1, ierr))
   PetscCallA(VecScatterCreate(v1, fromis, v3, tois, scat2, ierr))
   PetscCallA(ISDestroy(fromis, ierr))

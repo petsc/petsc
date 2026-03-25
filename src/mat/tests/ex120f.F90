@@ -5,16 +5,14 @@
 module ex120fmodule
   use petscmat
   implicit none
-
+  PetscInt, parameter :: tw = 12
 contains
   subroutine mymatgetvecs(A, x, y, ierr)
 
     PetscErrorCode ierr
     Mat A
     Vec x, y
-    PetscInt tw
 
-    tw = 12
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, x, ierr))
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, y, ierr))
   end
@@ -28,11 +26,9 @@ program main
   PetscErrorCode ierr
   Vec x, y
   Mat m
-  PetscInt tw
 
   PetscCallA(PetscInitialize(ierr))
 
-  tw = 12
   PetscCallA(MatCreateShell(PETSC_COMM_SELF, tw, tw, tw, tw, 0, m, ierr))
   PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))

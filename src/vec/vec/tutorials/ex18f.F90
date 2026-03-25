@@ -4,21 +4,37 @@
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 ! Fortran translation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
 #include <petsc/finclude/petscvec.h>
-program main
+module ex18fmodule
   use petscvec
   implicit none
 
+contains
+
+  pure function func(a)
+    PetscScalar :: func
+    PetscScalar, intent(in) :: a
+
+    func = 2.0*a/(1.0 + a**2)
+
+  end function func
+
+end module ex18fmodule
+
+program main
+  use petscvec
+  use ex18fmodule
+
+  implicit none
   PetscErrorCode :: ierr
   PetscMPIInt :: rank, size
   PetscInt   ::  rstart, rend, i, k, N
-  PetscInt, parameter   ::   numPoints = 1000000
+  PetscInt, parameter ::numPoints = 1000000
   PetscScalar  ::  dummy
   PetscScalar, parameter  :: h = 1.0/numPoints
   PetscScalar, pointer, dimension(:)  :: xarray
   PetscScalar :: myResult = 0
   Vec x, xend
   character(len=PETSC_MAX_PATH_LEN) :: output
-  PetscInt, parameter :: one = 1
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -39,12 +55,12 @@ program main
   myResult = 0.5
   if (rank == 0) then
     i = 0
-    PetscCallA(VecSetValues(xend, one, [i], [myResult], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(xend, 1_PETSC_INT_KIND, [i], [myResult], INSERT_VALUES, ierr))
   end if
 
   if (rank == size - 1) then
     i = N - 1
-    PetscCallA(VecSetValues(xend, one, [i], [myResult], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(xend, 1_PETSC_INT_KIND, [i], [myResult], INSERT_VALUES, ierr))
   end if
 
   ! Assemble vector, using the 2-step process:
@@ -64,8 +80,7 @@ program main
   PetscCallA(VecGetArray(x, xarray, ierr))
   k = 1
   do i = rstart, rend - 1
-    xarray(k) = real(i)*h
-    xarray(k) = func(xarray(k))
+    xarray(k) = func(real(i)*h)
     k = k + 1
   end do
   PetscCallA(VecRestoreArray(x, xarray, ierr))
@@ -88,20 +103,6 @@ program main
   PetscCallA(VecDestroy(xend, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-
-contains
-
-  function func(a)
-    use petscvec
-
-    implicit none
-    PetscScalar :: func
-    PetscScalar, intent(IN) :: a
-
-    func = 2.0*a/(1.0 + a*a)
-
-  end function func
-
 end program
 
 !/*TEST

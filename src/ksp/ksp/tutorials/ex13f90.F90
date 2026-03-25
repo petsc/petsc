@@ -1,6 +1,9 @@
 #include <petsc/finclude/petscksp.h>
 module ex13module
   use petscksp
+
+  implicit none
+  PetscReal :: hx2, hy2
   type User
     Vec x
     Vec b
@@ -14,40 +17,34 @@ contains
 ! ----------------------------------------------------------------
   subroutine UserInitializeLinearSolver(m, n, userctx, ierr)
 
-    PetscInt m, n
-    PetscErrorCode ierr
+    PetscInt, intent(in) :: m, n
+    PetscErrorCode, intent(out) :: ierr
     type(User) userctx
-
-    common/param/hx2, hy2
-    PetscReal hx2, hy2
 
 !  Local variable declararions
     Mat A
     Vec b, x
     KSP ksp
-    PetscInt Ntot, five, one
+    PetscInt Ntot
 
 !  Here we assume use of a grid of size m x n, with all points on the
 !  interior of the domain, i.e., we do not include the points corresponding
 !  to homogeneous Dirichlet boundary conditions.  We assume that the domain
 !  is [0,1]x[0,1].
 
-    hx2 = (m + 1)*(m + 1)
-    hy2 = (n + 1)*(n + 1)
+    hx2 = (m + 1)**2
+    hy2 = (n + 1)**2
     Ntot = m*n
-
-    five = 5
-    one = 1
 
 !  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
-    PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, Ntot, Ntot, five, PETSC_NULL_INTEGER_ARRAY, A, ierr))
+    PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, Ntot, Ntot, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, A, ierr))
 !
 !  Create vectors. Here we create vectors with no memory allocated.
 !  This way, we can use the data structures already in the program
 !  by using VecPlaceArray() subroutine at a later stage.
 !
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, one, Ntot, PETSC_NULL_SCALAR_ARRAY, b, ierr))
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1_PETSC_INT_KIND, Ntot, PETSC_NULL_SCALAR_ARRAY, b, ierr))
     PetscCall(VecDuplicate(b, x, ierr))
 
 !  Create linear solver context. This will be used repeatedly for all
@@ -71,22 +68,18 @@ contains
 
   subroutine UserDoLinearSolver(rho, userctx, userb, userx, ierr)
 
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     type(User) userctx
     PetscScalar rho(*), userb(*), userx(*)
-
-    common/param/hx2, hy2
-    PetscReal hx2, hy2
 
     PC pc
     KSP ksp
     Vec b, x
     Mat A
-    PetscInt m, n, one
+    PetscInt m, n
     PetscInt i, j, II, JJ
     PetscScalar v
 
-    one = 1
     x = userctx%x
     b = userctx%b
     A = userctx%A
@@ -112,25 +105,25 @@ contains
         if (j > 1) then
           JJ = II - m
           v = -0.5*(rho(II + 1) + rho(JJ + 1))*hy2
-          PetscCall(MatSetValues(A, one, [II], one, [JJ], [v], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
         end if
         if (j < n) then
           JJ = II + m
           v = -0.5*(rho(II + 1) + rho(JJ + 1))*hy2
-          PetscCall(MatSetValues(A, one, [II], one, [JJ], [v], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
         end if
         if (i > 1) then
           JJ = II - 1
           v = -0.5*(rho(II + 1) + rho(JJ + 1))*hx2
-          PetscCall(MatSetValues(A, one, [II], one, [JJ], [v], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
         end if
         if (i < m) then
           JJ = II + 1
           v = -0.5*(rho(II + 1) + rho(JJ + 1))*hx2
-          PetscCall(MatSetValues(A, one, [II], one, [JJ], [v], INSERT_VALUES, ierr))
+          PetscCall(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
         end if
         v = 2*rho(II + 1)*(hx2 + hy2)
-        PetscCall(MatSetValues(A, one, [II], one, [II], [v], INSERT_VALUES, ierr))
+        PetscCall(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], INSERT_VALUES, ierr))
         II = II + 1
       end do
     end do
@@ -193,7 +186,7 @@ contains
 
   subroutine UserFinalizeLinearSolver(userctx, ierr)
 
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     type(User) userctx
 
 !
@@ -207,12 +200,10 @@ contains
     PetscCall(KSPDestroy(userctx%ksp, ierr))
   end
 
-end module
+end module ex13module
 
 program main
   use ex13module
-  implicit none
-
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
 
@@ -229,14 +220,12 @@ program main
 !
 !   Scalar hx2,hy2  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+  implicit none
   PetscScalar hx, hy, x, y
   type(User) userctx
   PetscErrorCode ierr
-  PetscInt m, n, t, tmax, i, j
+  PetscInt m, n, t, i, j
+  PetscInt, parameter :: tmax = 2
   PetscBool flg
   PetscMPIInt size
   PetscReal enorm
@@ -245,13 +234,6 @@ program main
   PetscScalar, allocatable :: userb(:, :)
   PetscScalar, allocatable :: solution(:, :)
   PetscScalar, allocatable :: rho(:, :)
-
-  PetscReal hx2, hy2
-  common/param/hx2, hy2
-
-  tmax = 2
-  m = 6
-  n = 7
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -263,8 +245,9 @@ program main
 
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
-
+  m = 6
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 7
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
 
 !  Create the empty sparse matrix and linear solver data structures
@@ -309,10 +292,10 @@ program main
   do t = 1, tmax
     PetscCallA(UserDoLinearSolver(rho, userctx, userb, userx, ierr))
 
-!        Compute error: Note that this could (and usually should) all be done
-!        using the PETSc vector operations. Here we demonstrate using more
-!        standard programming practices to show how they may be mixed with
-!        PETSc.
+!   Compute error: Note that this could (and usually should) all be done
+!   using the PETSc vector operations. Here we demonstrate using more
+!   standard programming practices to show how they may be mixed with
+!   PETSc.
     cnorm = 0.0
     do j = 1, n
       do i = 1, m

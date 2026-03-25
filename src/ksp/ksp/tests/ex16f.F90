@@ -18,21 +18,16 @@ program main
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
   PetscErrorCode ierr
-  PetscInt its, ione, ifive, izero
+  PetscInt its
   PetscBool flg
-  PetscScalar none, five
+  PetscScalar, parameter :: none = -1.0, five = 5.0
   PetscReal norm
   Vec x, b, u
   Mat A
   KSP ksp1, ksp2
-  character*(PETSC_MAX_PATH_LEN) f
+  character(len=PETSC_MAX_PATH_LEN) f
   PetscViewer fd
   IS isrow
-  none = -1.0
-  five = 5.0
-  ifive = 5
-  ione = 1
-  izero = 0
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -70,7 +65,7 @@ program main
 100 format('Residual norm ', e11.4, ' iterations ', i5)
 
 ! Create system 2 by striping off some rows of the matrix
-  PetscCallA(ISCreateStride(PETSC_COMM_SELF, ifive, izero, ione, isrow, ierr))
+  PetscCallA(ISCreateStride(PETSC_COMM_SELF, 5_PETSC_INT_KIND, 0_PETSC_INT_KIND, 1_PETSC_INT_KIND, isrow, ierr))
   PetscCallA(MatZeroRowsIS(A, isrow, five, PETSC_NULL_VEC, PETSC_NULL_VEC, ierr))
 
 ! Solve system-2

@@ -10,11 +10,11 @@ program main
   KSP ksp
   PC pc
   Mat F
-  PetscScalar alpha
+  PetscScalar, parameter :: alpha = -1.0
   PetscReal norm
   PetscInt m, K
   PetscViewer viewer
-  character*(PETSC_MAX_PATH_LEN) name
+  character(PETSC_MAX_PATH_LEN) name
   PetscBool flg
   PetscErrorCode ierr
 
@@ -47,7 +47,6 @@ program main
   if (flg) then
     PetscCallA(PCFactorGetMatrix(pc, F, ierr))
     PetscCallA(MatMatSolve(F, B, B, ierr))
-    alpha = -1.0
     PetscCallA(MatAYPX(B, alpha, X, SAME_NONZERO_PATTERN, ierr))
     PetscCallA(MatNorm(B, NORM_INFINITY, norm, ierr))
     PetscCheckA(norm < 100*PETSC_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'KSPMatSolve() and MatMatSolve() difference has nonzero norm')

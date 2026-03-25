@@ -4,35 +4,21 @@ program ex95f90
   implicit none
 #include "exodusII.inc"
 
-  ! Get the Fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
-  PetscInt                             :: dummyPetscInt
-  PetscReal                            :: dummyPetscreal
-  PetscBool                            :: flg
-  integer, parameter                    :: kPI = kind(dummyPetscInt)
-  integer, parameter                    :: kPR = kind(dummyPetscReal)
-  integer                              :: nNodalVar = 4
-  integer                              :: nZonalVar = 3
-  integer                              :: i
+  PetscBool :: flg
+  integer :: nNodalVar = 4
+  integer :: nZonalVar = 3
+  integer :: i
 
-  PetscErrorCode                       :: ierr
-  type(tDM)                            :: dm, pdm
-  character(len=PETSC_MAX_PATH_LEN)    :: ifilename, ofilename, IOBuffer
-  PetscInt                             :: order = 1
-  type(tPetscViewer)                   :: viewer
-  character(len=MXNAME), dimension(4) :: nodalVarName = ["U_x  ", &
-                                                         "U_y  ", &
-                                                         "Alpha", &
-                                                         "Beta "]
-  character(len=MXNAME), dimension(3) :: zonalVarName = ["Sigma_11", &
-                                                         "Sigma_12", &
-                                                         "Sigma_22"]
-  character(len=MXNAME)              :: varName
+  PetscErrorCode :: ierr
+  type(tDM) :: dm, pdm
+  character(len=PETSC_MAX_PATH_LEN) :: ifilename, ofilename, IOBuffer
+  PetscInt, parameter :: order = 1
+  type(tPetscViewer) :: viewer
+  character(len=MXNAME), dimension(4) :: nodalVarName = ["U_x  ", "U_y  ", "Alpha", "Beta "]
+  character(len=MXNAME), dimension(3) :: zonalVarName = ["Sigma_11", "Sigma_12", "Sigma_22"]
+  character(len=MXNAME) :: varName
 
   PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
-  if (ierr /= 0) then
-    print *, 'Unable to initialize PETSc'
-    stop
-  end if
 
   PetscCallA(PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 'PetscViewer_ExodusII test', 'ex95f90', ierr))
   PetscCallA(PetscOptionsString("-i", "Filename to read", "ex95f90", ifilename, ifilename, flg, ierr))
@@ -62,7 +48,7 @@ program ex95f90
   PetscCallA(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD, ierr))
   PetscCall(PetscViewerFlush(viewer, ierr))
 
-  PetscCallA(DMPlexDistribute(dm, 0_kPI, PETSC_NULL_SF, pdm, ierr))
+  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, pdm, ierr))
   if (pdm /= PETSC_NULL_DM) then
     pdm = dm
   end if

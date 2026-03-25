@@ -10,19 +10,17 @@ module ex45fmodule
 contains
 
   subroutine ComputeInitialGuess(ksp, b, ctx, ierr)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     KSP ksp
     PetscInt ctx(*)
     Vec b
-    PetscScalar h
+    PetscScalar, parameter :: h = 0.0
 
-    h = 0.0
     PetscCall(VecSet(b, h, ierr))
   end subroutine
 
   subroutine ComputeRHS(ksp, b, unused, ierr)
-
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     KSP ksp
     Vec b
     integer unused(*)
@@ -40,20 +38,17 @@ contains
   end subroutine
 
   subroutine ComputeMatrix(ksp, A, B, unused, ierr)
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     KSP ksp
     Mat A, B
     integer unused(*)
     DM dm
 
-    PetscInt i, j, mx, my, xm
-    PetscInt ym, xs, ys, i1, i5
+    PetscInt i, j, mx, my, xm, ym, xs, ys
     PetscScalar v(5), Hx, Hy
     PetscScalar HxdHy, HydHx
     MatStencil row(1), col(5)
 
-    i1 = 1
-    i5 = 5
     PetscCall(KSPGetDM(ksp, dm, ierr))
     PetscCall(DMDAGetInfo(dm, PETSC_NULL_INTEGER, mx, my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
 
@@ -68,7 +63,7 @@ contains
         row(1)%j = j
         if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
           v(1) = 2.0*(HxdHy + HydHx)
-          PetscCall(MatSetValuesStencil(B, i1, row, i1, row, v, INSERT_VALUES, ierr))
+          PetscCall(MatSetValuesStencil(B, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, row, v, INSERT_VALUES, ierr))
         else
           v(1) = -HxdHy
           col(1)%i = i
@@ -85,7 +80,7 @@ contains
           v(5) = -HxdHy
           col(5)%i = i
           col(5)%j = j + 1
-          PetscCall(MatSetValuesStencil(B, i1, row, i5, col, v, INSERT_VALUES, ierr))
+          PetscCall(MatSetValuesStencil(B, 1_PETSC_INT_KIND, row, 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         end if
       end do
     end do
@@ -105,17 +100,13 @@ program main
   implicit none
 
   PetscInt is, js, iw, jw
-  PetscInt one, three
   PetscErrorCode ierr
   KSP ksp
   DM dm
 
-  one = 1
-  three = 3
-
   PetscCallA(PetscInitialize(ierr))
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
-  PetscCallA(DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, three, three, PETSC_DECIDE, PETSC_DECIDE, one, one, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
+  PetscCallA(DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3_PETSC_INT_KIND, 3_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
   PetscCallA(DMSetFromOptions(dm, ierr))
   PetscCallA(DMSetUp(dm, ierr))
   PetscCallA(KSPSetDM(ksp, dm, ierr))

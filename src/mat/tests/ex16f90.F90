@@ -9,8 +9,8 @@ program main
 
   Mat A
   PetscErrorCode ierr
-  PetscInt i, j, m, n, iar(1), jar(1)
-  PetscInt one
+  PetscInt i, j, iar(1), jar(1)
+  PetscInt, parameter :: m = 3, n = 2
   PetscScalar v(1)
   PetscScalar, pointer :: array(:, :)
   PetscMPIInt rank
@@ -18,23 +18,20 @@ program main
   character(len=80) :: string
 
   PetscCallA(PetscInitialize(ierr))
-  m = 3
-  n = 2
-  one = 1
 !
-!      Create a parallel dense matrix shared by all processors
+! Create a parallel dense matrix shared by all processors
 !
   PetscCallA(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, n, PETSC_NULL_SCALAR_ARRAY, A, ierr))
 
 !
-!     Set values into the matrix. All processors set all values.
+! Set values into the matrix. All processors set all values.
 !
   do i = 0, m - 1
     iar(1) = i
     do j = 0, n - 1
       jar(1) = j
       v(1) = 9.0/real(i + j + 1)
-      PetscCallA(MatSetValues(A, one, iar, one, jar, v, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, iar, 1_PETSC_INT_KIND, jar, v, INSERT_VALUES, ierr))
     end do
   end do
 
@@ -42,12 +39,12 @@ program main
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !
-!       Print the matrix to the screen
+! Print the matrix to the screen
 !
   PetscCallA(MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
 !
-!      Print the local matrix shape to the screen for each rank
+! Print the local matrix shape to the screen for each rank
 !
   PetscCallA(MatDenseGetArray(A, array, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
@@ -57,7 +54,7 @@ program main
   PetscCallA(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT, ierr))
   PetscCallA(MatDenseRestoreArray(A, array, ierr))
 !
-!      Free the space used by the matrix
+! Free the space used by the matrix
 !
   PetscCallA(MatDestroy(A, ierr))
   PetscCallA(PetscFinalize(ierr))

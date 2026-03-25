@@ -7,11 +7,10 @@
 
       PetscErrorCode ierr
       Vec x, y
-      PetscInt :: one = 1
 
       PetscCallA(PetscInitialize(ierr))
 
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD, one, PETSC_DETERMINE, x, ierr))
+      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD, 1_PETSC_INT_KIND, PETSC_DETERMINE, x, ierr))
       y = x
       PetscCallA(VecDestroy(x, ierr))
       if (.not. PetscObjectIsNull(y)) then
@@ -19,7 +18,7 @@
       end if
       PetscObjectNullify(y)
       !  Using y = PETSC_NULL_VEC would cause a crash in VecCreateMPI()
-      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD, one, PETSC_DETERMINE, y, ierr))
+      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD, 1_PETSC_INT_KIND, PETSC_DETERMINE, y, ierr))
       PetscCallA(VecDestroy(y, ierr))
       PetscCallA(PetscFinalize(ierr))
     end

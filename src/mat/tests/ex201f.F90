@@ -60,11 +60,8 @@ contains
     Mat A, B
     MatReuse reuse
     PetscErrorCode ierr
-    PetscInt i12, i0
 
-    i12 = 12
-    i0 = 0
-    PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, B, ierr))
+    PetscCallA(MatCreateShell(PETSC_COMM_SELF, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 0_PETSC_INT_KIND, B, ierr))
     PetscCallA(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
     PetscCallA(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
 
@@ -152,21 +149,18 @@ program main
 
   Mat m, mt
   Vec x, y, z
-  PetscScalar a
+  PetscScalar, parameter :: a = 102.
   PetscViewer viewer
   MatOperation op
   PetscErrorCode ierr
-  PetscInt i12, i0
 
   PetscCallA(PetscInitialize(ierr))
 
   viewer = PETSC_VIEWER_STDOUT_SELF
-  i12 = 12
-  i0 = 0
-  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, x, ierr))
-  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, y, ierr))
-  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, z, ierr))
-  PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, m, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, 12_PETSC_INT_KIND, x, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, 12_PETSC_INT_KIND, y, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, 12_PETSC_INT_KIND, z, ierr))
+  PetscCallA(MatCreateShell(PETSC_COMM_SELF, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 12_PETSC_INT_KIND, 0_PETSC_INT_KIND, m, ierr))
   PetscCallA(MatShellSetManageScalingShifts(m, ierr))
   PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
@@ -214,7 +208,6 @@ program main
   PetscCallA(MatGetDiagonal(m, x, ierr))
   PetscCallA(MatDiagonalScale(m, x, y, ierr))
   PetscCallA(MatZeroEntries(m, ierr))
-  a = 102.
   PetscCallA(MatAXPY(m, a, mt, SAME_NONZERO_PATTERN, ierr))
   PetscCallA(MatShift(m, a, ierr))
   PetscCallA(MatDiagonalSet(m, x, INSERT_VALUES, ierr))

@@ -29,9 +29,7 @@ program main
 
   nis = 1
   zero(1) = 0
-  if (rank == 1) then
-    nis = 0 ! test nis = 0
-  end if
+  if (rank == 1) nis = 0 ! test nis = 0
   PetscCallA(ISCreateGeneral(PETSC_COMM_SELF, nis, zero, PETSC_COPY_VALUES, isrow, ierr))
 
   PetscCallA(MatCreateSubmatrices(A, nis, [isrow], [isrow], MAT_INITIAL_MATRIX, B, ierr))

@@ -11,8 +11,7 @@ program DMPlexTestLandauInterface
   external DMPlexLandauIFunction
   external DMPlexLandauIJacobian
   DM dm
-  PetscInt dim
-  PetscInt ii
+  PetscInt, parameter :: dim = 2
   PetscErrorCode ierr
   TS ts
   Vec X, X_0
@@ -21,15 +20,14 @@ program DMPlexTestLandauInterface
   KSP ksp
   PC pc
   SNESLineSearch linesearch
-  PetscReal mone
-  PetscScalar scalar
+  PetscReal :: time
+  PetscScalar, parameter :: scalar = -1.0
 
   PetscCallA(PetscInitialize(ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create mesh (DM), read in parameters, create and add f_0 (X)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  dim = 2
   PetscCallA(DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr))
   PetscCallA(DMSetUp(dm, ierr))
   PetscCallA(VecDuplicate(X, X_0, ierr))
@@ -37,10 +35,8 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  View
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ii = 0
-  PetscCallA(DMPlexLandauPrintNorms(X, ii, ierr))
-  mone = 0
-  PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
+  PetscCallA(DMPlexLandauPrintNorms(X, 0_PETSC_INT_KIND, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dm, 0_PETSC_INT_KIND, 0.0_PETSC_REAL_KIND, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,14 +62,12 @@ program DMPlexTestLandauInterface
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   PetscCallA(TSSolve(ts, X, ierr))
-  ii = 1
-  PetscCallA(DMPlexLandauPrintNorms(X, ii, ierr))
-  PetscCallA(TSGetTime(ts, mone, ierr))
-  PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
+  PetscCallA(DMPlexLandauPrintNorms(X, 1_PETSC_INT_KIND, ierr))
+  PetscCallA(TSGetTime(ts, time, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dm, 1_PETSC_INT_KIND, time, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  remove f_0
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  scalar = -1.
   PetscCallA(VecAXPY(X, scalar, X_0, ierr))
   PetscCallA(DMPlexLandauDestroyVelocitySpace(dm, ierr))
   PetscCallA(TSDestroy(ts, ierr))

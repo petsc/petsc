@@ -17,7 +17,6 @@ program main
   PetscMPIInt   ::  rank, sizef
   PetscErrorCode ierr
   PetscBool set
-  PetscInt, parameter :: one = 1, two = 2, three = 3
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -44,12 +43,12 @@ program main
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
   PetscCallA(MatSetsizes(A, m, m, PETSC_DECIDE, PETSC_DECIDE, ierr))
   PetscCallA(MatSetFromOptions(A, ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatSeqBAIJSetPreallocation(A, one, three, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatMPIBAIJSetPreallocation(A, one, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatSeqSBAIJSetPreallocation(A, one, two, PETSC_NULL_INTEGER_ARRAY, ierr))
-  PetscCallA(MatMPISBAIJSetPreallocation(A, one, two, PETSC_NULL_INTEGER_ARRAY, one, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatSeqBAIJSetPreallocation(A, 1_PETSC_INT_KIND, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPIBAIJSetPreallocation(A, 1_PETSC_INT_KIND, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatSeqSBAIJSetPreallocation(A, 1_PETSC_INT_KIND, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPISBAIJSetPreallocation(A, 1_PETSC_INT_KIND, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, ierr))
 
   PetscCallA(MatGetSize(A, PETSC_NULL_INTEGER, N, ierr))
   PetscCallA(MatGetOwnershipRange(A, rstart, rend, ierr))
@@ -57,10 +56,9 @@ program main
   allocate (cols(1:3))
   allocate (vals(1:3))
   do i = rstart, rend - 1
-
-    cols = (/mod((i + N - 1), N), i, mod((i + 1), N)/)
+    cols = [mod(i + N - 1, N), i, mod(i + 1, N)]
     vals = [1.0, 1.0, 1.0]
-    PetscCallA(MatSetValues(A, one, [i], three, cols, vals, INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [i], 3_PETSC_INT_KIND, cols, vals, INSERT_VALUES, ierr))
   end do
   deallocate (cols)
   deallocate (vals)

@@ -13,16 +13,15 @@ program main
   PetscErrorCode ierr
   PetscInt its, m, n, mlocal, nlocal
   PetscBool flg
-  PetscScalar none
+  PetscScalar, parameter :: none = -1.0
   PetscReal norm
   Vec x, b, u
   Mat A
-  character*(128) f
+  character(len=128) f
   PetscViewer fd
   MatInfo info
   KSP ksp
 
-  none = -1.0
   PetscCallA(PetscInitialize(ierr))
 
 ! Read in matrix and RHS
@@ -37,13 +36,13 @@ program main
   PetscCallA(MatGetSize(A, m, n, ierr))
   PetscCallA(MatGetLocalSize(A, mlocal, nlocal, ierr))
   PetscCallA(MatGetInfo(A, MAT_GLOBAL_SUM, info, ierr))
-  write (*, 100) m,                                                   &
- &  n,                                                              &
- &  mlocal, nlocal,                                                  &
- &  info%BLOCK_SIZE, info%NZ_ALLOCATED,          &
- &  info%NZ_USED, info%NZ_UNNEEDED,              &
- &  info%MEMORY, info%ASSEMBLIES,                &
- &  info%MALLOCS
+  write (*, 100) m, &
+    n, &
+    mlocal, nlocal, &
+    info%BLOCK_SIZE, info%NZ_ALLOCATED, &
+    info%NZ_USED, info%NZ_UNNEEDED, &
+    info%MEMORY, info%ASSEMBLIES, &
+    info%MALLOCS
 
 100 format(4(i4, 1x), 7(1pe9.2, 1x))
   PetscCallA(VecCreate(PETSC_COMM_WORLD, b, ierr))

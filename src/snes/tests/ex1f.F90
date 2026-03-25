@@ -32,6 +32,9 @@
 module ex1fmodule
   use petscsnes
   implicit none
+  PetscReal lambda
+  PetscInt mx, my
+  PetscBool fd_coloring
 contains
   subroutine postcheck(snes, x, y, w, changed_y, changed_w, ctx, ierr)
     SNES snes
@@ -40,14 +43,13 @@ contains
     PetscBool changed_w, changed_y
     PetscErrorCode ierr
     PetscInt ctx
-    PetscScalar mone
+    PetscScalar, parameter :: mone = -1.0
     MPIU_Comm comm
 
     character(len=PETSC_MAX_PATH_LEN) :: outputString
 
     PetscCallA(PetscObjectGetComm(snes, comm, ierr))
     PetscCallA(VecDuplicate(x, tmp, ierr))
-    mone = -1.0
     PetscCallA(VecWAXPY(tmp, mone, x, w, ierr))
     PetscCallA(VecNorm(tmp, NORM_2, norm, ierr))
     PetscCallA(VecDestroy(tmp, ierr))
@@ -75,29 +77,21 @@ contains
 !  VecGetArray() and VecRestoreArray().
 !
   subroutine FormInitialGuess(X, ierr)
-
-!  Input/output variables:
     Vec X
-    PetscErrorCode ierr
-
-!     Declarations for use with local arrays:
+    PetscErrorCode, intent(out) :: ierr
+!   Declarations for use with local arrays:
     PetscScalar, pointer :: lx_v(:)
 
-    ierr = 0
-
-!  Get a pointer to vector data.
-!    - VecGetArray() returns a pointer to the data array.
-!    - You MUST call VecRestoreArray() when you no longer need access to
-!      the array.
-
+!   Get a pointer to vector data.
+!     - VecGetArray() returns a pointer to the data array.
+!     - You MUST call VecRestoreArray() when you no longer need access to
+!       the array.
     PetscCallA(VecGetArray(X, lx_v, ierr))
 
-!  Compute initial guess
-
+!   Compute initial guess
     PetscCallA(ApplicationInitialGuess(lx_v, ierr))
 
-!  Restore vector
-
+!   Restore vector
     PetscCallA(VecRestoreArray(X, lx_v, ierr))
 
   end
@@ -116,28 +110,16 @@ contains
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
   subroutine ApplicationInitialGuess(x, ierr)
-
-!  Common blocks:
-    PetscReal lambda
-    PetscInt mx, my
-    PetscBool fd_coloring
-    common/params/lambda, mx, my, fd_coloring
-
-!  Input/output variables:
-    PetscScalar x(mx, my)
-    PetscErrorCode ierr
-
-!  Local variables:
+    PetscScalar, intent(out) :: x(mx, my)
+    PetscErrorCode, intent(out) :: ierr
+!   Local variables:
     PetscInt i, j
-    PetscReal temp1, temp, hx, hy, one
+    PetscReal temp1, temp, hx, hy
 
-!  Set parameters
-
-    ierr = 0
-    one = 1.0
-    hx = one/(mx - 1)
-    hy = one/(my - 1)
-    temp1 = lambda/(lambda + one)
+!   Set parameters
+    hx = 1.0_PETSC_REAL_KIND/(mx - 1)
+    hy = 1.0_PETSC_REAL_KIND/(my - 1)
+    temp1 = lambda/(lambda + 1.0_PETSC_REAL_KIND)
 
     do j = 1, my
       temp = min(j - 1, my - j)*hy
@@ -149,7 +131,7 @@ contains
         end if
       end do
     end do
-
+    ierr = 0
   end
 
 ! ---------------------------------------------------------------------
@@ -174,20 +156,12 @@ contains
 !  VecGetArray() and VecRestoreArray().
 !
   subroutine FormFunction(snes, X, F, fdcoloring, ierr)
-
-!  Input/output variables:
+!   Input/output variables:
     SNES snes
     Vec X, F
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     MatFDColoring fdcoloring
-
-!  Common blocks:
-    PetscReal lambda
-    PetscInt mx, my
-    PetscBool fd_coloring
-    common/params/lambda, mx, my, fd_coloring
-
-!  Declarations for use with local arrays:
+!   Declarations for use with local arrays:
     PetscScalar, pointer :: lx_v(:), lf_v(:)
     PetscInt, pointer :: indices(:)
 
@@ -195,24 +169,20 @@ contains
 !    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-
     PetscCallA(VecGetArrayRead(X, lx_v, ierr))
     PetscCallA(VecGetArray(F, lf_v, ierr))
 
-!  Compute function
-
+!   Compute function
     PetscCallA(ApplicationFunction(lx_v, lf_v, ierr))
 
-!  Restore vectors
-
+!   Restore vectors
     PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
     PetscCallA(VecRestoreArray(F, lf_v, ierr))
 
     PetscCallA(PetscLogFlops(11.0d0*mx*my, ierr))
 !
-!     fdcoloring is in the common block and used here ONLY to test the
-!     calls to MatFDColoringGetPerturbedColumns() and  MatFDColoringRestorePerturbedColumns()
-!
+!   fd_coloring is a global variable used here ONLY to test the
+!   calls to MatFDColoringGetPerturbedColumns() and  MatFDColoringRestorePerturbedColumns()
     if (fd_coloring) then
       PetscCallA(MatFDColoringGetPerturbedColumns(fdcoloring, PETSC_NULL_INTEGER, indices, ierr))
       print *, 'Indices from GetPerturbedColumns'
@@ -238,26 +208,15 @@ contains
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
   subroutine ApplicationFunction(x, f, ierr)
-
-!  Common blocks:
-    PetscReal lambda
-    PetscInt mx, my
-    PetscBool fd_coloring
-    common/params/lambda, mx, my, fd_coloring
-
-!  Input/output variables:
-    PetscScalar x(mx, my), f(mx, my)
-    PetscErrorCode ierr
-
-!  Local variables:
-    PetscScalar two, one, hx, hy
-    PetscScalar hxdhy, hydhx, sc
+    PetscScalar, intent(in) :: x(mx, my)
+    PetscScalar, intent(out) :: f(mx, my)
+    PetscErrorCode, intent(out) :: ierr
+!   Local variables:
+    PetscScalar, parameter :: one = 1.0, two = 2.0
+    PetscScalar hx, hy, hxdhy, hydhx, sc
     PetscScalar u, uxx, uyy
     PetscInt i, j
 
-    ierr = 0
-    one = 1.0
-    two = 2.0
     hx = one/(mx - 1)
     hy = one/(my - 1)
     sc = hx*hy*lambda
@@ -278,7 +237,7 @@ contains
         end if
       end do
     end do
-
+    ierr = 0
   end
 
 ! ---------------------------------------------------------------------
@@ -304,40 +263,27 @@ contains
 !  VecGetArray() and VecRestoreArray().
 !
   subroutine FormJacobian(snes, X, jac, jac_prec, dummy, ierr)
-
-!  Input/output variables:
+!   Input/output variables:
     SNES snes
     Vec X
     Mat jac, jac_prec
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     integer dummy
-
-!  Common blocks:
-    PetscReal lambda
-    PetscInt mx, my
-    PetscBool fd_coloring
-    common/params/lambda, mx, my, fd_coloring
-
-!  Declarations for use with local array:
+!   Declarations for use with local array:
     PetscScalar, pointer :: lx_v(:)
 
-!  Get a pointer to vector data
-
+!   Get a pointer to vector data
     PetscCallA(VecGetArrayRead(X, lx_v, ierr))
 
-!  Compute Jacobian entries
-
+!   Compute Jacobian entries
     PetscCallA(ApplicationJacobian(lx_v, jac, jac_prec, ierr))
 
-!  Restore vector
-
+!   Restore vector
     PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
 
-!  Assemble matrix
-
+!   Assemble matrix
     PetscCallA(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
     PetscCallA(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
-
   end
 
 ! ---------------------------------------------------------------------
@@ -357,28 +303,16 @@ contains
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
   subroutine ApplicationJacobian(x, jac, jac_prec, ierr)
-!  Common blocks:
-    PetscReal lambda
-    PetscInt mx, my
-    PetscBool fd_coloring
-    common/params/lambda, mx, my, fd_coloring
-
-!  Input/output variables:
-    PetscScalar x(mx, my)
+!   Input/output variables:
+    PetscScalar, intent(in) :: x(mx, my)
     Mat jac, jac_prec
-    PetscErrorCode ierr
-
-!  Local variables:
-    PetscInt i, j, row(1), col(5), i1, i5
-    PetscScalar two, one, hx, hy
-    PetscScalar hxdhy, hydhx, sc, v(5)
+    PetscErrorCode, intent(out) :: ierr
+!   Local variables:
+    PetscInt i, j, row(1), col(5)
+    PetscScalar, parameter :: one = 1.0, two = 2.0
+    PetscScalar hx, hy, hxdhy, hydhx, sc, v(5)
 
 !  Set parameters
-
-    i1 = 1
-    i5 = 5
-    one = 1.0
-    two = 2.0
     hx = one/(mx - 1)
     hy = one/(my - 1)
     sc = hx*hy
@@ -396,7 +330,7 @@ contains
         row(1) = row(1) + 1
 !           boundary points
         if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-          PetscCallA(MatSetValues(jac_prec, i1, row, i1, row, [one], INSERT_VALUES, ierr))
+          PetscCallA(MatSetValues(jac_prec, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, row, [one], INSERT_VALUES, ierr))
 !           interior grid points
         else
           v(1) = -hxdhy
@@ -409,7 +343,7 @@ contains
           col(3) = row(1)
           col(4) = row(1) + 1
           col(5) = row(1) + mx
-          PetscCallA(MatSetValues(jac_prec, i1, row, i5, col, v, INSERT_VALUES, ierr))
+          PetscCallA(MatSetValues(jac_prec, 1_PETSC_INT_KIND, row, 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         end if
       end do
     end do
@@ -441,22 +375,18 @@ program main
   Vec x, r
   PetscDraw draw
   Mat J
-  PetscBool matrix_free, flg, fd_coloring
+  PetscBool matrix_free, flg
   PetscErrorCode ierr
-  PetscInt its, N, mx, my, i5
-  PetscMPIInt size, rank
-  PetscReal lambda_max, lambda_min, lambda
+  PetscInt its, N
   MatFDColoring fdcoloring
+  PetscMPIInt size, rank
+  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
   ISColoring iscoloring
   PetscBool pc
   integer4 imx, imy
   character(len=PETSC_MAX_PATH_LEN) :: outputString
   PetscScalar, pointer :: lx_v(:)
-  integer4 xl, yl, width, height
-
-!  Store parameters in common block
-
-  common/params/lambda, mx, my, fd_coloring
+  integer4, parameter :: xl = 300, yl = 0, width = 300, height = 300
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
@@ -469,14 +399,11 @@ program main
   PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only')
 
 !  Initialize problem parameters
-  i5 = 5
-  lambda_max = 6.81
-  lambda_min = 0.0
-  lambda = 6.0
   mx = 4
-  my = 4
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mx', mx, flg, ierr))
+  my = 4
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-my', my, flg, ierr))
+  lambda = 6.0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-par', lambda, flg, ierr))
   PetscCheckA(lambda < lambda_max .and. lambda > lambda_min, PETSC_COMM_SELF, PETSC_ERR_USER, 'Lambda out of range ')
   N = mx*my
@@ -522,7 +449,7 @@ program main
 
   PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-snes_mf', matrix_free, ierr))
   if (.not. matrix_free) then
-    PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD, N, N, i5, PETSC_NULL_INTEGER_ARRAY, J, ierr))
+    PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD, N, N, 5_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, J, ierr))
   end if
 
 !
@@ -607,10 +534,6 @@ program main
 
 !  PetscDraw contour plot of solution
 
-  xl = 300
-  yl = 0
-  width = 300
-  height = 300
   PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 'Solution', xl, yl, width, height, draw, ierr))
   PetscCallA(PetscDrawSetFromOptions(draw, ierr))
 

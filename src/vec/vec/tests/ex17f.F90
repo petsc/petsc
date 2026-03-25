@@ -9,16 +9,15 @@
 
       PetscErrorCode ierr
       PetscMPIInt size, rank
-      PetscInt n, NN, low, high
-      PetscInt iglobal, i, ione
-      PetscInt first, stride
-      PetscScalar value, zero
+      PetscInt NN, low, high
+      PetscInt iglobal, i
+      PetscInt, parameter :: first = 0, stride = 1, n = 5
+      PetscScalar value
+      PetscScalar, parameter :: zero = 0.0
       Vec x, y
       IS is1, is2
       VecScatter ctx
 
-      n = 5
-      zero = 0.0
       PetscCallA(PetscInitialize(ierr))
 
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
@@ -29,17 +28,15 @@
 !     is as long as the entire parallel one.
 
       NN = size*n
-      ione = 1
-      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, PETSC_DECIDE, NN, y, ierr))
-      PetscCallA(VecCreateFromOptions(PETSC_COMM_SELF, PETSC_NULL_CHARACTER, ione, NN, NN, x, ierr))
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, NN, y, ierr))
+      PetscCallA(VecCreateFromOptions(PETSC_COMM_SELF, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, NN, NN, x, ierr))
 
       PetscCallA(VecSet(x, zero, ierr))
       PetscCallA(VecGetOwnershipRange(y, low, high, ierr))
-      ione = 1
       do i = 0, n - 1
         iglobal = i + low
         value = i + 10*rank
-        PetscCallA(VecSetValues(y, ione, [iglobal], [value], INSERT_VALUES, ierr))
+        PetscCallA(VecSetValues(y, 1_PETSC_INT_KIND, [iglobal], [value], INSERT_VALUES, ierr))
       end do
 
       PetscCallA(VecAssemblyBegin(y, ierr))
@@ -54,8 +51,6 @@
 !     parallel vector delivered to only one processor then create a is2
 !     of length zero on all processors except the one to receive the parallel vector
 
-      first = 0
-      stride = 1
       PetscCallA(ISCreateStride(PETSC_COMM_SELF, NN, first, stride, is1, ierr))
       PetscCallA(ISCreateStride(PETSC_COMM_SELF, NN, first, stride, is2, ierr))
       PetscCallA(VecScatterCreate(y, is2, x, is1, ctx, ierr))

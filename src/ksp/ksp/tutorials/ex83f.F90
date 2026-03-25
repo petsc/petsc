@@ -11,18 +11,12 @@ program main
   use petscksp
   implicit none
 
-  PetscInt i, n, one
+  PetscInt i, n
   PetscCount nz
   PetscBool flg, equal
   PetscErrorCode ierr
-  PetscInt, allocatable :: ia(:)
-  PetscInt, allocatable :: ja(:)
-  PetscScalar, allocatable :: a(:)
-  PetscScalar, allocatable :: x(:)
-  PetscScalar, allocatable :: b(:)
-
-  PetscInt, allocatable :: rows(:)
-  PetscInt, allocatable :: cols(:)
+  PetscInt, allocatable, dimension(:) :: ia, ja, rows, cols
+  PetscScalar, allocatable, dimension(:) :: a, x, b
 
   Mat J, Jt, Jr
   Vec rhs, solution
@@ -30,7 +24,6 @@ program main
   PC pc
 
   PetscCallA(PetscInitialize(ierr))
-  one = 1
   n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   nz = 3*n - 4
@@ -41,9 +34,7 @@ program main
   allocate (ia(n + 1), ja(nz), a(nz))
   allocate (rows(nz), cols(nz))
 
-  do i = 1, n
-    b(i) = 1.0
-  end do
+  b(1:n) = 1.0
 
 !     PETSc ia() and ja() values begin at 0, not 1, you may need to shift the indices used in your code
   ia(1) = 0
@@ -84,12 +75,12 @@ program main
   PetscCallA(MatEqual(J, Jr, equal, ierr))
   PetscCheckA(equal .eqv. PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Matrices J and Jr must be equal')
 
-  PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF, one, n, b, rhs, ierr))
-  PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF, one, n, x, solution, ierr))
+  PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF, 1_PETSC_INT_KIND, n, b, rhs, ierr))
+  PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF, 1_PETSC_INT_KIND, n, x, solution, ierr))
 
   PetscCallA(KSPCreate(PETSC_COMM_SELF, ksp, ierr))
   PetscCallA(KSPSetErrorIfNotConverged(ksp, PETSC_TRUE, ierr))
-!     Default to a direct sparse LU solver for robustness
+! Default to a direct sparse LU solver for robustness
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCLU, ierr))
   PetscCallA(KSPSetFromOptions(ksp, ierr))
@@ -97,7 +88,7 @@ program main
 
   PetscCallA(KSPSolve(ksp, rhs, solution, ierr))
 
-!     Keep the same size and nonzero structure of the matrix but change its numerical entries
+! Keep the same size and nonzero structure of the matrix but change its numerical entries
   do i = 2, n - 1
     a(2 + 3*(i - 2) + 1) = 4.0
   end do

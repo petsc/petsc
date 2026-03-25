@@ -10,11 +10,9 @@ module ex49fmodule
   end type uctx
 contains
   subroutine CompareIntegers(a, b, ctx, res)
-    implicit none
-
-    PetscInt :: a, b
+    PetscInt, intent(in) :: a, b
     type(uctx) :: ctx
-    integer  :: res
+    integer, intent(out)  :: res
 
     if (a < b) then
       res = -1
@@ -27,7 +25,6 @@ contains
 end module ex49fmodule
 
 program main
-
   use ex49fmodule
   implicit none
 

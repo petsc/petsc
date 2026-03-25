@@ -167,9 +167,9 @@ program tpetsc
 !      --------------
   call system_clock(t1, count_rate)
 
-!$omp  parallel do                                                      &
-!$omp& private(ith,icase,ip,i,j,ii,jj,aij,ierr,x,b)                      &
-!$omp& private(col_f_mat,col_f_vecb,col_f_vecx,col_f_ksp,pc)
+!$omp parallel do &
+!$omp private(ith,icase,ip,i,j,ii,jj,aij,ierr,x,b)  &
+!$omp private(col_f_mat,col_f_vecb,col_f_vecx,col_f_ksp,pc)
   do ith = 1, nthreads
     col_f_mat => Mcol_f_mat(ith)
     col_f_vecb => Mcol_f_vecb(ith)
@@ -235,8 +235,8 @@ program tpetsc
     end do
   end do
 
-!$omp parallel do                                                        &
-!$omp private(ith,ierr)                                                  &
+!$omp parallel do &
+!$omp private(ith,ierr) &
 !$omp private(col_f_mat,col_f_vecb,col_f_vecx,col_f_ksp)
   do ith = 1, nthreads
     col_f_mat => Mcol_f_mat(ith)

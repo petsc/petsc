@@ -9,7 +9,8 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt i, nroots, nrootsalloc, nleaves, nleavesalloc, mine(6), stride
+  PetscInt i, nroots, nrootsalloc, nleaves, nleavesalloc, mine(6)
+  PetscInt, parameter :: stride = 2
   PetscSFNode remote(6)
   PetscMPIInt rank, size
   PetscSF sf
@@ -25,7 +26,6 @@ program main
   PetscInt, pointer ::          ioffset(:), irootloc(:), roffset(:), rmine(:), rremote(:)
 
   PetscCallA(PetscInitialize(ierr))
-  stride = 2
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
@@ -58,33 +58,29 @@ program main
     remote(3)%index = 2*stride
   end if
 
-!  Create a star forest for communication
+! Create a star forest for communication
   PetscCallA(PetscSFCreate(PETSC_COMM_WORLD, sf, ierr))
   PetscCallA(PetscSFSetFromOptions(sf, ierr))
   PetscCallA(PetscSFSetGraph(sf, nrootsalloc, nleaves, mine, PETSC_COPY_VALUES, remote, PETSC_COPY_VALUES, ierr))
   PetscCallA(PetscSFSetUp(sf, ierr))
 
-!   View graph, mostly useful for debugging purposes.
+! View graph, mostly useful for debugging purposes.
   PetscCallA(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL, ierr))
   PetscCallA(PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD, ierr))
   PetscCallA(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD, ierr))
 
-!   Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
-!     * user-defined structures, could also be used.
-!     Set rootdata buffer to be broadcast
-  do i = 1, nrootsalloc
-    rootdata(i) = -1
-  end do
+! Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
+!   * user-defined structures, could also be used.
+! Set rootdata buffer to be broadcast
+  rootdata(1:nrootsalloc) = -1
   do i = 1, nroots
     rootdata(1 + (i - 1)*stride) = 100*(rank + 1) + i - 1
   end do
 
-!     Initialize local buffer, these values are never used.
-  do i = 1, nleavesalloc
-    leafdata(i) = -1
-  end do
+! Initialize local buffer, these values are never used.
+  leafdata(1:nleavesalloc) = -1
 
-!     Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls.
+! Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls.
   PetscCallA(PetscSFBcastBegin(sf, MPIU_INTEGER, rootdata, leafdata, MPI_REPLACE, ierr))
   PetscCallA(PetscSFBcastEnd(sf, MPIU_INTEGER, rootdata, leafdata, MPI_REPLACE, ierr))
   PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, '## Bcast Rootdata\n', ierr))
@@ -92,7 +88,7 @@ program main
   PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, '## Bcast Leafdata\n', ierr))
   PetscCallA(PetscIntView(nleavesalloc, leafdata, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
-!     Reduce entries from leafdata to rootdata. Computation or other communication can be performed between the begin and end calls.
+! Reduce entries from leafdata to rootdata. Computation or other communication can be performed between the begin and end calls.
   PetscCallA(PetscSFReduceBegin(sf, MPIU_INTEGER, leafdata, rootdata, MPI_SUM, ierr))
   PetscCallA(PetscSFReduceEnd(sf, MPIU_INTEGER, leafdata, rootdata, MPI_SUM, ierr))
   PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, '## Reduce Leafdata\n', ierr))

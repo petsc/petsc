@@ -281,8 +281,8 @@ contains
   subroutine RunSimulation(x, i, f, ierr)
 
     PetscReal x(n), f
-    PetscInt i
-    PetscErrorCode ierr
+    PetscInt, intent(in) :: i
+    PetscErrorCode, intent(out) :: ierr
     f = y(i) - exp(-x(1)*t(i))/(x(2) + x(3)*t(i))
     ierr = 0
   end
@@ -297,8 +297,7 @@ contains
 #endif
     PetscMPIInt source
     PetscReal f(1), x(n)
-    PetscErrorCode ierr
-    PetscInt i
+    PetscErrorCode, intent(out) :: ierr
 
     checkedin = 0
     do while (checkedin < size - 1)
@@ -309,9 +308,7 @@ contains
 #else
       source = status(MPI_SOURCE)
 #endif
-      do i = 1, n
-        x(i) = 0.0
-      end do
+      x(1:n) = 0.0
       PetscCallMPI(MPI_Send(x, nn, MPIU_SCALAR, source, DIE_TAG, PETSC_COMM_WORLD, ierr))
     end do
     ierr = 0
@@ -438,28 +435,28 @@ program main
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, x, ierr))
     PetscCallA(VecCreateSeq(PETSC_COMM_SELF, m, f, ierr))
 
-!     The TAO code begins here
+!   The TAO code begins here
 
-!     Create TAO solver
+!   Create TAO solver
     PetscCallA(TaoCreate(PETSC_COMM_SELF, ta, ierr))
     PetscCallA(TaoSetType(ta, TAOPOUNDERS, ierr))
 
-!     Set routines for function, gradient, and hessian evaluation
+!   Set routines for function, gradient, and hessian evaluation
     PetscCallA(TaoSetResidualRoutine(ta, f, FormFunction, 0, ierr))
 
-!     Optional: Set initial guess
+!   Optional: Set initial guess
     call FormStartingPoint(x)
     PetscCallA(TaoSetSolution(ta, x, ierr))
 
-!     Check for TAO command line options
+!   Check for TAO command line options
     PetscCallA(TaoSetFromOptions(ta, ierr))
-!     SOLVE THE APPLICATION
+!   SOLVE THE APPLICATION
     PetscCallA(TaoSolve(ta, ierr))
 
-!     Free TAO data structures
+!   Free TAO data structures
     PetscCallA(TaoDestroy(ta, ierr))
 
-!     Free PETSc data structures
+!   Free PETSc data structures
     PetscCallA(VecDestroy(x, ierr))
     PetscCallA(VecDestroy(f, ierr))
     PetscCallA(StopWorkers(ierr))

@@ -11,13 +11,10 @@ program main
   Mat A, B
   Mat C, SC
   MatNullSpace sp, sp1
-  PetscInt one, zero, rend
-  PetscScalar sone
+  PetscInt rend
+  PetscScalar, parameter :: sone = 1.0
   Vec x, y
 
-  zero = 0
-  one = 1
-  sone = 1
   PetscCallA(PetscInitialize(ierr))
 
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
@@ -30,21 +27,21 @@ program main
   PetscCallA(MatGetNullSpace(A, sp, ierr))
   PetscCheckA(PetscObjectIsNull(sp), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Matrix null space should not exist')
 
-  PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, zero, PETSC_NULL_VEC_ARRAY, sp, ierr))
+  PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0_PETSC_INT_KIND, PETSC_NULL_VEC_ARRAY, sp, ierr))
   PetscCallA(MatSetNullSpace(A, sp, ierr))
   PetscCallA(MatGetNullSpace(A, sp1, ierr))
   PetscCheckA(.not. PetscObjectIsNull(sp), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Matrix null space should not exist')
   PetscCallA(MatNullSpaceDestroy(sp, ierr))
 
-  PetscCallA(MatCreateSeqDense(PETSC_COMM_WORLD, one, one, PETSC_NULL_SCALAR_ARRAY, C, ierr))
-  PetscCallA(MatSetValues(C, one, [zero], one, [zero], [sone], INSERT_VALUES, ierr))
+  PetscCallA(MatCreateSeqDense(PETSC_COMM_WORLD, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_SCALAR_ARRAY, C, ierr))
+  PetscCallA(MatSetValues(C, 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], [sone], INSERT_VALUES, ierr))
   PetscCallA(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatCreateSchurComplement(C, C, C, C, PETSC_NULL_MAT, SC, ierr))
   PetscCallA(MatGetOwnershipRange(SC, PETSC_NULL_INTEGER, rend, ierr))
-  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, one, x, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, 1_PETSC_INT_KIND, x, ierr))
   PetscCallA(VecDuplicate(x, y, ierr))
-  PetscCallA(VecSetValues(x, one, [zero], [sone], INSERT_VALUES, ierr))
+  PetscCallA(VecSetValues(x, 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], [sone], INSERT_VALUES, ierr))
   PetscCallA(VecAssemblyBegin(x, ierr))
   PetscCallA(VecAssemblyEnd(x, ierr))
   PetscCallA(MatMult(SC, x, y, ierr))

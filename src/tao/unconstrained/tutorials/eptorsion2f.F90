@@ -49,16 +49,14 @@ contains
   subroutine FormInitialGuess(X, ierr)
 !  Input/output variables:
     Vec X
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
 !  Local variables:
     PetscInt i, j, k, xe, ye
     PetscReal temp, val, hx, hy
     PetscInt xs, ys, xm, ym
     PetscInt gxm, gym, gxs, gys
-    PetscInt i1
 
-    i1 = 1
     hx = 1.0/real(mx + 1)
     hy = 1.0/real(my + 1)
 
@@ -74,7 +72,7 @@ contains
       do i = xs, xe - 1
         k = (j - gys)*gxm + i - gxs
         val = min((min(i + 1, mx - i))*hx, temp)
-        PetscCall(VecSetValuesLocal(X, i1, [k], [val], ADD_VALUES, ierr))
+        PetscCall(VecSetValuesLocal(X, 1_PETSC_INT_KIND, [k], [val], ADD_VALUES, ierr))
       end do
     end do
     PetscCall(VecAssemblyBegin(X, ierr))
@@ -106,7 +104,7 @@ contains
     type(tTao) ta
     type(tVec) X, G
     PetscReal f
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
 !  Declarations for use with local array:
@@ -114,7 +112,7 @@ contains
     PetscReal, pointer :: lx_v(:)
 
 !  Local variables:
-    PetscReal zero, p5, area, cdiv3
+    PetscReal area, cdiv3
     PetscReal val, flin, fquad, floc
     PetscReal v, vb, vl, vr, vt, dvdx
     PetscReal dvdy, hx, hy
@@ -122,20 +120,16 @@ contains
     PetscInt xep, yep, i, j, k, ind
     PetscInt xs, ys, xm, ym
     PetscInt gxs, gys, gxm, gym
-    PetscInt i1
 
-    i1 = 1
     ierr = 0
     cdiv3 = param/3.0
-    zero = 0.0
-    p5 = 0.5
     hx = 1.0/real(mx + 1)
     hy = 1.0/real(my + 1)
-    fquad = zero
-    flin = zero
+    fquad = 0.0_PETSC_REAL_KIND
+    flin = 0.0_PETSC_REAL_KIND
 
 !  Initialize gradient to zero
-    PetscCall(VecSet(G, zero, ierr))
+    PetscCall(VecSet(G, 0.0_PETSC_REAL_KIND, ierr))
 
 !  Scatter ghost points to local vector
     PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX, ierr))
@@ -177,9 +171,9 @@ contains
     do j = ysm, ye - 1
       do i = xsm, xe - 1
         k = (j - gys)*gxm + i - gxs
-        v = zero
-        vr = zero
-        vt = zero
+        v = 0.0
+        vr = 0.0
+        vt = 0.0
         if (i >= 0 .and. j >= 0) v = lx_v(k + 1)
         if (i < mx - 1 .and. j > -1) vr = lx_v(k + 2)
         if (i > -1 .and. j < my - 1) vt = lx_v(k + 1 + gxm)
@@ -188,17 +182,17 @@ contains
         if (i /= -1 .and. j /= -1) then
           ind = k
           val = -dvdx/hx - dvdy/hy - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [k], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [k], [val], ADD_VALUES, ierr))
         end if
         if (i /= mx - 1 .and. j /= -1) then
           ind = k + 1
           val = dvdx/hx - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [ind], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [ind], [val], ADD_VALUES, ierr))
         end if
         if (i /= -1 .and. j /= my - 1) then
           ind = k + gxm
           val = dvdy/hy - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [ind], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [ind], [val], ADD_VALUES, ierr))
         end if
         fquad = fquad + dvdx*dvdx + dvdy*dvdy
         flin = flin - cdiv3*(v + vr + vt)
@@ -210,9 +204,9 @@ contains
     do j = ys, yep - 1
       do i = xs, xep - 1
         k = (j - gys)*gxm + i - gxs
-        vb = zero
-        vl = zero
-        v = zero
+        vb = 0.0
+        vl = 0.0
+        v = 0.0
         if (i < mx .and. j > 0) vb = lx_v(k + 1 - gxm)
         if (i > 0 .and. j < my) vl = lx_v(k)
         if (i < mx .and. j < my) v = lx_v(1 + k)
@@ -221,17 +215,17 @@ contains
         if (i /= mx .and. j /= 0) then
           ind = k - gxm
           val = -dvdy/hy - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [ind], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [ind], [val], ADD_VALUES, ierr))
         end if
         if (i /= 0 .and. j /= my) then
           ind = k - 1
           val = -dvdx/hx - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [ind], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [ind], [val], ADD_VALUES, ierr))
         end if
         if (i /= mx .and. j /= my) then
           ind = k
           val = dvdx/hx + dvdy/hy - cdiv3
-          PetscCall(VecSetValuesLocal(G, i1, [ind], [val], ADD_VALUES, ierr))
+          PetscCall(VecSetValuesLocal(G, 1_PETSC_INT_KIND, [ind], [val], ADD_VALUES, ierr))
         end if
         fquad = fquad + dvdx*dvdx + dvdy*dvdy
         flin = flin - cdiv3*(vb + vl + v)
@@ -246,8 +240,8 @@ contains
     PetscCall(VecAssemblyEnd(G, ierr))
 
 ! Scale the gradient
-    area = p5*hx*hy
-    floc = area*(p5*fquad + flin)
+    area = .5*hx*hy
+    floc = area*(.5*fquad + flin)
     PetscCall(VecScale(G, area, ierr))
 
 !  Sum function contributions from all processes
@@ -259,7 +253,7 @@ contains
     type(tTao) ta
     type(tVec) X
     type(tMat) H, Hpre
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
     PetscInt i, j, k
@@ -267,11 +261,8 @@ contains
     PetscInt xs, xm, gxs, gxm
     PetscInt ys, ym, gys, gym
     PetscReal v(0:4)
-    PetscInt i1
 
-    i1 = 1
-
-!     Get local grid boundaries
+!   Get local grid boundaries
     PetscCall(DMDAGetCorners(dm, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
     PetscCall(DMDAGetGhostCorners(dm, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
 
@@ -308,7 +299,7 @@ contains
           k = k + 1
         end if
 
-        PetscCall(MatSetValuesLocal(H, i1, [row], k, col, v, INSERT_VALUES, ierr))
+        PetscCall(MatSetValuesLocal(H, 1_PETSC_INT_KIND, [row], k, col, v, INSERT_VALUES, ierr))
       end do
     end do
 
@@ -330,7 +321,7 @@ contains
   subroutine Monitor(ta, dummy, ierr)
     type(tTao) ta
     PetscInt dummy
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
     PetscInt its
     PetscReal f, gnorm, cnorm, xdiff
@@ -348,7 +339,7 @@ contains
   subroutine ConvergenceTest(ta, dummy, ierr)
     type(tTao) ta
     PetscInt dummy
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
     PetscInt its
     PetscReal f, gnorm, cnorm, xdiff
@@ -379,28 +370,24 @@ program eptorsion2f
   PetscInt Nx, Ny         ! number of processes in x- and y- directions
   type(tTao) ta            ! Tao solver context
   PetscBool flg
-  PetscInt i1
   PetscInt dummy
 
-  i1 = 1
-
-!     Initialize TAO, PETSc  contexts
+! Initialize TAO, PETSc  contexts
   PetscCallA(PetscInitialize(ierr))
-
-!     Specify default parameters
-  param = 5.0
-  mx = 10
-  my = 10
   Nx = PETSC_DECIDE
   Ny = PETSC_DECIDE
 
-!     Check for any command line arguments that might override defaults
+! Specify default parameters and
+! check for any command line arguments that might override defaults
+  mx = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mx', mx, flg, ierr))
+  my = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-my', my, flg, ierr))
+  param = 5.0
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-par', param, flg, ierr))
 
 !     Set up distributed array and vectors
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, Nx, Ny, i1, i1, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, Nx, Ny, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
   PetscCallA(DMSetFromOptions(dm, ierr))
   PetscCallA(DMSetUp(dm, ierr))
 
@@ -408,22 +395,21 @@ program eptorsion2f
   PetscCallA(DMCreateGlobalVector(dm, x, ierr))
   PetscCallA(DMCreateLocalVector(dm, localX, ierr))
 
-!     Create Hessian
+! Create Hessian
   PetscCallA(DMCreateMatrix(dm, H, ierr))
   PetscCallA(MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE, ierr))
 
-!     The TAO code begins here
+! The TAO code begins here
 
-!     Create TAO solver
+! Create TAO solver
   PetscCallA(TaoCreate(PETSC_COMM_WORLD, ta, ierr))
   PetscCallA(TaoSetType(ta, TAOCG, ierr))
 
-!     Set routines for function and gradient evaluation
-
+! Set routines for function and gradient evaluation
   PetscCallA(TaoSetObjectiveAndGradient(ta, PETSC_NULL_VEC, FormFunctionGradient, 0, ierr))
   PetscCallA(TaoSetHessian(ta, H, H, ComputeHessian, 0, ierr))
 
-!     Set initial guess
+! Set initial guess
   PetscCallA(FormInitialGuess(x, ierr))
   PetscCallA(TaoSetSolution(ta, x, ierr))
 
@@ -437,22 +423,22 @@ program eptorsion2f
     PetscCallA(TaoSetConvergenceTest(ta, ConvergenceTest, dummy, ierr))
   end if
 
-!     Check for any TAO command line options
+! Check for any TAO command line options
   PetscCallA(TaoSetFromOptions(ta, ierr))
 
-!     SOLVE THE APPLICATION
+! SOLVE THE APPLICATION
   PetscCallA(TaoSolve(ta, ierr))
 
-!     Free TAO data structures
+! Free TAO data structures
   PetscCallA(TaoDestroy(ta, ierr))
 
-!     Free PETSc data structures
+! Free PETSc data structures
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(VecDestroy(localX, ierr))
   PetscCallA(MatDestroy(H, ierr))
   PetscCallA(DMDestroy(dm, ierr))
 
-!     Finalize TAO and PETSc
+! Finalize TAO and PETSc
   PetscCallA(PetscFinalize(ierr))
 end
 

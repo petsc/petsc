@@ -15,13 +15,13 @@ program main
   Vec x
   PetscViewer viewer
   PetscScalar v
-  PetscInt :: i, istart, iend
-  PetscInt, parameter :: ione = 1, n = 50
+  PetscInt :: i, istart, iend, n
   PetscErrorCode ierr
   PetscBool flg
-  integer4 xl, yl, w, h
+  integer4, parameter :: xl = 0, yl = 0, w = 300, h = 300
 
   PetscCallA(PetscInitialize(ierr))
+  n = 50
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
 
 !  Create a vector, specifying only its global dimension.
@@ -43,7 +43,7 @@ program main
 !   - Each processor needs to insert only elements that it owns locally.
   do i = istart, iend - 1
     v = 1.0*real(i)
-    PetscCallA(VecSetValues(x, ione, [i], [v], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(x, 1_PETSC_INT_KIND, [i], [v], INSERT_VALUES, ierr))
   end do
 
 !  Assemble vector, using the 2-step process:
@@ -59,11 +59,6 @@ program main
 !         -draw_pause <pause> : sets time (in seconds) that the
 !               program pauses after PetscDrawPause() has been called
 !              (0 is default, -1 implies until user input).
-
-  xl = 0
-  yl = 0
-  w = 300
-  h = 300
   PetscCallA(PetscViewerDrawOpen(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, xl, yl, w, h, viewer, ierr))
 
 !  View the vector

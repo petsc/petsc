@@ -32,7 +32,6 @@ module Bratu2D
 contains
 
   subroutine GetGridInfo(da, grd, ierr)
-    implicit none
     DM da
     type(gridinfo) grd
     PetscErrorCode ierr
@@ -54,52 +53,46 @@ contains
   end subroutine GetGridInfo
 
   subroutine InitGuessLocal(grd, x, lambda, ierr)
-    implicit none
     type(gridinfo) grd
-    PetscScalar x(grd%xs:grd%xe, grd%ys:grd%ye)
-    PetscReal lambda
-    PetscErrorCode ierr
+    PetscScalar, intent(out) :: x(grd%xs:grd%xe, grd%ys:grd%ye)
+    PetscReal, intent(in) :: lambda
+    PetscErrorCode, intent(out) :: ierr
     !
     PetscInt i, j
-    PetscReal hx, hy, temp, temp1, one
+    PetscReal hx, hy, temp, temp1
 
-    one = 1.0
-    hx = one/(dble(grd%mx - 1))
-    hy = one/(dble(grd%my - 1))
-    temp1 = lambda/(lambda + one)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
+    temp1 = lambda/(lambda + 1.0)
 
     do j = grd%ys, grd%ye
-      temp = dble(min(j - 1, grd%my - j))*hy
+      temp = real(min(j - 1, grd%my - j), PETSC_REAL_KIND)*hy
       do i = grd%xs, grd%xe
         if (i == 1 .or. j == 1 .or. i == grd%mx .or. j == grd%my) then
           ! boundary points
           x(i, j) = 0.0
         else
           ! interior grid points
-          x(i, j) = temp1*sqrt(min(dble(min(i - 1, grd%mx - i)*hx), dble(temp)))
+          x(i, j) = temp1*sqrt(min(real(min(i - 1, grd%mx - i), PETSC_REAL_KIND)*hx, temp))
         end if
       end do
     end do
     ierr = 0
-
   end subroutine InitGuessLocal
 
   subroutine FunctionLocal(grd, x, f, lambda, ierr)
-    implicit none
     type(gridinfo) grd
-    PetscScalar x(grd%gxs:grd%gxe, grd%gys:grd%gye)
-    PetscScalar f(grd%xs:grd%xe, grd%ys:grd%ye)
-    PetscReal lambda
-    PetscErrorCode ierr
+    PetscScalar, intent(in) :: x(grd%gxs:grd%gxe, grd%gys:grd%gye)
+    PetscScalar, intent(out) :: f(grd%xs:grd%xe, grd%ys:grd%ye)
+    PetscReal, intent(in) :: lambda
+    PetscErrorCode, intent(out) :: ierr
     !
     PetscInt i, j
-    PetscReal hx, hy, hxdhy, hydhx, sc, one, two
+    PetscReal hx, hy, hxdhy, hydhx, sc
     PetscScalar u, uxx, uyy
 
-    one = 1.0
-    two = 2.0
-    hx = one/dble(grd%mx - 1)
-    hy = one/dble(grd%my - 1)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
     sc = hx*hy
     hxdhy = hx/hy
     hydhx = hy/hx
@@ -112,8 +105,8 @@ contains
         else
           ! interior grid points
           u = x(i, j)
-          uxx = (two*u - x(i - 1, j) - x(i + 1, j))*hydhx
-          uyy = (two*u - x(i, j - 1) - x(i, j + 1))*hxdhy
+          uxx = (2.0*u - x(i - 1, j) - x(i + 1, j))*hydhx
+          uyy = (2.0*u - x(i, j - 1) - x(i, j + 1))*hxdhy
           f(i, j) = uxx + uyy - lambda*exp(u)*sc
         end if
       end do
@@ -127,19 +120,14 @@ contains
     type(gridinfo) grd
     PetscScalar x(grd%gxs:grd%gxe, grd%gys:grd%gye)
     Mat Jac
-    PetscReal lambda
-    PetscErrorCode ierr
+    PetscReal, intent(in) :: lambda
+    PetscErrorCode, intent(out) :: ierr
     !
     PetscInt i, j, row(1), col(5)
-    PetscInt ione, ifive
-    PetscReal hx, hy, hxdhy, hydhx, sc, v(5), one, two
+    PetscReal hx, hy, hxdhy, hydhx, sc, v(5)
 
-    ione = 1
-    ifive = 5
-    one = 1.0
-    two = 2.0
-    hx = one/dble(grd%mx - 1)
-    hy = one/dble(grd%my - 1)
+    hx = 1.0/real(grd%mx - 1, PETSC_REAL_KIND)
+    hy = 1.0/real(grd%my - 1, PETSC_REAL_KIND)
     sc = hx*hy
     hxdhy = hx/hy
     hydhx = hy/hx
@@ -151,13 +139,13 @@ contains
         if (i == 1 .or. j == 1 .or. i == grd%mx .or. j == grd%my) then
           ! boundary points
           col(1) = row(1)
-          v(1) = one
-          PetscCall(MatSetValuesLocal(Jac, ione, row, ione, col, v, INSERT_VALUES, ierr))
+          v(1) = 1.0
+          PetscCall(MatSetValuesLocal(Jac, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         else
           ! interior grid points
           v(1) = -hxdhy
           v(2) = -hydhx
-          v(3) = two*(hydhx + hxdhy) - lambda*exp(x(i, j))*sc
+          v(3) = 2.0*(hydhx + hxdhy) - lambda*exp(x(i, j))*sc
           v(4) = -hydhx
           v(5) = -hxdhy
           col(1) = row(1) - grd%gxm
@@ -165,7 +153,7 @@ contains
           col(3) = row(1)
           col(4) = row(1) + 1
           col(5) = row(1) + grd%gxm
-          PetscCall(MatSetValuesLocal(Jac, ione, row, ifive, col, v, INSERT_VALUES, ierr))
+          PetscCall(MatSetValuesLocal(Jac, 1_PETSC_INT_KIND, row, 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
         end if
       end do
     end do
@@ -252,9 +240,3 @@ subroutine FormJacobian(da, X, J, lambda, ierr)
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY, ierr))
 
 end subroutine FormJacobian
-
-! --------------------------------------------------------------------
-
-! Local Variables:
-! mode: f90
-! End:

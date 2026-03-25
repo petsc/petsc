@@ -1,6 +1,7 @@
 #include <petsc/finclude/petscvec.h>
 module ex43fmodule
   use, intrinsic :: iso_c_binding
+  implicit none
   interface
     subroutine fillupvector(vaddr, err) bind(C, name='fillupvector')
 !
@@ -15,38 +16,37 @@ module ex43fmodule
   end interface
 end module
 
-use, intrinsic :: iso_c_binding
-use petscvec
-use ex43fmodule
-implicit none
+program ex43f
+  use, intrinsic :: iso_c_binding
+  use petscvec
+  use ex43fmodule
+  implicit none
 !
 !  This routine demonstrates how to call a bind C function from Fortran
-Vec v
-PetscErrorCode ierr
-PetscInt five
+  Vec v
+  PetscErrorCode ierr
 !
 !     We need to use the same iso_c_binding variable types here or some compilers
 !     will see a type mismatch in the call to fillupvector and thus not link
 !
-integer(c_long_long) vaddr
-integer(c_int) err
+  integer(c_long_long) vaddr
+  integer(c_int) err
 
-PetscCallA(PetscInitialize(ierr))
-PetscCallA(VecCreate(PETSC_COMM_WORLD, v, ierr))
-five = 5
-PetscCallA(VecSetSizes(v, PETSC_DECIDE, five, ierr))
-PetscCallA(VecSetFromOptions(v, ierr))
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, v, ierr))
+  PetscCallA(VecSetSizes(v, PETSC_DECIDE, 5_PETSC_INT_KIND, ierr))
+  PetscCallA(VecSetFromOptions(v, ierr))
 !
 !     Now call a PETSc routine from Fortran
 !
 !
-vaddr = v%v
-call fillupvector(vaddr, err)
+  vaddr = v%v
+  call fillupvector(vaddr, err)
 
-PetscCallA(VecView(v, PETSC_VIEWER_STDOUT_WORLD, ierr))
-PetscCallA(VecDestroy(v, ierr))
-PetscCallA(PetscFinalize(ierr))
-end
+  PetscCallA(VecView(v, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(VecDestroy(v, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end program ex43f
 
 !/*TEST
 !

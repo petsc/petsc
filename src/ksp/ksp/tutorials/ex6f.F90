@@ -1,13 +1,91 @@
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
-!  matrices.  This example also illustrates how to save PETSc objects
-!  in common blocks.
-!
+!  matrices.  This example also illustrates how to save retain data
+!  between successive subroutine calls
 !
 #include <petsc/finclude/petscksp.h>
-program main
+module ex6fmodule
   use petscksp
+
+  implicit none
+! Global data to retain matrix between successive subroutine calls
+  PetscMPIInt rank
+  PetscBool pflag
+
+contains
+  subroutine solve1(ksp, A, x, b, u, count, nsteps, A2, ierr)
+
+!
+!   solve1 - This routine is used for repeated linear system solves.
+!   We update the linear system matrix each time, but retain the same
+!   matrix from which the preconditioner is constructed for all linear solves.
+!
+!      A - linear system matrix
+!      A2 - matrix from which the preconditioner is constructed
+!
+    PetscInt, intent(in) :: count, nsteps
+    PetscErrorCode, intent(out) :: ierr
+    Mat A
+    KSP ksp
+    Vec x, b, u
+    Mat A2
+    PetscScalar v, val
+    PetscInt II, Istart, Iend
+
+! First time thorough: Create new matrix to define the linear system
+    if (count == 1) then
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+      pflag = .false.
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mat_view', pflag, ierr))
+      if (pflag) then
+        if (rank == 0) write (6, 100)
+        call PetscFlush(6)
+      end if
+      PetscCallA(MatConvert(A, MATSAME, MAT_INITIAL_MATRIX, A2, ierr))
+! All other times: Set previous solution as initial guess for next solve.
+    else
+      PetscCallA(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr))
+    end if
+
+! Alter the matrix A a bit
+    PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
+    do II = Istart, Iend - 1
+      v = 2.0
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
+    end do
+    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+    if (pflag) then
+      if (rank == 0) write (6, 110)
+      call PetscFlush(6)
+    end if
+    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+
+! Set the exact solution; compute the right-hand-side vector
+    val = 1.0*real(count)
+    PetscCallA(VecSet(u, val, ierr))
+    PetscCallA(MatMult(A, u, b, ierr))
+
+! Set operators, keeping the identical preconditioner for
+! all linear solves.  This approach is often effective when the
+! linear systems do not change very much between successive steps.
+    PetscCallA(KSPSetReusePreconditioner(ksp, PETSC_TRUE, ierr))
+    PetscCallA(KSPSetOperators(ksp, A, A2, ierr))
+
+! Solve linear system
+    PetscCallA(KSPSolve(ksp, b, x, ierr))
+
+! Destroy the matrix used to construct the preconditioner on the last time through
+    if (count == nsteps) PetscCallA(MatDestroy(A2, ierr))
+
+100 format('previous matrix: preconditioning')
+110 format('next matrix: defines linear system')
+  end subroutine
+end module ex6fmodule
+
+program ex6f
+  use petscksp
+  use ex6fmodule
   implicit none
 
 !  Variables:
@@ -20,20 +98,18 @@ program main
   Vec x, u, b
   Mat A, A2
   KSP ksp
-  PetscInt i, j, II, JJ, m, n
-  PetscInt Istart, Iend
-  PetscInt nsteps, one
+  PetscInt i, j, II, JJ, Istart, Iend
+  PetscInt m, n, nsteps
   PetscErrorCode ierr
   PetscBool flg
   PetscScalar v
 
   PetscCallA(PetscInitialize(ierr))
   m = 3
-  n = 3
-  nsteps = 2
-  one = 1
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
+  nsteps = 2
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-nsteps', nsteps, flg, ierr))
 
 !  Create parallel matrix, specifying only its global dimensions.
@@ -63,22 +139,22 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, one, [II], one, [JJ], [v], ADD_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], ADD_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], ADD_VALUES, ierr))
   end do
 
 !  Assemble matrix, using the 2-step process:
@@ -124,86 +200,7 @@ program main
   PetscCallA(KSPDestroy(ksp, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-! -----------------------------------------------------------------------
-!
-subroutine solve1(ksp, A, x, b, u, count, nsteps, A2, ierr)
-  use petscksp
-  implicit none
-
-!
-!   solve1 - This routine is used for repeated linear system solves.
-!   We update the linear system matrix each time, but retain the same
-!   matrix from which the preconditioner is constructed for all linear solves.
-!
-!      A - linear system matrix
-!      A2 - matrix from which the preconditioner is constructed
-!
-  PetscScalar v, val
-  PetscInt II, Istart, Iend
-  PetscInt count, nsteps, one
-  PetscErrorCode ierr
-  Mat A
-  KSP ksp
-  Vec x, b, u
-
-! Use common block to retain matrix between successive subroutine calls
-  Mat A2
-  PetscMPIInt rank
-  PetscBool pflag
-  common/my_data/rank, pflag
-
-  one = 1
-! First time thorough: Create new matrix to define the linear system
-  if (count == 1) then
-    PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
-    pflag = .false.
-    PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mat_view', pflag, ierr))
-    if (pflag) then
-      if (rank == 0) write (6, 100)
-      call PetscFlush(6)
-    end if
-    PetscCallA(MatConvert(A, MATSAME, MAT_INITIAL_MATRIX, A2, ierr))
-! All other times: Set previous solution as initial guess for next solve.
-  else
-    PetscCallA(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr))
-  end if
-
-! Alter the matrix A a bit
-  PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
-  do II = Istart, Iend - 1
-    v = 2.0
-    PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
-  end do
-  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-  if (pflag) then
-    if (rank == 0) write (6, 110)
-    call PetscFlush(6)
-  end if
-  PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
-
-! Set the exact solution; compute the right-hand-side vector
-  val = 1.0*real(count)
-  PetscCallA(VecSet(u, val, ierr))
-  PetscCallA(MatMult(A, u, b, ierr))
-
-! Set operators, keeping the identical preconditioner for
-! all linear solves.  This approach is often effective when the
-! linear systems do not change very much between successive steps.
-  PetscCallA(KSPSetReusePreconditioner(ksp, PETSC_TRUE, ierr))
-  PetscCallA(KSPSetOperators(ksp, A, A2, ierr))
-
-! Solve linear system
-  PetscCallA(KSPSolve(ksp, b, x, ierr))
-
-! Destroy the matrix used to construct the preconditioner on the last time through
-  if (count == nsteps) PetscCallA(MatDestroy(A2, ierr))
-
-100 format('previous matrix: preconditioning')
-110 format('next matrix: defines linear system')
-
-end
+end program ex6f
 
 !/*TEST
 !

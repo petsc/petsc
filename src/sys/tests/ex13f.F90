@@ -8,7 +8,7 @@ program main
 
   PetscErrorCode ierr
   PetscViewer o1, o2, o3
-  character*(4) name
+  character(len=4) name
   PetscCopyMode :: mode = PETSC_COPY_VALUES
 
   PetscCallA(PetscInitialize(ierr))

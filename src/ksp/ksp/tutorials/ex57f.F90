@@ -63,10 +63,10 @@ contains
   subroutine MyKSPConverged(ksp, n, rnorm, flag, unused, ierr)
 
     KSP ksp
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt n, unused
-    KSPConvergedReason flag
-    PetscReal rnorm
+    KSPConvergedReason, intent(out) :: flag
+    PetscReal, intent(in) :: rnorm
 
     if (rnorm <= .05) then
       flag = KSP_CONVERGED_RTOL
@@ -110,18 +110,19 @@ program main
   Mat F
 #endif
   PC pc
-  PetscReal norm, zero
+  PetscReal norm
   PetscInt i, j, II, JJ, m, n, its
-  PetscInt Istart, Iend, ione
+  PetscInt Istart, Iend
   PetscErrorCode ierr
   PetscMPIInt rank, size
   PetscBool flg
-  PetscScalar v, one, neg_one
+  PetscScalar v
+  PetscScalar, parameter :: one = 1.0, neg_one = -1.0
   Vec x, b, u
   Mat A
   KSP ksp
   PetscRandom rctx
-  character*80 ksptype
+  character(len=80) ksptype
 
 !  These variables are not currently used.
 !      PC          pc
@@ -134,12 +135,8 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
   m = 3
-  n = 3
-  one = 1.0
-  neg_one = -1.0
-  ione = 1
-  zero = 0.0
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  n = 3
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
@@ -184,29 +181,29 @@ program main
     j = II - i*n
     if (i > 0) then
       JJ = II - n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (i < m - 1) then
       JJ = II + n
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (j > 0) then
       JJ = II - 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     if (j < n - 1) then
       JJ = II + 1
-      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
     end if
     v = 4.0
-    PetscCallA(MatSetValues(A, ione, [II], ione, [II], [v], INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(A, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [II], [v], INSERT_VALUES, ierr))
   end do
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !   Check if A is symmetric
   if (size == 1) then
-    PetscCallA(MatIsSymmetric(A, zero, flg, ierr))
+    PetscCallA(MatIsSymmetric(A, 0.0_PETSC_REAL_KIND, flg, ierr))
     if (flg .eqv. PETSC_FALSE) then
       write (6, 120)
     end if
@@ -222,7 +219,7 @@ program main
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, PETSC_DECIDE, m*n, u, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, 1_PETSC_INT_KIND, PETSC_DECIDE, m*n, u, ierr))
   PetscCallA(VecSetFromOptions(u, ierr))
   PetscCallA(VecDuplicate(u, b, ierr))
   PetscCallA(VecDuplicate(b, x, ierr))

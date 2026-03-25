@@ -8,7 +8,7 @@ program main
 !      This example demonstrates writing an array to a file in binary
 !      format that may be read in by PETSc's VecLoad() routine.
 !
-  PetscInt n, i, ione
+  PetscInt i, n ! MarDiehl: fails for "PetscInt, parameter :: n = 5" in the second write, but should work
   PetscErrorCode ierr
   integer4 fd
   PetscInt vecclassid(1)
@@ -16,25 +16,22 @@ program main
   Vec x
   PetscViewer v
 
-  ione = 1
   n = 5
   vecclassid(1) = 1211211 + 3
 
   PetscCallA(PetscInitialize(ierr))
 
-  do i = 1, 5
-    array(i) = i
-  end do
+  array = [(real(i), i=1, n)]
 
-!      Open binary file for writing
+! Open binary file for writing
   PetscCallA(PetscBinaryOpen('testfile', FILE_MODE_WRITE, fd, ierr))
-!      Write the Vec header
-  PetscCallA(PetscBinaryWrite(fd, vecclassid, ione, PETSC_INT, ierr))
-!      Write the array length
-  PetscCallA(PetscBinaryWrite(fd, n, ione, PETSC_INT, ierr))
-!      Write the array
+! Write the Vec header
+  PetscCallA(PetscBinaryWrite(fd, vecclassid, 1_PETSC_INT_KIND, PETSC_INT, ierr))
+! Write the array length
+  PetscCallA(PetscBinaryWrite(fd, n, 1_PETSC_INT_KIND, PETSC_INT, ierr))
+! Write the array
   PetscCallA(PetscBinaryWrite(fd, array, n, PETSC_SCALAR, ierr))
-!      Close the file
+! Close the file
   PetscCallA(PetscBinaryClose(fd, ierr))
 
 !

@@ -10,7 +10,7 @@ program main
   PetscErrorCode ierr
   PetscMPIInt rank
   PetscFortranAddr file
-  character*100 joe
+  character(len=100) joe
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))

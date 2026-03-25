@@ -15,7 +15,7 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-!     Test IS of size 0
+! Test IS of size 0
   ssize = 0
   stride = 0
   first = 2
@@ -33,8 +33,7 @@ program main
   PetscCallA(ISRestoreIndices(is, ii, ierr))
   PetscCallA(ISDestroy(is, ierr))
 
-!     Test ISGetIndices()
-
+! Test ISGetIndices()
   ssize = 10000
   stride = -8
   first = 3

@@ -59,7 +59,7 @@ contains
     Tao ta
     PetscReal fcn
     Vec X, G
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt dummy
 
     PetscInt i, j, row
@@ -67,7 +67,7 @@ contains
     PetscInt gxs, gxm
     PetscInt ys, ym
     PetscInt gys, gym
-    PetscReal ft, zero, hx, hy, hydhx, hxdhy
+    PetscReal ft, hx, hy, hydhx, hxdhy
     PetscReal area, rhx, rhy
     PetscReal f1, f2, f3, f4, f5, f6, d1, d2, d3
     PetscReal d4, d5, d6, d7, d8
@@ -79,8 +79,6 @@ contains
     PetscReal, pointer :: top_v(:), left_v(:)
     PetscReal, pointer :: right_v(:), bottom_v(:)
 
-    ft = 0.0
-    zero = 0.0
     hx = 1.0/real(mx + 1)
     hy = 1.0/real(my + 1)
     hydhx = hy/hx
@@ -98,7 +96,7 @@ contains
     PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX, ierr))
 
 ! Initialize the vector to zero
-    PetscCall(VecSet(localV, zero, ierr))
+    PetscCall(VecSet(localV, 0.0_PETSC_REAL_KIND, ierr))
 
 ! Get arrays to vector data (See note above about using VecGetArray in Fortran)
     PetscCall(VecGetArray(localX, x_v, ierr))
@@ -108,6 +106,7 @@ contains
     PetscCall(VecGetArray(Left, left_v, ierr))
     PetscCall(VecGetArray(Right, right_v, ierr))
 
+    ft = 0.0
 ! Compute function over the locally owned part of the mesh
     do j = ys, ys + ym - 1
       do i = xs, xs + xm - 1
@@ -261,7 +260,7 @@ contains
     PetscCall(DMLocalToGlobalBegin(dm, localV, INSERT_VALUES, G, ierr))
     PetscCall(DMLocalToGlobalEnd(dm, localV, INSERT_VALUES, G, ierr))
 
-    PetscCall(PetscLogFlops(70.0d0*xm*ym, ierr))
+    PetscCall(PetscLogFlops(70.0_C_DOUBLE*xm*ym, ierr))
 
   end  !FormFunctionGradient
 
@@ -296,7 +295,7 @@ contains
     Vec X
     Mat Hessian, Hpc
     PetscInt dummy
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
 
     PetscInt i, j, k, row
     PetscInt xs, xm, gxs, gxm
@@ -313,9 +312,6 @@ contains
     PetscReal, pointer ::  x_v(:)
     PetscReal v(0:6)
     PetscBool assembled
-    PetscInt i1
-
-    i1 = 1
 
 ! Set various matrix options
     PetscCall(MatSetOption(Hessian, MAT_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE, ierr))
@@ -404,27 +400,27 @@ contains
         d7 = (xlt - xl)*rhy
         d8 = (xlt - xt)*rhx
 
-        f1 = sqrt(1.0 + d1*d1 + d7*d7)
-        f2 = sqrt(1.0 + d1*d1 + d4*d4)
-        f3 = sqrt(1.0 + d3*d3 + d8*d8)
-        f4 = sqrt(1.0 + d3*d3 + d2*d2)
-        f5 = sqrt(1.0 + d2*d2 + d5*d5)
-        f6 = sqrt(1.0 + d4*d4 + d6*d6)
+        f1 = sqrt(1.0 + d1**2 + d7**2)
+        f2 = sqrt(1.0 + d1**2 + d4**2)
+        f3 = sqrt(1.0 + d3**2 + d8**2)
+        f4 = sqrt(1.0 + d3**2 + d2**2)
+        f5 = sqrt(1.0 + d2**2 + d5**2)
+        f6 = sqrt(1.0 + d4**2 + d6**2)
 
-        hl = (-hydhx*(1.0 + d7*d7) + d1*d7)/(f1*f1*f1) + (-hydhx*(1.0 + d4*d4) + d1*d4)/(f2*f2*f2)
+        hl = (-hydhx*(1.0 + d7**2) + d1*d7)/f1**3 + (-hydhx*(1.0 + d4**2) + d1*d4)/f2**3
 
-        hr = (-hydhx*(1.0 + d5*d5) + d2*d5)/(f5*f5*f5) + (-hydhx*(1.0 + d3*d3) + d2*d3)/(f4*f4*f4)
+        hr = (-hydhx*(1.0 + d5**2) + d2*d5)/f5**3 + (-hydhx*(1.0 + d3**2) + d2*d3)/f4**3
 
-        ht = (-hxdhy*(1.0 + d8*d8) + d3*d8)/(f3*f3*f3) + (-hxdhy*(1.0 + d2*d2) + d2*d3)/(f4*f4*f4)
+        ht = (-hxdhy*(1.0 + d8**2) + d3*d8)/f3**3 + (-hxdhy*(1.0 + d2**2) + d2*d3)/f4**3
 
-        hb = (-hxdhy*(1.0 + d6*d6) + d4*d6)/(f6*f6*f6) + (-hxdhy*(1.0 + d1*d1) + d1*d4)/(f2*f2*f2)
+        hb = (-hxdhy*(1.0 + d6**2) + d4*d6)/f6**3 + (-hxdhy*(1.0 + d1**2) + d1*d4)/f2**3
 
         hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6)
         htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3)
 
-        hc = hydhx*(1.0 + d7*d7)/(f1*f1*f1) + hxdhy*(1.0 + d8*d8)/(f3*f3*f3) + hydhx*(1.0 + d5*d5)/(f5*f5*f5) +                      &
-  &           hxdhy*(1.0 + d6*d6)/(f6*f6*f6) + (hxdhy*(1.0 + d1*d1) + hydhx*(1.0 + d4*d4) - 2*d1*d4)/(f2*f2*f2) + (hxdhy*(1.0 + d2*d2) +   &
-  &           hydhx*(1.0 + d3*d3) - 2*d2*d3)/(f4*f4*f4)
+        hc = hydhx*(1.0 + d7**2)/f1**3 + hxdhy*(1.0 + d8**2)/f3**3 + hydhx*(1.0 + d5**2)/f5**3 + hxdhy*(1.0 + d6**2)/f6**3 + &
+             (hxdhy*(1.0 + d1**2) + hydhx*(1.0 + d4**2) - 2*d1*d4)/f2**3 + &
+             (hxdhy*(1.0 + d2**2) + hydhx*(1.0 + d3**2) - 2*d2*d3)/f4**3
 
         hl = hl*0.5
         hr = hr*0.5
@@ -477,7 +473,7 @@ contains
         end if
 
 ! Set matrix values using local numbering, defined earlier in main routine
-        PetscCall(MatSetValuesLocal(Hessian, i1, [row], k, col, v, INSERT_VALUES, ierr))
+        PetscCall(MatSetValuesLocal(Hessian, 1_PETSC_INT_KIND, [row], k, col, v, INSERT_VALUES, ierr))
 
       end do
     end do
@@ -493,11 +489,11 @@ contains
     PetscCall(MatAssemblyBegin(Hessian, MAT_FINAL_ASSEMBLY, ierr))
     PetscCall(MatAssemblyEnd(Hessian, MAT_FINAL_ASSEMBLY, ierr))
 
-    PetscCall(PetscLogFlops(199.0d0*xm*ym, ierr))
+    PetscCall(PetscLogFlops(199.0_C_DOUBLE*xm*ym, ierr))
 
   end
 
-! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H, defined in plate2f.h
+! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H
 
 ! ----------------------------------------------------------------------------
 !
@@ -509,34 +505,23 @@ contains
 
   subroutine MSA_BoundaryConditions(ierr)
 
-    PetscErrorCode ierr
-    PetscInt i, j, k, limit, maxits
+    PetscErrorCode, intent(out) :: ierr
+    PetscInt, parameter :: maxits = 5
+    PetscInt i, j, k, limit
     PetscInt xs, xm, gxs, gxm
     PetscInt ys, ym, gys, gym
     PetscInt bsize, lsize
     PetscInt tsize, rsize
-    PetscReal one, two, three, tol
     PetscReal scl, fnorm, det, xt
     PetscReal yt, hx, hy, u1, u2, nf1, nf2
     PetscReal njac11, njac12, njac21, njac22
-    PetscReal b, t, l, r
+    PetscReal, parameter :: b = -0.5, t = 0.5, l = -0.5, r = 0.5, tol = 1.e-10
     PetscReal, pointer :: boundary_v(:)
 
     logical exitloop
     PetscBool flg
 
     limit = 0
-    maxits = 5
-    tol = 1e-10
-    b = -0.5
-    t = 0.5
-    l = -0.5
-    r = 0.5
-    xt = 0
-    yt = 0
-    one = 1.0
-    two = 2.0
-    three = 3.0
 
     PetscCall(DMDAGetCorners(dm, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
     PetscCall(DMDAGetGhostCorners(dm, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
@@ -554,6 +539,8 @@ contains
     hx = (r - l)/(mx + 1)
     hy = (t - b)/(my + 1)
 
+    xt = 0
+    yt = 0
     do j = 0, 3
 
       if (j == 0) then
@@ -589,14 +576,14 @@ contains
         exitloop = .false.
         do while (k < maxits .and. (.not. exitloop))
 
-          nf1 = u1 + u1*u2*u2 - u1*u1*u1/three - xt
-          nf2 = -u2 - u1*u1*u2 + u2*u2*u2/three - yt
+          nf1 = u1 + u1*u2*u2 - u1*u1*u1/3.0_PETSC_REAL_KIND - xt
+          nf2 = -u2 - u1*u1*u2 + u2*u2*u2/3.0_PETSC_REAL_KIND - yt
           fnorm = sqrt(nf1*nf1 + nf2*nf2)
           if (fnorm > tol) then
-            njac11 = one + u2*u2 - u1*u1
-            njac12 = two*u1*u2
-            njac21 = -two*u1*u2
-            njac22 = -one - u1*u1 + u2*u2
+            njac11 = 1.0_PETSC_REAL_KIND + u2*u2 - u1*u1
+            njac12 = 2.0_PETSC_REAL_KIND*u1*u2
+            njac21 = -2.0_PETSC_REAL_KIND*u1*u2
+            njac22 = -1.0_PETSC_REAL_KIND - u1*u1 + u2*u2
             det = njac11*njac22 - njac21*njac12
             u1 = u1 - (njac22*nf1 - njac12*nf2)/det
             u2 = u2 - (njac11*nf2 - njac21*nf1)/det
@@ -665,7 +652,7 @@ contains
 
     Tao ta
     Vec xl, xu
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt i, j, row
     PetscInt xs, xm, ys, ym
     PetscReal lb, ub
@@ -693,8 +680,8 @@ contains
 
         row = (j - ys)*xm + (i - xs)
 
-        if (i >= ((mx - bmx)/2) .and. i < (mx - (mx - bmx)/2) .and.           &
-  &          j >= ((my - bmy)/2) .and. j < (my - (my - bmy)/2)) then
+        if (i >= ((mx - bmx)/2) .and. i < (mx - (mx - bmx)/2) .and. &
+            j >= ((my - bmy)/2) .and. j < (my - (my - bmy)/2)) then
           xl_v(1 + row) = bheight
 
         end if
@@ -719,7 +706,7 @@ contains
   subroutine MSA_InitialPoint(X, ierr)
 
     Vec X
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt start, i, j
     PetscInt row
     PetscInt xs, xm, gxs, gxm
@@ -767,8 +754,8 @@ contains
       do j = ys, ys + ym - 1
         do i = xs, xs + xm - 1
           row = (j - gys)*gxm + (i - gxs)
-          x_v(1 + row) = ((j + 1)*bottom_v(1 + i - xs + 1)/my + (my - j + 1)*top_v(1 + i - xs + 1)/(my + 2) +                  &
-  &                          (i + 1)*left_v(1 + j - ys + 1)/mx + (mx - i + 1)*right_v(1 + j - ys + 1)/(mx + 2))*0.5
+          x_v(1 + row) = ((j + 1)*bottom_v(1 + i - xs + 1)/my + (my - j + 1)*top_v(1 + i - xs + 1)/(my + 2) + &
+                          (i + 1)*left_v(1 + j - ys + 1)/mx + (mx - i + 1)*right_v(1 + j - ys + 1)/(mx + 2))*0.5
         end do
       end do
 
@@ -800,31 +787,21 @@ program plate2f
   Mat H             ! Hessian matrix
   ISLocalToGlobalMapping isltog  ! local to global mapping object
   PetscBool flg
-  PetscInt i1, i3, i7
 
 ! Initialize Tao
-
-  i1 = 1
-  i3 = 3
-  i7 = 7
-
   PetscCallA(PetscInitialize(ierr))
 
-! Specify default dimensions of the problem
+! Specify default dimensions of the problem and
+! check for any command line arguments that override defaults
   mx = 10
-  my = 10
-  bheight = 0.1
-
-! Check for any command line arguments that override defaults
-
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-mx', mx, flg, ierr))
+  my = 10
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-my', my, flg, ierr))
-
   bmx = mx/2
-  bmy = my/2
-
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bmx', bmx, flg, ierr))
+  bmy = my/2
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bmy', bmy, flg, ierr))
+  bheight = 0.1
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bheight', bheight, flg, ierr))
 
 ! Calculate any derived values from parameters
@@ -838,7 +815,7 @@ program plate2f
 ! derives from an elliptic PDE on a two-dimensional domain.  From the
 ! distributed array, create the vectors
 
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, Nx, Ny, i1, i1, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, Nx, Ny, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, dm, ierr))
   PetscCallA(DMSetFromOptions(dm, ierr))
   PetscCallA(DMSetUp(dm, ierr))
 
@@ -857,7 +834,7 @@ program plate2f
 ! assembly
 
   PetscCallA(VecGetLocalSize(x, m, ierr))
-  PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, m, m, N, N, i7, PETSC_NULL_INTEGER_ARRAY, i3, PETSC_NULL_INTEGER_ARRAY, H, ierr))
+  PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, m, m, N, N, 7_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 3_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, H, ierr))
 
   PetscCallA(MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE, ierr))
   PetscCallA(DMGetLocalToGlobalMapping(dm, isltog, ierr))
@@ -906,7 +883,6 @@ program plate2f
   PetscCallA(DMDestroy(dm, ierr))
 
 ! Finalize TAO
-
   PetscCallA(PetscFinalize(ierr))
 
 end program plate2f

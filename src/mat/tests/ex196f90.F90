@@ -11,8 +11,8 @@ program main
   Mat A
   PetscErrorCode ierr
   PetscViewer v
-  PetscScalar, pointer ::        aa(:)
-  character*(PETSC_MAX_PATH_LEN) f
+  PetscScalar, pointer :: aa(:)
+  character(len=PETSC_MAX_PATH_LEN) f
   PetscBool flg
 
   PetscCallA(PetscInitialize(ierr))

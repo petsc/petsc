@@ -3,17 +3,14 @@ program ex47f90
   use petsc
   implicit none
 
-  type(tDM)                         :: dm
-  type(tPetscSection)               :: section
-  character(len=PETSC_MAX_PATH_LEN) :: IOBuffer
-  PetscInt                          :: dof, p, pStart, pEnd, d
-  type(tVec)                        :: v
-  PetscInt                          :: zero = 0
-  PetscInt                          :: one = 1
-  PetscInt                          :: two = 2
-  PetscScalar, dimension(:), pointer  :: val
-  PetscScalar, pointer              :: x(:)
-  PetscErrorCode                    :: ierr
+  type(tDM)                          :: dm
+  type(tPetscSection)                :: section
+  character(len=PETSC_MAX_PATH_LEN)  :: IOBuffer
+  PetscInt                           :: dof, p, pStart, pEnd, d
+  type(tVec)                         :: v
+  PetscScalar, dimension(:), pointer :: val
+  PetscScalar, pointer               :: x(:)
+  PetscErrorCode                     :: ierr
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -25,13 +22,13 @@ program ex47f90
   PetscCallA(PetscSectionCreate(PETSC_COMM_WORLD, section, ierr))
   PetscCallA(DMPlexGetChart(dm, pStart, pEnd, ierr))
   PetscCallA(PetscSectionSetChart(section, pStart, pEnd, ierr))
-  PetscCallA(DMPlexGetHeightStratum(dm, zero, pStart, pEnd, ierr))
+  PetscCallA(DMPlexGetHeightStratum(dm, 0_PETSC_INT_KIND, pStart, pEnd, ierr))
   do p = pStart, pEnd - 1
-    PetscCallA(PetscSectionSetDof(section, p, one, ierr))
+    PetscCallA(PetscSectionSetDof(section, p, 1_PETSC_INT_KIND, ierr))
   end do
-  PetscCallA(DMPlexGetDepthStratum(dm, zero, pStart, pEnd, ierr))
+  PetscCallA(DMPlexGetDepthStratum(dm, 0_PETSC_INT_KIND, pStart, pEnd, ierr))
   do p = pStart, pEnd - 1
-    PetscCallA(PetscSectionSetDof(section, p, two, ierr))
+    PetscCallA(PetscSectionSetDof(section, p, 2_PETSC_INT_KIND, ierr))
   end do
   PetscCallA(PetscSectionSetUp(section, ierr))
   PetscCallA(DMSetLocalSection(dm, section, ierr))

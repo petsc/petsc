@@ -3,19 +3,13 @@ program ex98f90
   use petsc
   implicit none
 
-  ! Get the fortran kind associated with PetscInt and PetscReal so that we can use literal constants.
-  PetscInt                           :: dummyPetscInt
-  PetscReal                          :: dummyPetscreal
-  integer, parameter                  :: kPI = kind(dummyPetscInt)
-  integer, parameter                  :: kPR = kind(dummyPetscReal)
-
   type(tDM)                          :: dm, pdm
   type(tPetscSection)                :: section
   character(len=PETSC_MAX_PATH_LEN)  :: ifilename, iobuffer
   PetscInt                           :: sdim, s, pStart, pEnd, p, numVS, numPoints
-  PetscInt, dimension(:), pointer      :: constraints
+  PetscInt, dimension(:), pointer    :: constraints
   type(tIS)                          :: setIS, pointIS
-  PetscInt, dimension(:), pointer      :: setID, pointID
+  PetscInt, dimension(:), pointer    :: setID, pointID
   PetscErrorCode                     :: ierr
   PetscBool                          :: flg
   PetscMPIInt                        :: numProc
@@ -32,7 +26,7 @@ program ex98f90
   PetscCallA(DMSetFromOptions(dm, ierr))
 
   if (numproc > 1) then
-    PetscCallA(DMPlexDistribute(dm, 0_kPI, PETSC_NULL_SF, pdm, ierr))
+    PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, pdm, ierr))
     PetscCallA(DMDestroy(dm, ierr))
     dm = pdm
   end if
@@ -41,17 +35,17 @@ program ex98f90
   PetscCallA(DMGetDimension(dm, sdim, ierr))
   PetscCallA(PetscObjectGetComm(dm, comm, ierr))
   PetscCallA(PetscSectionCreate(comm, section, ierr))
-  PetscCallA(PetscSectionSetNumFields(section, 1_kPI, ierr))
-  PetscCallA(PetscSectionSetFieldName(section, 0_kPI, 'U', ierr))
-  PetscCallA(PetscSectionSetFieldComponents(section, 0_kPI, sdim, ierr))
+  PetscCallA(PetscSectionSetNumFields(section, 1_PETSC_INT_KIND, ierr))
+  PetscCallA(PetscSectionSetFieldName(section, 0_PETSC_INT_KIND, 'U', ierr))
+  PetscCallA(PetscSectionSetFieldComponents(section, 0_PETSC_INT_KIND, sdim, ierr))
   PetscCallA(DMPlexGetChart(dm, pStart, pEnd, ierr))
   PetscCallA(PetscSectionSetChart(section, pStart, pEnd, ierr))
 
   ! initialize the section storage for a P1 field
-  PetscCallA(DMPlexGetDepthStratum(dm, 0_kPI, pStart, pEnd, ierr))
+  PetscCallA(DMPlexGetDepthStratum(dm, 0_PETSC_INT_KIND, pStart, pEnd, ierr))
   do p = pStart, pEnd - 1
     PetscCallA(PetscSectionSetDof(section, p, sdim, ierr))
-    PetscCallA(PetscSectionSetFieldDof(section, p, 0_kPI, sdim, ierr))
+    PetscCallA(PetscSectionSetFieldDof(section, p, 0_PETSC_INT_KIND, sdim, ierr))
   end do
 
   ! add constraints at all vertices belonging to a vertex set:
@@ -70,8 +64,8 @@ program ex98f90
     do p = 1, numPoints
       write (iobuffer, '("   point ",i3,"\n")') pointID(p)
       PetscCallA(PetscPrintf(PETSC_COMM_WORLD, iobuffer, ierr))
-      PetscCallA(PetscSectionSetConstraintDof(section, pointID(p), 1_kPI, ierr))
-      PetscCallA(PetscSectionSetFieldConstraintDof(section, pointID(p), 0_kPI, 1_kPI, ierr))
+      PetscCallA(PetscSectionSetConstraintDof(section, pointID(p), 1_PETSC_INT_KIND, ierr))
+      PetscCallA(PetscSectionSetFieldConstraintDof(section, pointID(p), 0_PETSC_INT_KIND, 1_PETSC_INT_KIND, ierr))
     end do
     PetscCallA(ISRestoreIndices(pointIS, pointID, ierr))
     PetscCallA(ISDestroy(pointIS, ierr))
@@ -89,7 +83,7 @@ program ex98f90
     do p = 1, numPoints
       constraints(1) = mod(setID(s), sdim)
       PetscCallA(PetscSectionSetConstraintIndices(section, pointID(p), constraints, ierr))
-      PetscCallA(PetscSectionSetFieldConstraintIndices(section, pointID(p), 0_kPI, constraints, ierr))
+      PetscCallA(PetscSectionSetFieldConstraintIndices(section, pointID(p), 0_PETSC_INT_KIND, constraints, ierr))
     end do
     PetscCallA(ISRestoreIndices(pointIS, pointID, ierr))
     PetscCallA(ISDestroy(pointIS, ierr))

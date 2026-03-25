@@ -17,8 +17,7 @@ module ex22fmodule
 
 contains
   subroutine ComputeRHS(ksp, b, ctx, ierr)
-
-    PetscErrorCode ierr
+    PetscErrorCode, intent(out) :: ierr
     PetscInt mx, my, mz
     PetscScalar h
     Vec b
@@ -34,20 +33,17 @@ contains
   end
 
   subroutine ComputeMatrix(ksp, JJ, jac, ctx, ierr)
-
     Mat jac, JJ
     PetscErrorCode ierr
     KSP ksp
     DM da
     PetscInt i, j, k, mx, my, mz, xm
-    PetscInt ym, zm, xs, ys, zs, i1, i7
+    PetscInt ym, zm, xs, ys, zs
     PetscScalar v(7), Hx, Hy, Hz
     PetscScalar HxHydHz, HyHzdHx
     PetscScalar HxHzdHy
     MatStencil row(1), col(7)
     PetscInt ctx
-    i1 = 1
-    i7 = 7
     PetscCall(KSPGetDM(ksp, da, ierr))
     PetscCall(DMDAGetInfo(da, PETSC_NULL_INTEGER, mx, my, mz, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
 
@@ -67,7 +63,7 @@ contains
           row(1)%k = k
           if (i == 0 .or. j == 0 .or. k == 0 .or. i == mx - 1 .or. j == my - 1 .or. k == mz - 1) then
             v(1) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
-            PetscCall(MatSetValuesStencil(jac, i1, row, i1, row, v, INSERT_VALUES, ierr))
+            PetscCall(MatSetValuesStencil(jac, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, row, v, INSERT_VALUES, ierr))
           else
             v(1) = -HxHydHz
             col(1)%i = i
@@ -97,7 +93,7 @@ contains
             col(7)%i = i
             col(7)%j = j
             col(7)%k = k + 1
-            PetscCall(MatSetValuesStencil(jac, i1, row, i7, col, v, INSERT_VALUES, ierr))
+            PetscCall(MatSetValuesStencil(jac, 1_PETSC_INT_KIND, row, 7_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
           end if
         end do
       end do
@@ -116,15 +112,12 @@ program main
   DM da
   KSP ksp
   Vec x
-  PetscInt i1, i3
   PetscInt ctx
 
   PetscCallA(PetscInitialize(ierr))
 
-  i3 = 3
-  i1 = 1
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
-  PetscCallA(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, i3, i3, i3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, i1, i1, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
+  PetscCallA(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3_PETSC_INT_KIND, 3_PETSC_INT_KIND, 3_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
   PetscCallA(DMSetUp(da, ierr))
   PetscCallA(KSPSetDM(ksp, da, ierr))

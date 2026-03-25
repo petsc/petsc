@@ -6,20 +6,18 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscInt i, one, twelve, j
+  PetscInt :: i, j
+  PetscInt, parameter :: one = 1, twelve = 12
   Mat m
-  PetscScalar value
+  PetscScalar, parameter :: value = 3.0
 
   PetscCallA(PetscInitialize(ierr))
-  twelve = 12
   PetscCallA(MatCreate(PETSC_COMM_WORLD, m, ierr))
   PetscCallA(MatSetSizes(m, PETSC_DECIDE, PETSC_DECIDE, twelve, twelve, ierr))
   PetscCallA(MatSetFromOptions(m, ierr))
   PetscCallA(MatMPIAIJSetPreallocation(m, PETSC_DEFAULT_INTEGER, PETSC_NULL_INTEGER_ARRAY, PETSC_DEFAULT_INTEGER, PETSC_NULL_INTEGER_ARRAY, ierr))
 
-  value = 3.0
   i = 4
-  one = 1
   PetscCallA(MatSetValuesMPIAIJ(m, one, [i], one, [i], [value], ADD_VALUES, ierr))
   i = 5
   j = 7

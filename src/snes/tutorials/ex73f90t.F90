@@ -93,21 +93,14 @@ contains
 !
   subroutine FormInitialGuess(mysnes, Xnest, ierr)
 !  Input/output variables:
-    SNES::     mysnes
-    Vec::      Xnest
-    PetscErrorCode ierr
-
+    SNES :: mysnes
+    Vec :: Xnest
+    PetscErrorCode, intent(out) :: ierr
 !  Declarations for use with local arrays:
     type(ex73f90tmodule_type), pointer:: solver
-    Vec::      Xsub(2)
-    PetscInt::  izero, ione, itwo
-
-    izero = 0
-    ione = 1
-    itwo = 2
-    ierr = 0
+    Vec :: Xsub(2)
     PetscCall(SNESGetApplicationContext(mysnes, solver, ierr))
-    PetscCall(DMCompositeGetAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, Xnest, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
 
     PetscCall(InitialGuessLocal(solver, Xsub(1), ierr))
     PetscCall(VecAssemblyBegin(Xsub(1), ierr))
@@ -115,7 +108,7 @@ contains
 
 !     zero out lambda
     PetscCall(VecZeroEntries(Xsub(2), ierr))
-    PetscCall(DMCompositeRestoreAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, Xnest, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
 
   end subroutine FormInitialGuess
 
@@ -136,22 +129,17 @@ contains
 !
   subroutine InitialGuessLocal(solver, X1, ierr)
 !  Input/output variables:
-    type(ex73f90tmodule_type) solver
-    Vec::      X1
-    PetscErrorCode ierr
-
+    type(ex73f90tmodule_type), intent(in) :: solver
+    Vec :: X1
+    PetscErrorCode, intent(out) :: ierr
 !  Local variables:
-    PetscInt row, i, j, ione, low, high
+    PetscInt row, i, j, low, high
     PetscReal temp1, temp, hx, hy, v
-    PetscReal one
 
 !  Set parameters
-    ione = 1
-    ierr = 0
-    one = 1.0
-    hx = one/(solver%mx - 1)
-    hy = one/(solver%my - 1)
-    temp1 = solver%lambda/(solver%lambda + one) + one
+    hx = 1._PETSC_REAL_KIND/(solver%mx - 1)
+    hy = 1._PETSC_REAL_KIND/(solver%my - 1)
+    temp1 = solver%lambda/(solver%lambda + 1._PETSC_REAL_KIND) + 1._PETSC_REAL_KIND
 
     PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
 
@@ -164,7 +152,7 @@ contains
       else
         v = temp1*sqrt(min(min(i, solver%mx - i + 1)*hx, temp))
       end if
-      PetscCall(VecSetValues(X1, ione, [row], [v], INSERT_VALUES, ierr))
+      PetscCall(VecSetValues(X1, 1_PETSC_INT_KIND, [row], [v], INSERT_VALUES, ierr))
     end do
 
   end subroutine InitialGuessLocal
@@ -184,27 +172,23 @@ contains
 !
   subroutine FormJacobian(dummy, X, jac, jac_prec, solver, ierr)
 !  Input/output variables:
-    SNES::     dummy
-    Vec::      X
-    Mat::     jac, jac_prec
+    SNES :: dummy
+    Vec :: X
+    Mat :: jac, jac_prec
     type(ex73f90tmodule_type) solver
-    PetscErrorCode ierr
-
+    PetscErrorCode, intent(out) :: ierr
 !  Declarations for use with local arrays:
-    Vec::      Xsub(1)
-    Mat::     Amat
-    PetscInt ione
+    Vec :: Xsub(1)
+    Mat :: Amat
 
-    ione = 1
-
-    PetscCall(DMCompositeGetAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, X, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
     PetscCall(MatCreateSubMatrix(jac_prec, solver%isPhi, solver%isPhi, MAT_INITIAL_MATRIX, Amat, ierr))
 
     PetscCall(FormJacobianLocal(Xsub(1), Amat, solver, .true., ierr))
     PetscCall(MatDestroy(Amat, ierr)) ! discard our reference
-    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
 
     ! the rest of the matrix is not touched
     PetscCall(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
@@ -238,23 +222,18 @@ contains
   subroutine FormJacobianLocal(X1, jac, solver, add_nl_term, ierr)
 !  Input/output variables:
     type(ex73f90tmodule_type) solver
-    Vec::      X1
-    Mat::     jac
+    Vec :: X1
+    Mat :: jac
     logical add_nl_term
     PetscErrorCode ierr
-
 !  Local variables:
     PetscInt irow, row(1), col(5), i, j
-    PetscInt ione, ifive, low, high, ii
-    PetscScalar two, one, hx, hy, hy2inv
-    PetscScalar hx2inv, sc, v(5)
+    PetscInt low, high, ii
+    PetscScalar, parameter :: one = 1.0, two = 2.0
+    PetscScalar hx, hy, hy2inv, hx2inv, sc, v(5)
     PetscScalar, pointer :: lx_v(:)
 
 !  Set parameters
-    ione = 1
-    ifive = 5
-    one = 1.0
-    two = 2.0
     hx = one/(solver%mx - 1)
     hy = one/(solver%my - 1)
     sc = solver%lambda
@@ -274,7 +253,7 @@ contains
         col(1) = irow
         row(1) = irow
         v(1) = one
-        PetscCall(MatSetValues(jac, ione, row, ione, col, v, INSERT_VALUES, ierr))
+        PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
 !     interior grid points
       else
         v(1) = -hy2inv
@@ -293,7 +272,7 @@ contains
         col(4) = irow + 1
         col(5) = irow + solver%mx
         row(1) = irow
-        PetscCall(MatSetValues(jac, ione, row, ifive, col, v, INSERT_VALUES, ierr))
+        PetscCall(MatSetValues(jac, 1_PETSC_INT_KIND, row, 5_PETSC_INT_KIND, col, v, INSERT_VALUES, ierr))
       end if
     end do
 
@@ -316,23 +295,21 @@ contains
 !
   subroutine FormFunction(snesIn, X, F, solver, ierr)
 !  Input/output variables:
-    SNES::     snesIn
-    Vec::      X, F
-    PetscErrorCode ierr
+    SNES :: snesIn
+    Vec :: X, F
+    PetscErrorCode, intent(out) :: ierr
     type(ex73f90tmodule_type) solver
 
 !  Declarations for use with local arrays:
-    Vec::              Xsub(2), Fsub(2)
-    PetscInt itwo
+    Vec :: Xsub(2), Fsub(2)
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
 
-    itwo = 2
-    PetscCall(DMCompositeGetAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-    PetscCall(DMCompositeGetAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, X, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, F, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
 
     PetscCall(FormFunctionNLTerm(Xsub(1), Fsub(1), solver, ierr))
     PetscCall(MatMultAdd(solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr))
@@ -342,8 +319,8 @@ contains
     PetscCall(MatMultAdd(solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr))
     PetscCall(MatMultAdd(solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr))
 
-    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-    PetscCall(DMCompositeRestoreAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, F, 2_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
   end subroutine formfunction
 
 ! ---------------------------------------------------------------------
@@ -369,11 +346,10 @@ contains
 !  Local variables:
     PetscScalar sc
     PetscScalar u, v(1)
-    PetscInt i, j, low, high, ii, ione, irow, row(1)
+    PetscInt i, j, low, high, ii, irow, row(1)
     PetscScalar, pointer :: lx_v(:)
 
     sc = solver%lambda
-    ione = 1
 
     PetscCall(VecGetArrayRead(X1, lx_v, ierr))
     PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
@@ -391,7 +367,7 @@ contains
         u = lx_v(ii)
         v(1) = -sc*exp(u)
       end if
-      PetscCall(VecSetValues(F1, ione, row, v, INSERT_VALUES, ierr))
+      PetscCall(VecSetValues(F1, 1_PETSC_INT_KIND, row, v, INSERT_VALUES, ierr))
     end do
 
     PetscCall(VecRestoreArrayRead(X1, lx_v, ierr))
@@ -419,20 +395,21 @@ program main
 !     its         - iterations for convergence
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !
-  SNES::       mysnes
-  Vec::        x, r, x2, x1, x1loc, x2loc
-  Mat::       Amat, Bmat, Cmat, Dmat, KKTMat, matArray(4)
-!      Mat::       tmat
-  DM::       daphi, dalam
-  IS, pointer ::        isglobal(:)
+  SNES :: mysnes
+  Vec :: x, r, x2, x1, x1loc, x2loc
+  Mat :: Amat, Bmat, Cmat, Dmat, KKTMat, matArray(4)
+! Mat :: tmat
+  DM :: daphi, dalam
+  IS, pointer :: isglobal(:)
   PetscErrorCode ierr
   PetscInt its, N1, N2, i, j, irow, row(1)
   PetscInt col(1), low, high, lamlow, lamhigh
   PetscBool flg
-  PetscInt ione, nfour, itwo, nloc, nloclam
-  PetscReal lambda_max, lambda_min
+  PetscInt nloc, nloclam
+  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
   type(ex73f90tmodule_type) solver
-  PetscScalar bval(1), cval(1), one
+  PetscScalar, parameter :: one = 1.0
+  PetscScalar bval(1), cval(1)
   PetscBool useobjective
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -442,15 +419,10 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, solver%rank, ierr))
 
 !  Initialize problem parameters
-  lambda_max = 6.81_PETSC_REAL_KIND
-  lambda_min = 0.0
   solver%lambda = 6.0
-  ione = 1
-  nfour = 4
-  itwo = 2
-  useobjective = PETSC_FALSE
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-par', solver%lambda, flg, ierr))
   PetscCheckA(solver%lambda <= lambda_max .and. solver%lambda >= lambda_min, PETSC_COMM_SELF, PETSC_ERR_USER, 'Lambda provided with -par is out of range')
+  useobjective = PETSC_FALSE
   PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-objective', useobjective, flg, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -458,7 +430,7 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nfour, nfour, PETSC_DECIDE, PETSC_DECIDE, ione, ione, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, daphi, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 4_PETSC_INT_KIND, 4_PETSC_INT_KIND, PETSC_DECIDE, PETSC_DECIDE, 1_PETSC_INT_KIND, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, daphi, ierr))
   PetscCallA(DMSetFromOptions(daphi, ierr))
   PetscCallA(DMSetUp(daphi, ierr))
   PetscCallA(DMDAGetInfo(daphi, PETSC_NULL_INTEGER, solver%mx, solver%my, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMBOUNDARYTYPE, PETSC_NULL_DMDASTENCILTYPE, ierr))
@@ -531,23 +503,20 @@ program main
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set fake B and C
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  one = 1.0
   if (N2 > 0) then
     bval(1) = -one/(solver%mx - 2)
-!     cval = -one/(solver%my*solver%mx)
+!   cval = -one/(solver%my*solver%mx)
     cval(1) = -one
     do irow = low, high - 1
       j = irow/solver%mx   ! row in domain
       i = mod(irow, solver%mx)
       row(1) = irow
       col(1) = j
-      if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
-        !     no op
-      else
-        PetscCallA(MatSetValues(Bmat, ione, row, ione, col, bval, INSERT_VALUES, ierr))
+      if (.not. (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1)) then
+        PetscCallA(MatSetValues(Bmat, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, col, bval, INSERT_VALUES, ierr))
       end if
       row(1) = j
-      PetscCallA(MatSetValues(Cmat, ione, row, ione, row, cval, INSERT_VALUES, ierr))
+      PetscCallA(MatSetValues(Cmat, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, row, cval, INSERT_VALUES, ierr))
     end do
   end if
   PetscCallA(MatAssemblyBegin(Bmat, MAT_FINAL_ASSEMBLY, ierr))
@@ -561,7 +530,7 @@ program main
   do j = lamlow, lamhigh - 1
     row(1) = j
     cval(1) = one
-    PetscCallA(MatSetValues(Dmat, ione, row, ione, row, cval, INSERT_VALUES, ierr))
+    PetscCallA(MatSetValues(Dmat, 1_PETSC_INT_KIND, row, 1_PETSC_INT_KIND, row, cval, INSERT_VALUES, ierr))
   end do
   PetscCallA(MatAssemblyBegin(Dmat, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(Dmat, MAT_FINAL_ASSEMBLY, ierr))
@@ -605,7 +574,7 @@ program main
   matArray(3) = Cmat
   matArray(4) = Dmat
 
-  PetscCallA(MatCreateNest(PETSC_COMM_WORLD, itwo, isglobal, itwo, isglobal, matArray, KKTmat, ierr))
+  PetscCallA(MatCreateNest(PETSC_COMM_WORLD, 2_PETSC_INT_KIND, isglobal, 2_PETSC_INT_KIND, isglobal, matArray, KKTmat, ierr))
   PetscCallA(DMCompositeRestoreGlobalISs(solver%da, isglobal, ierr))
   PetscCallA(MatSetFromOptions(KKTmat, ierr))
 

@@ -1,31 +1,31 @@
 !
 !   Example of getting an enum value from the options database in Fortran
 #include "petsc/finclude/petsc.h"
-      use petsc
-      implicit none
+program main
+  use petsc
+  implicit none
 
-      PetscErrorCode                            :: ierr
-      character(len=99) list1(6)
-      PetscEnum                                 :: opt = -1
-      PetscBool                                 :: set = PETSC_FALSE
+  PetscErrorCode :: ierr
+  character(len=99) list1(6)
+  PetscEnum :: opt = -1
+  PetscBool :: set = PETSC_FALSE
 
-      PetscCallA(PetscInitialize(ierr))
-      list1(1) = 'a123'
-      list1(2) = 'b456'
-      list1(3) = 'c789'
-      list1(4) = 'list1'
-      list1(5) = 'prefix_'
-      list1(6) = ''
+  PetscCallA(PetscInitialize(ierr))
+  list1(1) = 'a123'
+  list1(2) = 'b456'
+  list1(3) = 'c789'
+  list1(4) = 'list1'
+  list1(5) = 'prefix_'
+  list1(6) = ''
 
-      write (*, 20) list1(1)
-20    format(A99)
-      PetscCallA(PetscOptionsGetEnum(PETSC_NULL_OPTIONS, 'joe_', '-jeff', list1, opt, set, ierr))
-      write (*, *) 'opt is ', opt
-      write (*, *) 'set is ', set
+  write (*, 20) list1(1)
+20 format(A99)
+  PetscCallA(PetscOptionsGetEnum(PETSC_NULL_OPTIONS, 'joe_', '-jeff', list1, opt, set, ierr))
+  write (*, *) 'opt is ', opt
+  write (*, *) 'set is ', set
 
-      PetscCallA(PetscFinalize(ierr))
-    end
-
+  PetscCallA(PetscFinalize(ierr))
+end program main
 !
 !/*TEST
 !

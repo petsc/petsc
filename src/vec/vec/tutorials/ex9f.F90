@@ -15,16 +15,13 @@ program main
   implicit none
 
   PetscMPIInt rank, size
-  PetscInt nlocal, nghost, ifrom(2)
+  PetscInt, parameter :: nlocal = 6, nghost = 2
   PetscErrorCode ierr
-  PetscInt i, rstart, rend, ione
+  PetscInt i, rstart, rend, ifrom(2)
   PetscBool flag
   PetscScalar value, tarray(20)
   Vec lx, gx, gxs
   PetscViewer subviewer
-
-  nlocal = 6
-  nghost = 2
 
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
@@ -53,11 +50,9 @@ program main
 !
 
   if (rank == 0) then
-    ifrom(1) = 11
-    ifrom(2) = 6
+    ifrom = [11, 6]
   else
-    ifrom(1) = 0
-    ifrom(2) = 5
+    ifrom = [0, 5]
   end if
 
 !     Create the vector with two slots for ghost points. Note that both
@@ -84,10 +79,9 @@ program main
 
   PetscCallA(VecGetOwnershipRange(gx, rstart, rend, ierr))
 
-  ione = 1
   do i = rstart, rend - 1
     value = real(i)
-    PetscCallA(VecSetValues(gx, ione, [i], [value], INSERT_VALUES, ierr))
+    PetscCallA(VecSetValues(gx, 1_PETSC_INT_KIND, [i], [value], INSERT_VALUES, ierr))
   end do
 
   PetscCallA(VecAssemblyBegin(gx, ierr))

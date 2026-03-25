@@ -1,6 +1,7 @@
 #include <petsc/finclude/petscdmda.h>
 module ex13f90auxmodule
   use petscdm
+  use petscdmda
   implicit none
 contains
   !
@@ -27,10 +28,10 @@ contains
     PetscInt, intent(in) :: ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, n
     PetscReal, dimension(n, ib1:ibn, jb1:jbn, kb1:kbn), intent(inout) :: f
     PetscReal, dimension(n, imax, jmax, kmax) :: dfdt_vdp
-    PetscReal, parameter :: mu = 1.4, one = 1.0
+    PetscReal, parameter :: mu = 1.4
     !
     dfdt_vdp(1, :, :, :) = f(2, 1, 1, 1)
-    dfdt_vdp(2, :, :, :) = mu*(one - f(1, 1, 1, 1)**2)*f(2, 1, 1, 1) - f(1, 1, 1, 1)
+    dfdt_vdp(2, :, :, :) = mu*(1.0_PETSC_REAL_KIND - f(1, 1, 1, 1)**2)*f(2, 1, 1, 1) - f(1, 1, 1, 1)
   end function dfdt_vdp
   !
   ! The standard Forward Euler time-stepping method.
@@ -66,11 +67,10 @@ contains
   ! 1 to the (local) imax.
   !
   subroutine petsc_to_local(da, vec, array, f, dof, stw)
-    use petscdmda
-    DM                                                            :: da
-    Vec, intent(in)                                                :: vec
-    PetscReal, pointer                                            :: array(:, :, :, :)
-    PetscInt, intent(in)                                           :: dof, stw
+    DM :: da
+    Vec, intent(in)     :: vec
+    PetscReal, pointer  :: array(:, :, :, :)
+    PetscInt, intent(in):: dof, stw
     PetscReal, intent(inout), dimension(:, 1 - stw:, 1 - stw:, 1 - stw:) :: f
     PetscErrorCode                                                :: ierr
     !
@@ -85,19 +85,18 @@ contains
     f(:, :, :, :) = array(:, :, :, :)
   end subroutine transform_petsc_us
   subroutine local_to_petsc(da, vec, array, f, dof, stw)
-    use petscdmda
-    DM                                                    :: da
-    Vec, intent(inout)                                     :: vec
-    PetscReal, pointer                                    :: array(:, :, :, :)
-    PetscInt, intent(in)                                    :: dof, stw
+    DM :: da
+    Vec, intent(inout)   :: vec
+    PetscReal, pointer   :: array(:, :, :, :)
+    PetscInt, intent(in) :: dof, stw
     PetscReal, intent(inout), dimension(:, 1 - stw:, 1 - stw:, 1 - stw:)  :: f
-    PetscErrorCode                                        :: ierr
+    PetscErrorCode :: ierr
     call transform_us_petsc(array, f, stw)
     PetscCall(DMDAVecRestoreArray(da, vec, array, ierr))
   end subroutine local_to_petsc
   subroutine transform_us_petsc(array, f, stw)
     !Note: this assumed shape-array is what does the "coordinate transformation"
-    PetscInt, intent(in)                                     :: stw
+    PetscInt, intent(in) :: stw
     PetscReal, intent(inout), dimension(:, 1 - stw:, 1 - stw:, 1 - stw:) :: array
     PetscReal, intent(in), dimension(:, 1 - stw:, 1 - stw:, 1 - stw:)      :: f
     array(:, :, :, :) = f(:, :, :, :)

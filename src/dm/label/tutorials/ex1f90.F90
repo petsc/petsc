@@ -1,36 +1,13 @@
 #include <petsc/finclude/petscdmlabel.h>
-program ex1f90
+module ex1f90module
   use petscdm
   implicit none
-
-  type(tDM)                         :: dm, dmDist
-  character(len=PETSC_MAX_PATH_LEN) :: filename
-  PetscBool                         :: interpolate = PETSC_FALSE
-  PetscBool                         :: flg
-  PetscErrorCode                    :: ierr
-  PetscInt                          :: izero
-  izero = 0
-
-  PetscCallA(PetscInitialize(ierr))
-  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-i', filename, flg, ierr))
-  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-interpolate', interpolate, flg, ierr))
-
-  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, 'ex1f90_plex', interpolate, dm, ierr))
-  PetscCallA(DMPlexDistribute(dm, izero, PETSC_NULL_SF, dmDist, ierr))
-  if (.not. PetscObjectIsNull(dmDist)) then
-    PetscCallA(DMDestroy(dm, ierr))
-    dm = dmDist
-  end if
-
-  PetscCallA(ViewLabels(dm, PETSC_VIEWER_STDOUT_WORLD, ierr))
-  PetscCallA(DMDestroy(dm, ierr))
-  PetscCallA(PetscFinalize(ierr))
 
 contains
   subroutine ViewLabels(dm, viewer, ierr)
     type(tDM)                        :: dm
     type(tPetscViewer)               :: viewer
-    PetscErrorCode                   :: ierr
+    PetscErrorCode, intent(out)      :: ierr
 
     DMLabel                          :: label
     type(tIS)                        :: labelIS
@@ -48,9 +25,9 @@ contains
       PetscCall(PetscViewerASCIIPrintf(viewer, 'IS of values\n', ierr))
       PetscCall(DMGetLabel(dm, labelName, label, ierr))
       PetscCall(DMLabelGetValueIS(label, labelIS, ierr))
-!      PetscCall(PetscViewerASCIIPushTab(viewer,ierr))
+!     PetscCall(PetscViewerASCIIPushTab(viewer,ierr))
       PetscCall(ISView(labelIS, viewer, ierr))
-!      PetscCall(PetscViewerASCIIPopTab(viewer,ierr))
+!     PetscCall(PetscViewerASCIIPopTab(viewer,ierr))
       PetscCall(ISDestroy(labelIS, ierr))
       PetscCall(PetscViewerASCIIPrintf(viewer, '\n', ierr))
     end do
@@ -61,6 +38,33 @@ contains
     PetscCall(ISView(labelIS, viewer, ierr))
     PetscCall(ISDestroy(labelIS, ierr))
   end subroutine viewLabels
+end module ex1f90module
+
+program ex1f90
+  use petscdm
+  use ex1f90module
+
+  implicit none
+  type(tDM)                         :: dm, dmDist
+  character(len=PETSC_MAX_PATH_LEN) :: filename
+  PetscBool                         :: interpolate = PETSC_FALSE
+  PetscBool                         :: flg
+  PetscErrorCode                    :: ierr
+
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-i', filename, flg, ierr))
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-interpolate', interpolate, flg, ierr))
+
+  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, 'ex1f90_plex', interpolate, dm, ierr))
+  PetscCallA(DMPlexDistribute(dm, 0_PETSC_INT_KIND, PETSC_NULL_SF, dmDist, ierr))
+  if (.not. PetscObjectIsNull(dmDist)) then
+    PetscCallA(DMDestroy(dm, ierr))
+    dm = dmDist
+  end if
+
+  PetscCallA(ViewLabels(dm, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(DMDestroy(dm, ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program ex1F90
 
 !/*TEST

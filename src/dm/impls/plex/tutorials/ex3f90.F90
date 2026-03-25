@@ -9,14 +9,17 @@ program main
   PetscFV :: fvm
   PetscInt, parameter :: dim = 3
 
-  PetscInt :: depth = 1
+  PetscInt, parameter :: depth = 1
   PetscErrorCode :: ierr
-  PetscInt, dimension(2) :: numPoints
-  PetscInt, dimension(14) :: coneSize
-  PetscInt, dimension(16) :: cones
-  PetscInt, dimension(16) :: coneOrientations
-  PetscScalar, dimension(36) :: vertexCoords
-  PetscReal ::  vol = 0.
+  PetscInt, dimension(2) :: numPoints = [12, 2]
+  PetscInt, dimension(14) :: coneSize = [8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  PetscInt, dimension(16) :: cones = [2, 5, 4, 3, 6, 7, 8, 9, 3, 4, 11, 10, 7, 12, 13, 8]
+  PetscInt, dimension(16) :: coneOrientations = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  PetscScalar, dimension(36), parameter :: vertexCoords = [ &
+                                                          -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 1.0, 0.0, &
+                                                          -0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -0.5, 1.0, 1.0, &
+                                                          0.5, 0.0, 0.0, 0.5, 1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 1.0, 1.0]
+  PetscReal :: vol
   PetscReal, target, dimension(dim)  :: centroid
   PetscReal, target, dimension(dim)  :: normal
   PetscReal, pointer :: pcentroid(:)
@@ -32,14 +35,6 @@ program main
 
   PetscInt :: i
 
-  numPoints = [12, 2]
-  coneSize = [8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  cones = [2, 5, 4, 3, 6, 7, 8, 9, 3, 4, 11, 10, 7, 12, 13, 8]
-  coneOrientations = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  vertexCoords = [                                                  &
- &  -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 1.0, 0.0,           &
- &  -0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -0.5, 1.0, 1.0,           &
- &   0.5, 0.0, 0.0, 0.5, 1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 1.0, 1.0]
   pcentroid => centroid
   pnormal => normal
 
