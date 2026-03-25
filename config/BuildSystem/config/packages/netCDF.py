@@ -4,10 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version          = '4.9.2'
+    self.version          = '4.10.1'
     self.versionname      = 'NC_VERSION_MAJOR.NC_VERSION_MINOR.NC_VERSION_PATCH'
     self.versioninclude   = 'netcdf_meta.h'
-    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/netcdf-c-4.9.2-p1.tar.gz']
+    self.download         = ['https://downloads.unidata.ucar.edu/netcdf-c/'+self.version+'/netcdf-c-'+self.version+'.tar.gz',
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/netcdf-c-'+self.version+'.tar.gz']
     self.functions        = ['nccreate']
     self.includes         = ['netcdf.h']
     self.liblist          = [['libnetcdf.a']]
