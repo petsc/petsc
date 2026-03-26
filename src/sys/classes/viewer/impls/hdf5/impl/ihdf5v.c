@@ -9,7 +9,11 @@ static PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const cha
   PetscCallHDF5Return(exists, H5Lexists, (h5, name, H5P_DEFAULT));
   if (exists) PetscCallHDF5Return(exists, H5Oexists_by_name, (h5, name, H5P_DEFAULT));
   if (!exists && createGroup) {
-    PetscCallHDF5Return(group, H5Gcreate2, (h5, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+    hid_t plist_id;
+    PetscCallHDF5Return(plist_id, H5Pcreate, (H5P_GROUP_CREATE));
+    PetscCallHDF5(H5Pset_link_creation_order, (plist_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED));
+    PetscCallHDF5Return(group, H5Gcreate2, (h5, name, H5P_DEFAULT, plist_id, H5P_DEFAULT));
+    PetscCallHDF5(H5Pclose, (plist_id));
     PetscCallHDF5(H5Gclose, (group));
     exists = PETSC_TRUE;
   }
@@ -313,16 +317,18 @@ static PetscErrorCode PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, Pets
 static PetscErrorCode PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
-  hid_t             plist_id;
+  hid_t             plist_access_id;
+  hid_t             plist_create_id;
 
   PetscFunctionBegin;
   if (hdf5->file_id) PetscCallHDF5(H5Fclose, (hdf5->file_id));
   if (hdf5->filename) PetscCall(PetscFree(hdf5->filename));
   PetscCall(PetscStrallocpy(name, &hdf5->filename));
-  /* Set up file access property list with parallel I/O access */
-  PetscCallHDF5Return(plist_id, H5Pcreate, (H5P_FILE_ACCESS));
+  PetscCallHDF5Return(plist_create_id, H5Pcreate, (H5P_FILE_CREATE));
+  PetscCallHDF5(H5Pset_link_creation_order, (plist_create_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED));
+  PetscCallHDF5Return(plist_access_id, H5Pcreate, (H5P_FILE_ACCESS));
 #if defined(H5_HAVE_PARALLEL)
-  PetscCallHDF5(H5Pset_fapl_mpio, (plist_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
+  PetscCallHDF5(H5Pset_fapl_mpio, (plist_access_id, PetscObjectComm((PetscObject)viewer), MPI_INFO_NULL));
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
@@ -338,18 +344,18 @@ static PetscErrorCode PetscViewerFileSetName_HDF5(PetscViewer viewer, const char
       }
       PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)viewer)));
     }
-    PetscCallHDF5Return(hdf5->file_id, H5Fopen, (name, H5F_ACC_RDONLY, plist_id));
+    PetscCallHDF5Return(hdf5->file_id, H5Fopen, (name, H5F_ACC_RDONLY, plist_access_id));
     break;
   case FILE_MODE_APPEND:
   case FILE_MODE_UPDATE: {
     PetscBool flg;
     PetscCall(PetscTestFile(hdf5->filename, 'r', &flg));
-    if (flg) PetscCallHDF5Return(hdf5->file_id, H5Fopen, (name, H5F_ACC_RDWR, plist_id));
-    else PetscCallHDF5Return(hdf5->file_id, H5Fcreate, (name, H5F_ACC_EXCL, H5P_DEFAULT, plist_id));
+    if (flg) PetscCallHDF5Return(hdf5->file_id, H5Fopen, (name, H5F_ACC_RDWR, plist_access_id));
+    else PetscCallHDF5Return(hdf5->file_id, H5Fcreate, (name, H5F_ACC_EXCL, plist_create_id, plist_access_id));
     break;
   }
   case FILE_MODE_WRITE:
-    PetscCallHDF5Return(hdf5->file_id, H5Fcreate, (name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
+    PetscCallHDF5Return(hdf5->file_id, H5Fcreate, (name, H5F_ACC_TRUNC, plist_create_id, plist_access_id));
     break;
   case FILE_MODE_UNDEFINED:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
@@ -357,7 +363,8 @@ static PetscErrorCode PetscViewerFileSetName_HDF5(PetscViewer viewer, const char
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[hdf5->btype]);
   }
   PetscCheck(hdf5->file_id >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
-  PetscCallHDF5(H5Pclose, (plist_id));
+  PetscCallHDF5(H5Pclose, (plist_access_id));
+  PetscCallHDF5(H5Pclose, (plist_create_id));
   PetscCall(PetscViewerHDF5ResetAttachedDMPlexStorageVersion(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
