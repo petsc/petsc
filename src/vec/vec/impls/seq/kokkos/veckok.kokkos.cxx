@@ -1352,35 +1352,98 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
 /* Maps the local portion of vector v into vector w */
 PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v, Vec w)
 {
-  Vec_Seq    *vecseq = static_cast<Vec_Seq *>(w->data);
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(w->spptr);
+  PetscBool isKokkos = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(w, VECSEQKOKKOS, VECMPIKOKKOS);
-  /* Destroy w->data, w->spptr */
-  if (vecseq) {
-    PetscCall(PetscFree(vecseq->array_allocated));
-    PetscCall(PetscFree(w->data));
-  }
-  delete veckok;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)(w), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  if (!isKokkos) {
+    PetscScalar *a;
 
-  /* Replace with v's */
-  w->data  = v->data;
-  w->spptr = v->spptr;
-  PetscCall(PetscObjectStateIncrease((PetscObject)w));
+    PetscCall(VecGetArray(v, &a));
+    PetscCall(VecPlaceArray(w, a));
+  } else { // The whole purpose of VecGetLocalVector is to quickly put v's data pointers into w (i.e., the v_dual, array fields)
+    Vec_Kokkos *vkok = static_cast<Vec_Kokkos *>(v->spptr);
+    Vec_Kokkos *wkok = static_cast<Vec_Kokkos *>(w->spptr);
+    Vec_Seq    *vseq = static_cast<Vec_Seq *>(v->data);
+    Vec_Seq    *wseq = static_cast<Vec_Seq *>(w->data);
+
+    wkok->unplaced_dual = wkok->v_dual;
+    wkok->v_dual        = vkok->v_dual;
+    wseq->array         = vseq->array; // Need to also update w's host array pointer
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v, Vec w)
 {
+  PetscBool isKokkos = PETSC_FALSE;
+
   PetscFunctionBegin;
-  PetscCheckTypeNames(w, VECSEQKOKKOS, VECMPIKOKKOS);
-  v->data  = w->data;
-  v->spptr = w->spptr;
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  /* TODO: need to think if setting w->data/spptr to NULL is safe */
-  w->data  = NULL;
-  w->spptr = NULL;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)(w), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  if (!isKokkos) {
+    PetscScalar *a;
+
+    PetscCall(VecGetArray(w, &a));
+    PetscCall(VecRestoreArray(v, &a));
+    PetscCall(VecResetArray(w));
+  } else {
+    Vec_Kokkos *vkok = static_cast<Vec_Kokkos *>(v->spptr);
+    Vec_Kokkos *wkok = static_cast<Vec_Kokkos *>(w->spptr);
+    Vec_Seq    *wseq = static_cast<Vec_Seq *>(w->data);
+
+    vkok->v_dual = wkok->v_dual;
+    wkok->v_dual = wkok->unplaced_dual;
+    wseq->array  = wkok->v_dual.view_host().data(); // restore w's host array pointer
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Maps the local portion of vector v into vector w */
+PetscErrorCode VecGetLocalVectorRead_SeqKokkos(Vec v, Vec w)
+{
+  PetscBool isKokkos = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)(w), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  if (!isKokkos) {
+    const PetscScalar *a;
+
+    PetscCall(VecGetArrayRead(v, &a));
+    PetscCall(VecPlaceArray(w, a));
+  } else {
+    Vec_Kokkos *vkok = static_cast<Vec_Kokkos *>(v->spptr);
+    Vec_Kokkos *wkok = static_cast<Vec_Kokkos *>(w->spptr);
+    Vec_Seq    *vseq = static_cast<Vec_Seq *>(v->data);
+    Vec_Seq    *wseq = static_cast<Vec_Seq *>(w->data);
+
+    wkok->unplaced_dual = wkok->v_dual;
+    wkok->v_dual        = vkok->v_dual;
+    wseq->array         = vseq->array;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecRestoreLocalVectorRead_SeqKokkos(Vec v, Vec w)
+{
+  PetscBool isKokkos = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)(w), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  if (!isKokkos) {
+    const PetscScalar *a;
+
+    PetscCall(VecGetArrayRead(w, &a));
+    PetscCall(VecRestoreArrayRead(v, &a));
+    PetscCall(VecResetArray(w));
+  } else {
+    Vec_Kokkos *vkok = static_cast<Vec_Kokkos *>(v->spptr);
+    Vec_Kokkos *wkok = static_cast<Vec_Kokkos *>(w->spptr);
+    Vec_Seq    *wseq = static_cast<Vec_Seq *>(w->data);
+
+    vkok->v_dual = wkok->v_dual;
+    wkok->v_dual = wkok->unplaced_dual;
+    wseq->array  = wkok->v_dual.view_host().data();
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1678,8 +1741,8 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
   v->ops->conjugate              = VecConjugate_SeqKokkos;
   v->ops->getlocalvector         = VecGetLocalVector_SeqKokkos;
   v->ops->restorelocalvector     = VecRestoreLocalVector_SeqKokkos;
-  v->ops->getlocalvectorread     = VecGetLocalVector_SeqKokkos;
-  v->ops->restorelocalvectorread = VecRestoreLocalVector_SeqKokkos;
+  v->ops->getlocalvectorread     = VecGetLocalVectorRead_SeqKokkos;
+  v->ops->restorelocalvectorread = VecRestoreLocalVectorRead_SeqKokkos;
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
   v->ops->getarray               = VecGetArray_SeqKokkos;
   v->ops->restorearray           = VecRestoreArray_SeqKokkos;

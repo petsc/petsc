@@ -249,8 +249,8 @@ static PetscErrorCode VecCreate_MPIKokkos_Common(Vec v)
   v->ops->destroy                 = VecDestroy_MPIKokkos;
   v->ops->getlocalvector          = VecGetLocalVector_SeqKokkos;
   v->ops->restorelocalvector      = VecRestoreLocalVector_SeqKokkos;
-  v->ops->getlocalvectorread      = VecGetLocalVector_SeqKokkos;
-  v->ops->restorelocalvectorread  = VecRestoreLocalVector_SeqKokkos;
+  v->ops->getlocalvectorread      = VecGetLocalVectorRead_SeqKokkos;
+  v->ops->restorelocalvectorread  = VecRestoreLocalVectorRead_SeqKokkos;
   v->ops->getarraywrite           = VecGetArrayWrite_SeqKokkos;
   v->ops->getarray                = VecGetArray_SeqKokkos;
   v->ops->restorearray            = VecRestoreArray_SeqKokkos;
