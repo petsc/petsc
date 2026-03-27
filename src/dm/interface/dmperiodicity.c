@@ -394,7 +394,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscCall(PetscSectionSetChart(csDG, newStart, newEnd));
   PetscCheck(bs == Nc, comm, PETSC_ERR_ARG_INCOMP, "Coordinate block size %" PetscInt_FMT " != %" PetscInt_FMT " number of components", bs, Nc);
   for (PetscInt d = 0; d < Nc; ++d) {
-    PetscCheck(L[d] < 0. || (maxCell[d] > 0. && maxCell[d] < L[d]), comm, PETSC_ERR_ARG_INCOMP, "Periodic length %g > max cell size %g in dimension %" PetscInt_FMT, (double)L[d], (double)maxCell[d], d);
+    PetscCheck(L[d] < 0. || (maxCell[d] > 0. && maxCell[d] < 2 * L[d]), comm, PETSC_ERR_ARG_INCOMP, "Periodic length %g > max cell size %g in dimension %" PetscInt_FMT, (double)L[d], (double)maxCell[d], d);
   }
 
   PetscCall(DMGetWorkArray(dm, 2 * Nc, MPIU_SCALAR, &anchor));
