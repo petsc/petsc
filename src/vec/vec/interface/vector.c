@@ -1443,6 +1443,100 @@ PetscErrorCode VecSetRandom(Vec x, PetscRandom rctx)
 }
 
 /*@
+  VecSetRandomGaussian - Fills a vector with Gaussian random values of the given mean and standard deviation.
+
+  Collective
+
+  Input Parameters:
++ v       - the vector to fill
+. rng     - PETSc random number generator
+. mean    - desired mean of the Gaussian samples
+- std_dev - desired standard deviation
+
+  Level: advanced
+
+  Note:
+  For complex builds where `PetscScalar` is complex the imaginary part of all the vector entries is zero
+
+  Developer Note:
+  Uses the Box-Muller transform to generate normally distributed random numbers
+  from uniform random numbers. Handles edge cases where uniform random values
+  approach 0 or 1.
+
+.seealso: [](ch_vectors), [](ch_da), `PetscDA`, `PetscRandom`, `PetscRandomSetInterval()`, `VecSetRandom()`
+@*/
+PetscErrorCode VecSetRandomGaussian(Vec v, PetscRandom rng, PetscReal mean, PetscReal std_dev)
+{
+  PetscInt        n, i;
+  PetscScalar    *array;
+  PetscReal       u1, u2;
+  PetscReal       gauss_sample1, gauss_sample2, magnitude, theta;
+  const PetscReal min_uniform     = PETSC_MACHINE_EPSILON;
+  const PetscInt  max_retry_count = 100;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(rng, PETSC_RANDOM_CLASSID, 2);
+  PetscValidLogicalCollectiveReal(v, mean, 3);
+  PetscValidLogicalCollectiveReal(v, std_dev, 4);
+  PetscCheck(!PetscIsInfOrNanReal(mean), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mean must be a finite real number");
+  PetscCheck(std_dev >= 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Standard deviation must be non-negative, got %g", (double)std_dev);
+  PetscCheck(!PetscIsInfOrNanReal(std_dev), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Standard deviation must be a finite real number");
+
+  PetscCall(VecGetLocalSize(v, &n));
+  if (n == 0) PetscFunctionReturn(PETSC_SUCCESS);
+
+  if (std_dev == 0.0) {
+    PetscCall(VecSet(v, mean));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(VecGetArrayWrite(v, &array));
+
+  /*
+    Generate Gaussian-distributed random values using the Box-Muller transform.
+    This transform converts pairs of uniform random variables U1, U2 ~ Uniform(0,1)
+    into pairs of independent standard normal variables Z0, Z1 ~ N(0,1):
+      Z0 = sqrt(-2 * ln(U1)) * cos(2pi * U2)
+      Z1 = sqrt(-2 * ln(U1)) * sin(2pi * U2)
+    Then scale and shift to get desired mean and standard deviation.
+  */
+  for (i = 0; i < n; i += 2) {
+    PetscInt retry_count = 0;
+
+    /*
+      Generate U1 and ensure it's not too close to 0 to avoid log(0) singularity.
+      Add retry limit to prevent infinite loops in case of RNG failure.
+    */
+    do {
+      PetscCall(PetscRandomGetValueReal(rng, &u1));
+      retry_count++;
+      PetscCheck(retry_count < max_retry_count, PETSC_COMM_SELF, PETSC_ERR_LIB, "Random number generator failed to produce valid values after %" PetscInt_FMT " attempts", (PetscInt)max_retry_count);
+    } while (u1 < min_uniform);
+
+    PetscCall(PetscRandomGetValueReal(rng, &u2));
+
+    /*
+      Apply Box-Muller transform:
+      - magnitude: sqrt(-2 * ln(U1)) represents the radial distance from origin
+      - theta: 2pi * U2 represents the angle uniformly distributed on [0, 2pi]
+      - Converting from polar to Cartesian coordinates yields two independent samples
+    */
+    magnitude     = PetscSqrtReal(-2.0 * PetscLogReal(u1));
+    theta         = 2.0 * PETSC_PI * u2;
+    gauss_sample1 = magnitude * PetscCosReal(theta);
+    gauss_sample2 = magnitude * PetscSinReal(theta);
+
+    /* Scale and shift to achieve desired mean and standard deviation */
+    array[i] = mean + std_dev * gauss_sample1;
+    if (i + 1 < n) array[i + 1] = mean + std_dev * gauss_sample2;
+  }
+
+  PetscCall(VecRestoreArrayWrite(v, &array));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   VecZeroEntries - puts a `0.0` in each element of a vector
 
   Logically Collective
