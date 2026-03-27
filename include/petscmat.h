@@ -520,6 +520,7 @@ PETSC_EXTERN PetscErrorCode MatSubMatrixVirtualUpdate(Mat, Mat, IS, IS);
 PETSC_EXTERN PetscErrorCode MatCreateLocalRef(Mat, IS, IS, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateConstantDiagonal(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateDiagonal(Vec, Mat *);
+PETSC_EXTERN PetscErrorCode MatDiagonalSetDiagonal(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatDiagonalGetDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatDiagonalRestoreDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatDiagonalGetInverseDiagonal(Mat, Vec *);
@@ -720,6 +721,8 @@ PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatMultAdd(Mat, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatMultTranspose(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatMultHermitianTranspose(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatADot(Mat, Vec, Vec, PetscScalar *);
+PETSC_EXTERN PetscErrorCode MatANorm(Mat, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatIsTranspose(Mat, Mat, PetscReal, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitianTranspose(Mat, Mat, PetscReal, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatMultTransposeAdd(Mat, Vec, Vec, Vec);
@@ -2038,7 +2041,11 @@ typedef enum {
   MATOP_GET_VBLOCK_DIAGONAL       = 140, /* and need to destroy it after use. */
   MATOP_COPY_HASH_TO_XAIJ         = 141,
   MATOP_GET_CURRENT_MEM_TYPE      = 142,
-  MATOP_ZERO_ROWS_COLUMNS_LOCAL   = 143
+  MATOP_ZERO_ROWS_COLUMNS_LOCAL   = 143,
+  MATOP_ADOT                      = 144,
+  MATOP_ANORM                     = 145,
+  MATOP_ADOT_LOCAL                = 146,
+  MATOP_ANORM_LOCAL               = 147
 } MatOperation;
 
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, PetscErrorCodeFn *);

@@ -56,6 +56,7 @@ Options for SEQAIJ matrix:
   -mat_no_unroll: <now FALSE : formerly FALSE> Do not optimize for inodes (slower) (None)
   -mat_no_inode: <now FALSE : formerly FALSE> Do not optimize for inodes -slower- (None)
   -mat_inode_limit: <now 5 : formerly 5>: Do not use inodes larger than this value (None)
+  -mat_vec_type <now standard : formerly standard>: Vec type used by MatCreateVecs() (one of) (MatSetVecType)
   -mat_is_symmetric: Checks if mat is symmetric on MatAssemblyEnd() (MatIsSymmetric)
   -mat_is_symmetric: <now 0. : formerly 0.>: Checks if mat is symmetric on MatAssemblyEnd() (MatIsSymmetric)
   -mat_null_space_test: <now FALSE : formerly FALSE> Checks if provided null space is correct in MatAssemblyEnd() (MatSetNullSpaceTest)

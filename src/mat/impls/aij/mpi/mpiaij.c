@@ -2842,6 +2842,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        MatCopyHashToXAIJ_MPI_Hash,
                                        MatGetCurrentMemType_MPIAIJ,
+                                       NULL,
+                                       /*144*/ MatADot_Default,
+                                       MatANorm_Default,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)

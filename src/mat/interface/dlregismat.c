@@ -179,6 +179,8 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatMultHermitian", MAT_CLASSID, &MAT_MultHermitianTranspose));
   PetscCall(PetscLogEventRegister("MatMultTrAdd", MAT_CLASSID, &MAT_MultTransposeAdd));
   PetscCall(PetscLogEventRegister("MatMultHTAdd", MAT_CLASSID, &MAT_MultHermitianTransposeAdd));
+  PetscCall(PetscLogEventRegister("MatADot", MAT_CLASSID, &MAT_ADot));
+  PetscCall(PetscLogEventRegister("MatANorm", MAT_CLASSID, &MAT_ANorm));
   PetscCall(PetscLogEventRegister("MatSolve", MAT_CLASSID, &MAT_Solve));
   PetscCall(PetscLogEventRegister("MatSolves", MAT_CLASSID, &MAT_Solves));
   PetscCall(PetscLogEventRegister("MatSolveAdd", MAT_CLASSID, &MAT_SolveAdd));

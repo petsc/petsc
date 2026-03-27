@@ -1,14 +1,5 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
-
-typedef struct {
-  Vec              diag;
-  PetscBool        diag_valid;
-  Vec              inv_diag;
-  PetscBool        inv_diag_valid;
-  PetscObjectState diag_state, inv_diag_state;
-  PetscInt        *col;
-  PetscScalar     *val;
-} Mat_Diagonal;
+#include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 
 static PetscErrorCode MatDiagonalSetUpDiagonal(Mat A)
 {
@@ -157,7 +148,8 @@ static PetscErrorCode MatDuplicate_Diagonal(Mat A, MatDuplicateOption op, Mat *B
 
   For a copy of the diagonal values, rather than a reference, use `MatGetDiagonal()`
 
-  Any changes to the obtained vector immediately change the action of the `Mat`. The matrix can be changed more efficiently by accessing this vector and changing its values, instead of filling a work vector and using `MatDiagonalSet()`
+  Any changes to the obtained vector immediately change the action of the `Mat`.
+  The matrix can be changed more efficiently by accessing this vector and changing its values, instead of filling a work vector and using `MatDiagonalSet()`
 
 .seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`, `MatGetDiagonal()`
 @*/
@@ -191,9 +183,6 @@ static PetscErrorCode MatDiagonalGetDiagonal_Diagonal(Mat A, Vec *diag)
 - diag - the `Vec` obtained from `MatDiagonalGetDiagonal()`
 
   Level: developer
-
-  Note:
-  Use `MatDiagonalSet()` to change the values by copy, rather than reference.
 
 .seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalGetDiagonal()`
 @*/
@@ -379,6 +368,170 @@ static PetscErrorCode MatGetDiagonal_Diagonal(Mat J, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatADot_Diagonal_Local(Mat A, Vec x, Vec y, PetscScalar *val)
+{
+  Mat_Diagonal      *ctx = (Mat_Diagonal *)A->data;
+  PetscInt           n   = x->map->n;
+  const PetscScalar *ya, *xa, *wa;
+  PetscScalar        sum = 0;
+
+  PetscFunctionBegin;
+  PetscCheckSameTypeAndComm(x, 2, ctx->diag, 1);
+  PetscCheckSameTypeAndComm(y, 3, ctx->diag, 1);
+  PetscCall(VecGetArrayRead(x, &xa));
+  PetscCall(VecGetArrayRead(y, &ya));
+  PetscCall(VecGetArrayRead(ctx->diag, &wa));
+  for (PetscInt i = 0; i < n; i++) {
+    sum += PetscConj(ya[i]) * wa[i] * xa[i];
+  }
+  if (n > 0) PetscCall(PetscLogFlops(3.0 * n));
+  PetscCall(VecRestoreArrayRead(x, &xa));
+  PetscCall(VecRestoreArrayRead(y, &ya));
+  PetscCall(VecRestoreArrayRead(ctx->diag, &wa));
+  *val = sum;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatADot_Diagonal_MPI(Mat A, Vec x, Vec y, PetscScalar *val)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDiagonalSetUpDiagonal(A));
+  PetscUseTypeMethod(A, adot_local, x, y, val);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, val, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatANorm_Diagonal_Local(Mat A, Vec x, PetscReal *val)
+{
+  Mat_Diagonal      *ctx = (Mat_Diagonal *)A->data;
+  PetscInt           n   = x->map->n;
+  const PetscScalar *xa, *wa;
+  PetscScalar        sum = 0;
+
+  PetscFunctionBegin;
+  PetscCheckSameTypeAndComm(x, 2, ctx->diag, 1);
+  PetscCall(VecGetArrayRead(x, &xa));
+  PetscCall(VecGetArrayRead(ctx->diag, &wa));
+  for (PetscInt i = 0; i < n; i++) {
+    sum += PetscConj(xa[i]) * wa[i] * xa[i];
+  }
+  if (n > 0) PetscCall(PetscLogFlops(3.0 * n));
+  PetscCall(VecRestoreArrayRead(x, &xa));
+  PetscCall(VecRestoreArrayRead(ctx->diag, &wa));
+  PetscCheck(PetscAbsReal(PetscImaginaryPart(sum)) < 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix argument is not Hermitian (diagonal has nonzero imaginary parts)");
+  *val = PetscRealPart(sum);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatANorm_Diagonal_MPI(Mat A, Vec x, PetscReal *val)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDiagonalSetUpDiagonal(A));
+  PetscUseTypeMethod(A, anorm_local, x, val);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, val, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+  *val = PetscSqrtReal(*val);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatANorm_Diagonal_Seq(Mat A, Vec x, PetscReal *val)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDiagonalSetUpDiagonal(A));
+  PetscUseTypeMethod(A, anorm_local, x, val);
+  PetscCheck(*val >= 0.0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix argument is not positive definite (diagonal has negative entries)");
+  *val = PetscSqrtReal(*val);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatDiagonalSetDiagonal - Sets the diagonal for a `MATDIAGONAL`
+
+  Collective
+
+  Input Parameter:
++ J    - the `MATDIAGONAL` matrix
+- diag - the vector for the diagonal
+
+  Level: advanced
+
+  Notes:
+  The input vector `diag` will be referenced internally: any changes to `diag`
+  will affect the matrix `J`.
+
+  This routine can only be called once for the given `J` matrix.
+
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MatCreateDiagonal()`, `MATDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`,
+          `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`,
+          `MATCONSTANTDIAGONAL`
+@*/
+PetscErrorCode MatDiagonalSetDiagonal(Mat J, Vec diag)
+{
+  Mat_Diagonal *ctx = (Mat_Diagonal *)J->data;
+  PetscMPIInt   comm_size;
+  PetscLayout   map;
+  VecType       type;
+  PetscBool     iskokkos, ismpi, iscuda, iship;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(diag, VEC_CLASSID, 2);
+  PetscCheckSameComm(J, 1, diag, 2);
+  PetscCheck(!ctx->diag, PetscObjectComm((PetscObject)J), PETSC_ERR_ARG_WRONGSTATE, "MATDIAGONAL already has a diagonal");
+  ctx->diag = diag;
+  PetscCall(PetscObjectReference((PetscObject)ctx->diag));
+  PetscCall(VecDuplicate(ctx->diag, &ctx->inv_diag));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)J), &comm_size));
+  PetscCall(VecGetLayout(ctx->diag, &map));
+  PetscCall(MatSetLayouts(J, map, map));
+  PetscCall(PetscFree(J->defaultvectype));
+  PetscCall(VecGetType(ctx->diag, &type));
+  PetscCall(PetscStrallocpy(type, &J->defaultvectype));
+
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->diag, &iscuda, VECCUDA, VECMPICUDA, VECSEQCUDA, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->diag, &iship, VECHIP, VECMPIHIP, VECSEQHIP, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->diag, &iskokkos, VECKOKKOS, VECMPIKOKKOS, VECSEQKOKKOS, ""));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)ctx->diag, VECMPI, &ismpi));
+  ismpi               = ismpi || comm_size > 1;
+  J->ops->adot_local  = MatADot_Diagonal_Local;
+  J->ops->adot        = MatADot_Diagonal_Local;
+  J->ops->anorm_local = MatANorm_Diagonal_Local;
+  if (iskokkos) {
+    PetscCheck(PetscDefined(HAVE_KOKKOS_KERNELS), PetscObjectComm((PetscObject)ctx->diag), PETSC_ERR_SUP, "Reconfigure using KOKKOS kernels support");
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+    J->ops->adot_local  = MatADot_Diagonal_SeqKokkos;
+    J->ops->adot        = MatADot_Diagonal_SeqKokkos;
+    J->ops->anorm_local = MatANormSq_Diagonal_SeqKokkos;
+#endif
+  }
+  if (iscuda) {
+    PetscCheck(PetscDefined(HAVE_CUDA), PetscObjectComm((PetscObject)ctx->diag), PETSC_ERR_SUP, "Reconfigure using CUDA support");
+#if PetscDefined(HAVE_CUDA)
+    J->ops->adot_local  = MatADot_Diagonal_SeqCUDA;
+    J->ops->adot        = MatADot_Diagonal_SeqCUDA;
+    J->ops->anorm_local = MatANormSq_Diagonal_SeqCUDA;
+#endif
+  }
+  if (iship) {
+    PetscCheck(PetscDefined(HAVE_HIP), PetscObjectComm((PetscObject)ctx->diag), PETSC_ERR_SUP, "Reconfigure using HIP support");
+#if PetscDefined(HAVE_HIP)
+    J->ops->adot_local  = MatADot_Diagonal_SeqHIP;
+    J->ops->adot        = MatADot_Diagonal_SeqHIP;
+    J->ops->anorm_local = MatANormSq_Diagonal_SeqHIP;
+#endif
+  }
+  if (ismpi) {
+    J->ops->adot  = MatADot_Diagonal_MPI;
+    J->ops->anorm = MatANorm_Diagonal_MPI;
+  } else {
+    J->ops->anorm = MatANorm_Diagonal_Seq;
+  }
+  ctx->col        = NULL;
+  ctx->val        = NULL;
+  ctx->diag_valid = PETSC_TRUE;
+  J->assembled    = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDiagonalSet_Diagonal(Mat J, Vec D, InsertMode is)
 {
   Mat_Diagonal *ctx = (Mat_Diagonal *)J->data;
@@ -395,7 +548,6 @@ static PetscErrorCode MatDiagonalSet_Diagonal(Mat J, Vec D, InsertMode is)
   case INSERT_VALUES:
   case INSERT_BC_VALUES:
   case INSERT_ALL_VALUES:
-    PetscCall(MatSetUp(J));
     PetscCall(VecCopy(D, ctx->diag));
     ctx->diag_valid     = PETSC_TRUE;
     ctx->inv_diag_valid = PETSC_FALSE;
@@ -432,7 +584,6 @@ static PetscErrorCode MatScale_Diagonal(Mat Y, PetscScalar a)
   Mat_Diagonal *ctx = (Mat_Diagonal *)Y->data;
 
   PetscFunctionBegin;
-  PetscCall(MatSetUp(Y));
   PetscCall(MatDiagonalSetUpDiagonal(Y));
   PetscCall(VecScale(ctx->diag, a));
   ctx->inv_diag_valid = PETSC_FALSE;
@@ -506,12 +657,13 @@ static PetscErrorCode MatSetUp_Diagonal(Mat A)
 
   PetscFunctionBegin;
   if (!ctx->diag) {
+    Vec diag;
+
     PetscCall(PetscLayoutSetUp(A->cmap));
     PetscCall(PetscLayoutSetUp(A->rmap));
-    PetscCall(MatCreateVecs(A, &ctx->diag, NULL));
-    PetscCall(VecDuplicate(ctx->diag, &ctx->inv_diag));
-    PetscCall(VecZeroEntries(ctx->diag));
-    ctx->diag_valid = PETSC_TRUE;
+    PetscCall(MatCreateVecs(A, &diag, NULL));
+    PetscCall(MatDiagonalSetDiagonal(A, diag));
+    PetscCall(VecDestroy(&diag));
   }
   A->assembled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -522,7 +674,6 @@ static PetscErrorCode MatZeroEntries_Diagonal(Mat Y)
   Mat_Diagonal *ctx = (Mat_Diagonal *)Y->data;
 
   PetscFunctionBegin;
-  PetscCall(MatSetUp(Y));
   PetscCall(VecZeroEntries(ctx->diag));
   ctx->diag_valid     = PETSC_TRUE;
   ctx->inv_diag_valid = PETSC_FALSE;
@@ -574,38 +725,17 @@ static PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info
   The input vector `diag` will be referenced internally: any changes to `diag`
   will affect the matrix `J`.
 
-.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`,
-          `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`,
+          `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`,
+          `MATCONSTANTDIAGONAL`
 @*/
 PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(diag, VEC_CLASSID, 1);
   PetscCall(MatCreate(PetscObjectComm((PetscObject)diag), J));
-  PetscInt m, M;
-  PetscCall(VecGetLocalSize(diag, &m));
-  PetscCall(VecGetSize(diag, &M));
-  PetscCall(MatSetSizes(*J, m, m, M, M));
   PetscCall(MatSetType(*J, MATDIAGONAL));
-
-  PetscLayout map;
-  PetscCall(VecGetLayout(diag, &map));
-  PetscCall(MatSetLayouts(*J, map, map));
-  Mat_Diagonal *ctx = (Mat_Diagonal *)(*J)->data;
-  PetscCall(PetscObjectReference((PetscObject)diag));
-  PetscCall(VecDestroy(&ctx->diag));
-  PetscCall(VecDestroy(&ctx->inv_diag));
-  ctx->diag           = diag;
-  ctx->diag_valid     = PETSC_TRUE;
-  ctx->inv_diag_valid = PETSC_FALSE;
-  VecType type;
-  PetscCall(VecDuplicate(ctx->diag, &ctx->inv_diag));
-  PetscCall(VecGetType(diag, &type));
-  PetscCall(PetscFree((*J)->defaultvectype));
-  PetscCall(PetscStrallocpy(type, &(*J)->defaultvectype));
-  PetscCall(MatSetUp(*J));
-  ctx->col = NULL;
-  ctx->val = NULL;
+  PetscCall(MatDiagonalSetDiagonal(*J, diag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -684,7 +814,18 @@ static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense(Mat C)
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
+  Note:
+  The first use case is simply to call `MatCreateDiagonal()' to provide the vector containing the diagonal matrix.  The input vector  will be
+  referenced internally by the matrix: any changes to it will affect the matrix. Similar changes to the matrix will affect the vector.
+
+  For the second use case call `MatSetType()` with a type of `MATDIAGONAL` followed by a call to `MatDiagonalSetDiagonal()`. The input vector  will be
+  referenced internally by the matrix: any changes to it will affect the matrix.  Similar changes to the matrix will affect the vector.
+
+  For the third use case call `MatSetType()` with a type of `MATDIAGONAL` followed by a calls to `MatSetSizes()` and `MatDiagonalSet()`. In this case
+  the diagonal vector will not be referenced internally by the matrix, its values will be copied.
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`,
+          `MatDiagonalGetInverseDiagonal()`, `MatDiagonalSet()`, `MatDiagonalSetDiagonal()`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
 {
