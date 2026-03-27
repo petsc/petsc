@@ -9,7 +9,15 @@
 /* SUBMANSEC = DMMOAB */
 
 #include <string>
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+  #pragma clang diagnostic ignored "-Wnontrivial-memcall"
+#endif
 #include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 #ifdef MOAB_HAVE_MPI
   #include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
 #endif
