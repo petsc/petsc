@@ -2031,7 +2031,7 @@ static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patc
   PetscInt        Nf = patch->nsubspaces, Np, poff, p, f;
 
   PetscFunctionBegin;
-  PetscCheck(!patch->precomputeElementTensors, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Precomputing element tensors not implemented with DMPlex compute operator");
+  PetscCheck(!patch->precomputeElementTensors, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Precomputing element tensors not implemented with DMPlex compute function");
   PetscCall(PCGetDM(pc, &dm));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   dm = plex;
@@ -2378,6 +2378,7 @@ static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const Pe
   PetscScalar *array;
   PetscInt     bs, nz, i, j, cell;
 
+  PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &data));
   PetscCall(VecGetBlockSize(data, &bs));
   PetscCall(VecGetSize(data, &nz));
@@ -2414,6 +2415,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscInt        cStart, cEnd;
   DM              dm, plex;
 
+  PetscFunctionBegin;
   PetscCall(ISGetSize(patch->cells, &ncell));
   if (!ncell) { /* No cells to assemble over -> skip */
     PetscFunctionReturn(PETSC_SUCCESS);
