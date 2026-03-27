@@ -64,8 +64,9 @@ PetscErrorCode TSPseudoComputeFunction(TS ts, Vec solution, Vec *residual, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(solution, VEC_CLASSID, 2);
-  if (residual) PetscValidHeaderSpecific(*residual, VEC_CLASSID, 3);
+  if (residual) PetscAssertPointer(residual, 3);
   if (fnorm) PetscAssertPointer(fnorm, 4);
+  PetscCheckTypeName(ts, TSPSEUDO);
 
   PetscCall(PetscObjectStateGet((PetscObject)solution, &Xstate));
   if (Xstate != pseudo->Xstate || pseudo->fnorm < 0) {
@@ -128,6 +129,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
 
   // Check solution convergence
   PetscCall(TSPseudoComputeFunction(ts, ts->vec_sol, NULL, &fnorm));
+  if (pseudo->fnorm_initial == -1) pseudo->fnorm_initial = fnorm;
 
   if (fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
