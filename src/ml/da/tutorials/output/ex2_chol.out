@@ -1,0 +1,48 @@
+Spinning up truth for 1000 steps...
+Localization matrix Q created: 40 x 7
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 40
+  Observation size: 40
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Square root type: eigen
+  Local analysis: CPU
+  Local observations per vertex: 7
+  GPU batch size: auto
+  Localization matrix: set
+Lorenz-96 LETKF Example
+======================
+  State dimension        : 40
+  Ensemble size          : 5
+  Forcing parameter (F)  : 8.0000
+  Time step (dt)         : 0.0500
+  Total steps            : 112
+  Burn-in steps          : 10
+  Spin-up steps          : 1000
+  Observation frequency  : 1
+  Observation noise std  : 1.000
+  Ensemble init std      : 1.000
+  Random seed            : 12345
+  Localization (obs/vert): 7 
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000  Spread 1.21961 [burn-in]
+Step   11, time  0.550  RMSE_forecast 0.29874  RMSE_analysis 0.26777  Spread 0.28376
+Step   22, time  1.100  RMSE_forecast 0.28730  RMSE_analysis 0.25491  Spread 0.24271
+Step   33, time  1.650  RMSE_forecast 0.33842  RMSE_analysis 0.33161  Spread 0.22487
+Step   44, time  2.200  RMSE_forecast 0.47613  RMSE_analysis 0.46078  Spread 0.20673
+Step   55, time  2.750  RMSE_forecast 0.34996  RMSE_analysis 0.33171  Spread 0.21598
+Step   66, time  3.300  RMSE_forecast 0.43398  RMSE_analysis 0.40120  Spread 0.22059
+Step   77, time  3.850  RMSE_forecast 0.34450  RMSE_analysis 0.31360  Spread 0.22590
+Step   88, time  4.400  RMSE_forecast 0.36870  RMSE_analysis 0.32094  Spread 0.19066
+Step   99, time  4.950  RMSE_forecast 0.20737  RMSE_analysis 0.23803  Spread 0.20994
+Step  110, time  5.500  RMSE_forecast 0.30401  RMSE_analysis 0.28158  Spread 0.18157
+Step  112, time  5.600  RMSE_forecast 0.28315  RMSE_analysis 0.26530  Spread 0.18586
+
+Statistics (103 forecast steps, 103 analysis steps post-burn-in):
+==================================================
+  Mean RMSE (forecast) : 0.35227
+  Mean RMSE (analysis) : 0.31852
+  Observations used    : 112
+

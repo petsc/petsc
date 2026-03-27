@@ -29,7 +29,6 @@
 - Add the option `-hypre_umpire_device_pool_size <n>` to set the Umpire device memory pool size (in MiB), which is used by HYPRE and 4 Gib by default
 - Change `PetscStackCallExternalVoid()` to `PetscCallExternalVoid()`
 
-
 ```{rubric} Event Logging:
 ```
 
@@ -148,7 +147,13 @@
 ```{rubric} PetscRegressor:
 ```
 
-```{rubric} DM/DA:
+```{rubric} PetscDA:
+```
+
+- Add data assimilation object `PetscDA` with two ensemble-based implementations `PETSCDAETKF` and `PETSCDALETKF` and three tutorials: Lorenz-96, traveling wave, and dam break
+- Move localization `PetscDALETKFGetLocalizationMatrix()` utility out of `DMPLEX` and into `PETSCDALETKF`
+
+```{rubric} DM:
 ```
 
 - Change the final argument of `DMShellSetDestroyContext()` to `PetscCtxDestroyFn *`. This means the destroy function must dereference the argument before operating on it
@@ -162,7 +167,6 @@
 
 - Add `DMPlexVecGetClosureAtDepth()`
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
-- Add `DMPlexGetLETKFLocalizationMatrix` to compute localization weight matrix for LETKF
 - Change `verticesAdjSaved` parameter in `DMPlexCreateFromCell*Parallel*()` functions to be allocated by function rather than by user
 - Add `DMPlexCreateColoring()`
 

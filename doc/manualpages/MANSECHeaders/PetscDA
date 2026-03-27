@@ -1,0 +1,7 @@
+# Data Assimilation (PetscDA)
+
+The `PetscDA` object provides a high-level framework for data assimilation capabilities.
+
+It currently only provides ensemble-based data assimilation capabilities for combining model forecasts with observations in dynamical systems.
+It centralizes ensemble storage, observational metadata, and user-defined forecast/analysis operators, enabling algorithms to run independently of MPI layout or vector/matrix backends.
+Users guide chapter: [](ch_da)

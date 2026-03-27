@@ -1,0 +1,53 @@
+Using distance-based localization with 5 observations per vertex
+PetscDA Object: 3 MPI processes
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Square root type: eigen
+  Local analysis: Kokkos
+  Local observations per vertex: 5
+  GPU batch size: auto
+  Localization matrix: set
+2D Shallow Water LETKF Example
+==============================
+  Mode                  : Data Assimilation
+  Flux scheme           : Rusanov (1st order)
+  Grid dimensions       : 21 x 21
+  State dimension       : 1323 (441 grid points x 3 DOF)
+  Observation dimension : 121
+  Observation stride    : 2
+  Ensemble size         : 5
+  Domain size           : 80.00 x 80.00
+  Grid spacing          : dx=3.8095, dy=3.8095
+  Mean height (h0)      : 1.5000
+  Wave amplitudes       : Ax=0.2000, Ay=0.2000
+  Gravitational const   : 9.8100
+  Wave speed (c)        : 3.8360
+  Time step (dt)        : 0.0200
+  CFL number            : 0.0403
+  Total steps           : 10
+  Observation frequency : 2
+  Observation noise std : 0.030
+  Random seed           : 12345
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step    1, time  0.020  RMSE_forecast 0.00001  RMSE_analysis 0.00001
+Step    2, time  0.040  RMSE_forecast 0.00002  RMSE_analysis 0.00948
+Step    3, time  0.060  RMSE_forecast 0.00910  RMSE_analysis 0.00910
+Step    4, time  0.080  RMSE_forecast 0.00877  RMSE_analysis 0.00823
+Step    5, time  0.100  RMSE_forecast 0.00795  RMSE_analysis 0.00795
+Step    6, time  0.120  RMSE_forecast 0.00771  RMSE_analysis 0.00748
+Step    7, time  0.140  RMSE_forecast 0.00726  RMSE_analysis 0.00726
+Step    8, time  0.160  RMSE_forecast 0.00705  RMSE_analysis 0.00686
+Step    9, time  0.180  RMSE_forecast 0.00668  RMSE_analysis 0.00668
+Step   10, time  0.200  RMSE_forecast 0.00651  RMSE_analysis 0.00648
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00611
+  Mean RMSE (analysis) : 0.00695
+  Observations used    : 5
+

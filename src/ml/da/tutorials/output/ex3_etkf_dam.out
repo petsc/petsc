@@ -1,0 +1,43 @@
+Localization matrix Q created: 80x40, no localization/global (all weights = 1.0)
+PetscDA Object: 1 MPI process
+  type: etkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 10
+  Assembled: true
+  Inflation: 1.
+  Square root type: cholesky
+Shallow Water [L]ETKF Example
+============================
+  Test case             : Dam-break
+  Flux scheme           : Rusanov (1st order)
+  State dimension       : 160 (80 grid points x 2 DOF)
+  Observation dimension : 40
+  Ensemble size         : 10
+  Domain length (L)     : 80.0000
+  Gravitational const   : 9.8100
+  Time step (dt)        : 0.0200
+  Total steps           : 10
+  Observation frequency : 2
+  Observation noise std : 0.030
+  Random seed           : 12345
+  Localization          : None/Global (7 obs per vertex)
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step    1, time  0.020  RMSE_forecast 0.00002  RMSE_analysis 0.00002
+Step    2, time  0.040  RMSE_forecast 0.00004  RMSE_analysis 0.01665
+Step    3, time  0.060  RMSE_forecast 0.01664  RMSE_analysis 0.01664
+Step    4, time  0.080  RMSE_forecast 0.01682  RMSE_analysis 0.01212
+Step    5, time  0.100  RMSE_forecast 0.01233  RMSE_analysis 0.01233
+Step    6, time  0.120  RMSE_forecast 0.01255  RMSE_analysis 0.00716
+Step    7, time  0.140  RMSE_forecast 0.00729  RMSE_analysis 0.00729
+Step    8, time  0.160  RMSE_forecast 0.00740  RMSE_analysis 0.00696
+Step    9, time  0.180  RMSE_forecast 0.00701  RMSE_analysis 0.00701
+Step   10, time  0.200  RMSE_forecast 0.00703  RMSE_analysis 0.00799
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00871
+  Mean RMSE (analysis) : 0.00942
+  Observations used    : 5
+

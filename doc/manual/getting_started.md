@@ -1123,6 +1123,7 @@ directories:
   - `ml` - Machine Learning
 
     - `regressor` - Regression solvers
+    - `da` - Ensemble data assimilation
 
   - `dm` - data management between meshes and solvers, vectors, and
     matrices,

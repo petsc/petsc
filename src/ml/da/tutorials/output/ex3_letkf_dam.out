@@ -1,0 +1,47 @@
+Localization matrix Q created using PetscDALETKFGetLocalizationMatrix
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Square root type: eigen
+  Local analysis: CPU
+  Local observations per vertex: 7
+  GPU batch size: auto
+  Localization matrix: set
+Shallow Water [L]ETKF Example
+============================
+  Test case             : Dam-break
+  Flux scheme           : Rusanov (1st order)
+  State dimension       : 160 (80 grid points x 2 DOF)
+  Observation dimension : 40
+  Ensemble size         : 7
+  Domain length (L)     : 80.0000
+  Gravitational const   : 9.8100
+  Time step (dt)        : 0.0200
+  Total steps           : 10
+  Observation frequency : 2
+  Observation noise std : 0.030
+  Random seed           : 12345
+  Localization          : None/Global (7 obs per vertex)
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step    1, time  0.020  RMSE_forecast 0.00003  RMSE_analysis 0.00003
+Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.01103
+Step    3, time  0.060  RMSE_forecast 0.01096  RMSE_analysis 0.01096
+Step    4, time  0.080  RMSE_forecast 0.01103  RMSE_analysis 0.00933
+Step    5, time  0.100  RMSE_forecast 0.00936  RMSE_analysis 0.00936
+Step    6, time  0.120  RMSE_forecast 0.00942  RMSE_analysis 0.00892
+Step    7, time  0.140  RMSE_forecast 0.00900  RMSE_analysis 0.00900
+Step    8, time  0.160  RMSE_forecast 0.00907  RMSE_analysis 0.01114
+Step    9, time  0.180  RMSE_forecast 0.01128  RMSE_analysis 0.01128
+Step   10, time  0.200  RMSE_forecast 0.01139  RMSE_analysis 0.01129
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00816
+  Mean RMSE (analysis) : 0.00923
+  Observations used    : 5
+
