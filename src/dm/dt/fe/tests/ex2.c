@@ -238,7 +238,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
   PetscFEGeom    *affineGeom, **geoms = NULL;
   PetscScalar    *u, *elemVec;
   IS              cellIS;
-  PetscInt        depth, cStart, cEnd, cell, chunkSize = cbs, Nch = 0, Nf, f, totDim, i, k;
+  PetscInt        depth, cStart, cEnd, cell, chunkSize = cbs, Nf, f, totDim, i, k;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -256,7 +256,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     - No time-dependence
   */
   for (i = 0; i < its; ++i) {
-    for (cell = cStart; cell < cEnd; cell += chunkSize, ++Nch) {
+    for (cell = cStart; cell < cEnd; cell += chunkSize) {
       const PetscInt cS = cell, cE = PetscMin(cS + chunkSize, cEnd), Ne = cE - cS;
 
       PetscCall(PetscArrayzero(elemVec, chunkSize * totDim));
