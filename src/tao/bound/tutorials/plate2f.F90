@@ -801,7 +801,7 @@ program plate2f
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bmx', bmx, flg, ierr))
   bmy = my/2
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bmy', bmy, flg, ierr))
-  bheight = 0.1
+  bheight = 0.1_PETSC_REAL_KIND
   PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-bheight', bheight, flg, ierr))
 
 ! Calculate any derived values from parameters

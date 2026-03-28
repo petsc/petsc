@@ -380,7 +380,7 @@ program main
   PetscInt its, N
   MatFDColoring fdcoloring
   PetscMPIInt size, rank
-  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
+  PetscReal, parameter :: lambda_min = 0.0_PETSC_REAL_KIND, lambda_max = 6.81_PETSC_REAL_KIND
   ISColoring iscoloring
   PetscBool pc
   integer4 imx, imy

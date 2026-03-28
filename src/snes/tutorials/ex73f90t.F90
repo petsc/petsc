@@ -406,7 +406,7 @@ program main
   PetscInt col(1), low, high, lamlow, lamhigh
   PetscBool flg
   PetscInt nloc, nloclam
-  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
+  PetscReal, parameter :: lambda_min = 0.0_PETSC_REAL_KIND, lambda_max = 6.81_PETSC_REAL_KIND
   type(ex73f90tmodule_type) solver
   PetscScalar, parameter :: one = 1.0
   PetscScalar bval(1), cval(1)

@@ -63,7 +63,7 @@ program ex5f90
   PetscCallA(PetscBagRegisterInt(bag, data%nxc, 56_PETSC_INT_KIND, 'nxc', 'nxc_variable help message', ierr))
   PetscCallA(PetscBagRegisterRealArray(bag, data%rarray, 3_PETSC_INT_KIND, 'rarray', 'rarray help message', ierr))
 !     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
-  svalue = 103.20
+  svalue = 103.20_PETSC_SCALAR_KIND
   PetscCallA(PetscBagRegisterScalar(bag, data%x, svalue, 'x', 'x variable help message', ierr))
   PetscCallA(PetscBagRegisterBool(bag, data%t, PETSC_TRUE, 't', 't boolean help message', ierr))
   PetscCallA(PetscBagRegisterBoolArray(bag, data%tarray, 3_PETSC_INT_KIND, 'tarray', 'tarray help message', ierr))
@@ -79,7 +79,7 @@ program ex5f90
 
   data%nxc = 23
   data%rarray = [-1.0, -2.0, -3.0]
-  data%x = 155.4
+  data%x = 155.4_PETSC_SCALAR_KIND
   data%c = 'a whole new string'
   data%t = PETSC_TRUE
   data%tarray = [PETSC_TRUE, PETSC_FALSE, PETSC_TRUE]
