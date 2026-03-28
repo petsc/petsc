@@ -111,6 +111,7 @@ int main(int argc, char **args)
 
     PetscCall(MatGetFactor(A, MATSOLVERSUPERLU_DIST, MAT_FACTOR_CHOLESKY, &F));
     PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm));
+    PetscCall(MatFactorInfoInitialize(&info));
     PetscCall(MatCholeskyFactorSymbolic(F, A, perm, &info));
     PetscCall(MatCholeskyFactorNumeric(F, A, &info));
 

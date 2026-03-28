@@ -12,7 +12,7 @@ program main
   PetscViewer v
   PetscInt i, j
   PetscInt n, rstart, rend
-  PetscInt, parameter :: zero = 0, one = 1
+  PetscInt, parameter :: one = 1
   PetscBool done
   PetscScalar, pointer :: aa(:)
   PetscInt, pointer :: ia(:), ja(:), icol(:)

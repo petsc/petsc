@@ -825,18 +825,22 @@ static inline PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, con
     switch (dim) {
     case 1:
       PetscCall(PetscSNPrintf(buf, len, "(%12.3f)", ps2d(coords[0])));
+      break;
     case 2:
       PetscCall(PetscSNPrintf(buf, len, "(%12.3f, %12.3f)", ps2d(coords[0]), ps2d(coords[1])));
-    case 3:
+      break;
+    default:
       PetscCall(PetscSNPrintf(buf, len, "(%12.3f, %12.3f, %12.3f)", ps2d(coords[0]), ps2d(coords[1]), ps2d(coords[2])));
     }
   } else {
     switch (dim) {
     case 1:
       PetscCall(PetscSNPrintf(buf, len, "(%12.6f)", ps2d(coords[0])));
+      break;
     case 2:
       PetscCall(PetscSNPrintf(buf, len, "(%12.6f, %12.6f)", ps2d(coords[0]), ps2d(coords[1])));
-    case 3:
+      break;
+    default:
       PetscCall(PetscSNPrintf(buf, len, "(%12.6f, %12.6f, %12.6f)", ps2d(coords[0]), ps2d(coords[1]), ps2d(coords[2])));
     }
   }

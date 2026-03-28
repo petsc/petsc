@@ -208,6 +208,7 @@ int main(int argc, char **args)
       /* Get memory estimates from MUMPS' MatLUFactorSymbolic(), e.g. INFOG(16), INFOG(17).
          KSPSetUp() below will do nothing inside MatLUFactorSymbolic() */
       MatFactorInfo info;
+      PetscCall(MatFactorInfoInitialize(&info));
       PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, &info));
       flg = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-print_mumps_memory", &flg, NULL));
