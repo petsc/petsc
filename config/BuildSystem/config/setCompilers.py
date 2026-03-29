@@ -852,7 +852,7 @@ class Configure(config.base.Configure):
       return ''.join((includes11(),textwrap.dedent(
         """
         #include <type_traits> // c++14 includes
-        template<class T> constexpr T pi = T(3.1415926535897932385L);  // variable template
+        template<class T> constexpr T pi = T(3.1415926535897932385L); // variable template
         """
         )))
 
@@ -906,7 +906,8 @@ class Configure(config.base.Configure):
         typedef std::integral_constant<Shapes,Shapes::SQUARE> squareShape;
         static_assert(std::is_same_v<squareShape,squareShape>); // static_assert with no message since c++17
         auto val = nodiscardFunc();ignore(val);
-        const auto [ab, cd, ef] = foobar(); // structured binding
+        // structured binding
+        const auto [ab, cd, ef] = foobar();
         """
       )))
 
@@ -931,7 +932,8 @@ class Configure(config.base.Configure):
         void f_concept(T) {}
         void abbrev_f1(auto); // same as template<class T> void abbrev_f1(T)
         void abbrev_f4(const std::destructible auto*, std::floating_point auto&); // same as template<C3 T, C4 U> void abbrev_f4(const T*, U&);
-        template<> void abbrev_f4<int>(const int*, const double&); // specialization of abbrev_f4<int, const double> (since C++20)
+        // specialization of abbrev_f4<int, const double> (since C++20)
+        template<> void abbrev_f4<int>(const int*, const double&);
         """
       )))
 
