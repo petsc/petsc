@@ -157,6 +157,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 {
   PetscFunctionBegin;
+  if (!*vf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscViewerDestroy(&(*vf)->viewer));
   if ((*vf)->data_destroy) PetscCall((*vf)->data_destroy(&(*vf)->data));
   PetscCall(PetscFree(*vf));
