@@ -1421,7 +1421,7 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
       PetscCall(PetscFree4(redund->sbuf_nz, redund->rbuf_nz, redund->rbuf_j, redund->rbuf_a));
     }
 
-    if (redund->subcomm) PetscCall(PetscCommDestroy(&redund->subcomm));
+    PetscCall(PetscCommDestroy(&redund->subcomm));
     PetscCall(PetscFree(redund));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

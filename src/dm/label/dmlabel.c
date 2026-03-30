@@ -522,7 +522,7 @@ PetscErrorCode DMLabelReset(DMLabel label)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   for (v = 0; v < label->numStrata; ++v) {
-    if (label->ht[v]) PetscCall(PetscHSetIDestroy(&label->ht[v]));
+    PetscCall(PetscHSetIDestroy(&label->ht[v]));
     PetscCall(ISDestroy(&label->points[v]));
   }
   label->numStrata = 0;

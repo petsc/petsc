@@ -286,7 +286,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 
   if ((*tao)->ops->convergencedestroy) {
     PetscCall((*(*tao)->ops->convergencedestroy)((*tao)->cnvP));
-    if ((*tao)->jacobian_state_inv) PetscCall(MatDestroy(&(*tao)->jacobian_state_inv));
+    PetscCall(MatDestroy(&(*tao)->jacobian_state_inv));
   }
   PetscCall(VecDestroy(&(*tao)->solution));
   PetscCall(VecDestroy(&(*tao)->gradient));

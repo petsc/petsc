@@ -330,7 +330,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetStepNumber(ts, &steps));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution T after %g hours %" PetscInt_FMT " steps\n", (double)(ftime / 3600), steps));
 
-  if (matfdcoloring) PetscCall(MatFDColoringDestroy(&matfdcoloring));
+  PetscCall(MatFDColoringDestroy(&matfdcoloring));
   if (usermonitor.drawcontours) PetscCall(PetscViewerDestroy(&usermonitor.drawviewer));
   PetscCall(MatDestroy(&J));
   PetscCall(VecDestroy(&T));

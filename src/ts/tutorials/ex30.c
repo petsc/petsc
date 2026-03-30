@@ -2345,8 +2345,8 @@ static PetscErrorCode Run(MPI_Comm comm, AppCtx *ctx)
   if (!ctx->test_restart) PetscCall(PetscLogStagePush(SolveStage));
   PetscCall(TSSolve(ts, NULL));
   if (!ctx->test_restart) PetscCall(PetscLogStagePop());
-  if (ctx->view_vtk_ctx) PetscCall(TSMonitorSolutionVTKDestroy(&ctx->view_vtk_ctx));
-  if (ctx->view_hdf5_ctx) PetscCall(PetscViewerAndFormatDestroy(&ctx->view_hdf5_ctx));
+  PetscCall(TSMonitorSolutionVTKDestroy(&ctx->view_vtk_ctx));
+  PetscCall(PetscViewerAndFormatDestroy(&ctx->view_hdf5_ctx));
   PetscCall(DMDestroy(&ctx->view_dm));
   for (PetscInt i = 0; i < NUM_FIELDS; i++) {
     PetscCall(VecScatterDestroy(&ctx->subsct[i]));

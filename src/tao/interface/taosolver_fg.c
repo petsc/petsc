@@ -306,7 +306,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(res, VEC_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)res));
-  if (tao->ls_res) PetscCall(VecDestroy(&tao->ls_res));
+  PetscCall(VecDestroy(&tao->ls_res));
   tao->ls_res               = res;
   tao->user_lsresP          = ctx;
   tao->ops->computeresidual = func;

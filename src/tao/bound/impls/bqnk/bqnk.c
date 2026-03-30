@@ -9,8 +9,8 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
 
   PetscFunctionBegin;
   /* Alias the LMVM matrix into the TAO hessian */
-  if (tao->hessian) PetscCall(MatDestroy(&tao->hessian));
-  if (tao->hessian_pre) PetscCall(MatDestroy(&tao->hessian_pre));
+  PetscCall(MatDestroy(&tao->hessian));
+  PetscCall(MatDestroy(&tao->hessian_pre));
   PetscCall(PetscObjectReference((PetscObject)bqnk->B));
   tao->hessian = bqnk->B;
   PetscCall(PetscObjectReference((PetscObject)bqnk->B));
@@ -19,11 +19,8 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   if (bqnk->is_spd) {
     gnorm2 = bnk->gnorm * bnk->gnorm;
     if (gnorm2 == 0.0) gnorm2 = PETSC_MACHINE_EPSILON;
-    if (bnk->f == 0.0) {
-      delta = 2.0 / gnorm2;
-    } else {
-      delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
-    }
+    if (bnk->f == 0.0) delta = 2.0 / gnorm2;
+    else delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
     PetscCall(MatLMVMSymBroydenSetDelta(bqnk->B, delta));
   }
   PetscCall(MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient));
@@ -236,7 +233,7 @@ PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
   PetscCheck(flg, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given matrix is not an LMVM matrix");
-  if (bqnk->B) PetscCall(MatDestroy(&bqnk->B));
+  PetscCall(MatDestroy(&bqnk->B));
   PetscCall(PetscObjectReference((PetscObject)B));
   bqnk->B = B;
   PetscFunctionReturn(PETSC_SUCCESS);

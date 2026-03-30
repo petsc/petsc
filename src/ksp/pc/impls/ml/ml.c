@@ -472,12 +472,12 @@ static PetscErrorCode PCReset_ML(PC pc)
 
   if (pc_ml->gridctx) {
     for (level = 0; level < fine_level; level++) {
-      if (pc_ml->gridctx[level].A) PetscCall(MatDestroy(&pc_ml->gridctx[level].A));
-      if (pc_ml->gridctx[level].P) PetscCall(MatDestroy(&pc_ml->gridctx[level].P));
-      if (pc_ml->gridctx[level].R) PetscCall(MatDestroy(&pc_ml->gridctx[level].R));
-      if (pc_ml->gridctx[level].x) PetscCall(VecDestroy(&pc_ml->gridctx[level].x));
-      if (pc_ml->gridctx[level].b) PetscCall(VecDestroy(&pc_ml->gridctx[level].b));
-      if (pc_ml->gridctx[level + 1].r) PetscCall(VecDestroy(&pc_ml->gridctx[level + 1].r));
+      PetscCall(MatDestroy(&pc_ml->gridctx[level].A));
+      PetscCall(MatDestroy(&pc_ml->gridctx[level].P));
+      PetscCall(MatDestroy(&pc_ml->gridctx[level].R));
+      PetscCall(VecDestroy(&pc_ml->gridctx[level].x));
+      PetscCall(VecDestroy(&pc_ml->gridctx[level].b));
+      PetscCall(VecDestroy(&pc_ml->gridctx[level + 1].r));
     }
   }
   PetscCall(PetscFree(pc_ml->gridctx));

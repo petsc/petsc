@@ -3119,7 +3119,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
 
   PetscCall((*patch->resetsolver)(pc));
 
-  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
+  PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
 
   PetscCall(VecDestroy(&patch->localRHS));
   PetscCall(VecDestroy(&patch->localUpdate));
@@ -3390,7 +3390,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   PetscCall(PetscCitationsRegister(PCPatchCitation, &PCPatchcite));
   PetscCall(PetscNew(&patch));
 
-  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
+  PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
   PetscCall(PetscHSetICreate(&patch->subspaces_to_exclude));
 
   patch->classname   = "pc";

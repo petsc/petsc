@@ -345,7 +345,7 @@ PetscErrorCode TSMonitorDMDARayDestroy(PetscCtxRt mctx)
   TSMonitorDMDARayCtx *rayctx = *(TSMonitorDMDARayCtx **)mctx;
 
   PetscFunctionBegin;
-  if (rayctx->lgctx) PetscCall(TSMonitorLGCtxDestroy(&rayctx->lgctx));
+  PetscCall(TSMonitorLGCtxDestroy(&rayctx->lgctx));
   PetscCall(VecDestroy(&rayctx->ray));
   PetscCall(VecScatterDestroy(&rayctx->scatter));
   PetscCall(PetscViewerDestroy(&rayctx->viewer));

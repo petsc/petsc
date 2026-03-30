@@ -2888,7 +2888,7 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
   }
   PetscCall(VecDestroy(&x));
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
-  if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
+  PetscCall(PetscViewerDestroy(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
 
   if (Jnorm) *Jnorm = gnorm;

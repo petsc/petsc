@@ -265,7 +265,7 @@ int main(int argc, char **argv)
   }
 
   if (V_serial && dm_serial) PetscCall(DMRestoreGlobalVector(dm_serial, &V_serial));
-  if (dm_serial) PetscCall(DMDestroy(&dm_serial));
+  PetscCall(DMDestroy(&dm_serial));
   PetscCall(PetscFinalize());
   return 0;
 }

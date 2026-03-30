@@ -254,9 +254,9 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
     PetscCall(KSPSolve(ksp, work_ferhs, matshellctx->uu));
     // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
     PetscCall(MatMult(M_p, matshellctx->uu, ff));
-    if (D) PetscCall(MatDestroy(&D));
+    PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&MtM));
-    if (matshellctx->MpTrans) PetscCall(MatDestroy(&matshellctx->MpTrans));
+    PetscCall(MatDestroy(&matshellctx->MpTrans));
     PetscCall(VecDestroy(&matshellctx->ff));
     PetscCall(VecDestroy(&matshellctx->uu));
     PetscCall(PetscFree(matshellctx));

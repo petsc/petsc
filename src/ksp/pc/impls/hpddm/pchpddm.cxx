@@ -2507,7 +2507,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (overlap == 1 && subdomains && flg) {
                 *subA = A0;
                 sub   = subA;
-                if (uaux) PetscCall(MatDestroy(&uaux));
+                PetscCall(MatDestroy(&uaux));
               } else PetscCall(MatDestroy(&A0));
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
               PetscCall(MatSetVecType(data->aux, h->A[0]->defaultvectype));

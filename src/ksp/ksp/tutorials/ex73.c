@@ -670,9 +670,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
   }
   PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD, &commlist[ndecomps - 1], NULL));
 
-  for (k = 0; k < ncoarsen; k++) {
-    if (pscommlist[k]) PetscCall(PetscSubcommDestroy(&pscommlist[k]));
-  }
+  for (k = 0; k < ncoarsen; k++) PetscCall(PetscSubcommDestroy(&pscommlist[k]));
 
   nx = 17;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &nx, NULL));

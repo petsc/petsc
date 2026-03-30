@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
   /* Free data structures */
   PetscCall(MatDestroy(&tmat));
-  if (mat) PetscCall(MatDestroy(&mat));
+  PetscCall(MatDestroy(&mat));
 
   PetscCall(PetscFinalize());
   return 0;

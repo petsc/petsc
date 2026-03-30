@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   PetscCall(VecAXPY(gpcg->B, -1.0, gpcg->Work));
   PetscCall(VecDot(gpcg->B, tao->solution, &xtb));
   gpcg->c = f - xtHx / 2.0 - xtb;
-  if (gpcg->Free_Local) PetscCall(ISDestroy(&gpcg->Free_Local));
+  PetscCall(ISDestroy(&gpcg->Free_Local));
   PetscCall(VecWhichInactive(tao->XL, tao->solution, tao->gradient, tao->XU, PETSC_TRUE, &gpcg->Free_Local));
 
   /* Project the gradient and calculate the norm */

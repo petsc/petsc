@@ -54,7 +54,7 @@ static PetscErrorCode SNESReset_NASM(SNES snes)
   PetscCall(PetscFree(nasm->y));
   PetscCall(PetscFree(nasm->b));
 
-  if (nasm->xinit) PetscCall(VecDestroy(&nasm->xinit));
+  PetscCall(VecDestroy(&nasm->xinit));
 
   PetscCall(PetscFree(nasm->subsnes));
   PetscCall(PetscFree(nasm->oscatter));

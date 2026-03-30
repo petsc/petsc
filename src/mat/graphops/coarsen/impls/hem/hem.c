@@ -42,7 +42,7 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
   }
   PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
-  if (ail->mat) PetscCall(MatDestroy(&ail->mat));
+  PetscCall(MatDestroy(&ail->mat));
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -343,7 +343,7 @@ PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat)
 PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
 {
   PetscFunctionBegin;
-  if (ail->mat) PetscCall(MatDestroy(&ail->mat)); //should not happen
+  PetscCall(MatDestroy(&ail->mat)); //should not happen
   ail->mat = a_mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

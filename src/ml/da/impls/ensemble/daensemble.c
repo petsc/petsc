@@ -436,7 +436,7 @@ static PetscErrorCode ApplySqrtTInverse_Cholesky(PetscDA da, Mat U, Mat Y)
   PetscCall(MatDenseRestoreArrayWrite(Y, &y_array));
 
   /* Cleanup temporary identity matrix if created */
-  if (U_identity) PetscCall(MatDestroy(&U_identity));
+  PetscCall(MatDestroy(&U_identity));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

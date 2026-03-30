@@ -830,12 +830,12 @@ static PetscErrorCode PCReset_GASM(PC pc)
     osm->N    = PETSC_DETERMINE;
     osm->nmax = PETSC_DETERMINE;
   }
-  if (osm->pctoouter) PetscCall(VecScatterDestroy(&osm->pctoouter));
-  if (osm->permutationIS) PetscCall(ISDestroy(&osm->permutationIS));
-  if (osm->pcx) PetscCall(VecDestroy(&osm->pcx));
-  if (osm->pcy) PetscCall(VecDestroy(&osm->pcy));
-  if (osm->permutationP) PetscCall(MatDestroy(&osm->permutationP));
-  if (osm->pcmat) PetscCall(MatDestroy(&osm->pcmat));
+  PetscCall(VecScatterDestroy(&osm->pctoouter));
+  PetscCall(ISDestroy(&osm->permutationIS));
+  PetscCall(VecDestroy(&osm->pcx));
+  PetscCall(VecDestroy(&osm->pcy));
+  PetscCall(MatDestroy(&osm->permutationP));
+  PetscCall(MatDestroy(&osm->pcmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

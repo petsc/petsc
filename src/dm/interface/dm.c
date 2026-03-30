@@ -743,7 +743,7 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscCall(MatDestroy(&(*dm)->defaultConstraint.mat));
   PetscCall(PetscSFDestroy(&(*dm)->sf));
   PetscCall(PetscSFDestroy(&(*dm)->sectionSF));
-  if ((*dm)->sfNatural) PetscCall(PetscSFDestroy(&(*dm)->sfNatural));
+  PetscCall(PetscSFDestroy(&(*dm)->sfNatural));
   PetscCall(PetscObjectDereference((PetscObject)(*dm)->sfMigration));
   PetscCall(DMClearAuxiliaryVec(*dm));
   PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
