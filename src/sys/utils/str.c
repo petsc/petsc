@@ -126,7 +126,7 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
 PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
 {
   for (int i = 0; i < argc; ++i) free(args[i]);
-  if (args) free(args);
+  free(args);
   return PETSC_SUCCESS;
 }
 

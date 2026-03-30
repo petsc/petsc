@@ -1944,8 +1944,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(ISCreateStride(PETSC_COMM_SELF, B->rmap->N, 0, 1, &uis));
                 PetscCall(ISSetIdentity(uis));
                 if (!data->is) {
-                  if (C) PetscCall(PetscObjectReference((PetscObject)C));
-                  else PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &C));
+                  if (!C) PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &C));
+                  else PetscCall(PetscObjectReference((PetscObject)C));
                   PetscCall(ISDuplicate(data_00->is, is));
                   PetscCall(MatIncreaseOverlap(A, 1, is, 1));
                   PetscCall(MatSetOption(C, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));

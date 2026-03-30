@@ -2868,7 +2868,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
     for (PetscInt i = 0; i < mesh->periodic.num_face_sfs; i++) PetscCall(ISDestroy(&mesh->periodic.periodic_points[i]));
     PetscCall(PetscFree(mesh->periodic.periodic_points));
   }
-  if (mesh->periodic.transform) PetscCall(PetscFree(mesh->periodic.transform));
+  PetscCall(PetscFree(mesh->periodic.transform));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
   PetscCall(PetscSectionDestroy(&mesh->parentSection));
@@ -2879,7 +2879,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(DMDestroy(&mesh->referenceTree));
   PetscCall(PetscGridHashDestroy(&mesh->lbox));
   PetscCall(PetscFree(mesh->neighbors));
-  if (mesh->metricCtx) PetscCall(PetscFree(mesh->metricCtx));
+  PetscCall(PetscFree(mesh->metricCtx));
   if (mesh->nonempty_comm != MPI_COMM_NULL && mesh->nonempty_comm != MPI_COMM_SELF) PetscCallMPI(MPI_Comm_free(&mesh->nonempty_comm));
   PetscCall(DMPlexTransformDestroy(&mesh->transform));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */

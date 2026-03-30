@@ -151,7 +151,7 @@ PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat
   if (residual) mglevels[l]->residual = residual;
   if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidualDefault;
   mglevels[l]->matresidual = PCMGMatResidualDefault;
-  if (mat) PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&mglevels[l]->A));
   mglevels[l]->A = mat;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -185,7 +185,7 @@ PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*resi
   if (residualt) mglevels[l]->residualtranspose = residualt;
   if (!mglevels[l]->residualtranspose) mglevels[l]->residualtranspose = PCMGResidualTransposeDefault;
   mglevels[l]->matresidualtranspose = PCMGMatResidualTransposeDefault;
-  if (mat) PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&mglevels[l]->A));
   mglevels[l]->A = mat;
   PetscFunctionReturn(PETSC_SUCCESS);

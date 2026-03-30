@@ -697,9 +697,9 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     }
   }
 
-  if (left) PetscCall(PetscObjectReference((PetscObject)left));
-  if (right) PetscCall(PetscObjectReference((PetscObject)right));
-  if (dshift) PetscCall(PetscObjectReference((PetscObject)dshift));
+  PetscCall(PetscObjectReference((PetscObject)left));
+  PetscCall(PetscObjectReference((PetscObject)right));
+  PetscCall(PetscObjectReference((PetscObject)dshift));
 
   PetscCall(MatHeaderReplace(mat, &tmat));
 

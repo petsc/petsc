@@ -106,7 +106,7 @@ static PetscErrorCode PetscViewerFileSetName_ExodusII(PetscViewer viewer, const 
     PetscCallExternal(ex_close, exo->exoid);
     exo->exoid = -1;
   }
-  if (exo->filename) PetscCall(PetscFree(exo->filename));
+  PetscCall(PetscFree(exo->filename));
   PetscCall(PetscStrallocpy(name, &exo->filename));
   switch (exo->btype) {
   case FILE_MODE_READ:

@@ -588,16 +588,16 @@ PetscErrorCode PetscDALETKFDestroyLocalization_Kokkos(PetscDA_LETKF *impl)
 
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || defined(KOKKOS_ENABLE_SYCL)
   #if defined(KOKKOS_ENABLE_CUDA)
-    if (work->d_A_contig) PetscCallCUDA(cudaFree(work->d_A_contig));
-    if (work->d_W_contig) PetscCallCUDA(cudaFree(work->d_W_contig));
-    if (work->d_work) PetscCallCUDA(cudaFree(work->d_work));
-    if (work->d_info) PetscCallCUDA(cudaFree(work->d_info));
+    PetscCallCUDA(cudaFree(work->d_A_contig));
+    PetscCallCUDA(cudaFree(work->d_W_contig));
+    PetscCallCUDA(cudaFree(work->d_work));
+    PetscCallCUDA(cudaFree(work->d_info));
     if (work->syevj_params) cusolverDnDestroySyevjInfo(work->syevj_params);
   #elif defined(KOKKOS_ENABLE_HIP)
-    if (work->d_A_contig) PetscCallHIP(hipFree(work->d_A_contig));
-    if (work->d_W_contig) PetscCallHIP(hipFree(work->d_W_contig));
-    if (work->d_work) PetscCallHIP(hipFree(work->d_work));
-    if (work->d_info) PetscCallHIP(hipFree(work->d_info));
+    PetscCallHIP(hipFree(work->d_A_contig));
+    PetscCallHIP(hipFree(work->d_W_contig));
+    PetscCallHIP(hipFree(work->d_work));
+    PetscCallHIP(hipFree(work->d_info));
   #elif defined(KOKKOS_ENABLE_SYCL)
     if (impl->solver_handle) {
       sycl::queue *q = static_cast<sycl::queue *>(impl->solver_handle);
@@ -890,17 +890,17 @@ PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA da, PetscDA_LETKF *impl, Pe
   if (eigen_work->max_chunk_size < chunk_size || eigen_work->m != m || eigen_work->n_obs_vertex != n_obs_vertex_copy) {
     /* Free old device workspace if exists */
 #if defined(KOKKOS_ENABLE_CUDA)
-    if (eigen_work->d_work) PetscCallCUDA(cudaFree(eigen_work->d_work));
-    if (eigen_work->d_info) PetscCallCUDA(cudaFree(eigen_work->d_info));
-    if (eigen_work->d_A_contig) PetscCallCUDA(cudaFree(eigen_work->d_A_contig));
-    if (eigen_work->d_W_contig) PetscCallCUDA(cudaFree(eigen_work->d_W_contig));
+    PetscCallCUDA(cudaFree(eigen_work->d_work));
+    PetscCallCUDA(cudaFree(eigen_work->d_info));
+    PetscCallCUDA(cudaFree(eigen_work->d_A_contig));
+    PetscCallCUDA(cudaFree(eigen_work->d_W_contig));
     if (eigen_work->syevj_params) cusolverDnDestroySyevjInfo(eigen_work->syevj_params);
     eigen_work->syevj_params = nullptr;
 #elif defined(KOKKOS_ENABLE_HIP)
-    if (eigen_work->d_work) PetscCallHIP(hipFree(eigen_work->d_work));
-    if (eigen_work->d_info) PetscCallHIP(hipFree(eigen_work->d_info));
-    if (eigen_work->d_A_contig) PetscCallHIP(hipFree(eigen_work->d_A_contig));
-    if (eigen_work->d_W_contig) PetscCallHIP(hipFree(eigen_work->d_W_contig));
+    PetscCallHIP(hipFree(eigen_work->d_work));
+    PetscCallHIP(hipFree(eigen_work->d_info));
+    PetscCallHIP(hipFree(eigen_work->d_A_contig));
+    PetscCallHIP(hipFree(eigen_work->d_W_contig));
 #elif defined(KOKKOS_ENABLE_SYCL)
     if (eigen_work->d_work) sycl::free(eigen_work->d_work, *device_handle);
     if (eigen_work->d_info) sycl::free(eigen_work->d_info, *device_handle);

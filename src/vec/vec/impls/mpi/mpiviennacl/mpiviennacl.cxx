@@ -127,7 +127,7 @@ static PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
     vw->localrep->ops[0] = w->localrep->ops[0];
     PetscCall(VecRestoreArray(*v, &array));
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
+    PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
   }
 
   /* New vector should inherit stashing property of parent */

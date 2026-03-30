@@ -26,10 +26,10 @@ static PetscErrorCode MatSeqSELLHIP_Destroy(Mat_SeqSELLHIP **hipstruct)
 {
   PetscFunctionBegin;
   if (*hipstruct) {
-    if ((*hipstruct)->colidx) PetscCallHIP(hipFree((*hipstruct)->colidx));
-    if ((*hipstruct)->val) PetscCallHIP(hipFree((*hipstruct)->val));
-    if ((*hipstruct)->sliidx) PetscCallHIP(hipFree((*hipstruct)->sliidx));
-    if ((*hipstruct)->chunk_slice_map) PetscCallHIP(hipFree((*hipstruct)->chunk_slice_map));
+    PetscCallHIP(hipFree((*hipstruct)->colidx));
+    PetscCallHIP(hipFree((*hipstruct)->val));
+    PetscCallHIP(hipFree((*hipstruct)->sliidx));
+    PetscCallHIP(hipFree((*hipstruct)->chunk_slice_map));
     PetscCall(PetscFree(*hipstruct));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -48,10 +48,10 @@ static PetscErrorCode MatSeqSELLHIPCopyToGPU(Mat A)
       PetscCallHIP(hipMemcpy(hipstruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), hipMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
     } else {
-      if (hipstruct->colidx) PetscCallHIP(hipFree(hipstruct->colidx));
-      if (hipstruct->val) PetscCallHIP(hipFree(hipstruct->val));
-      if (hipstruct->sliidx) PetscCallHIP(hipFree(hipstruct->sliidx));
-      if (hipstruct->chunk_slice_map) PetscCallHIP(hipFree(hipstruct->chunk_slice_map));
+      PetscCallHIP(hipFree(hipstruct->colidx));
+      PetscCallHIP(hipFree(hipstruct->val));
+      PetscCallHIP(hipFree(hipstruct->sliidx));
+      PetscCallHIP(hipFree(hipstruct->chunk_slice_map));
       hipstruct->maxallocmat  = a->maxallocmat;
       hipstruct->totalentries = a->sliidx[a->totalslices];
       hipstruct->totalslices  = a->totalslices;

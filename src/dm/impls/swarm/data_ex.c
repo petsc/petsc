@@ -162,17 +162,17 @@ PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
 {
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&d->comm));
-  if (d->neighbour_procs) PetscCall(PetscFree(d->neighbour_procs));
-  if (d->messages_to_be_sent) PetscCall(PetscFree(d->messages_to_be_sent));
-  if (d->message_offsets) PetscCall(PetscFree(d->message_offsets));
-  if (d->messages_to_be_recvieved) PetscCall(PetscFree(d->messages_to_be_recvieved));
-  if (d->send_message) PetscCall(PetscFree(d->send_message));
-  if (d->recv_message) PetscCall(PetscFree(d->recv_message));
-  if (d->pack_cnt) PetscCall(PetscFree(d->pack_cnt));
-  if (d->send_tags) PetscCall(PetscFree(d->send_tags));
-  if (d->recv_tags) PetscCall(PetscFree(d->recv_tags));
-  if (d->_stats) PetscCall(PetscFree(d->_stats));
-  if (d->_requests) PetscCall(PetscFree(d->_requests));
+  PetscCall(PetscFree(d->neighbour_procs));
+  PetscCall(PetscFree(d->messages_to_be_sent));
+  PetscCall(PetscFree(d->message_offsets));
+  PetscCall(PetscFree(d->messages_to_be_recvieved));
+  PetscCall(PetscFree(d->send_message));
+  PetscCall(PetscFree(d->recv_message));
+  PetscCall(PetscFree(d->pack_cnt));
+  PetscCall(PetscFree(d->send_tags));
+  PetscCall(PetscFree(d->recv_tags));
+  PetscCall(PetscFree(d->_stats));
+  PetscCall(PetscFree(d->_requests));
   PetscCall(PetscFree(d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

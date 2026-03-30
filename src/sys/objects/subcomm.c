@@ -261,7 +261,7 @@ PetscErrorCode PetscSubcommDestroy(PetscSubcomm *psubcomm)
   PetscCall(PetscCommDestroy(&(*psubcomm)->dupparent));
   PetscCall(PetscCommDestroy(&(*psubcomm)->child));
   PetscCall(PetscFree((*psubcomm)->subsize));
-  if ((*psubcomm)->subcommprefix) PetscCall(PetscFree((*psubcomm)->subcommprefix));
+  PetscCall(PetscFree((*psubcomm)->subcommprefix));
   PetscCall(PetscFree(*psubcomm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

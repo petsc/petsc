@@ -406,7 +406,7 @@ PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
   PetscFunctionBegin;
-  if (patch->sub_mat_type) PetscCall(PetscFree(patch->sub_mat_type));
+  PetscCall(PetscFree(patch->sub_mat_type));
   PetscCall(PetscStrallocpy(sub_mat_type, (char **)&patch->sub_mat_type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -3096,7 +3096,7 @@ PetscErrorCode TaoAddTerm(Tao tao, const char prefix[], PetscReal scale, TaoTerm
     // Empty callback term
     if (!(is_obj || is_objgrad || is_grad)) {
       PetscCall(TaoTermMappingSetData(&tao->objective_term, NULL, scale, term, map));
-      if (params) PetscCall(PetscObjectReference((PetscObject)params));
+      PetscCall(PetscObjectReference((PetscObject)params));
       PetscCall(VecDestroy(&tao->objective_parameters));
       // Empty callback term. Destroy hessians, as they are not needed
       PetscCall(MatDestroy(&tao->hessian));

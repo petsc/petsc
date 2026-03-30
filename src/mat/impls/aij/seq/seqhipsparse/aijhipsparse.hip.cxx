@@ -2201,11 +2201,11 @@ static PetscErrorCode MatProductCtxDestroy_MatMatHipsparse(PetscCtxRt data)
   if (mmdata->matCDescr) PetscCallHIPSPARSE(hipsparseDestroyDnMat(mmdata->matCDescr));
   if (mmdata->spgemmDesc) PetscCallHIPSPARSE(hipsparseSpGEMM_destroyDescr(mmdata->spgemmDesc));
 #if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
-  if (mmdata->dBuffer4) PetscCallHIP(hipFree(mmdata->dBuffer4));
-  if (mmdata->dBuffer5) PetscCallHIP(hipFree(mmdata->dBuffer5));
+  PetscCallHIP(hipFree(mmdata->dBuffer4));
+  PetscCallHIP(hipFree(mmdata->dBuffer5));
 #endif
-  if (mmdata->mmBuffer) PetscCallHIP(hipFree(mmdata->mmBuffer));
-  if (mmdata->mmBuffer2) PetscCallHIP(hipFree(mmdata->mmBuffer2));
+  PetscCallHIP(hipFree(mmdata->mmBuffer));
+  PetscCallHIP(hipFree(mmdata->mmBuffer2));
   PetscCall(MatDestroy(&mmdata->X));
   PetscCall(PetscFree(*(void **)data));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3587,9 +3587,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSETr
     if ((*trifactor)->descr) PetscCallHIPSPARSE(hipsparseDestroyMatDescr((*trifactor)->descr));
     if ((*trifactor)->solveInfo) PetscCallHIPSPARSE(hipsparseDestroyCsrsvInfo((*trifactor)->solveInfo));
     PetscCall(CsrMatrix_Destroy(&(*trifactor)->csrMat));
-    if ((*trifactor)->solveBuffer) PetscCallHIP(hipFree((*trifactor)->solveBuffer));
-    if ((*trifactor)->AA_h) PetscCallHIP(hipHostFree((*trifactor)->AA_h));
-    if ((*trifactor)->csr2cscBuffer) PetscCallHIP(hipFree((*trifactor)->csr2cscBuffer));
+    PetscCallHIP(hipFree((*trifactor)->solveBuffer));
+    PetscCallHIP(hipHostFree((*trifactor)->AA_h));
+    PetscCallHIP(hipFree((*trifactor)->csr2cscBuffer));
     PetscCall(PetscFree(*trifactor));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3612,9 +3612,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSEMu
     }
     if ((*matstruct)->descr) PetscCallHIPSPARSE(hipsparseDestroyMatDescr((*matstruct)->descr));
     delete (*matstruct)->cprowIndices;
-    if ((*matstruct)->alpha_one) PetscCallHIP(hipFree((*matstruct)->alpha_one));
-    if ((*matstruct)->beta_zero) PetscCallHIP(hipFree((*matstruct)->beta_zero));
-    if ((*matstruct)->beta_one) PetscCallHIP(hipFree((*matstruct)->beta_one));
+    PetscCallHIP(hipFree((*matstruct)->alpha_one));
+    PetscCallHIP(hipFree((*matstruct)->beta_zero));
+    PetscCallHIP(hipFree((*matstruct)->beta_one));
 
     Mat_SeqAIJHIPSPARSEMultStruct *mdata = *matstruct;
     if (mdata->matDescr) PetscCallHIPSPARSE(hipsparseDestroySpMat(mdata->matDescr));

@@ -785,7 +785,7 @@ PetscErrorCode test_hierarchy(void)
       UserContext *ctx = NULL;
 
       PetscCall(DMGetApplicationContext(first, &ctx));
-      if (ctx) PetscCall(PetscFree(ctx));
+      PetscCall(PetscFree(ctx));
       PetscCall(DMSetApplicationContext(first, NULL));
     }
     for (k = 1; k < nref; k++) {
@@ -886,7 +886,7 @@ PetscErrorCode test_mg(void)
       UserContext *ctx = NULL;
 
       PetscCall(DMGetApplicationContext(first, &ctx));
-      if (ctx) PetscCall(PetscFree(ctx));
+      PetscCall(PetscFree(ctx));
       PetscCall(DMSetApplicationContext(first, NULL));
     }
     for (k = 1; k < nref; k++) {

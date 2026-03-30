@@ -264,7 +264,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         }
         osm->ksp[i] = ksp;
       }
-      if (domain_dm) PetscCall(PetscFree(domain_dm));
+      PetscCall(PetscFree(domain_dm));
     }
 
     PetscCall(ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis));
@@ -666,7 +666,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
       PetscCall(VecDestroy(&osm->y[i]));
     }
     PetscCall(PetscFree(osm->lrestriction));
-    if (osm->lprolongation) PetscCall(PetscFree(osm->lprolongation));
+    PetscCall(PetscFree(osm->lprolongation));
     PetscCall(PetscFree(osm->x));
     PetscCall(PetscFree(osm->y));
   }

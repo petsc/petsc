@@ -438,8 +438,8 @@ static PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
 
   PetscFunctionBegin;
-  if (hpart->coarseparttype) PetscCall(PetscFree(hpart->coarseparttype));
-  if (hpart->fineparttype) PetscCall(PetscFree(hpart->fineparttype));
+  PetscCall(PetscFree(hpart->coarseparttype));
+  PetscCall(PetscFree(hpart->fineparttype));
   PetscCall(ISDestroy(&hpart->fineparts));
   PetscCall(ISDestroy(&hpart->coarseparts));
   PetscCall(MatPartitioningDestroy(&hpart->coarseMatPart));

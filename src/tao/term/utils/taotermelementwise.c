@@ -13,7 +13,7 @@ PETSC_INTERN PetscErrorCode TaoTermDestroy_ElementwiseDivergence_Internal(TaoTer
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&term->parameters_factory));
-  if (term->parameters_factory_orig) PetscCall(PetscObjectReference((PetscObject)term->parameters_factory_orig));
+  PetscCall(PetscObjectReference((PetscObject)term->parameters_factory_orig));
   term->parameters_factory = term->parameters_factory_orig;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1896,8 +1896,8 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
     } else {
       PetscCall(PetscObjectQuery((PetscObject)*M, "_MatIS_IS_XAIJ_irows", (PetscObject *)&irows));
       PetscCall(PetscObjectQuery((PetscObject)*M, "_MatIS_IS_XAIJ_icols", (PetscObject *)&icols));
-      if (irows) PetscCall(PetscObjectReference((PetscObject)irows));
-      if (icols) PetscCall(PetscObjectReference((PetscObject)icols));
+      PetscCall(PetscObjectReference((PetscObject)irows));
+      PetscCall(PetscObjectReference((PetscObject)icols));
     }
     if (!irows || !icols) {
       PetscCall(ISDestroy(&icols));

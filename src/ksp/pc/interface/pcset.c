@@ -182,7 +182,7 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (dm) PetscCall(PetscObjectReference((PetscObject)dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMDestroy(&pc->dm));
   pc->dm = dm;
   PetscFunctionReturn(PETSC_SUCCESS);

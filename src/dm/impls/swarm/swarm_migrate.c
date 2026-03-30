@@ -655,9 +655,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
     PetscCall(DMSwarmDataBucketInsertPackedArray(swarm->db, npoints + p, data_p));
   }
   /* Release memory */
-  for (PetscMPIInt r = 0; r < size; r++) {
-    if (collectlist[r]) PetscCall(PetscFree(collectlist[r]));
-  }
+  for (PetscMPIInt r = 0; r < size; r++) PetscCall(PetscFree(collectlist[r]));
   PetscCall(PetscFree(collectlist));
   PetscCall(PetscFree(n2collect));
   PetscCall(PetscFree(ctxlist));

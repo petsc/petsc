@@ -40,10 +40,10 @@ PetscErrorCode VecDuplicateWithArray_MPI(Vec win, const PetscScalar *array, Vec 
     vw->localrep->ops[0] = w->localrep->ops[0];
 
     vw->localupdate = w->localupdate;
-    if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
+    PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
 
     vw->ghost = w->ghost;
-    if (vw->ghost) PetscCall(PetscObjectReference((PetscObject)vw->ghost));
+    PetscCall(PetscObjectReference((PetscObject)vw->ghost));
   }
 
   /* New vector should inherit stashing property of parent */

@@ -712,7 +712,7 @@ static PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *
   PetscFunctionBegin;
   PetscCall(MatNestFindSubMat(A, &vs->islocal, isrow, iscol, &sub));
   /* We allow the submatrix to be NULL, perhaps it would be better for the user to return an empty matrix instead */
-  if (sub) PetscCall(PetscObjectReference((PetscObject)sub));
+  PetscCall(PetscObjectReference((PetscObject)sub));
   *B = sub;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

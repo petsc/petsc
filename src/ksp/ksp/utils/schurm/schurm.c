@@ -385,7 +385,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   PetscCall(PetscObjectReference((PetscObject)Ap00));
   PetscCall(PetscObjectReference((PetscObject)A01));
   PetscCall(PetscObjectReference((PetscObject)A10));
-  if (A11) PetscCall(PetscObjectReference((PetscObject)A11));
+  PetscCall(PetscObjectReference((PetscObject)A11));
 
   PetscCall(MatDestroy(&Na->A));
   PetscCall(MatDestroy(&Na->Ap));

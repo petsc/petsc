@@ -571,7 +571,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionName(PetscViewer viewer, const char *na
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id));
 
   PetscCallCGNSRead(cg_sol_info(cgv->file_num, cgv->base, cgv->zone, sol_id, buffer, &gridloc), viewer, 0);
-  if (cgv->solution_name) PetscCall(PetscFree(cgv->solution_name));
+  PetscCall(PetscFree(cgv->solution_name));
   PetscCall(PetscStrallocpy(buffer, &cgv->solution_name));
   *name = cgv->solution_name;
   PetscFunctionReturn(PETSC_SUCCESS);

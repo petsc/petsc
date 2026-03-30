@@ -9184,7 +9184,7 @@ PetscErrorCode MatSetNullSpace(Mat mat, MatNullSpace nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (nullsp) PetscValidHeaderSpecific(nullsp, MAT_NULLSPACE_CLASSID, 2);
-  if (nullsp) PetscCall(PetscObjectReference((PetscObject)nullsp));
+  PetscCall(PetscObjectReference((PetscObject)nullsp));
   PetscCall(MatNullSpaceDestroy(&mat->nullsp));
   mat->nullsp = nullsp;
   if (mat->symmetric == PETSC_BOOL3_TRUE) PetscCall(MatSetTransposeNullSpace(mat, nullsp));
@@ -9237,7 +9237,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat, MatNullSpace nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (nullsp) PetscValidHeaderSpecific(nullsp, MAT_NULLSPACE_CLASSID, 2);
-  if (nullsp) PetscCall(PetscObjectReference((PetscObject)nullsp));
+  PetscCall(PetscObjectReference((PetscObject)nullsp));
   PetscCall(MatNullSpaceDestroy(&mat->transnullsp));
   mat->transnullsp = nullsp;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -9269,7 +9269,7 @@ PetscErrorCode MatSetNearNullSpace(Mat mat, MatNullSpace nullsp)
   PetscValidType(mat, 1);
   if (nullsp) PetscValidHeaderSpecific(nullsp, MAT_NULLSPACE_CLASSID, 2);
   MatCheckPreallocated(mat, 1);
-  if (nullsp) PetscCall(PetscObjectReference((PetscObject)nullsp));
+  PetscCall(PetscObjectReference((PetscObject)nullsp));
   PetscCall(MatNullSpaceDestroy(&mat->nearnullsp));
   mat->nearnullsp = nullsp;
   PetscFunctionReturn(PETSC_SUCCESS);

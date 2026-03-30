@@ -58,7 +58,7 @@ static PetscErrorCode PetscViewerFileSetName_ADIOS(PetscViewer viewer, const cha
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS *)viewer->data;
 
   PetscFunctionBegin;
-  if (adios->filename) PetscCall(PetscFree(adios->filename));
+  PetscCall(PetscFree(adios->filename));
   PetscCall(PetscStrallocpy(name, &adios->filename));
   /* Create or open the file collectively */
   switch (adios->btype) {

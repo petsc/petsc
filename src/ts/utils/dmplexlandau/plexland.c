@@ -580,7 +580,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   /* clean up */
-  if (cellClosure) PetscCall(PetscFree(cellClosure));
+  PetscCall(PetscFree(cellClosure));
   if (xdata) PetscCall(VecRestoreArrayReadAndMemType(a_X, &xdata));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2290,7 +2290,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
       PetscReal *invJ = (PetscReal *)ctx->SData_d.invJ, *xx = (PetscReal *)ctx->SData_d.x, *yy = (PetscReal *)ctx->SData_d.y, *zz = (PetscReal *)ctx->SData_d.z, *ww = (PetscReal *)ctx->SData_d.w;
       LandauIdx *coo_elem_offsets = (LandauIdx *)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx *)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1] = (LandauIdx(*)[LANDAU_MAX_NQND + 1]) ctx->SData_d.coo_elem_point_offsets;
       PetscCall(PetscFree4(ww, xx, yy, invJ));
-      if (zz) PetscCall(PetscFree(zz));
+      PetscCall(PetscFree(zz));
       if (coo_elem_offsets) PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
       PetscCall(PetscFree4(ctx->SData_d.alpha, ctx->SData_d.beta, ctx->SData_d.invMass, ctx->SData_d.lambdas));
     }

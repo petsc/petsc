@@ -546,7 +546,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
     PetscCall(PetscFree(nitem));
     nitem = item;
   }
-  if ((*bag)->bagprefix) PetscCall(PetscFree((*bag)->bagprefix));
+  PetscCall(PetscFree((*bag)->bagprefix));
   PetscCall(PetscFree(*bag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

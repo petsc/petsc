@@ -184,9 +184,9 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_PCSetup(parms->pc);
 
   /* Allocate two auxiliary vector of length lsize */
-  if (parms->lvec0) PetscCall(PetscFree(parms->lvec0));
+  PetscCall(PetscFree(parms->lvec0));
   PetscCall(PetscMalloc1(lsize, &parms->lvec0));
-  if (parms->lvec1) PetscCall(PetscFree(parms->lvec1));
+  PetscCall(PetscFree(parms->lvec1));
   PetscCall(PetscMalloc1(lsize, &parms->lvec1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -240,8 +240,8 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   if (parms->map) parms_MapFree(&parms->map);
   if (parms->A) parms_MatFree(&parms->A);
   if (parms->pc) parms_PCFree(&parms->pc);
-  if (parms->lvec0) PetscCall(PetscFree(parms->lvec0));
-  if (parms->lvec1) PetscCall(PetscFree(parms->lvec1));
+  PetscCall(PetscFree(parms->lvec0));
+  PetscCall(PetscFree(parms->lvec1));
   PetscCall(PetscFree(pc->data));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, 0));
