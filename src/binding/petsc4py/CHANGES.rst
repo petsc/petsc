@@ -9,6 +9,7 @@ CHANGES: PETSc for Python
 Release 3.25.0
 ==============
 
+- Update to PETSc 3.25 release.
 - Add support for ``TaoTerm``.
 - Add ``TAOTerm.create()``, and ``TAOTerm.destroy()``.
 - Add ``TAOTerm.view()``.
