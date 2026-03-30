@@ -406,7 +406,7 @@ PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
   PetscFunctionBegin;
-  if (patch->sub_mat_type) PetscCall(PetscFree(patch->sub_mat_type));
+  PetscCall(PetscFree(patch->sub_mat_type));
   PetscCall(PetscStrallocpy(sub_mat_type, (char **)&patch->sub_mat_type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3119,7 +3119,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
 
   PetscCall((*patch->resetsolver)(pc));
 
-  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
+  PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
 
   PetscCall(VecDestroy(&patch->localRHS));
   PetscCall(VecDestroy(&patch->localUpdate));
@@ -3390,7 +3390,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   PetscCall(PetscCitationsRegister(PCPatchCitation, &PCPatchcite));
   PetscCall(PetscNew(&patch));
 
-  if (patch->subspaces_to_exclude) PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
+  PetscCall(PetscHSetIDestroy(&patch->subspaces_to_exclude));
   PetscCall(PetscHSetICreate(&patch->subspaces_to_exclude));
 
   patch->classname   = "pc";

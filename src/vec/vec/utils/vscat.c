@@ -136,7 +136,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   /* Since the indices changed, we must also update the local SF. But we do not do it since
      lsf is rarely used. We just destroy lsf and rebuild it on demand from updated sf.
   */
-  if (sf->vscat.lsf) PetscCall(PetscSFDestroy(&sf->vscat.lsf));
+  PetscCall(PetscSFDestroy(&sf->vscat.lsf));
 
   PetscCall(PetscSFGetType(sf, &type));
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, PETSCSFBASIC, &isbasic));

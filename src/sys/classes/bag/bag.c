@@ -542,11 +542,11 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
   while (nitem) {
     PetscBagItem item = nitem->next;
 
-    if (nitem->list) PetscCall(PetscStrArrayDestroy(&nitem->list));
+    PetscCall(PetscStrArrayDestroy(&nitem->list));
     PetscCall(PetscFree(nitem));
     nitem = item;
   }
-  if ((*bag)->bagprefix) PetscCall(PetscFree((*bag)->bagprefix));
+  PetscCall(PetscFree((*bag)->bagprefix));
   PetscCall(PetscFree(*bag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

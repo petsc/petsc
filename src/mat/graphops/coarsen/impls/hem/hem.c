@@ -40,9 +40,9 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
     n = n->next;
     PetscCall(PetscFree(lstn));
   }
-  if (ail->pool_list.array) PetscCall(PetscFree(ail->pool_list.array));
+  PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
-  if (ail->mat) PetscCall(MatDestroy(&ail->mat));
+  PetscCall(MatDestroy(&ail->mat));
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -343,7 +343,7 @@ PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat)
 PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
 {
   PetscFunctionBegin;
-  if (ail->mat) PetscCall(MatDestroy(&ail->mat)); //should not happen
+  PetscCall(MatDestroy(&ail->mat)); //should not happen
   ail->mat = a_mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -869,7 +869,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
 
             PetscCallMPI(MPI_Get_count(&status, MPIU_INT, &rcount));
             if (rcount > rbuff_sz) {
-              if (rbuff) PetscCall(PetscFree(rbuff));
+              PetscCall(PetscFree(rbuff));
               PetscCall(PetscMalloc1(rcount, &rbuff));
               rbuff_sz = rcount;
             }
@@ -932,7 +932,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           PetscCallMPI(MPI_Probe(comm_procs[proc_idx] /* MPI_ANY_SOURCE */, tag2, comm, &status));
           PetscCallMPI(MPI_Get_count(&status, MPIU_INT, &rcount));
           if (rcount > rbuff_sz) {
-            if (rbuff) PetscCall(PetscFree(rbuff));
+            PetscCall(PetscFree(rbuff));
             PetscCall(PetscMalloc1(rcount, &rbuff));
             rbuff_sz = rcount;
           }

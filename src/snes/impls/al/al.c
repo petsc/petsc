@@ -187,6 +187,7 @@ PetscErrorCode SNESNewtonALSetDiagonalScaling(SNES snes, Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (v) PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscTryMethod(snes, "SNESNewtonALSetDiagonalScaling_C", (SNES, Vec), (snes, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -196,7 +197,7 @@ static PetscErrorCode SNESNewtonALSetDiagonalScaling_NEWTONAL(SNES snes, Vec v)
   SNES_NEWTONAL *al = (SNES_NEWTONAL *)snes->data;
 
   PetscFunctionBegin;
-  if (v) PetscCall(PetscObjectReference((PetscObject)v));
+  PetscCall(PetscObjectReference((PetscObject)v));
   PetscCall(MatDestroy(&al->mat_diag_scaling));
   if (v) {
     PetscCall(MatCreateDiagonal(v, &al->mat_diag_scaling));

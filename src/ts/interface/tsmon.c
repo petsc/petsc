@@ -953,6 +953,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u
 PetscErrorCode TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *ctx)
 {
   PetscFunctionBegin;
+  if (!*ctx) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*ctx)->filenametemplate));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);

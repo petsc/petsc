@@ -288,7 +288,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscFunctionBegin;
   PetscCall(PetscObjectSAWsViewOff(v));
   PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
-  if (vs->array_allocated) PetscCall(PetscFree(vs->array_allocated));
+  PetscCall(PetscFree(vs->array_allocated));
   PetscCall(PetscFree(vs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

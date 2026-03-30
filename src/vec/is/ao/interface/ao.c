@@ -453,14 +453,17 @@ PetscErrorCode AOSetFromOptions(AO ao)
 PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
 {
   PetscFunctionBegin;
+  if (isapp) PetscValidHeaderSpecific(isapp, IS_CLASSID, 2);
   if (ispetsc) {
     PetscInt napp, npetsc;
+
+    PetscValidHeaderSpecific(ispetsc, IS_CLASSID, 3);
     PetscCall(ISGetLocalSize(isapp, &napp));
     PetscCall(ISGetLocalSize(ispetsc, &npetsc));
     PetscCheck(napp == npetsc, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "napp %" PetscInt_FMT " != npetsc %" PetscInt_FMT ". Local IS lengths must match", napp, npetsc);
   }
-  if (isapp) PetscCall(PetscObjectReference((PetscObject)isapp));
-  if (ispetsc) PetscCall(PetscObjectReference((PetscObject)ispetsc));
+  PetscCall(PetscObjectReference((PetscObject)isapp));
+  PetscCall(PetscObjectReference((PetscObject)ispetsc));
   PetscCall(ISDestroy(&ao->isapp));
   PetscCall(ISDestroy(&ao->ispetsc));
   ao->isapp   = isapp;

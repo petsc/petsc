@@ -239,7 +239,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   dmmoab = (DM_Moab *)dm->data;
   PetscCheck(!(field < 0) && !(field >= dmmoab->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
 
-  if (dmmoab->fieldNames[field]) PetscCall(PetscFree(dmmoab->fieldNames[field]));
+  PetscCall(PetscFree(dmmoab->fieldNames[field]));
   PetscCall(PetscStrallocpy(fieldName, (char **)&dmmoab->fieldNames[field]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -156,6 +156,10 @@ checkbadSource:
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
 	-@echo "----- Unneeded parentheses [!&~*](foo[->|.]bar) --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\-\-|\+\+|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Useless check before Petsc(Free|Dereference|Reference)() -----" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'if \(([^=;, ]+)\) PetscCall(CUDA|HIP)?\((Petsc|hip|cuda)(Free\(|Object(Der|R)eference\(\(PetscObject\))\1\)\);' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Useless check before Destroy() -------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'if \(([^=;, ]+)\) PetscCall\([a-zA-Z_]+Destroy\(\&\1\)\);' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Use PetscSafePointerPlusOffset(ptr, n) instead of ptr ? ptr + n : NULL" >> checkbadSource.out
 	-@git --no-pager grep -n -Po ' ([^()\ ]+) \? (?1) \+ (.)* : NULL' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Wrong PETSc capitalization -----------------------------------" >> checkbadSource.out
@@ -182,7 +186,7 @@ checkbadSource:
 	-@git ls-files *.cpp >> checkbadSource.out;true
 	-@echo "----- Fortran: use of dble -----------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n "dble(" -- ${GITFSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 44` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 46` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

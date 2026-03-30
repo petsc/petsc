@@ -2832,8 +2832,8 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
     PetscCall(PetscFree2(u, a));
     PetscCall(ISRestoreIndices(pointIS, &points));
   }
-  if (plex) PetscCall(DMDestroy(&plex));
-  if (plexA) PetscCall(DMDestroy(&plexA));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(DMDestroy(&plexA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6103,8 +6103,8 @@ PetscErrorCode DMPlexComputeBdJacobianSingleByLabel(DM dm, PetscWeakForm wf, DML
     PetscCall(ISDestroy(&pointIS));
     PetscCall(PetscFree5(u, u_t, elemMat, elemMatP, a));
   }
-  if (plex) PetscCall(DMDestroy(&plex));
-  if (plexA) PetscCall(DMDestroy(&plexA));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(DMDestroy(&plexA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

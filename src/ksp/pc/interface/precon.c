@@ -1289,9 +1289,9 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
   }
 
   /* reference first in case the matrices are the same */
-  if (Amat) PetscCall(PetscObjectReference((PetscObject)Amat));
+  PetscCall(PetscObjectReference((PetscObject)Amat));
   PetscCall(MatDestroy(&pc->mat));
-  if (Pmat) PetscCall(PetscObjectReference((PetscObject)Pmat));
+  PetscCall(PetscObjectReference((PetscObject)Pmat));
   PetscCall(MatDestroy(&pc->pmat));
   pc->mat  = Amat;
   pc->pmat = Pmat;

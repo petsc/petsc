@@ -1033,7 +1033,7 @@ static PetscErrorCode TSDestroy_GLLE(TS ts)
     PetscCall(DMCoarsenHookRemove(ts->dm, DMCoarsenHook_TSGLLE, DMRestrictHook_TSGLLE, ts));
     PetscCall(DMSubDomainHookRemove(ts->dm, DMSubDomainHook_TSGLLE, DMSubDomainRestrictHook_TSGLLE, ts));
   }
-  if (gl->adapt) PetscCall(TSGLLEAdaptDestroy(&gl->adapt));
+  PetscCall(TSGLLEAdaptDestroy(&gl->adapt));
   if (gl->Destroy) PetscCall((*gl->Destroy)(gl));
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSGLLESetType_C", NULL));

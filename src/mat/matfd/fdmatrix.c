@@ -508,7 +508,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
     PetscCall(PetscFree(color->matentry));
   }
   PetscCall(PetscFree(color->dy));
-  if (color->vscale) PetscCall(VecDestroy(&color->vscale));
+  PetscCall(VecDestroy(&color->vscale));
   PetscCall(VecDestroy(&color->w1));
   PetscCall(VecDestroy(&color->w2));
   PetscCall(VecDestroy(&color->w3));

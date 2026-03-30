@@ -176,7 +176,7 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
     PetscCall(VecDestroy(&lmP->D));
   }
   PetscCall(MatDestroy(&lmP->M));
-  if (lmP->H0) PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
+  PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

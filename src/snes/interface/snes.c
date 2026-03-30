@@ -791,8 +791,8 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     J = snes->jacobian;
     PetscCall(DMGetDS(dm, &prob));
     if (prob) PetscCall(PetscDSHasJacobianPreconditioner(prob, &hasPrec));
-    if (J) PetscCall(PetscObjectReference((PetscObject)J));
-    else if (hasPrec) PetscCall(DMCreateMatrix(snes->dm, &J));
+    if (!J && hasPrec) PetscCall(DMCreateMatrix(snes->dm, &J));
+    else PetscCall(PetscObjectReference((PetscObject)J));
     PetscCall(DMCreateMatrix(snes->dm, &B));
     PetscCall(SNESSetJacobian(snes, J ? J : B, B, NULL, NULL));
     PetscCall(MatDestroy(&J));
@@ -1766,7 +1766,7 @@ PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 2);
   PetscCheckSameComm(snes, 1, ksp, 2);
   PetscCall(PetscObjectReference((PetscObject)ksp));
-  if (snes->ksp) PetscCall(PetscObjectDereference((PetscObject)snes->ksp));
+  PetscCall(PetscObjectDereference((PetscObject)snes->ksp));
   snes->ksp = ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2888,7 +2888,7 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
   }
   PetscCall(VecDestroy(&x));
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
-  if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
+  PetscCall(PetscViewerDestroy(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
 
   if (Jnorm) *Jnorm = gnorm;
@@ -4853,7 +4853,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     PetscCall(SNESGetDM(snes, &dm));
 
     /* set affine vector if provided */
-    if (b) PetscCall(PetscObjectReference((PetscObject)b));
+    PetscCall(PetscObjectReference((PetscObject)b));
     PetscCall(VecDestroy(&snes->vec_rhs));
     snes->vec_rhs = b;
 

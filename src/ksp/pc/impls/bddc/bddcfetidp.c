@@ -215,7 +215,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BB));
 
     PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc, "__KSPFETIDP_flip", (PetscObject *)&fetidpmat_ctx->rhs_flip));
-    if (fetidpmat_ctx->rhs_flip) PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
+    PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
 
     PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc, "__KSPFETIDP_lP_I", (PetscObject *)&fetidpmat_ctx->lP_I));
     PetscCheck(fetidpmat_ctx->lP_I, PETSC_COMM_SELF, PETSC_ERR_PLIB, "lP_I not present");

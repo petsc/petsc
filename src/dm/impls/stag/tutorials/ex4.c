@@ -298,12 +298,10 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFree(A));
   if (A_faces) {
-    for (PetscInt level = 0; level < ctx->n_levels; ++level) {
-      if (A_faces[level]) PetscCall(MatDestroy(&A_faces[level]));
-    }
+    for (PetscInt level = 0; level < ctx->n_levels; ++level) PetscCall(MatDestroy(&A_faces[level]));
     PetscCall(PetscFree(A_faces));
   }
-  if (P) PetscCall(MatDestroy(&P));
+  PetscCall(MatDestroy(&P));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&S_hat));
@@ -431,10 +429,10 @@ static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx)
 
   PetscFunctionBeginUser;
   level_ctx = *p_level_ctx;
-  if (level_ctx->dm_stokes) PetscCall(DMDestroy(&level_ctx->dm_stokes));
-  if (level_ctx->dm_coefficients) PetscCall(DMDestroy(&level_ctx->dm_coefficients));
-  if (level_ctx->dm_faces) PetscCall(DMDestroy(&level_ctx->dm_faces));
-  if (level_ctx->coeff) PetscCall(VecDestroy(&level_ctx->coeff));
+  PetscCall(DMDestroy(&level_ctx->dm_stokes));
+  PetscCall(DMDestroy(&level_ctx->dm_coefficients));
+  PetscCall(DMDestroy(&level_ctx->dm_faces));
+  PetscCall(VecDestroy(&level_ctx->coeff));
   PetscCall(PetscFree(*p_level_ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

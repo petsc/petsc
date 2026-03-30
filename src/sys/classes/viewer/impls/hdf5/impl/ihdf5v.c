@@ -322,7 +322,7 @@ static PetscErrorCode PetscViewerFileSetName_HDF5(PetscViewer viewer, const char
 
   PetscFunctionBegin;
   if (hdf5->file_id) PetscCallHDF5(H5Fclose, (hdf5->file_id));
-  if (hdf5->filename) PetscCall(PetscFree(hdf5->filename));
+  PetscCall(PetscFree(hdf5->filename));
   PetscCall(PetscStrallocpy(name, &hdf5->filename));
   PetscCallHDF5Return(plist_create_id, H5Pcreate, (H5P_FILE_CREATE));
   PetscCallHDF5(H5Pset_link_creation_order, (plist_create_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED));

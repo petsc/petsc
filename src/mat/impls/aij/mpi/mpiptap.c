@@ -63,7 +63,7 @@ PetscErrorCode MatProductCtxDestroy_MPIAIJ_PtAP(PetscCtxRt data)
   }
   PetscCall(MatDestroy(&ptap->C_loc));
   PetscCall(MatDestroy(&ptap->C_oth));
-  if (ptap->apa) PetscCall(PetscFree(ptap->apa));
+  PetscCall(PetscFree(ptap->apa));
 
   PetscCall(MatDestroy(&ptap->Pt));
 

@@ -412,13 +412,10 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
     // outstanding reads (don't want to kill the pointer before they are done)
     PetscCall(PetscDeviceContextMarkIntentFromID(dctx, attr.id, PETSC_MEMORY_ACCESS_WRITE, "memory deallocation"));
     // do free
-    if (dctx->ops->memfree) {
-      PetscUseTypeMethod(dctx, memfree, attr.mtype, (void **)&ptr);
-    } else {
-      PetscCall(PetscDeviceCheckCapable_Private(dctx, PetscMemTypeHost(attr.mtype), "freeing"));
-    }
+    if (dctx->ops->memfree) PetscUseTypeMethod(dctx, memfree, attr.mtype, (void **)&ptr);
+    else PetscCall(PetscDeviceCheckCapable_Private(dctx, PetscMemTypeHost(attr.mtype), "freeing"));
     // if ptr still exists, then the device context could not handle it
-    if (ptr) PetscCall(PetscFree(ptr));
+    PetscCall(PetscFree(ptr));
     PetscCallCXX(map.erase(found_it));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

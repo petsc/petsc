@@ -116,7 +116,7 @@ static PetscErrorCode MatReset_LMVMDQN_Internal(Mat B, MatLMVMResetMode mode)
       PetscCall(MatZeroEntries(lqn->YtHY));
       PetscCall(MatShift(lqn->YtHY, 1.0));
     }
-    if (lqn->Fprev_ref) PetscCall(VecDestroy(&lqn->Fprev_ref));
+    PetscCall(VecDestroy(&lqn->Fprev_ref));
     lqn->Fprev_state = 0;
     if (lqn->StFprev) PetscCall(VecZeroEntries(lqn->StFprev));
   }

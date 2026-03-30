@@ -1313,7 +1313,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     subcomm = PetscSubcommChild(mpjac->psubcomm);
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
-      if (mpjac->submats) PetscCall(MatDestroy(&mpjac->submats));
+      PetscCall(MatDestroy(&mpjac->submats));
       PetscCall(MatGetMultiProcBlock(pc->pmat, subcomm, MAT_INITIAL_MATRIX, &mpjac->submats));
     } else {
       PetscCall(MatGetMultiProcBlock(pc->pmat, subcomm, MAT_REUSE_MATRIX, &mpjac->submats));

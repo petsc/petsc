@@ -1944,8 +1944,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(ISCreateStride(PETSC_COMM_SELF, B->rmap->N, 0, 1, &uis));
                 PetscCall(ISSetIdentity(uis));
                 if (!data->is) {
-                  if (C) PetscCall(PetscObjectReference((PetscObject)C));
-                  else PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &C));
+                  if (!C) PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &C));
+                  else PetscCall(PetscObjectReference((PetscObject)C));
                   PetscCall(ISDuplicate(data_00->is, is));
                   PetscCall(MatIncreaseOverlap(A, 1, is, 1));
                   PetscCall(MatSetOption(C, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
@@ -2507,7 +2507,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (overlap == 1 && subdomains && flg) {
                 *subA = A0;
                 sub   = subA;
-                if (uaux) PetscCall(MatDestroy(&uaux));
+                PetscCall(MatDestroy(&uaux));
               } else PetscCall(MatDestroy(&A0));
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
               PetscCall(MatSetVecType(data->aux, h->A[0]->defaultvectype));

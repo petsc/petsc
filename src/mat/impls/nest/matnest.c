@@ -391,8 +391,7 @@ static PetscErrorCode MatNestDestroyISList(PetscInt n, IS **list)
 
   PetscFunctionBegin;
   if (!lst) PetscFunctionReturn(PETSC_SUCCESS);
-  for (i = 0; i < n; i++)
-    if (lst[i]) PetscCall(ISDestroy(&lst[i]));
+  for (i = 0; i < n; i++) PetscCall(ISDestroy(&lst[i]));
   PetscCall(PetscFree(lst));
   *list = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -712,7 +711,7 @@ static PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *
   PetscFunctionBegin;
   PetscCall(MatNestFindSubMat(A, &vs->islocal, isrow, iscol, &sub));
   /* We allow the submatrix to be NULL, perhaps it would be better for the user to return an empty matrix instead */
-  if (sub) PetscCall(PetscObjectReference((PetscObject)sub));
+  PetscCall(PetscObjectReference((PetscObject)sub));
   *B = sub;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1995,7 +1994,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y, PetscScalar a, Mat X)
         PetscCall(MatRestoreRow(B, br + rstart, &brncols, &brcols, &brcoldata));
         PetscCall(PetscFree(cols));
       }
-      if (D) PetscCall(MatDestroy(&D));
+      PetscCall(MatDestroy(&D));
       PetscCall(ISRestoreIndices(nest->isglobal.row[i], &bmindices));
     }
     PetscCall(ISRestoreIndices(bNis, &bNindices));
@@ -2165,7 +2164,7 @@ static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse
         }
         PetscCall(MatRestoreRow(B, br + rstart, &brncols, &brcols, NULL));
       }
-      if (D) PetscCall(MatDestroy(&D));
+      PetscCall(MatDestroy(&D));
       PetscCall(ISRestoreIndices(nest->isglobal.row[i], &bmindices));
       /* bsf will have to take care of disposing of bedges. */
       PetscCall(PetscSFSetGraph(bmsf, m, bm, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));

@@ -23,10 +23,10 @@ static PetscErrorCode MatSeqSELLCUDA_Destroy(Mat_SeqSELLCUDA **cudastruct)
 {
   PetscFunctionBegin;
   if (*cudastruct) {
-    if ((*cudastruct)->colidx) PetscCallCUDA(cudaFree((*cudastruct)->colidx));
-    if ((*cudastruct)->val) PetscCallCUDA(cudaFree((*cudastruct)->val));
-    if ((*cudastruct)->sliidx) PetscCallCUDA(cudaFree((*cudastruct)->sliidx));
-    if ((*cudastruct)->chunk_slice_map) PetscCallCUDA(cudaFree((*cudastruct)->chunk_slice_map));
+    PetscCallCUDA(cudaFree((*cudastruct)->colidx));
+    PetscCallCUDA(cudaFree((*cudastruct)->val));
+    PetscCallCUDA(cudaFree((*cudastruct)->sliidx));
+    PetscCallCUDA(cudaFree((*cudastruct)->chunk_slice_map));
     PetscCall(PetscFree(*cudastruct));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -45,10 +45,10 @@ static PetscErrorCode MatSeqSELLCUDACopyToGPU(Mat A)
       PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), cudaMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
     } else {
-      if (cudastruct->colidx) PetscCallCUDA(cudaFree(cudastruct->colidx));
-      if (cudastruct->val) PetscCallCUDA(cudaFree(cudastruct->val));
-      if (cudastruct->sliidx) PetscCallCUDA(cudaFree(cudastruct->sliidx));
-      if (cudastruct->chunk_slice_map) PetscCallCUDA(cudaFree(cudastruct->chunk_slice_map));
+      PetscCallCUDA(cudaFree(cudastruct->colidx));
+      PetscCallCUDA(cudaFree(cudastruct->val));
+      PetscCallCUDA(cudaFree(cudastruct->sliidx));
+      PetscCallCUDA(cudaFree(cudastruct->chunk_slice_map));
       cudastruct->maxallocmat  = a->maxallocmat;
       cudastruct->totalentries = a->sliidx[a->totalslices];
       cudastruct->totalslices  = a->totalslices;

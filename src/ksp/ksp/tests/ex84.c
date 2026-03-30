@@ -76,7 +76,7 @@ PetscErrorCode port_lsd_bfbt(void)
   PetscCall(KSPDestroy(&ksp_A));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&Q));
-  if (L) PetscCall(MatDestroy(&L));
+  PetscCall(MatDestroy(&L));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(ISDestroy(&isu));

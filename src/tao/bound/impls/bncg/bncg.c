@@ -169,7 +169,7 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
   PetscCall(ISDestroy(&cg->inactive_old));
   PetscCall(ISDestroy(&cg->new_inactives));
   PetscCall(MatDestroy(&cg->B));
-  if (cg->pc) PetscCall(MatDestroy(&cg->pc));
+  PetscCall(MatDestroy(&cg->pc));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

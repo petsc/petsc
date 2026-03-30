@@ -2631,11 +2631,11 @@ static PetscErrorCode MatProductCtxDestroy_MatMatCusparse(PetscCtxRt data)
   if (mmdata->matCDescr) PetscCallCUSPARSE(cusparseDestroyDnMat(mmdata->matCDescr));
   if (mmdata->spgemmDesc) PetscCallCUSPARSE(cusparseSpGEMM_destroyDescr(mmdata->spgemmDesc));
   #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
-  if (mmdata->dBuffer4) PetscCallCUDA(cudaFree(mmdata->dBuffer4));
-  if (mmdata->dBuffer5) PetscCallCUDA(cudaFree(mmdata->dBuffer5));
+  PetscCallCUDA(cudaFree(mmdata->dBuffer4));
+  PetscCallCUDA(cudaFree(mmdata->dBuffer5));
   #endif
-  if (mmdata->mmBuffer) PetscCallCUDA(cudaFree(mmdata->mmBuffer));
-  if (mmdata->mmBuffer2) PetscCallCUDA(cudaFree(mmdata->mmBuffer2));
+  PetscCallCUDA(cudaFree(mmdata->mmBuffer));
+  PetscCallCUDA(cudaFree(mmdata->mmBuffer2));
 #endif
   PetscCall(MatDestroy(&mmdata->X));
   PetscCall(PetscFree(mmdata));
@@ -4207,10 +4207,10 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSETriF
     if ((*trifactor)->descr) PetscCallCUSPARSE(cusparseDestroyMatDescr((*trifactor)->descr));
     if ((*trifactor)->solveInfo) PetscCallCUSPARSE(cusparseDestroyCsrsvInfo((*trifactor)->solveInfo));
     PetscCall(CsrMatrix_Destroy(&(*trifactor)->csrMat));
-    if ((*trifactor)->solveBuffer) PetscCallCUDA(cudaFree((*trifactor)->solveBuffer));
-    if ((*trifactor)->AA_h) PetscCallCUDA(cudaFreeHost((*trifactor)->AA_h));
+    PetscCallCUDA(cudaFree((*trifactor)->solveBuffer));
+    PetscCallCUDA(cudaFreeHost((*trifactor)->AA_h));
   #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
-    if ((*trifactor)->csr2cscBuffer) PetscCallCUDA(cudaFree((*trifactor)->csr2cscBuffer));
+    PetscCallCUDA(cudaFree((*trifactor)->csr2cscBuffer));
   #endif
     PetscCall(PetscFree(*trifactor));
   }
@@ -4239,9 +4239,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMult
     }
     if ((*matstruct)->descr) PetscCallCUSPARSE(cusparseDestroyMatDescr((*matstruct)->descr));
     delete (*matstruct)->cprowIndices;
-    if ((*matstruct)->alpha_one) PetscCallCUDA(cudaFree((*matstruct)->alpha_one));
-    if ((*matstruct)->beta_zero) PetscCallCUDA(cudaFree((*matstruct)->beta_zero));
-    if ((*matstruct)->beta_one) PetscCallCUDA(cudaFree((*matstruct)->beta_one));
+    PetscCallCUDA(cudaFree((*matstruct)->alpha_one));
+    PetscCallCUDA(cudaFree((*matstruct)->beta_zero));
+    PetscCallCUDA(cudaFree((*matstruct)->beta_one));
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
     Mat_SeqAIJCUSPARSEMultStruct *mdata = *matstruct;

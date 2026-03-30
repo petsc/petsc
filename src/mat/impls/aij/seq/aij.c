@@ -2662,7 +2662,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
 
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&submatj->rmap));
-  if (submatj->cmap_loc) PetscCall(PetscFree(submatj->cmap_loc));
+  PetscCall(PetscFree(submatj->cmap_loc));
   PetscCall(PetscFree(submatj->rmap_loc));
 #else
   PetscCall(PetscFree(submatj->rmap));

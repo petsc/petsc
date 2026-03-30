@@ -32,9 +32,7 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm, Mat *J)
   for (i = 0; i < n; i++) PetscCall(ISDestroy(&isg[i]));
   PetscCall(PetscFree(isg));
 
-  for (i = 0; i < n * n; i++) {
-    if (submats[i]) PetscCall(MatDestroy(&submats[i]));
-  }
+  for (i = 0; i < n * n; i++) PetscCall(MatDestroy(&submats[i]));
   PetscCall(PetscFree(submats));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

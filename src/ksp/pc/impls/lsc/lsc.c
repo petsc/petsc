@@ -144,8 +144,8 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PetscCall(VecDestroy(&lsc->Svec0));
   PetscCall(KSPDestroy(&lsc->kspL));
   if (lsc->commute) PetscCall(KSPDestroy(&lsc->kspMass));
-  if (lsc->L) PetscCall(MatDestroy(&lsc->L));
-  if (lsc->scale) PetscCall(VecDestroy(&lsc->scale));
+  PetscCall(MatDestroy(&lsc->L));
+  PetscCall(VecDestroy(&lsc->scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -537,7 +537,7 @@ PetscErrorCode TSRemoveTrajectory(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (ts->trajectory) PetscCall(TSTrajectoryDestroy(&ts->trajectory));
+  PetscCall(TSTrajectoryDestroy(&ts->trajectory));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

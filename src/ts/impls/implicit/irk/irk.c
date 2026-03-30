@@ -413,9 +413,9 @@ static PetscErrorCode TSReset_IRK(TS ts)
 
   PetscFunctionBegin;
   PetscCall(TSIRKTableauReset(ts));
-  if (irk->tableau) PetscCall(PetscFree(irk->tableau));
-  if (irk->method_name) PetscCall(PetscFree(irk->method_name));
-  if (irk->work) PetscCall(PetscFree(irk->work));
+  PetscCall(PetscFree(irk->tableau));
+  PetscCall(PetscFree(irk->method_name));
+  PetscCall(PetscFree(irk->work));
   PetscCall(VecDestroyVecs(irk->nstages, &irk->Y));
   PetscCall(VecDestroyVecs(irk->nstages, &irk->YdotI));
   PetscCall(VecDestroy(&irk->Ydot));

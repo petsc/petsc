@@ -267,7 +267,7 @@ PetscErrorCode TaoTermComputeHessianMFFD(TaoTerm term, Vec x, Vec params, Mat H,
   }
   PetscCall(PetscContainerGetPointer(container, (void **)&tp));
   PetscCheck(tp->term == term, PetscObjectComm((PetscObject)term), PETSC_ERR_ARG_INCOMP, "Hessian shell matrix does not come from this TaoTerm");
-  if (params) PetscCall(PetscObjectReference((PetscObject)params));
+  PetscCall(PetscObjectReference((PetscObject)params));
   PetscCall(VecDestroy(&tp->params));
   tp->params = params;
   PetscCall(MatMFFDSetBase(H, x, NULL));
