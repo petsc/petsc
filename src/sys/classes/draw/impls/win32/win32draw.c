@@ -131,7 +131,7 @@ static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawBut
     ResetEvent(current->event);
     current->MouseListTail = NULL;
   }
-  if (node) PetscFree(node);
+  PetscCall(PetscFree(node));
 
   /* Release mutex so that  other code can use
      the linked list now that we are done with it */

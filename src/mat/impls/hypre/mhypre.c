@@ -2121,8 +2121,8 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
 #ifdef PETSC_HAVE_HYPRE_DEVICE
   if (hypre_ParCSRMatrixMemoryLocation(parcsr) == HYPRE_MEMORY_DEVICE) {
-    if (idx) PetscFree(*idx);
-    if (v) PetscFree(*v);
+    if (idx) PetscCall(PetscFree(*idx));
+    if (v) PetscCall(PetscFree(*v));
   }
 #endif
   /* call HYPRE API. It doesn't actually use any of the arguments so it's ok if we've actually
