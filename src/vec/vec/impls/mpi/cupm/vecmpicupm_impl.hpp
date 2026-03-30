@@ -136,6 +136,9 @@ inline PetscErrorCode VecMPI_CUPM<T>::Duplicate(Vec v, Vec *y) noexcept
     PetscCall(VecRestoreArray(*y, &array));
     ylocrep->ops[0] = locrep->ops[0];
     if (const auto scatter = (yimpl->localupdate = vimpl->localupdate)) PetscCall(PetscObjectReference(PetscObjectCast(scatter)));
+
+    yimpl->ghost = vimpl->ghost;
+    PetscCall(PetscObjectReference((PetscObject)yimpl->ghost));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

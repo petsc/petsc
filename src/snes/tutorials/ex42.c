@@ -48,8 +48,8 @@ int main(int argc, char **argv)
   } else {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
     PetscCall(VecSetSizes(x, 2, PETSC_DECIDE));
-    PetscCall(VecSetFromOptions(x));
   }
+  PetscCall(VecSetFromOptions(x));
 
   /*
      Create Jacobian matrix data structure
@@ -220,5 +220,19 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
       nsize: {{1 2}}
       args: -snes_max_it 4 -snes_type {{newtontr newtonls}} -nghost {{0 1 2}} -test_ghost
       requires: !single
+
+   test:
+      suffix: ghosts_kok
+      nsize: {{1 2}}
+      args: -snes_max_it 4 -snes_type {{newtontr newtonls}} -nghost {{0 1 2}} -test_ghost -mat_type aijkokkos -vec_type kokkos
+      requires: !single kokkos_kernels
+      output_file: output/ex42_ghosts.out
+
+   test:
+      suffix: ghosts_cuda
+      nsize: {{1 2}}
+      args: -snes_max_it 4 -snes_type {{newtontr newtonls}} -nghost {{0 1 2}} -test_ghost -mat_type aijcusparse -vec_type cuda
+      requires: !single cuda
+      output_file: output/ex42_ghosts.out
 
 TEST*/

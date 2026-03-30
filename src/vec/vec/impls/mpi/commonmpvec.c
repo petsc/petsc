@@ -71,8 +71,8 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
   PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
   PetscAssertPointer(l, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
-  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)g, VECSEQ, &isseq));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)g, VECMPI, &ismpi));
   if (ismpi) {
     Vec_MPI *v = (Vec_MPI *)g->data;
     *l         = v->localrep;
@@ -187,8 +187,8 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
-  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECSEQ, &isseq));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)g, VECMPI, &ismpi));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)g, VECSEQ, &isseq));
   if (ismpi) {
     v = (Vec_MPI *)g->data;
     PetscCheck(v->localrep, PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
@@ -198,9 +198,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
     } else {
       PetscCall(VecScatterBegin(v->localupdate, g, v->localrep, insertmode, scattermode));
     }
-  } else if (isseq) {
-    /* Do nothing */
-  } else SETERRQ(PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
+  } else PetscCheck(isseq, PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -249,7 +247,7 @@ PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scatt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g, VEC_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)g, VECMPI, &ismpi));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)g, VECMPI, &ismpi));
   if (ismpi) {
     v = (Vec_MPI *)g->data;
     PetscCheck(v->localrep, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vector is not ghosted");

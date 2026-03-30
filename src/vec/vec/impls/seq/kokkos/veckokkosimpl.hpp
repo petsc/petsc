@@ -21,7 +21,8 @@
 
 struct Vec_Kokkos {
   PetscScalarKokkosDualView v_dual;
-  PetscScalarKokkosView     unplaced_d; /* Unplaced device array in VecKokkosPlaceArray() */
+  PetscScalarKokkosView     unplaced_d;    // Unplaced device array in VecKokkosPlaceArray()
+  PetscScalarKokkosDualView unplaced_dual; // Unplaced v_dual, used in VecGetLocalVector_SeqKokkos()
 
   /* COO stuff */
   PetscCountKokkosView jmap1_d; /* [m+1]: i-th entry of the vector has jmap1[i+1]-jmap1[i] repeats in COO arrays */
@@ -152,7 +153,9 @@ PETSC_INTERN PetscErrorCode VecCreate_Kokkos(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos(Vec, PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqKokkos(Vec, Vec);
+PETSC_INTERN PetscErrorCode VecGetLocalVectorRead_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec, Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVectorRead_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec, PetscScalar **);
 PETSC_INTERN PetscErrorCode VecCopy_SeqKokkos_Private(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos_Private(Vec, PetscRandom);

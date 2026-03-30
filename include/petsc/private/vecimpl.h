@@ -381,7 +381,7 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec);
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
-PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
 

@@ -801,7 +801,7 @@ PetscErrorCode VecGhostGetGhostIS(Vec X, IS *ghost)
   PetscFunctionBegin;
   PetscValidType(X, 1);
   PetscAssertPointer(ghost, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)X, VECMPI, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)X, VECMPI, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "VecGhostGetGhostIS was not supported for vec type %s", ((PetscObject)X)->type_name);
   w      = (Vec_MPI *)X->data;
   *ghost = w->ghost;
@@ -873,7 +873,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
   PetscBool flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)vv, VECMPI, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)vv, VECMPI, &flg));
   /* if already fully existent VECMPI then basically destroy it and rebuild with ghosting */
   if (flg) {
     PetscInt     n, N;
@@ -881,8 +881,13 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
     PetscScalar *larray;
     IS           from, to;
     MPI_Comm     comm;
+    VecType      vtype;
+    char        *savedType;
 
     PetscCall(PetscObjectGetComm((PetscObject)vv, &comm));
+    PetscCall(VecGetType(vv, &vtype));             // vtype might be VECMPIKOKKOS
+    PetscCall(PetscStrallocpy(vtype, &savedType)); // save it as *vtype could be changed by VecCreate_MPI_Private()
+
     n = vv->map->n;
     N = vv->map->N;
     PetscUseTypeMethod(vv, destroy);
@@ -904,6 +909,8 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 
     w->ghost                         = from;
     vv->ops->getlocaltoglobalmapping = VecGetLocalToGlobalMapping_MPI_VecGhost;
+    PetscCall(VecSetType(vv, savedType));
+    PetscCall(PetscFree(savedType));
   } else {
     PetscCheck(vv->ops->create != VecCreate_MPI, PetscObjectComm((PetscObject)vv), PETSC_ERR_ARG_WRONGSTATE, "Must set local or global size before setting ghosting");
     PetscCheck(((PetscObject)vv)->type_name, PetscObjectComm((PetscObject)vv), PETSC_ERR_ARG_WRONGSTATE, "Must set type to VECMPI before ghosting");

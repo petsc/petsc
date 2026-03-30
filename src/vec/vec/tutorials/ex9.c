@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
   PetscMPIInt            rank, size;
   PetscInt               nlocal = 6, nghost = 2, ifrom[2], i, rstart, rend;
-  PetscBool              flg, flg2, flg3, flg4, flg5;
+  PetscBool              flg, flg2, flg3, flg4, flg5, setbefore = PETSC_FALSE;
   PetscScalar            value, *array, *tarray = 0;
   Vec                    lx, gx, gxs;
   IS                     ghost;
@@ -72,13 +72,18 @@ int main(int argc, char **argv)
   if (flg) {
     PetscCall(PetscMalloc1(nlocal + nghost, &tarray));
     PetscCall(VecCreateGhostWithArray(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nghost, ifrom, tarray, &gxs));
+    PetscCall(VecSetFromOptions(gxs));
   } else if (flg2) {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &gxs));
-    PetscCall(VecSetType(gxs, VECMPI));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-setbefore", &setbefore, NULL)); // Set a vector type before VecMPISetGhost()
+    if (setbefore) PetscCall(VecSetFromOptions(gxs));
+    else PetscCall(VecSetType(gxs, VECMPI));
     PetscCall(VecSetSizes(gxs, nlocal, PETSC_DECIDE));
     PetscCall(VecMPISetGhost(gxs, nghost, ifrom));
+    if (!setbefore) PetscCall(VecSetFromOptions(gxs));
   } else {
     PetscCall(VecCreateGhost(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nghost, ifrom, &gxs));
+    PetscCall(VecSetFromOptions(gxs));
     PetscCall(VecSet(gxs, 1.0));
     if (rank == 1) PetscCall(VecSetValueLocal(gxs, 0, 2.0, INSERT_VALUES));
     PetscCall(VecAssemblyBegin(gxs));
@@ -168,36 +173,40 @@ int main(int argc, char **argv)
 
 /*TEST
 
-     test:
-       nsize: 2
+  testset:
+    requires: cuda kokkos_kernels
+    args: -vec_type {{mpi cuda kokkos}}
 
-     test:
-       suffix: 2
-       nsize: 2
-       args: -allocate
-       output_file: output/ex9_1.out
+    test:
+      nsize: 2
 
-     test:
-       suffix: 3
-       nsize: 2
-       args: -vecmpisetghost
-       output_file: output/ex9_1.out
+    test:
+      suffix: 2
+      nsize: 2
+      args: -allocate
+      output_file: output/ex9_1.out
 
-     test:
-       suffix: 4
-       nsize: 2
-       args: -minvalues
-       output_file: output/ex9_2.out
-       requires: !complex
+    test:
+      suffix: 3
+      nsize: 2
+      args: -vecmpisetghost -setbefore {{true false}}
+      output_file: output/ex9_1.out
 
-     test:
-       suffix: 5
-       nsize: 2
-       args: -vecghostgetghostis
+    test:
+      suffix: 4
+      nsize: 2
+      args: -minvalues
+      output_file: output/ex9_2.out
+      requires: !complex
 
-     test:
-       suffix: 6
-       nsize: 2
-       args: -getgtlmapping
+    test:
+      suffix: 5
+      nsize: 2
+      args: -vecghostgetghostis
+
+    test:
+      suffix: 6
+      nsize: 2
+      args: -getgtlmapping
 
 TEST*/
