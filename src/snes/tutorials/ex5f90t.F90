@@ -453,7 +453,7 @@ program main
   PetscErrorCode ierr
   PetscInt its
   PetscBool flg, matrix_free
-  PetscReal, parameter :: lambda_min = 0.0, lambda_max = 6.81
+  PetscReal, parameter :: lambda_min = 0.0_PETSC_REAL_KIND, lambda_max = 6.81_PETSC_REAL_KIND
   type(AppCtx) ctx
   type(tPetscOptions) :: options
 

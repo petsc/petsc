@@ -3699,7 +3699,9 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
       cellCoords = swap;
     }
   }
+  PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Warray-bounds")
   PetscCall(PetscArrayzero(realCoords, numPoints * dimC));
+  PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
   for (j = 0; j < numPoints; j++) {
     const PetscReal *guess  = &refCoords[dimR * j];
     PetscReal       *mapped = &realCoords[dimC * j];

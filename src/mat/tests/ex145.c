@@ -177,7 +177,8 @@ int main(int argc, char **argv)
 
   /* Out-place Cholesky */
   PetscCall(MatGetFactor(Aher, MATSOLVERELEMENTAL, MAT_FACTOR_CHOLESKY, &G));
-  PetscCall(MatCholeskyFactorSymbolic(G, Aher, 0, &finfo));
+  PetscCall(MatFactorInfoInitialize(&finfo));
+  PetscCall(MatCholeskyFactorSymbolic(G, Aher, NULL, &finfo));
   PetscCall(MatCholeskyFactorNumeric(G, Aher, &finfo));
   if (mats_view) PetscCall(MatView(G, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatSolve(G, b, x));

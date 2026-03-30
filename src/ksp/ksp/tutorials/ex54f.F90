@@ -214,7 +214,7 @@ program main
   PetscReal :: thk = 1.0              ! thickness
   PetscReal :: eps, h, x, y, xsj, a1, a2
   PetscReal :: coord(2, 4), dd(2, 2), ev(3), blb(2)
-  PetscReal, parameter :: rad2deg = 57.2957795
+  PetscReal, parameter :: rad2deg = 57.2957795_PETSC_REAL_KIND
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

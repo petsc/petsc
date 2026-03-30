@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   /*
      Test IS of size 0
   */
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 0, &n, PETSC_COPY_VALUES, &is));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is));
   PetscCall(ISGetSize(is, &n));
   PetscCheck(n == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "ISGetSize");
   PetscCall(ISDestroy(&is));

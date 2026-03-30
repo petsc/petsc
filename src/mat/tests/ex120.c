@@ -136,13 +136,13 @@ int main(int argc, char **args)
   if (TestZHEEV) { /* test zheev() */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsyev: compute all %" PetscInt_FMT " eigensolutions...\n", m));
     PetscCall(PetscMalloc1(3 * n - 2, &rwork));
-    LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, rwork, &lierr);
+    PetscCallBLAS("LAPACKsyev_", LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, rwork, &lierr));
     PetscCall(PetscFree(rwork));
 
     evecs_array = arrayA;
-    nevs        = m;
-    il          = 1;
-    iu          = m;
+    PetscCall(PetscBLASIntCast(m, &nevs));
+    il = 1;
+    PetscCall(PetscBLASIntCast(m, &iu));
   }
   if (TestZHEEVX) {
     il = 1;
@@ -157,7 +157,7 @@ int main(int argc, char **args)
     vl = 0.0;
     vu = 8.0;
     PetscCall(PetscBLASIntCast(n, &nn));
-    LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr);
+    PetscCallBLAS("LAPACKsyevx_", LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr));
     PetscCall(PetscFree(iwork));
     PetscCall(PetscFree(ifail));
     PetscCall(PetscFree(rwork));
@@ -166,11 +166,11 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsygv: compute all %" PetscInt_FMT " eigensolutions...\n", m));
     PetscCall(PetscMalloc1(3 * n + 1, &rwork));
     PetscCall(MatDenseGetArray(B, &arrayB));
-    LAPACKsygv_(&one, "V", "U", &bn, arrayA, &bn, arrayB, &bn, evals, work, &lwork, rwork, &lierr);
+    PetscCallBLAS("LAPACKsygv_", LAPACKsygv_(&one, "V", "U", &bn, arrayA, &bn, arrayB, &bn, evals, work, &lwork, rwork, &lierr));
     evecs_array = arrayA;
-    nevs        = m;
-    il          = 1;
-    iu          = m;
+    PetscCall(PetscBLASIntCast(m, &nevs));
+    il = 1;
+    PetscCall(PetscBLASIntCast(m, &iu));
     PetscCall(MatDenseRestoreArray(B, &arrayB));
     PetscCall(PetscFree(rwork));
   }
@@ -186,7 +186,7 @@ int main(int argc, char **args)
     vl = 0.0;
     vu = 8.0;
     PetscCall(PetscBLASIntCast(n, &nn));
-    LAPACKsygvx_(&one, "V", "I", "U", &bn, arrayA, &bn, arrayB, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr);
+    PetscCallBLAS("LAPACKsygvx_", LAPACKsygvx_(&one, "V", "I", "U", &bn, arrayA, &bn, arrayB, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr));
     PetscCall(MatDenseRestoreArray(B, &arrayB));
     PetscCall(PetscFree(iwork));
     PetscCall(PetscFree(rwork));
@@ -273,8 +273,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
         }
       }
     }
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max|(x_j^T*x_i) - delta_ji|: %g\n", (double)dot_max));
-
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max|(x_j^T*x_i) - delta_ji|: %g\n", (double)dot_max)); /* fall through */
   case 1:
     norm_max = 0.0;
     for (i = il; i < iu; i++) {

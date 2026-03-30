@@ -316,14 +316,11 @@ PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], cons
   #include <stdexcept>
 static void PetscCxxErrorThrow()
 {
-  const char *str;
   if (eh && eh->ctx) {
     std::ostringstream *msg;
     msg = (std::ostringstream *)eh->ctx;
-    str = msg->str().c_str();
-  } else str = "Error detected in C PETSc";
-
-  throw std::runtime_error(str);
+    throw std::runtime_error(msg->str());
+  } else throw std::runtime_error("Error detected in C PETSc");
 }
 #endif
 

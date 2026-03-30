@@ -649,7 +649,7 @@ int main(int argc, char *argv[])
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rand));
-  PetscCall(PetscRandomSetInterval(rand, INT_MIN, INT_MAX));
+  PetscCall(PetscRandomSetInterval(rand, static_cast<PetscReal>(INT_MIN), static_cast<PetscReal>(INT_MAX)));
   PetscCall(PetscRandomSetFromOptions(rand));
   PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD, &vwr));
 

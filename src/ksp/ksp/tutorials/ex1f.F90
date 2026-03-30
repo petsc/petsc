@@ -149,7 +149,7 @@ program main
 
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCJACOBI, ierr))
-  tol = .0000001
+  tol = .0000001_PETSC_REAL_KIND
   PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_INTEGER, ierr))
   PetscCallA(KSPGetTolerances(ksp, PETSC_NULL_REAL, tol, PETSC_NULL_REAL, PETSC_NULL_INTEGER, ierr))
 

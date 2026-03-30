@@ -28,7 +28,7 @@ contains
     PetscInt, intent(in) :: ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, n
     PetscReal, dimension(n, ib1:ibn, jb1:jbn, kb1:kbn), intent(inout) :: f
     PetscReal, dimension(n, imax, jmax, kmax) :: dfdt_vdp
-    PetscReal, parameter :: mu = 1.4
+    PetscReal, parameter :: mu = 1.4_PETSC_REAL_KIND
     !
     dfdt_vdp(1, :, :, :) = f(2, 1, 1, 1)
     dfdt_vdp(2, :, :, :) = mu*(1.0_PETSC_REAL_KIND - f(1, 1, 1, 1)**2)*f(2, 1, 1, 1) - f(1, 1, 1, 1)
