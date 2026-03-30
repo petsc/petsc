@@ -325,7 +325,7 @@ gmakeinfo:
              printf  "Fortran compiler version: %b\n" "${FC_VERSION}";\
          fi
 	-@if [ "${CUDAC}" != "" ]; then\
-	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
+	   echo 'Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}';\
          fi
 	-@if [ "${HIPC}" != "" ]; then\
 	   echo "Using HIP compile: ${PETSC_HIPCOMPILE_SINGLE}";\
