@@ -2282,10 +2282,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
   PetscAssert(!mat->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
 
   PetscCall(PetscLogEventBegin(MAT_SetValuesBatch, mat, 0, 0, 0));
-  if (mat->ops->setvaluesbatch) PetscUseTypeMethod(mat, setvaluesbatch, nb, bs, rows, v);
-  else {
-    for (PetscInt b = 0; b < nb; ++b) PetscCall(MatSetValues(mat, bs, &rows[b * bs], bs, &rows[b * bs], &v[b * bs * bs], ADD_VALUES));
-  }
+  for (PetscInt b = 0; b < nb; ++b) PetscCall(MatSetValues(mat, bs, &rows[b * bs], bs, &rows[b * bs], &v[b * bs * bs], ADD_VALUES));
   PetscCall(PetscLogEventEnd(MAT_SetValuesBatch, mat, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

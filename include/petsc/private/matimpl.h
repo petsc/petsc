@@ -178,38 +178,37 @@ struct _MatOps {
   PetscErrorCode (*invertvariableblockdiagonal)(Mat, PetscInt, const PetscInt *, PetscScalar *);
   PetscErrorCode (*createsubmatricesmpi)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat **);
   /*119*/
-  PetscErrorCode (*setvaluesbatch)(Mat, PetscInt, PetscInt, PetscInt *, const PetscScalar *);
   PetscErrorCode (*transposematmultsymbolic)(Mat, Mat, PetscReal, Mat);
   PetscErrorCode (*transposematmultnumeric)(Mat, Mat, Mat);
   PetscErrorCode (*transposecoloringcreate)(Mat, ISColoring, MatTransposeColoring);
   PetscErrorCode (*transcoloringapplysptoden)(MatTransposeColoring, Mat, Mat);
-  /*124*/
   PetscErrorCode (*transcoloringapplydentosp)(MatTransposeColoring, Mat, Mat);
+  /*124*/
   PetscErrorCode (*rartnumeric)(Mat, Mat, Mat); /* double dispatch wrapper routine */
   PetscErrorCode (*setblocksizes)(Mat, PetscInt, PetscInt);
   PetscErrorCode (*residual)(Mat, Vec, Vec, Vec);
   PetscErrorCode (*fdcoloringsetup)(Mat, ISColoring, MatFDColoring);
-  /*129*/
   PetscErrorCode (*findoffblockdiagonalentries)(Mat, IS *);
+  /*129*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
   PetscErrorCode (*destroysubmatrices)(PetscInt, Mat *[]);
   PetscErrorCode (*mattransposesolve)(Mat, Mat, Mat);
   PetscErrorCode (*getvalueslocal)(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscScalar[]);
-  /*134*/
   PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
+  /*134*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
   PetscErrorCode (*eliminatezeros)(Mat, PetscBool);
   PetscErrorCode (*getrowsumabs)(Mat, Vec);
   PetscErrorCode (*getfactor)(Mat, MatSolverType, MatFactorType, Mat *);
+  PetscErrorCode (*getblockdiagonal)(Mat, Mat *); // NOTE: the caller of get{block, vblock}diagonal owns the returned matrix;
   /*139*/
-  PetscErrorCode (*getblockdiagonal)(Mat, Mat *);  // NOTE: the caller of get{block, vblock}diagonal owns the returned matrix;
   PetscErrorCode (*getvblockdiagonal)(Mat, Mat *); // they must destroy it after use
   PetscErrorCode (*copyhashtoxaij)(Mat, Mat);
   PetscErrorCode (*getcurrentmemtype)(Mat, PetscMemType *);
   PetscErrorCode (*zerorowscolumnslocal)(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
-  /*144*/
   PetscErrorCode (*adot)(Mat, Vec, Vec, PetscScalar *); /* induced vector inner product */
-  PetscErrorCode (*anorm)(Mat, Vec, PetscReal *);       /* induced vector norm */
+  /*144*/
+  PetscErrorCode (*anorm)(Mat, Vec, PetscReal *); /* induced vector norm */
   PetscErrorCode (*adot_local)(Mat, Vec, Vec, PetscScalar *);
   PetscErrorCode (*anorm_local)(Mat, Vec, PetscReal *);
 };
