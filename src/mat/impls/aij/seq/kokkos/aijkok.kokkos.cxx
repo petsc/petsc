@@ -96,7 +96,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
     A->spptr = aijkok;
   } else if (A->rmap->n && aijkok->diag_dual.extent(0) == 0) { // MatProduct might directly produce AIJ on device, but not the diag.
     const PetscInt *adiag;
-    /* the a->diag is created at assmebly here because the rest of the Kokkos AIJ code assumes it always exists. This needs to be fixed since it is now only created when needed! */
+    /* the a->diag is created at assembly here because the rest of the Kokkos AIJ code assumes it always exists. This needs to be fixed since it is now only created when needed! */
     PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
     MatRowMapKokkosViewHost diag_h(aijseq->diag, A->rmap->n);
     auto                    diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);

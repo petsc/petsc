@@ -4093,7 +4093,7 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   This function combines `PetscSFDistributeSection()`, `PetscSFCreateSectionSF()`, and `PetscSFBcastBegin()`/`PetscSFBcastEnd()` into a single call.
   `migrateDataSF` can be used to repeat the `PetscSFBcastBegin()`/`PetscSFBcastEnd()` on a different data array described by the same `rootSection`.
 
-  This should not be used for global-to-local type communciation patterns.
+  This should not be used for global-to-local type communication patterns.
   For this use case, see `PetscSectionCreateGlobalSection()` and `PetscSFSetGraphSection()`.
 
 .seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSFDistributeSection()`, `PetscSFCreateSectionSF()`, `DMPlexDistributeData()`

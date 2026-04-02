@@ -111,7 +111,7 @@ static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems Petsc
 //
 // With the abstract (outer) type, we can write shared code. We call MUMPS through a type-to-be-determined inner field within the abstract type.
 // Before/after calling MUMPS, we need to copy in/out fields between the outer and the inner, which seems expensive. But note that the large fixed size
-// arrays within the types are directly linked. At the end, we only need to copy ~20 intergers/pointers, which is doable. See PreMumpsCall()/PostMumpsCall().
+// arrays within the types are directly linked. At the end, we only need to copy ~20 integers/pointers, which is doable. See PreMumpsCall()/PostMumpsCall().
 //
 // Not all fields in the specific types are exposed in the abstract type. We only need those used by the PETSc/MUMPS interface.
 // Notably, DMUMPS_COMPLEX* and DMUMPS_REAL* fields are now declared as void *. Their type will be determined by the the actual precision to be used.

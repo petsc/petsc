@@ -2698,7 +2698,7 @@ PetscErrorCode SNESTestFunction(SNES snes)
   PetscCall(VecDuplicate(x, &g1));
   PetscCall(VecDuplicate(x, &g2));
   PetscCall(VecDuplicate(x, &g3));
-  PetscCall(SNESComputeFunction(snes, x, g1)); /* does not handle use of SNESSetFunctionDomainError() corrrectly */
+  PetscCall(SNESComputeFunction(snes, x, g1)); /* does not handle use of SNESSetFunctionDomainError() correctly */
   PetscCall(SNESComputeFunction_FD(snes, x, g2));
 
   PetscCall(VecNorm(g2, NORM_2, &fdnorm));

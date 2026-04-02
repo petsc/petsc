@@ -1646,7 +1646,7 @@ struct _n_PetscObjectList {
     Values:
 +   `PETSC_PRECISION_INVALID`     - an invalid value
 .   `PETSC_PRECISION_BFLOAT16`    - half precision (Google Brain bfloat16)
-.   `PETSC_PRECISION___FP16`      - half precison (IEEE FP16)
+.   `PETSC_PRECISION___FP16`      - half precision (IEEE FP16)
 .   `PETSC_PRECISION_SINGLE`      - single precision
 .   `PETSC_PRECISION_DOUBLE`      - double precision
 -   `PETSC_PRECISION___FLOAT128`  - quadruple precision (__float128)

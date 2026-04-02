@@ -32,8 +32,8 @@
   a call to `PetscSectionSetup()` and then used to index into arrays and other PETSc objects. The construction (setup) phase corresponds to providing all
   the information needed to define the multi-dimensional jagged array structure.
 
-  `PetscSection` is used heavily by `DMPLEX`. Simplier `DM`, such as `DMDA`, generally do not need `PetscSection` since their array access patterns
-  are simplier and can be fully expressed using standard programming language array syntax, see [DM commonality](ch_dmcommonality).
+  `PetscSection` is used heavily by `DMPLEX`. Simpler `DM`, such as `DMDA`, generally do not need `PetscSection` since their array access patterns
+  are simpler and can be fully expressed using standard programming language array syntax, see [DM commonality](ch_dmcommonality).
 
   Level: beginner
 
