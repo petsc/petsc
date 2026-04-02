@@ -386,24 +386,24 @@ def processManualPage(name, lines):
   for i in seealso:
     if i.startswith('['):
       if not i.endswith(')'):
-        print('See also for ' + name + ': ' + i + ' is misformed. Does not end with expected )')
+        print('See also for ' + name + ': ' + i + ' is malformed. Does not end with expected )')
         badSeealso = True
         return
     elif i.startswith('`'):
       if not i.endswith('`'):
-        print('See also for ' + name + ': ' + i + ' is misformed. Does not end with expected `')
+        print('See also for ' + name + ': ' + i + ' is malformed. Does not end with expected `')
         badSeealso = True
         return
       if i.find(' ') > -1:
-        print('See also for ' + name + ': ' + i + ' is misformed. Seems to contain a blank space')
+        print('See also for ' + name + ': ' + i + ' is malformed. Seems to contain a blank space')
         badSeealso = True
         return
       if i.endswith(')') and not i.endswith('()'):
-        print('See also for ' + name + ': ' + i + ' is misformed. Seems to be missing a (')
+        print('See also for ' + name + ': ' + i + ' is malformed. Seems to be missing a (')
         badSeealso = True
         return
     else:
-      print('See also for ' + name + ': ' + i + ' is misformed')
+      print('See also for ' + name + ': ' + i + ' is malformed')
       badSeealso = True
       return
   seealsos = []

@@ -91,7 +91,7 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
    The main purpose of this solver is to solve linear problems using the `SNES` interface, without
    any additional overhead in the form of vector norm operations.
 
-   Use `SNESKSPTRANSPOSEONLY` for solving tranposed systems.
+   Use `SNESKSPTRANSPOSEONLY` for solving transposed systems.
 
 .seealso: [](ch_snes), `SNES`, `SNESType`, `SNESKSPTRANSPOSEONLY`, `SNESCreate()`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
