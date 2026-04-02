@@ -4,6 +4,7 @@
 
 from __future__ import annotations  # novermin
 from typing import (  # novermin
+    Any,
     Callable,
     Sequence,
     Literal,
@@ -50,6 +51,7 @@ __all__ = [
     'CSRSpec',
     'NNZSpec',
     'MatNullFunction',
+    'MatHtoolFunction',
     'DMCoarsenHookFunction',
     'DMRestrictHookFunction',
     'KSPRHSFunction',
@@ -283,6 +285,23 @@ NNZSpec: TypeAlias = int | Sequence[int] | tuple[Sequence[int], Sequence[int]]
 
 MatNullFunction = Callable[[NullSpace, Vec], None]
 """`PETSc.NullSpace` callback."""
+
+# --- MatHtool ---
+
+MatHtoolFunction = Callable[[int, int, int, ArrayInt, ArrayInt, ArrayScalar, Any], None]
+"""`PETSc.Mat` `Mat.Type.HTOOL` kernel callback.
+
+Callable with signature ``kernel(sdim, M, N, rows, cols, v, ctx)``:
+
+- ``sdim`` — spatial dimension of the coordinate space
+- ``M`` — number of target (row) indices
+- ``N`` — number of source (column) indices
+- ``rows`` — target global indices, shape ``(M,)``
+- ``cols`` — source global indices, shape ``(N,)``
+- ``v`` — output submatrix, shape ``(M, N)`` in column-major order, to be filled by the callable
+- ``ctx`` — user-defined context passed to `Mat.createHtoolFromKernel`
+
+"""
 
 # --- DM ---
 
