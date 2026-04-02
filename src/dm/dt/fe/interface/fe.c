@@ -166,6 +166,9 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 . obj  - Optional object that provides the options prefix, pass `NULL` to use the options prefix of `A`
 - name - command line option name
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: `PetscFE`, `PetscFEView()`, `PetscObjectViewFromOptions()`, `PetscFECreate()`

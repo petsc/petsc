@@ -433,19 +433,22 @@ PetscErrorCode PetscDAView(PetscDA da, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ da     - the `PetscDA` context
-. obj    - optional object that provides the prefix for options
-- option - option name to check (may be `NULL`)
++ da   - the `PetscDA` context
+. obj  - optional object that provides the prefix for options
+- name - option name to check
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: beginner
 
 .seealso: [](ch_da), `PetscDAView()`, `PetscObjectViewFromOptions()`
 @*/
-PetscErrorCode PetscDAViewFromOptions(PetscDA da, PetscObject obj, const char option[])
+PetscErrorCode PetscDAViewFromOptions(PetscDA da, PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)da, obj, option));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)da, obj, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

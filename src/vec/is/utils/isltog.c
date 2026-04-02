@@ -331,10 +331,10 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
 . obj  - Optional object that provides the options prefix used for the options database query
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for the available `PetscViewer` and `PetscViewerFormat`
+  Level: intermediate
 
 .seealso: [](sec_scatter), `PetscViewer`, `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingView`, `PetscObjectViewFromOptions()`, `ISLocalToGlobalMappingCreate()`
 @*/

@@ -98,18 +98,21 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   Collective
 
   Input Parameters:
-+ obj        - the `ISColoring` object
-. bobj       - prefix to use for viewing, or `NULL` to use prefix of `mat`
-- optionname - option to activate viewing
++ obj  - the `ISColoring` object
+. bobj - prefix to use for viewing, or `NULL` to use prefix of `mat`
+- name - option to activate viewing
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
 
-  Developer Notes:
+  Developer Note:
   This cannot use `PetscObjectViewFromOptions()` because `ISColoring` is not a `PetscObject`
 
-.seealso: `ISColoring`, `ISColoringView()`
+.seealso: `ISColoring`, `ISColoringView()`, `PetscObjectViewFromOptions()`
 @*/
-PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const char optionname[])
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const char name[])
 {
   PetscViewer       viewer;
   PetscBool         flg;
@@ -118,7 +121,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : NULL;
-  PetscCall(PetscOptionsCreateViewer(obj->comm, NULL, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(obj->comm, NULL, prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(ISColoringView(obj, viewer));
@@ -398,7 +401,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 
   Level: advanced
 
-  Developer Notes:
+  Developer Note:
   This manual page is incomprehensible and still needs to be fixed
 
 .seealso: [](sec_scatter), `IS`, `MatPartitioningCreate()`, `ISPartitioningToNumbering()`, `ISPartitioningCount()`

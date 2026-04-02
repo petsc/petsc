@@ -227,6 +227,9 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 . obj  - Optional object that provides the options prefix used to query the options database
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: [](ch_ksp), `KSP`, `KSPView()`, `PetscObjectViewFromOptions()`, `KSPCreate()`

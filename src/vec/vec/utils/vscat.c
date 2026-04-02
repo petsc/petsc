@@ -517,10 +517,10 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 . obj  - Optional object
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for available `PetscViewer` and `PetscViewerFormat` values
+  Level: intermediate
 
 .seealso: [](sec_scatter), `VecScatter`, `VecScatterView()`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
 @*/

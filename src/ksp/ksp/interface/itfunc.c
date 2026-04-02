@@ -582,7 +582,9 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
 
   Level: intermediate
 
-  Note:
+  Notes:
+  This function has a different API and behavior than `PetscObjectViewFromOptions()`
+
   This is called automatically at the conclusion of `KSPSolve()` so is rarely called directly by user code.
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewSet()`

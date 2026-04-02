@@ -29,7 +29,7 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 }
 
 /*@
-  PetscObjectDestroy - Destroys a `PetscObject`, regardless of the type.
+  PetscObjectDestroy - Destroys a `PetscObject`, regardless of the class.
 
   Collective
 
@@ -52,7 +52,7 @@ PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 }
 
 /*@
-  PetscObjectView - Views a `PetscObject` regardless of the type.
+  PetscObjectView - Views, that is displays or stores information about a `PetscObject`.
 
   Collective
 
@@ -83,41 +83,50 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ obj        - the object
-. bobj       - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
-- optionname - option string that is used to activate viewing
++ obj  - the object
+. bobj - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
+- name - option string that is used to activate viewing. It typically ends with _view.
 
   Options Database Key:
-. -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like `-mat_coarse_view`
+. -name [viewertype][:...] - option name and values. In actual usage the key might be something like `-vec_view`
 
   Level: developer
 
   Notes:
-  The argument has the following form
+  For a `viewertype` that represents files, including `ascii`, `binary`, `matlab`, `vu`, `vtk`, `glvis`, `cgns`, and `hdf5`, the argument has the following form
 .vb
-    type:filename:format:filemode
+    viewertype[:filename[:format[:filemode]]]
 .ve
-  where all parts are optional, but you need to include the colon to access the next part. For example, to read from an HDF5 file, use
+  where all parts are optional, but you need to include the colon to access the next part.
+  `filename` is the name of the file where the object data will be stored. `format` is the string name
+  of a `PetscViewerFormat`, for example, `default` or `ascii_info`. `filemode` can be `append` to indicate the file named `filename` should be appended
+  to and not replaced, while `read` indicates the file is for reading.
+
+  For example, to read from an HDF5 file, use
 .vb
     hdf5:sol.h5::read
 .ve
 
+  For a `viewertype` of `draw` the argument is of the form
 .vb
-    If no value is provided ascii:stdout is used
-       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
-                                                  for example ascii::ascii_info prints just the information about the object not all details
-                                                  unless :append is given filename opens in write mode, overwriting what was already there
-       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
-       socket[:port]                             defaults to the standard output port
-       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+  draw[:drawtype[:filename]]
 .ve
+  where `drawtype` is, for example, `tikz` or `x` and `filename` indicates where the data is to be saved if it is not directly displayed.
 
-  This is not called directly but is called by, for example, `MatViewFromOptions()`
+  Other formats, such as
+.vb
+  socket[:port]
+  saws[:communicatorname]
+.ve
+  that send the data to a Unix socket or publish the object to the Scientific Application Webserver (SAWs) exist.
+
+  If no value is provided `ascii:stdout` is used
+
+  This function is usually not called directly but is called by, for example, `MatViewFromOptions()`.
 
 .seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsCreateViewer()`
 @*/
-PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, const char optionname[])
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, const char name[])
 {
   PetscViewer       viewer;
   PetscBool         flg;
@@ -131,7 +140,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscObjectView(obj, viewer));
@@ -189,6 +198,9 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 . same - `PETSC_TRUE` if they are the same or both unset, else `PETSC_FALSE`
 
   Level: intermediate
+
+  Note:
+  Both objects must be of the same class, for example both `Vec` objects.
 
 .seealso: `PetscObjectTypeCompare()`, `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 @*/
@@ -409,9 +421,11 @@ static PetscErrorCode RegisterFinalizer(PetscFinalizerContainer container)
 
   Level: developer
 
-  Note:
+  Notes:
   This is used by, for example, `PETSC_VIEWER_XXX_()` routines to free the viewer
   when PETSc ends.
+
+  This should be used only where there is no natural location in the code to put a call to the destructor of the object.
 
 .seealso: `PetscObjectRegisterDestroyAll()`
 @*/
@@ -476,7 +490,7 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 /*@C
   PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
 
-  Not Collective unless registered functions are collective
+  Not Collective except for registered functions that are collective
 
   Level: developer
 
