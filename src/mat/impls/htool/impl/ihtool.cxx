@@ -1,4 +1,5 @@
 #include <../src/mat/impls/htool/htool.hpp> /*I "petscmat.h" I*/
+#include <petscdraw.h>
 #include <set>
 
 const char *const MatHtoolCompressorTypes[] = {"sympartialACA", "fullACA", "SVD"};
@@ -310,6 +311,84 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatView_Htool_Draw_Zoom(PetscDraw draw, void *ptr)
+{
+  Mat                                                         A = (Mat)ptr;
+  Mat_Htool                                                  *a;
+  PetscReal                                                   x_r, y_r, x_l, y_l, w, h;
+  PetscInt                                                    min_max[2] = {PETSC_INT_MAX, 0};
+  const int                                                   greens[]   = {PETSC_DRAW_LIMEGREEN, PETSC_DRAW_FORESTGREEN, PETSC_DRAW_DARKGREEN};
+  int                                                         color;
+  char                                                        str[16];
+  std::vector<const htool::HMatrix<PetscScalar, PetscReal> *> dense_blocks, low_rank_blocks;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
+  PetscCallExternalVoid("get_leaves", htool::get_leaves(*a->local_hmatrix, dense_blocks, low_rank_blocks));
+  for (const htool::HMatrix<PetscScalar, PetscReal> *block : low_rank_blocks) {
+    const PetscInt rank = block->get_rank();
+
+    if (rank < min_max[0]) min_max[0] = rank;
+    if (rank > min_max[1]) min_max[1] = rank;
+  }
+  PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)A), min_max, min_max));
+  if (min_max[0] == PETSC_INT_MAX) min_max[0] = min_max[1];
+  PetscCall(PetscDrawStringGetSize(draw, &w, &h));
+  PetscDrawCollectiveBegin(draw);
+  for (const htool::HMatrix<PetscScalar, PetscReal> *block : dense_blocks) {
+    x_l = x_r = (PetscReal)block->get_source_cluster().get_offset();
+    x_r += (PetscReal)block->get_source_cluster().get_size();
+    y_l = y_r = (PetscReal)(A->rmap->N - block->get_target_cluster().get_offset());
+    y_l -= (PetscReal)block->get_target_cluster().get_size();
+    PetscCall(PetscDrawRectangle(draw, x_l, y_l, x_r, y_r, PETSC_DRAW_RED, PETSC_DRAW_RED, PETSC_DRAW_RED, PETSC_DRAW_RED));
+    PetscCall(PetscDrawLine(draw, x_l, y_l, x_r, y_l, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_r, y_l, x_r, y_r, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_r, y_r, x_l, y_r, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_l, y_r, x_l, y_l, PETSC_DRAW_BLACK));
+  }
+  for (const htool::HMatrix<PetscScalar, PetscReal> *block : low_rank_blocks) {
+    PetscReal      th;
+    const PetscInt rank = block->get_rank();
+
+    x_l = x_r = (PetscReal)block->get_source_cluster().get_offset();
+    x_r += (PetscReal)block->get_source_cluster().get_size();
+    y_l = y_r = (PetscReal)(A->rmap->N - block->get_target_cluster().get_offset());
+    y_l -= (PetscReal)block->get_target_cluster().get_size();
+    if (min_max[1] > min_max[0]) color = greens[(int)((PetscReal)(rank - min_max[0]) / (PetscReal)(min_max[1] - min_max[0]) * (PETSC_STATIC_ARRAY_LENGTH(greens) - 1) + 0.5)];
+    else color = greens[PETSC_STATIC_ARRAY_LENGTH(greens) - 1];
+    PetscCall(PetscDrawRectangle(draw, x_l, y_l, x_r, y_r, color, color, color, color));
+    PetscCall(PetscDrawLine(draw, x_l, y_l, x_r, y_l, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_r, y_l, x_r, y_r, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_r, y_r, x_l, y_r, PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, x_l, y_r, x_l, y_l, PETSC_DRAW_BLACK));
+    PetscCall(PetscSNPrintf(str, sizeof(str), "%d", rank));
+    PetscCall(PetscDrawStringGetSize(draw, nullptr, &th));
+    if (x_r - x_l > 4 * w && y_r - y_l > 4 * h) PetscCall(PetscDrawStringCentered(draw, 0.5 * (x_l + x_r), 0.5 * (y_l + y_r) - th / 2, PETSC_DRAW_BLACK, str));
+  }
+  PetscDrawCollectiveEnd(draw);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatView_Htool_Draw(Mat A, PetscViewer viewer)
+{
+  PetscDraw draw;
+  PetscReal x_r = (PetscReal)A->cmap->N, y_r = (PetscReal)A->rmap->N, w, h;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
+  PetscCall(PetscDrawIsNull(draw, &flg));
+  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
+  w = x_r / 10.0;
+  h = y_r / 10.0;
+  PetscCall(PetscDrawSetCoordinates(draw, -w, -h, x_r + w, y_r + h));
+  PetscCall(PetscObjectCompose((PetscObject)A, "Zoomviewer", (PetscObject)viewer));
+  PetscCall(PetscDrawZoom(draw, MatView_Htool_Draw_Zoom, A));
+  PetscCall(PetscObjectCompose((PetscObject)A, "Zoomviewer", nullptr));
+  PetscCall(PetscDrawSave(draw));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
 {
   Mat_Htool                         *a;
@@ -318,43 +397,47 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
   std::map<std::string, std::string> hmatrix_information;
 
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(A, &a));
-  hmatrix_information = htool::get_distributed_hmatrix_information(*a->local_hmatrix, PetscObjectComm((PetscObject)A));
-  PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
-  if (flg) {
-    PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
-    PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->block_diagonal_hmatrix->get_symmetry()));
-    if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERDRAW, &flg));
+  if (flg) PetscCall(MatView_Htool_Draw(A, pv));
+  else {
+    PetscCall(MatShellGetContext(A, &a));
+    hmatrix_information = htool::get_distributed_hmatrix_information(*a->local_hmatrix, PetscObjectComm((PetscObject)A));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
+    if (flg) {
+      PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+      PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->block_diagonal_hmatrix->get_symmetry()));
+      if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
+        PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
 #else
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)scale));
+        PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)scale));
 #endif
-    }
-    if (PetscAbsScalar(shift) > PETSC_MACHINE_EPSILON) {
+      }
+      if (PetscAbsScalar(shift) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(shift), (double)PetscImaginaryPart(shift)));
+        PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(shift), (double)PetscImaginaryPart(shift)));
 #else
-      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)shift));
+        PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)shift));
 #endif
+      }
+      PetscCall(PetscViewerASCIIPrintf(pv, "maximal cluster leaf size: %" PetscInt_FMT "\n", a->max_cluster_leaf_size));
+      PetscCall(PetscViewerASCIIPrintf(pv, "epsilon: %g\n", (double)a->epsilon));
+      PetscCall(PetscViewerASCIIPrintf(pv, "eta: %g\n", (double)a->eta));
+      PetscCall(PetscViewerASCIIPrintf(pv, "minimum target depth: %" PetscInt_FMT "\n", a->depth[0]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "minimum source depth: %" PetscInt_FMT "\n", a->depth[1]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "compressor: %s\n", MatHtoolCompressorTypes[a->compressor]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "clustering: %s\n", MatHtoolClusteringTypes[a->clustering]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "compression ratio: %s\n", hmatrix_information["Compression_ratio"].c_str()));
+      PetscCall(PetscViewerASCIIPrintf(pv, "space saving: %s\n", hmatrix_information["Space_saving"].c_str()));
+      PetscCall(PetscViewerASCIIPrintf(pv, "block tree consistency: %s\n", PetscBools[a->local_hmatrix->is_block_tree_consistent()]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "recompression: %s\n", PetscBools[a->recompression]));
+      PetscCall(PetscViewerASCIIPrintf(pv, "number of dense (resp. low rank) matrices: %s (resp. %s)\n", hmatrix_information["Number_of_dense_blocks"].c_str(), hmatrix_information["Number_of_low_rank_blocks"].c_str()));
+      PetscCall(
+        PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) dense block sizes: (%s, %s, %s)\n", hmatrix_information["Dense_block_size_min"].c_str(), hmatrix_information["Dense_block_size_mean"].c_str(), hmatrix_information["Dense_block_size_max"].c_str()));
+      PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) low rank block sizes: (%s, %s, %s)\n", hmatrix_information["Low_rank_block_size_min"].c_str(), hmatrix_information["Low_rank_block_size_mean"].c_str(),
+                                       hmatrix_information["Low_rank_block_size_max"].c_str()));
+      PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) ranks: (%s, %s, %s)\n", hmatrix_information["Rank_min"].c_str(), hmatrix_information["Rank_mean"].c_str(), hmatrix_information["Rank_max"].c_str()));
     }
-    PetscCall(PetscViewerASCIIPrintf(pv, "maximal cluster leaf size: %" PetscInt_FMT "\n", a->max_cluster_leaf_size));
-    PetscCall(PetscViewerASCIIPrintf(pv, "epsilon: %g\n", (double)a->epsilon));
-    PetscCall(PetscViewerASCIIPrintf(pv, "eta: %g\n", (double)a->eta));
-    PetscCall(PetscViewerASCIIPrintf(pv, "minimum target depth: %" PetscInt_FMT "\n", a->depth[0]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "minimum source depth: %" PetscInt_FMT "\n", a->depth[1]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "compressor: %s\n", MatHtoolCompressorTypes[a->compressor]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "clustering: %s\n", MatHtoolClusteringTypes[a->clustering]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "compression ratio: %s\n", hmatrix_information["Compression_ratio"].c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "space saving: %s\n", hmatrix_information["Space_saving"].c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "block tree consistency: %s\n", PetscBools[a->local_hmatrix->is_block_tree_consistent()]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "recompression: %s\n", PetscBools[a->recompression]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "number of dense (resp. low rank) matrices: %s (resp. %s)\n", hmatrix_information["Number_of_dense_blocks"].c_str(), hmatrix_information["Number_of_low_rank_blocks"].c_str()));
-    PetscCall(
-      PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) dense block sizes: (%s, %s, %s)\n", hmatrix_information["Dense_block_size_min"].c_str(), hmatrix_information["Dense_block_size_mean"].c_str(), hmatrix_information["Dense_block_size_max"].c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) low rank block sizes: (%s, %s, %s)\n", hmatrix_information["Low_rank_block_size_min"].c_str(), hmatrix_information["Low_rank_block_size_mean"].c_str(),
-                                     hmatrix_information["Low_rank_block_size_max"].c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) ranks: (%s, %s, %s)\n", hmatrix_information["Rank_min"].c_str(), hmatrix_information["Rank_mean"].c_str(), hmatrix_information["Rank_max"].c_str()));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
