@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 {
   Mat               A, AT, D, B, P, R, RT;
   PetscInt          m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
-  PetscMPIInt       size;
+  PetscMPIInt       rank, size;
   PetscScalar      *ptr;
   PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon = PetscSqrtReal(PETSC_SMALL);
   MatHtoolKernelFn *kernel = GenEntries;
@@ -56,6 +56,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-symmetric", &sym, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-recompression", &recompression, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-mat_htool_epsilon", &epsilon, NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   M = size * m;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
@@ -229,6 +230,56 @@ int main(int argc, char **argv)
       PetscCall(PetscFree(gscoords));
       PetscCall(PetscFree(scoords));
     }
+  }
+  /* verify that MatGetDiagonalBlock() returns the proper matrix */
+  {
+    Mat D, B, C;
+
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, M, size, NULL, &B));
+    for (PetscMPIInt i = 0; i < size; ++i) {
+      Vec col, local;
+
+      PetscCall(MatDenseGetColumnVecWrite(B, i, &col));
+      PetscCall(VecCreateLocalVector(col, &local));
+      PetscCall(VecGetLocalVector(col, local));
+      if (i == rank) PetscCall(VecSetRandom(local, rdm));
+      else PetscCall(VecSet(local, 0.0));
+      PetscCall(VecRestoreLocalVector(col, local));
+      PetscCall(VecDestroy(&local));
+      PetscCall(MatDenseRestoreColumnVecWrite(B, i, &col));
+    }
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+    PetscCall(MatGetDiagonalBlock(A, &D));
+    PetscCall(PetscObjectTypeCompare((PetscObject)D, MATHTOOL, &flg));
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatGetDiagonalBlock() did not return a MATHTOOL");
+    for (PetscMPIInt i = 0; i < size; ++i) {
+      Vec col[2], local[2];
+
+      PetscCall(MatDenseGetColumnVecRead(B, i, col));
+      PetscCall(MatDenseGetColumnVecRead(C, i, col + 1));
+      if (i == rank) {
+        Vec y;
+
+        PetscCall(VecCreateLocalVector(col[0], local));
+        PetscCall(VecGetLocalVectorRead(col[0], local[0]));
+        PetscCall(VecCreateLocalVector(col[1], local + 1));
+        PetscCall(VecGetLocalVectorRead(col[1], local[1]));
+        PetscCall(MatCreateVecs(D, NULL, &y));
+        PetscCall(MatMult(D, local[0], y));
+        PetscCall(VecAXPY(y, -1.0, local[1]));
+        PetscCall(VecNorm(y, NORM_INFINITY, &norm));
+        PetscCheck(norm < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Difference (= %g) greater than PETSC_SMALL (= %g)", (double)norm, (double)PETSC_SMALL);
+        PetscCall(VecDestroy(&y));
+        PetscCall(VecRestoreLocalVectorRead(col[1], local[1]));
+        PetscCall(VecDestroy(local + 1));
+        PetscCall(VecRestoreLocalVectorRead(col[0], local[0]));
+        PetscCall(VecDestroy(local));
+      }
+      PetscCall(MatDenseRestoreColumnVecRead(C, i, col + 1));
+      PetscCall(MatDenseRestoreColumnVecRead(B, i, col));
+    }
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(&B));
   }
   PetscCall(PetscRandomDestroy(&rdm));
   PetscCall(MatDestroy(&A));
