@@ -858,7 +858,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor,
   void           *ctx;
   PetscQuadrature quad;
   PetscScalar    *earray;
-  PetscReal       minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
+  PetscReal       minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL};
   PetscInt        dim, cdim, cStart, cEnd, Nf, Nc;
 
   PetscFunctionBegin;
@@ -949,8 +949,8 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor,
   PetscCall(VecRestoreArray(errVec, &earray));
   PetscCall(DMDestroy(&plex));
   PetscCall(DMDestroy(&eplex));
-  PetscCall(PetscGlobalMinMaxReal(PetscObjectComm((PetscObject)adaptor), minMaxInd, minMaxIndGlobal));
-  PetscCall(PetscInfo(adaptor, "DMAdaptor: error indicator range (%g, %g)\n", (double)minMaxIndGlobal[0], (double)minMaxIndGlobal[1]));
+  PetscCall(PetscGlobalMinMaxReal(PetscObjectComm((PetscObject)adaptor), minMaxInd, minMaxInd));
+  PetscCall(PetscInfo(adaptor, "DMAdaptor: error indicator range (%g, %g)\n", (double)minMaxInd[0], (double)minMaxInd[1]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

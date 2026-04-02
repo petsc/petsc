@@ -1678,18 +1678,16 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
           }
         }
       } else {
-        PetscInt locMinMax[2];
-
-        locMinMax[0] = Nc[0] + Nc[1];
-        locMinMax[1] = Nc[0] + Nc[1];
-        PetscCall(PetscGlobalMinMaxInt(comm, locMinMax, sizes));
-        locMinMax[0] = Nc[1];
-        locMinMax[1] = Nc[1];
-        PetscCall(PetscGlobalMinMaxInt(comm, locMinMax, hybsizes));
+        sizes[0] = Nc[0] + Nc[1];
+        sizes[1] = Nc[0] + Nc[1];
+        PetscCall(PetscGlobalMinMaxInt(comm, sizes, sizes));
+        hybsizes[0] = Nc[1];
+        hybsizes[1] = Nc[1];
+        PetscCall(PetscGlobalMinMaxInt(comm, hybsizes, hybsizes));
         if (d == depth) {
-          locMinMax[0] = gcNum;
-          locMinMax[1] = gcNum;
-          PetscCall(PetscGlobalMinMaxInt(comm, locMinMax, ghostsizes));
+          ghostsizes[0] = gcNum;
+          ghostsizes[1] = gcNum;
+          PetscCall(PetscGlobalMinMaxInt(comm, ghostsizes, ghostsizes));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Min/Max of %" PetscInt_FMT "-cells per rank:", (depth == 1) && d ? dim : d));
         PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT "/%" PetscInt_FMT, sizes[0], sizes[1]));
@@ -10893,11 +10891,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
     bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
     bsLocal[1] = bs;
     PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)dm), bsLocal, bsMinMax));
-    if (bsMinMax[0] != bsMinMax[1]) {
-      bs = 1;
-    } else {
-      bs = bsMinMax[0];
-    }
+    if (bsMinMax[0] != bsMinMax[1]) bs = 1;
+    else bs = bsMinMax[0];
     PetscCall(PetscMalloc1(subSize, &subIndices));
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
