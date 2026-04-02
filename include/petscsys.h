@@ -1528,7 +1528,7 @@ typedef void *PetscCtx;
    The getAPI() code processor also uses the variable type to generate correct bindings for other languages.
 
    The Fortran C stub and Fortran interface definition generated for functions with a `PetscCtxRt` argument are the C function name suffixed with
-   `Cptr`, for example `KSPConvergedDefaultDestroyCptr`. The Fortran user API is a macro with the original C funtion name, for example,
+   `Cptr`, for example `KSPConvergedDefaultDestroyCptr`. The Fortran user API is a macro with the original C function name, for example,
    `KSPConvergedDefaultDestroy` that calls the  `KSPConvergedDefaultDestroyCptr` version and then calls `c_f_pointer()` to handle the equivalent of a `void**` cast
    to the users Fortran derived type argument.
 

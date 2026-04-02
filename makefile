@@ -365,7 +365,7 @@ checkfprettifyformat: checkgitclean fprettify
 shellcheck:
 	@shellcheck --format=diff $$(git ls-files \*.sh) $$(file lib/petsc/bin/* lib/petsc/bin/maint/* | grep "/usr/bin/env sh" | cut -d: -f1) | patch -p1
 
-# Cannot use the following line since it encouters many problems we will likely not fix
+# Cannot use the following line since it encounters many problems we will likely not fix
 #   shellcheck --format=tty $$(git ls-files \*.sh) $$(file lib/petsc/bin/* lib/petsc/bin/maint/* | grep "/usr/bin/env sh" | cut -d: -f1)
 checkshellcheck: shellcheck
 	@if ! git diff --quiet; then\
