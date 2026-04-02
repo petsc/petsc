@@ -247,7 +247,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallCUDA(cudaMemcpy(h_info, d_info, sizeof(int) * n_batch, cudaMemcpyDeviceToHost));
-  for (int i = 0; i < n_batch; i++) {
+  for (PetscInt i = 0; i < n_batch; i++) {
     if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cuSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   }
   PetscCall(PetscFree(h_info));
@@ -307,7 +307,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallHIP(hipMemcpy(h_info, d_info, sizeof(int) * n_batch, hipMemcpyDeviceToHost));
-  for (int i = 0; i < n_batch; i++) {
+  for (PetscInt i = 0; i < n_batch; i++) {
     if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   }
   PetscCall(PetscFree(h_info));
@@ -365,7 +365,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   q->memcpy(h_info, d_info, sizeof(int) * n_batch).wait();
-  for (int i = 0; i < n_batch; i++) {
+  for (PetscInt i = 0; i < n_batch; i++) {
     if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "oneMKL eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   }
   PetscCall(PetscFree(h_info));
@@ -1123,7 +1123,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA da, PetscDA_LETKF *impl, Pe
       PetscInt nan_count = 0;
       Kokkos::parallel_reduce(
         "CheckS", Kokkos::RangePolicy<exec_space>(0, n_batch_current),
-        KOKKOS_LAMBDA(const int i, int &l_count) {
+        KOKKOS_LAMBDA(const int i, PetscInt &l_count) {
           for (int j = 0; j < n_obs_vertex_copy; j++) {
             for (int k = 0; k < m; k++) {
               if (S_batch(i, j, k) != S_batch(i, j, k)) l_count++;
@@ -1167,7 +1167,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA da, PetscDA_LETKF *impl, Pe
       PetscInt nan_count = 0;
       Kokkos::parallel_reduce(
         "CheckT", Kokkos::RangePolicy<exec_space>(0, n_batch_current),
-        KOKKOS_LAMBDA(const int i, int &l_count) {
+        KOKKOS_LAMBDA(const int i, PetscInt &l_count) {
           for (int j = 0; j < m; j++) {
             for (int k = 0; k < m; k++) {
               if (T_batch(i, j, k) != T_batch(i, j, k)) l_count++;
@@ -1193,7 +1193,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA da, PetscDA_LETKF *impl, Pe
       PetscInt bad_lambda = 0;
       Kokkos::parallel_reduce(
         "CheckLambda", Kokkos::RangePolicy<exec_space>(0, n_batch_current),
-        KOKKOS_LAMBDA(const int i, int &l_count) {
+        KOKKOS_LAMBDA(const int i, PetscInt &l_count) {
           for (int k = 0; k < m; k++) {
             if (Lambda_batch(i, k) != Lambda_batch(i, k) || PetscRealPart(Lambda_batch(i, k)) < -1e-8) l_count++;
           }
