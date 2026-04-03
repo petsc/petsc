@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.version           = '1.0.1'
     self.gitcommit         = '{0}'.format(self.version)
-    self.versionname       = 'ZFP_VERSION'
+    self.versionname       = 'ZFP_VERSION_STRING'
     self.download          = ['git://https://github.com/LLNL/zfp']
     self.functions         = ['zfp_field_2d']
     self.includes          = ['zfp/array2.hpp']
