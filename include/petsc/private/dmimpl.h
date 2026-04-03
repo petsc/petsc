@@ -539,6 +539,9 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode DMViewDSFromOptions_Internal(DM, const char[]);
+PETSC_INTERN PetscErrorCode DMViewSectionFromOptions_Internal(DM, const char[]);
+
 PETSC_INTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf);

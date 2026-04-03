@@ -4367,6 +4367,44 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMViewDSFromOptions_Internal(DM dm, const char opt[])
+{
+  PetscObject       obj = (PetscObject)dm;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, obj->prefix, opt, &viewer, &format, &flg));
+  if (flg) {
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    for (PetscInt d = 0; d < dm->Nds; ++d) PetscCall(PetscDSView(dm->probs[d].ds, viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMViewSectionFromOptions_Internal(DM dm, const char opt[])
+{
+  PetscObject       obj = (PetscObject)dm;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, obj->prefix, opt, &viewer, &format, &flg));
+  if (flg) {
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    if (dm->localSection) PetscCall(PetscSectionView(dm->localSection, viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMGetLocalSection - Get the `PetscSection` encoding the local data layout for the `DM`.
 
@@ -4392,25 +4430,9 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(section, 2);
   if (!dm->localSection && dm->ops->createlocalsection) {
-    PetscInt d;
-
     if (dm->setfromoptionscalled) {
-      PetscObject       obj = (PetscObject)dm;
-      PetscViewer       viewer;
-      PetscViewerFormat format;
-      PetscBool         flg;
-
-      PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, obj->prefix, "-dm_petscds_view", &viewer, &format, &flg));
-      if (flg) PetscCall(PetscViewerPushFormat(viewer, format));
-      for (d = 0; d < dm->Nds; ++d) {
-        PetscCall(PetscDSSetFromOptions(dm->probs[d].ds));
-        if (flg) PetscCall(PetscDSView(dm->probs[d].ds, viewer));
-      }
-      if (flg) {
-        PetscCall(PetscViewerFlush(viewer));
-        PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscViewerDestroy(&viewer));
-      }
+      for (PetscInt d = 0; d < dm->Nds; ++d) PetscCall(PetscDSSetFromOptions(dm->probs[d].ds));
+      PetscCall(DMViewDSFromOptions_Internal(dm, "-dm_petscds_view"));
     }
     PetscUseTypeMethod(dm, createlocalsection);
     if (dm->localSection) PetscCall(PetscObjectViewFromOptions((PetscObject)dm->localSection, NULL, "-dm_petscsection_view"));
