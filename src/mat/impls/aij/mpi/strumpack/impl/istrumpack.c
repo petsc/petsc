@@ -2,6 +2,9 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <StrumpackSparseSolver.h>
 
+static const char *const MatSTRUMPACKCompressionTypes[] = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "MatSTRUMPACKCompressionType", "", 0};
+static const char *const MatSTRUMPACKReorderingTypes[]  = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "MatSTRUMPACKReordering", "", 0};
+
 static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A, Vec v)
 {
   PetscFunctionBegin;
@@ -338,25 +341,30 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A, Mat B_mpi, Mat X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatView_Info_STRUMPACK(Mat A, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  /* check if matrix is strumpack type */
-  if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscViewerASCIIPrintf(viewer, "STRUMPACK sparse solver!\n"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatView_STRUMPACK(Mat A, PetscViewer viewer)
 {
-  PetscBool         isascii;
-  PetscViewerFormat format;
+  STRUMPACK_SparseSolver     *S = (STRUMPACK_SparseSolver *)A->data;
+  MatSTRUMPACKCompressionType compressionType;
+  MatSTRUMPACKReordering      reorderingType;
+  PetscBool                   cperm, gpu;
+  PetscBool                   isascii;
+  PetscViewerFormat           format;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_STRUMPACK(A, viewer));
+    if (format == PETSC_VIEWER_ASCII_INFO) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "STRUMPACK sparse solver\n"));
+      PetscCallExternalVoid("STRUMPACK_compression", compressionType = (MatSTRUMPACKCompressionType)STRUMPACK_compression(*S));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Compression type %s\n", MatSTRUMPACKCompressionTypes[compressionType]));
+      PetscCallExternalVoid("STRUMPACK_reordering_method", reorderingType = (MatSTRUMPACKReordering)STRUMPACK_reordering_method(*S));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Reordering %s\n", MatSTRUMPACKReorderingTypes[reorderingType]));
+      PetscCallExternalVoid("STRUMPACK_matching", cperm = (PetscBool)(STRUMPACK_matching(*S) != STRUMPACK_MATCHING_NONE));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Column permutation: %s\n", cperm ? "True" : "False"));
+      PetscCallExternalVoid("STRUMPACK_use_gpu", gpu = (PetscBool)STRUMPACK_use_gpu(*S));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Use GPU: %s\n", gpu ? "True" : "False"));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -434,8 +442,6 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   STRUMPACK_SparseSolver       *S = (STRUMPACK_SparseSolver *)F->data;
   STRUMPACK_REORDERING_STRATEGY ndcurrent, ndvalue;
   STRUMPACK_COMPRESSION_TYPE    compcurrent, compvalue;
-  const char *const             STRUMPACKNDTypes[] = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "STRUMPACKNDTypes", "", 0};
-  const char *const             CompTypes[]        = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "CompTypes", "", 0};
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "STRUMPACK Options", "Mat");
@@ -449,7 +455,7 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   /* When compression is enabled, the STRUMPACK solver becomes an incomplete                         */
   /* (or approximate) LU factorization.                                                              */
   PetscCallExternalVoid("STRUMPACK_compression", compcurrent = STRUMPACK_compression(*S));
-  PetscCall(PetscOptionsEnum("-mat_strumpack_compression", "Rank-structured compression type", "None", CompTypes, (PetscEnum)compcurrent, (PetscEnum *)&compvalue, &set));
+  PetscCall(PetscOptionsEnum("-mat_strumpack_compression", "Rank-structured compression type", "None", MatSTRUMPACKCompressionTypes, (PetscEnum)compcurrent, (PetscEnum *)&compvalue, &set));
   if (set) PetscCall(MatSTRUMPACKSetCompression(F, (MatSTRUMPACKCompressionType)compvalue));
   else if (F->factortype == MAT_FACTOR_ILU) PetscCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR));
 
@@ -492,7 +498,7 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   if (set) PetscCallExternalVoid("STRUMPACK_set_matching", STRUMPACK_set_matching(*S, flg ? STRUMPACK_MATCHING_MAX_DIAGONAL_PRODUCT_SCALING : STRUMPACK_MATCHING_NONE));
 
   PetscCallExternalVoid("STRUMPACK_reordering_method", ndcurrent = STRUMPACK_reordering_method(*S));
-  PetscCall(PetscOptionsEnum("-mat_strumpack_reordering", "Sparsity reducing matrix reordering", "None", STRUMPACKNDTypes, (PetscEnum)ndcurrent, (PetscEnum *)&ndvalue, &set));
+  PetscCall(PetscOptionsEnum("-mat_strumpack_reordering", "Sparsity reducing matrix reordering", "None", MatSTRUMPACKReorderingTypes, (PetscEnum)ndcurrent, (PetscEnum *)&ndvalue, &set));
   if (set) PetscCallExternalVoid("STRUMPACK_set_reordering_method", STRUMPACK_set_reordering_method(*S, ndvalue));
 
   /* geometric ordering, for a regular 1D/2D/3D mesh in the natural ordering, */
