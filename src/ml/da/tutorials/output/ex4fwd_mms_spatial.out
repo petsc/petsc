@@ -1,0 +1,6 @@
+MMS spatial-order check
+  coarse grid : 12 x 12, dt=1.00000e-04, L1=9.46593e-04, L2=1.42672e-05, Linf=3.32782e-07
+  medium grid : 24 x 24, dt=1.00000e-04, L1=2.34777e-04, L2=3.59987e-06, Linf=8.84435e-08
+  fine grid   : 48 x 48, dt=1.00000e-04, L1=5.69311e-05, L2=8.76648e-07, Linf=2.18035e-08
+  observed p (coarse->medium) : L1=2.01, L2=1.99, Linf=1.91
+  observed p (medium->fine)   : L1=2.04, L2=2.04, Linf=2.02
