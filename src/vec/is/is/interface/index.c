@@ -37,7 +37,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscLayout     map;
   const PetscInt *idxs, *idxs_mult = NULL;
   PetscInt       *leaf_data, *root_data, *gidxs, *ilocal, *ilocalneg;
-  PetscInt        N_n, n, i, lbounds[2], gbounds[2], Nl, ibs;
+  PetscInt        N_n, n, i, bounds[2], Nl, ibs;
   PetscInt        n_n, nlocals, start, first_index, npos, nneg;
   PetscMPIInt     commsize;
   PetscBool       first_found, isblock;
@@ -59,15 +59,15 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscCall(ISGetBlockSize(subset, &ibs));
   PetscCall(PetscObjectTypeCompare((PetscObject)subset, ISBLOCK, &isblock));
   if (subset_mult) PetscCall(ISGetIndices(subset_mult, &idxs_mult));
-  lbounds[0] = PETSC_INT_MAX;
-  lbounds[1] = PETSC_INT_MIN;
+  bounds[0] = PETSC_INT_MAX;
+  bounds[1] = PETSC_INT_MIN;
   for (i = 0, npos = 0, nneg = 0; i < n; i++) {
     if (idxs[i] < 0) {
       ilocalneg[nneg++] = i;
       continue;
     }
-    if (idxs[i] < lbounds[0]) lbounds[0] = idxs[i];
-    if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
+    if (idxs[i] < bounds[0]) bounds[0] = idxs[i];
+    if (idxs[i] > bounds[1]) bounds[1] = idxs[i];
     ilocal[npos++] = i;
   }
   if (npos == n) {
@@ -87,8 +87,8 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscCall(PetscFree(ilocalneg));
   PetscCall(PetscMalloc1(PetscMax(n_n, n), &gidxs)); /* allocating extra space to reuse gidxs */
   /* check for early termination (all negative) */
-  PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)subset), lbounds, gbounds));
-  if (gbounds[1] < gbounds[0]) {
+  PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)subset), bounds, bounds));
+  if (bounds[1] < bounds[0]) {
     if (N) *N = 0;
     if (subset_n) { /* all negative */
       for (i = 0; i < n_n; i++) gidxs[i] = -1;
@@ -104,7 +104,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   }
 
   /* split work */
-  N_n = gbounds[1] - gbounds[0] + 1;
+  N_n = bounds[1] - bounds[0] + 1;
   PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)subset), &map));
   PetscCall(PetscLayoutSetBlockSize(map, 1));
   PetscCall(PetscLayoutSetSize(map, N_n));
@@ -112,7 +112,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscCall(PetscLayoutGetLocalSize(map, &Nl));
 
   /* global indexes in layout */
-  for (i = 0; i < npos; i++) gidxs[i] = (ilocal ? idxs[ilocal[i]] : idxs[i]) - gbounds[0];
+  for (i = 0; i < npos; i++) gidxs[i] = (ilocal ? idxs[ilocal[i]] : idxs[i]) - bounds[0];
   PetscCall(ISRestoreIndices(subset, &idxs));
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)subset), &sf));
   PetscCall(PetscSFSetGraphLayout(sf, map, npos, ilocal, PETSC_USE_POINTER, gidxs));

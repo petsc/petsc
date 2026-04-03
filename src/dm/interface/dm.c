@@ -1149,11 +1149,8 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *ltog)
       bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
       bsLocal[1] = bs;
       PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)dm), bsLocal, bsMinMax));
-      if (bsMinMax[0] != bsMinMax[1]) {
-        bs = 1;
-      } else {
-        bs = bsMinMax[0];
-      }
+      if (bsMinMax[0] != bsMinMax[1]) bs = 1;
+      else bs = bsMinMax[0];
       bs = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
       if (bs > 1) {
