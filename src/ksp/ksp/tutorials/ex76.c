@@ -68,6 +68,23 @@ int main(int argc, char **args)
   PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &aux));
   PetscCall(MatDestroy(&X));
   flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-sort", &flg, NULL));
+  if (flg) {
+    Mat B;
+    IS  perm;
+
+    PetscCall(ISSortPermutation(is, PETSC_FALSE, &perm));
+    PetscCall(ISSort(is));
+    PetscCall(MatPermute(aux, perm, perm, &B));
+    PetscCall(ISDestroy(&perm));
+    PetscCall(MatDestroy(&aux));
+    aux = B;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset_is_block_size", &flg, NULL));
+    if (flg) {
+      PetscCall(ISSetBlockSize(is, 1));
+      flg = PETSC_FALSE;
+    }
+  }
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_levels_1_st_share_sub_ksp", &flg, &set));
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
@@ -358,7 +375,7 @@ int main(int argc, char **args)
       test:
         suffix: geneo_block_splitting
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-15.out
-        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[6-9]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[5-9]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
         args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij}shared output} -successive_solves
       test:
         suffix: geneo_share
@@ -457,7 +474,7 @@ int main(int argc, char **args)
         suffix: geneo_explicittranspose
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -ksp_use_explicittranspose -rhs 2
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -ksp_use_explicittranspose -rhs 2 -sort -reset_is_block_size {{false true}shared output}
       test:
         requires: mumps
         suffix: geneo_share_lu

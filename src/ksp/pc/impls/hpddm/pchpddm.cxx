@@ -1299,27 +1299,27 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
 {
   IS                           perm;
   const PetscInt              *ptr;
-  PetscInt                    *concatenate, size, bs;
+  PetscInt                    *compressed, size, bs;
   std::map<PetscInt, PetscInt> order;
-  PetscBool                    sorted;
+  PetscBool                    flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(in_C, MAT_CLASSID, 4);
-  PetscCall(ISSorted(is, &sorted));
-  if (!sorted) {
-    PetscCall(ISGetLocalSize(is, &size));
+  PetscCall(ISGetLocalSize(is, &size));
+  PetscCall(ISGetBlockSize(is, &bs));
+  PetscCall(ISSorted(is, &flg));
+  if (!flg) {
     PetscCall(ISGetIndices(is, &ptr));
-    PetscCall(ISGetBlockSize(is, &bs));
     /* MatCreateSubMatrices(), called by PCASM, follows the global numbering of Pmat */
     for (PetscInt n = 0; n < size; n += bs) order.insert(std::make_pair(ptr[n] / bs, n / bs));
     PetscCall(ISRestoreIndices(is, &ptr));
     size /= bs;
     if (out_C) {
-      PetscCall(PetscMalloc1(size, &concatenate));
-      for (const std::pair<const PetscInt, PetscInt> &i : order) *concatenate++ = i.second;
-      concatenate -= size;
-      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_C), bs, size, concatenate, PETSC_OWN_POINTER, &perm));
+      PetscCall(PetscMalloc1(size, &compressed));
+      for (const std::pair<const PetscInt, PetscInt> &i : order) *compressed++ = i.second;
+      compressed -= size;
+      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_C), bs, size, compressed, PETSC_OWN_POINTER, &perm));
       PetscCall(ISSetPermutation(perm));
       /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
       PetscCall(MatPermute(in_C, perm, perm, out_C));
@@ -1327,15 +1327,29 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
       else PetscCall(ISDestroy(&perm)); /* no need to save the permutation */
     }
     if (out_is) {
-      PetscCall(PetscMalloc1(size, &concatenate));
-      for (const std::pair<const PetscInt, PetscInt> &i : order) *concatenate++ = i.first;
-      concatenate -= size;
+      PetscCall(PetscMalloc1(size, &compressed));
+      for (const std::pair<const PetscInt, PetscInt> &i : order) *compressed++ = i.first;
+      compressed -= size;
       /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
-      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), bs, size, concatenate, PETSC_OWN_POINTER, out_is));
+      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), bs, size, compressed, PETSC_OWN_POINTER, out_is));
     }
   } else { /* input IS is sorted, nothing to permute, simply duplicate inputs when needed */
     if (out_C) PetscCall(MatDuplicate(in_C, MAT_COPY_VALUES, out_C));
-    if (out_is) PetscCall(ISDuplicate(in_is, out_is));
+    if (out_is) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)in_is, ISBLOCK, &flg));
+      if (flg) PetscCall(ISDuplicate(in_is, out_is));
+      else {
+        PetscCall(ISGetIndices(is, &ptr));
+        if (bs > 1) {
+          size /= bs;
+          PetscCall(PetscMalloc1(size, &compressed));
+          for (PetscInt n = 0; n < size; ++n) compressed[n] = ptr[n * bs] / bs;
+          PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), bs, size, compressed, PETSC_OWN_POINTER, out_is));
+        } else PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), 1, size, ptr, PETSC_COPY_VALUES, out_is));
+        PetscCall(ISRestoreIndices(is, &ptr));
+        PetscCall(ISSetInfo(*out_is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
+      }
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
