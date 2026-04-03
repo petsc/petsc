@@ -1698,10 +1698,14 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     PetscCall(PetscFree3(sizes, hybsizes, ghostsizes));
     {
+      DM               cdm;
       const PetscReal *maxCell;
       const PetscReal *L;
       PetscBool        localized;
 
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      PetscCall(DMViewDSFromOptions_Internal(cdm, "-plex_view_ds"));
+      PetscCall(DMViewSectionFromOptions_Internal(cdm, "-plex_view_section"));
       PetscCall(DMGetPeriodicity(dm, &maxCell, NULL, &L));
       PetscCall(DMGetCoordinatesLocalized(dm, &localized));
       if (L || localized) {
@@ -5942,9 +5946,28 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(DM dm, PetscSecti
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(PetscFEGetDualSpace(fe, &dsp));
     PetscCall(PetscDualSpaceGetDimension(dsp, &dual_space_size));
-    *k = (PetscInt)PetscCeilReal(PetscPowReal(dual_space_size / *Nc, 1.0 / dim)) - 1;
     PetscCall(PetscDualSpaceLagrangeGetContinuity(dsp, continuous));
     PetscCall(PetscDualSpaceLagrangeGetTensor(dsp, tensor));
+    if (*tensor) {
+      *k = (PetscInt)PetscCeilReal(PetscPowReal(dual_space_size / *Nc, 1.0 / dim)) - 1;
+    } else {
+      switch (dim) {
+      case 1:
+        *k = (dual_space_size / *Nc) - 1;
+        break;
+      case 2:
+        // N = (k + 1) (k + 2) / 2, k^2 + 3 k - 2 (N - 1) = 0, k = (sqrt(8 N + 1) - 3) / 2
+        *k = (PetscInt)PetscCeilReal((PetscSqrtReal(8 * dual_space_size / *Nc + 1) - 3) / 2);
+        break;
+      case 3: {
+        // N = (k + 1) (k + 2) (k + 3) / 6, k = (sqrt(3) sqrt(243 N^2 - 1) + 27 N)^(1/3)/3^(2/3) + 1/(3^(1/3) (sqrt(3) sqrt(243 N^2 - 1) + 27 N)^(1/3)) - 2
+        PetscInt N = dual_space_size / *Nc;
+        *k         = (PetscInt)PetscCeilReal(PetscPowReal((PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N) / 9, 1.0 / 3.0) + 1 / PetscPowReal(3 * (PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N), 1.0 / 3.0)) - 2;
+      } break;
+      default:
+        *k = -1;
+      }
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5976,6 +5999,8 @@ static PetscErrorCode GetFieldSize_Private(PetscInt dim, PetscInt k, PetscBool t
   DMPlexSetClosurePermutationTensor - Create a permutation from the default (BFS) point ordering in the closure, to a
   lexicographic ordering over the tensor product cell (i.e., line, quad, hex, etc.), and set this permutation in the
   section provided (or the section of the `DM`).
+
+  Not Collective
 
   Input Parameters:
 + dm      - The `DM`
@@ -6029,7 +6054,7 @@ static PetscErrorCode GetFieldSize_Private(PetscInt dim, PetscInt k, PetscBool t
 
   This is required to run with libCEED.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMSetGlobalSection()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMPlexSetClosurePermutationLexicographic()`, `DMSetGlobalSection()`
 @*/
 PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {
@@ -6038,6 +6063,8 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
   PetscBool continuous = PETSC_TRUE, tensor = PETSC_TRUE;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (section) PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
   PetscCall(DMGetDimension(dm, &dim));
   if (dim < 1) PetscFunctionReturn(PETSC_SUCCESS);
   if (point < 0) {
@@ -6291,6 +6318,314 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       }
       for (i = 0; i < size; ++i) check[perm[i]] = i;
       for (i = 0; i < size; ++i) PetscCheck(check[i] >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing permutation index %" PetscInt_FMT, i);
+      PetscCall(PetscFree(check));
+    }
+    PetscCall(PetscSectionSetClosurePermutation_Internal(section, (PetscObject)dm, d, size, PETSC_OWN_POINTER, perm));
+    if (d == dim) { // Add permutation for localized (in case this is a coordinate DM)
+      PetscInt *loc_perm;
+      PetscCall(PetscMalloc1(size * 2, &loc_perm));
+      for (PetscInt i = 0; i < size; i++) {
+        loc_perm[i]        = perm[i];
+        loc_perm[size + i] = size + perm[i];
+      }
+      PetscCall(PetscSectionSetClosurePermutation_Internal(section, (PetscObject)dm, d, size * 2, PETSC_OWN_POINTER, loc_perm));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexSetClosurePermutationLexicographic - Create a permutation from the default (BFS) point ordering in the closure, to a
+  lexicographic ordering over the simplex (i.e., line, tri, tet, etc.), and set this permutation in the
+  section provided (or the section of the `DM`).
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The `DM`
+. point   - Either a cell (highest dim point) or an edge (dim 1 point), or `PETSC_DETERMINE`
+- section - The `PetscSection` to reorder, or `NULL` for the default section
+
+  Example:
+  A typical interpolated single-tri mesh might order points as
+.vb
+  [c0, v1, v2, v3, e4, e5, e6]
+
+  v3
+  |  \
+  |    \
+  e6    e5
+  |  c0   \
+  |         \
+  v1 -- e4 -- v2
+.ve
+
+  (There is no significance to the ordering described here.)  The default section for a P3 tri might typically assign
+  dofs in the order of points, e.g.,
+.vb
+    c0 -> [0]
+    v1 -> [1]
+    ...
+    e4 -> [4, 5]
+.ve
+
+  which corresponds to the dofs
+.vb
+    3
+    8  7
+    9  0   6
+    1  4   5   2
+.ve
+
+  The closure in BFS ordering works through height strata (cells, edges, vertices) to produce the ordering
+.vb
+  0 4 5 6 7 8 9 1 2 3
+.ve
+
+  After calling DMPlexSetClosurePermutationLexicographic(), the closure will be ordered lexicographically,
+.vb
+   1 4 5 2 9 0 6 8 7 3
+.ve
+
+  Level: developer
+
+  Notes:
+  The point is used to determine the number of dofs/field on an edge. For SEM, this is related to the polynomial
+  degree of the basis.
+
+  The lexicographic order starts along the left edge, not the front, to match codes like GMsh with a bottom face oriented into the volume.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMPlexSetClosurePermutationTensor()`, `DMSetGlobalSection()`
+@*/
+PetscErrorCode DMPlexSetClosurePermutationLexicographic(DM dm, PetscInt point, PetscSection section)
+{
+  DMLabel   label;
+  PetscInt  dim, depth = -1, eStart = -1, Nf;
+  PetscBool continuous = PETSC_TRUE, tensor = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (section) PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
+  // TODO: This needs to be tested for P4-6 using Plex ex3 with a linear field to check the permutations
+  PetscCall(DMGetDimension(dm, &dim));
+  if (dim < 1) PetscFunctionReturn(PETSC_SUCCESS);
+  if (point < 0) {
+    PetscInt sStart, sEnd;
+
+    PetscCall(DMPlexGetDepthStratum(dm, 1, &sStart, &sEnd));
+    point = sEnd - sStart ? sStart : point;
+  }
+  PetscCall(DMPlexGetDepthLabel(dm, &label));
+  if (point >= 0) PetscCall(DMLabelGetValue(label, point, &depth));
+  if (!section) PetscCall(DMGetLocalSection(dm, &section));
+  if (depth == 1) {
+    eStart = point;
+  } else if (depth == dim) {
+    const PetscInt *cone;
+
+    PetscCall(DMPlexGetCone(dm, point, &cone));
+    if (dim == 2) eStart = cone[0];
+    else if (dim == 3) {
+      const PetscInt *cone2;
+      PetscCall(DMPlexGetCone(dm, cone[0], &cone2));
+      eStart = cone2[0];
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " of depth %" PetscInt_FMT " cannot be used to bootstrap spectral ordering for dim %" PetscInt_FMT, point, depth, dim);
+  } else PetscCheck(depth < 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " of depth %" PetscInt_FMT " cannot be used to bootstrap spectral ordering for dim %" PetscInt_FMT, point, depth, dim);
+
+  PetscCall(PetscSectionGetNumFields(section, &Nf));
+  for (PetscInt d = 1; d <= dim; d++) {
+    PetscInt  k, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
+    PetscInt *perm;
+
+    for (f = 0; f < Nf; ++f) {
+      PetscInt dof;
+
+      PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous, &tensor));
+      PetscCheck(dim == 1 || !tensor, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Field %" PetscInt_FMT " should not have a tensor product discretization", f);
+      if (!continuous && d < dim) continue;
+      PetscCall(GetFieldSize_Private(d, k, tensor, &dof));
+      size += dof * Nc;
+    }
+    PetscCall(PetscMalloc1(size, &perm));
+    for (f = 0; f < Nf; ++f) {
+      switch (d) {
+      case 1:
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous, &tensor));
+        if (!continuous && d < dim) continue;
+        /*
+         Original ordering is [ edge of length k-1; vtx0; vtx1 ]
+         We want              [ vtx0; edge of length k-1; vtx1 ]
+         */
+        if (continuous) {
+          for (c = 0; c < Nc; c++, offset++) perm[offset] = (k - 1) * Nc + c + foffset;
+          for (i = 0; i < k - 1; i++)
+            for (c = 0; c < Nc; c++, offset++) perm[offset] = i * Nc + c + foffset;
+          for (c = 0; c < Nc; c++, offset++) perm[offset] = k * Nc + c + foffset;
+          foffset = offset;
+        } else {
+          PetscInt dof;
+
+          PetscCall(GetFieldSize_Private(d, k, tensor, &dof));
+          for (i = 0; i < dof * Nc; ++i, ++offset) perm[offset] = i + foffset;
+          foffset = offset;
+        }
+        break;
+      case 2:
+        /* The original tri closure is oriented clockwise, {f, e_b, e_r, e_l, v_lb, v_rb, v_lt} */
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous, &tensor));
+        if (!continuous && d < dim) continue;
+        /* The SEM order is
+
+         v_lb, {e_b}, v_rb,
+         e^{(k-1)-i}_l, {f^{i*(k-1-i)}}, e^i_r,
+         v_lt
+         */
+        if (continuous) {
+          const PetscInt of   = 0;
+          const PetscInt oeb  = of + (k - 2) * (k - 1) / 2;
+          const PetscInt oer  = oeb + (k - 1);
+          const PetscInt oel  = oer + (k - 1);
+          const PetscInt ovlb = oel + (k - 1);
+          const PetscInt ovrb = ovlb + 1;
+          const PetscInt ovlt = ovrb + 1;
+          PetscInt       o;
+
+          /* bottom */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlb * Nc + c + foffset;
+          for (o = oeb; o < oer; ++o)
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrb * Nc + c + foffset;
+          /* middle */
+          for (i = 0; i < k - 1; ++i) {
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oel + (k - 2) - i) * Nc + c + foffset;
+            // (k - 2) (k - 1) / 2 - (k - 2 - i) (k - 1 - i) / 2 = i (2 k - 3 - i) / 2
+            for (o = of + i * (2 * k - 3 - i) / 2; o < of + (i + 1) * (2 * k - 4 - i) / 2; ++o)
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oer + i) * Nc + c + foffset;
+          }
+          /* top */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlt * Nc + c + foffset;
+          foffset = offset;
+        } else {
+          PetscInt dof;
+
+          PetscCall(GetFieldSize_Private(d, k, tensor, &dof));
+          for (i = 0; i < dof * Nc; ++i, ++offset) perm[offset] = i + foffset;
+          foffset = offset;
+        }
+        break;
+      case 3:
+        /* The original tet closure is
+
+         {c,
+         f_b, f_l, f_f, f_r,
+         e_bl, e_br, e_bf,  e_lf, e_rf, e_rb,
+         v_blf, v_blb, v_brf, v_tlf}
+         */
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous, &tensor));
+        if (!continuous && d < dim) continue;
+        /* The SEM order (starting on the left edge since GMsh flips the bottom face) is
+         Bottom Slice
+         v_blb, {e^{-n}_bl}, v_blf,
+         e^{i}_br, f^{i,-n}_b, e^{-i}_bf,
+         v_brf,
+
+         Middle Slice (j)
+         e^{-j}_rb, {f^{-n,j}_l}, e^{j}_lf,
+         f^{-n,j}_r, {c^{j,-n,i}}, f^{j,i}_f,
+         e^{j}_rf,
+
+         Top Slice
+         v_tlf,
+         */
+        if (continuous) {
+          const PetscInt oc    = 0;
+          const PetscInt ofb   = oc + (k - 3) * (k - 2) * (k - 1) / 6;
+          const PetscInt ofl   = ofb + (k - 2) * (k - 1) / 2;
+          const PetscInt off   = ofl + (k - 2) * (k - 1) / 2;
+          const PetscInt ofr   = off + (k - 2) * (k - 1) / 2;
+          const PetscInt oebl  = ofr + (k - 2) * (k - 1) / 2;
+          const PetscInt oebr  = oebl + (k - 1);
+          const PetscInt oebf  = oebr + (k - 1);
+          const PetscInt oelf  = oebf + (k - 1);
+          const PetscInt oerb  = oelf + (k - 1);
+          const PetscInt oerf  = oerb + (k - 1);
+          const PetscInt ovblf = oerf + (k - 1);
+          const PetscInt ovblb = ovblf + 1;
+          const PetscInt ovbrf = ovblb + 1;
+          const PetscInt ovtlf = ovbrf + 1;
+          PetscInt       o, n;
+
+          /* Bottom Slice */
+          /*   bottom */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblb * Nc + c + foffset;
+          for (o = oebr - 1; o >= oebl; --o)
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovblf * Nc + c + foffset;
+          /*   middle */
+          for (i = 0; i < k - 1; ++i) {
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebr + i) * Nc + c + foffset;
+            for (n = 0; n < k - 2 - i; ++n) {
+              // (k - 2) (k - 1) / 2 - (k - 2 - i) (k - 1 - i) / 2 = i (2 k - 3 - i) / 2
+              o = ofb + i * (2 * k - 3 - i) / 2 + (k - 2 - i - 1 - n);
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
+            }
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oebf + (k - 2) - i) * Nc + c + foffset;
+          }
+          /*   top */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovbrf * Nc + c + foffset;
+
+          /* Middle Slice */
+          for (j = 0; j < k - 1; ++j) {
+            /*   bottom */
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerb + k - 2 - j) * Nc + c + foffset;
+            for (n = k - 3 - j; n >= 0; --n) {
+              // (k - 2) (k - 1) / 2 - (k - 2 - i) (k - 1 - i) / 2 = i (2 k - 3 - i) / 2
+              o = ofl + n * (2 * k - 3 - n) / 2 + j;
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
+            }
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oelf + j) * Nc + c + foffset;
+            /*   middle */
+            for (i = 0; i < k - 2 - j; ++i) {
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (ofr + i * (2 * k - 1 - i) / 2 + j) * Nc + c + foffset;
+              for (n = k - 4 - j - i; n >= 0; --n) {
+                // (k - 2) (k - 1) k / 6 - (k - 2 - j) (k - 1 - j) (k - j) / 6 = j (j^2 - 1 - 3 (k - 1) (j + k - 1)) / 6
+                for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oc + j * (j * j - 1 - 3 * (k - 1) * (j + k - 1)) / 6 + n * (2 * k - 3 - n) + i) * Nc + c + foffset;
+              }
+              for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (off + j * (2 * k - 3 - j) / 2 + i) * Nc + c + foffset;
+            }
+            /*   top */
+            for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oerf + j) * Nc + c + foffset;
+          }
+
+          /* Top Slice */
+          for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtlf * Nc + c + foffset;
+
+          foffset = offset;
+        } else {
+          PetscInt dof;
+
+          PetscCall(GetFieldSize_Private(d, k, tensor, &dof));
+          for (i = 0; i < dof * Nc; ++i, ++offset) perm[offset] = i + foffset;
+          foffset = offset;
+        }
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No spectral ordering for dimension %" PetscInt_FMT, d);
+      }
+    }
+    PetscCheck(offset == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Number of permutation entries %" PetscInt_FMT " != %" PetscInt_FMT, offset, size);
+    /* Check permutation */
+    {
+      PetscInt *check;
+
+      PetscCall(PetscMalloc1(size, &check));
+      for (i = 0; i < size; ++i) {
+        check[i] = -1;
+        PetscCheck(perm[i] >= 0 && perm[i] < size, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid permutation index p[%" PetscInt_FMT "] = %" PetscInt_FMT, i, perm[i]);
+      }
+      for (i = 0; i < size; ++i) check[perm[i]] = i;
+      for (i = 0; i < size; ++i) PetscCheck(check[i] >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing permutation index %" PetscInt_FMT " out of %" PetscInt_FMT, i, size);
       PetscCall(PetscFree(check));
     }
     PetscCall(PetscSectionSetClosurePermutation_Internal(section, (PetscObject)dm, d, size, PETSC_OWN_POINTER, perm));
