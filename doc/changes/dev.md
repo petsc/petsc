@@ -1,103 +1,105 @@
 # Changes: Development
 
+<!---
 % STYLE GUIDELINES:
 % * Capitalize sentences
 % * Use imperative, e.g., Add, Improve, Change, etc.
 % * Don't use a period (.) at the end of entries
 % * If multiple sentences are needed, use a period or semicolon to divide sentences, but not at the end of the final sentence
+--->
 
-```{rubric} General:
-```
+## General
 
-```{rubric} Configure/Build:
-```
 
-```{rubric} Sys:
-```
+## Configure/Build
 
-```{rubric} Event Logging:
-```
 
-```{rubric} PetscViewer:
-```
+## Sys
 
-```{rubric} PetscDraw:
-```
 
-```{rubric} AO:
-```
+## Event Logging
 
-```{rubric} IS:
-```
 
-```{rubric} VecScatter / PetscSF:
-```
+## PetscViewer
 
-```{rubric} PF:
-```
 
-```{rubric} Vec:
-```
+## PetscDraw
 
-```{rubric} PetscSection:
-```
 
-```{rubric} PetscPartitioner:
-```
+## AO
 
-```{rubric} Mat:
-```
 
-```{rubric} MatCoarsen:
-```
+## IS
 
-```{rubric} PC:
-```
 
-```{rubric} KSP:
-```
+## VecScatter / PetscSF
 
-```{rubric} SNES:
-```
 
-```{rubric} SNESLineSearch:
-```
+## PF
 
-```{rubric} TS:
-```
 
-```{rubric} TAO:
-```
+## Vec
 
-```{rubric} TaoTerm:
-```
 
-```{rubric} PetscRegressor:
-```
+## PetscSection
 
-```{rubric} PetscDA:
-```
 
-```{rubric} DM:
-```
+## PetscPartitioner
 
-```{rubric} DMSwarm:
-```
 
-```{rubric} DMPlex:
-```
+## Mat
 
-```{rubric} FE/FV:
-```
 
-```{rubric} DMNetwork:
-```
+## MatCoarsen
 
-```{rubric} DMStag:
-```
 
-```{rubric} DT:
-```
+## PC
 
-```{rubric} Fortran:
-```
+
+## KSP
+
+
+## SNES
+
+
+## SNESLineSearch
+
+
+## TS
+
+
+## TAO
+
+
+## TaoTerm
+
+
+## PetscRegressor
+
+
+## PetscDA
+
+
+## DM
+
+
+## DMSwarm
+
+
+## DMPlex
+
+
+## FE/FV
+
+
+## DMNetwork
+
+
+## DMStag
+
+
+## DT
+
+
+## Fortran
+
