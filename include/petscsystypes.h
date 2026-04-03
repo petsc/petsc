@@ -299,7 +299,7 @@ typedef int32_t PetscInt32;
   Notes:
   For MPI calls that require datatypes, use `MPIU_INT` as the datatype for `PetscInt`. It will automatically work correctly regardless of the size of `PetscInt`.
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt32`, `PetscInt64`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt32`, `PetscInt64`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscIntCast()`, `PETSC_INT_MIN`, `PETSC_INT_MAX`
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
@@ -683,6 +683,22 @@ M*/
     Nonzero integer
 
 .seealso: `PetscBool`, `PetscBool3`, `PETSC_FALSE`
+M*/
+
+/*MC
+    PETSC_INT_MIN - the minimum integer value representable by a `PetscInt`
+
+    Level: beginner
+
+.seealso: `PETSC_INT_MAX`, `PetscInt`, `PetscIntCast()`
+M*/
+
+/*MC
+    PETSC_INT_MAX - the maximum integer value representable by a `PetscInt`
+
+    Level: beginner
+
+.seealso: `PETSC_INT_MIN`, `PetscInt`, `PetscIntCast()`
 M*/
 
 /*MC
