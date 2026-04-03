@@ -1630,7 +1630,7 @@ cdef class Mat(Object):
         spacedim: int,
         coords_target: Sequence[Scalar],
         coords_source: Sequence[Scalar],
-        kernel: MatHtoolFunction,
+        kernel: MatHtoolKernelFunction,
         kernelctx: Any = None,
         comm: Comm | None = None) -> Self:
         """Create a `Type.HTOOL` matrix using a kernel function defined in Python.

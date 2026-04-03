@@ -454,6 +454,7 @@ from petsc4py.typing import (
     MatAssemblySpec,
     MatBlockSizeSpec,
     MatNullFunction,
+    MatHtoolKernelFunction,
     MatSizeSpec,
     NNZSpec,
     NormTypeSpec,

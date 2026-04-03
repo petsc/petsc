@@ -47,7 +47,7 @@ cdef MatNullFunction
 
 # --- MatHtool ---
 
-cdef MatHtoolFunction
+cdef MatHtoolKernelFunction
 
 # --- DM ---
 
