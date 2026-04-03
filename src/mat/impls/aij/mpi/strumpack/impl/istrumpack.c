@@ -2,9 +2,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <StrumpackSparseSolver.h>
 
-static const char *const MatSTRUMPACKCompressionTypes[] = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "MatSTRUMPACKCompressionType", "", 0};
-static const char *const MatSTRUMPACKReorderingTypes[]  = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "MatSTRUMPACKReordering", "", 0};
-
 static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A, Vec v)
 {
   PetscFunctionBegin;
@@ -38,8 +35,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompRelTol_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKSetCompAbsTol_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompAbsTol_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKSetCompMaxRank_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompMaxRank_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKSetCompLeafSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompLeafSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKSetCompMinSepSize_C", NULL));
@@ -91,9 +86,7 @@ static PetscErrorCode MatSTRUMPACKSetGPU_STRUMPACK(Mat F, PetscBool gpu)
 
   PetscFunctionBegin;
   if (gpu) {
-#if !(defined(STRUMPACK_USE_CUDA) || defined(STRUMPACK_USE_HIP) || defined(STRUMPACK_USE_SYCL))
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Warning: strumpack was not configured with GPU support\n"));
-#endif
+    PetscCheck(PetscDefined(STRUMPACK_USE_CUDA) || PetscDefined(STRUMPACK_USE_HIP), PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Strumpack was not configured with GPU support");
     PetscCallExternalVoid("STRUMPACK_enable_gpu", STRUMPACK_enable_gpu(*S));
   } else PetscCallExternalVoid("STRUMPACK_disable_gpu", STRUMPACK_disable_gpu(*S));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -408,21 +401,11 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactor
   /* Reorder and Factor the matrix. */
   /* TODO figure out how to avoid reorder if the matrix values changed, but the pattern remains the same. */
   PetscCallExternalVoid("STRUMPACK_reorder", sp_err = STRUMPACK_reorder(*S));
+  PetscCheck(sp_err != STRUMPACK_MATRIX_NOT_SET, PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix was not set");
+  PetscCheck(sp_err != STRUMPACK_REORDERING_ERROR, PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix reordering failed");
+  PetscCheck(sp_err == STRUMPACK_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: unknown error while reordering");
   PetscCallExternalVoid("STRUMPACK_factor", sp_err = STRUMPACK_factor(*S));
-  switch (sp_err) {
-  case STRUMPACK_SUCCESS:
-    break;
-  case STRUMPACK_MATRIX_NOT_SET: {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix was not set");
-    break;
-  }
-  case STRUMPACK_REORDERING_ERROR: {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix reordering failed");
-    break;
-  }
-  default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: factorization failed");
-  }
+  PetscCheck(sp_err == STRUMPACK_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: factorization failed");
   F->assembled    = PETSC_TRUE;
   F->preallocated = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -487,10 +470,10 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   if (set) PetscCallExternalVoid("STRUMPACK_set_compression_butterfly_levels", STRUMPACK_set_compression_butterfly_levels(*S, (int)bfly_lvls));
 #endif
 
-#if defined(STRUMPACK_USE_CUDA) || defined(STRUMPACK_USE_HIP) || defined(STRUMPACK_USE_SYCL)
+#if defined(STRUMPACK_USE_CUDA) || defined(STRUMPACK_USE_HIP)
   PetscCallExternalVoid("STRUMPACK_use_gpu", flg = (STRUMPACK_use_gpu(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
   PetscCall(PetscOptionsBool("-mat_strumpack_gpu", "Enable GPU acceleration (not supported for all compression types)", "None", flg, &flg, &set));
-  if (set) MatSTRUMPACKSetGPU(F, flg);
+  if (set) PetscCall(MatSTRUMPACKSetGPU(F, flg));
 #endif
 
   PetscCallExternalVoid("STRUMPACK_matching", flg = (STRUMPACK_matching(*S) == STRUMPACK_MATCHING_NONE) ? PETSC_FALSE : PETSC_TRUE);
@@ -508,7 +491,7 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   PetscCall(PetscOptionsIntArray("-mat_strumpack_geometric_xyz", "Mesh sizes nx,ny,nz (Use 1 for default)", "", nxyz, &nrdims, &set));
   if (set) {
     PetscCheck(nrdims == 1 || nrdims == 2 || nrdims == 3, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_OUTOFRANGE, "-mat_strumpack_geometric_xyz requires 1, 2, or 3 values");
-    PetscCall(MatSTRUMPACKSetGeometricNxyz(F, (int)nxyz[0], (int)nxyz[1], (int)nxyz[2]));
+    PetscCall(MatSTRUMPACKSetGeometricNxyz(F, nxyz[0], nxyz[1], nxyz[2]));
   }
   PetscCall(PetscOptionsInt("-mat_strumpack_geometric_components", "Number of components per mesh point, for geometric nested dissection ordering", "None", 1, &nc, &set));
   if (set) PetscCallExternalVoid("STRUMPACK_set_components", STRUMPACK_set_components(*S, (int)nc));
@@ -525,7 +508,7 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   /* Disable the outer iterative solver from STRUMPACK.                                       */
   /* When STRUMPACK is used as a direct solver, it will by default do iterative refinement.   */
   /* When STRUMPACK is used as an approximate factorization preconditioner (by enabling       */
-  /* low-rank compression), it will use it's own preconditioned GMRES. Here we can disable    */
+  /* low-rank compression), it will use its own preconditioned GMRES. Here we can disable    */
   /* the outer iterative solver, as PETSc uses STRUMPACK from within a KSP.                   */
   PetscCallExternalVoid("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(*S, STRUMPACK_DIRECT));
   PetscOptionsEnd();

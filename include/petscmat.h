@@ -2430,6 +2430,7 @@ typedef enum {
   MAT_STRUMPACK_MLF,
   MAT_STRUMPACK_SPECTRAL
 } MatSTRUMPACKReordering;
+PETSC_EXTERN const char *const MatSTRUMPACKReorderingTypes[];
 
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetReordering(Mat, MatSTRUMPACKReordering);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetReordering(Mat, MatSTRUMPACKReordering *);
@@ -2468,6 +2469,7 @@ typedef enum {
   MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS,
   MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY
 } MatSTRUMPACKCompressionType;
+PETSC_EXTERN const char *const MatSTRUMPACKCompressionTypes[];
 
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetCompression(Mat, MatSTRUMPACKCompressionType);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetCompression(Mat, MatSTRUMPACKCompressionType *);

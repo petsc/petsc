@@ -2,6 +2,9 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscmat.h>
 
+const char *const MatSTRUMPACKCompressionTypes[] = {"NONE", "HSS", "BLR", "HODLR", "BLR_HODLR", "ZFP_BLR_HODLR", "LOSSLESS", "LOSSY", "MatSTRUMPACKCompressionType", "", NULL};
+const char *const MatSTRUMPACKReorderingTypes[]  = {"NATURAL", "METIS", "PARMETIS", "SCOTCH", "PTSCOTCH", "RCM", "GEOMETRIC", "AMD", "MMD", "AND", "MLF", "SPECTRAL", "MatSTRUMPACKReordering", "", NULL};
+
 /*@
   MatSTRUMPACKSetReordering - Set STRUMPACK <https://portal.nersc.gov/project/sparse/strumpack/master> fill-reducing reordering
 
