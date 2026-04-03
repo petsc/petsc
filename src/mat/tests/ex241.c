@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   PetscInt          m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
   PetscMPIInt       rank, size;
   PetscScalar      *ptr;
-  PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon = PetscSqrtReal(PETSC_SMALL);
+  PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon;
   MatHtoolKernelFn *kernel = GenEntries;
   PetscBool         flg, sym = PETSC_FALSE, recompression = PETSC_FALSE;
   PetscRandom       rdm;
@@ -55,7 +55,6 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-K", &K, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-symmetric", &sym, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-recompression", &recompression, NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-mat_htool_epsilon", &epsilon, NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   M = size * m;
@@ -73,6 +72,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, sym));
   PetscCall(MatHtoolUseRecompression(A, recompression));
   PetscCall(MatSetFromOptions(A));
+  PetscCall(MatHtoolGetEpsilon(A, &epsilon));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));

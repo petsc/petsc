@@ -291,6 +291,22 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUseRecompression_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetEpsilon_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetEpsilon_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetEta_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetEta_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMaxClusterLeafSize_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMaxClusterLeafSize_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMinTargetDepth_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMinTargetDepth_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMinSourceDepth_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMinSourceDepth_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetBlockTreeConsistency_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetBlockTreeConsistency_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetCompressorType_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetCompressorType_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetClusteringType_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetClusteringType_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolCreateFromKernel_C", nullptr));
   PetscCall(PetscObjectQuery((PetscObject)A, "KernelTranspose", (PetscObject *)&container));
   if (container) { /* created in MatTranspose_Htool() */
@@ -755,6 +771,33 @@ static PetscErrorCode MatHtoolUseRecompression_Htool(Mat A, PetscBool use)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#define PETSC_HTOOL_PARAMETER(Type, Name, member) \
+  static PetscErrorCode MatHtoolGet##Name##_Htool(Mat A, Type *v) \
+  { \
+    Mat_Htool *a; \
+    PetscFunctionBegin; \
+    PetscCall(MatShellGetContext(A, &a)); \
+    *v = a->member; \
+    PetscFunctionReturn(PETSC_SUCCESS); \
+  } \
+  static PetscErrorCode MatHtoolSet##Name##_Htool(Mat A, Type v) \
+  { \
+    Mat_Htool *a; \
+    PetscFunctionBegin; \
+    PetscCall(MatShellGetContext(A, &a)); \
+    a->member = v; \
+    PetscFunctionReturn(PETSC_SUCCESS); \
+  }
+
+PETSC_HTOOL_PARAMETER(PetscReal, Epsilon, epsilon)
+PETSC_HTOOL_PARAMETER(PetscReal, Eta, eta)
+PETSC_HTOOL_PARAMETER(PetscInt, MaxClusterLeafSize, max_cluster_leaf_size)
+PETSC_HTOOL_PARAMETER(PetscInt, MinTargetDepth, depth[0])
+PETSC_HTOOL_PARAMETER(PetscInt, MinSourceDepth, depth[1])
+PETSC_HTOOL_PARAMETER(PetscBool, BlockTreeConsistency, block_tree_consistency)
+PETSC_HTOOL_PARAMETER(MatHtoolCompressorType, CompressorType, compressor)
+PETSC_HTOOL_PARAMETER(MatHtoolClusteringType, ClusteringType, clustering)
+
 static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat *B)
 {
   Mat          C;
@@ -1107,6 +1150,22 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", MatHtoolGetPermutationTarget_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", MatHtoolUsePermutation_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUseRecompression_C", MatHtoolUseRecompression_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetEpsilon_C", MatHtoolGetEpsilon_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetEpsilon_C", MatHtoolSetEpsilon_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetEta_C", MatHtoolGetEta_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetEta_C", MatHtoolSetEta_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMaxClusterLeafSize_C", MatHtoolGetMaxClusterLeafSize_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMaxClusterLeafSize_C", MatHtoolSetMaxClusterLeafSize_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMinTargetDepth_C", MatHtoolGetMinTargetDepth_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMinTargetDepth_C", MatHtoolSetMinTargetDepth_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetMinSourceDepth_C", MatHtoolGetMinSourceDepth_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetMinSourceDepth_C", MatHtoolSetMinSourceDepth_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetBlockTreeConsistency_C", MatHtoolGetBlockTreeConsistency_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetBlockTreeConsistency_C", MatHtoolSetBlockTreeConsistency_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetCompressorType_C", MatHtoolGetCompressorType_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetCompressorType_C", MatHtoolSetCompressorType_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetClusteringType_C", MatHtoolGetClusteringType_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetClusteringType_C", MatHtoolSetClusteringType_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolCreateFromKernel_C", MatHtoolCreateFromKernel_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
