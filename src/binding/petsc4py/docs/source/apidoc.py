@@ -114,7 +114,7 @@ def docstring(obj, fail=True):
 
     # warnings for docstrings that are not compliant
     if len(summary) > 79:
-        logger.warning(f'Summary for {obj} too long.')
+        logger.warning(f'Summary for {obj} exceeds 79 char limit.')
     if docbody:
         if not summary.endswith('.'):
             logger.warning(f'Summary for {obj} does not end with period.')
@@ -122,7 +122,7 @@ def docstring(obj, fail=True):
         lines = docbody.split('\n')
         for i, line in enumerate(lines):
             if len(line) > 79:
-                logger.warning(f'Line {i} for documentation of {obj} too long.')
+                logger.warning(f'Line {i} for documentation of {obj} exceeds 79 char limit.')
         if not cl:
             init = (
                 'Collective.',

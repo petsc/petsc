@@ -98,6 +98,7 @@ class MatType(object):
     CONSTANTDIAGONAL = S_(MATCONSTANTDIAGONAL)
     DIAGONAL         = S_(MATDIAGONAL)
     H2OPUS           = S_(MATH2OPUS)
+    HTOOL            = S_(MATHTOOL)
 
 
 class MatOption(object):
@@ -345,6 +346,30 @@ cdef class MatStencil:
         def __set__(self, value: int) -> None:
             cdef PetscMatStencil *s = &self.stencil
             s.c = asInt(value)
+
+# --------------------------------------------------------------------
+
+cdef PetscErrorCode MatHtoolKernelPython(
+    PetscInt sdim,
+    PetscInt M,
+    PetscInt N,
+    const PetscInt *rows,
+    const PetscInt *cols,
+    PetscScalar *ptr,
+    void *ctx,
+) except PETSC_ERR_PYTHON with gil:
+    """Wrapper that calls a Python kernel for MatHtool matrices."""
+    context = <object>ctx
+    kernel = context[0]
+    kernelctx = context[1]
+    cdef npy_intp M_sz = <npy_intp>M
+    cdef npy_intp N_sz = <npy_intp>N
+    cdef npy_intp sz = M_sz * N_sz
+    cdef ndarray rows_arr = PyArray_SimpleNewFromData(1, &M_sz, NPY_PETSC_INT, <void*>rows)
+    cdef ndarray cols_arr = PyArray_SimpleNewFromData(1, &N_sz, NPY_PETSC_INT, <void*>cols)
+    cdef ndarray flat = PyArray_SimpleNewFromData(1, &sz, NPY_PETSC_SCALAR, <void*>ptr)
+    kernel(sdim, M, N, rows_arr, cols_arr, flat.reshape(M, N, order='F'), kernelctx)
+    return PETSC_SUCCESS
 
 # --------------------------------------------------------------------
 
@@ -1597,6 +1622,96 @@ cdef class Mat(Object):
         cdef PetscMat newmat = NULL
         CHKERR(MatCreateH2OpusFromMat(A.mat, cdim, coords, cdist, peta, lsize, maxr, pbs, tol, &newmat))
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        return self
+
+    def createHtoolFromKernel(
+        self,
+        size: MatSizeSpec,
+        spacedim: int,
+        coords_target: Sequence[Scalar],
+        coords_source: Sequence[Scalar],
+        kernel: MatHtoolFunction,
+        kernelctx: Any = None,
+        comm: Comm | None = None) -> Self:
+        """Create a `Type.HTOOL` matrix using a kernel function defined in Python.
+
+        Collective.
+
+        Parameters
+        ----------
+        size
+            Matrix size.
+        spacedim
+            Dimension of the coordinate space.
+        coords_target
+            Local target (row) coordinates, shape ``(m, spacedim)``.
+        coords_source
+            Local source (column) coordinates, shape ``(n, spacedim)``.
+        kernel
+            Python callable with signature
+            ``kernel(sdim, M, N, rows, cols, v, ctx)`` that fills the
+            submatrix ``v[i, j]`` for target index ``rows[i]`` and source
+            index ``cols[j]``. ``v`` has shape ``(M, N)`` in column-major order.
+        kernelctx
+            Optional context passed as the last argument to ``kernel``.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        Notes
+        -----
+        This function is called while the Python Global Interpreter Lock
+        (GIL) is held. As a result, pure Python implementations will not
+        scale with multithreading. For better performance, users should
+        delegate heavy computations to compiled code that releases the
+        GIL. This allows parallel execution inside threaded regions.
+        For maximum performance, consider implementing the generator
+        directly in C or C++ instead of using the Python interface.
+        See `petsc.MatCreateHtoolFromKernel` for the appropriate
+        database options.
+
+        See Also
+        --------
+        petsc_options, petsc.MatCreateHtoolFromKernel, HtoolGetPermutationSource,
+        HtoolGetPermutationTarget, HtoolUsePermutation, HtoolUseRecompression
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, 1, &m, &M)
+        Sys_Layout(ccomm, 1, &n, &N)
+        cdef PetscInt sdim = asInt(spacedim)
+        cdef ndarray xt = iarray(coords_target, NPY_PETSC_REAL)
+        if PyArray_ISFORTRAN(xt): xt = PyArray_Copy(xt)
+        if PyArray_NDIM(xt) != 2: raise ValueError(
+            ("coords_target must have two dimensions: "
+             "coords_target.ndim=%d") % (PyArray_NDIM(xt)))
+        cdef PetscInt nxt = <PetscInt> PyArray_DIM(xt, 0)
+        if nxt < m: raise ValueError(
+            ("coords_target size must be at least %d" % m))
+        if <PetscInt> PyArray_DIM(xt, 1) != sdim: raise ValueError(
+            ("coords_target must have %d columns" % sdim))
+        cdef ndarray xs = iarray(coords_source, NPY_PETSC_REAL)
+        if PyArray_ISFORTRAN(xs): xs = PyArray_Copy(xs)
+        if PyArray_NDIM(xs) != 2: raise ValueError(
+            ("coords_source must have two dimensions: "
+             "coords_source.ndim=%d") % (PyArray_NDIM(xs)))
+        cdef PetscInt nxs = <PetscInt> PyArray_DIM(xs, 0)
+        if nxs < n: raise ValueError(
+            ("coords_source size must be at least %d" % n))
+        if <PetscInt> PyArray_DIM(xs, 1) != sdim: raise ValueError(
+            ("coords_source must have %d columns" % sdim))
+        # Store the Python kernel context to prevent garbage collection
+        cdef object py_ctx = [kernel, kernelctx]
+        cdef PetscMat newmat = NULL
+        CHKERR(MatCreateHtoolFromKernel(
+            ccomm, m, n, M, N, sdim,
+            <PetscReal*>PyArray_DATA(xt),
+            <PetscReal*>PyArray_DATA(xs),
+            MatHtoolKernelPython, <void*>py_ctx,
+            &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        self.set_attr('__htool_kernel_ctx__', py_ctx)
         return self
 
     def createIS(
@@ -5164,6 +5279,84 @@ cdef class Mat(Object):
         if V is not None:
             vmat = V.mat
         CHKERR(MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s))
+        return self
+
+    # Htool
+
+    def HtoolGetPermutationSource(self) -> IS:
+        """Get the permutation of source (column) indices computed by Htool.
+
+        Not collective.
+
+        Returns
+        -------
+        IS
+            The permutation index set for source indices.
+
+        See Also
+        --------
+        HtoolGetPermutationTarget, petsc.MatHtoolGetPermutationSource
+
+        """
+        cdef IS iset = IS()
+        CHKERR(MatHtoolGetPermutationSource(self.mat, &iset.iset))
+        return iset
+
+    def HtoolGetPermutationTarget(self) -> IS:
+        """Get the permutation of target (row) indices computed by Htool.
+
+        Not collective.
+
+        Returns
+        -------
+        IS
+            The permutation index set for target indices.
+
+        See Also
+        --------
+        HtoolGetPermutationSource, petsc.MatHtoolGetPermutationTarget
+
+        """
+        cdef IS iset = IS()
+        CHKERR(MatHtoolGetPermutationTarget(self.mat, &iset.iset))
+        return iset
+
+    def HtoolUsePermutation(self, use: bool) -> Self:
+        """Set whether to use the permutation computed by Htool.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        use
+            Whether to use the permutation.
+
+        See Also
+        --------
+        petsc.MatHtoolUsePermutation
+
+        """
+        cdef PetscBool _use = asBool(use)
+        CHKERR(MatHtoolUsePermutation(self.mat, _use))
+        return self
+
+    def HtoolUseRecompression(self, use: bool) -> Self:
+        """Set whether to recompress the matrix after assembly.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        use
+            Whether to use recompression.
+
+        See Also
+        --------
+        petsc.MatHtoolUseRecompression
+
+        """
+        cdef PetscBool _use = asBool(use)
+        CHKERR(MatHtoolUseRecompression(self.mat, _use))
         return self
 
     # LMVM
