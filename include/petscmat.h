@@ -2448,11 +2448,11 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetGPU(Mat, PetscBool *);
 +  `MAT_STRUMPACK_COMPRESSION_TYPE_NONE`          - no compression, direct solver
 .  `MAT_STRUMPACK_COMPRESSION_TYPE_HSS`           - hierarchically semi-separable
 .  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR`           - block low rank
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR`         - hierarchically off-diagonal low rank (requires ButterfyPACK support, configure with --download-butterflypack)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR`     - hybrid of BLR and HODLR (requires ButterfyPACK support, configure with --download-butterflypack)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` - hybrid of lossy (ZFP), BLR and HODLR (requires ButterfyPACK and ZFP support, configure with --download-butterflypack --download-zfp)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS`      - lossless compression (requires ZFP support, configure with --download-zfp)
--  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY`         - lossy compression (requires ZFP support, configure with --download-zfp)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR`         - hierarchically off-diagonal low rank (requires ButterflyPACK support, configure with `--download-butterflypack`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR`     - hybrid of BLR and HODLR (requires ButterflyPACK support, configure with `--download-butterflypack`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` - hybrid of lossy (ZFP), BLR and HODLR (requires ButterflyPACK and ZFP support, configure with `--download-butterflypack --download-zfp`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS`      - lossless compression (requires ZFP support, configure with `--download-zfp`)
+-  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY`         - lossy compression (requires ZFP support, configure with `--download-zfp`)
 
     Level: intermediate
 

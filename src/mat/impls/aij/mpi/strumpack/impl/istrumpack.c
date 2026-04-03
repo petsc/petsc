@@ -534,49 +534,60 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 }
 
 /*MC
-  MATSOLVERSTRUMPACK = "strumpack" - A solver package providing a direct sparse solver (PCLU)
-  and a preconditioner (PCILU) using low-rank compression via the external package STRUMPACK <https://portal.nersc.gov/project/sparse/strumpack/master>.
+  MATSOLVERSTRUMPACK = "strumpack" - A solver package providing a direct sparse solver (`PCLU`)
+  and a preconditioner (`PCILU`) using low-rank compression via the external package STRUMPACK <https://portal.nersc.gov/project/sparse/strumpack/master>.
 
   Use `./configure --download-strumpack --download-metis` to have PETSc installed with STRUMPACK.
 
   For full functionality, add `--download-slate --download-magma --download-parmetis --download-ptscotch --download-zfp --download-butterflypack`.
+
   SLATE provides GPU support in the multi-GPU setting, providing ScaLAPACK functionality but with GPU acceleration.
+
   MAGMA can optionally be used for on node GPU support instead cuBLAS/cuSOLVER, and performs slightly better.
+
   ParMETIS and PTScotch can be used for parallel fill-reducing ordering.
-  ZFP is used for floating point compression of the sparse factors (`LOSSY` or `LOSSLESS` compression).
-  ButterflyPACK is used for `HODLR` (Hierarchically Off-Diagonal Low Rank) and `HODBF` (Hierarchically Off-Diagonal Butterfly) compression of the sparse factors.
+
+  ZFP is used for floating point compression of the sparse factors (`lossy` or `lossless` compression).
+
+  ButterflyPACK is used for `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR` (Hierarchically Off-Diagonal Low Rank) and Hierarchically Off-Diagonal Butterfly
+  compression of the sparse factors.
 
   Options Database Keys:
-+ -mat_strumpack_verbose                      - Enable verbose output
-. -mat_strumpack_compression                  - Type of rank-structured compression in sparse LU factors (choose one of) `NONE`, `HSS`, `BLR`, `HODLR`, `BLR_HODLR ZFP_BLR_HODLR`, `LOSSLESS`, `LOSSY`
-. -mat_strumpack_compression_rel_tol          - Relative compression tolerance, when using `-pctype ilu`
-. -mat_strumpack_compression_abs_tol          - Absolute compression tolerance, when using `-pctype ilu`
-. -mat_strumpack_compression_min_sep_size     - Minimum size of separator for rank-structured compression, when using `-pctype ilu`
-. -mat_strumpack_compression_leaf_size        - Size of diagonal blocks in rank-structured approximation, when using `-pctype ilu`
-. -mat_strumpack_compression_lossy_precision  - Precision when using lossy compression [1-64], when using `-pctype ilu`, compression `LOSSY` (requires ZFP support)
-. -mat_strumpack_compression_butterfly_levels - Number of levels in the hierarchically off-diagonal matrix for which to use butterfly, when using `-pctype ilu`, (BLR_)HODLR compression (requires ButterflyPACK support)
-. -mat_strumpack_gpu                          - Enable GPU acceleration in numerical factorization (not supported for all compression types)
-. -mat_strumpack_colperm <TRUE>               - Permute matrix to make diagonal nonzeros
-. -mat_strumpack_reordering <METIS>           - Sparsity reducing matrix reordering (choose one of) `NATURAL`, `METIS`, `PARMETIS`, `SCOTCH`, `PTSCOTCH`, `RCM`, `GEOMETRIC`, `AMD`, `MMD`, `AND`, `MLF`, `SPECTRAL`
-. -mat_strumpack_geometric_xyz <1,1,1>        - Mesh x,y,z dimensions, for use with `GEOMETRIC` ordering
-. -mat_strumpack_geometric_components <1>     - Number of components per mesh point, for geometric nested dissection ordering
-. -mat_strumpack_geometric_width <1>          - Width of the separator of the mesh, for geometric nested dissection ordering
-- -mat_strumpack_metis_nodeNDP                - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
++ -mat_strumpack_verbose (true|false)                                                                       - Enable verbose output
+. -mat_strumpack_compression (none|hss|blr|hodlr|blr_hodlr|zfp_blr_hodlr|lossless|lossy)                    - Type of rank-structured compression in sparse LU factors
+. -mat_strumpack_compression_rel_tol rel_tol                                                                - Relative compression tolerance, when using `-pctype ilu`
+. -mat_strumpack_compression_abs_tol abs_tol                                                                - Absolute compression tolerance, when using `-pctype ilu`
+. -mat_strumpack_compression_min_sep_size min_sep                                                           - Minimum size of separator for rank-structured compression, when using `-pctype ilu`
+. -mat_strumpack_compression_leaf_size size                                                                 - Size of diagonal blocks in rank-structured approximation, when using `-pctype ilu`
+. -mat_strumpack_compression_lossy_precision pre                                                            - Precision when using lossy compression [1-64], when using `-pctype ilu`, `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY` compression  (requires ZFP support)
+. -mat_strumpack_compression_butterfly_levels levels                                                        - Number of levels in the hierarchically off-diagonal matrix for which to use butterfly, when using `-pctype ilu`, `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR` compression (requires ButterflyPACK support)
+. -mat_strumpack_gpu (true|false)                                                                           - Enable GPU acceleration in numerical factorization (not supported for all compression types)
+. -mat_strumpack_colperm (true|false)                                                                       - Permute matrix to make diagonal nonzeros
+. -mat_strumpack_reordering (natural|metis|parmetis|scotch|ptscotch|rcm|geometric|amd|mmd|and|mlf|spectral) - Sparsity reducing matrix reordering
+. -mat_strumpack_geometric_xyz m,n,p                                                                        - Mesh x,y,z dimensions, for use with `MAT_STRUMPACK_GEOMETRIC` ordering
+. -mat_strumpack_geometric_components dof                                                                   - Number of components per mesh point, for `MAT_STRUMPACK_GEOMETRIC` ordering
+. -mat_strumpack_geometric_width width                                                                      - Width of the separator of the mesh, for geometric nested dissection ordering
+- -mat_strumpack_metis_nodeNDP                                                                              - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
 
- Level: beginner
+  Level: beginner
 
- Notes:
- Recommended use is 1 MPI process per GPU.
+  Notes:
+  Recommended use is 1 MPI process per GPU.
 
- Use `-pc_type lu` `-pc_factor_mat_solver_type strumpack` to use this as an exact (direct) solver.
+  Use `-pc_type lu` `-pc_factor_mat_solver_type strumpack` to use this as an exact (direct) solver.
 
- Use `-pc_type ilu` `-pc_factor_mat_solver_type strumpack` to enable low-rank compression (i.e, use as a preconditioner), by default using block low rank (BLR).
+  Use `-pc_type ilu` `-pc_factor_mat_solver_type strumpack` to enable low-rank compression (i.e, use as a preconditioner), by default using block low rank (BLR).
 
- Works with `MATAIJ` matrices
+  Works with `MATAIJ` matrices
 
- `HODLR`, `BLR_HODBF` and `ZFP_BLR_HODLR` compression require STRUMPACK to be configured with ButterflyPACK support (`--download-butterflypack`).
+  `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR`, `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR`, and `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` compression
+  require STRUMPACK to be configured with ButterflyPACK support (`--download-butterflypack`).
 
- `LOSSY`, `LOSSLESS` and `ZFP_BLR_HODLR` compression require STRUMPACK to be configured with ZFP support (`--download-zfp`).
+  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS`, `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY`, and `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` compression require
+   STRUMPACK to be configured with ZFP support (`--download-zfp`).
+
+  Developer Note:
+  `MatView_Info_STRUMPACK()` should display all the STRUMPACK options used
 
 .seealso: `MATSOLVERSTRUMPACK`, [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
           `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKReordering`, `MatSTRUMPACKCompressionType`, `MatSTRUMPACKSetColPerm()`
