@@ -524,21 +524,21 @@ PetscErrorCode MatHtoolSetClusteringType(Mat A, MatHtoolClusteringType clusterin
 . coords_target - coordinates of the target
 . coords_source - coordinates of the source
 . kernel        - computational kernel (or `NULL`)
-- kernelctx     - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
+- kernelctx     - kernel context (if kernel is `NULL`, the pointer must be of type `htool::VirtualGenerator<PetscScalar> *`)
 
   Output Parameter:
 . B - matrix
 
   Options Database Keys:
-+ -mat_htool_max_cluster_leaf_size <`PetscInt`>                                                - maximal leaf size in cluster tree
-. -mat_htool_epsilon <`PetscReal`>                                                             - relative error in Frobenius norm when approximating a block
-. -mat_htool_eta <`PetscReal`>                                                                 - admissibility condition tolerance
-. -mat_htool_min_target_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the rows
-. -mat_htool_min_source_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the columns
-. -mat_htool_block_tree_consistency <`PetscBool`>                                              - block tree consistency
-. -mat_htool_recompression <`PetscBool`>                                                       - use recompression
-. -mat_htool_compressor <sympartialACA, fullACA, SVD>                                          - type of compression
-- -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
++ -mat_htool_max_cluster_leaf_size size                                                     - maximal leaf size in cluster tree
+. -mat_htool_epsilon epsilon                                                                - relative error in Frobenius norm when approximating a block
+. -mat_htool_eta eta                                                                        - admissibility condition tolerance
+. -mat_htool_min_target_depth depth                                                         - minimal cluster tree depth associated with the rows
+. -mat_htool_min_source_depth depth                                                         - minimal cluster tree depth associated with the columns
+. -mat_htool_block_tree_consistency (false|true)                                            - block tree consistency
+. -mat_htool_recompression (false|true)                                                     - use recompression
+. -mat_htool_compressor (sympartialACA|fullACA|SVD)                                         - type of compression
+- -mat_htool_clustering (PCARegular|PCAGeometric|BoundingBox1Regular|BoundingBox1Geometric) - type of clustering
 
   Level: intermediate
 
