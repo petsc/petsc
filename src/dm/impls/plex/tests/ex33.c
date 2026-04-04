@@ -261,6 +261,13 @@ int main(int argc, char **argv)
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
 
   test:
+    # Volume: 2.0
+    suffix: gmsh_tri_q3
+    requires: double
+    nsize: {{1 2}}
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tris-q3.msh -volume 2.0 -tol 1e-6 -dm_plex_check_all
+
+  test:
     # Volume: 1.0
     suffix: gmsh_3d_q2
     requires: double
@@ -271,6 +278,18 @@ int main(int argc, char **argv)
     suffix: gmsh_3d_q3
     requires: double
     nsize: {{1 2}}
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_q3.msh -dm_plex_gmsh_project -petscfe_default_quadrature_order 3 -volume 1.0 -tol 1e-6
+
+  test:
+    # Volume: 2/3
+    suffix: gmsh_3d_tet_q2
+    requires: double
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tets-q2.msh -dm_plex_gmsh_project -volume 0.66666666667 -tol 1e-6 -dm_plex_check_all
+
+  test:
+    # Volume: 2/3
+    suffix: gmsh_3d_tet_q3
+    requires: double
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tets-q3.msh -dm_plex_gmsh_project -petscfe_default_quadrature_order 3 -volume 0.66666666667 -tol 1e-6 -dm_plex_check_all
 
 TEST*/

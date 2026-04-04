@@ -88,6 +88,7 @@
 
 ## DMPlex
 
+- Add `DMPlexSetClosurePermutationLexicographic()`
 
 ## FE/FV
 

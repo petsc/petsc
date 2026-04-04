@@ -1971,8 +1971,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscBool       continuity = periodic ? PETSC_FALSE : PETSC_TRUE;
     PetscDTNodeType nodeType   = PETSCDTNODES_EQUISPACED;
 
-    if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
-
     PetscCall(GmshCreateFE(comm, NULL, isSimplex, continuity, nodeType, dim, coordDim, order, &fe));
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_fe_view"));
     PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)fe));
@@ -1994,7 +1992,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscCall(DMSetLocalSection(cdm, NULL));
     PetscCall(DMGetLocalSection(cdm, &cs));
     PetscCall(PetscSectionClone(cs, &section));
-    PetscCall(DMPlexSetClosurePermutationTensor(cdm, 0, section)); /* XXX Implement DMPlexSetClosurePermutationLexicographic() */
+    if (isSimplex) PetscCall(DMPlexSetClosurePermutationLexicographic(cdm, 0, section));
+    else PetscCall(DMPlexSetClosurePermutationTensor(cdm, 0, section));
 
     PetscCall(DMCreateLocalVector(cdm, &coordinates));
     PetscCall(PetscMalloc1(maxDof, &cellCoords));
@@ -2175,7 +2174,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscBool       continuity = periodic ? PETSC_FALSE : PETSC_TRUE;
     PetscDTNodeType nodeType   = PETSCDTNODES_GAUSSJACOBI;
 
-    if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
     PetscCall(GmshCreateFE(comm, prefix, isSimplex, continuity, nodeType, dim, coordDim, order, &fe));
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_project_fe_view"));
     PetscCall(DMSetCoordinateDisc(*dm, fe, PETSC_FALSE, PETSC_TRUE));
