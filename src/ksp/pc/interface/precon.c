@@ -33,7 +33,14 @@ PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
       } else if (isnormal) {
         *type = PCNONE;
       } else if (hasopblock) { /* likely is a parallel matrix run on one processor */
-        *type = PCBJACOBI;
+        if (pc->kspnestlevel > 0) {
+          Mat D;
+
+          PetscCall(MatGetDiagonalBlock(pc->pmat, &D));
+          PetscCall(PetscObjectTypeCompare((PetscObject)D, ((PetscObject)pc->pmat)->type_name, &flg1)); /* make sure there is no recursive call to PCGetDefaultType_Private() */
+        } else flg1 = PETSC_FALSE;
+        if (!flg1) *type = PCBJACOBI;
+        else *type = PCNONE;
       } else if (hasopsolve) {
         *type = PCMAT;
       } else {
