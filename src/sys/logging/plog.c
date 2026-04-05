@@ -472,9 +472,9 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
   Logically Collective on `PETSC_COMM_WORLD`
 
   Options Database Key:
-. -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing (profiling) information to the
-                                                 screen (for PETSc configured with `--with-log=1` (which is the default)).
-                                                 This option must be provided before `PetscInitialize()`.
+. -log_view [viewertype[:filename[:viewerformat]]] - Prints summary of flop and timing (profiling) information to the
+                                                     screen (for PETSc configured with `--with-log=1` (which is the default)).
+                                                     This option must be provided before `PetscInitialize()`.
 
   Example Usage:
 .vb
@@ -799,7 +799,7 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
 . stage - The stage on which to log
 
   Example Usage:
-  If the option -log_view is used to run the program containing the
+  If the option `-log_view` is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
@@ -841,7 +841,7 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
   Not Collective
 
   Example Usage:
-  If the option -log_view is used to run the program containing the
+  If the option `-log_view` is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
@@ -940,7 +940,7 @@ PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
   Level: intermediate
 
   Developer Notes:
-  Visibility only affects the default log handler in `PetscLogView()`: stages that are
+  Visibility only affects the default log handler in `PetscLogView()`; stages that are
   set to invisible are suppressed from output.
 
 .seealso: [](ch_profiling), `PetscLogStageGetVisible()`, `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`, `PetscLogGetDefaultHandler()`
@@ -1047,8 +1047,8 @@ PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char *name[])
   Input Parameters:
 + name    - The name associated with the event
 - classid - The classid associated to the class for this event, obtain either with
-           `PetscClassIdRegister()` or use a predefined one such as `KSP_CLASSID`, `SNES_CLASSID`, the predefined ones
-           are only available in C code
+            `PetscClassIdRegister()` or use a predefined one such as `KSP_CLASSID`, `SNES_CLASSID`, the predefined ones
+            are only available in C code
 
   Output Parameter:
 . event - The event id for use with `PetscLogEventBegin()` and `PetscLogEventEnd()`.
@@ -1070,21 +1070,21 @@ PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char *name[])
 
   Notes:
   PETSc automatically logs library events if the code has been
-  configured with --with-log (which is the default) and
-  -log_view or -log_all is specified.  `PetscLogEventRegister()` is
+  configured with `--with-log` (which is the default) and
+  `-log_view` or `-log_all` is specified.  `PetscLogEventRegister()` is
   intended for logging user events to supplement this PETSc
   information.
 
   PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled
   with flag -DPETSC_HAVE_MPE (MPE is an additional utility within
-  MPICH), the user can employ another command line option, -log_mpe,
+  MPICH), the user can employ another command line option, `-log_mpe`,
   to create a logfile, "mpe.log", which can be visualized
   Jumpshot.
 
-  The classid is associated with each event so that classes of events
+  The `classid` is associated with each event so that classes of events
   can be disabled simultaneously, such as all matrix events. The user
-  can either use an existing classid, such as `MAT_CLASSID`, or create
+  can either use an existing `classid`, such as `MAT_CLASSID`, or create
   their own as shown in the example.
 
   If an existing event with the same name exists, its event handle is
@@ -1140,7 +1140,7 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event, PetscBool collect
   Not Collective
 
   Input Parameters:
-+ classid - The object class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
++ classid  - The object class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
 - isActive - if `PETSC_FALSE`, events associated with this class will not be send to log handlers.
 
   Level: developer
@@ -1204,8 +1204,8 @@ PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
   Not Collective
 
   Input Parameters:
-+ stage - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
-. event - A `PetscLogEvent`
++ stage    - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+. event    - A `PetscLogEvent`
 - isActive - If `PETSC_FALSE`, activity from this event (`PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventSync()`) will not be sent to log handlers during this stage
 
   Usage:
@@ -1397,8 +1397,8 @@ PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive
   Not Collective
 
   Input Parameters:
-+ stage - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
-. classid - The event class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
++ stage    - A registered `PetscLogStage` (or `PETSC_DEFAULT` for the current stage)
+. classid  - The event class, for example `MAT_CLASSID`, `SNES_CLASSID`, etc.
 - isActive - If `PETSC_FALSE`, events associated with this class are not sent to log handlers.
 
   Level: developer
@@ -1454,7 +1454,7 @@ PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 }
 
 /*MC
-  PetscLogEventSync - Synchronizes the beginning of a user event.
+  PetscLogEventSync - Synchronizes the beginning of an event.
 
   Synopsis:
   #include <petsclog.h>
@@ -1487,7 +1487,7 @@ PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 M*/
 
 /*MC
-  PetscLogEventBegin - Logs the beginning of a user event.
+  PetscLogEventBegin - Logs the beginning of an event.
 
   Synopsis:
   #include <petsclog.h>
@@ -1529,7 +1529,7 @@ M*/
 M*/
 
 /*MC
-  PetscLogEventEnd - Log the end of a user event.
+  PetscLogEventEnd - Log the end of an event.
 
   Synopsis:
   #include <petsclog.h>
@@ -1787,7 +1787,7 @@ PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char *name[])
   Notes:
   When an external library or runtime has is initialized it can involve lots of setup time that skews the statistics of any unrelated running events: this function is intended to isolate such calls in the default log summary (`PetscLogDefaultBegin()`, `PetscLogView()`).
 
-  Other log handlers (such as the nested handler, `PetscLogNestedBegin()`) will ignore this function.
+  Other log handlers (such as `PetscLogNestedBegin()`) will ignore this function.
 
 .seealso: [](ch_profiling), `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`, `PetscLogEventsResume()`, `PetscLogGetDefaultHandler()`
 @*/
@@ -1932,8 +1932,7 @@ PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char **name)
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 /*@
-  PetscLogDump - Dumps logs of objects to a file. This file is intended to
-  be read by bin/petscview. This program no longer exists.
+  PetscLogDump - Dumps logs of objects to a file. There is currently no utility to read the dump file.
 
   Collective on `PETSC_COMM_WORLD`
 
@@ -2019,8 +2018,10 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 . -log_view_memory                         - Also display memory usage in each event
 . -log_view_gpu_time                       - Also display time in each event for GPU kernels (Note this may slow the computation)
 . -log_view_gpu_energy                     - Also display energy (estimated with power*gtime) in Joules for GPU kernels
-. -log_view_gpu_energy_meter               - [Experimental] Also display energy (readings from energy meters) in Joules for GPU kernels. This option is ignored if -log_view_gpu_energy is provided.
-. -log_all                                 - Saves a file Log.rank for each MPI rank with details of each step of the computation
+. -log_view_gpu_energy_meter               - [Experimental] Also display energy (readings from energy meters) in Joules for GPU kernels.
+                                             This option is ignored if `-log_view_gpu_energy` is provided.
+. -log_all                                 - Saves a file `Log.rank` for each MPI process with details of each step of the computation, where
+                                             `rank` is the MPI rank of each process
 - -log_trace [filename]                    - Displays a trace of what each process is doing
 
   Level: beginner
@@ -2029,9 +2030,9 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
   It is possible to control the logging programmatically but we recommend using the options database approach whenever possible
   By default the summary is printed to stdout.
 
-  Before calling this routine you must have called either PetscLogDefaultBegin() or PetscLogNestedBegin()
+  Before calling this routine you must have called either `PetscLogDefaultBegin()` or `PetscLogNestedBegin()`
 
-  If PETSc is configured with --with-log=0 then this functionality is not available
+  If PETSc is configured with `--with-log=0` then this functionality is not available
 
   To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current
   directory then open filename.xml with your browser. Specific notes for certain browsers
@@ -2406,7 +2407,7 @@ PetscErrorCode PetscLogGpuTime(void)
   When GPU is not available, the timer is run on the CPU, it is a separate logging of
   time devoted to GPU computations (including kernel launch times).
 
-  There is no need to call WaitForCUDA() or WaitForHIP() between `PetscLogGpuTimeBegin()` and
+  There is no need to call `WaitForCUDA()` or `WaitForHIP()` between `PetscLogGpuTimeBegin()` and
   `PetscLogGpuTimeEnd()`
 
   This timer should NOT include times for data transfers between the GPU and CPU, nor setup

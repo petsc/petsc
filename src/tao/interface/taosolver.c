@@ -831,7 +831,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, " Maximum Iterations\n"));
         break;
       case TAO_DIVERGED_NAN:
-        PetscCall(PetscViewerASCIIPrintf(viewer, " NAN or infinity encountered\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, " NaN or infinity encountered\n"));
         break;
       case TAO_DIVERGED_MAXFCN:
         PetscCall(PetscViewerASCIIPrintf(viewer, " Maximum Function Evaluations\n"));
