@@ -580,11 +580,18 @@ int main(int argc, char **args)
         args: -mat_type aijhipsparse
 
    test:
-      suffix: strumpack_ilu
-      nsize: {{1 2}}
+      suffix: strumpack_ilu_1
+      nsize: 1
       requires: strumpack
-      args: -use_strumpack_ilu
-      output_file: output/ex52_3.out
+      args: -use_strumpack_ilu -ksp_view
+      output_file: output/ex52_ilu_1.out
+
+   test:
+      suffix: strumpack_ilu_2
+      nsize: 2
+      requires: strumpack
+      args: -use_strumpack_ilu -ksp_view
+      output_file: output/ex52_ilu_2.out
 
    testset:
       suffix: superlu_dist

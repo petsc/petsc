@@ -2392,7 +2392,6 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat, PetscReal);
 PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat, PetscScalar *);
 #endif
 
-#ifdef PETSC_HAVE_STRUMPACK
 /*E
     MatSTRUMPACKReordering - sparsity reducing ordering to be used in `MATSOLVERSTRUMPACK`
 
@@ -2431,6 +2430,7 @@ typedef enum {
   MAT_STRUMPACK_MLF,
   MAT_STRUMPACK_SPECTRAL
 } MatSTRUMPACKReordering;
+PETSC_EXTERN const char *const MatSTRUMPACKReorderingTypes[];
 
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetReordering(Mat, MatSTRUMPACKReordering);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetReordering(Mat, MatSTRUMPACKReordering *);
@@ -2449,11 +2449,11 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetGPU(Mat, PetscBool *);
 +  `MAT_STRUMPACK_COMPRESSION_TYPE_NONE`          - no compression, direct solver
 .  `MAT_STRUMPACK_COMPRESSION_TYPE_HSS`           - hierarchically semi-separable
 .  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR`           - block low rank
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR`         - hierarchically off-diagonal low rank (requires ButterfyPACK support, configure with --download-butterflypack)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR`     - hybrid of BLR and HODLR (requires ButterfyPACK support, configure with --download-butterflypack)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` - hybrid of lossy (ZFP), BLR and HODLR (requires ButterfyPACK and ZFP support, configure with --download-butterflypack --download-zfp)
-.  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS`      - lossless compression (requires ZFP support, configure with --download-zfp)
--  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY`         - lossy compression (requires ZFP support, configure with --download-zfp)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_HODLR`         - hierarchically off-diagonal low rank (requires ButterflyPACK support, configure with `--download-butterflypack`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_BLR_HODLR`     - hybrid of BLR and HODLR (requires ButterflyPACK support, configure with `--download-butterflypack`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_ZFP_BLR_HODLR` - hybrid of lossy (ZFP), BLR and HODLR (requires ButterflyPACK and ZFP support, configure with `--download-butterflypack --download-zfp`)
+.  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS`      - lossless compression (requires ZFP support, configure with `--download-zfp`)
+-  `MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY`         - lossy compression (requires ZFP support, configure with `--download-zfp`)
 
     Level: intermediate
 
@@ -2469,6 +2469,7 @@ typedef enum {
   MAT_STRUMPACK_COMPRESSION_TYPE_LOSSLESS,
   MAT_STRUMPACK_COMPRESSION_TYPE_LOSSY
 } MatSTRUMPACKCompressionType;
+PETSC_EXTERN const char *const MatSTRUMPACKCompressionTypes[];
 
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetCompression(Mat, MatSTRUMPACKCompressionType);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetCompression(Mat, MatSTRUMPACKCompressionType *);
@@ -2484,7 +2485,6 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetCompLossyPrecision(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetCompLossyPrecision(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetCompButterflyLevels(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKGetCompButterflyLevels(Mat, PetscInt *);
-#endif
 
 PETSC_EXTERN PetscErrorCode MatBindToCPU(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatBoundToCPU(Mat, PetscBool *);
