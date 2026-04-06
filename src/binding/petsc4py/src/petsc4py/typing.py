@@ -51,7 +51,7 @@ __all__ = [
     'CSRSpec',
     'NNZSpec',
     'MatNullFunction',
-    'MatHtoolFunction',
+    'MatHtoolKernelFunction',
     'DMCoarsenHookFunction',
     'DMRestrictHookFunction',
     'KSPRHSFunction',
@@ -83,8 +83,6 @@ __all__ = [
     'TSPostStepFunction',
     'TSIndicatorFunction',
     'TSPostEventFunction',
-    'TSPreStepFunction',
-    'TSPostStepFunction',
     'TAOObjectiveFunction',
     'TAOGradientFunction',
     'TAOObjectiveGradientFunction',
@@ -288,7 +286,7 @@ MatNullFunction = Callable[[NullSpace, Vec], None]
 
 # --- MatHtool ---
 
-MatHtoolFunction = Callable[[int, int, int, ArrayInt, ArrayInt, ArrayScalar, Any], None]
+MatHtoolKernelFunction = Callable[[int, int, int, ArrayInt, ArrayInt, ArrayScalar, Any], None]
 """`PETSc.Mat` `Mat.Type.HTOOL` kernel callback.
 
 Callable with signature ``kernel(sdim, M, N, rows, cols, v, ctx)``:
