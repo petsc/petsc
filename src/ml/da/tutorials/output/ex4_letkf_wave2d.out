@@ -1,4 +1,4 @@
-Using distance-based localization with 7 observations per vertex
+Using Gaspari-Cohn localization with radius 20.
 PetscDA Object: 1 MPI process
   type: letkf
   State size: 1323
@@ -8,7 +8,7 @@ PetscDA Object: 1 MPI process
   Inflation: 1.
   Square root type: eigen
   Local analysis: CPU
-  Local observations per vertex: 7
+  Localization radius: 20.
   GPU batch size: auto
   Localization matrix: set
 2D Shallow Water LETKF Example
@@ -37,19 +37,19 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01434
-Step    3, time  0.060  RMSE_forecast 0.01404  RMSE_analysis 0.01404
-Step    4, time  0.080  RMSE_forecast 0.01374  RMSE_analysis 0.01331
-Step    5, time  0.100  RMSE_forecast 0.01304  RMSE_analysis 0.01304
-Step    6, time  0.120  RMSE_forecast 0.01279  RMSE_analysis 0.01227
-Step    7, time  0.140  RMSE_forecast 0.01202  RMSE_analysis 0.01202
-Step    8, time  0.160  RMSE_forecast 0.01178  RMSE_analysis 0.01130
-Step    9, time  0.180  RMSE_forecast 0.01108  RMSE_analysis 0.01108
-Step   10, time  0.200  RMSE_forecast 0.01087  RMSE_analysis 0.01061
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01376
+Step    3, time  0.060  RMSE_forecast 0.01361  RMSE_analysis 0.01361
+Step    4, time  0.080  RMSE_forecast 0.01346  RMSE_analysis 0.01237
+Step    5, time  0.100  RMSE_forecast 0.01224  RMSE_analysis 0.01224
+Step    6, time  0.120  RMSE_forecast 0.01211  RMSE_analysis 0.01177
+Step    7, time  0.140  RMSE_forecast 0.01164  RMSE_analysis 0.01164
+Step    8, time  0.160  RMSE_forecast 0.01151  RMSE_analysis 0.01102
+Step    9, time  0.180  RMSE_forecast 0.01090  RMSE_analysis 0.01090
+Step   10, time  0.200  RMSE_forecast 0.01078  RMSE_analysis 0.00937
 
 Statistics (10 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00994
-  Mean RMSE (analysis) : 0.01120
+  Mean RMSE (forecast) : 0.00963
+  Mean RMSE (analysis) : 0.01067
   Observations used    : 5
 

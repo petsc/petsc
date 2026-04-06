@@ -20,24 +20,24 @@ Lorenz-96 LETKF Example
   Observation noise std  : 1.000
   Ensemble init std      : 1.000
   Random seed            : 12345
-  Localization (obs/vert): 7 
+  Localization radius    : 100.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000  Spread 1.21961 [burn-in]
-Step   11, time  0.550  RMSE_forecast 0.22423  RMSE_analysis 0.22537  Spread 0.13684
-Step   22, time  1.100  RMSE_forecast 0.40737  RMSE_analysis 0.35593  Spread 0.12281
-Step   33, time  1.650  RMSE_forecast 0.44021  RMSE_analysis 0.42725  Spread 0.11746
-Step   44, time  2.200  RMSE_forecast 0.57957  RMSE_analysis 0.57487  Spread 0.12633
-Step   55, time  2.750  RMSE_forecast 1.42650  RMSE_analysis 1.41256  Spread 0.11461
-Step   66, time  3.300  RMSE_forecast 2.93639  RMSE_analysis 2.91956  Spread 0.11387
-Step   77, time  3.850  RMSE_forecast 2.99173  RMSE_analysis 2.97435  Spread 0.11549
-Step   88, time  4.400  RMSE_forecast 5.13715  RMSE_analysis 5.13333  Spread 0.09421
-Step   99, time  4.950  RMSE_forecast 4.57854  RMSE_analysis 4.55174  Spread 0.10890
-Step  110, time  5.500  RMSE_forecast 5.54694  RMSE_analysis 5.52582  Spread 0.10268
-Step  112, time  5.600  RMSE_forecast 4.83874  RMSE_analysis 4.80761  Spread 0.09943
+Step   11, time  0.550  RMSE_forecast 0.15166  RMSE_analysis 0.15062  Spread 0.12863
+Step   22, time  1.100  RMSE_forecast 0.19780  RMSE_analysis 0.20623  Spread 0.11882
+Step   33, time  1.650  RMSE_forecast 0.48997  RMSE_analysis 0.48840  Spread 0.09270
+Step   44, time  2.200  RMSE_forecast 0.78619  RMSE_analysis 0.78518  Spread 0.11092
+Step   55, time  2.750  RMSE_forecast 1.05238  RMSE_analysis 1.05030  Spread 0.11210
+Step   66, time  3.300  RMSE_forecast 1.14282  RMSE_analysis 1.07792  Spread 0.12318
+Step   77, time  3.850  RMSE_forecast 1.43454  RMSE_analysis 1.42436  Spread 0.13366
+Step   88, time  4.400  RMSE_forecast 2.48685  RMSE_analysis 2.46905  Spread 0.10164
+Step   99, time  4.950  RMSE_forecast 3.35881  RMSE_analysis 3.32653  Spread 0.12772
+Step  110, time  5.500  RMSE_forecast 3.47218  RMSE_analysis 3.45810  Spread 0.13425
+Step  112, time  5.600  RMSE_forecast 3.42970  RMSE_analysis 3.41131  Spread 0.13571
 
 Statistics (103 forecast steps, 103 analysis steps post-burn-in):
 ==================================================
-  Mean RMSE (forecast) : 2.50493
-  Mean RMSE (analysis) : 2.48373
+  Mean RMSE (forecast) : 1.45031
+  Mean RMSE (analysis) : 1.43206
   Observations used    : 112
 

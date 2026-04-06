@@ -104,9 +104,9 @@ PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplyTInverse(PetscDA, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA, Mat, Mat);
 
 PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalization(PetscDA, Mat, Mat);
-PETSC_EXTERN PetscErrorCode PetscDALETKFSetObsPerVertex(PetscDA, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscDALETKFGetObsPerVertex(PetscDA, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationRadius(PetscDA, PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationRadius(PetscDA, PetscReal *);
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationMatrix(const PetscInt, const PetscInt, Vec[3], PetscReal[3], Mat, Mat *);
+PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationMatrix(PetscReal, Vec[3], PetscReal[3], Mat, Mat *);
 #endif

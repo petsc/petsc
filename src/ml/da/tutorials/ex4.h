@@ -220,6 +220,7 @@ static PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, PetscInt n
   PetscFunctionBeginUser;
   PetscCheck(flux_type != EX4_FLUX_MC, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "MC flux limiter not yet implemented for 2D; use -ex4_flux rusanov");
   PetscCall(PetscNew(&sw));
+  /* Borrowed reference; caller owns the DM and ShallowWater2DContextDestroy() does not free it. */
   sw->da         = da;
   sw->nx         = nx;
   sw->ny         = ny;

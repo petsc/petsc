@@ -1,4 +1,5 @@
 #pragma once
+
 #include <petsc/private/daimpl.h>
 #include <petsc/private/daensembleimpl.h>
 
@@ -13,10 +14,12 @@ typedef struct {
   Mat              S;
   Mat              T_sqrt;
   Mat              w_ones;
-  Mat              Q;            /* Localization matrix (n_grid x n_observations_total) Each row has exactly n_obs_vertex non-zeros */
-  PetscInt         n_obs_vertex; /* number of local observations per grid point (const now) */
-  PetscInt         n_grid;       /* Number of grid points (n_grid = state_size / da->ndof) */
-  PetscInt         batch_size;   /* Batch size for GPU processing */
+  Mat              Q;                   /* Localization matrix (n_grid x n_observations_total), variable nnz per row */
+  PetscReal        localization_radius; /* Gaspari-Cohn cutoff half-width */
+  PetscInt         max_nnz_per_row;     /* Cached max nnz across all rows of Q (global) */
+  PetscInt         min_nnz_per_row;     /* Cached min nnz across all rows of Q (global) */
+  PetscInt         n_grid;              /* Number of grid points (n_grid = state_size / da->ndof) */
+  PetscInt         batch_size;          /* Batch size for GPU processing */
 
   /* Localization support for MPI */
   IS         obs_is_local;    // Indices of observations needed by this process
@@ -39,7 +42,7 @@ typedef struct {
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA, PetscDA_LETKF *, PetscInt, PetscInt, Mat, Vec, Mat, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA, PetscDA_LETKF *, PetscInt, PetscInt, Mat, Vec, Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA, PetscDA_LETKF *, PetscInt, PetscInt, Mat, Vec, Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscDALETKFSetupLocalization_Kokkos(PetscDA_LETKF *, Mat);
 PETSC_EXTERN PetscErrorCode PetscDALETKFDestroyLocalization_Kokkos(PetscDA_LETKF *);
 #endif

@@ -1,4 +1,4 @@
-Using distance-based localization with 5 observations per vertex
+Using Gaspari-Cohn localization with radius 10.
 PetscDA Object: 3 MPI processes
   type: letkf
   State size: 1323
@@ -8,7 +8,7 @@ PetscDA Object: 3 MPI processes
   Inflation: 1.
   Square root type: eigen
   Local analysis: Kokkos
-  Local observations per vertex: 5
+  Localization radius: 10.
   GPU batch size: auto
   Localization matrix: set
 2D Shallow Water LETKF Example

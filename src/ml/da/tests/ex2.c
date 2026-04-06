@@ -7,8 +7,8 @@ static char help[] = "Test PetscDALETKFGetLocalizationMatrix.\n\n";
 int main(int argc, char **argv)
 {
   DM        dm;
-  Mat       H, Q             = NULL;
-  PetscInt  nvertexobs, ndof = 1, n_state_global;
+  Mat       H, Q = NULL;
+  PetscInt  ndof      = 1, n_state_global;
   PetscInt  dim       = 1, n, vStart, vEnd;
   PetscInt  faces[3]  = {1, 1, 1};
   PetscReal lower[3]  = {0.0, 0.0, 0.0};
@@ -122,10 +122,9 @@ int main(int argc, char **argv)
   } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test does not run for DM type %s", type);
   PetscCall(DMViewFromOptions(dm, NULL, "-ex2_dm_view")); // PetscSleep(10);
 
-  /* Set number of local observations to use: 3^dim */
-  nvertexobs = 1;
-  for (PetscInt d = 0; d < dim && d < 2; d++) nvertexobs *= 3;
-  // nvertexobs += 2 * dim;
+  /* Localization radius: default covers ~3 observation spacings (obs at every-other vertex) */
+  PetscReal radius = 3.0 * (upper[0] - lower[0]) / faces[0];
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-radius", &radius, NULL));
 
   /* Count observations (every other vertex in each dimension) */
   PetscInt   nobs_local = 0;
@@ -210,7 +209,7 @@ int main(int argc, char **argv)
   }
 
   /* Call the function */
-  PetscCall(PetscDALETKFGetLocalizationMatrix(nvertexobs, ndof, Vecxyz, bd, H, &Q));
+  PetscCall(PetscDALETKFGetLocalizationMatrix(radius, Vecxyz, bd, H, &Q));
   PetscCall(PetscObjectSetName((PetscObject)Q, "Q_localization"));
 
   // View Q

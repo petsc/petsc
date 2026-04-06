@@ -192,47 +192,102 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if !defined(PETSC_HAVE_KOKKOS_KERNELS)
 /*
-  CreateLocalizationMatrix - Create and initialize full localization matrix Q
-
-  For the fully observed case, Q is a dense nxn
-  matrix with all entries = 1.0, meaning each vertex uses all observations.
+  GaspariCohnWeight - Gaspari-Cohn fifth-order piecewise rational function.
+  Input: r = distance / radius (normalized distance, support is [0, 2])
 */
-static PetscErrorCode CreateLocalizationMatrix(PetscInt n, Mat *Q)
+static PetscReal GaspariCohnWeight(PetscReal r)
 {
-  PetscInt i;
+  if (r >= 2.0) return 0.0;
+  if (r <= 0.0) return 1.0;
+  if (r <= 1.0) return (((-0.25 * r + 0.5) * r + 0.625) * r - 5.0 / 3.0) * r * r + 1.0;
+  return ((((r / 12.0 - 0.5) * r + 0.625) * r + 5.0 / 3.0) * r - 5.0) * r + 4.0 - 2.0 / (3.0 * r);
+}
+
+/*
+  CreateRadiusLocalization1D - Build a radius-based localization matrix for a 1D periodic grid.
+
+  Each grid point includes all observations within distance 2*radius, weighted by
+  the Gaspari-Cohn function. Radius must be positive; use a large radius for effectively no localization.
+  Assumes identity observation operator (n vertices = n observations).
+  Vertex coordinates are node-based: x_i = i * dx (DMPlex convention).
+*/
+static PetscErrorCode CreateRadiusLocalization1D(PetscInt n, PetscReal domain_length, PetscReal radius, Mat *Q)
+{
+  PetscInt    rstart, rend, nlocal;
+  PetscInt   *d_nnz, *o_nnz;
+  PetscReal   dx;
+  PetscLayout layout;
 
   PetscFunctionBeginUser;
-  /* Create Q matrix (n x n for identity observation operator)
-     Each row will have exactly const non-zeros -- this can be relaxed */
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, n, NULL, 0, NULL, Q));
-  PetscCall(MatSetFromOptions(*Q));
+  PetscCheck(radius > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
+  dx = domain_length / n;
 
-  /* Initialize with full localization (all weights = 1.0)
-     Each vertex i uses all n observations */
-  for (i = 0; i < n; i++) {
-    for (PetscInt j = 0; j < n; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
+  /* Determine ownership range */
+  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &layout));
+  PetscCall(PetscLayoutSetSize(layout, n));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscLayoutGetRange(layout, &rstart, &rend));
+  PetscCall(PetscLayoutDestroy(&layout));
+  nlocal = rend - rstart;
+
+  /* Pass 1: count nnz per row, split into diagonal and off-diagonal blocks */
+  PetscCall(PetscCalloc1(nlocal, &d_nnz));
+  PetscCall(PetscCalloc1(nlocal, &o_nnz));
+  for (PetscInt row = rstart; row < rend; row++) {
+    PetscReal gx = row * dx;
+    for (PetscInt col = 0; col < n; col++) {
+      PetscReal diff = PetscAbsReal(gx - col * dx);
+      if (diff > 0.5 * domain_length) diff = domain_length - diff;
+      if (diff >= 2.0 * radius) continue;
+      if (col >= rstart && col < rend) d_nnz[row - rstart]++;
+      else o_nnz[row - rstart]++;
+    }
   }
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, n, n, 0, d_nnz, 0, o_nnz, Q));
+  PetscCall(PetscFree(d_nnz));
+  PetscCall(PetscFree(o_nnz));
+  PetscCall(MatSetFromOptions(*Q));
+  PetscCall(MatSetUp(*Q));
+
+  /* Pass 2: fill values */
+  PetscCall(MatGetOwnershipRange(*Q, &rstart, &rend));
+  for (PetscInt row = rstart; row < rend; row++) {
+    PetscReal gx = row * dx;
+    for (PetscInt col = 0; col < n; col++) {
+      PetscReal diff = PetscAbsReal(gx - col * dx);
+      PetscReal weight;
+
+      if (diff > 0.5 * domain_length) diff = domain_length - diff;
+      if (diff >= 2.0 * radius) continue;
+      weight = GaspariCohnWeight(diff / radius);
+      PetscCall(MatSetValue(*Q, row, col, weight, INSERT_VALUES));
+    }
+  }
+
   PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif /* !PETSC_HAVE_KOKKOS_KERNELS */
 
 int main(int argc, char **argv)
 {
   /* Configuration parameters */
-  PetscInt  n             = DEFAULT_N;
-  PetscInt  steps         = DEFAULT_STEPS;
-  PetscInt  burn          = DEFAULT_BURN;
-  PetscInt  obs_freq      = DEFAULT_OBS_FREQ;
-  PetscInt  random_seed   = DEFAULT_RANDOM_SEED;
-  PetscInt  ensemble_size = DEFAULT_ENSEMBLE_SIZE, n_obs_vertex = 7;
-  PetscReal F                     = DEFAULT_F;
-  PetscReal dt                    = DEFAULT_DT;
-  PetscReal obs_error_std         = DEFAULT_OBS_ERROR_STD;
-  PetscReal ensemble_init_std     = -1; /* Initial ensemble spread */
-  PetscBool use_fake_localization = PETSC_FALSE, isletkf;
-  PetscReal bd[3]                 = {DEFAULT_N, 0, 0};
+  PetscInt  n                   = DEFAULT_N;
+  PetscInt  steps               = DEFAULT_STEPS;
+  PetscInt  burn                = DEFAULT_BURN;
+  PetscInt  obs_freq            = DEFAULT_OBS_FREQ;
+  PetscInt  random_seed         = DEFAULT_RANDOM_SEED;
+  PetscInt  ensemble_size       = DEFAULT_ENSEMBLE_SIZE;
+  PetscReal F                   = DEFAULT_F;
+  PetscReal dt                  = DEFAULT_DT;
+  PetscReal obs_error_std       = DEFAULT_OBS_ERROR_STD;
+  PetscReal ensemble_init_std   = -1;    /* Initial ensemble spread */
+  PetscReal localization_radius = 100.0; /* Large value = effectively no localization for domain size 40 */
+  PetscBool isletkf;
+  PetscReal bd[3] = {DEFAULT_N, 0, 0};
 
   /* PETSc objects */
   Lorenz96Ctx *l95_ctx = NULL, *truth_ctx = NULL;
@@ -268,9 +323,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
   PetscCall(PetscOptionsReal("-ensemble_init_std", "Initial ensemble spread standard deviation", "", ensemble_init_std, &ensemble_init_std, NULL));
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
-  PetscCall(PetscOptionsBool("-use_fake_localization", "Use fake localization matrix", "", use_fake_localization, &use_fake_localization, NULL));
-  if (!use_fake_localization) PetscCall(PetscOptionsInt("-n_obs_vertex", "Number of observations per vertex", "", n_obs_vertex, &n_obs_vertex, NULL));
-  else n_obs_vertex = n; /* fully observed */
+  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "Gaspari-Cohn localization cutoff radius (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
   if (ensemble_init_std < 0) ensemble_init_std = obs_error_std;
@@ -342,30 +395,28 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
 
   /* Create and set localization matrix Q */
-  if (!use_fake_localization && isletkf) {
-    Vec Vecxyz[3] = {NULL, NULL, NULL};
-    Vec coord;
-
-    PetscCall(DMGetCoordinates(da_state, &coord));
-    for (PetscInt d = 0; d < 1; d++) {
-      PetscCall(DMCreateGlobalVector(da_state, &Vecxyz[d]));
-      PetscCall(PetscObjectSetName((PetscObject)Vecxyz[d], "x_coordinate"));
-      PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
-    }
-    PetscCall(PetscDALETKFGetLocalizationMatrix(n_obs_vertex, 1, Vecxyz, bd, H, &Q));
-    PetscCall(PetscDALETKFSetObsPerVertex(da, n_obs_vertex));
-    PetscCall(VecDestroy(&Vecxyz[0]));
-  } else {
-    PetscCall(CreateLocalizationMatrix(n, &Q));
-    if (isletkf) {
-      PetscCall(PetscDALETKFSetObsPerVertex(da, n_obs_vertex)); // fully observed
-    }
-  }
-  PetscCall(PetscDALETKFSetLocalization(da, Q, H));
   if (isletkf) {
-    PetscInt n_obs_vertex_actual;
-    PetscCall(PetscDALETKFGetObsPerVertex(da, &n_obs_vertex_actual));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization matrix Q created: %" PetscInt_FMT " x %" PetscInt_FMT "\n", n, n_obs_vertex_actual));
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    {
+      Vec      xyz[3] = {NULL, NULL, NULL};
+      Vec      coord;
+      PetscInt d;
+
+      PetscCall(DMGetCoordinates(da_state, &coord));
+      for (d = 0; d < 1; d++) {
+        PetscCall(DMCreateGlobalVector(da_state, &xyz[d]));
+        PetscCall(PetscObjectSetName((PetscObject)xyz[d], "x_coordinate"));
+        PetscCall(VecStrideGather(coord, d, xyz[d], INSERT_VALUES));
+      }
+      PetscCall(PetscDALETKFGetLocalizationMatrix(localization_radius, xyz, bd, H, &Q));
+      PetscCall(VecDestroy(&xyz[0]));
+    }
+#else
+    PetscCall(CreateRadiusLocalization1D(n, bd[0], localization_radius, &Q));
+#endif
+    PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+    PetscCall(PetscDALETKFSetLocalization(da, Q, H));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization matrix Q created: %" PetscInt_FMT " x %" PetscInt_FMT ", radius=%g\n", n, n, (double)localization_radius));
   }
 
   /* Initialize ensemble members from spun-up truth state */
@@ -388,8 +439,8 @@ int main(int argc, char **argv)
                         "  Observation noise std  : %.3f\n"
                         "  Ensemble init std      : %.3f\n"
                         "  Random seed            : %" PetscInt_FMT "\n"
-                        "  Localization (obs/vert): %" PetscInt_FMT " \n\n",
-                        n, ensemble_size, (double)F, (double)dt, steps, burn, (PetscInt)SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, n_obs_vertex));
+                        "  Localization radius    : %g\n\n",
+                        n, ensemble_size, (double)F, (double)dt, steps, burn, SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, (double)localization_radius));
 
   /* Main assimilation cycle: forecast and analysis steps */
   for (step = 0; step <= steps; step++) {
@@ -495,7 +546,7 @@ int main(int argc, char **argv)
     test:
       nsize: 3
       suffix: letkf
-      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -info :vec -n_obs_vertex 5
+      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -info :vec -petscda_letkf_localization_radius 5.0
 
     test:
       suffix: etkf

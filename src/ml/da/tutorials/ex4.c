@@ -7,29 +7,29 @@ static char help[] = "2D shallow water LETKF data assimilation example.\n"
 #include <petscdmda.h>
 #include <petscts.h>
 
-#include "ex4common.h"
+#include "ex4.h"
 
 /* Default parameter values */
-#define DEFAULT_NX                      40
-#define DEFAULT_NY                      40
-#define DEFAULT_STEPS                   100
-#define DEFAULT_OBS_FREQ                5
-#define DEFAULT_RANDOM_SEED             12345
-#define DEFAULT_G                       9.81
-#define DEFAULT_DT                      0.02
-#define DEFAULT_LX                      80.0
-#define DEFAULT_LY                      80.0
-#define DEFAULT_H0                      1.5
-#define DEFAULT_AX                      0.2
-#define DEFAULT_AY                      0.2
-#define DEFAULT_OBS_ERROR_STD           0.01
-#define DEFAULT_INIT_PERTURB_STD        0.05
-#define DEFAULT_INIT_H_BIAS             0.0
-#define DEFAULT_ENSEMBLE_SIZE           30
-#define DEFAULT_PROGRESS_FREQ           10
-#define DEFAULT_OBS_STRIDE              2
-#define DEFAULT_FALLBACK_OBS_PER_VERTEX 49
-#define SPINUP_STEPS                    0
+#define DEFAULT_NX                  40
+#define DEFAULT_NY                  40
+#define DEFAULT_STEPS               100
+#define DEFAULT_OBS_FREQ            5
+#define DEFAULT_RANDOM_SEED         12345
+#define DEFAULT_G                   9.81
+#define DEFAULT_DT                  0.02
+#define DEFAULT_LX                  80.0
+#define DEFAULT_LY                  80.0
+#define DEFAULT_H0                  1.5
+#define DEFAULT_AX                  0.2
+#define DEFAULT_AY                  0.2
+#define DEFAULT_OBS_ERROR_STD       0.01
+#define DEFAULT_INIT_PERTURB_STD    0.05
+#define DEFAULT_INIT_H_BIAS         0.0
+#define DEFAULT_ENSEMBLE_SIZE       30
+#define DEFAULT_PROGRESS_FREQ       10
+#define DEFAULT_OBS_STRIDE          2
+#define DEFAULT_LOCALIZATION_RADIUS 20.0 /* Gaspari-Cohn half-width; cutoff at 2*radius=40, covering ~10 obs spacings for the default 80x80 domain with obs_stride=2 */
+#define SPINUP_STEPS                0
 
 /* Minimum valid parameter values */
 #define MIN_ENSEMBLE_SIZE 2
@@ -88,116 +88,113 @@ static PetscErrorCode CreateObservationMatrix2D(PetscInt nx, PetscInt ny, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  CreateLocalizationMatrix2D - Create localization matrix Q for 2D shallow water
-*/
-static PetscErrorCode CreateLocalizationMatrix2D(PetscInt nx, PetscInt ny, PetscInt nobs, Mat *Q)
-{
-  PetscInt i, j, rstart, rend;
-
-  PetscFunctionBeginUser;
-  /* Create Q matrix (nx*ny x nobs) - global/no localization for simplicity */
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, nx * ny, nobs, nobs, NULL, 0, NULL, Q));
-  PetscCall(MatSetFromOptions(*Q));
-  PetscCall(MatGetOwnershipRange(*Q, &rstart, &rend));
-
-  /* Initialize with no localization: each state variable uses all observations */
-  for (i = rstart; i < rend; i++) {
-    for (j = 0; j < nobs; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
-  }
-  PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 #if !defined(PETSC_HAVE_KOKKOS_KERNELS)
 /*
-  CreateNearestObservationLocalization2D - Build a fixed-width localization pattern.
-
-  Each state row connects to exactly n_obs_vertex nearby observations so the LETKF
-  localization contract is satisfied even without the distance-based helper.
+  GaspariCohnWeight - Gaspari-Cohn fifth-order piecewise rational function.
+  Input: r = distance / radius (normalized distance, support is [0, 2])
 */
 static PetscReal GaspariCohnWeight(PetscReal r)
 {
-  PetscFunctionBeginHot;
-  if (r >= 2.0) PetscFunctionReturn(0.0);
-  if (r <= 1.0) PetscFunctionReturn((((-0.25 * r + 0.5) * r + 0.625) * r - 5.0 / 3.0) * r * r + 1.0);
-  PetscFunctionReturn(((((r / 12.0 - 0.5) * r + 0.625) * r + 5.0 / 3.0) * r - 5.0) * r + 4.0 - 2.0 / (3.0 * r));
+  if (r >= 2.0) return 0.0;
+  if (r <= 0.0) return 1.0;
+  if (r <= 1.0) return (((-0.25 * r + 0.5) * r + 0.625) * r - 5.0 / 3.0) * r * r + 1.0;
+  return ((((r / 12.0 - 0.5) * r + 0.625) * r + 5.0 / 3.0) * r - 5.0) * r + 4.0 - 2.0 / (3.0 * r);
 }
 
-static PetscErrorCode CreateNearestObservationLocalization2D(PetscInt nx, PetscInt ny, PetscInt obs_stride, PetscInt nobs_vertex, Mat *Q)
+/*
+  CreateRadiusLocalization2D - Build a radius-based localization matrix for a 2D periodic grid.
+
+  Each grid point includes all observations within distance 2*radius, weighted by
+  the Gaspari-Cohn function. Radius must be positive; use a large radius for effectively no localization.
+*/
+static PetscErrorCode CreateRadiusLocalization2D(PetscInt nx, PetscInt ny, PetscInt obs_stride, PetscReal Lx, PetscReal Ly, PetscReal radius, Mat *Q)
 {
-  PetscInt rstart, rend;
-  PetscInt nobs_x, nobs_y, nobs;
+  PetscInt    rstart, rend, cstart, cend, nlocal;
+  PetscInt    nobs_x, nobs_y, nobs;
+  PetscInt   *d_nnz, *o_nnz;
+  PetscReal   dx, dy;
+  PetscLayout rmap, cmap;
 
   PetscFunctionBeginUser;
+  PetscCheck(radius > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
   nobs_x = (nx + obs_stride - 1) / obs_stride;
   nobs_y = (ny + obs_stride - 1) / obs_stride;
   nobs   = nobs_x * nobs_y;
+  dx     = Lx / nx;
+  dy     = Ly / ny;
 
-  PetscCheck(nobs_vertex > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of observations per vertex must be positive");
-  PetscCheck(nobs_vertex <= nobs, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Observations per vertex (%" PetscInt_FMT ") cannot exceed total observations (%" PetscInt_FMT ")", nobs_vertex, nobs);
+  /* Determine ownership ranges */
+  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &rmap));
+  PetscCall(PetscLayoutSetSize(rmap, nx * ny));
+  PetscCall(PetscLayoutSetUp(rmap));
+  PetscCall(PetscLayoutGetRange(rmap, &rstart, &rend));
+  PetscCall(PetscLayoutDestroy(&rmap));
+  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &cmap));
+  PetscCall(PetscLayoutSetSize(cmap, nobs));
+  PetscCall(PetscLayoutSetUp(cmap));
+  PetscCall(PetscLayoutGetRange(cmap, &cstart, &cend));
+  PetscCall(PetscLayoutDestroy(&cmap));
+  nlocal = rend - rstart;
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, nx * ny, nobs, nobs_vertex, NULL, 0, NULL, Q));
-  PetscCall(MatSetFromOptions(*Q));
-  PetscCall(MatGetOwnershipRange(*Q, &rstart, &rend));
-
+  /* Pass 1: count nnz per row, split into diagonal and off-diagonal blocks */
+  PetscCall(PetscCalloc1(nlocal, &d_nnz));
+  PetscCall(PetscCalloc1(nlocal, &o_nnz));
   for (PetscInt row = rstart; row < rend; row++) {
-    PetscInt  gi       = row % nx;
-    PetscInt  gj       = row / nx;
-    PetscInt  selected = 0;
-    PetscReal best_dist[64];
-    PetscInt  best_col[64];
-
-    PetscCheck(nobs_vertex <= 64, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Fallback nearest-observation localization currently supports up to 64 observations per vertex");
-    for (PetscInt k = 0; k < nobs_vertex; k++) {
-      best_dist[k] = PETSC_MAX_REAL;
-      best_col[k]  = -1;
-    }
+    PetscInt  gi = row % nx;
+    PetscInt  gj = row / nx;
+    PetscReal gx = gi * dx;
+    PetscReal gy = gj * dy;
 
     for (PetscInt oy = 0; oy < nobs_y; oy++) {
-      PetscInt oj = PetscMin(oy * obs_stride, ny - 1);
-
+      PetscInt  oj    = PetscMin(oy * obs_stride, ny - 1);
+      PetscReal obs_y = oj * dy;
       for (PetscInt ox = 0; ox < nobs_x; ox++) {
-        PetscInt  oi  = PetscMin(ox * obs_stride, nx - 1);
-        PetscInt  col = oy * nobs_x + ox;
-        PetscInt  dxp = PetscAbsInt(gi - oi);
-        PetscInt  dyp = PetscAbsInt(gj - oj);
-        PetscReal dist;
+        PetscInt  oi    = PetscMin(ox * obs_stride, nx - 1);
+        PetscInt  col   = oy * nobs_x + ox;
+        PetscReal obs_x = oi * dx;
+        PetscReal diffx = PetscAbsReal(gx - obs_x);
+        PetscReal diffy = PetscAbsReal(gy - obs_y);
 
-        /* Respect the periodic geometry used by the DMDA and PDE model. */
-        dxp  = PetscMin(dxp, nx - dxp);
-        dyp  = PetscMin(dyp, ny - dyp);
-        dist = (PetscReal)(dxp * dxp + dyp * dyp);
-
-        if (selected < nobs_vertex) {
-          best_dist[selected] = dist;
-          best_col[selected]  = col;
-          selected++;
-        } else {
-          PetscInt worst = 0;
-          for (PetscInt k = 1; k < nobs_vertex; k++) {
-            if (best_dist[k] > best_dist[worst]) worst = k;
-          }
-          if (dist < best_dist[worst]) {
-            best_dist[worst] = dist;
-            best_col[worst]  = col;
-          }
-        }
+        if (diffx > 0.5 * Lx) diffx = Lx - diffx;
+        if (diffy > 0.5 * Ly) diffy = Ly - diffy;
+        if (diffx * diffx + diffy * diffy >= 4.0 * radius * radius) continue;
+        if (col >= cstart && col < cend) d_nnz[row - rstart]++;
+        else o_nnz[row - rstart]++;
       }
     }
+  }
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nx * ny, nobs, 0, d_nnz, 0, o_nnz, Q));
+  PetscCall(PetscFree(d_nnz));
+  PetscCall(PetscFree(o_nnz));
+  PetscCall(MatSetFromOptions(*Q));
+  PetscCall(MatSetUp(*Q));
 
-    {
-      PetscReal radius = PetscSqrtReal(best_dist[0]);
+  /* Pass 2: fill values */
+  for (PetscInt row = rstart; row < rend; row++) {
+    PetscInt  gi = row % nx;
+    PetscInt  gj = row / nx;
+    PetscReal gx = gi * dx;
+    PetscReal gy = gj * dy;
 
-      for (PetscInt k = 1; k < nobs_vertex; k++) radius = PetscMax(radius, PetscSqrtReal(best_dist[k]));
-      radius = PetscMax(radius, 1.0);
+    for (PetscInt oy = 0; oy < nobs_y; oy++) {
+      PetscInt  oj    = PetscMin(oy * obs_stride, ny - 1);
+      PetscReal obs_y = oj * dy;
 
-      for (PetscInt k = 0; k < nobs_vertex; k++) {
-        PetscReal dist   = PetscSqrtReal(best_dist[k]);
-        PetscReal weight = GaspariCohnWeight(2.0 * dist / radius);
+      for (PetscInt ox = 0; ox < nobs_x; ox++) {
+        PetscInt  oi    = PetscMin(ox * obs_stride, nx - 1);
+        PetscInt  col   = oy * nobs_x + ox;
+        PetscReal obs_x = oi * dx;
+        PetscReal diffx = PetscAbsReal(gx - obs_x);
+        PetscReal diffy = PetscAbsReal(gy - obs_y);
+        PetscReal dist, weight;
 
-        PetscCall(MatSetValue(*Q, row, best_col[k], weight, INSERT_VALUES));
+        if (diffx > 0.5 * Lx) diffx = Lx - diffx;
+        if (diffy > 0.5 * Ly) diffy = Ly - diffy;
+        dist = PetscSqrtReal(diffx * diffx + diffy * diffy);
+
+        if (dist >= 2.0 * radius) continue;
+        weight = GaspariCohnWeight(dist / radius);
+        PetscCall(MatSetValue(*Q, row, col, weight, INSERT_VALUES));
       }
     }
   }
@@ -268,7 +265,7 @@ static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscR
     PetscReal      c   = PetscSqrtReal(g * h0);
 
     PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-    PetscCall(DMDAVecGetArrayDOF(da_state, member, &x_array));
+    PetscCall(DMDAVecGetArrayDOFWrite(da_state, member, &x_array));
     for (PetscInt j = ys; j < ys + ym; j++) {
       for (PetscInt i = xs; i < xs + xm; i++) {
         PetscReal x  = ((PetscReal)i + 0.5) * dx;
@@ -288,7 +285,7 @@ static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscR
         x_array[j][i][2] = hvbase + h0 * v;
       }
     }
-    PetscCall(DMDAVecRestoreArrayDOF(da_state, member, &x_array));
+    PetscCall(DMDAVecRestoreArrayDOFWrite(da_state, member, &x_array));
     PetscCall(PetscDAEnsembleSetMember(da, e, member));
   }
 
@@ -322,30 +319,28 @@ static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *n
 int main(int argc, char **argv)
 {
   /* Configuration parameters */
-  const PetscInt ndof                    = 3; /* h, hu, hv */
-  PetscInt       nx                      = DEFAULT_NX;
-  PetscInt       ny                      = DEFAULT_NY;
-  PetscInt       steps                   = DEFAULT_STEPS;
-  PetscInt       obs_freq                = DEFAULT_OBS_FREQ;
-  PetscInt       random_seed             = DEFAULT_RANDOM_SEED;
-  PetscInt       ensemble_size           = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt       n_spin                  = SPINUP_STEPS;
-  PetscInt       progress_freq           = DEFAULT_PROGRESS_FREQ;
-  PetscInt       obs_stride              = DEFAULT_OBS_STRIDE;
-  PetscReal      g                       = DEFAULT_G;
-  PetscReal      dt                      = DEFAULT_DT;
-  PetscReal      Lx                      = DEFAULT_LX;
-  PetscReal      Ly                      = DEFAULT_LY;
-  PetscReal      h0                      = DEFAULT_H0;
-  PetscReal      Ax                      = DEFAULT_AX;
-  PetscReal      Ay                      = DEFAULT_AY;
-  PetscReal      init_perturb_std        = DEFAULT_INIT_PERTURB_STD;
-  PetscReal      init_h_bias             = DEFAULT_INIT_H_BIAS;
-  PetscReal      obs_error_std           = DEFAULT_OBS_ERROR_STD;
-  PetscBool      use_fake_localization   = PETSC_FALSE;
-  PetscBool      obs_per_vertex_set      = PETSC_FALSE;
-  PetscInt       num_observations_vertex = 7;
-  Ex4FluxType    flux_type               = EX4_FLUX_RUSANOV;
+  const PetscInt ndof                = 3; /* h, hu, hv */
+  PetscInt       nx                  = DEFAULT_NX;
+  PetscInt       ny                  = DEFAULT_NY;
+  PetscInt       steps               = DEFAULT_STEPS;
+  PetscInt       obs_freq            = DEFAULT_OBS_FREQ;
+  PetscInt       random_seed         = DEFAULT_RANDOM_SEED;
+  PetscInt       ensemble_size       = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt       n_spin              = SPINUP_STEPS;
+  PetscInt       progress_freq       = DEFAULT_PROGRESS_FREQ;
+  PetscInt       obs_stride          = DEFAULT_OBS_STRIDE;
+  PetscReal      g                   = DEFAULT_G;
+  PetscReal      dt                  = DEFAULT_DT;
+  PetscReal      Lx                  = DEFAULT_LX;
+  PetscReal      Ly                  = DEFAULT_LY;
+  PetscReal      h0                  = DEFAULT_H0;
+  PetscReal      Ax                  = DEFAULT_AX;
+  PetscReal      Ay                  = DEFAULT_AY;
+  PetscReal      init_perturb_std    = DEFAULT_INIT_PERTURB_STD;
+  PetscReal      init_h_bias         = DEFAULT_INIT_H_BIAS;
+  PetscReal      obs_error_std       = DEFAULT_OBS_ERROR_STD;
+  PetscReal      localization_radius = DEFAULT_LOCALIZATION_RADIUS;
+  Ex4FluxType    flux_type           = EX4_FLUX_RUSANOV;
   char           output_file[PETSC_MAX_PATH_LEN];
   PetscBool      output_enabled = PETSC_FALSE;
   FILE          *fp             = NULL;
@@ -393,26 +388,16 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
   PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov/mc)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
-  PetscCall(PetscOptionsBool("-use_fake_localization", "Use fake localization matrix", "", use_fake_localization, &use_fake_localization, NULL));
-  PetscCall(PetscOptionsInt("-petscda_letkf_obs_per_vertex", "Number of observations per vertex", "", num_observations_vertex, &num_observations_vertex, &obs_per_vertex_set));
+  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "Gaspari-Cohn localization cutoff radius (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
   /* Calculate number of observations */
   nobs = ((nx + obs_stride - 1) / obs_stride) * ((ny + obs_stride - 1) / obs_stride);
 
-  /* Set num_observations_vertex for fake localization after nobs is calculated */
-  if (use_fake_localization && !obs_per_vertex_set) num_observations_vertex = nobs;
-
   PetscCall(ValidateParameters(&nx, &ny, &nobs, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
   PetscCheck(init_perturb_std > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation std must be positive");
 
-  /* Create 2D periodic DMDA with 3 DOF (h, hu, hv) */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, ndof, 2, NULL, NULL, &da_state));
-  PetscCall(DMSetFromOptions(da_state));
-  PetscCall(DMSetUp(da_state));
-
-  /* Create shallow water context */
-  PetscCall(ShallowWater2DContextCreate(da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &sw_ctx));
+  PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &da_state, &sw_ctx, &x0));
 
   /* Initialize random number generator */
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rng));
@@ -424,28 +409,8 @@ int main(int argc, char **argv)
   PetscCall(PetscRandomSetFromOptions(rng));
   PetscCall(PetscRandomSeed(rng));
 
-  /* Initialize state vectors */
-  PetscCall(DMCreateGlobalVector(da_state, &x0));
-
-  /* Set initial condition from analytic solution */
-  {
-    PetscScalar ***x_array;
-    PetscInt       xs, ys, xm, ym, i, j;
-    PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-    PetscCall(DMDAVecGetArrayDOF(da_state, x0, &x_array));
-    for (j = ys; j < ys + ym; j++) {
-      for (i = xs; i < xs + xm; i++) {
-        PetscReal x = ((PetscReal)i + 0.5) * sw_ctx->dx;
-        PetscReal y = ((PetscReal)j + 0.5) * sw_ctx->dy;
-        PetscReal h, hu, hv;
-        PetscCall(ShallowWaterSolution_Wave2D(Lx, Ly, x, y, 0.0, g, h0, Ax, Ay, &h, &hu, &hv));
-        x_array[j][i][0] = h;
-        x_array[j][i][1] = hu;
-        x_array[j][i][2] = hv;
-      }
-    }
-    PetscCall(DMDAVecRestoreArrayDOF(da_state, x0, &x_array));
-  }
+  /* Set initial condition from analytic wave solution */
+  PetscCall(SetInitialCondition(da_state, x0, sw_ctx, PETSC_FALSE));
 
   /* Initialize truth trajectory */
   PetscCall(VecDuplicate(x0, &truth_state));
@@ -457,11 +422,11 @@ int main(int argc, char **argv)
     PetscInt       xs, ys, xm, ym, i, j;
 
     PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-    PetscCall(DMDAVecGetArrayDOF(da_state, x0, &x_array));
+    PetscCall(DMDAVecGetArrayDOFWrite(da_state, x0, &x_array));
     for (j = ys; j < ys + ym; j++) {
       for (i = xs; i < xs + xm; i++) x_array[j][i][0] += init_h_bias;
     }
-    PetscCall(DMDAVecRestoreArrayDOF(da_state, x0, &x_array));
+    PetscCall(DMDAVecRestoreArrayDOFWrite(da_state, x0, &x_array));
   }
 
   /* Spinup if needed */
@@ -519,26 +484,20 @@ int main(int argc, char **argv)
     PetscBool isletkf;
     PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
 
-    if (!use_fake_localization && isletkf) {
+    if (isletkf) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      /* Use PetscDALETKFGetLocalizationMatrix for proper distance-based localization */
       Vec       Vecxyz[3] = {NULL, NULL, NULL};
       Vec       coord;
       DM        cda;
       PetscReal bd[3] = {Lx, Ly, 0};
       PetscInt  cdof;
 
-      /* Set up coordinates for DMDA */
       PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
-
-      /* Get coordinate DM and coordinates */
       PetscCall(DMGetCoordinateDM(da_state, &cda));
       PetscCall(DMGetCoordinates(da_state, &coord));
       PetscCall(DMGetBlockSize(cda, &cdof));
-
       PetscCheck(cdof >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Coordinate DM block size must be at least 2 for 2D localization");
 
-      /* Extract x/y coordinate fields into scalar vectors expected by localization setup. */
       for (PetscInt d = 0; d < 2; d++) {
         PetscCall(VecCreate(PETSC_COMM_WORLD, &Vecxyz[d]));
         PetscCall(VecSetSizes(Vecxyz[d], PETSC_DECIDE, nx * ny));
@@ -547,33 +506,18 @@ int main(int argc, char **argv)
         PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
       }
 
-      /* Get localization matrix using distance-based method */
-      PetscCall(PetscDALETKFGetLocalizationMatrix(num_observations_vertex, 1, Vecxyz, bd, H1, &Q));
+      PetscCall(PetscDALETKFGetLocalizationMatrix(localization_radius, Vecxyz, bd, H1, &Q));
       PetscCall(VecDestroy(&Vecxyz[0]));
       PetscCall(VecDestroy(&Vecxyz[1]));
-      PetscCall(PetscDALETKFSetObsPerVertex(da, num_observations_vertex));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using distance-based localization with %" PetscInt_FMT " observations per vertex\n", num_observations_vertex));
 #else
-      PetscInt fallback_obs_per_vertex = num_observations_vertex;
-
-      if (!obs_per_vertex_set) fallback_obs_per_vertex = PetscMax(fallback_obs_per_vertex, DEFAULT_FALLBACK_OBS_PER_VERTEX);
-      fallback_obs_per_vertex = PetscMax(fallback_obs_per_vertex, ensemble_size);
-      fallback_obs_per_vertex = PetscMin(fallback_obs_per_vertex, nobs);
-
-      PetscCall(CreateNearestObservationLocalization2D(nx, ny, obs_stride, fallback_obs_per_vertex, &Q));
-      PetscCall(PetscDALETKFSetObsPerVertex(da, fallback_obs_per_vertex));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Distance-based localization unavailable in this build; using nearest-observation localization with %" PetscInt_FMT " observations per vertex instead\n", fallback_obs_per_vertex));
+      PetscCall(CreateRadiusLocalization2D(nx, ny, obs_stride, Lx, Ly, localization_radius, &Q));
 #endif
-    } else {
-      PetscCall(CreateLocalizationMatrix2D(nx, ny, nobs, &Q));
-      if (isletkf) {
-        PetscCall(PetscDALETKFSetObsPerVertex(da, num_observations_vertex));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using global localization (all observations)\n"));
-      }
+      PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+      PetscCall(PetscDALETKFSetLocalization(da, Q, H));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using Gaspari-Cohn localization with radius %g\n", (double)localization_radius));
+      PetscCall(MatViewFromOptions(Q, NULL, "-Q_view"));
+      PetscCall(MatDestroy(&Q));
     }
-    PetscCall(PetscDALETKFSetLocalization(da, Q, H));
-    PetscCall(MatViewFromOptions(Q, NULL, "-Q_view"));
-    PetscCall(MatDestroy(&Q));
   }
 
   /* Initialize ensemble members with perturbations */
@@ -779,5 +723,5 @@ int main(int argc, char **argv)
     test:
       nsize: 3
       suffix: kokkos_wave2d
-      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_obs_per_vertex 5
+      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 TEST*/
