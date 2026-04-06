@@ -91,6 +91,7 @@ cdef extern from * nogil:
     PetscMatType MATCONSTANTDIAGONAL
     PetscMatType MATDIAGONAL
     PetscMatType MATH2OPUS
+    PetscMatType MATHTOOL
 
     ctypedef const char* PetscMatOrderingType "MatOrderingType"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -423,6 +424,13 @@ cdef extern from * nogil:
     PetscErrorCode MatH2OpusOrthogonalize(PetscMat)
     PetscErrorCode MatH2OpusCompress(PetscMat, PetscReal)
     PetscErrorCode MatH2OpusLowRankUpdate(PetscMat, PetscMat, PetscMat, PetscScalar)
+
+    ctypedef PetscErrorCode MatHtoolKernel(PetscInt, PetscInt, PetscInt, const PetscInt*, const PetscInt*, PetscScalar*, void*) except PETSC_ERR_PYTHON
+    PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernel*, void*, PetscMat*)
+    PetscErrorCode MatHtoolGetPermutationSource(PetscMat, PetscIS*)
+    PetscErrorCode MatHtoolGetPermutationTarget(PetscMat, PetscIS*)
+    PetscErrorCode MatHtoolUsePermutation(PetscMat, PetscBool)
+    PetscErrorCode MatHtoolUseRecompression(PetscMat, PetscBool)
 
     PetscErrorCode MatLMVMGetJ0(PetscMat, PetscMat*)
     PetscErrorCode MatLMVMSetJ0(PetscMat, PetscMat)

@@ -246,7 +246,7 @@ class ParallelPool(WorkerPoolBase):
     pl.sync_print = lock_sync_print
     return
 
-  @timeout(seconds=10)
+  @timeout(seconds=50)
   def __crash_and_burn(self, message: str) -> NoReturn:
     r"""Forcefully annihilate the pool and crash the program
 
@@ -290,7 +290,7 @@ class ParallelPool(WorkerPoolBase):
 
     while not return_q.empty():
       try:
-        packet = return_q.get(timeout=1)
+        packet = return_q.get(timeout=5)
       except queue.Empty:
         # this should never really happen since this thread is the only consumer of the
         # queue, but it's here just in case
@@ -358,7 +358,7 @@ class ParallelPool(WorkerPoolBase):
     """
     import time
 
-    @timeout(seconds=3)
+    @timeout(seconds=15)
     def timeout_join() -> None:
       self.input_queue.join()
       return
@@ -380,7 +380,7 @@ class ParallelPool(WorkerPoolBase):
     #
     # We need to spin (and continue consuming results) until all processes have have
     # exited, since they will only fully exit once they flush their pipes.
-    @timeout(seconds=60)
+    @timeout(seconds=300)
     def reap_workers() -> None:
       while 1:
         live_list = [w.is_alive() for w in self.workers]
@@ -389,7 +389,7 @@ class ParallelPool(WorkerPoolBase):
             'Checking whether process', worker.name, 'has finished:', 'no' if alive else 'yes'
           )
           if alive:
-            worker.join(timeout=1)
+            worker.join(timeout=5)
             self._consume_results()
         if sum(live_list) == 0:
           break
@@ -433,7 +433,7 @@ class ParallelPool(WorkerPoolBase):
       # reinitialize it when no errors exist. If we get to this point however we no longer
       # care about performance as we are about to crash everything.
       try:
-        exception = self.error_queue.get(timeout=.5)
+        exception = self.error_queue.get(timeout=2.5)
       except queue.Empty:
         # Queue is not empty (we were in the loop), but we timed out on the get. Should
         # not happen yet here we are. Try a few couple more times, otherwise bail
