@@ -1,6 +1,5 @@
 2D Shallow Water Forward Example
 ==============================
-Step    0, time  0.000  L1=0.00000e+00  L2=0.00000e+00  Linf=0.00000e+00 [initial]
 Step   10, time  0.200  L1=7.29074e-01  L2=1.12308e-02  Linf=2.84312e-04
 Step   20, time  0.400  L1=5.38589e+00  L2=8.29339e-02  Linf=2.09393e-03
 Step   30, time  0.600  L1=1.71769e+01  L2=2.64460e-01  Linf=6.68366e-03

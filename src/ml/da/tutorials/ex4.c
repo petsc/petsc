@@ -9,6 +9,8 @@ static char help[] = "2D shallow water LETKF data assimilation example.\n"
 
 #include "ex4.h"
 
+const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
+
 /* Default parameter values */
 #define DEFAULT_NX                  40
 #define DEFAULT_NY                  40
@@ -279,7 +281,7 @@ static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscR
         PetscReal v     = (c / h0) * (ayp * cy - byp * sy);
         PetscReal hbase, hubase, hvbase;
 
-        PetscCall(ShallowWaterSolution_Wave2D(Lx, Ly, x, y, 0.0, g, h0, Ax, Ay, &hbase, &hubase, &hvbase));
+        ShallowWaterSolution_Wave2D(Lx, Ly, x, y, 0.0, g, h0, Ax, Ay, &hbase, &hubase, &hvbase);
         x_array[j][i][0] = hbase + init_h_bias + eta;
         x_array[j][i][1] = hubase + h0 * u;
         x_array[j][i][2] = hvbase + h0 * v;
@@ -498,6 +500,8 @@ int main(int argc, char **argv)
       PetscCall(DMGetBlockSize(cda, &cdof));
       PetscCheck(cdof >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Coordinate DM block size must be at least 2 for 2D localization");
 
+      /* Extract per-component coordinate vectors; VecStrideGather works because
+         the coordinate DM and Vecxyz share the same parallel layout (xm*ym local points) */
       for (PetscInt d = 0; d < 2; d++) {
         PetscCall(VecCreate(PETSC_COMM_WORLD, &Vecxyz[d]));
         PetscCall(VecSetSizes(Vecxyz[d], PETSC_DECIDE, nx * ny));

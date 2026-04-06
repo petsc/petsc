@@ -26,9 +26,11 @@ static char help[] = "2D Shallow water equations forward model with MMS verifica
 #define DEFAULT_CONV_NY_COARSE    12
 #define DEFAULT_CONV_REFINE       2
 
-#include "ex4common.h"
+#include "ex4.h"
 
-static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal time, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscReal *L1_error, PetscReal *L2_error, PetscReal *Linf_error)
+const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
+
+static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal time, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal A, PetscReal *L1_error, PetscReal *L2_error, PetscReal *Linf_error)
 {
   const PetscScalar ***x_num;
   PetscInt             xs, ys, xm, ym, i, j;
@@ -52,7 +54,7 @@ static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal t
       PetscReal h_exact, hu_exact, hv_exact;
       PetscReal error;
 
-      PetscCall(ManufacturedSolution2D(Lx, Ly, x, y, time, h0, Ax, Ay, &h_exact, &hu_exact, &hv_exact));
+      ManufacturedSolution2D(Lx, Ly, x, y, time, h0, A, &h_exact, &hu_exact, &hv_exact);
       error = PetscAbsReal(PetscRealPart(x_num[j][i][0]) - h_exact);
       L1_local += error * dA;
       L2_local += error * error * dA;
@@ -70,41 +72,17 @@ static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt steps, PetscReal g, PetscReal dt, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal Ax, PetscReal Ay, Ex4FluxType flux_type, PetscReal *L1_err, PetscReal *L2_err, PetscReal *Linf_err)
+static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt steps, PetscReal g, PetscReal dt, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal A, Ex4FluxType flux_type, PetscReal *L1_err, PetscReal *L2_err, PetscReal *Linf_err)
 {
-  const PetscInt     ndof = 3;
   DM                 da_state;
   ShallowWater2DCtx *sw_ctx;
   Vec                x_numerical;
-  PetscScalar     ***x_array;
-  PetscInt           xs, ys, xm, ym, i, j;
-  PetscReal          final_time;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, ndof, 2, NULL, NULL, &da_state));
-  PetscCall(DMSetUp(da_state));
-  PetscCall(ShallowWater2DContextCreate(da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_TRUE, flux_type, &sw_ctx));
-  PetscCall(DMCreateGlobalVector(da_state, &x_numerical));
-  PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-  PetscCall(DMDAVecGetArrayDOF(da_state, x_numerical, &x_array));
-  for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) {
-      PetscReal x = ((PetscReal)i + 0.5) * sw_ctx->dx;
-      PetscReal y = ((PetscReal)j + 0.5) * sw_ctx->dy;
-      PetscReal h, hu, hv;
-
-      PetscCall(ManufacturedSolution2D(Lx, Ly, x, y, 0.0, h0, Ax, Ay, &h, &hu, &hv));
-      x_array[j][i][0] = h;
-      x_array[j][i][1] = hu;
-      x_array[j][i][2] = hv;
-    }
-  }
-  PetscCall(DMDAVecRestoreArrayDOF(da_state, x_numerical, &x_array));
-
+  PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, A, A, PETSC_TRUE, flux_type, &da_state, &sw_ctx, &x_numerical));
+  PetscCall(SetInitialCondition(da_state, x_numerical, sw_ctx, PETSC_TRUE));
   for (PetscInt step = 0; step < steps; step++) PetscCall(ShallowWaterStep2D(x_numerical, x_numerical, sw_ctx));
-  final_time = steps * dt;
-  PetscCall(ComputeManufacturedError(x_numerical, da_state, final_time, Lx, Ly, h0, Ax, Ay, L1_err, L2_err, Linf_err));
-
+  PetscCall(ComputeManufacturedError(x_numerical, da_state, steps * dt, Lx, Ly, h0, A, L1_err, L2_err, Linf_err));
   PetscCall(VecDestroy(&x_numerical));
   PetscCall(ShallowWater2DContextDestroy(&sw_ctx));
   PetscCall(DMDestroy(&da_state));
@@ -113,7 +91,6 @@ static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt ste
 
 int main(int argc, char **argv)
 {
-  const PetscInt     ndof = 3;
   PetscInt           nx = DEFAULT_NX, ny = DEFAULT_NY, steps = DEFAULT_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ, verification_freq = DEFAULT_VERIFICATION_FREQ;
   PetscReal          g = DEFAULT_G, dt = DEFAULT_DT, Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0, Ax = DEFAULT_AX, Ay = DEFAULT_AY;
   PetscBool          verify_mms = PETSC_FALSE, test_mms_spatial_order = PETSC_FALSE;
@@ -150,6 +127,7 @@ int main(int argc, char **argv)
   PetscCheck(steps >= 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of steps must be non-negative");
   PetscCheck(dt > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Time step must be positive");
   PetscCheck(!test_mms_spatial_order || conv_refine >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-conv_refine must be >= 2 for spatial-order check (got %" PetscInt_FMT ")", conv_refine);
+  PetscCheck((!verify_mms && !test_mms_spatial_order) || Ax == Ay, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MMS verification requires Ax == Ay (isotropic amplitude); got Ax=%g, Ay=%g", (double)Ax, (double)Ay);
 
   if (test_mms_spatial_order) {
     PetscInt  medium_nx = conv_refine * conv_nx_coarse, medium_ny = conv_refine * conv_ny_coarse, fine_nx = conv_refine * medium_nx, fine_ny = conv_refine * medium_ny;
@@ -157,9 +135,9 @@ int main(int argc, char **argv)
     PetscReal order_cm_L1, order_cm_L2, order_cm_Linf;
     PetscReal order_mf_L1, order_mf_L2, order_mf_Linf;
 
-    PetscCall(RunManufacturedCase(conv_nx_coarse, conv_ny_coarse, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, Ay, flux_type, &coarse_L1, &coarse_L2, &coarse_Linf));
-    PetscCall(RunManufacturedCase(medium_nx, medium_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, Ay, flux_type, &medium_L1, &medium_L2, &medium_Linf));
-    PetscCall(RunManufacturedCase(fine_nx, fine_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, Ay, flux_type, &fine_L1, &fine_L2, &fine_Linf));
+    PetscCall(RunManufacturedCase(conv_nx_coarse, conv_ny_coarse, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &coarse_L1, &coarse_L2, &coarse_Linf));
+    PetscCall(RunManufacturedCase(medium_nx, medium_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &medium_L1, &medium_L2, &medium_Linf));
+    PetscCall(RunManufacturedCase(fine_nx, fine_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &fine_L1, &fine_L2, &fine_Linf));
     order_cm_L1   = PetscLogReal(coarse_L1 / medium_L1) / PetscLogReal((PetscReal)conv_refine);
     order_cm_L2   = PetscLogReal(coarse_L2 / medium_L2) / PetscLogReal((PetscReal)conv_refine);
     order_cm_Linf = PetscLogReal(coarse_Linf / medium_Linf) / PetscLogReal((PetscReal)conv_refine);
@@ -174,64 +152,28 @@ int main(int argc, char **argv)
                           "  observed p (coarse->medium) : L1=%.2f, L2=%.2f, Linf=%.2f\n"
                           "  observed p (medium->fine)   : L1=%.2f, L2=%.2f, Linf=%.2f\n",
                           conv_nx_coarse, conv_ny_coarse, (double)dt, (double)coarse_L1, (double)coarse_L2, (double)coarse_Linf, medium_nx, medium_ny, (double)dt, (double)medium_L1, (double)medium_L2, (double)medium_Linf, fine_nx, fine_ny, (double)dt, (double)fine_L1, (double)fine_L2, (double)fine_Linf, (double)order_cm_L1, (double)order_cm_L2, (double)order_cm_Linf, (double)order_mf_L1, (double)order_mf_L2, (double)order_mf_Linf));
-    PetscCall(PetscFinalize());
-    return 0;
-  }
-
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, ndof, 2, NULL, NULL, &da_state));
-  PetscCall(DMSetFromOptions(da_state));
-  PetscCall(DMSetUp(da_state));
-  PetscCall(ShallowWater2DContextCreate(da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, flux_type, &sw_ctx));
-  PetscCall(DMCreateGlobalVector(da_state, &x_numerical));
-
-  {
-    PetscScalar ***x_array;
-    PetscInt       xs, ys, xm, ym, i, j;
-    PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-    PetscCall(DMDAVecGetArrayDOF(da_state, x_numerical, &x_array));
-    for (j = ys; j < ys + ym; j++) {
-      for (i = xs; i < xs + xm; i++) {
-        PetscReal x = ((PetscReal)i + 0.5) * sw_ctx->dx;
-        PetscReal y = ((PetscReal)j + 0.5) * sw_ctx->dy;
-        PetscReal h, hu, hv;
-
-        if (verify_mms) PetscCall(ManufacturedSolution2D(Lx, Ly, x, y, 0.0, h0, Ax, Ay, &h, &hu, &hv));
-        else PetscCall(ShallowWaterSolution_Wave2D(Lx, Ly, x, y, 0.0, g, h0, Ax, Ay, &h, &hu, &hv));
-        x_array[j][i][0] = h;
-        x_array[j][i][1] = hu;
-        x_array[j][i][2] = hv;
-      }
-    }
-    PetscCall(DMDAVecRestoreArrayDOF(da_state, x_numerical, &x_array));
-  }
-
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "2D Shallow Water Forward Example\n==============================\n"));
-
-  if (verify_mms) {
-    PetscReal L1_err, L2_err, Linf_err;
-    PetscCall(ComputeManufacturedError(x_numerical, da_state, 0.0, Lx, Ly, h0, Ax, Ay, &L1_err, &L2_err, &Linf_err));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4d, time %6.3f  L1=%.5e  L2=%.5e  Linf=%.5e [initial]\n", 0, 0.0, (double)L1_err, (double)L2_err, (double)Linf_err));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4d, time %6.3f  Forward state initialized\n", 0, 0.0));
-  }
+    PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, flux_type, &da_state, &sw_ctx, &x_numerical));
+    PetscCall(SetInitialCondition(da_state, x_numerical, sw_ctx, verify_mms));
 
-  for (PetscInt step = 1; step <= steps; step++) {
-    PetscReal time          = step * dt;
-    PetscBool emit_progress = (PetscBool)(step == steps || (progress_freq > 0 && step % progress_freq == 0));
-    PetscCall(ShallowWaterStep2D(x_numerical, x_numerical, sw_ctx));
-    if (verify_mms && (step % verification_freq == 0 || step == steps)) {
-      PetscReal L1_err, L2_err, Linf_err;
-      PetscCall(ComputeManufacturedError(x_numerical, da_state, time, Lx, Ly, h0, Ax, Ay, &L1_err, &L2_err, &Linf_err));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  L1=%.5e  L2=%.5e  Linf=%.5e\n", step, (double)time, (double)L1_err, (double)L2_err, (double)Linf_err));
-    } else if (emit_progress) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  Forward step complete\n", step, (double)time));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "2D Shallow Water Forward Example\n==============================\n"));
+
+    for (PetscInt step = 1; step <= steps; step++) {
+      PetscReal time          = step * dt;
+      PetscBool emit_progress = (PetscBool)(step == steps || (progress_freq > 0 && step % progress_freq == 0));
+      PetscCall(ShallowWaterStep2D(x_numerical, x_numerical, sw_ctx));
+      if (verify_mms && (step % verification_freq == 0 || step == steps)) {
+        PetscReal L1_err, L2_err, Linf_err;
+        PetscCall(ComputeManufacturedError(x_numerical, da_state, time, Lx, Ly, h0, Ax, &L1_err, &L2_err, &Linf_err));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  L1=%.5e  L2=%.5e  Linf=%.5e\n", step, (double)time, (double)L1_err, (double)L2_err, (double)Linf_err));
+      } else if (emit_progress) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  Forward step complete\n", step, (double)time));
     }
-  }
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, verify_mms ? "\nMMS forward run complete.\n" : "\nForward simulation complete.\n"));
-  PetscCall(VecDestroy(&x_numerical));
-  PetscCall(ShallowWater2DContextDestroy(&sw_ctx));
-  PetscCall(DMDestroy(&da_state));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, verify_mms ? "\nMMS forward run complete.\n" : "\nForward simulation complete.\n"));
+    PetscCall(VecDestroy(&x_numerical));
+    PetscCall(ShallowWater2DContextDestroy(&sw_ctx));
+    PetscCall(DMDestroy(&da_state));
+  }
   PetscCall(PetscFinalize());
   return 0;
 }

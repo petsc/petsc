@@ -56,11 +56,16 @@ static PetscReal GaspariCohn(PetscReal distance, PetscReal radius)
 @*/
 PetscErrorCode PetscDALETKFGetLocalizationMatrix(PetscReal radius, Vec Vecxyz[3], PetscReal bd[3], Mat H, Mat *Q)
 {
-  PetscInt dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
-  Vec     *obs_vecs;
-  MPI_Comm comm;
+  PetscInt    dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
+  PetscInt    rstart, cstart, cend;
+  PetscInt   *d_nnz, *o_nnz;
+  Vec        *obs_vecs;
+  MPI_Comm    comm;
+  PetscLayout cmap;
 
   PetscFunctionBegin;
+  PetscAssertPointer(Vecxyz, 2);
+  PetscAssertPointer(bd, 3);
   PetscValidHeaderSpecific(H, MAT_CLASSID, 4);
   PetscAssertPointer(Q, 5);
 
@@ -217,12 +222,9 @@ PetscErrorCode PetscDALETKFGetLocalizationMatrix(PetscReal radius, Vec Vecxyz[3]
   Kokkos::deep_copy(values_host, values_dev);
 
   /* Create Q matrix with variable nnz preallocation */
-  PetscInt rstart;
   PetscCall(VecGetOwnershipRange(Vecxyz[0], &rstart, NULL));
 
   /* Determine column ownership range for diagonal/off-diagonal preallocation split */
-  PetscInt    cstart, cend;
-  PetscLayout cmap;
   PetscCall(PetscLayoutCreate(comm, &cmap));
   PetscCall(PetscLayoutSetLocalSize(cmap, n_obs_local));
   PetscCall(PetscLayoutSetSize(cmap, n_obs_global));
@@ -233,7 +235,6 @@ PetscErrorCode PetscDALETKFGetLocalizationMatrix(PetscReal radius, Vec Vecxyz[3]
   PetscCall(MatCreate(comm, Q));
   PetscCall(MatSetSizes(*Q, n_vert_local, n_obs_local, PETSC_DETERMINE, n_obs_global));
   PetscCall(MatSetType(*Q, MATAIJKOKKOS));
-  PetscInt *d_nnz, *o_nnz;
   PetscCall(PetscCalloc1(n_vert_local, &d_nnz));
   PetscCall(PetscCalloc1(n_vert_local, &o_nnz));
   for (PetscInt i = 0; i < n_vert_local; ++i) {
