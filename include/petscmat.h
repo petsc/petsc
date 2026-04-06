@@ -2306,7 +2306,6 @@ PETSC_EXTERN PetscErrorCode MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
-#ifdef PETSC_HAVE_HTOOL
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
 PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
 
@@ -2357,7 +2356,6 @@ typedef enum {
   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR,
   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC
 } MatHtoolClusteringType;
-#endif
 
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat, PetscInt, PetscInt *);

@@ -1,4 +1,5 @@
--include ../../../../petscdir.mk
+-include ../../../../../petscdir.mk
+#requirespackage 'PETSC_HAVE_HTOOL'
 
 MANSEC = Mat
 

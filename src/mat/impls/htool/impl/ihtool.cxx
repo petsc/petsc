@@ -273,6 +273,7 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUseRecompression_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolCreateFromKernel_C", nullptr));
   PetscCall(PetscObjectQuery((PetscObject)A, "KernelTranspose", (PetscObject *)&container));
   if (container) { /* created in MatTranspose_Htool() */
     PetscCall(PetscContainerGetPointer(container, &kernelt));
@@ -571,37 +572,13 @@ static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::DistributedOperator<PetscScalar> **distributed_operator)
+static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, void *distributed_operator)
 {
   Mat_Htool *a;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  *distributed_operator = &a->distributed_operator_holder->distributed_operator;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
-
-  No Fortran Support, No C Support
-
-  Input Parameter:
-. A - hierarchical matrix
-
-  Output Parameter:
-. distributed_operator - opaque pointer to a Htool virtual matrix
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`
-@*/
-PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::DistributedOperator<PetscScalar> **distributed_operator)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscAssertPointer(distributed_operator, 2);
-  PetscTryMethod(A, "MatHtoolGetHierarchicalMat_C", (Mat, const htool::DistributedOperator<PetscScalar> **), (A, distributed_operator));
+  *(const void **)distributed_operator = static_cast<const void *>(a->distributed_operator);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -615,30 +592,6 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, v
   a->kernelctx = kernelctx;
   delete a->wrapper;
   if (a->kernel) a->wrapper = new WrapperHtool(a->dim, a->kernel, a->kernelctx);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-  MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
-
-  Collective, No Fortran Support
-
-  Input Parameters:
-+ A         - hierarchical matrix
-. kernel    - computational kernel (or `NULL`)
-- kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
-@*/
-PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (!kernelctx) PetscValidFunction(kernel, 2);
-  if (!kernel) PetscAssertPointer(kernelctx, 3);
-  PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernelFn *, void *), (A, kernel, kernelctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -659,28 +612,6 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster for a `MATHTOOL` matrix.
-
-  Input Parameter:
-. A - hierarchical matrix
-
-  Output Parameter:
-. is - permutation
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
-@*/
-PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (!is) PetscAssertPointer(is, 2);
-  PetscTryMethod(A, "MatHtoolGetPermutationSource_C", (Mat, IS *), (A, is));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 {
   Mat_Htool                   *a;
@@ -696,28 +627,6 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster for a `MATHTOOL` matrix.
-
-  Input Parameter:
-. A - hierarchical matrix
-
-  Output Parameter:
-. is - permutation
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
-@*/
-PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  if (!is) PetscAssertPointer(is, 2);
-  PetscTryMethod(A, "MatHtoolGetPermutationTarget_C", (Mat, IS *), (A, is));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 {
   Mat_Htool *a;
@@ -728,26 +637,6 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  MatHtoolUsePermutation - Sets whether a `MATHTOOL` matrix should permute input (resp. output) vectors following its internal source (resp. target) permutation.
-
-  Input Parameters:
-+ A   - hierarchical matrix
-- use - Boolean value
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
-@*/
-PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(A, use, 2);
-  PetscTryMethod(A, "MatHtoolUsePermutation_C", (Mat, PetscBool), (A, use));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatHtoolUseRecompression_Htool(Mat A, PetscBool use)
 {
   Mat_Htool *a;
@@ -755,26 +644,6 @@ static PetscErrorCode MatHtoolUseRecompression_Htool(Mat A, PetscBool use)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
   a->recompression = use;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  MatHtoolUseRecompression - Sets whether a `MATHTOOL` matrix should use recompression.
-
-  Input Parameters:
-+ A   - hierarchical matrix
-- use - Boolean value
-
-  Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, `MATHTOOL`
-@*/
-PetscErrorCode MatHtoolUseRecompression(Mat A, PetscBool use)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(A, use, 2);
-  PetscTryMethod(A, "MatHtoolUseRecompression_C", (Mat, PetscBool), (A, use));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1051,69 +920,23 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Htool(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
-
-  Collective, No Fortran Support
-
-  Input Parameters:
-+ comm          - MPI communicator
-. m             - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-. n             - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
-. M             - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
-. N             - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
-. spacedim      - dimension of the space coordinates
-. coords_target - coordinates of the target
-. coords_source - coordinates of the source
-. kernel        - computational kernel (or `NULL`)
-- kernelctx     - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
-
-  Output Parameter:
-. B - matrix
-
-  Options Database Keys:
-+ -mat_htool_max_cluster_leaf_size <`PetscInt`>                                                - maximal leaf size in cluster tree
-. -mat_htool_epsilon <`PetscReal`>                                                             - relative error in Frobenius norm when approximating a block
-. -mat_htool_eta <`PetscReal`>                                                                 - admissibility condition tolerance
-. -mat_htool_min_target_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the rows
-. -mat_htool_min_source_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the columns
-. -mat_htool_block_tree_consistency <`PetscBool`>                                              - block tree consistency
-. -mat_htool_recompression <`PetscBool`>                                                       - use recompression
-. -mat_htool_compressor <sympartialACA, fullACA, SVD>                                          - type of compression
-- -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
-
-  Level: intermediate
-
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
-@*/
-PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernelFn *kernel, void *kernelctx, Mat *B)
+static PetscErrorCode MatHtoolCreateFromKernel_Htool(Mat A, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernelFn *kernel, void *kernelctx)
 {
-  Mat        A;
   Mat_Htool *a;
 
   PetscFunctionBegin;
-  PetscCall(MatCreate(comm, &A));
-  PetscValidLogicalCollectiveInt(A, spacedim, 6);
-  PetscAssertPointer(coords_target, 7);
-  PetscAssertPointer(coords_source, 8);
-  if (!kernelctx) PetscValidFunction(kernel, 9);
-  if (!kernel) PetscAssertPointer(kernelctx, 10);
-  PetscCall(MatSetSizes(A, m, n, M, N));
-  PetscCall(MatSetType(A, MATHTOOL));
-  PetscCall(MatSetUp(A));
   PetscCall(MatShellGetContext(A, &a));
   a->dim       = spacedim;
   a->kernel    = kernel;
   a->kernelctx = kernelctx;
   PetscCall(PetscCalloc1(A->rmap->N * spacedim, &a->gcoords_target));
   PetscCall(PetscArraycpy(a->gcoords_target + A->rmap->rstart * spacedim, coords_target, A->rmap->n * spacedim));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a->gcoords_target, A->rmap->N * spacedim, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)A))); /* global target coordinates */
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a->gcoords_target, A->rmap->N * spacedim, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)A)));
   if (coords_target != coords_source) {
     PetscCall(PetscCalloc1(A->cmap->N * spacedim, &a->gcoords_source));
     PetscCall(PetscArraycpy(a->gcoords_source + A->cmap->rstart * spacedim, coords_source, A->cmap->n * spacedim));
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a->gcoords_source, A->cmap->N * spacedim, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)A))); /* global source coordinates */
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a->gcoords_source, A->cmap->N * spacedim, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)A)));
   } else a->gcoords_source = a->gcoords_target;
-  *B = A;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1173,6 +996,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", MatHtoolGetPermutationTarget_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", MatHtoolUsePermutation_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUseRecompression_C", MatHtoolUseRecompression_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolCreateFromKernel_C", MatHtoolCreateFromKernel_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
