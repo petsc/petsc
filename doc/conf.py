@@ -225,7 +225,6 @@ def build_finished_handler(app, exception):
 
 def _add_man_page_redirects(app, exception):
     if exception is None:
-        import time
         print("============================================")
         print("    Adding man pages redirects")
         x = time.clock_gettime(time.CLOCK_REALTIME)
@@ -235,7 +234,6 @@ def _add_man_page_redirects(app, exception):
 
 def _fix_man_page_edit_links(app, exception):
     if exception is None:
-        import time
         print("============================================")
         print("    Fixing manual page edit links")
         x = time.clock_gettime(time.CLOCK_REALTIME)
@@ -255,7 +253,6 @@ def _fix_links(app, exception):
        for the root directory that needs to be constructed based on if the Sphinx build is html or dirhtml
     """
     if exception is None:
-        import time
         print("============================================")
         print("    Fixing relative links")
         x = time.clock_gettime(time.CLOCK_REALTIME)
@@ -269,7 +266,6 @@ def _update_htmlmap_links(app):
        hierarchy. The format of the directory location needs to be different for the Sphinx html and dirhtml
        builds
     """
-    import time
     print("============================================")
     print("    Updating htmlmap")
     x = time.clock_gettime(time.CLOCK_REALTIME)
@@ -283,14 +279,13 @@ def build_petsc4py_docs(app):
     command = ['make', '-f', 'makefile', 'libs',
                'PETSC_DIR=%s' % app.petsc_dir,
                'PETSC_ARCH=arch-docs']
-    import time
-    print('==============================================')
+    print('============================================')
     print('Building library to make petsc4py docs')
     print(command)
     x = time.clock_gettime(time.CLOCK_REALTIME)
     subprocess.run(command, cwd=app.petsc_dir, check=True)
     print("End building library for petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
-    print('==============================================')
+    print('============================================')
 
     command = ['make', 'website',
                'PETSC_DIR=%s' % app.petsc_dir,
