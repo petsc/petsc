@@ -275,6 +275,20 @@ def _update_htmlmap_links(app):
 
 def build_petsc4py_docs(app):
     '''Builds the petsc4py docs and puts the results into the same directory tree as the PETSc docs'''
+
+    # clean previously generated docs - if any
+    command = ['make', 'docsclean',
+               'PETSC_DIR=%s' % app.petsc_dir,
+               'PETSC_ARCH=arch-docs',
+               'LOC=%s' % app.outdir]
+    print('============================================')
+    print('Cleaning petsc4py docs')
+    print(command)
+    x = time.clock_gettime(time.CLOCK_REALTIME)
+    subprocess.run(command, cwd=os.path.join(app.petsc_dir,'src','binding','petsc4py'), check=True)
+    print("End clean petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
+    print('============================================')
+
     # petsc4py needs to be built to build petsc4py docs via introspection
     command = ['make', '-f', 'makefile', 'libs',
                'PETSC_DIR=%s' % app.petsc_dir,

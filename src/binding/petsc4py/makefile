@@ -145,6 +145,7 @@ docsclean:
 	-${RM} docs/*.html docs/*.pdf
 	-${RM} docs/*.info docs/*.[137]
 	-${RM} -r docs/html
+	-${RM} -r build/doctrees build/latex build/man build/texinfo
 	-${RM} -r docs/source/_build
 	-${RM} -r docs/source/demo
 	-${RM} -r docs/source/reference
