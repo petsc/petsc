@@ -623,3 +623,4 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscV
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm, const char[], DM *, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexDrawCell(DM, PetscDraw, PetscInt, PetscInt, PetscInt, const PetscScalar[]);

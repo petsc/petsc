@@ -198,8 +198,10 @@ end module petscdmda
 
 module petscdmplex
   use, intrinsic :: ISO_C_binding
+  use petscdraw
   use petscdm
   use petscdmdef
+#include <petsc/finclude/petscdraw.h>
 #include <petsc/finclude/petscfv.h>
 #include <petsc/finclude/petscdmplex.h>
 #include <petsc/finclude/petscdmplextransform.h>

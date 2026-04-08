@@ -283,8 +283,10 @@ extern "C" {
             break
 
     if found and self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
+      self.logPrint('Functions ['+' '.join(funcs)+'] FOUND in library '+str(libName))
       if hasattr(self.compilers, 'FC') and self.language[-1] == 'C':
         if self.compilers.checkCrossLink(includes+'\nvoid dummy(void) {'+body+'}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
+          self.logPrint('Fortran Functions ['+' '.join(funcs)+'] FOUND in library '+str(libName))
           # define the symbol as found
           if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
           # add to list of found libraries
@@ -293,8 +295,10 @@ extern "C" {
               shortlib = self.getShortLibName(lib)
               if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
         else:
+          self.logPrint('Fortran Functions ['+' '.join(funcs)+'] NOT FOUND in library '+str(libName))
           found = 0
     else:
+      self.logPrint('Functions ['+' '.join(funcs)+'] NOT FOUND in library '+str(libName))
       found = 0
     self.setCompilers.LIBS = oldLibs
     self.popLanguage()
