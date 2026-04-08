@@ -282,6 +282,33 @@ class MatSORType(object):
     APPLY_LOWER           = SOR_APPLY_LOWER
 
 
+class MatHtoolCompressorType(object):
+    """Htool compressor type.
+
+    See Also
+    --------
+    petsc.MatHtoolCompressorType
+
+    """
+    SYMPARTIAL_ACA = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA
+    FULL_ACA       = MAT_HTOOL_COMPRESSOR_FULL_ACA
+    SVD            = MAT_HTOOL_COMPRESSOR_SVD
+
+
+class MatHtoolClusteringType(object):
+    """Htool clustering type.
+
+    See Also
+    --------
+    petsc.MatHtoolClusteringType
+
+    """
+    PCA_REGULAR              = MAT_HTOOL_CLUSTERING_PCA_REGULAR
+    PCA_GEOMETRIC            = MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC
+    BOUNDING_BOX_1_REGULAR   = MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR
+    BOUNDING_BOX_1_GEOMETRIC = MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC
+
+
 @cython.internal
 cdef class MatStencil:
     """Associate structured grid coordinates with matrix indices.
@@ -1671,8 +1698,12 @@ cdef class Mat(Object):
 
         See Also
         --------
-        petsc_options, petsc.MatCreateHtoolFromKernel, HtoolGetPermutationSource,
-        HtoolGetPermutationTarget, HtoolUsePermutation, HtoolUseRecompression
+        petsc_options, petsc.MatCreateHtoolFromKernel, getHtoolPermutationSource,
+        getHtoolPermutationTarget, useHtoolPermutation, useHtoolRecompression,
+        getHtoolEpsilon, setHtoolEpsilon, getHtoolEta, setHtoolEta,
+        getHtoolMaxClusterLeafSize, setHtoolMaxClusterLeafSize,
+        getHtoolCompressorType, setHtoolCompressorType,
+        getHtoolClusteringType, setHtoolClusteringType
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -5283,7 +5314,7 @@ cdef class Mat(Object):
 
     # Htool
 
-    def HtoolGetPermutationSource(self) -> IS:
+    def getHtoolPermutationSource(self) -> IS:
         """Get the permutation of source (column) indices computed by Htool.
 
         Not collective.
@@ -5295,14 +5326,14 @@ cdef class Mat(Object):
 
         See Also
         --------
-        HtoolGetPermutationTarget, petsc.MatHtoolGetPermutationSource
+        getHtoolPermutationTarget, petsc.MatHtoolGetPermutationSource
 
         """
         cdef IS iset = IS()
         CHKERR(MatHtoolGetPermutationSource(self.mat, &iset.iset))
         return iset
 
-    def HtoolGetPermutationTarget(self) -> IS:
+    def getHtoolPermutationTarget(self) -> IS:
         """Get the permutation of target (row) indices computed by Htool.
 
         Not collective.
@@ -5314,14 +5345,14 @@ cdef class Mat(Object):
 
         See Also
         --------
-        HtoolGetPermutationSource, petsc.MatHtoolGetPermutationTarget
+        getHtoolPermutationSource, petsc.MatHtoolGetPermutationTarget
 
         """
         cdef IS iset = IS()
         CHKERR(MatHtoolGetPermutationTarget(self.mat, &iset.iset))
         return iset
 
-    def HtoolUsePermutation(self, use: bool) -> Self:
+    def useHtoolPermutation(self, use: bool) -> Self:
         """Set whether to use the permutation computed by Htool.
 
         Logically collective.
@@ -5340,7 +5371,7 @@ cdef class Mat(Object):
         CHKERR(MatHtoolUsePermutation(self.mat, _use))
         return self
 
-    def HtoolUseRecompression(self, use: bool) -> Self:
+    def useHtoolRecompression(self, use: bool) -> Self:
         """Set whether to recompress the matrix after assembly.
 
         Logically collective.
@@ -5357,6 +5388,310 @@ cdef class Mat(Object):
         """
         cdef PetscBool _use = asBool(use)
         CHKERR(MatHtoolUseRecompression(self.mat, _use))
+        return self
+
+    def getHtoolEpsilon(self) -> float:
+        """Get the relative error tolerance in Frobenius norm.
+
+        Not collective.
+
+        Returns
+        -------
+        float
+            The relative error tolerance.
+
+        See Also
+        --------
+        setHtoolEpsilon, petsc.MatHtoolGetEpsilon
+
+        """
+        cdef PetscReal epsilon = 0
+        CHKERR(MatHtoolGetEpsilon(self.mat, &epsilon))
+        return toReal(epsilon)
+
+    def setHtoolEpsilon(self, epsilon: float) -> Self:
+        """Set the relative error tolerance in Frobenius norm.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        epsilon
+            The relative error tolerance.
+
+        See Also
+        --------
+        getHtoolEpsilon, petsc.MatHtoolSetEpsilon
+
+        """
+        cdef PetscReal _epsilon = asReal(epsilon)
+        CHKERR(MatHtoolSetEpsilon(self.mat, _epsilon))
+        return self
+
+    def getHtoolEta(self) -> float:
+        """Get the admissibility condition tolerance.
+
+        Not collective.
+
+        Returns
+        -------
+        float
+            The admissibility condition tolerance.
+
+        See Also
+        --------
+        setHtoolEta, petsc.MatHtoolGetEta
+
+        """
+        cdef PetscReal eta = 0
+        CHKERR(MatHtoolGetEta(self.mat, &eta))
+        return toReal(eta)
+
+    def setHtoolEta(self, eta: float) -> Self:
+        """Set the admissibility condition tolerance.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        eta
+            The admissibility condition tolerance.
+
+        See Also
+        --------
+        getHtoolEta, petsc.MatHtoolSetEta
+
+        """
+        cdef PetscReal _eta = asReal(eta)
+        CHKERR(MatHtoolSetEta(self.mat, _eta))
+        return self
+
+    def getHtoolMaxClusterLeafSize(self) -> int:
+        """Get the maximum size of a leaf in the cluster tree.
+
+        Not collective.
+
+        Returns
+        -------
+        int
+            The maximum leaf size.
+
+        See Also
+        --------
+        setHtoolMaxClusterLeafSize, petsc.MatHtoolGetMaxClusterLeafSize
+
+        """
+        cdef PetscInt size = 0
+        CHKERR(MatHtoolGetMaxClusterLeafSize(self.mat, &size))
+        return toInt(size)
+
+    def setHtoolMaxClusterLeafSize(self, size: int) -> Self:
+        """Set the maximum size of a leaf in the cluster tree.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        size
+            The maximum leaf size.
+
+        See Also
+        --------
+        getHtoolMaxClusterLeafSize, petsc.MatHtoolSetMaxClusterLeafSize
+
+        """
+        cdef PetscInt _size = asInt(size)
+        CHKERR(MatHtoolSetMaxClusterLeafSize(self.mat, _size))
+        return self
+
+    def getHtoolMinTargetDepth(self) -> int:
+        """Get the minimum depth of the target cluster tree.
+
+        Not collective.
+
+        Returns
+        -------
+        int
+            The minimum depth of the target cluster tree.
+
+        See Also
+        --------
+        setHtoolMinTargetDepth, getHtoolMinSourceDepth, petsc.MatHtoolGetMinTargetDepth
+
+        """
+        cdef PetscInt depth = 0
+        CHKERR(MatHtoolGetMinTargetDepth(self.mat, &depth))
+        return toInt(depth)
+
+    def setHtoolMinTargetDepth(self, depth: int) -> Self:
+        """Set the minimum depth of the target cluster tree.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        depth
+            The minimum depth of the target cluster tree.
+
+        See Also
+        --------
+        getHtoolMinTargetDepth, setHtoolMinSourceDepth, petsc.MatHtoolSetMinTargetDepth
+
+        """
+        cdef PetscInt _depth = asInt(depth)
+        CHKERR(MatHtoolSetMinTargetDepth(self.mat, _depth))
+        return self
+
+    def getHtoolMinSourceDepth(self) -> int:
+        """Get the minimum depth of the source cluster tree.
+
+        Not collective.
+
+        Returns
+        -------
+        int
+            The minimum depth of the source cluster tree.
+
+        See Also
+        --------
+        setHtoolMinSourceDepth, getHtoolMinTargetDepth, petsc.MatHtoolGetMinSourceDepth
+
+        """
+        cdef PetscInt min_source_depth = 0
+        CHKERR(MatHtoolGetMinSourceDepth(self.mat, &min_source_depth))
+        return toInt(min_source_depth)
+
+    def setHtoolMinSourceDepth(self, min_source_depth: int) -> Self:
+        """Set the minimum depth of the source cluster tree.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        min_source_depth
+            The minimum depth of the source cluster tree.
+
+        See Also
+        --------
+        getHtoolMinSourceDepth, setHtoolMinTargetDepth, petsc.MatHtoolSetMinSourceDepth
+
+        """
+        cdef PetscInt _min_source_depth = asInt(min_source_depth)
+        CHKERR(MatHtoolSetMinSourceDepth(self.mat, _min_source_depth))
+        return self
+
+    def getHtoolBlockTreeConsistency(self) -> bool:
+        """Get whether the matrix enforces block tree consistency.
+
+        Not collective.
+
+        Returns
+        -------
+        bool
+            Whether block tree consistency is enforced.
+
+        See Also
+        --------
+        setHtoolBlockTreeConsistency, petsc.MatHtoolGetBlockTreeConsistency
+
+        """
+        cdef PetscBool block_tree_consistency = PETSC_FALSE
+        CHKERR(MatHtoolGetBlockTreeConsistency(self.mat, &block_tree_consistency))
+        return toBool(block_tree_consistency)
+
+    def setHtoolBlockTreeConsistency(self, block_tree_consistency: bool) -> Self:
+        """Set whether the matrix should enforce block tree consistency.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        block_tree_consistency
+            Whether to enforce block tree consistency.
+
+        See Also
+        --------
+        getHtoolBlockTreeConsistency, petsc.MatHtoolSetBlockTreeConsistency
+
+        """
+        cdef PetscBool _btc = asBool(block_tree_consistency)
+        CHKERR(MatHtoolSetBlockTreeConsistency(self.mat, _btc))
+        return self
+
+    def getHtoolCompressorType(self) -> MatHtoolCompressorType:
+        """Get the type of compressor used by the matrix.
+
+        Not collective.
+
+        Returns
+        -------
+        MatHtoolCompressorType
+            The compressor type.
+
+        See Also
+        --------
+        setHtoolCompressorType, petsc.MatHtoolGetCompressorType
+
+        """
+        cdef PetscMatHtoolCompressorType compressor = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA
+        CHKERR(MatHtoolGetCompressorType(self.mat, &compressor))
+        return compressor
+
+    def setHtoolCompressorType(self, compressor: MatHtoolCompressorType) -> Self:
+        """Set the type of compressor used by the matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        compressor
+            The compressor type.
+
+        See Also
+        --------
+        getHtoolCompressorType, petsc.MatHtoolSetCompressorType
+
+        """
+        cdef PetscMatHtoolCompressorType _compressor = compressor
+        CHKERR(MatHtoolSetCompressorType(self.mat, _compressor))
+        return self
+
+    def getHtoolClusteringType(self) -> MatHtoolClusteringType:
+        """Get the type of clustering used by the matrix.
+
+        Not collective.
+
+        Returns
+        -------
+        MatHtoolClusteringType
+            The clustering type.
+
+        See Also
+        --------
+        setHtoolClusteringType, petsc.MatHtoolGetClusteringType
+
+        """
+        cdef PetscMatHtoolClusteringType clustering = MAT_HTOOL_CLUSTERING_PCA_REGULAR
+        CHKERR(MatHtoolGetClusteringType(self.mat, &clustering))
+        return clustering
+
+    def setHtoolClusteringType(self, clustering: MatHtoolClusteringType) -> Self:
+        """Set the type of clustering used by the matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        clustering
+            The clustering type.
+
+        See Also
+        --------
+        getHtoolClusteringType, petsc.MatHtoolSetClusteringType
+
+        """
+        cdef PetscMatHtoolClusteringType _clustering = clustering
+        CHKERR(MatHtoolSetClusteringType(self.mat, _clustering))
         return self
 
     # LMVM

@@ -431,6 +431,31 @@ cdef extern from * nogil:
     PetscErrorCode MatHtoolGetPermutationTarget(PetscMat, PetscIS*)
     PetscErrorCode MatHtoolUsePermutation(PetscMat, PetscBool)
     PetscErrorCode MatHtoolUseRecompression(PetscMat, PetscBool)
+    PetscErrorCode MatHtoolGetEpsilon(PetscMat, PetscReal*)
+    PetscErrorCode MatHtoolSetEpsilon(PetscMat, PetscReal)
+    PetscErrorCode MatHtoolGetEta(PetscMat, PetscReal*)
+    PetscErrorCode MatHtoolSetEta(PetscMat, PetscReal)
+    PetscErrorCode MatHtoolGetMaxClusterLeafSize(PetscMat, PetscInt*)
+    PetscErrorCode MatHtoolSetMaxClusterLeafSize(PetscMat, PetscInt)
+    PetscErrorCode MatHtoolGetMinTargetDepth(PetscMat, PetscInt*)
+    PetscErrorCode MatHtoolSetMinTargetDepth(PetscMat, PetscInt)
+    PetscErrorCode MatHtoolGetMinSourceDepth(PetscMat, PetscInt*)
+    PetscErrorCode MatHtoolSetMinSourceDepth(PetscMat, PetscInt)
+    PetscErrorCode MatHtoolGetBlockTreeConsistency(PetscMat, PetscBool*)
+    PetscErrorCode MatHtoolSetBlockTreeConsistency(PetscMat, PetscBool)
+    ctypedef enum PetscMatHtoolCompressorType "MatHtoolCompressorType":
+        MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA
+        MAT_HTOOL_COMPRESSOR_FULL_ACA
+        MAT_HTOOL_COMPRESSOR_SVD
+    PetscErrorCode MatHtoolGetCompressorType(PetscMat, PetscMatHtoolCompressorType*)
+    PetscErrorCode MatHtoolSetCompressorType(PetscMat, PetscMatHtoolCompressorType)
+    ctypedef enum PetscMatHtoolClusteringType "MatHtoolClusteringType":
+        MAT_HTOOL_CLUSTERING_PCA_REGULAR
+        MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC
+        MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR
+        MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC
+    PetscErrorCode MatHtoolGetClusteringType(PetscMat, PetscMatHtoolClusteringType*)
+    PetscErrorCode MatHtoolSetClusteringType(PetscMat, PetscMatHtoolClusteringType)
 
     PetscErrorCode MatLMVMGetJ0(PetscMat, PetscMat*)
     PetscErrorCode MatLMVMSetJ0(PetscMat, PetscMat)

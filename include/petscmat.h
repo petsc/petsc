@@ -2306,7 +2306,6 @@ PETSC_EXTERN PetscErrorCode MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
-#ifdef PETSC_HAVE_HTOOL
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
 PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
 
@@ -2316,6 +2315,18 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatHtoolUseRecompression(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatHtoolGetEpsilon(Mat, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetEpsilon(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatHtoolGetEta(Mat, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetEta(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatHtoolGetMaxClusterLeafSize(Mat, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetMaxClusterLeafSize(Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode MatHtoolGetMinTargetDepth(Mat, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetMinTargetDepth(Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode MatHtoolGetMinSourceDepth(Mat, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetMinSourceDepth(Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode MatHtoolGetBlockTreeConsistency(Mat, PetscBool *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetBlockTreeConsistency(Mat, PetscBool);
 
 /*E
    MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`
@@ -2327,7 +2338,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolUseRecompression(Mat, PetscBool);
 
    Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolClusteringType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolClusteringType`, `MatHtoolGetCompressorType()`, `MatHtoolSetCompressorType()`
 E*/
 typedef enum {
   MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA,
@@ -2349,7 +2360,7 @@ typedef enum {
    Note:
    Higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolCompressorType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolCompressorType`, `MatHtoolGetClusteringType()`, `MatHtoolSetClusteringType()`
 E*/
 typedef enum {
   MAT_HTOOL_CLUSTERING_PCA_REGULAR,
@@ -2357,7 +2368,10 @@ typedef enum {
   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR,
   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC
 } MatHtoolClusteringType;
-#endif
+PETSC_EXTERN PetscErrorCode MatHtoolGetCompressorType(Mat, MatHtoolCompressorType *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetCompressorType(Mat, MatHtoolCompressorType);
+PETSC_EXTERN PetscErrorCode MatHtoolGetClusteringType(Mat, MatHtoolClusteringType *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetClusteringType(Mat, MatHtoolClusteringType);
 
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat, PetscInt, PetscInt *);

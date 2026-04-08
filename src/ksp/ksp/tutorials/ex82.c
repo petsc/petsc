@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   PC                pc;
   Vec               b, x;
   Mat               A;
-  PetscInt          m = 100, dim = 3, M, begin = 0, n = 0, overlap = 1;
+  PetscInt          m = 100, dim = 3, M, begin = 0, overlap = 1;
   PetscMPIInt       size;
   PetscReal        *coords, *gcoords;
   MatHtoolKernelFn *kernel = GenEntries;
@@ -67,8 +67,10 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
   if (flg) {
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-    Mat aux;
-    IS  is;
+    Mat      aux;
+    IS       is;
+    PetscInt n;
+
     PetscCall(MatGetOwnershipRange(A, &begin, &n));
     n -= begin;
     PetscCall(ISCreateStride(PETSC_COMM_SELF, n, begin, 1, &is));
@@ -99,14 +101,20 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-      requires: htool hpddm
+      requires: htool
 
    test:
-      requires: htool hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       # different numbers of iterations depending on PetscScalar type
       filter: sed -e "s/symmetry: S/symmetry: N/g" -e "/number of dense/d" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 13/Linear solve converged due to CONVERGED_RTOL iterations 18/g"
       args: -ksp_view -ksp_converged_reason -mat_htool_epsilon 1e-2 -m_local 200 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 1 -pc_hpddm_coarse_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -symmetric {{false true}shared output} -overlap 2
       output_file: output/ex82_1.out
+
+   test:
+      suffix: bjacobi
+      nsize: 4
+      args: -ksp_max_it 20 -mat_htool_epsilon 1e-2 -m_local 200 -ksp_error_if_not_converged
+      output_file: output/empty.out
 
 TEST*/
