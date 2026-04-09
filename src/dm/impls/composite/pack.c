@@ -1080,7 +1080,7 @@ static PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields, char
       const char *splitname;
 
       /* Split naming precedence: object name, prefix, number */
-      splitname = ((PetscObject)dm)->name;
+      splitname = ((PetscObject)dms[i])->name;
       if (!splitname) {
         PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dms[i], &splitname));
         if (splitname) {
