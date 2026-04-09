@@ -812,6 +812,9 @@ static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense(Mat C)
    MATDIAGONAL - MATDIAGONAL = "diagonal" - A diagonal matrix type with the diagonal implemented as a `Vec`.  Useful for
    cases where `VecPointwiseMult()` or `VecPointwiseDivide()` should be thought of as the actions of a linear operator.
 
+  Options Database Key:
+. -mat_vec_type type - set the `VecType` of the vector defining the diagonal
+
   Level: advanced
 
   Note:
@@ -821,11 +824,12 @@ static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense(Mat C)
   For the second use case call `MatSetType()` with a type of `MATDIAGONAL` followed by a call to `MatDiagonalSetDiagonal()`. The input vector  will be
   referenced internally by the matrix: any changes to it will affect the matrix.  Similar changes to the matrix will affect the vector.
 
-  For the third use case call `MatSetType()` with a type of `MATDIAGONAL` followed by a calls to `MatSetSizes()` and `MatDiagonalSet()`. In this case
-  the diagonal vector will not be referenced internally by the matrix, its values will be copied.
+  For the third use case call `MatSetType()` with a type of `MATDIAGONAL` followed by calls to `MatSetSizes()` and `MatDiagonalSet()`
+  (in this case the diagonal vector will not be referenced internally by the matrix, its values will be copied) or some other
+  operation to provide the matrix entries. One can control the `VecType` of the diagonal by calling `MatSetVecType()` or using `-mat_vec_type type`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`,
-          `MatDiagonalGetInverseDiagonal()`, `MatDiagonalSet()`, `MatDiagonalSetDiagonal()`
+          `MatDiagonalGetInverseDiagonal()`, `MatDiagonalSet()`, `MatDiagonalSetDiagonal()`, `MatSetVecType()`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
 {
