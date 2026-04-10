@@ -714,8 +714,10 @@ PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscCall(PetscObjectReference((PetscObject)dm));
+  if (dm) {
+    PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+    PetscCall(PetscObjectReference((PetscObject)dm));
+  }
   PetscCall(DMDestroy(&tr->dm));
   tr->dm = dm;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -978,6 +980,24 @@ PetscErrorCode DMPlexTransformSetMatchStrata(DMPlexTransform tr, PetscBool match
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   tr->labelMatchStrata = match;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformCheck - Verify that the given `DM`, produced by this `DMPlexTransform`, is valid
+
+  Input Parameters:
++ tr - The `DMPlexTransform` object
+- dm - The `DM` to check
+
+  Level: advanced
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
+PetscErrorCode DMPlexTransformCheck(DMPlexTransform tr, DM dm)
+{
+  PetscFunctionBegin;
+  PetscTryTypeMethod(tr, check, dm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

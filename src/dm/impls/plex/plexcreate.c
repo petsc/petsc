@@ -5158,6 +5158,8 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
       if (flg && flg2) PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
       PetscCall(PetscOptionsBool("-dm_plex_check_interface_cones", "Check points on inter-partition interfaces have conforming order of cone points", "DMPlexCheckInterfaceCones", PETSC_FALSE, &flg, &flg2));
       if (flg && flg2) PetscCall(DMPlexCheckInterfaceCones(dm));
+      PetscCall(PetscOptionsBool("-dm_plex_check_transform", "Check that the produced mesh is consistent with the transform", "DMPlexCheckTransform", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckTransform(dm));
     }
     PetscCall(PetscOptionsBool("-dm_plex_check_cell_shape", "Check cell shape", "DMPlexCheckCellShape", PETSC_FALSE, &flg, &flg2));
     if (flg && flg2) PetscCall(DMPlexCheckCellShape(dm, PETSC_TRUE, PETSC_DETERMINE));

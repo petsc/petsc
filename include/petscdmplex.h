@@ -202,6 +202,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM, PetscSF, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckOrphanVertices(DM);
+PETSC_EXTERN PetscErrorCode DMPlexCheckTransform(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);
 

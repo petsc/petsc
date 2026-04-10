@@ -10343,7 +10343,36 @@ PetscErrorCode DMPlexCheckOrphanVertices(DM dm)
 }
 
 /*@
+  DMPlexCheckTransform - If the mesh was produced by a transform, run the transform verification check on it
+
+  Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Level: developer
+
+  Notes:
+  This is mainly intended for debugging/testing purposes.
+
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCheck()`, `DMSetFromOptions()`
+@*/
+PetscErrorCode DMPlexCheckTransform(DM dm)
+{
+  DMPlexTransform tr;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetTransform(dm, &tr));
+  if (tr) PetscCall(DMPlexTransformCheck(tr, dm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMPlexCheck - Perform various checks of `DMPLEX` sanity
+
+  Collective
 
   Input Parameter:
 . dm - The `DMPLEX` object
@@ -10372,6 +10401,7 @@ PetscErrorCode DMPlexCheck(DM dm)
   PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
   PetscCall(DMPlexCheckInterfaceCones(dm));
   PetscCall(DMPlexCheckOrphanVertices(dm));
+  PetscCall(DMPlexCheckTransform(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

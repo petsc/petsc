@@ -1039,6 +1039,84 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Cohesive(DMPlexTransform tr,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMPlexTransformCheckImpingingPoint_Internal(DMPlexTransform tr, DM dm, DMLabel activeNew, PetscInt point, PetscBool negativeSide)
+{
+  const PetscInt  debug   = ((DM_Plex *)dm->data)->printCohesive;
+  const PetscInt  rTarget = negativeSide ? 0 : 1;
+  const PetscInt *cone;
+  PetscInt        cS;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetCone(dm, point, &cone));
+  PetscCall(DMPlexGetConeSize(dm, point, &cS));
+  for (PetscInt c = 0; c < cS; ++c) {
+    PetscInt val;
+
+    PetscCall(DMLabelGetValue(activeNew, cone[c], &val));
+    // Check that this cone point is on the surface
+    if (val >= 0 && val < 100) {
+      PetscInt pOld, r;
+
+      // Check what size of the fault it is on
+      PetscCall(DMPlexTransformGetSourcePoint(tr, cone[c], NULL, NULL, &pOld, &r));
+      if (debug > 3)
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r: %" PetscInt_FMT "\n", PetscGlobalRank, point, val, c, cone[c], val, pOld, r));
+      PetscCheck(r == rTarget, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r should be %" PetscInt_FMT " not %" PetscInt_FMT, point, val, c, cone[c], val, pOld, rTarget, r);
+    }
+    if (val >= 200 && val < 300) {
+      PetscInt pOld, r;
+
+      // Check what size of the fault it is on
+      PetscCall(DMPlexTransformGetSourcePoint(tr, cone[c], NULL, NULL, &pOld, &r));
+      if (debug)
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r: %" PetscInt_FMT "\n", PetscGlobalRank, point, val, c, cone[c], val, pOld, r));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexTransformCheckImpingingStratum_Internal(DMPlexTransform tr, DM dm, DMLabel activeNew, PetscInt val)
+{
+  IS              pointIS;
+  const PetscInt *points;
+  PetscInt        n;
+
+  PetscFunctionBegin;
+  PetscCall(DMLabelGetStratumIS(activeNew, val, &pointIS));
+  if (pointIS) {
+    PetscCall(ISGetLocalSize(pointIS, &n));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt i = 0; i < n; ++i) PetscCall(DMPlexTransformCheckImpingingPoint_Internal(tr, dm, activeNew, points[i], val < 0));
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexTransformCheck_Cohesive(DMPlexTransform tr, DM dm)
+{
+  DMLabel     trType, active, activeNew;
+  const char *activeName;
+  PetscInt    dim;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexTransformGetTransformTypes(tr, &trType));
+  PetscCall(DMLabelViewFromOptions(trType, NULL, "-trtypes_view"));
+  PetscCall(DMPlexTransformGetActive(tr, &active));
+  PetscCall(PetscObjectGetName((PetscObject)active, &activeName));
+  PetscCall(DMLabelViewFromOptions(active, NULL, "-active_view"));
+  PetscCall(DMGetLabel(dm, activeName, &activeNew));
+  PetscCall(DMLabelViewFromOptions(activeNew, NULL, "-active_new_view"));
+  for (PetscInt d = 1; d <= dim; ++d) {
+    const PetscInt v = 100 + d;
+
+    PetscCall(DMPlexTransformCheckImpingingStratum_Internal(tr, dm, activeNew, -v));
+    PetscCall(DMPlexTransformCheckImpingingStratum_Internal(tr, dm, activeNew, v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexTransformInitialize_Cohesive(DMPlexTransform tr)
 {
   PetscFunctionBegin;
@@ -1051,6 +1129,7 @@ static PetscErrorCode DMPlexTransformInitialize_Cohesive(DMPlexTransform tr)
   tr->ops->ordersupports         = DMPlexTransformOrderSupports_Cohesive;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Cohesive;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinates_Cohesive;
+  tr->ops->check                 = DMPlexTransformCheck_Cohesive;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
