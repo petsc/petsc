@@ -696,6 +696,30 @@ cdef class IS(Object):
             CHKERR(ISExpand(self.iset, iset.iset, &out.iset))
         return out
 
+    def intersect(self, IS iset: IS) -> IS:
+        """Return the intersection of two index sets.
+
+        Collective.
+
+        Parameters
+        ----------
+        iset
+            Index set to compute the intersection with.
+
+        Returns
+        -------
+        IS
+            Index set representing the intersection of ``self`` and ``iset``.
+
+        See Also
+        --------
+        petsc.ISIntersect
+
+        """
+        cdef IS out = IS()
+        CHKERR(ISIntersect(self.iset, iset.iset, &out.iset))
+        return out
+
     def difference(self, IS iset: IS) -> IS:
         """Return the difference between two index sets.
 

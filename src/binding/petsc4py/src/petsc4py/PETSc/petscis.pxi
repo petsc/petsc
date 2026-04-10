@@ -42,6 +42,7 @@ cdef extern from * nogil:
 
     PetscErrorCode ISSum(PetscIS, PetscIS, PetscIS*)
     PetscErrorCode ISExpand(PetscIS, PetscIS, PetscIS*)
+    PetscErrorCode ISIntersect(PetscIS, PetscIS, PetscIS*)
     PetscErrorCode ISDifference(PetscIS, PetscIS, PetscIS*)
     PetscErrorCode ISComplement(PetscIS, PetscInt, PetscInt, PetscIS*)
     PetscErrorCode ISEmbed(PetscIS, PetscIS, PetscBool, PetscIS*)
