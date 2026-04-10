@@ -2903,11 +2903,43 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A, PetscInt n, const Pet
     const PetscScalar *xx;
     PetscScalar       *bb;
 
-    PetscCall(VecGetArrayRead(x, &xx));
-    PetscCall(VecGetArray(b, &bb));
-    for (PetscInt i = 0; i < len; ++i) bb[lrows[i]] = diag * xx[lrows[i]];
-    PetscCall(VecRestoreArrayRead(x, &xx));
-    PetscCall(VecRestoreArray(b, &bb));
+    if (columns) {
+      /* Subtract the column contributions: b[i] -= A[i,r] * x[r] for non-zeroed rows i.
+         Build x_zeroed = x restricted to the zeroed (locally owned) rows, 0 elsewhere,
+         then compute b -= A * x_zeroed using the original (unmodified) local matrices.
+         The zeroed rows of b are overwritten below with diag * x[r], so no special
+         treatment is needed for them in the MatMult() output. */
+      Vec          x_zeroed, temp;
+      PetscScalar *xz, *saved;
+
+      PetscCall(PetscMalloc1(len, &saved));
+      PetscCall(VecDuplicate(x, &x_zeroed));
+      PetscCall(VecGetArrayRead(x, &xx));
+      PetscCall(VecGetArray(x_zeroed, &xz));
+      for (PetscInt i = 0; i < len; i++) {
+        xz[lrows[i]] = xx[lrows[i]];
+        saved[i]     = diag * xx[lrows[i]];
+      }
+      PetscCall(VecRestoreArray(x_zeroed, &xz));
+      PetscCall(VecRestoreArrayRead(x, &xx));
+      PetscCall(VecDuplicate(b, &temp));
+      PetscCall(MatMult(A, x_zeroed, temp));
+      PetscCall(VecAXPY(b, -1.0, temp));
+      PetscCall(VecDestroy(&temp));
+      PetscCall(VecDestroy(&x_zeroed));
+      /* Overwrite zeroed rows: b[r] = diag * x[r] (after the MatMult() so it is not clobbered) */
+      PetscCall(VecGetArray(b, &bb));
+      for (PetscInt i = 0; i < len; i++) bb[lrows[i]] = saved[i];
+      PetscCall(VecRestoreArray(b, &bb));
+      PetscCall(PetscFree(saved));
+    } else {
+      /* MatZeroRows(): only set b[r] = diag * x[r] for the zeroed rows */
+      PetscCall(VecGetArrayRead(x, &xx));
+      PetscCall(VecGetArray(b, &bb));
+      for (PetscInt i = 0; i < len; ++i) bb[lrows[i]] = diag * xx[lrows[i]];
+      PetscCall(VecRestoreArrayRead(x, &xx));
+      PetscCall(VecRestoreArray(b, &bb));
+    }
   }
   /* get rows associated to the local matrices */
   PetscCall(PetscArrayzero(matis->sf_leafdata, nl));
