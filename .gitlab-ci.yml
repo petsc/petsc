@@ -1326,8 +1326,8 @@ docs-review:
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "EXTRA_OPTIONS_INITIAL:$EXTRA_OPTIONS_INITIAL $BASE_EXTRA_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - (time make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
-    - (time make latexpdf SPHINXOPTS="-T -E -W --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make html BUILDDIR="../public" SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (time make latexpdf SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
@@ -1350,9 +1350,9 @@ pages: # this job name has special meaning to GitLab
   interruptible: true
   script:
     - mkdir -p ../public/ && cp public/* ../public/
-    - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS_EXTRA="-j 1" BUILDDIR="../public/main" && make latexpdf SPHINXOPTS_EXTRA="-j 1" && mkdir -p ../public/main/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cd .. && git clean -fdxq -e public -e venv-petsc-docs && cd doc && rm -rf images
-    - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/manual && cp _build/latex/manual.pdf ../public/release/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS_EXTRA="-j 1" BUILDDIR="../public/release" && make latexpdf SPHINXOPTS_EXTRA="-j 1" && mkdir -p ../public/release/manual && cp _build/latex/manual.pdf ../public/release/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - rm -rf ../public/*/.doctrees
   only:
     variables:

@@ -1,5 +1,7 @@
 Review the code changes in GitLab MR $ARGUMENTS and report findings to stdout.
 
+Adhere to @CLAUDE.md while reviewing.
+
 ## Steps
 
 ### 1. Identify the MR
@@ -19,7 +21,7 @@ glab api "projects/:id/merge_requests/<MR_IID>/changes"   # get changed file pat
 - Act as a senior software engineer. Focus on:
   - Bugs and correctness issues
   - Performance implications
-  - Code quality, style, and documentation: check against conventions in `doc/developers/style.md`
+  - Code quality, style, and documentation: check against conventions in @doc/developers/style.md
   - Missing error handling
 - PETSc-specific error-model rule: treat `PetscCall()`, `PetscCheck()`, `SETERRQ`, and related PETSc error macros/functions as terminal. Do not report issues that matter only after such a fatal error path is taken, such as unreleased resources, un-restored arrays, or partially updated state. Still report bugs that affect behavior on non-error paths or before the fatal error is raised.
 - Classify each finding by severity: CRITICAL, HIGH, MEDIUM, LOW, or Style/Nit.

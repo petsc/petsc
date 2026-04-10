@@ -44,7 +44,7 @@ class or method you are modifying, e.g.::
 All new code must include documentation in accordance with the `documentation
 standard <documentation_standards>`. To check for compliance, run::
 
-  $ make html SPHINXOPTS='-W' -C src/binding/petsc4py/docs/source
+  $ make html SPHINXOPTS='--fail-on-warning' -C src/binding/petsc4py/docs/source
 
 .. warning::
 

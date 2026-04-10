@@ -1,5 +1,7 @@
 Review the code changes in GitLab MR $ARGUMENTS and post inline comments with apply-able suggestions.
 
+Adhere to @CLAUDE.md while reviewing and drafting comments.
+
 ## Steps
 
 ### 1–3. Review the MR

@@ -474,25 +474,6 @@ chk_in_petscdir:
 	  echo " This target should be invoked in top level PETSc source dir!";\
 	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n"; false; fi
 
-chk_loc:
-	@if [ ${LOC}foo = foo ] ; then\
-	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n";\
-	  echo " Please specify LOC variable for eg: make allmanpages LOC=/sandbox/petsc ";\
-	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n"; false; fi
-	@${MKDIR} ${LOC}/manualpages
-
-alldocclean: deletemanualpages allcleanhtml
-
-# Deletes man pages (.md version)
-deletemanualpages: chk_loc
-	-@if [ -d ${LOC} -a -d ${LOC}/manualpages ]; then\
-          find ${LOC}/manualpages -type f -name "*.md" -exec ${RM} {}\; ;\
-          ${RM} ${LOC}/manualpages/manualpages.cit ;\
-        fi
-
-allcleanhtml:
-	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
-
 # ********* Rules for checking code coverage *********************************************************************************************
 
 gcov:
@@ -544,5 +525,4 @@ updatedatafiles:
 
 .PHONY: info info_h all deletelibs allclean update\
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages\
-        allcleanhtml\
         start_configure configure_petsc configure_clean matlabbin install

@@ -113,6 +113,7 @@ search structures and indices for the different types of points using
 DMPlexStratify(dm);
 ```
 
+(subsec_pointorientations)=
 ## Grid Point Orientations
 
 TODO: fill this out with regard to orientations.
@@ -207,13 +208,24 @@ However, their usage and purpose is best understood through `DMPLEX`.
 
 #### Closure:
 
-Closure information can be attached to a `PetscSection` to allow for more efficient closure information queries.
-This information can either be set directly with `DMPlexCreateClosureIndex()` or generated automatically for a `DMPLEX` via `DMPlexCreateClosureIndex()`.
+The `DMPlexGetTransitiveClosure()` method returns all points in the topological closure of a given point. This is equivalent to the transitive closure in the Hasse Diagram, which is a DAG. The default transitive closure order is breadth-first over the DAG. This means the $k$-cell itself, then its cone $(k-1)$-faces, then their cone $(k-2)$-faces until we get down to the vertices.
 
+This provides an ordering on points in the closure. If we map each point to a set of dofs using a section, then we have an order on the dofs in the closure of a point. If a closure permutation is applied, then we permute the entire dof closure after it has been generated.
+
+`DMPlexVecGetClosure()` can extract values associated with the closure of a given point from a local vector, using the layout in the local section, in the closure order. This means the data is ordered first by section field, then by closure point, and finally by dof on that point. The closure order can be directly changed using `PetscSectionSetClosurePermutation()`, but `DMPLEX` has helper functions for common reorderings such as `DMPlexSetClosurePermutationTensor()` and `DMPlexSetClosurePermutationLexicographic()`.
+
+If multiple dofs are associated to a point, we must order them in some way. The local section has a canonical order for these dofs, but if the point has an orientation in the closure, we must reorder those dofs to respect that orientation. See {any}`subsec_symmetries` for a discussion of `PetscSectionSym` which implements these transformations.
+
+Closure information can be attached to a `PetscSection` to allow for more efficient closure information queries.
+This information can either be set directly using the `PetscSectionSetClosureIndex()` method, or it can be generated automatically for a `DMPLEX` via `DMPlexCreateClosureIndex()`.
+
+(subsec_symmetries)=
 #### Symmetries: Accessing data from different orientations
 
 While mesh point orientation information specifies how one mesh point is oriented with respect to another, it does not describe how the dofs associated with that mesh point should be permuted for that orientation.
 This information is supplied via a `PetscSectionSym` object that is attached to the `PetscSection`.
+It is a map from orientation numbers to permutation indices for the dofs on that point.
+Orientation 0 means the canonical orientation, and negative orientations indicate a reversal. Each integer maps to a member of the dihedral group for the cell. More information on orientations is given in {any}`subsec_pointorientations`.
 Generally the setup and usage of this information is handled automatically by PETSc during setup of a Plex using `PetscFE`.
 
 #### Closure Permutation:
@@ -239,6 +251,37 @@ DMCreateDS(dm);
 
 Here the call to `DMSetField()` declares the discretization will have one field with the integer label 0 that has one degree of freedom at each point on the `DMPlex`.
 To get the $P_3$ section above, we can either give the option `-petscspace_degree 3`, or call `PetscFECreateLagrange()` and set the degree directly.
+
+Suppose we have a $P_3$ triangle, and call `DMPlexVecGetClosure()`. First it will retrieve the closure points and orientations
+
+$$
+  \left\{c_0, o_{c0}, e_0, o_{e0}, e_1, o_{e1}, e_2, o_{e2}, v_0, 0, v_1, 0, v_2, 0\right\}
+$$
+
+since vertices only have 0 orientation. Suppose that $o_{e0} = 0$, $o_{e1} = -1$ and $o_{e2} = 0$. Now we extract that local vector values in this order, using the local section. Suppose that the section map is
+
+$$
+\begin{tabular}{rccc}
+ point & & size & offset \\
+\hline
+  $c_0$ & $\to$ & 1 & 0\\
+  $e_0$ & $\to$ & 2 & 6 \\
+  $e_1$ & $\to$ & 2 & 8 \\
+  $e_2$ & $\to$ & 2 & 10 \\
+  $v_0$ & $\to$ & 1 & 2 \\
+  $v_1$ & $\to$ & 1 & 3 \\
+  $v_2$ & $\to$ & 1 & 4 \\
+\end{tabular}
+$$
+
+where the offset is into a local vector, not an array over the closure. Then we will have array values
+
+$$
+  \left\{ a_0, a_6, a_7, a_9, a_8, a_{10}, a_{11}, a_2, a_3, a_4 \right\}
+$$
+
+Notice that the values for $e_1$ are reversed since it had orientation $-1$.
+
 
 ## Partitioning and Ordering
 
