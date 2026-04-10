@@ -11478,20 +11478,13 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
   const PetscInt *pointNum;
   PetscInt       *i, *j, numVertices, numEdges, shift, maxnnzrow, dim, *numDof, numFields;
   PetscInt        pStart, pEnd;
-  PetscBool       useCone, useClosure;
   PetscScalar    *vals;
   PetscSection    s;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
-  if (depth == dim) {
-    /* FIXME this code only works for depth == dim and FVM adjacency */
-    /* Access CSR graph of local partition */
-    PetscCall(DMPlexCreatePartitionerGraph(dm, dim - depth, &numVertices, &i, &j, NULL));
-  } else {
-    /* FEM adjacency */
-    PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
-    PetscCall(DMSetBasicAdjacency(dm, PETSC_FALSE, PETSC_TRUE));
+  {
+    /* XXX this generalizes DMPlexCreatePartitionerGraph to any height and adjacency */
     PetscCall(DMPlexGetDepthStratum(dm, depth, &pStart, &pEnd));
     PetscCall(DMPlexCreatePointNumbering(dm, &pointNumbering));
     PetscCall(ISGetIndices(pointNumbering, &pointNum));
@@ -11533,7 +11526,6 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
       /* Sort adjacencies (not strictly necessary) */
       PetscCall(PetscSortInt(iptr - i[p - pStart], &j[i[p - pStart]]));
     }
-    PetscCall(DMSetBasicAdjacency(dm, useCone, useClosure));
     PetscCall(ISRestoreIndices(pointNumbering, &pointNum));
     PetscCall(ISDestroy(&pointNumbering));
   }
@@ -11633,7 +11625,7 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
 
   Notes:
   Unlike `DMCreateColoring`, the graph used for the coloring does not represent the operator matrix associated with the discretization of a PDE on the `DM`.
-  Here the coloring is computed from the connectivity graph of the mesh entities, defined with FEM adjacency if `depth < dim`, and with FVM adjacency if `depth == dim`.
+  Here the coloring is computed from the connectivity graph of the mesh entities.
 
   Coloring of matrices can also be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
   matrix comes from (what this function provides). In general using the mesh produces a more optimal coloring (fewer colors).
