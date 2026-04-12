@@ -96,7 +96,7 @@ def generateDocsIndex():
 def searchDocsIndex(text: str, cnt: int = 10, md: bool = False):
   """Find the files with the most appropriate matches to text. md = True indicates return the MarkDown file, otherwise return the HTML file"""
   (schema, path) = createDocsSchema()
-  if not os.path.isdir(path): raise RuntimeError("Use bin/lib/petsc/search.py --generate to create the search index")
+  if not os.path.isdir(path): raise RuntimeError("Use lib/petsc/bin/search.py --generate to create the search index")
   index = tantivy.Index(schema, path = path)
   searcher = index.searcher()
 
