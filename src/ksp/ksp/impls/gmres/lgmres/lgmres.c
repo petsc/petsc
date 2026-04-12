@@ -612,7 +612,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 
   Options Database Keys:
 +   -ksp_gmres_restart restart                                                  - total approximation space size (Krylov directions + error approximations)
-.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize against

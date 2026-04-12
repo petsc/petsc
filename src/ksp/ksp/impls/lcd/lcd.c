@@ -173,7 +173,7 @@ static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems PetscOptio
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP LCD options");
   PetscCall(PetscOptionsBoundedInt("-ksp_lcd_restart", "Number of vectors conjugate", "KSPLCDSetRestart", lcd->restart, &lcd->restart, &flg, 1));
-  PetscCall(PetscOptionsBoundedReal("-ksp_lcd_haptol", "Tolerance for exact convergence (happy ending)", "KSPLCDSetHapTol", lcd->haptol, &lcd->haptol, &flg, 0.0));
+  PetscCall(PetscOptionsBoundedReal("-ksp_lcd_haptol", "Tolerance for exact convergence (happy breakdown)", "KSPLCDSetHapTol", lcd->haptol, &lcd->haptol, &flg, 0.0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -182,7 +182,7 @@ static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems PetscOptio
 
    Options Database Keys:
 +  -ksp_lcd_restart - number of vectors conjugate
--  -ksp_lcd_haptol  - tolerance for exact convergence (happy ending)
+-  -ksp_lcd_haptol  - tolerance for exact convergence (happy breakdown)
 
    Level: beginner
 

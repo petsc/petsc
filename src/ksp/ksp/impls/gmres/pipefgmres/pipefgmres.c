@@ -528,7 +528,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart restart - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol tol      - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_haptol tol      - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate     - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
 .   -ksp_pipefgmres_shift      - the shift to use (defaults to 1. See `KSPPIPEFGMRESSetShift()`
 -   -ksp_gmres_krylov_monitor  - plot the Krylov space generated

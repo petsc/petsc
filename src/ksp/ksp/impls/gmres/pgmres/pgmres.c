@@ -340,7 +340,7 @@ static PetscErrorCode KSPReset_PGMRES(KSP ksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate (true|false)                                         - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize
