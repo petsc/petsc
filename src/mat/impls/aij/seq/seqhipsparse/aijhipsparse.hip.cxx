@@ -43,6 +43,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_NaturalOrdering(Mat, Vec
 static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat, PetscOptionItems PetscOptionsObject);
 static PetscErrorCode MatAXPY_SeqAIJHIPSPARSE(Mat, PetscScalar, Mat, MatStructure);
 static PetscErrorCode MatScale_SeqAIJHIPSPARSE(Mat, PetscScalar);
+static PetscErrorCode MatDiagonalScale_SeqAIJHIPSPARSE(Mat, Vec, Vec);
 static PetscErrorCode MatMult_SeqAIJHIPSPARSE(Mat, Vec, Vec);
 static PetscErrorCode MatMultAdd_SeqAIJHIPSPARSE(Mat, Vec, Vec, Vec);
 static PetscErrorCode MatMultTranspose_SeqAIJHIPSPARSE(Mat, Vec, Vec);
@@ -3358,6 +3359,56 @@ static PetscErrorCode MatScale_SeqAIJHIPSPARSE(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+struct DiagonalScaleLeft {
+  const PetscScalar       *lv_ptr;
+  PetscScalar             *val_ptr;
+  const int               *row_ptr;
+  const PetscInt          *cprow_ptr;
+  __host__ __device__ void operator()(int i) const
+  {
+    const int         row = cprow_ptr ? (int)cprow_ptr[i] : i;
+    const PetscScalar s   = lv_ptr[row];
+    for (int j = row_ptr[i]; j < row_ptr[i + 1]; j++) val_ptr[j] *= s;
+  }
+};
+
+static PetscErrorCode MatDiagonalScale_SeqAIJHIPSPARSE(Mat A, Vec l, Vec r)
+{
+  Mat_SeqAIJ        *aij = (Mat_SeqAIJ *)A->data;
+  CsrMatrix         *csr;
+  const PetscScalar *v;
+  PetscScalar       *av;
+  PetscInt           m, n;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(MatSeqAIJHIPSPARSEGetArray(A, &av));
+  csr = (CsrMatrix *)((Mat_SeqAIJHIPSPARSE *)A->spptr)->mat->mat;
+  if (l) {
+    const PetscInt   *cprow = ((Mat_SeqAIJHIPSPARSE *)A->spptr)->mat->cprowIndices ? ((Mat_SeqAIJHIPSPARSE *)A->spptr)->mat->cprowIndices->data().get() : NULL;
+    DiagonalScaleLeft functor;
+
+    PetscCall(VecGetLocalSize(l, &m));
+    PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling Vec of wrong length");
+    PetscCall(VecHIPGetArrayRead(l, &v));
+    functor = {v, av, csr->row_offsets->data().get(), cprow};
+    PetscCallThrust(thrust::for_each(thrust::hip::par.on(PetscDefaultHipStream), thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(csr->num_rows), functor));
+    PetscCall(VecHIPRestoreArrayRead(l, &v));
+    PetscCall(PetscLogGpuFlops(1.0 * aij->nz));
+  }
+  PetscCall(MatSeqAIJHIPSPARSERestoreArray(A, &av));
+  if (r) {
+    PetscCall(VecGetLocalSize(r, &n));
+    PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling Vec of wrong length");
+    PetscCall(VecHIPGetArrayRead(r, &v));
+    PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), csr->values->begin(), csr->values->end(), thrust::make_permutation_iterator(thrust::device_pointer_cast(v), csr->column_indices->begin()), csr->values->begin(), thrust::multiplies<PetscScalar>()));
+    PetscCall(VecHIPRestoreArrayRead(r, &v));
+    PetscCall(PetscLogGpuFlops(1.0 * aij->nz));
+  }
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
 {
   PetscBool   both = PETSC_FALSE;
@@ -3405,6 +3456,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     PetscCall(MatSeqAIJHIPSPARSECopyFromGPU(A));
 
     A->ops->scale                     = MatScale_SeqAIJ;
+    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->axpy                      = MatAXPY_SeqAIJ;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJ;
     A->ops->mult                      = MatMult_SeqAIJ;
@@ -3424,6 +3476,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijhipsparse_seqaijhipsparse_C", NULL));
   } else {
     A->ops->scale                     = MatScale_SeqAIJHIPSPARSE;
+    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJHIPSPARSE;
     A->ops->axpy                      = MatAXPY_SeqAIJHIPSPARSE;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJHIPSPARSE;
     A->ops->mult                      = MatMult_SeqAIJHIPSPARSE;
@@ -3690,15 +3743,6 @@ static PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Destroy(Mat_SeqAIJHIPSPARSETr
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-struct IJCompare {
-  __host__ __device__ inline bool operator()(const thrust::tuple<PetscInt, PetscInt> &t1, const thrust::tuple<PetscInt, PetscInt> &t2)
-  {
-    if (t1.get<0>() < t2.get<0>()) return true;
-    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
-    return false;
-  }
-};
 
 static PetscErrorCode MatSeqAIJHIPSPARSEInvalidateTranspose(Mat A, PetscBool destroy)
 {
