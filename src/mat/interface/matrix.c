@@ -9725,14 +9725,19 @@ PetscErrorCode MatStashGetInfo(Mat mat, PetscInt *nstash, PetscInt *reallocs, Pe
 + right - (optional) vector that the matrix can be multiplied against
 - left  - (optional) vector that the matrix vector product can be stored in
 
+  Options Database Key:
+. -mat_vec_type type - set the `VecType` of the created vectors during `MatSetFromOptions()`
+
   Level: advanced
 
   Notes:
   The blocksize of the returned vectors is determined by the row and column block sizes set with `MatSetBlockSizes()` or the single blocksize (same for both) set by `MatSetBlockSize()`.
 
-  These are new vectors which are not owned by the mat, they should be destroyed in `VecDestroy()` when no longer needed
+  The `VecType` of the created vectors is determined by the `MatType` of `mat`. This can be overridden by using `MatSetVecType()` or the option `-mat_vec_type`.
 
-.seealso: [](ch_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`
+  These are new vectors which are not owned by the `mat`, they should be destroyed with `VecDestroy()` when no longer needed.
+
+.seealso: [](ch_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`, `MatSetVecType()`
 @*/
 PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
 {

@@ -238,12 +238,15 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 + mat   - the matrix object
 - vtype - vector type
 
+  Options Database Key:
+. -mat_vec_type vtype - set the `VecType` of the created vectors during `MatSetFromOptions()`
+
   Level: advanced
 
   Note:
   This is rarely needed in practice since each matrix object internally sets the proper vector type.
 
-.seealso: [](ch_matrices), `Mat`, `VecType`, `VecSetType()`, `MatGetVecType()`
+.seealso: [](ch_matrices), `Mat`, `VecType`, `VecSetType()`, `MatGetVecType()`, `MatCreateVecs()`
 @*/
 PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 {
