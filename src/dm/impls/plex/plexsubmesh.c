@@ -202,7 +202,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
+static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells, PetscBool useCone)
 {
   IS              valueIS;
   PetscSF         sfPoint;
@@ -230,9 +230,9 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
       if (cStart <= q && q < cEnd && !completeCells) { /* skip cells */
         continue;
       }
-      PetscCall(DMPlexGetTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure));
+      PetscCall(DMPlexGetTransitiveClosure(dm, q, useCone, &closureSize, &closure));
       for (c = 0; c < closureSize * 2; c += 2) PetscCall(DMLabelSetValue(label, closure[c], values[v]));
-      PetscCall(DMPlexRestoreTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure));
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, q, useCone, &closureSize, &closure));
     }
     PetscCall(ISRestoreIndices(pointIS, &points));
     PetscCall(ISDestroy(&pointIS));
@@ -298,7 +298,28 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
 PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexLabelComplete_Internal(dm, label, PETSC_TRUE));
+  PetscCall(DMPlexLabelComplete_Internal(dm, label, PETSC_TRUE, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexLabelCompleteStar - Starting with a label marking points, we add their star
+
+  Input Parameters:
++ dm    - The `DM`
+- label - A `DMLabel` marking the points
+
+  Output Parameter:
+. label - A `DMLabel` marking all points in the star
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexLabelComplete()`
+@*/
+PetscErrorCode DMPlexLabelCompleteStar(DM dm, DMLabel label)
+{
+  PetscFunctionBegin;
+  PetscCall(DMPlexLabelComplete_Internal(dm, label, PETSC_TRUE, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
