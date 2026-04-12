@@ -148,7 +148,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     hapbnd = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt < hapbnd) {
-      PetscCall(PetscInfo(ksp, "Detected happy ending, current hapbnd = %14.12e tt = %14.12e\n", (double)hapbnd, (double)tt));
+      PetscCall(PetscInfo(ksp, "Detected happy breakdown, current hapbnd = %14.12e tt = %14.12e\n", (double)hapbnd, (double)tt));
       hapend = PETSC_TRUE;
     }
     PetscCall(KSPGMRESUpdateHessenberg(ksp, it, hapend, &res));
@@ -528,7 +528,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObj
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP GMRES Options");
   PetscCall(PetscOptionsInt("-ksp_gmres_restart", "Number of Krylov search directions", "KSPGMRESSetRestart", gmres->max_k, &restart, &flg));
   if (flg) PetscCall(KSPGMRESSetRestart(ksp, restart));
-  PetscCall(PetscOptionsReal("-ksp_gmres_haptol", "Tolerance for exact convergence (happy ending)", "KSPGMRESSetHapTol", gmres->haptol, &haptol, &flg));
+  PetscCall(PetscOptionsReal("-ksp_gmres_haptol", "Tolerance for exact convergence (happy breakdown)", "KSPGMRESSetHapTol", gmres->haptol, &haptol, &flg));
   if (flg) PetscCall(KSPGMRESSetHapTol(ksp, haptol));
   PetscCall(PetscOptionsReal("-ksp_gmres_breakdown_tolerance", "Divergence breakdown tolerance during GMRES restart", "KSPGMRESSetBreakdownTolerance", gmres->breakdowntol, &breakdowntol, &flg));
   if (flg) PetscCall(KSPGMRESSetBreakdownTolerance(ksp, breakdowntol));
@@ -775,13 +775,13 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 }
 
 /*@
-  KSPGMRESSetHapTol - Sets the tolerance for detecting a happy ending in GMRES (`KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` and others)
+  KSPGMRESSetHapTol - Sets the tolerance for detecting a happy breakdown in GMRES (`KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` and others)
 
   Logically Collective
 
   Input Parameters:
 + ksp - the Krylov space solver context
-- tol - the tolerance for detecting a happy ending
+- tol - the tolerance for detecting a happy breakdown
 
   Options Database Key:
 . -ksp_gmres_haptol tol - set tolerance for determining happy breakdown
@@ -789,11 +789,11 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
   Level: intermediate
 
   Note:
-  Happy ending is the rare case in `KSPGMRES` where a very near zero matrix entry is generated in the upper Hessenberg matrix indicating
+  Happy breakdown is the rare case in `KSPGMRES` where a very near zero matrix entry is generated in the upper Hessenberg matrix indicating
   an 'exact' solution has been obtained. If you attempt more iterations after this point with GMRES unstable
   things can happen.
 
-  The default tolerance value for detecting a happy ending with GMRES in PETSc is 1.0e-30.
+  The default tolerance value for detecting a happy breakdown with GMRES in PETSc is 1.0e-30.
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`
 @*/
@@ -848,7 +848,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 
    Options Database Keys:
 +   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol tol                                                       - sets the tolerance for happy ending (exact convergence) of `KSPGMRES`
+.   -ksp_gmres_haptol tol                                                       - sets the tolerance for happy breakdown (exact convergence) of `KSPGMRES`
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
                                                                                   vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
 .   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
