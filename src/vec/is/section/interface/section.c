@@ -2497,10 +2497,10 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 . obj  - Optional object that provides the options prefix used for the options
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for available values of `PetscViewer` and `PetscViewerFormat`
+  Level: intermediate
 
 .seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscSectionView()`
 @*/

@@ -2066,6 +2066,9 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
 
   Level: developer
 
+  Note:
+  This function has a different API and behavior than `PetscObjectViewFromOptions()`
+
 .seealso: [](ch_profiling), `PetscLogView()`
 @*/
 PetscErrorCode PetscLogViewFromOptions(void)

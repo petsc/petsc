@@ -488,10 +488,10 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 . obj   - optional object that provides the prefix for the options database (if `NULL` then the prefix in `obj` is used)
 - name  - option string that is used to activate viewing
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for a list of values that can be provided in the options database to determine how the `DMLabel` is viewed
+  Level: intermediate
 
 .seealso: [](ch_dmbase), `DMLabel`, `DMLabelView()`, `PetscObjectViewFromOptions()`, `DMLabelCreate()`
 @*/

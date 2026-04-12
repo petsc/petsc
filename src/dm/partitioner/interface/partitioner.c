@@ -81,10 +81,10 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 . obj  - Optional `PetscObject` that provides the options prefix
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
+  Level: intermediate
 
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/

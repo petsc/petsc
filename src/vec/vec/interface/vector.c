@@ -136,17 +136,13 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 . vec - the vector
 
   Options Database Keys:
-+ -vec_view                 - Prints vector in `PETSC_VIEWER_DEFAULT` format
-. -vec_view ::ascii_matlab  - Prints vector in `PETSC_VIEWER_ASCII_MATLAB` format to stdout
-. -vec_view matlab:filename - Prints vector in MATLAB .mat file to filename (requires PETSc configured with --with-matlab)
-. -vec_view draw            - Activates vector viewing using drawing tools
-. -display name             - Sets display name (default is host)
-. -draw_pause sec           - Sets number of seconds to pause after display
-- -vec_view socket          - Activates vector viewing using a socket
++ -vec_view [viewertype][:...]      - Display the vector. See `VecViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
+- -vecstash_view [viewertype][:...] - Display the vector stash. See `VecStashViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`
+.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`, `VecViewFromOptions()`, `VecStashViewFromOptions()`,
+          `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode VecAssemblyEnd(Vec vec)
 {
@@ -765,10 +761,10 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 . obj  - optional object that provides the options prefix for this viewing, use 'NULL' to use the prefix of `A`
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` to see the `PetscViewer` and PetscViewerFormat` available
+  Level: intermediate
 
 .seealso: [](ch_vectors), `Vec`, `VecView`, `PetscObjectViewFromOptions()`, `VecCreate()`
 @*/
@@ -2032,9 +2028,12 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   Collective
 
   Input Parameters:
-+ obj        - the `Vec` containing a stash
-. bobj       - optional other object that provides the prefix
-- optionname - option to activate viewing
++ obj  - the `Vec` containing a stash
+. bobj - optional other object that provides the prefix
+- name - option to activate viewing
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
 
@@ -2043,7 +2042,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
 
 .seealso: [](ch_vectors), `Vec`, `VecStashSetInitialSize()`
 @*/
-PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char optionname[])
+PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char name[])
 {
   PetscViewer       viewer;
   PetscBool         flg;
@@ -2052,7 +2051,7 @@ PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char opt
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(VecStashView(obj, viewer));

@@ -228,20 +228,23 @@ PetscErrorCode PetscBenchView(PetscBench bm, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ bm         - the object
-. bobj       - optional other object that provides prefix (if `NULL` then the prefix in `bm` is used)
-- optionname - option to activate viewing
++ bm   - the object
+. bobj - optional other object that provides prefix (if `NULL` then the prefix in `bm` is used)
+- name - option to activate viewing
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: advanced
 
 .seealso: `PetscBench`, `PetscBenchSetFromOptions()`, `PetscBenchRun()`, `PetscBenchCreate()`, `PetscBenchDestroy()`, `PetscBenchSetUp()`, `PetscBenchSetType()`,
-          `PetscBenchSetSize()`, `PetscBenchGetSize()`
+          `PetscBenchSetSize()`, `PetscBenchGetSize()`, `PetscObjectViewFromOptions()`, `PetscViewer`, `PetscBenchView()`
 @*/
-PetscErrorCode PetscBenchViewFromOptions(PetscBench bm, PetscObject bobj, const char optionname[])
+PetscErrorCode PetscBenchViewFromOptions(PetscBench bm, PetscObject bobj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bm, BM_CLASSID, 1);
-  PetscCall(PetscObjectViewFromOptions((PetscObject)bm, bobj, optionname));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)bm, bobj, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

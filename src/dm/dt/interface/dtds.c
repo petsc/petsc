@@ -228,6 +228,9 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
 . obj  - Optional object that provides the options prefix used in the search of the options database
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: `PetscDSType`, `PetscDS`, `PetscDSView()`, `PetscObjectViewFromOptions()`, `PetscDSCreate()`

@@ -127,6 +127,9 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 . obj  - Optional object that provides the options prefix to use
 - name - command line option name
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscObjectViewFromOptions()`, `PetscLimiterCreate()`
@@ -999,6 +1002,9 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 + A    - the `PetscFV` object
 . obj  - Optional object that provides the options prefix
 - name - command line option name
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
 

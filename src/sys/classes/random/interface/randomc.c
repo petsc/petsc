@@ -233,6 +233,9 @@ PetscErrorCode PetscRandomSetOptionsPrefix(PetscRandom r, const char prefix[])
 . obj  - Optional object
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: `PetscRandom`, `PetscRandomView`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`

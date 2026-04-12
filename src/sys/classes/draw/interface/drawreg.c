@@ -90,6 +90,9 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 . obj  - Optional object
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: `PetscDraw`, `PetscDrawView`, `PetscObjectViewFromOptions()`, `PetscDrawCreate()`
