@@ -3260,23 +3260,23 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
       -pc_hpddm_coarse_mat_filter
 .ve
 
-   E.g., -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_2_p 4 -pc_hpddm_levels_2_sub_pc_type lu -pc_hpddm_levels_2_eps_nev 10
-    -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_mat_type baij will use 10 deflation vectors per subdomain on the fine "level 1",
+   E.g., `-pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_2_p 4 -pc_hpddm_levels_2_sub_pc_type lu -pc_hpddm_levels_2_eps_nev 10
+    -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_mat_type baij` will use 10 deflation vectors per subdomain on the fine "level 1",
     aggregate the fine subdomains into 4 "level 2" subdomains, then use 10 deflation vectors per subdomain on "level 2",
     and assemble the coarse matrix (of dimension 4 x 10 = 40) on two processes as a `MATBAIJ` (default is `MATSBAIJ`).
 
-   In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold_absolute <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
+   In order to activate a "level N+1" coarse correction, it is mandatory to call `-pc_hpddm_levels_N_eps_nev nu` or `-pc_hpddm_levels_N_eps_threshold_absolute val`. The default `-pc_hpddm_coarse_p value` is 1, meaning that the coarse operator is aggregated on a single process.
 
    Level: intermediate
 
    Notes:
-   This preconditioner requires that PETSc is built with SLEPc (``--download-slepc``).
+   This preconditioner requires that PETSc is built with SLEPc (`--download-slepc`).
 
    By default, the underlying concurrent eigenproblems
    are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf.
    {cite}`spillane2011robust` {cite}`jolivet2013scalabledd`. As
-   stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_nev 10
-   -pc_hpddm_levels_1_st_type sinvert. There are furthermore three options related to the (subdomain-wise local) eigensolver that are not described in
+   stated above, SLEPc options are available through `-pc_hpddm_levels_%d_`, e.g., `-pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_nev 10
+   -pc_hpddm_levels_1_st_type sinvert`. There are furthermore three options related to the (subdomain-wise local) eigensolver that are not described in
    SLEPc documentation since they are specific to `PCHPDDM`.
 .vb
       -pc_hpddm_levels_1_st_share_sub_ksp
@@ -3286,10 +3286,10 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    The first option from the list only applies to the fine-level eigensolver, see `PCHPDDMSetSTShareSubKSP()`. The second option from the list is
    used to filter eigenmodes retrieved after convergence of `EPSSolve()` at "level N" such that eigenvectors used to define a "level N+1" coarse
-   correction are associated to eigenvalues whose magnitude are lower or equal than -pc_hpddm_levels_N_eps_threshold_absolute. When using an `EPS` which cannot
-   determine a priori the proper -pc_hpddm_levels_N_eps_nev such that all wanted eigenmodes are retrieved, it is possible to get an estimation of the
-   correct value using the third option from the list, -pc_hpddm_levels_1_eps_use_inertia, see `MatGetInertia()`. In that case, there is no need
-   to supply -pc_hpddm_levels_1_eps_nev. This last option also only applies to the fine-level (N = 1) eigensolver.
+   correction are associated to eigenvalues whose magnitude are lower or equal than `-pc_hpddm_levels_N_eps_threshold_absolute`. When using an `EPS` which cannot
+   determine a priori the proper `-pc_hpddm_levels_N_eps_nev` such that all wanted eigenmodes are retrieved, it is possible to get an estimation of the
+   correct value using the third option from the list, `-pc_hpddm_levels_1_eps_use_inertia`, see `MatGetInertia()`. In that case, there is no need
+   to supply `-pc_hpddm_levels_1_eps_nev`. This last option also only applies to the fine-level (N = 1) eigensolver.
 
    See also {cite}`dolean2015introduction`, {cite}`al2022robust`, {cite}`al2022robustpd`, and {cite}`nataf2022recent`
 

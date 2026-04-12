@@ -454,7 +454,7 @@ M*/
 typedef float PetscExodusIIFloat;
 
 /*E
-   PetscBool  - Logical variable.
+   PetscBool - Logical variable.
 
    Level: beginner
 
@@ -470,7 +470,7 @@ typedef float PetscExodusIIFloat;
    Developer Note:
    We should deprecate this definition since there is a native representation in all the languages.
 
-.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`, `PetscBool3ToBool()`, `PetscBoolToBool3()`
 E*/
 typedef bool PetscBool;
 #define PETSC_FALSE false
@@ -478,14 +478,14 @@ typedef bool PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
 
 /*E
-   PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
+   PetscBool3 - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
 
    Level: beginner
 
    Note:
-   Should not be used with the if (flg) or if (!flg) syntax.
+   Should not be used with the `if (flg)` or `if (!flg)` syntax.
 
-.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UNKNOWN`
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UNKNOWN`, `PetscBool3ToBool()`, `PetscBoolToBool3()`
 E*/
 typedef enum {
   PETSC_BOOL3_FALSE   = 0,
@@ -494,7 +494,40 @@ typedef enum {
 } PetscBool3;
 PETSC_EXTERN const char *const PetscBool3s[];
 
+/*MC
+   PetscBool3ToBool - Convert a `PetscBool3` to a `PetscBool`
+
+   Synopsis:
+   #include <petscsystypes.h>
+   PetscBool PetscBool3ToBool(PetscBool3 var)
+
+   No Fortran Support
+
+   Level: beginner
+
+   Note:
+   Evaluates to `PETSC_TRUE` if `var` is `PETSC_BOOL3_TRUE`, and `PETSC_FALSE` otherwise (including when `var` is `PETSC_BOOL3_UNKNOWN`).
+
+.seealso: `PetscBool`, `PetscBool3`, `PetscBoolToBool3()`
+M*/
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+   PetscBoolToBool3 - Convert a `PetscBool` to a `PetscBool3`
+
+   Synopsis:
+   #include <petscsystypes.h>
+   PetscBool3 PetscBoolToBool3(PetscBool var)
+
+   No Fortran Support
+
+   Level: beginner
+
+   Note:
+   Evaluates to `PETSC_BOOL3_TRUE` if `var` is `PETSC_TRUE`, and `PETSC_BOOL3_FALSE` otherwise.
+
+.seealso: `PetscBool`, `PetscBool3`, `PetscBool3ToBool()`
+M*/
 #define PetscBoolToBool3(a) ((a) == PETSC_TRUE ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE)
 
 /*MC
@@ -637,7 +670,7 @@ typedef PetscReal PetscScalar;
 #endif /* PETSC_USE_COMPLEX */
 
 /*E
-    PetscCopyMode  - Determines how an array or `PetscObject` passed to certain functions is copied or retained by the aggregate `PetscObject`
+    PetscCopyMode - Determines how an array or `PetscObject` passed to certain functions is copied or retained by the aggregate `PetscObject`
 
    Values for array input:
 +   `PETSC_COPY_VALUES` - the array values are copied into new space, the user is free to reuse or delete the passed in array
@@ -686,7 +719,7 @@ M*/
 M*/
 
 /*MC
-    PETSC_INT_MIN - the minimum integer value representable by a `PetscInt`
+    PETSC_INT_MIN - Minimum integer value representable by a `PetscInt`
 
     Level: beginner
 
@@ -694,11 +727,23 @@ M*/
 M*/
 
 /*MC
-    PETSC_INT_MAX - the maximum integer value representable by a `PetscInt`
+    PETSC_INT_MAX - Maximum integer value representable by a `PetscInt`
 
     Level: beginner
 
 .seealso: `PETSC_INT_MIN`, `PetscInt`, `PetscIntCast()`
+M*/
+
+/*MC
+    PETSC_MAX_PATH_LEN - Maximum length of a path (file name including directory)
+
+    Level: beginner
+
+    Note:
+    This value is set at configuration time based on the system's maximum path length (e.g., `MAXPATHLEN`, `MAX_PATH`, or `_MAX_PATH`).
+    It defaults to 4096 if no system value is available.
+
+.seealso: `PetscGetFullPath()`, `PetscGetRealPath()`, `PetscGetHomeDirectory()`
 M*/
 
 /*MC
