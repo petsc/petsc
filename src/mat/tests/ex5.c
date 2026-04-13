@@ -261,6 +261,14 @@ int main(int argc, char **args)
       requires: kokkos_kernels
 
    test:
+      suffix: 3_aijhipsparse
+      nsize: 3
+      args: -mat_type mpiaijhipsparse -vec_type hip -test_diagonalscale
+      filter: grep -v type
+      output_file: output/ex5_33.out
+      requires: hip
+
+   test:
       suffix: aijcusparse_1
       args: -mat_type seqaijcusparse -vec_type cuda -rectA
       filter: grep -v type
