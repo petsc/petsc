@@ -256,7 +256,7 @@ Viewer (-ksp_view_diagonal_scale) options:
   -ksp_use_explicittranspose: <now FALSE : formerly FALSE> Explicitly transpose the system in KSPSolveTranspose (KSPSetUseExplicitTranspose)
   KSP GMRES Options
   -ksp_gmres_restart: <now 30 : formerly 30>: Number of Krylov search directions (KSPGMRESSetRestart)
-  -ksp_gmres_haptol: <now 1e-30 : formerly 1e-30>: Tolerance for exact convergence (happy ending) (KSPGMRESSetHapTol)
+  -ksp_gmres_haptol: <now 1e-30 : formerly 1e-30>: Tolerance for exact convergence (happy breakdown) (KSPGMRESSetHapTol)
   -ksp_gmres_breakdown_tolerance: <now 0.1 : formerly 0.1>: Divergence breakdown tolerance during GMRES restart (KSPGMRESSetBreakdownTolerance)
   -ksp_gmres_preallocate: <now FALSE : formerly FALSE> Preallocate Krylov vectors (KSPGMRESSetPreAllocateVectors)
   Pick at most one of -------------

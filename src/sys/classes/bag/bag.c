@@ -747,15 +747,18 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   Collective
 
   Input Parameters:
-+ bag        - the object
-. bobj       - optional other object that provides prefix (if `NULL` then the prefix in obj is used)
-- optionname - option to activate viewing
++ bag  - the object
+. bobj - optional other object that provides prefix (if `NULL` then the prefix in obj is used)
+- name - option to activate viewing
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
 
-.seealso: `PetscBagCreate()`, `PetscBag`, `PetscViewer`
+.seealso: `PetscBagCreate()`, `PetscBag`, `PetscViewer`, `PetscBagView()`, `PetscObjectViewFromOptions()`
 @*/
-PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const char optionname[])
+PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const char name[])
 {
   static PetscBool  incall = PETSC_FALSE;
   PetscViewer       viewer;
@@ -769,7 +772,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscAssertPointer(bag, 1);
   if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
   prefix = bobj ? bprefix : bag->bagprefix;
-  PetscCall(PetscOptionsCreateViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(bag->bagcomm, NULL, prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscBagView(bag, viewer));

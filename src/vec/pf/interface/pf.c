@@ -208,10 +208,10 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 . obj  - Optional object that provides the prefix used to search the options database
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for the variety of viewer options available
+  Level: intermediate
 
 .seealso: `PF`, `PFView`, `PetscObjectViewFromOptions()`, `PFCreate()`
 @*/

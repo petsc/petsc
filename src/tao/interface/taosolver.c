@@ -642,6 +642,9 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 . obj  - Optional object that provides the prefix for the options database
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: [](ch_tao), `Tao`, `TaoView`, `PetscObjectViewFromOptions()`, `TaoCreate()`

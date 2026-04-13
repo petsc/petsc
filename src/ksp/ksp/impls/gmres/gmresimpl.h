@@ -22,7 +22,7 @@
   PetscReal   *Dsvd; \
   PetscScalar *Rsvd; \
 \
-  PetscReal haptol;      /* tolerance for happy ending */ \
+  PetscReal haptol;      /* tolerance for happy breakdown */ \
   PetscInt  max_k;       /* number of vectors in Krylov space, restart size */ \
   PetscInt  nextra_vecs; /* number of extra vecs needed, e.g. for a pipeline */ \
 \

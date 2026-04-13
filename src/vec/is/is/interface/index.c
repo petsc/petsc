@@ -1590,10 +1590,10 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
 . obj  - Optional object that provides the prefix for the options database
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for possible `PetscViewer` and `PetscViewerFormat` values
+  Level: intermediate
 
 .seealso: `IS`, `ISView()`, `PetscObjectViewFromOptions()`, `ISCreate()`
 @*/

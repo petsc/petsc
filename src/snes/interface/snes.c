@@ -333,6 +333,9 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
 . obj  - Optional object that provides the options prefix for the checks
 - name - command line option
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: [](ch_snes), `SNES`, `SNESView`, `PetscObjectViewFromOptions()`, `SNESCreate()`
@@ -4705,6 +4708,9 @@ PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES sn
 . snes - the `SNES` object
 
   Level: advanced
+
+  Note:
+  This function has a different API and behavior than `PetscObjectViewFromOptions()`
 
 .seealso: [](ch_snes), `SNES`, `SNESConvergedReason`, `SNESConvergedReasonViewSet()`, `SNESCreate()`, `SNESSetUp()`, `SNESDestroy()`,
           `SNESSetTolerances()`, `SNESConvergedDefault()`, `SNESGetConvergedReason()`, `SNESConvergedReasonView()`

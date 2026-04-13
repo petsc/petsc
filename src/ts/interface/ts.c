@@ -1850,6 +1850,9 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
 . obj  - Optional object that provides the prefix for the options database keys
 - name - command line option string to be passed by user
 
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+
   Level: intermediate
 
 .seealso: [](ch_ts), `TS`, `TSView`, `PetscObjectViewFromOptions()`, `TSCreate()`

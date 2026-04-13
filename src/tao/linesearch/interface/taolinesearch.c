@@ -21,10 +21,10 @@ const char *const *TaoLineSearchConvergedReasons = TaoLineSearchConvergedReasons
 . obj  - Optional object
 - name - command line option
 
-  Level: intermediate
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
-  Note:
-  See `PetscObjectViewFromOptions()` for available viewer options
+  Level: intermediate
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchView()`, `PetscObjectViewFromOptions()`, `TaoLineSearchCreate()`
 @*/

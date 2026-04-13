@@ -1014,21 +1014,9 @@ static PetscInt insidematview = 0;
 - name - command line option
 
   Options Database Key:
-. -mat_view [viewertype]:... - the viewer and its options
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
-
-  Note:
-.vb
-    If no value is provided ascii:stdout is used
-       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
-                                                  for example ascii::ascii_info prints just the information about the object not all details
-                                                  unless :append is given filename opens in write mode, overwriting what was already there
-       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
-       socket[:port]                             defaults to the standard output port
-       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
-.ve
 
 .seealso: [](ch_matrices), `Mat`, `MatView()`, `PetscObjectViewFromOptions()`, `MatCreate()`
 @*/
@@ -6008,22 +5996,13 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 + mat  - the matrix
 - type - type of assembly, either `MAT_FLUSH_ASSEMBLY` or `MAT_FINAL_ASSEMBLY`
 
-  Options Database Keys:
-+ -mat_view ::ascii_info             - Prints info on matrix at conclusion of `MatAssemblyEnd()`
-. -mat_view ::ascii_info_detail      - Prints more detailed info
-. -mat_view                          - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab           - Prints matrix in MATLAB format
-. -mat_view draw                     - draws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
-. -display name                      - Sets display name (default is host)
-. -draw_pause sec                    - Sets number of seconds to pause after display
-. -mat_view socket                   - Sends matrix to socket, can be accessed from MATLAB (See [Using MATLAB with PETSc](ch_matlab))
-. -viewer_socket_machine machine     - Machine to use for socket
-. -viewer_socket_port port           - Port number to use for socket
-- -mat_view binary:filename[:append] - Save matrix to file in binary format
+  Options Database Key:
+. -mat_view [viewertype][:...] - option name and values. See `MatViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
 
   Level: beginner
 
-.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatSetValues()`, `PetscDrawOpenX()`, `PetscDrawCreate()`, `MatView()`, `MatAssembled()`, `PetscViewerSocketOpen()`
+.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatSetValues()`, `PetscDrawOpenX()`, `PetscDrawCreate()`, `MatView()`, `MatAssembled()`, `PetscViewerSocketOpen()`,
+          `MatViewFromOptions()`, `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
 {
@@ -9743,14 +9722,19 @@ PetscErrorCode MatStashGetInfo(Mat mat, PetscInt *nstash, PetscInt *reallocs, Pe
 + right - (optional) vector that the matrix can be multiplied against
 - left  - (optional) vector that the matrix vector product can be stored in
 
+  Options Database Key:
+. -mat_vec_type type - set the `VecType` of the created vectors during `MatSetFromOptions()`
+
   Level: advanced
 
   Notes:
   The blocksize of the returned vectors is determined by the row and column block sizes set with `MatSetBlockSizes()` or the single blocksize (same for both) set by `MatSetBlockSize()`.
 
-  These are new vectors which are not owned by the mat, they should be destroyed in `VecDestroy()` when no longer needed
+  The `VecType` of the created vectors is determined by the `MatType` of `mat`. This can be overridden by using `MatSetVecType()` or the option `-mat_vec_type`.
 
-.seealso: [](ch_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`
+  These are new vectors which are not owned by the `mat`, they should be destroyed with `VecDestroy()` when no longer needed.
+
+.seealso: [](ch_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`, `MatSetVecType()`
 @*/
 PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
 {

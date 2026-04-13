@@ -16,10 +16,10 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 + ao     - the application ordering context
 - viewer - viewer used for display
 
-  Level: intermediate
-
   Options Database Key:
 . -ao_view - calls `AOView()` at end of `AOCreate()`
+
+  Level: intermediate
 
   Notes:
   The available visualization contexts include
@@ -32,7 +32,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
   The user can open an alternative visualization context with
   `PetscViewerASCIIOpen()` - output to a specified file.
 
-.seealso: [](sec_ao), `AO`, `PetscViewerASCIIOpen()`, `AOViewFromOptions()`
+.seealso: [](sec_ao), `AO`, `PetscViewer`, `PetscViewerASCIIOpen()`, `AOViewFromOptions()`
 @*/
 PetscErrorCode AOView(AO ao, PetscViewer viewer)
 {
@@ -55,6 +55,9 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
 + ao   - the application ordering context
 . obj  - optional object that provides the prefix used to search the options database
 - name - command line option
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
 

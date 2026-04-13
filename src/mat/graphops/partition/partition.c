@@ -622,21 +622,9 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
 - name - command line option
 
   Options Database Key:
-. -mat_partitioning_view [viewertype]:... - the viewer and its options
+. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
 
   Level: intermediate
-
-  Note:
-.vb
-    If no value is provided ascii:stdout is used
-       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
-                                                  for example ascii::ascii_info prints just the information about the object not all details
-                                                  unless :append is given filename opens in write mode, overwriting what was already there
-       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
-       socket[:port]                             defaults to the standard output port
-       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
-.ve
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningView()`, `PetscObjectViewFromOptions()`, `MatPartitioningCreate()`
 @*/
