@@ -260,7 +260,7 @@ static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, PetscCtx ctx)
   }
 
   /* Call general purpose update function */
-  if (gn->parent->ops->update) PetscCall((*gn->parent->ops->update)(gn->parent, gn->parent->niter, gn->parent->user_update));
+  PetscTryTypeMethod(gn->parent, update, gn->parent->niter, gn->parent->user_update);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

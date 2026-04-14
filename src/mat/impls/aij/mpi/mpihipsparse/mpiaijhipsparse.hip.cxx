@@ -318,9 +318,9 @@ static PetscErrorCode MatMult_MPIAIJHIPSPARSE(Mat A, Vec xx, Vec yy)
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->mult)(a->A, xx, yy));
+  PetscUseTypeMethod(a->A, mult, xx, yy);
   PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, yy, yy));
+  PetscUseTypeMethod(a->B, multadd, a->lvec, yy, yy);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -340,9 +340,9 @@ static PetscErrorCode MatMultAdd_MPIAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->multadd)(a->A, xx, yy, zz));
+  PetscUseTypeMethod(a->A, multadd, xx, yy, zz);
   PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, zz, zz));
+  PetscUseTypeMethod(a->B, multadd, a->lvec, zz, zz);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -351,8 +351,8 @@ static PetscErrorCode MatMultTranspose_MPIAIJHIPSPARSE(Mat A, Vec xx, Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
-  PetscCall((*a->B->ops->multtranspose)(a->B, xx, a->lvec));
-  PetscCall((*a->A->ops->multtranspose)(a->A, xx, yy));
+  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
+  PetscUseTypeMethod(a->A, multtranspose, xx, yy);
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);

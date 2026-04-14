@@ -8915,7 +8915,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
         PetscCall(PCBDDCSetLevels(pc_temp, pcbddc->max_levels));
         if (pc_temp->ops->setfromoptions) { /* need to setfromoptions again, skipping the pc_type */
           PetscObjectOptionsBegin((PetscObject)pc_temp);
-          PetscCall((*pc_temp->ops->setfromoptions)(pc_temp, PetscOptionsObject));
+          PetscUseTypeMethod(pc_temp, setfromoptions, PetscOptionsObject);
           PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pc_temp, PetscOptionsObject));
           PetscOptionsEnd();
           pc_temp->setfromoptionscalled++;
