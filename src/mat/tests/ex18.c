@@ -320,4 +320,9 @@ int main(int argc, char **args)
       nsize: 3
       args: -diag {{0.12 -0.13}separate output} -convname mpiaijcusparse -zerorhs 0 -mat_type mpiaijcusparse
 
+   test:
+      suffix: 18
+      nsize: 3
+      args: -diag 0.12 -convname {{mpisbaij is}separate output} -zerorhs 0
+
 TEST*/
