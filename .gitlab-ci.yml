@@ -315,6 +315,7 @@ ai-review-optional:
     - test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
     - command -v claude >/dev/null 2>&1 || { echo "claude not installed"; exit 1; }
     - command -v glab >/dev/null 2>&1 || { echo "glab not installed"; exit 1; }
+    - command -v pandoc >/dev/null 2>&1 || { echo "pandoc not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
       if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'AI review'; then
@@ -322,10 +323,26 @@ ai-review-optional:
       else
         REVIEW_CMD="/review-mr"
       fi
-      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 30
+      set -o pipefail
+      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 30 | tee ai-review.md
+    - |
+      if test -s ai-review.md; then
+        pandoc --from=markdown --to=html --standalone --metadata title="AI Review" ai-review.md --output ai-review.html
+      else
+        echo "No review output to convert"
+      fi
   timeout: 15m
   allow_failure: true
   interruptible: true
+  environment:
+    name: AI-Review/$CI_COMMIT_REF_SLUG
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/ai-review.html
+    auto_stop_in: one week
+    deployment_tier: development
+  artifacts:
+    paths:
+      - ai-review.*
+    expire_in: one week
 
 #
 # Basic template for code coverage generation. Tests should additionally inherit from the more
@@ -1268,7 +1285,7 @@ coverage-analyze:
 coverage-total-review:
   extends: .coverage-review
   environment:
-    name: coverage/all/$CI_COMMIT_REF_SLUG
+    name: Coverage-All/$CI_COMMIT_REF_SLUG
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html/report.html
     auto_stop_in: one week
     deployment_tier: testing
@@ -1276,7 +1293,7 @@ coverage-total-review:
 coverage-untested-review:
   extends: .coverage-review
   environment:
-    name: coverage/untested/$CI_COMMIT_REF_SLUG
+    name: Coverage-Untested/$CI_COMMIT_REF_SLUG
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html_untested/report_untested.html
     auto_stop_in: one week
     deployment_tier: testing
@@ -1330,7 +1347,7 @@ docs-review:
     - (time make latexpdf SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 2") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
-    name: review/$CI_COMMIT_REF_NAME
+    name: Documentation/$CI_COMMIT_REF_SLUG
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/html/index.html
     auto_stop_in: one week
     deployment_tier: development
