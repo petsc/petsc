@@ -180,13 +180,17 @@ checkbadSource:
 	-@git ls-files *.cu *.kokkos.cxx | xargs -I{} sh -c 'basename "{}"' | sort | uniq -d  >> checkbadSource.out;true
 	-@echo "----- #if [!]defined with a trailing white space -------------------" >> checkbadSource.out
 	-@git --no-pager grep -n "#if [!]defined " -- ${GITFSRC} ${GITSRC} >> checkbadSource.out;true
-	-@echo "----- #if[n]def should use #if [!]defined()-------------------------" >> checkbadSource.out
+	-@echo "----- #if[n]def should use #if [!]defined() ------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n "#if[n]def " -- ${GITFSRC} ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Use PetscTryTypeMethod() instead -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P "if \((([A-Za-z_][A-Za-z0-9_]*(->[A-Za-z_][A-Za-z0-9_]*)*)->ops->[A-Za-z_][A-Za-z0-9_]*)\) PetscCall\(\(\*\1\)\(\2," -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Use PetscUseTypeMethod() instead -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P "[^)][ ]+PetscCall\(\(\*([A-Za-z_][A-Za-z0-9_]*(->[A-Za-z_][A-Za-z0-9_]*)*)->ops->[A-Za-z_][A-Za-z0-9_]*\)\(\1," -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Use of the .cpp file extension instead of .cxx ---------------" >> checkbadSource.out
 	-@git ls-files *.cpp >> checkbadSource.out;true
 	-@echo "----- Fortran: use of dble -----------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n "dble(" -- ${GITFSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 46` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 48` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

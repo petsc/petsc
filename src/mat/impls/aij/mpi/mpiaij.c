@@ -1077,9 +1077,9 @@ static PetscErrorCode MatMultAdd_MPIAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->multadd)(a->A, xx, yy, zz));
+  PetscUseTypeMethod(a->A, multadd, xx, yy, zz);
   PetscCall(VecScatterEnd(Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, zz, zz));
+  PetscUseTypeMethod(a->B, multadd, a->lvec, zz, zz);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1089,9 +1089,9 @@ static PetscErrorCode MatMultTranspose_MPIAIJ(Mat A, Vec xx, Vec yy)
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  PetscCall((*a->B->ops->multtranspose)(a->B, xx, a->lvec));
+  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
   /* do local part */
-  PetscCall((*a->A->ops->multtranspose)(a->A, xx, yy));
+  PetscUseTypeMethod(a->A, multtranspose, xx, yy);
   /* add partial results together */
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
@@ -1144,9 +1144,9 @@ static PetscErrorCode MatMultTransposeAdd_MPIAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  PetscCall((*a->B->ops->multtranspose)(a->B, xx, a->lvec));
+  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
   /* do local part */
-  PetscCall((*a->A->ops->multtransposeadd)(a->A, xx, yy, zz));
+  PetscUseTypeMethod(a->A, multtransposeadd, xx, yy, zz);
   /* add partial results together */
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, zz, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, zz, ADD_VALUES, SCATTER_REVERSE));
@@ -1401,7 +1401,7 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
 
   PetscFunctionBegin;
   if (flag == SOR_APPLY_UPPER) {
-    PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, flag, fshift, lits, 1, xx));
+    PetscUseTypeMethod(mat->A, sor, bb, omega, flag, fshift, lits, 1, xx);
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -1409,7 +1409,7 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP) {
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, flag, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb, omega, flag, fshift, lits, 1, xx);
       its--;
     }
 
@@ -1419,14 +1419,14 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
 
       /* update rhs: bb1 = bb - B*x */
       PetscCall(VecScale(mat->lvec, -1.0));
-      PetscCall((*mat->B->ops->multadd)(mat->B, mat->lvec, bb, bb1));
+      PetscUseTypeMethod(mat->B, multadd, mat->lvec, bb, bb1);
 
       /* local sweep */
-      PetscCall((*mat->A->ops->sor)(mat->A, bb1, omega, SOR_SYMMETRIC_SWEEP, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb1, omega, SOR_SYMMETRIC_SWEEP, fshift, lits, 1, xx);
     }
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP) {
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, flag, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb, omega, flag, fshift, lits, 1, xx);
       its--;
     }
     while (its--) {
@@ -1435,14 +1435,14 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
 
       /* update rhs: bb1 = bb - B*x */
       PetscCall(VecScale(mat->lvec, -1.0));
-      PetscCall((*mat->B->ops->multadd)(mat->B, mat->lvec, bb, bb1));
+      PetscUseTypeMethod(mat->B, multadd, mat->lvec, bb, bb1);
 
       /* local sweep */
-      PetscCall((*mat->A->ops->sor)(mat->A, bb1, omega, SOR_FORWARD_SWEEP, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb1, omega, SOR_FORWARD_SWEEP, fshift, lits, 1, xx);
     }
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP) {
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, flag, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb, omega, flag, fshift, lits, 1, xx);
       its--;
     }
     while (its--) {
@@ -1451,16 +1451,16 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
 
       /* update rhs: bb1 = bb - B*x */
       PetscCall(VecScale(mat->lvec, -1.0));
-      PetscCall((*mat->B->ops->multadd)(mat->B, mat->lvec, bb, bb1));
+      PetscUseTypeMethod(mat->B, multadd, mat->lvec, bb, bb1);
 
       /* local sweep */
-      PetscCall((*mat->A->ops->sor)(mat->A, bb1, omega, SOR_BACKWARD_SWEEP, fshift, lits, 1, xx));
+      PetscUseTypeMethod(mat->A, sor, bb1, omega, SOR_BACKWARD_SWEEP, fshift, lits, 1, xx);
     }
   } else if (flag & SOR_EISENSTAT) {
     Vec xx1;
 
     PetscCall(VecDuplicate(bb, &xx1));
-    PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), fshift, lits, 1, xx));
+    PetscUseTypeMethod(mat->A, sor, bb, omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), fshift, lits, 1, xx);
 
     PetscCall(VecScatterBegin(mat->Mvctx, xx, mat->lvec, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(mat->Mvctx, xx, mat->lvec, INSERT_VALUES, SCATTER_FORWARD));
@@ -1476,7 +1476,7 @@ static PetscErrorCode MatSOR_MPIAIJ(Mat matin, Vec bb, PetscReal omega, MatSORTy
     PetscCall(MatMultAdd(mat->B, mat->lvec, bb1, bb1));
 
     /* local sweep */
-    PetscCall((*mat->A->ops->sor)(mat->A, bb1, omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), fshift, lits, 1, xx1));
+    PetscUseTypeMethod(mat->A, sor, bb1, omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), fshift, lits, 1, xx1);
     PetscCall(VecAXPY(xx, 1.0, xx1));
     PetscCall(VecDestroy(&xx1));
   } else SETERRQ(PetscObjectComm((PetscObject)matin), PETSC_ERR_SUP, "Parallel SOR not supported");
@@ -1743,8 +1743,8 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt 
     pcA = NULL;
     if (!v) pcB = NULL;
   }
-  PetscCall((*mat->A->ops->getrow)(mat->A, lrow, &nzA, pcA, pvA));
-  PetscCall((*mat->B->ops->getrow)(mat->B, lrow, &nzB, pcB, pvB));
+  PetscUseTypeMethod(mat->A, getrow, lrow, &nzA, pcA, pvA);
+  PetscUseTypeMethod(mat->B, getrow, lrow, &nzB, pcB, pvB);
   nztot = nzA + nzB;
 
   cmap = mat->garray;
@@ -1782,8 +1782,8 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt 
     }
   }
   *nz = nztot;
-  PetscCall((*mat->A->ops->restorerow)(mat->A, lrow, &nzA, pcA, pvA));
-  PetscCall((*mat->B->ops->restorerow)(mat->B, lrow, &nzB, pcB, pvB));
+  PetscUseTypeMethod(mat->A, restorerow, lrow, &nzA, pcA, pvA);
+  PetscUseTypeMethod(mat->B, restorerow, lrow, &nzB, pcB, pvB);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

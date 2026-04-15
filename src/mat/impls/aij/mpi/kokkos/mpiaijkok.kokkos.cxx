@@ -52,9 +52,9 @@ static PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
   PetscCall(VecGetLocalSize(xx, &nt));
   PetscCheck(nt == mat->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", mat->cmap->n, nt);
   PetscCall(VecScatterBegin(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*mpiaij->A->ops->mult)(mpiaij->A, xx, yy));
+  PetscUseTypeMethod(mpiaij->A, mult, xx, yy);
   PetscCall(VecScatterEnd(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*mpiaij->B->ops->multadd)(mpiaij->B, mpiaij->lvec, yy, yy));
+  PetscUseTypeMethod(mpiaij->B, multadd, mpiaij->lvec, yy, yy);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -67,9 +67,9 @@ static PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
   PetscCall(VecGetLocalSize(xx, &nt));
   PetscCheck(nt == mat->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", mat->cmap->n, nt);
   PetscCall(VecScatterBegin(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*mpiaij->A->ops->multadd)(mpiaij->A, xx, yy, zz));
+  PetscUseTypeMethod(mpiaij->A, multadd, xx, yy, zz);
   PetscCall(VecScatterEnd(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*mpiaij->B->ops->multadd)(mpiaij->B, mpiaij->lvec, zz, zz));
+  PetscUseTypeMethod(mpiaij->B, multadd, mpiaij->lvec, zz, zz);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -81,8 +81,8 @@ static PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(xx, &nt));
   PetscCheck(nt == mat->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", mat->rmap->n, nt);
-  PetscCall((*mpiaij->B->ops->multtranspose)(mpiaij->B, xx, mpiaij->lvec));
-  PetscCall((*mpiaij->A->ops->multtranspose)(mpiaij->A, xx, yy));
+  PetscUseTypeMethod(mpiaij->B, multtranspose, xx, mpiaij->lvec);
+  PetscUseTypeMethod(mpiaij->A, multtranspose, xx, yy);
   PetscCall(VecScatterBegin(mpiaij->Mvctx, mpiaij->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(mpiaij->Mvctx, mpiaij->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);

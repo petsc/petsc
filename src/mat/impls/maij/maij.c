@@ -471,9 +471,9 @@ static PetscErrorCode MatMult_MPIMAIJ_dof(Mat A, Vec xx, Vec yy)
   PetscFunctionBegin;
   /* start the scatter */
   PetscCall(VecScatterBegin(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*b->AIJ->ops->mult)(b->AIJ, xx, yy));
+  PetscUseTypeMethod(b->AIJ, mult, xx, yy);
   PetscCall(VecScatterEnd(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*b->OAIJ->ops->multadd)(b->OAIJ, b->w, yy, yy));
+  PetscUseTypeMethod(b->OAIJ, multadd, b->w, yy, yy);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -482,8 +482,8 @@ static PetscErrorCode MatMultTranspose_MPIMAIJ_dof(Mat A, Vec xx, Vec yy)
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ *)A->data;
 
   PetscFunctionBegin;
-  PetscCall((*b->OAIJ->ops->multtranspose)(b->OAIJ, xx, b->w));
-  PetscCall((*b->AIJ->ops->multtranspose)(b->AIJ, xx, yy));
+  PetscUseTypeMethod(b->OAIJ, multtranspose, xx, b->w);
+  PetscUseTypeMethod(b->AIJ, multtranspose, xx, yy);
   PetscCall(VecScatterBegin(b->ctx, b->w, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(b->ctx, b->w, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -496,9 +496,9 @@ static PetscErrorCode MatMultAdd_MPIMAIJ_dof(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionBegin;
   /* start the scatter */
   PetscCall(VecScatterBegin(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*b->AIJ->ops->multadd)(b->AIJ, xx, yy, zz));
+  PetscUseTypeMethod(b->AIJ, multadd, xx, yy, zz);
   PetscCall(VecScatterEnd(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*b->OAIJ->ops->multadd)(b->OAIJ, b->w, zz, zz));
+  PetscUseTypeMethod(b->OAIJ, multadd, b->w, zz, zz);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -507,8 +507,8 @@ static PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A, Vec xx, Vec yy, Vec
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ *)A->data;
 
   PetscFunctionBegin;
-  PetscCall((*b->OAIJ->ops->multtranspose)(b->OAIJ, xx, b->w));
-  PetscCall((*b->AIJ->ops->multtransposeadd)(b->AIJ, xx, yy, zz));
+  PetscUseTypeMethod(b->OAIJ, multtranspose, xx, b->w);
+  PetscUseTypeMethod(b->AIJ, multtransposeadd, xx, yy, zz);
   PetscCall(VecScatterBegin(b->ctx, b->w, zz, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(b->ctx, b->w, zz, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);

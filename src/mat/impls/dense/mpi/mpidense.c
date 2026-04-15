@@ -504,7 +504,7 @@ static PetscErrorCode MatMult_MPIDense(Mat mat, Vec xx, Vec yy)
   PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, ax, ay, MPI_REPLACE));
   PetscCall(VecRestoreArrayWriteAndMemType(mdn->lvec, &ay));
   PetscCall(VecRestoreArrayReadAndMemType(xx, &ax));
-  PetscCall((*mdn->A->ops->mult)(mdn->A, mdn->lvec, yy));
+  PetscUseTypeMethod(mdn->A, mult, mdn->lvec, yy);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -542,7 +542,7 @@ static PetscErrorCode MatMultAdd_MPIDense(Mat mat, Vec xx, Vec yy, Vec zz)
   PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, ax, ay, MPI_REPLACE));
   PetscCall(VecRestoreArrayAndMemType(mdn->lvec, &ay));
   PetscCall(VecRestoreArrayReadAndMemType(xx, &ax));
-  PetscCall((*mdn->A->ops->multadd)(mdn->A, mdn->lvec, yy, zz));
+  PetscUseTypeMethod(mdn->A, multadd, mdn->lvec, yy, zz);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -589,8 +589,8 @@ static PetscErrorCode MatMultTransposeKernel_MPIDense(Mat A, Vec xx, Vec yy, Pet
   PetscFunctionBegin;
   if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
   PetscCall(VecSet(yy, 0.0));
-  if (herm) PetscCall((*a->A->ops->multhermitiantranspose)(a->A, xx, a->lvec));
-  else PetscCall((*a->A->ops->multtranspose)(a->A, xx, a->lvec));
+  if (herm) PetscUseTypeMethod(a->A, multhermitiantranspose, xx, a->lvec);
+  else PetscUseTypeMethod(a->A, multtranspose, xx, a->lvec);
   PetscCall(VecGetArrayReadAndMemType(a->lvec, &ax, &axmtype));
   PetscCall(VecGetArrayAndMemType(yy, &ay, &aymtype));
   PetscCall(PetscSFReduceWithMemTypeBegin(a->Mvctx, MPIU_SCALAR, axmtype, ax, aymtype, ay, MPIU_SUM));
@@ -631,8 +631,8 @@ static PetscErrorCode MatMultTransposeAddKernel_MPIDense(Mat A, Vec xx, Vec yy, 
   PetscFunctionBegin;
   if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
   PetscCall(VecCopy(yy, zz));
-  if (herm) PetscCall((*a->A->ops->multhermitiantranspose)(a->A, xx, a->lvec));
-  else PetscCall((*a->A->ops->multtranspose)(a->A, xx, a->lvec));
+  if (herm) PetscUseTypeMethod(a->A, multhermitiantranspose, xx, a->lvec);
+  else PetscUseTypeMethod(a->A, multtranspose, xx, a->lvec);
   PetscCall(VecGetArrayReadAndMemType(a->lvec, &ax, &axmtype));
   PetscCall(VecGetArrayAndMemType(zz, &ay, &aymtype));
   PetscCall(PetscSFReduceWithMemTypeBegin(a->Mvctx, MPIU_SCALAR, axmtype, ax, aymtype, ay, MPIU_SUM));
@@ -1163,7 +1163,7 @@ static PetscErrorCode MatGetColumnVector_MPIDense(Mat A, Vec v, PetscInt col)
   PetscFunctionBegin;
   PetscCheck(a->A, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Missing local matrix");
   PetscCheck(a->A->ops->getcolumnvector, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Missing get column operation");
-  PetscCall((*a->A->ops->getcolumnvector)(a->A, v, col));
+  PetscUseTypeMethod(a->A, getcolumnvector, v, col);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
