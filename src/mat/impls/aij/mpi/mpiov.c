@@ -2902,7 +2902,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
       At least avoid calling MatSetValues() and the implied searches?
     */
 
-    if (B && pattern == DIFFERENT_NONZERO_PATTERN) {
+    if (pattern == DIFFERENT_NONZERO_PATTERN) {
 #if defined(PETSC_USE_CTABLE)
       PetscCall(PetscHMapIDestroy(&aij->colmap));
 #else
@@ -2915,8 +2915,8 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
       PetscCall(VecDestroy(&aij->lvec));
       PetscCall(VecScatterDestroy(&aij->Mvctx));
     }
-    if (aij->B && B && pattern == DIFFERENT_NONZERO_PATTERN) PetscCall(MatDestroy(&aij->B));
-    if (aij->B && B && pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(aij->B));
+    if (aij->B && pattern == DIFFERENT_NONZERO_PATTERN) PetscCall(MatDestroy(&aij->B));
+    if (aij->B && pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(aij->B));
   }
   Bdisassembled = PETSC_FALSE;
   if (!aij->B) {
@@ -2927,10 +2927,17 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     Bdisassembled = PETSC_TRUE;
   }
   if (B) {
-    Baij = (Mat_SeqAIJ *)B->data;
+    Baij       = (Mat_SeqAIJ *)B->data;
+    rowindices = NULL;
+    if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
     if (pattern == DIFFERENT_NONZERO_PATTERN) {
-      PetscCall(PetscMalloc1(B->rmap->n, &nz));
-      for (PetscInt i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+      PetscCall(PetscMalloc1(C->rmap->n, &nz));
+      if (rowemb) {
+        PetscCall(PetscArrayzero(nz, C->rmap->n));
+        for (PetscInt i = 0; i < B->rmap->n; i++) nz[rowindices[i]] = Baij->i[i + 1] - Baij->i[i];
+      } else {
+        for (PetscInt i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+      }
       PetscCall(MatSeqAIJSetPreallocation(aij->B, 0, nz));
       PetscCall(PetscFree(nz));
     }
@@ -2938,9 +2945,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(PetscLayoutGetRange(C->cmap, &cstart, &cend));
     shift      = cend - cstart;
     count      = 0;
-    rowindices = NULL;
     colindices = NULL;
-    if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
     if (ocolemb) PetscCall(ISGetIndices(ocolemb, &colindices));
     for (PetscInt i = 0; i < B->rmap->n; i++) {
       PetscInt row;
@@ -2955,6 +2960,8 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
         ++count;
       }
     }
+    if (ocolemb) PetscCall(ISRestoreIndices(ocolemb, &colindices));
+    if (rowemb) PetscCall(ISRestoreIndices(rowemb, &rowindices));
     /* No assembly for aij->B is necessary. */
     /* FIXME: set aij->B's nonzerostate correctly. */
   } else PetscCall(MatSetUp(aij->B));
@@ -3066,14 +3073,20 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
       PetscCheck(indices[j] != indices[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in row IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
     }
     PetscCall(ISRestoreIndices(isrow[i], &indices));
-    PetscCall(ISSortPermutation(iscol[i], PETSC_FALSE, iscol_p + i));
-    PetscCall(ISSort(iscol[i]));
-    PetscCall(ISGetLocalSize(iscol[i], &issize));
-    PetscCall(ISGetIndices(iscol[i], &indices));
-    for (PetscInt j = 1; j < issize; ++j) {
-      PetscCheck(indices[j - 1] != indices[j], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in col IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
+    if (isrow[i] == iscol[i]) {
+      /* Row and column are the same IS; isrow[i] is already sorted, so reuse row permutation */
+      iscol_p[i] = isrow_p[i];
+      PetscCall(PetscObjectReference((PetscObject)iscol_p[i]));
+    } else {
+      PetscCall(ISSortPermutation(iscol[i], PETSC_FALSE, iscol_p + i));
+      PetscCall(ISSort(iscol[i]));
+      PetscCall(ISGetLocalSize(iscol[i], &issize));
+      PetscCall(ISGetIndices(iscol[i], &indices));
+      for (PetscInt j = 1; j < issize; ++j) {
+        PetscCheck(indices[j - 1] != indices[j], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in col IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
+      }
+      PetscCall(ISRestoreIndices(iscol[i], &indices));
     }
-    PetscCall(ISRestoreIndices(iscol[i], &indices));
     PetscCallMPI(MPI_Comm_size(((PetscObject)isrow[i])->comm, &size));
     if (size > 1) {
       cisrow[ii] = isrow[i];
