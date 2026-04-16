@@ -67,11 +67,13 @@ class Configure(config.package.GNUPackage):
       args.append('--without-hwloc')
     else:
       args.append('--with-hwloc=embedded')
+    args.append('--enable-fast=""') # set to empty so that --with-debugging=1, -O0 is not there twice (since it is already in PETSc CFLAGS), and --with-debugging=0, -O2 (set by MPICH if there is no --enable-fast configure option) does not shadow what is in PETSc COPTFLAGS (usually -O3)
     # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
     if self.compilerFlags.debugging:
-      args.append("--enable-fast=no")
-      args.append("--enable-error-messages=all")
       mpich_device = 'ch3:sock'
+      # meminit: preinitialize memory associated structures and unions to eliminate access warnings from programs like Valgrind
+      # dbg: add compiler flag, -g, to all internal compiler flag, i.e., MPICHLIB_CFLAGS, MPICHLIB_CXXFLAGS, MPICHLIB_FFLAGS, and MPICHLIB_FCFLAGS, to make debugging easier
+      args.append('--enable-g=meminit,dbg')
     else:
       mpich_device = 'ch3:nemesis'
     if self.cuda.found:
@@ -91,9 +93,7 @@ class Configure(config.package.GNUPackage):
     if 'download-mpich-device' in self.argDB:
       mpich_device = self.argDB['download-mpich-device']
     args.append('--with-device='+mpich_device)
-    # meminit: preinitialize memory associated structures and unions to eliminate access warnings from programs like valgrind
-    # dbg: add compiler flag, -g, to all internal compiler flag i.e. MPICHLIB_CFLAGS, MPICHLIB_CXXFLAGS, MPICHLIB_FFLAGS, and MPICHLIB_FCFLAGS, to make debugging easier
-    args.append('--enable-g=meminit,dbg')
+
     if not self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.setCompilers.CC, self.log):
       args.append('pac_cv_have_float16=no')
     if config.setCompilers.Configure.isDarwin(self.log):
