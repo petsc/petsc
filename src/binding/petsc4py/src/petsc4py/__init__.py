@@ -40,6 +40,12 @@ def init(args=None, arch=None, comm=None):
     import petsc4py.lib
 
     PETSc = petsc4py.lib.ImportPETSc(arch)
+    if PETSc.Sys.isInitialized():
+        import warnings
+        warnings.warn(
+            "Calling petsc4py.init but PETSc has already been initialized",
+            stacklevel=2,
+        )
     args = petsc4py.lib.getInitArgs(args)
     PETSc._initialize(args, comm)
 
