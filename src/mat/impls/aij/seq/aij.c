@@ -5258,28 +5258,29 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
   if (rowemb) {
     PetscCall(ISGetLocalSize(rowemb, &m));
     PetscCheck(m == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row IS of size %" PetscInt_FMT " is incompatible with matrix row size %" PetscInt_FMT, m, B->rmap->n);
-  } else {
-    PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is row-incompatible with the target matrix");
-  }
+  } else PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is row-incompatible with the target matrix");
   if (colemb) {
     PetscCall(ISGetLocalSize(colemb, &n));
     PetscCheck(n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag col IS of size %" PetscInt_FMT " is incompatible with input matrix col size %" PetscInt_FMT, n, B->cmap->n);
-  } else {
-    PetscCheck(C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is col-incompatible with the target matrix");
-  }
+  } else PetscCheck(C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is col-incompatible with the target matrix");
 
-  Baij = (Mat_SeqAIJ *)B->data;
+  Baij       = (Mat_SeqAIJ *)B->data;
+  rowindices = NULL;
+  if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
   if (pattern == DIFFERENT_NONZERO_PATTERN) {
-    PetscCall(PetscMalloc1(B->rmap->n, &nz));
-    for (i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+    PetscCall(PetscMalloc1(C->rmap->n, &nz));
+    if (rowemb) {
+      PetscCall(PetscArrayzero(nz, C->rmap->n));
+      for (i = 0; i < B->rmap->n; i++) nz[rowindices[i]] = Baij->i[i + 1] - Baij->i[i];
+    } else {
+      for (i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+    }
     PetscCall(MatSeqAIJSetPreallocation(C, 0, nz));
     PetscCall(PetscFree(nz));
   }
   if (pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(C));
   count      = 0;
-  rowindices = NULL;
   colindices = NULL;
-  if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
   if (colemb) PetscCall(ISGetIndices(colemb, &colindices));
   for (i = 0; i < B->rmap->n; i++) {
     PetscInt row;
@@ -5294,6 +5295,8 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
       ++count;
     }
   }
+  if (colemb) PetscCall(ISRestoreIndices(colemb, &colindices));
+  if (rowemb) PetscCall(ISRestoreIndices(rowemb, &rowindices));
   /* FIXME: set C's nonzerostate correctly. */
   /* Assembly for C is necessary. */
   C->preallocated  = PETSC_TRUE;
