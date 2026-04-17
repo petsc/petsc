@@ -2860,31 +2860,23 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     if (rowemb) {
       PetscCall(ISGetLocalSize(rowemb, &m));
       PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row IS of size %" PetscInt_FMT " is incompatible with diag matrix row size %" PetscInt_FMT, m, A->rmap->n);
-    } else {
-      PetscCheck(C->rmap->n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag seq matrix is row-incompatible with the MPIAIJ matrix");
-    }
+    } else PetscCheck(C->rmap->n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag seq matrix is row-incompatible with the MPIAIJ matrix");
     if (dcolemb) {
       PetscCall(ISGetLocalSize(dcolemb, &n));
       PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag col IS of size %" PetscInt_FMT " is incompatible with diag matrix col size %" PetscInt_FMT, n, A->cmap->n);
-    } else {
-      PetscCheck(C->cmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag seq matrix is col-incompatible with the MPIAIJ matrix");
-    }
+    } else PetscCheck(C->cmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag seq matrix is col-incompatible with the MPIAIJ matrix");
   }
   if (B) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATSEQAIJ, &seqaij));
     PetscCheck(seqaij, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal matrix is of wrong type");
     if (rowemb) {
       PetscCall(ISGetLocalSize(rowemb, &m));
-      PetscCheck(m == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row IS of size %" PetscInt_FMT " is incompatible with off-diag matrix row size %" PetscInt_FMT, m, A->rmap->n);
-    } else {
-      PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
-    }
+      PetscCheck(m == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row IS of size %" PetscInt_FMT " is incompatible with off-diag matrix row size %" PetscInt_FMT, m, B->rmap->n);
+    } else PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
     if (ocolemb) {
       PetscCall(ISGetLocalSize(ocolemb, &n));
       PetscCheck(n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag col IS of size %" PetscInt_FMT " is incompatible with off-diag matrix col size %" PetscInt_FMT, n, B->cmap->n);
-    } else {
-      PetscCheck(C->cmap->N - C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
-    }
+    } else PetscCheck(C->cmap->N - C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
   }
 
   aij = (Mat_MPIAIJ *)C->data;
@@ -2895,11 +2887,8 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(MatSetBlockSizesFromMats(aij->A, C, C));
     PetscCall(MatSetType(aij->A, MATSEQAIJ));
   }
-  if (A) {
-    PetscCall(MatSetSeqMat_SeqAIJ(aij->A, rowemb, dcolemb, pattern, A));
-  } else {
-    PetscCall(MatSetUp(aij->A));
-  }
+  if (A) PetscCall(MatSetSeqMat_SeqAIJ(aij->A, rowemb, dcolemb, pattern, A));
+  else PetscCall(MatSetUp(aij->A));
   if (B) { /* Destroy the old matrix or the column map, depending on the sparsity pattern. */
     /*
       If pattern == DIFFERENT_NONZERO_PATTERN, we reallocate B and
@@ -2913,7 +2902,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
       At least avoid calling MatSetValues() and the implied searches?
     */
 
-    if (B && pattern == DIFFERENT_NONZERO_PATTERN) {
+    if (pattern == DIFFERENT_NONZERO_PATTERN) {
 #if defined(PETSC_USE_CTABLE)
       PetscCall(PetscHMapIDestroy(&aij->colmap));
 #else
@@ -2926,8 +2915,8 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
       PetscCall(VecDestroy(&aij->lvec));
       PetscCall(VecScatterDestroy(&aij->Mvctx));
     }
-    if (aij->B && B && pattern == DIFFERENT_NONZERO_PATTERN) PetscCall(MatDestroy(&aij->B));
-    if (aij->B && B && pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(aij->B));
+    if (aij->B && pattern == DIFFERENT_NONZERO_PATTERN) PetscCall(MatDestroy(&aij->B));
+    if (aij->B && pattern == SUBSET_NONZERO_PATTERN) PetscCall(MatZeroEntries(aij->B));
   }
   Bdisassembled = PETSC_FALSE;
   if (!aij->B) {
@@ -2938,10 +2927,17 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     Bdisassembled = PETSC_TRUE;
   }
   if (B) {
-    Baij = (Mat_SeqAIJ *)B->data;
+    Baij       = (Mat_SeqAIJ *)B->data;
+    rowindices = NULL;
+    if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
     if (pattern == DIFFERENT_NONZERO_PATTERN) {
-      PetscCall(PetscMalloc1(B->rmap->n, &nz));
-      for (PetscInt i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+      PetscCall(PetscMalloc1(C->rmap->n, &nz));
+      if (rowemb) {
+        PetscCall(PetscArrayzero(nz, C->rmap->n));
+        for (PetscInt i = 0; i < B->rmap->n; i++) nz[rowindices[i]] = Baij->i[i + 1] - Baij->i[i];
+      } else {
+        for (PetscInt i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+      }
       PetscCall(MatSeqAIJSetPreallocation(aij->B, 0, nz));
       PetscCall(PetscFree(nz));
     }
@@ -2949,9 +2945,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(PetscLayoutGetRange(C->cmap, &cstart, &cend));
     shift      = cend - cstart;
     count      = 0;
-    rowindices = NULL;
     colindices = NULL;
-    if (rowemb) PetscCall(ISGetIndices(rowemb, &rowindices));
     if (ocolemb) PetscCall(ISGetIndices(ocolemb, &colindices));
     for (PetscInt i = 0; i < B->rmap->n; i++) {
       PetscInt row;
@@ -2966,11 +2960,11 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
         ++count;
       }
     }
+    if (ocolemb) PetscCall(ISRestoreIndices(ocolemb, &colindices));
+    if (rowemb) PetscCall(ISRestoreIndices(rowemb, &rowindices));
     /* No assembly for aij->B is necessary. */
     /* FIXME: set aij->B's nonzerostate correctly. */
-  } else {
-    PetscCall(MatSetUp(aij->B));
-  }
+  } else PetscCall(MatSetUp(aij->B));
   C->preallocated  = PETSC_TRUE;
   C->was_assembled = PETSC_FALSE;
   C->assembled     = PETSC_FALSE;
@@ -3079,14 +3073,20 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
       PetscCheck(indices[j] != indices[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in row IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
     }
     PetscCall(ISRestoreIndices(isrow[i], &indices));
-    PetscCall(ISSortPermutation(iscol[i], PETSC_FALSE, iscol_p + i));
-    PetscCall(ISSort(iscol[i]));
-    PetscCall(ISGetLocalSize(iscol[i], &issize));
-    PetscCall(ISGetIndices(iscol[i], &indices));
-    for (PetscInt j = 1; j < issize; ++j) {
-      PetscCheck(indices[j - 1] != indices[j], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in col IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
+    if (isrow[i] == iscol[i]) {
+      /* Row and column are the same IS; isrow[i] is already sorted, so reuse row permutation */
+      iscol_p[i] = isrow_p[i];
+      PetscCall(PetscObjectReference((PetscObject)iscol_p[i]));
+    } else {
+      PetscCall(ISSortPermutation(iscol[i], PETSC_FALSE, iscol_p + i));
+      PetscCall(ISSort(iscol[i]));
+      PetscCall(ISGetLocalSize(iscol[i], &issize));
+      PetscCall(ISGetIndices(iscol[i], &indices));
+      for (PetscInt j = 1; j < issize; ++j) {
+        PetscCheck(indices[j - 1] != indices[j], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated indices in col IS %" PetscInt_FMT ": indices at %" PetscInt_FMT " and %" PetscInt_FMT " are both %" PetscInt_FMT, i, j - 1, j, indices[j]);
+      }
+      PetscCall(ISRestoreIndices(iscol[i], &indices));
     }
-    PetscCall(ISRestoreIndices(iscol[i], &indices));
     PetscCallMPI(MPI_Comm_size(((PetscObject)isrow[i])->comm, &size));
     if (size > 1) {
       cisrow[ii] = isrow[i];

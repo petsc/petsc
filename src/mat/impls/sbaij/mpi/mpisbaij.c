@@ -2,6 +2,7 @@
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscblaslapack.h>
+#include <petscsf.h>
 
 static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 {
@@ -1727,6 +1728,139 @@ static PetscErrorCode MatShift_MPISBAIJ(Mat Y, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatZeroRowsColumns_MPISBAIJ(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  Mat_MPISBAIJ      *l = (Mat_MPISBAIJ *)A->data;
+  PetscMPIInt        n, p = 0;
+  PetscInt           i, j, k, r, len = 0, row, col, count;
+  PetscInt          *lrows, *owners = A->rmap->range;
+  PetscSFNode       *rrows;
+  PetscSF            sf;
+  const PetscScalar *xx;
+  PetscScalar       *bb, *mask;
+  Vec                xmask, lmask, lvec_contrib = NULL;
+  Mat_SeqBAIJ       *baij = (Mat_SeqBAIJ *)l->B->data;
+  PetscInt           bs = A->rmap->bs, bs2 = baij->bs2;
+  PetscScalar       *aa;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMPIIntCast(A->rmap->n, &n));
+  /* create PetscSF where leaves are input rows and roots are owned rows */
+  PetscCall(PetscMalloc1(n, &lrows));
+  for (r = 0; r < n; ++r) lrows[r] = -1;
+  PetscCall(PetscMalloc1(N, &rrows));
+  for (r = 0; r < N; ++r) {
+    const PetscInt idx = rows[r];
+    PetscCheck(idx >= 0 && A->rmap->N > idx, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")", idx, A->rmap->N);
+    if (idx < owners[p] || owners[p + 1] <= idx) { /* short-circuit the search if the last p owns this row too */
+      PetscCall(PetscLayoutFindOwner(A->rmap, idx, &p));
+    }
+    rrows[r].rank  = p;
+    rrows[r].index = rows[r] - owners[p];
+  }
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &sf));
+  PetscCall(PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER));
+  /* collect flags for rows to be zeroed */
+  PetscCall(PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *)rows, lrows, MPI_LOR));
+  PetscCall(PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *)rows, lrows, MPI_LOR));
+  PetscCall(PetscSFDestroy(&sf));
+  /* compress and put in row numbers */
+  for (r = 0; r < n; ++r) {
+    if (lrows[r] >= 0) lrows[len++] = r;
+  }
+  /* zero diagonal part of matrix */
+  PetscCall(MatZeroRowsColumns(l->A, len, lrows, diag, x, b));
+  /* handle off-diagonal part of matrix */
+  PetscCall(MatCreateVecs(A, &xmask, NULL));
+  PetscCall(VecDuplicate(l->lvec, &lmask));
+  PetscCall(VecGetArray(xmask, &bb));
+  for (i = 0; i < len; i++) bb[lrows[i]] = 1;
+  PetscCall(VecRestoreArray(xmask, &bb));
+  PetscCall(VecScatterBegin(l->Mvctx, xmask, lmask, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(l->Mvctx, xmask, lmask, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecDestroy(&xmask));
+  if (x) {
+    PetscCall(VecScatterBegin(l->Mvctx, x, l->lvec, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(l->Mvctx, x, l->lvec, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecGetArrayRead(l->lvec, &xx));
+    PetscCall(VecGetArray(b, &bb));
+  }
+  PetscCall(VecGetArray(lmask, &mask));
+  /* MPISBAIJ stores only the upper off-diagonal in l->B; for each zeroed local row r and
+     non-zeroed off-process column c in that row, accumulate -A[r,c] * x[r] into lvec_contrib.
+     A SCATTER_REVERSE below sends these contributions to b[c] on the owning (higher-rank)
+     process, the missing symmetric lower-triangular update. We skip entries where c is
+     also a zeroed row (mask[col] != 0) since b[c] = diag * x[c] is handled separately. */
+  if (x) {
+    const PetscScalar *x_vals;
+    PetscScalar       *c_vals;
+
+    PetscCall(VecDuplicate(l->lvec, &lvec_contrib));
+    PetscCall(VecGetArray(lvec_contrib, &c_vals));
+    PetscCall(VecGetArrayRead(x, &x_vals));
+    /* Only accumulate b[c] -= A[r,c] * x[r] when off-process col c is not also a zeroed row
+       (mask[c] non-zero means col c is zeroed, so b[c] = diag * x[c] is already set).
+       This mirrors the MatSeqSBAIJ pattern: if (zeroed[r] && !zeroed[c]) bb[c] -= A[r,c] * x[r].
+       c_vals is indexed by the local B column index. */
+    for (i = 0; i < len; ++i) {
+      row = lrows[i];
+      for (j = baij->i[row / bs]; j < baij->i[row / bs + 1]; ++j) {
+        for (k = 0; k < bs; ++k) {
+          col = baij->j[j] * bs + k;
+          if (!PetscAbsScalar(mask[col])) {
+            aa = baij->a + j * bs2 + (row % bs) + bs * k;
+            c_vals[col] -= aa[0] * x_vals[row];
+          }
+        }
+      }
+    }
+    PetscCall(VecRestoreArrayRead(x, &x_vals));
+    PetscCall(VecRestoreArray(lvec_contrib, &c_vals));
+  }
+  /* remove zeroed rows of off-diagonal matrix */
+  for (i = 0; i < len; ++i) {
+    row   = lrows[i];
+    count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
+    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
+    for (k = 0; k < count; ++k) {
+      aa[0] = 0.0;
+      aa += bs;
+    }
+  }
+  /* loop over all elements of off process part of matrix zeroing removed columns */
+  for (i = 0; i < l->B->rmap->N; ++i) {
+    row = i / bs;
+    for (j = baij->i[row]; j < baij->i[row + 1]; ++j) {
+      for (k = 0; k < bs; ++k) {
+        col = bs * baij->j[j] + k;
+        if (PetscAbsScalar(mask[col])) {
+          aa = baij->a + j * bs2 + (i % bs) + bs * k;
+          if (x) bb[i] -= aa[0] * xx[col];
+          aa[0] = 0.0;
+        }
+      }
+    }
+  }
+  if (x) {
+    PetscCall(VecRestoreArray(b, &bb));
+    PetscCall(VecRestoreArrayRead(l->lvec, &xx));
+    /* scatter the accumulated contributions to b[c] on higher-rank processes owning column c */
+    PetscCall(VecScatterBegin(l->Mvctx, lvec_contrib, b, ADD_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(l->Mvctx, lvec_contrib, b, ADD_VALUES, SCATTER_REVERSE));
+    PetscCall(VecDestroy(&lvec_contrib));
+  }
+  PetscCall(VecRestoreArray(lmask, &mask));
+  PetscCall(VecDestroy(&lmask));
+  PetscCall(PetscFree(lrows));
+
+  /* only change matrix nonzero state if pattern was allowed to be changed */
+  if (!((Mat_SeqSBAIJ *)l->A->data)->nonew) {
+    PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
+    PetscCallMPI(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetDiagonalBlock_MPISBAIJ(Mat A, Mat *a)
 {
   PetscFunctionBegin;
@@ -1796,7 +1930,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatScale_MPISBAIJ,
                                        MatShift_MPISBAIJ,
                                        NULL,
-                                       NULL,
+                                       MatZeroRowsColumns_MPISBAIJ,
                                        /* 49*/ NULL,
                                        NULL,
                                        NULL,

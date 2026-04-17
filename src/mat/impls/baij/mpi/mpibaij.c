@@ -1668,7 +1668,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
 
   PetscFunctionBegin;
   PetscCall(PetscMPIIntCast(A->rmap->n, &n));
-  /* Create SF where leaves are input rows and roots are owned rows */
+  /* create PetscSF where leaves are input rows and roots are owned rows */
   PetscCall(PetscMalloc1(n, &lrows));
   for (r = 0; r < n; ++r) lrows[r] = -1;
   PetscCall(PetscMalloc1(N, &rrows));
@@ -1683,11 +1683,11 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   }
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &sf));
   PetscCall(PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER));
-  /* Collect flags for rows to be zeroed */
+  /* collect flags for rows to be zeroed */
   PetscCall(PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *)rows, lrows, MPI_LOR));
   PetscCall(PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *)rows, lrows, MPI_LOR));
   PetscCall(PetscSFDestroy(&sf));
-  /* Compress and put in row numbers */
+  /* compress and put in row numbers */
   for (r = 0; r < n; ++r)
     if (lrows[r] >= 0) lrows[len++] = r;
   /* zero diagonal part of matrix */
@@ -1718,7 +1718,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
       aa += bs;
     }
   }
-  /* loop over all elements of off process part of matrix zeroing removed columns*/
+  /* loop over all elements of off process part of matrix zeroing removed columns */
   for (i = 0; i < l->B->rmap->N; ++i) {
     row = i / bs;
     for (j = baij->i[row]; j < baij->i[row + 1]; ++j) {
