@@ -5258,15 +5258,11 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
   if (rowemb) {
     PetscCall(ISGetLocalSize(rowemb, &m));
     PetscCheck(m == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row IS of size %" PetscInt_FMT " is incompatible with matrix row size %" PetscInt_FMT, m, B->rmap->n);
-  } else {
-    PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is row-incompatible with the target matrix");
-  }
+  } else PetscCheck(C->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is row-incompatible with the target matrix");
   if (colemb) {
     PetscCall(ISGetLocalSize(colemb, &n));
     PetscCheck(n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diag col IS of size %" PetscInt_FMT " is incompatible with input matrix col size %" PetscInt_FMT, n, B->cmap->n);
-  } else {
-    PetscCheck(C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is col-incompatible with the target matrix");
-  }
+  } else PetscCheck(C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is col-incompatible with the target matrix");
 
   Baij = (Mat_SeqAIJ *)B->data;
   if (pattern == DIFFERENT_NONZERO_PATTERN) {
