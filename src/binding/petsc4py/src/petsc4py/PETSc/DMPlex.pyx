@@ -1471,22 +1471,28 @@ cdef class DMPlex(DM):
         CHKERR(DMGetLabel(self.dm, cval, &clbl))
         CHKERR(DMPlexMarkBoundaryFaces(self.dm, ival, clbl))
 
-    def labelComplete(self, DMLabel label) -> None:
-        """Add the transitive closure to the surface.
+    def labelComplete(self, DMLabel label, useCone: bool = True) -> None:
+        """Add the transitive closure or the star of each point in the label.
 
         Not collective.
 
         Parameters
         ----------
         label
-            A `DMLabel` marking the surface points.
+            A `DMLabel` marking the points.
+        useCone
+            `True` for the closure, otherwise return the star.
 
         See Also
         --------
         DM, DMPlex, DMPlex.labelCohesiveComplete, petsc.DMPlexLabelComplete
+        petsc.DMPlexLabelCompleteStar
 
         """
-        CHKERR(DMPlexLabelComplete(self.dm, label.dmlabel))
+        if useCone:
+            CHKERR(DMPlexLabelComplete(self.dm, label.dmlabel))
+        else:
+            CHKERR(DMPlexLabelCompleteStar(self.dm, label.dmlabel))
 
     def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, bdvalue: int,
                               flip: bool, split: bool, DMPlex subdm) -> None:

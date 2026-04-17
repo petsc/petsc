@@ -96,6 +96,7 @@
 
 - Add `DMPlexSetClosurePermutationLexicographic()`
 - Add `DMPlexDrawCell()`
+- Add `DMPlexLabelCompleteStar()`
 
 ## FE/FV
 
