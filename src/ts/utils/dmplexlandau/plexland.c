@@ -1662,14 +1662,16 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], con
                 if (nr == 1) rows[0] = Idxs[f];
                 else {
                   const PetscInt idx = -Idxs[f] - 1;
-                  for (PetscInt q = 0; q < nr; q++) rows[q] = maps[grid].c_maps[idx][q].gid;
+                  for (PetscInt q = 0, ri = 0; q < maps[grid].num_face; q++)
+                    if (maps[grid].c_maps[idx][q].gid >= 0) rows[ri++] = maps[grid].c_maps[idx][q].gid;
                 }
                 for (PetscInt g = 0; g < Nb; ++g) {
                   const PetscInt nc = coo_elem_point_offsets[glb_elem_idx][g + 1] - coo_elem_point_offsets[glb_elem_idx][g];
                   if (nc == 1) cols[0] = Idxs[g];
                   else {
                     const PetscInt idx = -Idxs[g] - 1;
-                    for (PetscInt q = 0; q < nc; q++) cols[q] = maps[grid].c_maps[idx][q].gid;
+                    for (PetscInt q = 0, ci = 0; q < maps[grid].num_face; q++)
+                      if (maps[grid].c_maps[idx][q].gid >= 0) cols[ci++] = maps[grid].c_maps[idx][q].gid;
                   }
                   const PetscInt idx0 = b_id * coo_elem_offsets[ncellsTot] + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
                   for (PetscInt q = 0, idx = idx0; q < nr; q++) {

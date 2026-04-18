@@ -353,9 +353,11 @@ PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij,
       row_scale[0] = 1.;
     } else {
       idx = -idx - 1;
-      for (q = 0, nr = 0; q < d_maps->num_face; q++, nr++) {
-        if (d_maps->c_maps[idx][q].gid < 0) break;
-        row_scale[q] = d_maps->c_maps[idx][q].scale;
+      for (q = 0, nr = 0; q < d_maps->num_face; q++) {
+        if (d_maps->c_maps[idx][q].gid >= 0) { // skip gid<0; do not break -- they may be non-contiguous in 3D AMR
+          row_scale[nr] = d_maps->c_maps[idx][q].scale;
+          nr++;
+        }
       }
     }
     idx = Idxs[g];
@@ -364,10 +366,11 @@ PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij,
       col_scale[0] = 1.;
     } else {
       idx = -idx - 1;
-      nc  = d_maps->num_face;
-      for (q = 0, nc = 0; q < d_maps->num_face; q++, nc++) {
-        if (d_maps->c_maps[idx][q].gid < 0) break;
-        col_scale[q] = d_maps->c_maps[idx][q].scale;
+      for (q = 0, nc = 0; q < d_maps->num_face; q++) {
+        if (d_maps->c_maps[idx][q].gid >= 0) { // skip gid<0; do not break -- they may be non-contiguous in 3D AMR
+          col_scale[nc] = d_maps->c_maps[idx][q].scale;
+          nc++;
+        }
       }
     }
     const int idx0 = bid_coo_sz_batch + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
@@ -446,7 +449,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
 
   PetscFunctionBegin;
   while (vector_size & (vector_size - 1)) vector_size = vector_size & (vector_size - 1);
-  if (vector_size > 16) vector_size = 16; // printf("DEBUG\n");
+  if (vector_size > 16) vector_size = 16;
   PetscCall(PetscLogEventBegin(events[3], 0, 0, 0, 0));
   PetscCall(DMGetApplicationContext(plex[0], &ctx));
   PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
@@ -579,6 +582,12 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
 
     PetscCall(PetscDeviceGetDefault_Internal(&device));
     PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
+    // Clamp against the Kokkos execution-space level-0 scratch limit (e.g. 32KB on Serial/CPU).
+    // PetscDeviceGetAttribute may return a stale default (64000) that exceeds the actual limit.
+    {
+      const size_t kokkos_l0_max = (size_t)Kokkos::TeamPolicy<>::scratch_size_max(0);
+      if (kokkos_l0_max < maximum_shared_mem_size) maximum_shared_mem_size = kokkos_l0_max;
+    }
     size_t    jac_scr_bytes    = (size_t)2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     // device function/lambda
