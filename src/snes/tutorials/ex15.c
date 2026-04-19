@@ -11,7 +11,7 @@ The command line options include:\n\
 \n";
 
 /*F
-    The $p$-Bratu problem is a combination of the $p$-Laplacian (nonlinear diffusion) and the Brutu solid fuel ignition problem.
+    The $p$-Bratu problem is a combination of the $p$-Laplacian (nonlinear diffusion) and the Bratu solid fuel ignition problem.
     This problem is modeled by the partial differential equation
 
 \begin{equation*}
@@ -800,8 +800,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
       }
     }
     /*
-x     Restore vector
-     */
+      Restore vector
+    */
   }
   PetscCall(DMDAVecRestoreArray(da, localX, &x));
   PetscCall(DMLocalToGlobalBegin(da, localX, INSERT_VALUES, X));
