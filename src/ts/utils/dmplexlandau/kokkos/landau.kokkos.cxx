@@ -340,7 +340,7 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
   #define KOKKOS_SHARED_LEVEL 0   // 0 is shared, 1 is global
 
 KOKKOS_INLINE_FUNCTION
-PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij, const PetscInt f, const PetscInt g, const PetscInt Nb, PetscInt moffset, const PetscInt elem, const PetscInt fieldA, const P4estVertexMaps *d_maps, const LandauIdx coo_elem_offsets[], const LandauIdx coo_elem_fullNb[], const LandauIdx (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1], const PetscInt glb_elem_idx, const PetscInt bid_coo_sz_batch)
+PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij, const PetscInt f, const PetscInt g, const PetscInt Nb, PetscInt moffset, const PetscInt elem, const PetscInt fieldA, const P4estVertexMaps *d_maps, const LandauIdx coo_elem_offsets[], const LandauIdx coo_elem_fullNb[], const LandauIdx (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1], const PetscInt glb_elem_idx, const PetscCount bid_coo_sz_batch)
 {
   PetscInt               idx, q, nr, nc;
   const LandauIdx *const Idxs                         = &d_maps->gIdx[elem][fieldA][0];
@@ -373,9 +373,10 @@ PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij,
         }
       }
     }
-    const int idx0 = bid_coo_sz_batch + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
-    for (int q = 0, idx2 = idx0; q < nr; q++) {
-      for (int d = 0; d < nc; d++, idx2++) coo_vals[idx2] = row_scale[q] * col_scale[d] * Aij;
+    const PetscCount idx0 = bid_coo_sz_batch + coo_elem_offsets[glb_elem_idx] + fieldA * fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
+    for (int q = 0; q < nr; q++) {
+      PetscCount idx2 = idx0 + q * nc;
+      for (int d = 0; d < nc; d++) coo_vals[idx2 + d] = row_scale[q] * col_scale[d] * Aij;
     }
   }
   return PETSC_SUCCESS;
@@ -395,7 +396,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   P4estVertexMaps *maps[LANDAU_MAX_GRIDS]; // this gets captured
   PetscContainer   container;
   const int        conc = Kokkos::DefaultExecutionSpace().concurrency(), openmp = !!(conc < 1000), team_size = (openmp == 0) ? Nq : 1;
-  const PetscInt   coo_sz_batch = SData_d->coo_size / batch_sz;                                                 // capture
+  const PetscCount coo_sz_batch = SData_d->coo_size / batch_sz;                                                 // capture
   auto             d_alpha_k    = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->alpha); //static data
   const PetscReal *d_alpha      = d_alpha_k->data();
   const PetscInt   Nftot        = d_alpha_k->size(); // total number of species
@@ -582,12 +583,6 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
 
     PetscCall(PetscDeviceGetDefault_Internal(&device));
     PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
-    // Clamp against the Kokkos execution-space level-0 scratch limit (e.g. 32KB on Serial/CPU).
-    // PetscDeviceGetAttribute may return a stale default (64000) that exceeds the actual limit.
-    {
-      const size_t kokkos_l0_max = (size_t)Kokkos::TeamPolicy<>::scratch_size_max(0);
-      if (kokkos_l0_max < maximum_shared_mem_size) maximum_shared_mem_size = kokkos_l0_max;
-    }
     size_t    jac_scr_bytes    = (size_t)2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     // device function/lambda
