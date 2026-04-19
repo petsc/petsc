@@ -113,6 +113,10 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
   PetscFunctionBegin;
   PetscCall(PetscFree(mat->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConstantDiagonalGetConstant_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_constantdiagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_diagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_diagonal_constantdiagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_anytype_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -346,6 +350,257 @@ static PetscErrorCode MatConstantDiagonalGetConstant_ConstantDiagonal(Mat mat, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* PtAP for constantdiagonal * constantdiagonal: C = alpha * beta^2 * I */
+static PetscErrorCode MatProductNumeric_PtAP_ConstDiag_ConstDiag(Mat C)
+{
+  Mat                   A = C->product->A, P = C->product->B;
+  Mat_ConstantDiagonal *a = (Mat_ConstantDiagonal *)A->data, *p = (Mat_ConstantDiagonal *)P->data, *c = (Mat_ConstantDiagonal *)C->data;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  c->diag = a->diag * p->diag * p->diag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_PtAP_ConstDiag_ConstDiag(Mat C)
+{
+  Mat P = C->product->B;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(MatSetSizes(C, P->cmap->n, P->cmap->n, P->cmap->N, P->cmap->N));
+  PetscCall(MatSetType(C, MATCONSTANTDIAGONAL));
+  C->assembled           = PETSC_TRUE;
+  C->ops->productnumeric = MatProductNumeric_PtAP_ConstDiag_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* PtAP for constantdiagonal A and diagonal P: C_i = alpha * p_i^2 */
+static PetscErrorCode MatProductNumeric_PtAP_ConstDiag_Diagonal(Mat C)
+{
+  Mat                   A = C->product->A, P = C->product->B;
+  Mat_ConstantDiagonal *a = (Mat_ConstantDiagonal *)A->data;
+  Vec                   pdiag, cdiag;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCall(MatDiagonalGetDiagonal(P, &pdiag));
+  PetscCall(MatDiagonalGetDiagonal(C, &cdiag));
+  PetscCall(VecPointwiseMult(cdiag, pdiag, pdiag));
+  PetscCall(VecScale(cdiag, a->diag));
+  PetscCall(MatDiagonalRestoreDiagonal(C, &cdiag));
+  PetscCall(MatDiagonalRestoreDiagonal(P, &pdiag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_PtAP_ConstDiag_Diagonal(Mat C)
+{
+  Mat P = C->product->B;
+  Vec pdiag, cdiag;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(MatSetSizes(C, P->cmap->n, P->cmap->n, P->cmap->N, P->cmap->N));
+  PetscCall(MatSetType(C, MATDIAGONAL));
+  PetscCall(MatDiagonalGetDiagonal(P, &pdiag));
+  PetscCall(VecDuplicate(pdiag, &cdiag));
+  PetscCall(MatDiagonalSetDiagonal(C, cdiag));
+  PetscCall(VecDestroy(&cdiag));
+  PetscCall(MatDiagonalRestoreDiagonal(P, &pdiag));
+  C->assembled           = PETSC_TRUE;
+  C->ops->productnumeric = MatProductNumeric_PtAP_ConstDiag_Diagonal;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* PtAP for diagonal A and constantdiagonal P: C_i = beta^2 * a_i */
+static PetscErrorCode MatProductNumeric_PtAP_Diagonal_ConstDiag(Mat C)
+{
+  Mat                   A = C->product->A, P = C->product->B;
+  Mat_ConstantDiagonal *p = (Mat_ConstantDiagonal *)P->data;
+  Vec                   adiag, cdiag;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCall(MatDiagonalGetDiagonal(A, &adiag));
+  PetscCall(MatDiagonalGetDiagonal(C, &cdiag));
+  PetscCall(VecCopy(adiag, cdiag));
+  PetscCall(VecScale(cdiag, p->diag * p->diag));
+  PetscCall(MatDiagonalRestoreDiagonal(C, &cdiag));
+  PetscCall(MatDiagonalRestoreDiagonal(A, &adiag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_PtAP_Diagonal_ConstDiag(Mat C)
+{
+  Mat A = C->product->A, P = C->product->B;
+  Vec adiag, cdiag;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(MatSetSizes(C, P->cmap->n, P->cmap->n, P->cmap->N, P->cmap->N));
+  PetscCall(MatSetType(C, MATDIAGONAL));
+  /* Duplicate A's diagonal Vec so C inherits the correct VecType (e.g., Kokkos, CUDA, HIP) */
+  PetscCall(MatDiagonalGetDiagonal(A, &adiag));
+  PetscCall(VecDuplicate(adiag, &cdiag));
+  PetscCall(MatDiagonalSetDiagonal(C, cdiag));
+  PetscCall(VecDestroy(&cdiag));
+  PetscCall(MatDiagonalRestoreDiagonal(A, &adiag));
+  C->assembled           = PETSC_TRUE;
+  C->ops->productnumeric = MatProductNumeric_PtAP_Diagonal_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* PtAP for any (non-diagonal) A and constantdiagonal P: C = beta^2 * A */
+static PetscErrorCode MatProductNumeric_PtAP_Anytype_ConstDiag(Mat C)
+{
+  Mat                   A = C->product->A, P = C->product->B;
+  Mat_ConstantDiagonal *p = (Mat_ConstantDiagonal *)P->data;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCall(MatCopy(A, C, SAME_NONZERO_PATTERN));
+  PetscCall(MatScale(C, p->diag * p->diag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_PtAP_Anytype_ConstDiag(Mat C)
+{
+  Mat          A       = C->product->A;
+  Mat_Product *product = C->product;
+  Mat          Cwork;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &Cwork));
+  C->product = NULL;
+  PetscCall(MatHeaderReplace(C, &Cwork));
+  C->product             = product;
+  C->ops->productnumeric = MatProductNumeric_PtAP_Anytype_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* PtAP for constantdiagonal A and any non-diagonal P: C = alpha * P^T * P */
+typedef struct {
+  Mat              PtP;       /* P^T * P result via MatProduct AtB */
+  PetscObjectState pnnzstate; /* P's nonzero state when inner symbolic was last built */
+} MatProductCtx_PtAP_ConstDiag_Anytype;
+
+static PetscErrorCode MatProductCtxDestroy_PtAP_ConstDiag_Anytype(PetscCtxRt data)
+{
+  MatProductCtx_PtAP_ConstDiag_Anytype *ctx = *(MatProductCtx_PtAP_ConstDiag_Anytype **)data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDestroy(&ctx->PtP));
+  PetscCall(PetscFree(ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductNumeric_PtAP_ConstDiag_Anytype(Mat C)
+{
+  Mat_Product                          *product = C->product;
+  Mat                                   A = product->A, P = product->B;
+  MatProductCtx_PtAP_ConstDiag_Anytype *ctx = (MatProductCtx_PtAP_ConstDiag_Anytype *)product->data;
+  Mat_ConstantDiagonal                 *a   = (Mat_ConstantDiagonal *)A->data;
+  PetscObjectState                      pnnzstate;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  /* Rebuild inner symbolic if P's nonzero structure has changed */
+  PetscCall(MatGetNonzeroState(P, &pnnzstate));
+  if (pnnzstate != ctx->pnnzstate) {
+    PetscCall(MatDestroy(&ctx->PtP));
+    PetscCall(MatProductCreate(P, P, NULL, &ctx->PtP));
+    PetscCall(MatProductSetType(ctx->PtP, MATPRODUCT_AtB));
+    PetscCall(MatProductSetFill(ctx->PtP, product->fill));
+    PetscCall(MatProductSetFromOptions(ctx->PtP));
+    PetscCall(MatProductSymbolic(ctx->PtP));
+    ctx->pnnzstate = pnnzstate;
+  }
+  /* Compute P^T * P */
+  PetscCall(MatProductNumeric(ctx->PtP));
+  PetscCall(MatCopy(ctx->PtP, C, SAME_NONZERO_PATTERN));
+  PetscCall(MatScale(C, a->diag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_PtAP_ConstDiag_Anytype(Mat C)
+{
+  Mat_Product                          *product = C->product;
+  Mat                                   P       = product->B;
+  MatProductCtx_PtAP_ConstDiag_Anytype *ctx;
+  Mat                                   Cwork;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(PetscNew(&ctx));
+
+  /* PtP = P^T * P (symbolic) */
+  PetscCall(MatProductCreate(P, P, NULL, &ctx->PtP));
+  PetscCall(MatProductSetType(ctx->PtP, MATPRODUCT_AtB));
+  PetscCall(MatProductSetFill(ctx->PtP, product->fill));
+  PetscCall(MatProductSetFromOptions(ctx->PtP));
+  PetscCall(MatProductSymbolic(ctx->PtP));
+
+  /* Record P's nonzero state so numeric phase can detect structural changes */
+  PetscCall(MatGetNonzeroState(P, &ctx->pnnzstate));
+
+  /* Set up C with the same structure as PtP */
+  PetscCall(MatDuplicate(ctx->PtP, MAT_DO_NOT_COPY_VALUES, &Cwork));
+  C->product = NULL;
+  PetscCall(MatHeaderReplace(C, &Cwork));
+  C->product             = product;
+  C->assembled           = PETSC_TRUE;
+  product->data          = ctx;
+  product->destroy       = MatProductCtxDestroy_PtAP_ConstDiag_Anytype;
+  C->ops->productnumeric = MatProductNumeric_PtAP_ConstDiag_Anytype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_ConstDiag_ConstDiag(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_PtAP) C->ops->productsymbolic = MatProductSymbolic_PtAP_ConstDiag_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_ConstDiag_Diagonal(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_PtAP) C->ops->productsymbolic = MatProductSymbolic_PtAP_ConstDiag_Diagonal;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_Diagonal_ConstDiag(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_PtAP) C->ops->productsymbolic = MatProductSymbolic_PtAP_Diagonal_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_ConstDiag_Anytype(Mat C)
+{
+  Mat_Product *product = C->product;
+  PetscBool    Acdiag, Bcdiag;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)product->A, MATCONSTANTDIAGONAL, &Acdiag));
+  PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATCONSTANTDIAGONAL, &Bcdiag));
+  if (Acdiag && !Bcdiag && (product->type == MATPRODUCT_PtAP)) C->ops->productsymbolic = MatProductSymbolic_PtAP_ConstDiag_Anytype;
+  else if (Bcdiag && !Acdiag && (product->type == MATPRODUCT_PtAP)) C->ops->productsymbolic = MatProductSymbolic_PtAP_Anytype_ConstDiag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATCONSTANTDIAGONAL - "constant-diagonal" - A diagonal matrix type with a uniform value
    along the diagonal.
@@ -400,6 +655,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATCONSTANTDIAGONAL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConstantDiagonalGetConstant_C", MatConstantDiagonalGetConstant_ConstantDiagonal));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_constantdiagonal_C", MatProductSetFromOptions_ConstDiag_ConstDiag));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_diagonal_C", MatProductSetFromOptions_ConstDiag_Diagonal));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_diagonal_constantdiagonal_C", MatProductSetFromOptions_Diagonal_ConstDiag));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_ConstDiag_Anytype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
