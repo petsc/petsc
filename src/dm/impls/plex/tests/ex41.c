@@ -48,16 +48,14 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ConstructRefineTree(DM dm)
+static PetscErrorCode ConstructRefineTree(DM dm, DM odm)
 {
   DMPlexTransform tr;
-  DM              odm;
   PetscInt        cStart, cEnd;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetTransform(dm, &tr));
   if (!tr) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(DMPlexTransformGetDM(tr, &odm));
   PetscCall(DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd));
   for (PetscInt c = cStart; c < cEnd; ++c) {
     DMPolytopeType  ct;
@@ -95,9 +93,9 @@ int main(int argc, char **argv)
   PetscCall(DMAdaptLabel(dm, adaptLabel, &dma));
   PetscCall(PetscObjectSetName((PetscObject)dma, "Adapted Mesh"));
   PetscCall(DMLabelDestroy(&adaptLabel));
-  PetscCall(DMDestroy(&dm));
   PetscCall(DMViewFromOptions(dma, NULL, "-adapt_dm_view"));
-  PetscCall(ConstructRefineTree(dma));
+  PetscCall(ConstructRefineTree(dma, dm));
+  PetscCall(DMDestroy(&dm));
   PetscCall(DMDestroy(&dma));
   PetscCall(PetscFree(ctx.refcell));
   PetscCall(PetscFinalize());

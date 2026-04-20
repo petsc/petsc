@@ -10,7 +10,11 @@
 [3]New Orientation 1 cells (depth 1) and 2 faces
 [3]BT for serial flipped cells:
 0 0
-[1]: component 0, Found representative leaf 0 (face 3) connecting to face 1 on (3, 0) with orientation -1
+[1]: Boundary face 1 component 0 orientation -1
+[1]: Boundary face 3 component 0 orientation 1
+[1]: component 0, Found representative leaf 0 (face 3) connecting to face 1 on (3, 0) with orientation 1
+[3]: Boundary face 1 component 0 orientation 1
+[3]: Boundary face 3 component 0 orientation -1
 Proc 0 Comp 0:
 Proc 1 Comp 0:
   edge (3, 0) (FALSE):

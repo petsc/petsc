@@ -255,6 +255,7 @@ typedef struct {
   PetscInt  printL2;
   PetscInt  printLocate;
   PetscInt  printProject;
+  PetscInt  printCohesive;
   PetscReal printTol;
 } DM_Plex;
 

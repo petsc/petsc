@@ -22,6 +22,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
+  if (name == obj->name) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(obj->name));
   PetscCall(PetscStrallocpy(name, &obj->name));
   PetscFunctionReturn(PETSC_SUCCESS);

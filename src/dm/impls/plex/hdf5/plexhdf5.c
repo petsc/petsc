@@ -1579,11 +1579,15 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
     if (viewLabels) PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbers, viewer));
   }
   if (view_rank) {
-    Vec v;
+    Vec      v;
+    PetscInt cellHeight;
 
-    PetscCall(DMPlexCreateRankField(dm, &v));
-    PetscCall(VecView(v, viewer));
-    PetscCall(VecDestroy(&v));
+    PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+    if (!cellHeight) {
+      PetscCall(DMPlexCreateRankField(dm, &v));
+      PetscCall(VecView(v, viewer));
+      PetscCall(VecDestroy(&v));
+    }
   }
   PetscCall(ISDestroy(&globalPointNumbers));
   PetscFunctionReturn(PETSC_SUCCESS);

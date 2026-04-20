@@ -999,7 +999,7 @@ int main(int argc, char **argv)
   testset:
     requires: triangle
     args: -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
-            -dm_plex_transform_active fault \
+            -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
 
     test:
@@ -1023,6 +1023,7 @@ int main(int argc, char **argv)
     args: -dm_plex_simplex 0 -dm_plex_box_faces 2,1 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 13 \
+            -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
 
     test:
@@ -1040,7 +1041,7 @@ int main(int argc, char **argv)
     nsize: 4
     args: -test_num 1 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
-            -dm_plex_transform_active fault \
+            -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
           -orientation_view -orientation_view_synchronized
 
@@ -1049,6 +1050,7 @@ int main(int argc, char **argv)
     args: -dm_plex_simplex 0 -dm_plex_box_faces 3,2 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 22,23 \
+            -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
 
   test:
@@ -1060,6 +1062,7 @@ int main(int argc, char **argv)
             -f0_dm_plex_transform_active fault0  -f0_coarse_dm_view ::ascii_info_detail \
           -f1_dm_refine 1 -f1_dm_plex_transform_type cohesive_extrude \
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
+          -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
 
   test:
@@ -1071,6 +1074,7 @@ int main(int argc, char **argv)
             -f0_dm_plex_transform_active fault0  -f0_coarse_dm_view ::ascii_info_detail \
           -f1_dm_refine 1 -f1_dm_plex_transform_type cohesive_extrude \
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
+          -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
 
   test:
@@ -1084,12 +1088,14 @@ int main(int argc, char **argv)
           -f1_dm_refine 1 -f1_dm_plex_transform_type cohesive_extrude \
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
             -f1_dm_plex_transform_cohesive_width 0.05 \
+          -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
 
   testset:
     args: -dm_plex_dim 3 -dm_plex_shape doublet \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 7 \
+            -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
 
     test:
@@ -1103,6 +1109,7 @@ int main(int argc, char **argv)
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,1,1 -dm_plex_box_upper 2,1,1 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 15 \
+            -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
 
     test:
@@ -1117,7 +1124,7 @@ int main(int argc, char **argv)
     nsize: 4
     args: -test_num 2 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
-            -dm_plex_transform_active fault \
+            -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
           -orientation_view -orientation_view_synchronized
 
@@ -1130,6 +1137,7 @@ int main(int argc, char **argv)
             -f0_dm_plex_transform_active fault0  -f0_coarse_dm_view ::ascii_info_detail \
           -f1_dm_refine 1 -f1_dm_plex_transform_type cohesive_extrude \
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
+          -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
 
   test:
@@ -1141,6 +1149,7 @@ int main(int argc, char **argv)
             -f0_dm_plex_transform_active fault0  -f0_coarse_dm_view ::ascii_info_detail \
           -f1_dm_refine 1 -f1_dm_plex_transform_type cohesive_extrude \
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
+          -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
 
 TEST*/

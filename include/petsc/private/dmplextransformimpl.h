@@ -22,6 +22,7 @@ struct _p_DMPlexTransformOps {
   PetscErrorCode (*ordersupports)(DMPlexTransform, DM, DM);
   PetscErrorCode (*getsubcellorientation)(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
   PetscErrorCode (*mapcoordinates)(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*check)(DMPlexTransform, DM);
 };
 
 struct _p_DMPlexTransform {

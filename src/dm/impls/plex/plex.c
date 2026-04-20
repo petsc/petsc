@@ -9692,30 +9692,33 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   PetscMPIInt    rank;
   DMPolytopeType ct;
   PetscInt       dim, cStart, cEnd, c;
-  PetscBool      simplex;
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(ranks, 2);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMClone(dm, &rdm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)rdm, "PETSc___rank_"));
   PetscCall(DMGetDimension(rdm, &dim));
   PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "PETSc___rank_", -1, &fe));
+  if (cEnd > cStart) PetscCall(DMPlexGetCellType(rdm, cStart, &ct));
+  else ct = DM_POLYTOPE_SEGMENT;
+  PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, 1, ct, 0, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "rank"));
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(rdm));
+  PetscCall(DMViewFromOptions(rdm, NULL, "-dm_view"));
   PetscCall(DMCreateGlobalVector(rdm, ranks));
   PetscCall(PetscObjectSetName((PetscObject)*ranks, "partition"));
   PetscCall(VecGetArray(*ranks, &r));
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *lr;
+  if (r) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscScalar *lr;
 
-    PetscCall(DMPlexPointGlobalRef(rdm, c, r, &lr));
-    if (lr) *lr = rank;
+      PetscCall(DMPlexPointGlobalRef(rdm, c, r, &lr));
+      if (lr) *lr = rank;
+    }
   }
   PetscCall(VecRestoreArray(*ranks, &r));
   PetscCall(DMDestroy(&rdm));
@@ -10192,6 +10195,8 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (pointSF) PetscValidHeaderSpecific(pointSF, PETSCSF_CLASSID, 2);
   else pointSF = dm->sf;
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_plex_point_sf_view"));
+  PetscCall(PetscSFViewFromOptions(pointSF, NULL, "-dm_plex_point_sf_view"));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCheck(pointSF, comm, PETSC_ERR_ARG_WRONGSTATE, "DMPlex must have Point SF attached");
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -10255,6 +10260,49 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
       }
     }
   }
+
+  // Depths of leaves should match depths of root
+  //   Does not work for geometrically non-conforming meshes
+  if (!((DM_Plex *)dm->data)->parentSection) {
+    PetscInt   *starts, *gstarts, *depths;
+    PetscInt    depth;
+    PetscMPIInt size;
+    PetscBool   skip = PETSC_FALSE;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCall(DMPlexGetDepth(dm, &depth));
+    PetscCall(PetscMalloc3(depth + 2, &starts, size * (depth + 2), &gstarts, depth + 2, &depths));
+    depths[0] = depth;
+    depths[1] = 0;
+    for (PetscInt d = 2; d <= depth; ++d) depths[d] = depth + 1 - d;
+    depths[depth + 1] = depth + 1;
+    for (PetscInt d = 0; d <= depth; ++d) {
+      PetscCall(DMPlexGetDepthStratum(dm, d, &starts[d], NULL));
+    }
+    // This is necessary because some strata might be missing
+    PetscCall(DMPlexGetChart(dm, NULL, &starts[depth + 1]));
+    PetscCallMPI(MPI_Allgather(starts, (int)(depth + 2), MPIU_INT, gstarts, (int)(depth + 2), MPIU_INT, comm));
+    // Check is invalid with empty strata
+    for (PetscInt p = 0; p < size * (depth + 2); ++p)
+      if (gstarts[p] < 0) skip = PETSC_TRUE;
+    for (l = skip ? nleaves : 0; l < nleaves; ++l) {
+      const PetscInt point  = locals ? locals[l] : l;
+      const PetscInt rpoint = remotes[l].index;
+      const PetscInt rrank  = remotes[l].rank;
+      PetscInt       pdepth, rdepth = -1;
+
+      PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
+      for (PetscInt d = 0; d <= depth; ++d) {
+        if (gstarts[rrank * (depth + 2) + depths[d]] <= rpoint && rpoint < gstarts[rrank * (depth + 2) + depths[d + 1]]) {
+          rdepth = depths[d];
+          break;
+        }
+      }
+      PetscCheck(rdepth != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " (%" PetscInt_FMT ") was not found on remote rank %" PetscInt_FMT, point, rpoint, rrank);
+      PetscCheck(pdepth == rdepth, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " has depth %" PetscInt_FMT " but remote (%" PetscInt_FMT ", %" PetscInt_FMT ") depth is %" PetscInt_FMT, point, pdepth, rpoint, rrank, rdepth);
+    }
+    PetscCall(PetscFree3(starts, gstarts, depths));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -10295,7 +10343,36 @@ PetscErrorCode DMPlexCheckOrphanVertices(DM dm)
 }
 
 /*@
+  DMPlexCheckTransform - If the mesh was produced by a transform, run the transform verification check on it
+
+  Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Level: developer
+
+  Notes:
+  This is mainly intended for debugging/testing purposes.
+
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCheck()`, `DMSetFromOptions()`
+@*/
+PetscErrorCode DMPlexCheckTransform(DM dm)
+{
+  DMPlexTransform tr;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetTransform(dm, &tr));
+  if (tr) PetscCall(DMPlexTransformCheck(tr, dm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMPlexCheck - Perform various checks of `DMPLEX` sanity
+
+  Collective
 
   Input Parameter:
 . dm - The `DMPLEX` object
@@ -10324,6 +10401,7 @@ PetscErrorCode DMPlexCheck(DM dm)
   PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
   PetscCall(DMPlexCheckInterfaceCones(dm));
   PetscCall(DMPlexCheckOrphanVertices(dm));
+  PetscCall(DMPlexCheckTransform(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -10361,6 +10439,12 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *d
   Level: developer
 
   Notes:
+  The condition number $\kappa_c$ of a cell $c$ is given by
+  ```{math}
+  \kappa_c = \left\lVert J_c \right\rVert \left\lVert J^{-1}_c \right\rVert
+  ```
+  where $J_c$ is the Jacobian of the mapping from the reference cell to cell $c$.
+
   This is mainly intended for debugging/testing purposes.
 
   For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
@@ -10387,6 +10471,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(PetscMalloc2(PetscSqr(cdim), &J, PetscSqr(cdim), &invJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));

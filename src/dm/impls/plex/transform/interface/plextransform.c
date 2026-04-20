@@ -714,8 +714,10 @@ PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscCall(PetscObjectReference((PetscObject)dm));
+  if (dm) {
+    PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+    PetscCall(PetscObjectReference((PetscObject)dm));
+  }
   PetscCall(DMDestroy(&tr->dm));
   tr->dm = dm;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -978,6 +980,24 @@ PetscErrorCode DMPlexTransformSetMatchStrata(DMPlexTransform tr, PetscBool match
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   tr->labelMatchStrata = match;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformCheck - Verify that the given `DM`, produced by this `DMPlexTransform`, is valid
+
+  Input Parameters:
++ tr - The `DMPlexTransform` object
+- dm - The `DM` to check
+
+  Level: advanced
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
+PetscErrorCode DMPlexTransformCheck(DMPlexTransform tr, DM dm)
+{
+  PetscFunctionBegin;
+  PetscTryTypeMethod(tr, check, dm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2126,6 +2146,15 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   }
   PetscCall(PetscSFSetGraph(sfNew, pEndNew - pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_CreateSF, tr, dm, 0, 0));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt overlap;
+
+    // Need to set overlap because some transforms put cells in the overlap
+    PetscCall(DMPlexGetOverlap(rdm, &overlap));
+    PetscCall(DMPlexSetOverlap(rdm, NULL, 1));
+    PetscCall(DMPlexCheckPointSF(rdm, sfNew, PETSC_FALSE));
+    PetscCall(DMPlexSetOverlap(rdm, NULL, overlap));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
