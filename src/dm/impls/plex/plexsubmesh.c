@@ -453,7 +453,8 @@ PetscErrorCode DMPlexCheckLabel(DM dm, MPI_Op reduceop, DMLabel label)
 @*/
 PetscErrorCode DMPlexReconcileLabel(DM dm, MPI_Op reduceop, PetscInt newValue, DMLabel label)
 {
-  const PetscInt     debug = ((DM_Plex *)dm->data)->printCohesive;
+  const PetscInt     debug  = ((DM_Plex *)dm->data)->printCohesive;
+  const PetscInt     shift3 = 300;
   PetscSF            sf;
   IS                 valueIS;
   const PetscInt    *leaves, *values, *degree;
@@ -467,6 +468,9 @@ PetscErrorCode DMPlexReconcileLabel(DM dm, MPI_Op reduceop, PetscInt newValue, D
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &leaves, &remotes));
   if (Nr < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMViewFromOptions(dm, NULL, "-reconcile_view"));
+  PetscCall(PetscSFViewFromOptions(sf, NULL, "-reconcile_view"));
+  PetscCall(DMLabelViewFromOptions(label, NULL, "-reconcile_view"));
   PetscCall(DMLabelGetValueIS(label, &valueIS));
   PetscCall(ISGetLocalSize(valueIS, &Nv));
   PetscCall(ISGetIndices(valueIS, &values));
@@ -518,7 +522,8 @@ PetscErrorCode DMPlexReconcileLabel(DM dm, MPI_Op reduceop, PetscInt newValue, D
           PetscInt val;
 
           PetscCall(DMLabelGetValue(label, point, &val));
-          if (val != rvalues[point]) {
+          // Do not discard or push ghost designation
+          if (val != rvalues[point] && val < shift3 && rvalues[point] < shift3) {
             PetscCall(DMLabelClearValue(label, point, val));
             PetscCall(DMLabelSetValue(label, point, rvalues[point]));
           }
@@ -549,7 +554,8 @@ PetscErrorCode DMPlexReconcileLabel(DM dm, MPI_Op reduceop, PetscInt newValue, D
     PetscInt       val;
 
     PetscCall(DMLabelGetValue(label, point, &val));
-    if (val != lvalues[point]) {
+    // Do not discard or push ghost designation
+    if (val != lvalues[point] && val < shift3 && lvalues[point] < shift3) {
       PetscCall(DMLabelClearValue(label, point, val));
       PetscCall(DMLabelSetValue(label, point, lvalues[point]));
     }
@@ -2470,6 +2476,22 @@ static void MPIAPI DMPlexLabelCohesiveValueReduce_Private(void *a, void *b, int 
         continue;
       }
       if (B[i] == A[i] + 200) continue;
+      // Ignore ghost designation
+      if (B[i] >= 300) {
+        const PetscInt a = A[i] - 300;
+        const PetscInt b = B[i] < 0 ? (B[i] < -100 ? -B[i] - 100 : -B[i]) : (B[i] >= 200 ? B[i] - 200 : (B[i] > 100 ? B[i] - 100 : B[i]));
+
+        if (a == b) {
+          B[i] = A[i];
+          continue;
+        }
+      }
+      if (A[i] >= 300) {
+        const PetscInt a = A[i] - 300;
+        const PetscInt b = B[i] < 0 ? (B[i] < -100 ? -B[i] - 100 : -B[i]) : (B[i] >= 200 ? B[i] - 200 : (B[i] > 100 ? B[i] - 100 : B[i]));
+
+        if (a == b) continue;
+      }
       // Process can disagree about the surface side on the boundary
       if (A[i] == -B[i]) continue;
       // Error
