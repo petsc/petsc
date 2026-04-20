@@ -1584,7 +1584,7 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
   PetscCall(DMViewFromOptions(rdm, NULL, "-rdm_view"));
   PetscCall(DMPlexSymmetrize(rdm));
   PetscCall(DMPlexStratify(rdm));
-  PetscTryTypeMethod(tr, ordersupports, dm, rdm);
+  PetscCall(DMPlexTransformOrderSupports(tr, dm, rdm));
   PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_SetCones, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1824,6 +1824,30 @@ PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeT
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformOrderSupports - Reorder newly introduced point supports
+
+  Collective
+
+  Input Parameters:
++ tr   - The `DMPlexTransform`
+. dm   - The original `DM`
+- trdm - The transformed `DM` which is reordered
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformApply()`
+@*/
+PetscErrorCode DMPlexTransformOrderSupports(DMPlexTransform tr, DM dm, DM trdm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(trdm, DM_CLASSID, 3);
+  PetscTryTypeMethod(tr, ordersupports, dm, trdm);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* Computes new vertex as the barycenter, or centroid */
 PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
@@ -2039,7 +2063,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (l = 0; l < numLeaves; ++l) {
-    const PetscInt  p = localPoints[l];
+    const PetscInt  p = localPoints ? localPoints[l] : l;
     DMPolytopeType  ct;
     DMPolytopeType *rct;
     PetscInt       *rsize, *rcone, *rornt;
@@ -2097,7 +2121,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   PetscCall(PetscMalloc1(numLeavesNew, &localPointsNew));
   PetscCall(PetscMalloc1(numLeavesNew, &remotePointsNew));
   for (l = 0, m = 0; l < numLeaves; ++l) {
-    const PetscInt  p = localPoints[l];
+    const PetscInt  p = localPoints ? localPoints[l] : l;
     DMPolytopeType  ct;
     DMPolytopeType *rct;
     PetscInt       *rsize, *rcone, *rornt;

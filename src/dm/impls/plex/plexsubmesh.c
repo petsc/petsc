@@ -4184,13 +4184,13 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       PetscCall(PetscSFComputeDegreeBegin(sfPoint, &rootdegree));
       PetscCall(PetscSFComputeDegreeEnd(sfPoint, &rootdegree));
       PetscCall(PetscMalloc2(pEnd - pStart, &newLocalPoints, numRoots, &newOwners));
-      for (p = 0; p < pEnd - pStart; ++p) {
+      for (PetscInt p = 0; p < pEnd - pStart; ++p) {
         newLocalPoints[p].rank  = -2;
         newLocalPoints[p].index = -2;
       }
-      for (p = pStart; p < pEnd; ++p) {
-        newOwners[p - pStart].rank  = -3;
-        newOwners[p - pStart].index = -3;
+      for (PetscInt r = 0; r < numRoots; ++r) {
+        newOwners[r].rank  = -3;
+        newOwners[r].index = -3;
       }
       if (sanitizeSubmesh) {
         /* A subpoint is forced to be owned by a rank that owns */
@@ -4233,8 +4233,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         }
       } else {
         /* Set subleaves */
-        for (l = 0; l < numLeaves; ++l) {
-          const PetscInt point    = localPoints[l];
+        for (PetscInt l = 0; l < numLeaves; ++l) {
+          const PetscInt point    = localPoints ? localPoints[l] : l;
           const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
 
           if (subpoint < 0) continue;
@@ -4320,7 +4320,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         PetscCall(PetscMalloc1(numSubleaves, &slocalPoints));
         PetscCall(PetscMalloc1(numSubleaves, &sremotePoints));
         for (l = 0; l < numLeaves; ++l) {
-          const PetscInt point    = localPoints[l];
+          const PetscInt point    = localPoints ? localPoints[l] : l;
           const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
 
           if (subpoint < 0) continue;
