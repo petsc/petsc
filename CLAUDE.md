@@ -59,6 +59,7 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Do not leave commented-out code or dead `#ifdef` blocks in source files.
 - Use `/* ... */` for multiline comments and `// ...` for short single-line comments.
 - Do not decorate multiline comments with leading `*` on each line.
+- Always append `()` to function names when mentioning them in comments, for example `MatAssemblyEnd_MPIAIJ()`.
 - Use correct grammar and spelling in comments and messages.
 - Follow C90-style declarations at the start of a block, except loop indices declared in `for (...)` initializers and small-scope declarations inside nested blocks when appropriate.
 

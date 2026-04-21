@@ -111,13 +111,13 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
   A->ops[0]      = a->cops;
   A->hash_active = PETSC_FALSE;
 
-  /* a->B must be in CSR before MatSetUpMultiply_MPIAIJ runs inside MatAssemblyEnd_MPIAIJ.
-     a->A is assembled by MatAssemblyEnd_MPIAIJ itself and does not need a separate call here. */
+  /* a->B must be in CSR before MatSetUpMultiply_MPIAIJ() runs inside MatAssemblyEnd_MPIAIJ().
+     a->A is assembled by MatAssemblyEnd_MPIAIJ() itself and does not need a separate call here. */
   PetscCall(MatAssemblyBegin(a->B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(a->B, MAT_FINAL_ASSEMBLY));
-  /* Off-process entries were already scattered in MatAssemblyBegin_MPI_Hash.
-     Suppress the stash scatter in MatAssemblyBegin_MPIAIJ to avoid a second
-     PetscCommBuildTwoSidedFReq call on an empty stash. */
+  /* Off-process entries were already scattered in MatAssemblyBegin_MPI_Hash().
+     Suppress the stash scatter in MatAssemblyBegin_MPIAIJ() to avoid a second
+     PetscCommBuildTwoSidedFReq() call on an empty stash. */
   A->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
