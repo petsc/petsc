@@ -485,6 +485,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCGNSGetSolutionIndex(PetscViewer, PetscIn
 PETSC_EXTERN PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer, PetscReal *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerCGNSGetSolutionIteration(PetscViewer, PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerCGNSGetSolutionName(PetscViewer, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscViewerCGNSGetDescriptors(PetscViewer, PetscInt *, char ***, char ***);
+PETSC_EXTERN PetscErrorCode PetscViewerCGNSRestoreDescriptors(PetscViewer, PetscInt *, char ***, char ***);
+PETSC_EXTERN PetscErrorCode PetscViewerCGNSSetDescriptor(PetscViewer, const char[], const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariableIndex(PetscViewer, const char[], PetscExodusIIInt *);

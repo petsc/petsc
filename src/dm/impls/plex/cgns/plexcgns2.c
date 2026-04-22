@@ -513,7 +513,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
     PetscCallMPI(MPI_Bcast(&coordDim, 1, MPI_INT, 0, comm));
     PetscCallMPI(MPI_Bcast(&nzones, 1, MPI_INT, 0, comm));
 
-    PetscCheck(ncells + nverts < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Mesh chart size too large for PetscInt type, reconfigure with --with-64-bit-indices");
+    PetscCheck(ncells + nverts < PETSC_INT_MAX, comm, PETSC_ERR_INT_OVERFLOW, "Mesh chart size too large for PetscInt type, reconfigure with --with-64-bit-indices");
     numCells    = (PetscInt)ncells;
     numVertices = (PetscInt)nverts;
   }

@@ -22,6 +22,7 @@
 
 ## PetscViewer
 
+- Add support for writing CGNS descriptors on the base node: `PetscViewerCGNSGetDescriptors()`, `PetscViewerCGNSRestoreDescriptors()`, `PetscViewerCGNSSetDescriptor()`
 
 ## PetscDraw
 

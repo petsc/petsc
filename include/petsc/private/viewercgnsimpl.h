@@ -28,6 +28,11 @@ typedef struct {
   int      solution_file_index;         // CGNS file solution index for direct access
   int      solution_file_pointer_index; // CGNS file solution index for FlowSolutionPointers (and other related arrays), index by 1
   char    *solution_name;
+
+  // Descriptor information
+  PetscInt num_descriptors, descriptor_capacity;
+  char   **descriptor_names;
+  char   **descriptor_values;
 } PetscViewer_CGNS;
 
 #define PetscCallCGNS(ierr) \
