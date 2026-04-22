@@ -60,7 +60,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
     PetscCall(PetscSegBufferExtractInPlace(cgv->output_times, &times));
     PetscCall(PetscSegBufferExtractInPlace(cgv->output_steps, &steps));
     num_times = size;
-    PetscCallCGNSWrite(cg_biter_write(cgv->file_num, cgv->base, "TimeIterValues", num_times), viewer, 0);
+    PetscCallCGNSWrite(cg_biter_write(cgv->file_num, cgv->base, "TimeIterValues", (int)num_times), viewer, 0);
     PetscCallCGNS(cg_goto(cgv->file_num, cgv->base, "BaseIterativeData_t", 1, NULL));
     PetscCallCGNSWrite(cg_array_write("TimeValues", CGNS_ENUMV(RealDouble), 1, &num_times, times), viewer, 0);
     { // Cast output_steps to long for writing into file
@@ -424,10 +424,10 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
       PetscCheck(cgv->solution_index == -1 || cgv->solution_index <= size[1], comm, PETSC_ERR_ARG_OUTOFRANGE, "CGNS Solution index (%" PetscInt_FMT ") not in range of FlowSolutionPointers [1, %" PRIdCGSIZE "]", cgv->solution_index, size[1]);
       PetscCall(PetscCalloc1(size[0] * size[1] + 1, &pointer_names)); // Need the +1 for (possibly) setting \0 for the last pointer name if it's full
       PetscCallCGNSRead(cg_array_read_as(1, CGNS_ENUMV(Character), pointer_names), viewer, 0);
-      cgv->solution_file_pointer_index = cgv->solution_index == -1 ? size[1] : cgv->solution_index;
+      cgv->solution_file_pointer_index = cgv->solution_index == -1 ? (int)size[1] : cgv->solution_index;
       pointer_id_name_ref              = &pointer_names[size[0] * (cgv->solution_file_pointer_index - 1)];
       { // Set last non-whitespace character of the pointer name to \0 (CGNS pads with spaces)
-        int str_idx;
+        cgsize_t str_idx;
         for (str_idx = size[0] - 1; str_idx > 0; str_idx--) {
           if (!isspace((unsigned char)pointer_id_name_ref[str_idx])) break;
         }
