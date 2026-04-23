@@ -1997,7 +1997,7 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 
   Before calling this routine you must have called either PetscLogDefaultBegin() or PetscLogNestedBegin()
 
-  If PETSc is configured with --with-logging=0 then this functionality is not available
+  If PETSc is configured with --with-log=0 then this functionality is not available
 
   To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current
   directory then open filename.xml with your browser. Specific notes for certain browsers
