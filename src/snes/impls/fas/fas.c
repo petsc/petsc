@@ -242,6 +242,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems PetscOp
     PetscCall(PetscOptionsBool("-snes_fas_log", "Log times for each FAS level", "SNESFASSetLog", monflg, &monflg, &flg));
     if (flg) PetscCall(SNESFASSetLog(snes, monflg));
   }
+  PetscCall(PetscOptionsBool("-snes_fas_monitor_correction", "View the tau correction at each iteration", "SNESFASCoarseCorrection", fas->monitorCorrection, &fas->monitorCorrection, &flg));
 
   PetscOptionsHeadEnd();
 
@@ -543,9 +544,11 @@ fine problem:   F(x) = b
 coarse problem: F^c(x^c) = b^c
 
 b^c = F^c(Rx) - R(F(x) - b)
+    = tau + R b
  */
 static PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 {
+  PetscBool           monitorCorrection = ((SNES_FAS *)snes->data)->monitorCorrection;
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;
   SNES                next;
@@ -569,21 +572,38 @@ static PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new
     PetscCall(SNESFASRestrict(snes, X, Xo_c));
     /* restrict the defect: R(F(x) - b) */
     PetscCall(MatRestrict(restrct, F, B_c));
+    if (monitorCorrection) {
+      PetscReal fnorm, rnorm;
+
+      PetscCall(VecNorm(F, NORM_2, &fnorm));
+      PetscCall(VecNorm(B_c, NORM_2, &rnorm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "||F(X)|| %g\n||R (F(X) - b)|| %g\n", (double)fnorm, (double)rnorm));
+    }
     if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict, snes, 0, 0, 0));
 
     if (fasc->eventresidual) PetscCall(PetscLogEventBegin(fasc->eventresidual, next, 0, 0, 0));
     /* F_c = F^c(Rx) - R(F(x) - b) since the second term was sitting in next->vec_rhs */
     PetscCall(SNESComputeFunction(next, Xo_c, F_c));
+    if (monitorCorrection) {
+      PetscReal xnorm, fnorm;
+
+      PetscCall(VecNorm(Xo_c, NORM_2, &xnorm));
+      PetscCall(VecNorm(F_c, NORM_2, &fnorm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "||R(X)|| %g\n||tau + Rb = F_c (R X) - R(F(X) - b)|| %g\n", (double)xnorm, (double)fnorm));
+      PetscCall(PetscObjectSetName((PetscObject)F_c, "tau"));
+      PetscCall(VecViewFromOptions(F_c, (PetscObject)next, "-tau_view"));
+    }
     if (fasc->eventresidual) PetscCall(PetscLogEventEnd(fasc->eventresidual, next, 0, 0, 0));
 
     /* solve the coarse problem corresponding to F^c(x^c) = b^c = F^c(Rx) - R(F(x) - b) */
-    PetscCall(VecCopy(B_c, X_c));
-    PetscCall(VecCopy(F_c, B_c));
-    PetscCall(VecCopy(X_c, F_c));
+    PetscCall(VecCopy(B_c, X_c)); // Now x^c holds R(F(x) - b)
+    PetscCall(VecCopy(F_c, B_c)); // Now b^c holds F^c(Rx) - R(F(x) - b)
+    PetscCall(VecCopy(X_c, F_c)); // Now F^c holds R(F(x) - b)
     /* set initial guess of the coarse problem to the projected fine solution */
     PetscCall(VecCopy(Xo_c, X_c));
 
     /* recurse to the next level */
+    // So x^c_0 = R x and F^c_0 = F^c(x^c_0) - b^c = F^c(x^c_0) - (F^c(x^c_0) - R(F(x) - b)) = R(F(x) - b)
     PetscCall(SNESSetInitialFunction(next, F_c));
     PetscCall(SNESSolve(next, B_c, X_c));
     PetscCall(SNESGetConvergedReason(next, &reason));
@@ -597,6 +617,17 @@ static PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new
     if (fasc->eventinterprestrict) PetscCall(PetscLogEventBegin(fasc->eventinterprestrict, snes, 0, 0, 0));
     PetscCall(MatInterpolateAdd(interpolate, X_c, X, X_new));
     if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict, snes, 0, 0, 0));
+    if (monitorCorrection) {
+      PetscReal xnorm, xonorm, inorm;
+
+      PetscCall(VecNorm(X_c, NORM_2, &xnorm));
+      PetscCall(VecNorm(X, NORM_2, &xonorm));
+      PetscCall(VecNorm(X_new, NORM_2, &inorm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "||X_c - Xo_c|| %g\n||X|| %g\n||X + I (X_c - X_co)|| %g\n", (double)xnorm, (double)xonorm, (double)inorm));
+    }
+    // TODO Check for snes->b, Technically we should strip out R b here if it is nonzero
+    PetscCall(PetscObjectSetName((PetscObject)B_c, "Tau correction"));
+    PetscCall(VecViewFromOptions(B_c, NULL, "-fas_tau_correction_view"));
     PetscCall(PetscObjectSetName((PetscObject)X_c, "Coarse correction"));
     PetscCall(VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view"));
     PetscCall(PetscObjectSetName((PetscObject)X_new, "Updated Fine solution"));
@@ -695,6 +726,8 @@ fine problem: F(x) = b
 coarse problem: F^c(x) = b^c
 
 b^c = F^c(Rx) - R(F(x) - b)
+    = F^c(Rx) - R(F(x)) + R b
+    = tau + R b
 
 correction:
 
@@ -847,7 +880,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
 
   /* test convergence */
-  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, snes->iter, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 

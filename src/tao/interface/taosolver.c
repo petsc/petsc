@@ -1,5 +1,6 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 #include <petsc/private/snesimpl.h>
+#include <petscdmshell.h>
 
 PetscBool         TaoRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoList              = NULL;
@@ -280,6 +281,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   PetscCall(TaoTermMappingReset(&(*tao)->objective_term));
   PetscCall(VecDestroy(&(*tao)->objective_parameters));
   PetscCall(TaoTermDestroy(&(*tao)->callbacks));
+  PetscCall(DMDestroy(&(*tao)->dm));
   PetscCall(KSPDestroy(&(*tao)->ksp));
   PetscCall(SNESDestroy(&(*tao)->snes_ewdummy));
   PetscCall(TaoLineSearchDestroy(&(*tao)->linesearch));
@@ -3171,5 +3173,67 @@ PetscErrorCode TaoAddTerm(Tao tao, const char prefix[], PetscReal scale, TaoTerm
     for (PetscInt i = 0; i < num_terms; i++) PetscCall(VecDestroy(&vec_list[i]));
     PetscCall(PetscFree(vec_list));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TaoSetDM - Sets the `DM` that may be used by some `TAO` solvers or their underlying solvers and preconditioners
+
+  Logically Collective
+
+  Input Parameters:
++ tao - the nonlinear solver context
+- dm  - the `DM`, cannot be `NULL`
+
+  Level: intermediate
+
+  Note:
+  A `DM` can only be used for solving one problem at a time because information about the problem is stored on the `DM`,
+  even when not using interfaces like `DMSNESSetFunction()`.  Use `DMClone()` to get a distinct `DM` when solving different
+  problems using the same function space.
+
+.seealso: [](ch_snes), `DM`, `TAO`, `TaoGetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
+@*/
+PetscErrorCode TaoSetDM(Tao tao, DM dm)
+{
+  KSP ksp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)dm));
+  PetscCall(DMDestroy(&tao->dm));
+  tao->dm = dm;
+
+  PetscCall(TaoGetKSP(tao, &ksp));
+  if (ksp) {
+    PetscCall(KSPSetDM(ksp, dm));
+    PetscCall(KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TaoGetDM - Gets the `DM` that may be used by some `TAO` solvers or their underlying solvers and preconditioners
+
+  Not Collective but `dm` obtained is parallel on `tao`
+
+  Input Parameter:
+. tao - the `TAO` context
+
+  Output Parameter:
+. dm - the `DM`
+
+  Level: intermediate
+
+.seealso: [](ch_snes), `DM`, `TAO`, `TaoSetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
+@*/
+PetscErrorCode TaoGetDM(Tao tao, DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscAssertPointer(dm, 2);
+  if (!tao->dm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)tao), &tao->dm));
+  *dm = tao->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

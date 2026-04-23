@@ -71,6 +71,7 @@
 
 ## TAO
 
+- Add `TaoGetDM()` and `TaoSetDM()`
 
 ## TaoTerm
 

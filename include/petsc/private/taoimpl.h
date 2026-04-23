@@ -107,6 +107,7 @@ struct _p_Tao {
   PetscBool setupcalled;
   void     *data;
 
+  DM         dm; // DM used to create linear algebra objects
   Vec        solution;
   Vec        gradient;
   Vec        stepdirection;

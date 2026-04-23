@@ -22,6 +22,8 @@ typedef struct {
   Mat  restrct;     /* restriction operator */
   Vec  rscale;      /* the pointwise scaling of the restriction operator */
 
+  PetscBool monitorCorrection; // Monitor the coarse correction step
+
   /* method parameters */
   PetscInt    n_cycles;               /* number of cycles on this level */
   SNESFASType fastype;                /* FAS type */
