@@ -2922,7 +2922,7 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
       mumps->id.irn = mumps->irn;
       mumps->id.jcn = mumps->jcn;
       if (1 < mumps->id.ICNTL(6) && mumps->id.ICNTL(6) < 7) PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, mumps->nnz, mumps->val, mumps->id.precision, &mumps->id.a_len, &mumps->id.a));
-      if (r && mumps->id.ICNTL(7) == 7) {
+      if (r && mumps->id.ICNTL(7) == 7 && !F->schur) {
         mumps->id.ICNTL(7) = 1;
         if (!mumps->myid) {
           const PetscInt *idx;
