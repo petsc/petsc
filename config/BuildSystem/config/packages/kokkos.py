@@ -149,7 +149,7 @@ class Configure(config.package.CMakePackage):
                       'AMPERE':   ['80', '86'],
                       'ADA':      ['89'],
                       'HOPPER':   ['90'],
-                      'BLACKWELL':['100', '120']}
+                      'BLACKWELL':['100', '103', '120']}
         gen = self.cuda.cudaArchSingle() # cudaArchSingle() returns a number, such as '75' or '120'
         foundName = None
         for name, gens in nameToGens.items():
