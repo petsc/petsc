@@ -250,8 +250,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j]; // CUDA-12.6 nvcc compiler hangs if we put this line before the V_batch loop
       }
     });
   Kokkos::fence();
@@ -310,8 +310,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
       }
     });
   Kokkos::fence();
@@ -370,8 +370,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
       }
     });
   Kokkos::fence();
