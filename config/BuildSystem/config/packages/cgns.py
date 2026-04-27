@@ -5,8 +5,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version    = '4.5.1'
-    self.gitcommit  = 'v' + self.version
+    #self.version    = '4.5.1'
+    #self.gitcommit  = 'v' + self.version
+    self.gitcommit  = '30011c57e446d009ea41f2662535eb6dfb6eecb7' # v4.5.1+
     self.download   = ['git://https://github.com/cgns/cgns', 'https://github.com/cgns/cgns/archive/{}.tar.gz'.format(self.gitcommit)]
     self.functions  = ['cgp_close']
     self.includes   = ['cgnslib.h']
