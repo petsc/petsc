@@ -655,10 +655,10 @@ Anderson Mixing (`SNESANDERSON`) methods combine the last $m$ iterates, plus a n
 fixed-point iteration iterate, into an approximate residual-minimizing new iterate.
 
 All of the above methods have support for using a nonlinear preconditioner to compute the preliminary update step, rather than the default
-which is the nonlinear function's residual, \$ mathbf\{F}(mathbf\{x}\_k)\$. The different update is obtained by solving a nonlinear preconditioner nonlinear problem, which has its own
+which is the nonlinear function's residual, $\mathbf{F}(\mathbf{x}_k)$. The different update is obtained by solving a nonlinear preconditioner nonlinear problem, which has its own
 `SNES` object that may be obtained with `SNESGetNPC()`.
-Quasi-Newton Methods
-^^^^^^^^^^^^^^^^^^^^
+
+### Quasi-Newton Methods
 
 Quasi-Newton methods store iterative rank-one updates to the Jacobian
 instead of computing the Jacobian directly. Three limited-memory quasi-Newton
@@ -687,7 +687,7 @@ The quasi-Newton methods support the use of a nonlinear preconditioner that can 
    * - “Good” Broyden
      - ``SNES_QN_BROYDEN``
      - ``broyden``
-     - ``SNESLINESEARCHBASIC`` (or equivalently ``SNESLINESEARCHNONE``
+     - ``SNESLINESEARCHBASIC`` (or equivalently ``SNESLINESEARCHNONE``)
    * - “Bad” Broyden
      - ``SNES_QN_BADBROYDEN``
      - ``badbroyden``
