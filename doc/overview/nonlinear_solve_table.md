@@ -20,6 +20,9 @@ on the algorithms.
    * - Newton's method with trust region
      - ``SNESNEWTONTR``
      -
+   * - Newton with Arc Length Continuation
+     - ``SNESNEWTONAL``
+     -
    * - Single linearization
      - ``SNESKSPONLY``
      - Essentially one step of Newtwon without a line search
@@ -52,6 +55,9 @@ on the algorithms.
      -
    * - Composite (combine several nonlinear solvers)
      - ``SNESCOMPOSITE``
+     -
+   * - Multi-stage smoothers
+     - ``SNESMS``
      -
    * - Preconditioned nonlinear solver
      - ---

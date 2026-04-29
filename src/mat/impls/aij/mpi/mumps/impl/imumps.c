@@ -2525,8 +2525,7 @@ static PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, PETSC_UNUSED const Ma
   }
 
   if (mumps->id.ICNTL(22)) PetscCall(PetscStrncpy(mumps->id.ooc_prefix, ((PetscObject)F)->prefix, sizeof(((MUMPS_STRUC_C *)NULL)->ooc_prefix)));
-
-  PetscMUMPS_c(mumps);
+  if (A->rmap->N && A->cmap->N) PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) {
     PetscCheck(!A->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in numerical factorization: INFOG(1)=%d, INFO(2)=%d " MUMPS_MANUALS, mumps->id.INFOG(1), mumps->id.INFO(2));
     if (mumps->id.INFOG(1) == -10) {
@@ -2923,7 +2922,7 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
       mumps->id.irn = mumps->irn;
       mumps->id.jcn = mumps->jcn;
       if (1 < mumps->id.ICNTL(6) && mumps->id.ICNTL(6) < 7) PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, mumps->nnz, mumps->val, mumps->id.precision, &mumps->id.a_len, &mumps->id.a));
-      if (r && mumps->id.ICNTL(7) == 7) {
+      if (r && mumps->id.ICNTL(7) == 7 && !F->schur) {
         mumps->id.ICNTL(7) = 1;
         if (!mumps->myid) {
           const PetscInt *idx;
@@ -2949,9 +2948,10 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
     }
     break;
   }
-  PetscMUMPS_c(mumps);
-  PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
-
+  if (A->rmap->N && A->cmap->N) {
+    PetscMUMPS_c(mumps);
+    PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
+  }
   F->ops->lufactornumeric   = MatFactorNumeric_MUMPS;
   F->ops->solve             = MatSolve_MUMPS;
   F->ops->solvetranspose    = MatSolveTranspose_MUMPS;
@@ -3006,9 +3006,10 @@ static PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F, Mat A, PETSC_UNUSED I
     }
     break;
   }
-  PetscMUMPS_c(mumps);
-  PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
-
+  if (A->rmap->N && A->cmap->N) {
+    PetscMUMPS_c(mumps);
+    PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
+  }
   F->ops->lufactornumeric   = MatFactorNumeric_MUMPS;
   F->ops->solve             = MatSolve_MUMPS;
   F->ops->solvetranspose    = MatSolveTranspose_MUMPS;
@@ -3061,9 +3062,10 @@ static PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F, Mat A, PETSC_UNUSED
     }
     break;
   }
-  PetscMUMPS_c(mumps);
-  PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
-
+  if (A->rmap->N && A->cmap->N) {
+    PetscMUMPS_c(mumps);
+    PetscCall(MatFactorSymbolic_MUMPS_ReportIfError(F, A, info, mumps));
+  }
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;
   F->ops->solvetranspose        = MatSolve_MUMPS;

@@ -3732,7 +3732,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
+  if (v && *v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVec_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3795,7 +3795,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
+  if (v && *v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecRead_C", (Mat, PetscInt, Vec *), (A, col, v));
@@ -3856,7 +3856,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveInt(A, col, 2);
-  if (v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
+  if (v && *v) PetscValidHeaderSpecific(*v, VEC_CLASSID, 3);
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecWrite_C", (Mat, PetscInt, Vec *), (A, col, v));
