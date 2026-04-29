@@ -108,14 +108,14 @@ static const PetscReal HexQInterp_Lobatto[8][8] = {
   {0, 0, 0, L, 0, 0, 0, H}
 };
 static const PetscReal HexQDeriv_Lobatto[8][8][3] = {
-  {{M * H, M *H, M}, {P * H, 0, 0},    {0, 0, 0},        {0, P *H, 0},     {M * L, M *L, P}, {P * L, 0, 0},    {0, 0, 0},        {0, P *L, 0}    },
-  {{M * H, 0, 0},    {P * H, M *H, M}, {0, P *H, 0},     {0, 0, 0},        {M * L, 0, 0},    {P * L, M *L, P}, {0, P *L, 0},     {0, 0, 0}       },
-  {{0, 0, 0},        {0, M *H, 0},     {P * H, P *H, M}, {M * H, 0, 0},    {0, 0, 0},        {0, M *L, 0},     {P * L, P *L, P}, {M * L, 0, 0}   },
-  {{0, M *H, 0},     {0, 0, 0},        {P * H, 0, 0},    {M * H, P *H, M}, {0, M *L, 0},     {0, 0, 0},        {P * L, 0, 0},    {M * L, P *L, P}},
-  {{M * L, M *L, M}, {P * L, 0, 0},    {0, 0, 0},        {0, P *L, 0},     {M * H, M *H, P}, {P * H, 0, 0},    {0, 0, 0},        {0, P *H, 0}    },
-  {{M * L, 0, 0},    {P * L, M *L, M}, {0, P *L, 0},     {0, 0, 0},        {M * H, 0, 0},    {P * H, M *H, P}, {0, P *H, 0},     {0, 0, 0}       },
-  {{0, 0, 0},        {0, M *L, 0},     {P * L, P *L, M}, {M * L, 0, 0},    {0, 0, 0},        {0, M *H, 0},     {P * H, P *H, P}, {M * H, 0, 0}   },
-  {{0, M *L, 0},     {0, 0, 0},        {P * L, 0, 0},    {M * L, P *L, M}, {0, M *H, 0},     {0, 0, 0},        {P * H, 0, 0},    {M * H, P *H, P}}
+  {{M * H, M * H, M}, {P * H, 0, 0},     {0, 0, 0},         {0, P * H, 0},     {M * L, M * L, P}, {P * L, 0, 0},     {0, 0, 0},         {0, P * L, 0}    },
+  {{M * H, 0, 0},     {P * H, M * H, M}, {0, P * H, 0},     {0, 0, 0},         {M * L, 0, 0},     {P * L, M * L, P}, {0, P * L, 0},     {0, 0, 0}        },
+  {{0, 0, 0},         {0, M * H, 0},     {P * H, P * H, M}, {M * H, 0, 0},     {0, 0, 0},         {0, M * L, 0},     {P * L, P * L, P}, {M * L, 0, 0}    },
+  {{0, M * H, 0},     {0, 0, 0},         {P * H, 0, 0},     {M * H, P * H, M}, {0, M * L, 0},     {0, 0, 0},         {P * L, 0, 0},     {M * L, P * L, P}},
+  {{M * L, M * L, M}, {P * L, 0, 0},     {0, 0, 0},         {0, P * L, 0},     {M * H, M * H, P}, {P * H, 0, 0},     {0, 0, 0},         {0, P * H, 0}    },
+  {{M * L, 0, 0},     {P * L, M * L, M}, {0, P * L, 0},     {0, 0, 0},         {M * H, 0, 0},     {P * H, M * H, P}, {0, P * H, 0},     {0, 0, 0}        },
+  {{0, 0, 0},         {0, M * L, 0},     {P * L, P * L, M}, {M * L, 0, 0},     {0, 0, 0},         {0, M * H, 0},     {P * H, P * H, P}, {M * H, 0, 0}    },
+  {{0, M * L, 0},     {0, 0, 0},         {P * L, 0, 0},     {M * L, P * L, M}, {0, M * H, 0},     {0, 0, 0},         {P * H, 0, 0},     {M * H, P * H, P}}
 };
 /* Standard Gauss */
 static const PetscReal HexQInterp_Gauss[8][8] = {
@@ -141,16 +141,16 @@ static const PetscReal HexQDeriv_Gauss[8][8][3] = {
 static const PetscReal (*HexQInterp)[8], (*HexQDeriv)[8][3];
 /* Standard 2x2 Gauss quadrature for the bottom layer. */
 static const PetscReal QuadQInterp[4][4] = {
-  {H * H, L *H, L *L, H *L},
-  {L * H, H *H, H *L, L *L},
-  {L * L, H *L, H *H, L *H},
-  {H * L, L *L, L *H, H *H}
+  {H * H, L * H, L * L, H * L},
+  {L * H, H * H, H * L, L * L},
+  {L * L, H * L, H * H, L * H},
+  {H * L, L * L, L * H, H * H}
 };
 static const PetscReal QuadQDeriv[4][4][2] = {
-  {{M * H, M *H}, {P * H, M *L}, {P * L, P *L}, {M * L, P *H}},
-  {{M * H, M *L}, {P * H, M *H}, {P * L, P *H}, {M * L, P *L}},
-  {{M * L, M *L}, {P * L, M *H}, {P * H, P *H}, {M * H, P *L}},
-  {{M * L, M *H}, {P * L, M *L}, {P * H, P *L}, {M * H, P *H}}
+  {{M * H, M * H}, {P * H, M * L}, {P * L, P * L}, {M * L, P * H}},
+  {{M * H, M * L}, {P * H, M * H}, {P * L, P * H}, {M * L, P * L}},
+  {{M * L, M * L}, {P * L, M * H}, {P * H, P * H}, {M * H, P * L}},
+  {{M * L, M * H}, {P * L, M * L}, {P * H, P * L}, {M * H, P * H}}
 };
 #undef G
 #undef H
