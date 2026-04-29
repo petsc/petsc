@@ -929,8 +929,8 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . -snes_monitor_solution [ascii binary draw][:filename][:viewer format]        - plots solution at each iteration
 . -snes_monitor_residual [ascii binary draw][:filename][:viewer format]        - plots residual (not its norm) at each iteration
 . -snes_monitor_solution_update [ascii binary draw][:filename][:viewer format] - plots update to solution at each iteration
-. -snes_monitor_lg_residualnorm                                                - plots residual norm at each iteration
-. -snes_monitor_lg_range                                                       - plots residual norm at each iteration
+. -snes_monitor draw::draw_lg                                                  - plots residual norm at each iteration
+. -snes_monitor_lg_range                                                       - plots function range at each iteration
 . -snes_monitor_pause_final                                                    - Pauses all monitor drawing after the solver ends
 . -snes_fd                                                                     - use finite differences to compute Jacobian; very slow, only for testing
 . -snes_fd_color                                                               - use finite differences with coloring to compute Jacobian
@@ -4237,7 +4237,7 @@ M*/
 
   Options Database Keys:
 + -snes_monitor               - sets `SNESMonitorDefault()`
-. -snes_monitor draw::draw_lg - sets line graph monitor,
+. -snes_monitor draw::draw_lg - sets line graph monitor
 - -snes_monitor_cancel        - cancels all monitors that have been hardwired into a code by calls to `SNESMonitorSet()`, but does not cancel those set via
                                 the options database.
 
