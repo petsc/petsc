@@ -3,10 +3,12 @@
 
 typedef struct {
   PetscErrorCode (*boundarylocal)(DM, PetscReal, Vec, Vec, void *);
+  PetscErrorCode (*ifunctionpre)(DM, PetscReal, Vec, Vec, void *);
   PetscErrorCode (*ifunctionlocal)(DM, PetscReal, Vec, Vec, Vec, void *);
   PetscErrorCode (*ijacobianlocal)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
   PetscErrorCode (*rhsfunctionlocal)(DM, PetscReal, Vec, Vec, void *);
   void *boundarylocalctx;
+  void *ifunctionprectx;
   void *ifunctionlocalctx;
   void *ijacobianlocalctx;
   void *rhsfunctionlocalctx;
@@ -61,6 +63,7 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscCall(DMGetLocalVector(dm, &locF));
   PetscCall(VecZeroEntries(locX));
   PetscCall(VecZeroEntries(locX_t));
+  if (dmlocalts->ifunctionpre) PetscCall((*dmlocalts->ifunctionpre)(dm, time, X, X_t, dmlocalts->ifunctionprectx));
   if (dmlocalts->boundarylocal) PetscCall((*dmlocalts->boundarylocal)(dm, time, locX, locX_t, dmlocalts->boundarylocalctx));
   PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
@@ -232,6 +235,45 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscRe
 
   dmlocalts->boundarylocal    = func;
   dmlocalts->boundarylocalctx = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMTSSetIFunctionPre - set a pre-evaluation callback for each local implicit function evaluation. The callback function provided is called at the beginning of `TSComputeIFunction()` before the function provided with `TSSetIFunctionLocal()` and `DMTSSetBoundaryLocal()` is called.
+
+  Logically Collective
+
+  Input Parameters:
++ dm   - `DM` to associate callback with
+. func - function evaluation
+- ctx  - context for function evaluation
+
+  Calling sequence of `func`:
++ dm   - the `DM`
+. time - the current time
+. u    - the global solution
+. u_t  - the global time derivative
+- ctx  - the user context
+
+  Level: intermediate
+
+  Notes:
+  `func` should perform any setup required before the local implicit function evaluation provided by `TSSetIFunctionLocal()` can be performed, such as computing auxiliary data via a subsolve. This function is necessary because some setups may require global communication, such as the Poisson solve in the Vlasov-Poisson system, and cannot be embedded in only a local evaluation, yet we want to specify the local callback for the main equations using `TSSetIFunctionLocal()`.
+
+.seealso: [](ch_ts), `DM`, `TS`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+@*/
+PetscErrorCode DMTSSetIFunctionPre(DM dm, PetscErrorCode (*func)(DM dm, PetscReal time, Vec u, Vec u_t, void *ctx), void *ctx)
+{
+  DMTS        tdm;
+  DMTS_Local *dmlocalts;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tdm));
+  PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
+
+  dmlocalts->ifunctionpre    = func;
+  dmlocalts->ifunctionprectx = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

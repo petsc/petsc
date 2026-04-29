@@ -211,11 +211,14 @@ PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &ibinary));
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
   if (isascii) {
+    const char *prefix;
+
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ts, &prefix));
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
     if (step == -1) { /* this indicates it is an interpolated solution */
       PetscCall(PetscViewerASCIIPrintf(viewer, "Interpolated solution at time %g between steps %" PetscInt_FMT " and %" PetscInt_FMT "\n", (double)ptime, ts->steps - 1, ts->steps));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)\n" : "\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS%s%s%s dt %g time %g%s", step, prefix ? " (" : "", prefix ? prefix : "", prefix ? ")" : "", (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)\n" : "\n"));
     }
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
   } else if (ibinary) {

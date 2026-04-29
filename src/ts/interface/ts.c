@@ -859,6 +859,136 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  TSComputeIJacobian_Internal - Evaluates the Jacobian of the DAE
+
+  Collective
+
+  Input Parameters:
++ ts          - the `TS` context
+. ijacobian   - function to compute LHS Jacobian
+. rhsjacobian - function to compute RHS Jacobian
+. ctx         - user context for Jacobian functions
+. t           - current timestep
+. U           - state vector
+. Udot        - time derivative of state vector
+. shift       - shift to apply, see note below
+- imex        - flag indicates if the method is `TSARKIMEX` so that the RHSJacobian should be kept separate
+
+  Output Parameters:
++ A - Jacobian matrix
+- B - matrix from which the preconditioner is constructed; often the same as `A`
+
+  Level: developer
+
+  Notes:
+  This function exists so that a user can assemble the Jacobian pieces with functions not stores in the `DMTS`. This was necessary in `TSDISCGRAD` since two different representations of the formulation can be stored.
+
+  If $ F(t,U,\dot{U})=0 $ is the DAE, the required Jacobian is
+.vb
+   dF/dU + shift*dF/dUdot
+.ve
+
+.seealso: [](ch_ts), `TS`, `TSSetIJacobian()`
+*/
+PetscErrorCode TSComputeIJacobian_Internal(TS ts, TSIJacobianFn *ijacobian, TSRHSJacobianFn *rhsjacobian, void *ctx, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, PetscBool imex)
+{
+  PetscFunctionBegin;
+  PetscCheck(rhsjacobian || ijacobian, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
+
+  PetscCall(PetscLogEventBegin(TS_JacobianEval, U, ts, A, B));
+  if (ijacobian) {
+    PetscCallBack("TS callback implicit Jacobian", (*ijacobian)(ts, t, U, Udot, shift, A, B, ctx));
+    ts->ijacs++;
+  }
+  if (imex) {
+    if (!ijacobian) { /* system was written as Udot = G(t,U) */
+      PetscBool assembled;
+      if (rhsjacobian) {
+        Mat Arhs = NULL;
+        PetscCall(TSGetRHSMats_Private(ts, &Arhs, NULL));
+        if (A == Arhs) {
+          PetscCheck(rhsjacobian != TSComputeRHSJacobianConstant, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Unsupported operation! cannot use TSComputeRHSJacobianConstant"); /* there is no way to reconstruct shift*M-J since J cannot be reevaluated */
+          ts->rhsjacobian.time = PETSC_MIN_REAL;
+        }
+      }
+      PetscCall(MatZeroEntries(A));
+      PetscCall(MatAssembled(A, &assembled));
+      if (!assembled) {
+        PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+        PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+      }
+      PetscCall(MatShift(A, shift));
+      if (A != B) {
+        PetscCall(MatZeroEntries(B));
+        PetscCall(MatAssembled(B, &assembled));
+        if (!assembled) {
+          PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+          PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+        }
+        PetscCall(MatShift(B, shift));
+      }
+    }
+  } else {
+    Mat Arhs = NULL, Brhs = NULL;
+
+    /* RHSJacobian needs to be converted to part of IJacobian if exists */
+    if (rhsjacobian) PetscCall(TSGetRHSMats_Private(ts, &Arhs, &Brhs));
+    if (Arhs == A) { /* No IJacobian matrix, so we only have the RHS matrix */
+      DM               dm;
+      PetscObjectState Ustate;
+      PetscObjectId    Uid;
+      TSRHSFunctionFn *rhsfunction;
+
+      PetscCall(TSGetDM(ts, &dm));
+      PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
+      PetscCall(PetscObjectStateGet((PetscObject)U, &Ustate));
+      PetscCall(PetscObjectGetId((PetscObject)U, &Uid));
+      if ((rhsjacobian == TSComputeRHSJacobianConstant || (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && rhsfunction != TSComputeRHSFunctionLinear)) &&
+          ts->rhsjacobian.scale == -1.) {                      /* No need to recompute RHSJacobian */
+        PetscCall(MatShift(A, shift - ts->rhsjacobian.shift)); /* revert the old shift and add the new shift with a single call to MatShift */
+        if (A != B) PetscCall(MatShift(B, shift - ts->rhsjacobian.shift));
+      } else {
+        PetscBool flg;
+
+        if (ts->rhsjacobian.reuse) { /* Undo the damage */
+          /* MatScale has a short path for this case.
+             However, this code path is taken the first time TSComputeRHSJacobian is called
+             and the matrices have not been assembled yet */
+          PetscCall(TSRecoverRHSJacobian(ts, A, B));
+        }
+        PetscCall(TSComputeRHSJacobian(ts, t, U, A, B));
+        PetscCall(SNESGetUseMatrixFree(ts->snes, NULL, &flg));
+        /* since -snes_mf_operator uses the full SNES function it does not need to be shifted or scaled here */
+        if (!flg) {
+          PetscCall(MatScale(A, -1));
+          PetscCall(MatShift(A, shift));
+        }
+        if (A != B) {
+          PetscCall(MatScale(B, -1));
+          PetscCall(MatShift(B, shift));
+        }
+      }
+      ts->rhsjacobian.scale = -1;
+      ts->rhsjacobian.shift = shift;
+    } else if (Arhs) {  /* Both IJacobian and RHSJacobian */
+      if (!ijacobian) { /* No IJacobian provided, but we have a separate RHS matrix */
+        PetscCall(MatZeroEntries(A));
+        PetscCall(MatShift(A, shift));
+        if (A != B) {
+          PetscCall(MatZeroEntries(B));
+          PetscCall(MatShift(B, shift));
+        }
+      }
+      PetscCall(TSComputeRHSJacobian(ts, t, U, Arhs, Brhs));
+      PetscCall(MatAXPY(A, -1, Arhs, ts->axpy_pattern));
+      if (A != B) PetscCall(MatAXPY(B, -1, Brhs, ts->axpy_pattern));
+    }
+  }
+  PetscCall(PetscLogEventEnd(TS_JacobianEval, U, ts, A, B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   TSComputeIJacobian - Evaluates the Jacobian of the DAE
 
@@ -905,97 +1035,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMTSGetIJacobian(dm, &ijacobian, &ctx));
   PetscCall(DMTSGetRHSJacobian(dm, &rhsjacobian, NULL));
-
-  PetscCheck(rhsjacobian || ijacobian, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
-
-  PetscCall(PetscLogEventBegin(TS_JacobianEval, U, ts, A, B));
-  if (ijacobian) {
-    PetscCallBack("TS callback implicit Jacobian", (*ijacobian)(ts, t, U, Udot, shift, A, B, ctx));
-    ts->ijacs++;
-  }
-  if (imex) {
-    if (!ijacobian) { /* system was written as Udot = G(t,U) */
-      PetscBool assembled;
-      if (rhsjacobian) {
-        Mat Arhs = NULL;
-        PetscCall(TSGetRHSMats_Private(ts, &Arhs, NULL));
-        if (A == Arhs) {
-          PetscCheck(rhsjacobian != TSComputeRHSJacobianConstant, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Unsupported operation! cannot use TSComputeRHSJacobianConstant"); /* there is no way to reconstruct shift*M-J since J cannot be reevaluated */
-          ts->rhsjacobian.time = PETSC_MIN_REAL;
-        }
-      }
-      PetscCall(MatZeroEntries(A));
-      PetscCall(MatAssembled(A, &assembled));
-      if (!assembled) {
-        PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-        PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-      }
-      PetscCall(MatShift(A, shift));
-      if (A != B) {
-        PetscCall(MatZeroEntries(B));
-        PetscCall(MatAssembled(B, &assembled));
-        if (!assembled) {
-          PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-          PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-        }
-        PetscCall(MatShift(B, shift));
-      }
-    }
-  } else {
-    Mat Arhs = NULL, Brhs = NULL;
-
-    /* RHSJacobian needs to be converted to part of IJacobian if exists */
-    if (rhsjacobian) PetscCall(TSGetRHSMats_Private(ts, &Arhs, &Brhs));
-    if (Arhs == A) { /* No IJacobian matrix, so we only have the RHS matrix */
-      PetscObjectState Ustate;
-      PetscObjectId    Uid;
-      TSRHSFunctionFn *rhsfunction;
-
-      PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
-      PetscCall(PetscObjectStateGet((PetscObject)U, &Ustate));
-      PetscCall(PetscObjectGetId((PetscObject)U, &Uid));
-      if ((rhsjacobian == TSComputeRHSJacobianConstant || (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && rhsfunction != TSComputeRHSFunctionLinear)) &&
-          ts->rhsjacobian.scale == -1.) {                      /* No need to recompute RHSJacobian */
-        PetscCall(MatShift(A, shift - ts->rhsjacobian.shift)); /* revert the old shift and add the new shift with a single call to MatShift */
-        if (A != B) PetscCall(MatShift(B, shift - ts->rhsjacobian.shift));
-      } else {
-        PetscBool flg;
-
-        if (ts->rhsjacobian.reuse) { /* Undo the damage */
-          /* MatScale has a short path for this case.
-             However, this code path is taken the first time TSComputeRHSJacobian is called
-             and the matrices have not been assembled yet */
-          PetscCall(TSRecoverRHSJacobian(ts, A, B));
-        }
-        PetscCall(TSComputeRHSJacobian(ts, t, U, A, B));
-        PetscCall(SNESGetUseMatrixFree(ts->snes, NULL, &flg));
-        /* since -snes_mf_operator uses the full SNES function it does not need to be shifted or scaled here */
-        if (!flg) {
-          PetscCall(MatScale(A, -1));
-          PetscCall(MatShift(A, shift));
-        }
-        if (A != B) {
-          PetscCall(MatScale(B, -1));
-          PetscCall(MatShift(B, shift));
-        }
-      }
-      ts->rhsjacobian.scale = -1;
-      ts->rhsjacobian.shift = shift;
-    } else if (Arhs) {  /* Both IJacobian and RHSJacobian */
-      if (!ijacobian) { /* No IJacobian provided, but we have a separate RHS matrix */
-        PetscCall(MatZeroEntries(A));
-        PetscCall(MatShift(A, shift));
-        if (A != B) {
-          PetscCall(MatZeroEntries(B));
-          PetscCall(MatShift(B, shift));
-        }
-      }
-      PetscCall(TSComputeRHSJacobian(ts, t, U, Arhs, Brhs));
-      PetscCall(MatAXPY(A, -1, Arhs, ts->axpy_pattern));
-      if (A != B) PetscCall(MatAXPY(B, -1, Brhs, ts->axpy_pattern));
-    }
-  }
-  PetscCall(PetscLogEventEnd(TS_JacobianEval, U, ts, A, B));
+  PetscCall(TSComputeIJacobian_Internal(ts, ijacobian, rhsjacobian, ctx, t, U, Udot, shift, A, B, imex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
