@@ -5,9 +5,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    #self.version    = '4.5.1'
-    #self.gitcommit  = 'v' + self.version
-    self.gitcommit  = '1d0e493144a058d0966983d69cc39a35c8ba0a27' # Custom version to get *_multi_* interfaces fixes, but with old library version, see discussion in !9120
+    self.version    = '4.5.2'
+    self.gitcommit  = 'v' + self.version
     self.download   = ['git://https://github.com/cgns/cgns', 'https://github.com/cgns/cgns/archive/{}.tar.gz'.format(self.gitcommit)]
     self.functions  = ['cgp_close']
     self.includes   = ['cgnslib.h']
