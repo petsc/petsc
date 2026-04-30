@@ -1,15 +1,15 @@
-Using Gaspari-Cohn localization with radius 20.
+Using boxcar localization with radius 15.
 PetscDA Object: 1 MPI process
   type: letkf
   State size: 1323
   Observation size: 121
-  Ensemble size: 7
+  Ensemble size: 3
   Assembled: true
   Inflation: 1.
   Square root type: eigen
-  Local analysis: CPU
-  Localization type: gaspari_cohn
-  Localization radius: 20.
+  Local analysis: Kokkos
+  Localization type: boxcar
+  Localization radius: 15.
   GPU batch size: auto
 2D Shallow Water LETKF Example
 ==============================
@@ -19,7 +19,7 @@ PetscDA Object: 1 MPI process
   State dimension       : 1323 (441 grid points x 3 DOF)
   Observation dimension : 121
   Observation stride    : 2
-  Ensemble size         : 7
+  Ensemble size         : 3
   Domain size           : 80.00 x 80.00
   Grid spacing          : dx=3.8095, dy=3.8095
   Mean height (h0)      : 1.5000
@@ -37,19 +37,19 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01376
-Step    3, time  0.060  RMSE_forecast 0.01361  RMSE_analysis 0.01361
-Step    4, time  0.080  RMSE_forecast 0.01346  RMSE_analysis 0.01237
-Step    5, time  0.100  RMSE_forecast 0.01224  RMSE_analysis 0.01224
-Step    6, time  0.120  RMSE_forecast 0.01211  RMSE_analysis 0.01177
-Step    7, time  0.140  RMSE_forecast 0.01164  RMSE_analysis 0.01164
-Step    8, time  0.160  RMSE_forecast 0.01151  RMSE_analysis 0.01102
-Step    9, time  0.180  RMSE_forecast 0.01090  RMSE_analysis 0.01090
-Step   10, time  0.200  RMSE_forecast 0.01078  RMSE_analysis 0.00937
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01948
+Step    3, time  0.060  RMSE_forecast 0.01916  RMSE_analysis 0.01916
+Step    4, time  0.080  RMSE_forecast 0.01886  RMSE_analysis 0.01683
+Step    5, time  0.100  RMSE_forecast 0.01650  RMSE_analysis 0.01650
+Step    6, time  0.120  RMSE_forecast 0.01618  RMSE_analysis 0.01881
+Step    7, time  0.140  RMSE_forecast 0.01849  RMSE_analysis 0.01849
+Step    8, time  0.160  RMSE_forecast 0.01818  RMSE_analysis 0.01755
+Step    9, time  0.180  RMSE_forecast 0.01724  RMSE_analysis 0.01724
+Step   10, time  0.200  RMSE_forecast 0.01694  RMSE_analysis 0.01716
 
 Statistics (10 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00963
-  Mean RMSE (analysis) : 0.01067
+  Mean RMSE (forecast) : 0.01415
+  Mean RMSE (analysis) : 0.01612
   Observations used    : 5
 

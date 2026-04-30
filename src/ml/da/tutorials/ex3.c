@@ -391,94 +391,6 @@ static PetscErrorCode CreateObservationMatrix(PetscInt n_vert, PetscInt ndof, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_HAVE_KOKKOS_KERNELS)
-/*
-  GaspariCohnWeight - Gaspari-Cohn fifth-order piecewise rational function.
-  Input: r = distance / radius (normalized distance, support is [0, 2])
-*/
-static PetscReal GaspariCohnWeight(PetscReal r)
-{
-  if (r >= 2.0) return 0.0;
-  if (r <= 0.0) return 1.0;
-  if (r <= 1.0) return (((-0.25 * r + 0.5) * r + 0.625) * r - 5.0 / 3.0) * r * r + 1.0;
-  return ((((r / 12.0 - 0.5) * r + 0.625) * r + 5.0 / 3.0) * r - 5.0) * r + 4.0 - 2.0 / (3.0 * r);
-}
-
-/*
-  CreateRadiusLocalization1D - Build a radius-based localization matrix for a 1D periodic grid
-  with observations at every obs_stride-th vertex.
-
-  Q has dimensions (num_vert x nobs). Each row contains Gaspari-Cohn weights for
-  observations within distance 2*radius. Radius must be positive; use a large radius for effectively no localization.
-  Vertex coordinates are cell-centered: x_i = (i + 0.5) * dx (DMDA finite-volume convention).
-*/
-static PetscErrorCode CreateRadiusLocalization1D(PetscInt num_vert, PetscInt nobs, PetscInt obs_stride, PetscReal domain_length, PetscReal radius, Mat *Q)
-{
-  PetscInt    rstart, rend, cstart, cend, nlocal;
-  PetscInt   *d_nnz, *o_nnz;
-  PetscReal   dx;
-  PetscLayout rmap, cmap;
-
-  PetscFunctionBeginUser;
-  PetscCheck(radius > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
-  dx = domain_length / num_vert;
-
-  /* Determine ownership ranges */
-  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &rmap));
-  PetscCall(PetscLayoutSetSize(rmap, num_vert));
-  PetscCall(PetscLayoutSetUp(rmap));
-  PetscCall(PetscLayoutGetRange(rmap, &rstart, &rend));
-  PetscCall(PetscLayoutDestroy(&rmap));
-  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &cmap));
-  PetscCall(PetscLayoutSetSize(cmap, nobs));
-  PetscCall(PetscLayoutSetUp(cmap));
-  PetscCall(PetscLayoutGetRange(cmap, &cstart, &cend));
-  PetscCall(PetscLayoutDestroy(&cmap));
-  nlocal = rend - rstart;
-
-  /* Pass 1: count nnz per row, split into diagonal and off-diagonal blocks */
-  PetscCall(PetscCalloc1(nlocal, &d_nnz));
-  PetscCall(PetscCalloc1(nlocal, &o_nnz));
-  for (PetscInt row = rstart; row < rend; row++) {
-    PetscReal gx = ((PetscReal)row + 0.5) * dx;
-    for (PetscInt col = 0; col < nobs; col++) {
-      PetscInt  oi   = PetscMin(col * obs_stride, num_vert - 1);
-      PetscReal diff = PetscAbsReal(gx - ((PetscReal)oi + 0.5) * dx);
-      if (diff > 0.5 * domain_length) diff = domain_length - diff;
-      if (diff >= 2.0 * radius) continue;
-      if (col >= cstart && col < cend) d_nnz[row - rstart]++;
-      else o_nnz[row - rstart]++;
-    }
-  }
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, num_vert, nobs, 0, d_nnz, 0, o_nnz, Q));
-  PetscCall(PetscFree(d_nnz));
-  PetscCall(PetscFree(o_nnz));
-  PetscCall(MatSetFromOptions(*Q));
-  PetscCall(MatSetUp(*Q));
-
-  /* Pass 2: fill values */
-  PetscCall(MatGetOwnershipRange(*Q, &rstart, &rend));
-  for (PetscInt row = rstart; row < rend; row++) {
-    PetscReal gx = ((PetscReal)row + 0.5) * dx;
-    for (PetscInt col = 0; col < nobs; col++) {
-      PetscInt  oi    = PetscMin(col * obs_stride, num_vert - 1);
-      PetscReal obs_x = ((PetscReal)oi + 0.5) * dx;
-      PetscReal diff  = PetscAbsReal(gx - obs_x);
-      PetscReal weight;
-
-      if (diff > 0.5 * domain_length) diff = domain_length - diff;
-      if (diff >= 2.0 * radius) continue;
-      weight = GaspariCohnWeight(diff / radius);
-      PetscCall(MatSetValue(*Q, row, col, weight, INSERT_VALUES));
-    }
-  }
-
-  PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif /* !PETSC_HAVE_KOKKOS_KERNELS */
-
 /*
   ValidateParameters - Validate input parameters and apply constraints
 */
@@ -583,7 +495,6 @@ int main(int argc, char **argv)
   Vec              truth_state, rmse_work;
   Vec              observation, obs_noise, obs_error_var;
   PetscRandom      rng;
-  Mat              Q = NULL;            /* Localization matrix */
   Mat              H = NULL, H1 = NULL; /* Observation operator matrix (h at every other grid point) and scalar version */
 
   /* Statistics tracking */
@@ -737,44 +648,35 @@ int main(int argc, char **argv)
   /* Set observation error variance */
   PetscCall(PetscDASetObsErrorVariance(da, obs_error_var));
 
-  /* Create and set localization matrix Q */
+  /* Configure localization for LETKF (Q is built lazily on first analysis). */
   {
     PetscBool isletkf;
     PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
 
     if (isletkf) {
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      {
-        Vec          xyz[3] = {NULL, NULL, NULL};
-        Vec          coord;
-        DM           cda;
-        PetscScalar *x_coord;
-        PetscInt     xs, xm, i;
-        PetscReal    bd[3] = {L, 0, 0};
+      Vec          xyz[3] = {NULL, NULL, NULL};
+      Vec          coord;
+      DM           cda;
+      PetscScalar *x_coord;
+      PetscInt     xs, xm, i;
+      PetscReal    bd[3] = {L, 0, 0};
 
-        PetscCall(DMDASetUniformCoordinates(da_state, 0.0, L, 0.0, 0.0, 0.0, 0.0));
-        PetscCall(DMGetCoordinateDM(da_state, &cda));
-        PetscCall(DMGetCoordinates(da_state, &coord));
-        PetscCall(DMDAGetCorners(cda, &xs, NULL, NULL, &xm, NULL, NULL));
-        PetscCall(DMDAVecGetArray(cda, coord, &x_coord));
-        for (i = xs; i < xs + xm; i++) x_coord[i] = ((PetscReal)i + 0.5) * L / n_vert;
-        PetscCall(DMDAVecRestoreArray(cda, coord, &x_coord));
+      PetscCall(DMDASetUniformCoordinates(da_state, 0.0, L, 0.0, 0.0, 0.0, 0.0));
+      PetscCall(DMGetCoordinateDM(da_state, &cda));
+      PetscCall(DMGetCoordinates(da_state, &coord));
+      PetscCall(DMDAGetCorners(cda, &xs, NULL, NULL, &xm, NULL, NULL));
+      PetscCall(DMDAVecGetArray(cda, coord, &x_coord));
+      for (i = xs; i < xs + xm; i++) x_coord[i] = ((PetscReal)i + 0.5) * L / n_vert;
+      PetscCall(DMDAVecRestoreArray(cda, coord, &x_coord));
 
-        PetscCall(DMCreateGlobalVector(cda, &xyz[0]));
-        PetscCall(VecSetFromOptions(xyz[0]));
-        PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
-        PetscCall(VecCopy(coord, xyz[0]));
+      PetscCall(DMCreateGlobalVector(cda, &xyz[0]));
+      PetscCall(VecSetFromOptions(xyz[0]));
+      PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
+      PetscCall(VecCopy(coord, xyz[0]));
 
-        PetscCall(PetscDALETKFGetLocalizationMatrix(localization_radius, xyz, bd, H1, &Q));
-        PetscCall(VecDestroy(&xyz[0]));
-      }
-#else
-      PetscCall(CreateRadiusLocalization1D(n_vert, nobs, obs_stride, L, localization_radius, &Q));
-#endif
       PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-      PetscCall(PetscDALETKFSetLocalization(da, Q, H));
-      PetscCall(MatViewFromOptions(Q, NULL, "-Q_view"));
-      PetscCall(MatDestroy(&Q));
+      PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H1));
+      PetscCall(VecDestroy(&xyz[0]));
     }
   }
 

@@ -307,16 +307,21 @@ domains by avoiding the global ensemble covariance matrix. LETKF-specific
 configuration:
 
 ```c
-/* Number of observations associated with each grid vertex (default: 9) */
-PetscDALETKFSetObsPerVertex(PetscDA da, PetscInt n_obs_vertex);
-PetscDALETKFGetObsPerVertex(PetscDA da, PetscInt *n_obs_vertex);
-
-/* Localization weight matrix Q (N x P) and observation operator matrix H (P x N) */
-PetscDALETKFSetLocalization(PetscDA da, Mat Q, Mat H);
+/* Distance-based localization: pick a kernel, set the radius, supply
+   per-dimension state coordinates and the observation operator H.
+   The localization matrix Q is built lazily on the first analysis. */
+PetscDALETKFSetLocalizationType(PetscDA da, PetscDALETKFLocalizationType type);
+PetscDALETKFSetLocalizationRadius(PetscDA da, PetscReal radius);
+PetscDALETKFSetLocalizationCoordinates(PetscDA da, Vec xyz[], PetscReal bd[], Mat H);
 ```
 
-Set the observation count at runtime with
-`-petscda_letkf_obs_per_vertex <n>` (default: `9`).
+The built-in kernels `gaspari_cohn`, `gaussian`, and `boxcar` are available in
+every PETSc build; the `none` type disables localization and is mathematically
+equivalent to global ETKF. The localization matrix Q is built on the device
+matching the observation operator `H`: a Kokkos backend is used when `H` has
+type `MATAIJKOKKOS`, otherwise a plain CPU build path is used. Select the
+kernel at runtime with
+`-petscda_letkf_localization_type {none,gaspari_cohn,gaussian,boxcar}`.
 
 (sec_da_options)=
 
@@ -327,7 +332,6 @@ The `PetscDA` object obeys standard PETSc options parsing. Commonly used switche
 - `-petscda_type <name>`                         – select a registered `PetscDA` implementation (`etkf`, `letkf`).
 - `-petscda_ensemble_inflation <value>`          – set the covariance inflation factor (default: `1.0`).
 - `-petscda_ensemble_sqrt_type {cholesky,eigen}` – select the T-matrix square-root algorithm for ETKF (default: `eigen`).
-- `-petscda_letkf_obs_per_vertex <n>`            – set the number of observations per grid vertex for LETKF (default: `9`).
 - `-petscda_view`                                – inspect ensemble metadata and internal sizes.
 
 Because `PetscDA` participates in the PETSc object registry, any prefix applied with `PetscDASetOptionsPrefix()` scopes these options.

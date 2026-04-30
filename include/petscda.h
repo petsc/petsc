@@ -42,6 +42,32 @@ typedef enum {
   PETSCDA_SQRT_EIGEN    = 1
 } PetscDASqrtType;
 
+/*E
+  PetscDALETKFLocalizationType - Type of localization kernel used by `PETSCDALETKF`
+
+  Values:
++ `PETSCDA_LETKF_LOC_NONE`         - No localization. Each vertex sees every observation with weight one;
+                                     the per-vertex loop is replaced by a single global analysis equivalent to `PETSCDAETKF`.
+. `PETSCDA_LETKF_LOC_GASPARI_COHN` - Gaspari-Cohn fifth-order piecewise rational kernel with compact support at twice the radius
+. `PETSCDA_LETKF_LOC_GAUSSIAN`     - Gaussian kernel exp(-d^2 / (2 r^2)) truncated at twice the radius
+- `PETSCDA_LETKF_LOC_BOXCAR`       - Uniform weight one inside the radius, zero outside
+
+  Options Database Keys:
+. -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel at run time
+
+  Level: intermediate
+
+.seealso: [](ch_da), `PETSCDALETKF`, `PetscDALETKFSetLocalizationType()`, `PetscDALETKFGetLocalizationType()`,
+          `PetscDALETKFSetLocalizationRadius()`, `PetscDALETKFSetLocalizationCoordinates()`
+E*/
+typedef enum {
+  PETSCDA_LETKF_LOC_NONE         = 0,
+  PETSCDA_LETKF_LOC_GASPARI_COHN = 1,
+  PETSCDA_LETKF_LOC_GAUSSIAN     = 2,
+  PETSCDA_LETKF_LOC_BOXCAR       = 3,
+  PETSCDA_LETKF_LOC_NUM_TYPES
+} PetscDALETKFLocalizationType;
+
 /*J
   PetscDAType - String with the name of a PETSc data assimilation method
 
@@ -103,10 +129,8 @@ PETSC_EXTERN PetscErrorCode PetscDAEnsembleTFactor(PetscDA, Mat);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplyTInverse(PetscDA, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA, Mat, Mat);
 
-PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalization(PetscDA, Mat, Mat);
 PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationRadius(PetscDA, PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationRadius(PetscDA, PetscReal *);
-
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationMatrix(PetscReal, Vec[3], PetscReal[3], Mat, Mat *);
-#endif
+PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationType(PetscDA, PetscDALETKFLocalizationType);
+PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationType(PetscDA, PetscDALETKFLocalizationType *);
+PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationCoordinates(PetscDA, const Vec[3], const PetscReal[3], Mat);

@@ -1,5 +1,5 @@
 Spinning up truth for 1000 steps...
-Localization matrix Q created: 40 x 40, radius=100.
+Localization configured: 40 vertices, radius=100.
 PetscDA Object: 1 MPI process
   type: letkf
   State size: 40
@@ -9,9 +9,8 @@ PetscDA Object: 1 MPI process
   Inflation: 1.
   Square root type: eigen
   Local analysis: CPU
+  Localization type: gaspari_cohn
   Localization radius: 100.
-  GPU batch size: auto
-  Localization matrix: set
 Lorenz-96 LETKF Example
 ======================
   State dimension        : 40

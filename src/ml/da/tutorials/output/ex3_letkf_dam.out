@@ -7,9 +7,8 @@ PetscDA Object: 1 MPI process
   Inflation: 1.
   Square root type: eigen
   Local analysis: CPU
+  Localization type: gaspari_cohn
   Localization radius: 100.
-  GPU batch size: auto
-  Localization matrix: set
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Dam-break

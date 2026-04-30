@@ -4,22 +4,30 @@
 #include <petsc/private/daensembleimpl.h>
 
 typedef struct {
-  PetscDA_Ensemble en;
-  Vec              mean;
-  Vec              y_mean;
-  Vec              delta_scaled;
-  Vec              w;
-  Vec              r_inv_sqrt;
-  Mat              Z;
-  Mat              S;
-  Mat              T_sqrt;
-  Mat              w_ones;
-  Mat              Q;                   /* Localization matrix (n_grid x n_observations_total), variable nnz per row */
-  PetscReal        localization_radius; /* Gaspari-Cohn cutoff half-width */
-  PetscInt         max_nnz_per_row;     /* Cached max nnz across all rows of Q (global) */
-  PetscInt         min_nnz_per_row;     /* Cached min nnz across all rows of Q (global) */
-  PetscInt         n_grid;              /* Number of grid points (n_grid = state_size / da->ndof) */
-  PetscInt         batch_size;          /* Batch size for GPU processing */
+  PetscDA_Ensemble             en;
+  Vec                          mean;
+  Vec                          y_mean;
+  Vec                          delta_scaled;
+  Vec                          w;
+  Vec                          r_inv_sqrt;
+  Mat                          Z;
+  Mat                          S;
+  Mat                          T_sqrt;
+  Mat                          w_ones;
+  Mat                          Q;                   /* Localization matrix (n_grid x n_observations_total), variable nnz per row; NULL when type == NONE */
+  PetscDALETKFLocalizationType type;                /* Localization kernel type */
+  PetscReal                    localization_radius; /* Cutoff half-width for built-in kernels */
+
+  /* Cached inputs for lazy Q construction (built-in kernels only) */
+  Vec       coord_xyz[3]; /* Coordinate vectors for grid points (per dimension) */
+  PetscReal coord_bd[3];  /* Periodic-domain extents (0 = non-periodic) */
+  Mat       coord_H;      /* Observation operator used to map coordinates to observation locations */
+  PetscBool Q_dirty;      /* Q must be (re)built before next analysis */
+
+  PetscInt max_nnz_per_row; /* Cached max nnz across all rows of Q (global) */
+  PetscInt min_nnz_per_row; /* Cached min nnz across all rows of Q (global) */
+  PetscInt n_grid;          /* Number of grid points (n_grid = state_size / da->ndof) */
+  PetscInt batch_size;      /* Batch size for GPU processing */
 
   /* Localization support for MPI */
   IS         obs_is_local;    // Indices of observations needed by this process

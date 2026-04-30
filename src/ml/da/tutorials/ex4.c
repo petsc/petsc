@@ -30,7 +30,7 @@ const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_",
 #define DEFAULT_ENSEMBLE_SIZE       30
 #define DEFAULT_PROGRESS_FREQ       10
 #define DEFAULT_OBS_STRIDE          2
-#define DEFAULT_LOCALIZATION_RADIUS 20.0 /* Gaspari-Cohn half-width; cutoff at 2*radius=40, covering ~10 obs spacings for the default 80x80 domain with obs_stride=2 */
+#define DEFAULT_LOCALIZATION_RADIUS 20.0 /* kernel half-width; effective cutoff is 2*radius for gaspari_cohn/gaussian and radius for boxcar (~10 obs spacings on the default 80x80 domain with obs_stride=2) */
 #define SPINUP_STEPS                0
 
 /* Minimum valid parameter values */
@@ -89,123 +89,6 @@ static PetscErrorCode CreateObservationMatrix2D(PetscInt nx, PetscInt ny, PetscI
   *nobs_out = nobs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#if !defined(PETSC_HAVE_KOKKOS_KERNELS)
-/*
-  GaspariCohnWeight - Gaspari-Cohn fifth-order piecewise rational function.
-  Input: r = distance / radius (normalized distance, support is [0, 2])
-*/
-static PetscReal GaspariCohnWeight(PetscReal r)
-{
-  if (r >= 2.0) return 0.0;
-  if (r <= 0.0) return 1.0;
-  if (r <= 1.0) return (((-0.25 * r + 0.5) * r + 0.625) * r - 5.0 / 3.0) * r * r + 1.0;
-  return ((((r / 12.0 - 0.5) * r + 0.625) * r + 5.0 / 3.0) * r - 5.0) * r + 4.0 - 2.0 / (3.0 * r);
-}
-
-/*
-  CreateRadiusLocalization2D - Build a radius-based localization matrix for a 2D periodic grid.
-
-  Each grid point includes all observations within distance 2*radius, weighted by
-  the Gaspari-Cohn function. Radius must be positive; use a large radius for effectively no localization.
-*/
-static PetscErrorCode CreateRadiusLocalization2D(PetscInt nx, PetscInt ny, PetscInt obs_stride, PetscReal Lx, PetscReal Ly, PetscReal radius, Mat *Q)
-{
-  PetscInt    rstart, rend, cstart, cend, nlocal;
-  PetscInt    nobs_x, nobs_y, nobs;
-  PetscInt   *d_nnz, *o_nnz;
-  PetscReal   dx, dy;
-  PetscLayout rmap, cmap;
-
-  PetscFunctionBeginUser;
-  PetscCheck(radius > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
-  nobs_x = (nx + obs_stride - 1) / obs_stride;
-  nobs_y = (ny + obs_stride - 1) / obs_stride;
-  nobs   = nobs_x * nobs_y;
-  dx     = Lx / nx;
-  dy     = Ly / ny;
-
-  /* Determine ownership ranges */
-  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &rmap));
-  PetscCall(PetscLayoutSetSize(rmap, nx * ny));
-  PetscCall(PetscLayoutSetUp(rmap));
-  PetscCall(PetscLayoutGetRange(rmap, &rstart, &rend));
-  PetscCall(PetscLayoutDestroy(&rmap));
-  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &cmap));
-  PetscCall(PetscLayoutSetSize(cmap, nobs));
-  PetscCall(PetscLayoutSetUp(cmap));
-  PetscCall(PetscLayoutGetRange(cmap, &cstart, &cend));
-  PetscCall(PetscLayoutDestroy(&cmap));
-  nlocal = rend - rstart;
-
-  /* Pass 1: count nnz per row, split into diagonal and off-diagonal blocks */
-  PetscCall(PetscCalloc1(nlocal, &d_nnz));
-  PetscCall(PetscCalloc1(nlocal, &o_nnz));
-  for (PetscInt row = rstart; row < rend; row++) {
-    PetscInt  gi = row % nx;
-    PetscInt  gj = row / nx;
-    PetscReal gx = gi * dx;
-    PetscReal gy = gj * dy;
-
-    for (PetscInt oy = 0; oy < nobs_y; oy++) {
-      PetscInt  oj    = PetscMin(oy * obs_stride, ny - 1);
-      PetscReal obs_y = oj * dy;
-      for (PetscInt ox = 0; ox < nobs_x; ox++) {
-        PetscInt  oi    = PetscMin(ox * obs_stride, nx - 1);
-        PetscInt  col   = oy * nobs_x + ox;
-        PetscReal obs_x = oi * dx;
-        PetscReal diffx = PetscAbsReal(gx - obs_x);
-        PetscReal diffy = PetscAbsReal(gy - obs_y);
-
-        if (diffx > 0.5 * Lx) diffx = Lx - diffx;
-        if (diffy > 0.5 * Ly) diffy = Ly - diffy;
-        if (diffx * diffx + diffy * diffy >= 4.0 * radius * radius) continue;
-        if (col >= cstart && col < cend) d_nnz[row - rstart]++;
-        else o_nnz[row - rstart]++;
-      }
-    }
-  }
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nx * ny, nobs, 0, d_nnz, 0, o_nnz, Q));
-  PetscCall(PetscFree(d_nnz));
-  PetscCall(PetscFree(o_nnz));
-  PetscCall(MatSetFromOptions(*Q));
-  PetscCall(MatSetUp(*Q));
-
-  /* Pass 2: fill values */
-  for (PetscInt row = rstart; row < rend; row++) {
-    PetscInt  gi = row % nx;
-    PetscInt  gj = row / nx;
-    PetscReal gx = gi * dx;
-    PetscReal gy = gj * dy;
-
-    for (PetscInt oy = 0; oy < nobs_y; oy++) {
-      PetscInt  oj    = PetscMin(oy * obs_stride, ny - 1);
-      PetscReal obs_y = oj * dy;
-
-      for (PetscInt ox = 0; ox < nobs_x; ox++) {
-        PetscInt  oi    = PetscMin(ox * obs_stride, nx - 1);
-        PetscInt  col   = oy * nobs_x + ox;
-        PetscReal obs_x = oi * dx;
-        PetscReal diffx = PetscAbsReal(gx - obs_x);
-        PetscReal diffy = PetscAbsReal(gy - obs_y);
-        PetscReal dist, weight;
-
-        if (diffx > 0.5 * Lx) diffx = Lx - diffx;
-        if (diffy > 0.5 * Ly) diffy = Ly - diffy;
-        dist = PetscSqrtReal(diffx * diffx + diffy * diffy);
-
-        if (dist >= 2.0 * radius) continue;
-        weight = GaspariCohnWeight(dist / radius);
-        PetscCall(MatSetValue(*Q, row, col, weight, INSERT_VALUES));
-      }
-    }
-  }
-
-  PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
 
 /*
   ComputeRMSE - Compute root mean square error between two vectors
@@ -345,6 +228,7 @@ int main(int argc, char **argv)
   Ex4FluxType    flux_type           = EX4_FLUX_RUSANOV;
   char           output_file[PETSC_MAX_PATH_LEN];
   PetscBool      output_enabled = PETSC_FALSE;
+  PetscBool      isletkf        = PETSC_FALSE;
   FILE          *fp             = NULL;
 
   /* PETSc objects */
@@ -355,7 +239,7 @@ int main(int argc, char **argv)
   Vec                truth_state, rmse_work;
   Vec                observation, obs_noise, obs_error_var;
   PetscRandom        rng;
-  Mat                Q = NULL, H = NULL, H1 = NULL;
+  Mat                H = NULL, H1 = NULL;
   PetscInt           nobs;
 
   /* Statistics tracking */
@@ -390,7 +274,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
   PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov/mc)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "Gaspari-Cohn localization cutoff radius (must be positive)", "", localization_radius, &localization_radius, NULL));
+  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
   /* Calculate number of observations */
@@ -468,11 +352,8 @@ int main(int argc, char **argv)
   PetscCall(PetscDASetUp(da));
 
   /* LETKF requires the symmetric eigen square root for the local update. */
-  {
-    PetscBool isletkf;
-    PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
-    if (isletkf) PetscCall(PetscDAEnsembleSetSqrtType(da, PETSCDA_SQRT_EIGEN));
-  }
+  PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
+  if (isletkf) PetscCall(PetscDAEnsembleSetSqrtType(da, PETSCDA_SQRT_EIGEN));
 
   /* Initialize ensemble statistics vectors */
   PetscCall(VecDuplicate(x0, &x_mean));
@@ -481,27 +362,26 @@ int main(int argc, char **argv)
   /* Set observation error variance */
   PetscCall(PetscDASetObsErrorVariance(da, obs_error_var));
 
-  /* Create and set localization matrix Q */
-  {
-    PetscBool isletkf;
-    PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
+  /* Configure localization for LETKF. Built-in distance-based kernels (Gaspari-Cohn,
+     Gaussian, boxcar) are wired through SetLocalizationCoordinates and the matrix Q
+     is built lazily on the first analysis; the NONE kernel needs no setup. */
+  if (isletkf) {
+    PetscDALETKFLocalizationType loc_type;
 
-    if (isletkf) {
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      Vec       Vecxyz[3] = {NULL, NULL, NULL};
-      Vec       coord;
-      DM        cda;
-      PetscReal bd[3] = {Lx, Ly, 0};
-      PetscInt  cdof;
+    PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
+    if (loc_type == PETSCDA_LETKF_LOC_NONE) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
+    } else {
+      Vec         Vecxyz[3] = {NULL, NULL, NULL};
+      Vec         coord;
+      DM          cda;
+      PetscReal   bd[3] = {Lx, Ly, 0};
+      const char *kname;
 
       PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
       PetscCall(DMGetCoordinateDM(da_state, &cda));
       PetscCall(DMGetCoordinates(da_state, &coord));
-      PetscCall(DMGetBlockSize(cda, &cdof));
-      PetscCheck(cdof >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Coordinate DM block size must be at least 2 for 2D localization");
 
-      /* Extract per-component coordinate vectors; VecStrideGather works because
-         the coordinate DM and Vecxyz share the same parallel layout (xm*ym local points) */
       for (PetscInt d = 0; d < 2; d++) {
         PetscCall(VecCreate(PETSC_COMM_WORLD, &Vecxyz[d]));
         PetscCall(VecSetSizes(Vecxyz[d], PETSC_DECIDE, nx * ny));
@@ -510,17 +390,26 @@ int main(int argc, char **argv)
         PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
       }
 
-      PetscCall(PetscDALETKFGetLocalizationMatrix(localization_radius, Vecxyz, bd, H1, &Q));
+      PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+      PetscCall(PetscDALETKFSetLocalizationCoordinates(da, Vecxyz, bd, H1));
       PetscCall(VecDestroy(&Vecxyz[0]));
       PetscCall(VecDestroy(&Vecxyz[1]));
-#else
-      PetscCall(CreateRadiusLocalization2D(nx, ny, obs_stride, Lx, Ly, localization_radius, &Q));
-#endif
-      PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-      PetscCall(PetscDALETKFSetLocalization(da, Q, H));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using Gaspari-Cohn localization with radius %g\n", (double)localization_radius));
-      PetscCall(MatViewFromOptions(Q, NULL, "-Q_view"));
-      PetscCall(MatDestroy(&Q));
+
+      switch (loc_type) {
+      case PETSCDA_LETKF_LOC_GASPARI_COHN:
+        kname = "Gaspari-Cohn";
+        break;
+      case PETSCDA_LETKF_LOC_GAUSSIAN:
+        kname = "Gaussian";
+        break;
+      case PETSCDA_LETKF_LOC_BOXCAR:
+        kname = "boxcar";
+        break;
+      default:
+        kname = "built-in";
+        break;
+      }
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)localization_radius));
     }
   }
 
@@ -717,15 +606,31 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    requires: kokkos_kernels !complex
+    requires: !complex
     args: -steps 10 -progress_freq 1 -petscda_view -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03 -nx 21 -ny 21
 
     test:
       suffix: letkf_wave2d
+      requires: kokkos_kernels
       args: -petscda_type letkf -petscda_ensemble_size 7
 
     test:
       nsize: 3
       suffix: kokkos_wave2d
+      requires: kokkos_kernels
       args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
+
+    test:
+      suffix: letkf_none
+      args: -petscda_type letkf -petscda_ensemble_size 7 -petscda_letkf_localization_type none
+
+    test:
+      suffix: letkf_gaussian
+      requires: kokkos_kernels
+      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 7 -petscda_letkf_localization_type gaussian -petscda_letkf_localization_radius 10.0
+
+    test:
+      suffix: letkf_boxcar
+      requires: kokkos_kernels
+      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 3 -petscda_letkf_localization_type boxcar -petscda_letkf_localization_radius 15.0
 TEST*/

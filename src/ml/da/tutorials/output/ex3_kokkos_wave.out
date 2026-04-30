@@ -7,9 +7,9 @@ PetscDA Object: 3 MPI processes
   Inflation: 1.
   Square root type: eigen
   Local analysis: Kokkos
+  Localization type: gaspari_cohn
   Localization radius: 10.
   GPU batch size: 13
-  Localization matrix: set
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Traveling wave
