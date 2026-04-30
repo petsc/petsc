@@ -991,7 +991,7 @@ static PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *local
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexCreateGridHash(dm, &lbox));
   {
-    PetscInt n[3], d;
+    PetscInt n[3], d = 3;
 
     PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, "-dm_plex_hash_box_faces", n, &d, &flg));
     if (flg) {
