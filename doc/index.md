@@ -74,6 +74,9 @@ miscellaneous/index
 - [DEAL.II](https://www.dealii.org/) C++-based finite element
   simulation package
 - [DUNE-FEM](https://dune-project.org/sphinx/content/sphinx/dune-fem/) Python and C++-based finite element simulation package
+- [Feel++](https://docs.feelpp.org) C++ framework for scalable Galerkin-based
+  finite element and reduced-order simulations, with single- and multiphysics
+  toolboxes
 - [FEniCS](https://fenicsproject.org/) Python-based finite
   element simulation package
 - [Firedrake](https://www.firedrakeproject.org/) Python-based
