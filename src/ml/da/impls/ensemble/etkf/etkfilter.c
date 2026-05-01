@@ -359,31 +359,6 @@ static PetscErrorCode PetscDAEnsembleAnalysis_ETKF(PetscDA da, Vec observation, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscErrorCode (*model)(Vec, Vec, PetscCtx), PetscCtx ctx)
-{
-  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-  Vec               col_in, col_out, temp;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
-
-  /* Create temp vector from ensemble matrix (right vector = state space) */
-  PetscCall(MatCreateVecs(en->ensemble, NULL, &temp));
-
-  for (PetscInt i = 0; i < en->size; i++) {
-    PetscCall(MatDenseGetColumnVecRead(en->ensemble, i, &col_in));
-    PetscCall(model(col_in, temp, ctx));
-    PetscCall(MatDenseRestoreColumnVecRead(en->ensemble, i, &col_in));
-
-    PetscCall(MatDenseGetColumnVecWrite(en->ensemble, i, &col_out));
-    PetscCall(VecCopy(temp, col_out));
-    PetscCall(MatDenseRestoreColumnVecWrite(en->ensemble, i, &col_out));
-  }
-
-  PetscCall(VecDestroy(&temp));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
    PETSCDAETKF - Ensemble transform Kalman filter data assimilation using a deterministic square-root update that avoids stochastic perturbations.
 
