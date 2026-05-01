@@ -358,8 +358,6 @@ int main(int argc, char **argv)
 
   /**/
   PetscCall(VecSet(Uloc, 1.));
-  PetscCall(VecZeroEntries(V));
-  PetscCall(VecZeroEntries(Vloc));
   PetscCall(VecGetArray(Vloc, &v));
   PetscCall(CeedVectorSetArray(ceeddata.vceed, CEED_MEM_HOST, CEED_USE_POINTER, v));
   PetscCall(CeedVectorSetValue(ceeddata.uceed, 1.0));

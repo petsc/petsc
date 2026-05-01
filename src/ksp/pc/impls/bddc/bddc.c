@@ -189,7 +189,6 @@ static PetscErrorCode PCView_BDDC(PC pc, PetscViewer viewer)
     /* compute interface size */
     PetscCall(VecSet(pcis->vec1_B, 1.0));
     PetscCall(MatCreateVecs(pc->pmat, &counter, NULL));
-    PetscCall(VecSet(counter, 0.0));
     PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_B, counter, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_B, pcis->vec1_B, counter, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecSum(counter, &interface_size));

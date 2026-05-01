@@ -2865,7 +2865,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       }
 
       PetscCall(VecDuplicate(patch->dof_weights, &global));
-      PetscCall(VecSet(global, 0.));
 
       PetscCall(VecGetArray(patch->dof_weights, &input));
       PetscCall(VecGetArray(global, &output));

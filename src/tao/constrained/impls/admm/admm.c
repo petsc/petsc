@@ -560,10 +560,7 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   PetscCall(MatCreateVecs(am->JA, NULL, &am->Ax));
   if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscCall(TaoSetSolution(am->subsolverX, tao->solution));
-  if (!am->z) {
-    PetscCall(VecDuplicate(tao->solution, &am->z));
-    PetscCall(VecSet(am->z, 0.0));
-  }
+  if (!am->z) PetscCall(VecDuplicate(tao->solution, &am->z));
   PetscCall(TaoSetSolution(am->subsolverZ, am->z));
   if (!am->workLeft) PetscCall(VecDuplicate(tao->solution, &am->workLeft));
   if (!am->Axold) PetscCall(VecDuplicate(am->Ax, &am->Axold));
@@ -572,30 +569,12 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   if (!am->Bz) PetscCall(VecDuplicate(am->Ax, &am->Bz));
   if (!am->Bzold) PetscCall(VecDuplicate(am->Ax, &am->Bzold));
   if (!am->Bz0) PetscCall(VecDuplicate(am->Ax, &am->Bz0));
-  if (!am->y) {
-    PetscCall(VecDuplicate(am->Ax, &am->y));
-    PetscCall(VecSet(am->y, 0.0));
-  }
-  if (!am->yold) {
-    PetscCall(VecDuplicate(am->Ax, &am->yold));
-    PetscCall(VecSet(am->yold, 0.0));
-  }
-  if (!am->y0) {
-    PetscCall(VecDuplicate(am->Ax, &am->y0));
-    PetscCall(VecSet(am->y0, 0.0));
-  }
-  if (!am->yhat) {
-    PetscCall(VecDuplicate(am->Ax, &am->yhat));
-    PetscCall(VecSet(am->yhat, 0.0));
-  }
-  if (!am->yhatold) {
-    PetscCall(VecDuplicate(am->Ax, &am->yhatold));
-    PetscCall(VecSet(am->yhatold, 0.0));
-  }
-  if (!am->residual) {
-    PetscCall(VecDuplicate(am->Ax, &am->residual));
-    PetscCall(VecSet(am->residual, 0.0));
-  }
+  if (!am->y) PetscCall(VecDuplicate(am->Ax, &am->y));
+  if (!am->yold) PetscCall(VecDuplicate(am->Ax, &am->yold));
+  if (!am->y0) PetscCall(VecDuplicate(am->Ax, &am->y0));
+  if (!am->yhat) PetscCall(VecDuplicate(am->Ax, &am->yhat));
+  if (!am->yhatold) PetscCall(VecDuplicate(am->Ax, &am->yhatold));
+  if (!am->residual) PetscCall(VecDuplicate(am->Ax, &am->residual));
   if (!am->constraint) {
     am->constraint = NULL;
   } else {

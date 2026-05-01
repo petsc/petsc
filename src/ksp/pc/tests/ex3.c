@@ -25,7 +25,6 @@ int main(int argc, char **args)
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &ustar));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &u));
   PetscCall(VecSet(ustar, 1.0));
-  PetscCall(VecSet(u, 0.0));
 
   /* Create and assemble matrix */
   PetscCall(MatCreate(PETSC_COMM_SELF, &mat));

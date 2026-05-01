@@ -35,7 +35,6 @@ int main(int argc, char **argv)
 
   /* Create a sequential vector y */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &y));
-  PetscCall(VecSet(y, 0.0));
 
   /* Create two index sets */
   if (rank == 0) {

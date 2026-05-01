@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
   PetscCall(TSSetType(ts, TSRK));
   PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, NULL));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, N, &X));
-  PetscCall(VecZeroEntries(X));
   PetscCall(TSSetTimeStep(ts, 0.001));
   PetscCall(TSSetTimeSpan(ts, 8, tspan));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));

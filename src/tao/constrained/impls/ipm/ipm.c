@@ -289,7 +289,6 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
     PetscCall(VecDuplicate(ipmP->s, &ipmP->save_s));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->rpi));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->Zero_nb));
-    PetscCall(VecSet(ipmP->Zero_nb, 0.0));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->One_nb));
     PetscCall(VecSet(ipmP->One_nb, 1.0));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->Inf_nb));

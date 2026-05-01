@@ -43,7 +43,6 @@ int main(int argc,char **argv)
   MatSetUp(A);
   /* setup linear system vectors */
   MatCreateVecs(A, &x, &b);
-  VecSet(x, 0);
   VecSet(b, 1);
   /* setup Krylov linear solver */
   KSPCreate(PETSC_COMM_SELF, &ksp);

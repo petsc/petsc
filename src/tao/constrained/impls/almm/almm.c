@@ -172,10 +172,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
       PetscCall(VecDuplicate(auglag->Ci, &auglag->Yi));
     }
     if (!auglag->Ciwork) PetscCall(VecDuplicate(auglag->Ci, &auglag->Ciwork));
-    if (!auglag->Cizero) {
-      PetscCall(VecDuplicate(auglag->Ci, &auglag->Cizero));
-      PetscCall(VecZeroEntries(auglag->Cizero));
-    }
+    if (!auglag->Cizero) PetscCall(VecDuplicate(auglag->Ci, &auglag->Cizero));
     if (!auglag->Ps) { /* slack vars */
       PetscCall(VecDuplicate(auglag->Ci, &auglag->Ps));
     }
@@ -261,7 +258,6 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     if (tao->ineq_constrained) {
       /* create lower and upper bounds for slack, set lower to 0 */
       PetscCall(VecDuplicate(auglag->Ci, &SL));
-      PetscCall(VecSet(SL, 0.0));
       PetscCall(VecDuplicate(auglag->Ci, &SU));
       PetscCall(VecSet(SU, PETSC_INFINITY));
       /* combine opt var bounds with slack bounds */
@@ -289,7 +285,6 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
         PetscCall(VecSet(auglag->PU, PETSC_INFINITY));
         /* create lower and upper bounds for slack, set lower to 0 */
         PetscCall(VecDuplicate(auglag->Ci, &SL));
-        PetscCall(VecSet(SL, 0.0));
         PetscCall(VecDuplicate(auglag->Ci, &SU));
         PetscCall(VecSet(SU, PETSC_INFINITY));
         /* PL, PU is already set. Only copy Slack variable parts */

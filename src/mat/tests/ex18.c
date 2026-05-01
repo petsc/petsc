@@ -148,7 +148,6 @@ int main(int argc, char **args)
   }
 
   PetscCall(VecDuplicate(rhs, &x));
-  PetscCall(VecZeroEntries(x));
   PetscCall(PetscMalloc2(nboundary_nodes * bs, &boundary_indices, nboundary_nodes * bs, &boundary_values));
   for (k = 0; k < nboundary_nodes; k++) {
     Ii = boundary_nodes[k] * bs;

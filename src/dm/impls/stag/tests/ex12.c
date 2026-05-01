@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 
   PetscCall(DMCreateGlobalVector(dm, &vec));
   PetscCall(VecSet(vec, 1.0));
-  PetscCall(VecSet(vecLocal1, 0.0));
   PetscCall(DMGlobalToLocalBegin(dm, vec, INSERT_VALUES, vecLocal1));
   PetscCall(DMGlobalToLocalEnd(dm, vec, INSERT_VALUES, vecLocal1));
 

@@ -17,7 +17,6 @@ int main(int argc, char **args)
   PetscCall(PetscObjectSetName((PetscObject)u, "Test_Vec"));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, 10));
   PetscCall(VecSetFromOptions(u));
-  PetscCall(VecSet(u, 0.));
 
   /* write vector and attribute*/
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_WRITE, &viewer));

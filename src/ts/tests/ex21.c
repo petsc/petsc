@@ -191,7 +191,6 @@ int main(int argc, char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMCreateGlobalVector(da, &U));
-  PetscCall(VecSet(U, 0.0));
   PetscCall(TSSetSolution(ts, U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

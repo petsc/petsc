@@ -1128,7 +1128,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (doCR) {
         PetscCall(VecDuplicate(mglevels[i]->b, &mglevels[i]->crx));
         PetscCall(VecDuplicate(mglevels[i]->b, &mglevels[i]->crb));
-        PetscCall(VecZeroEntries(mglevels[i]->crb));
       }
     }
     if (n != 1 && !mglevels[n - 1]->r) {
@@ -1143,7 +1142,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (doCR) {
       PetscCall(VecDuplicate(mglevels[n - 1]->r, &mglevels[n - 1]->crx));
       PetscCall(VecDuplicate(mglevels[n - 1]->r, &mglevels[n - 1]->crb));
-      PetscCall(VecZeroEntries(mglevels[n - 1]->crb));
     }
   }
 

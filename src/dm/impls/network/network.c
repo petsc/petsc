@@ -2498,7 +2498,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm, Mat *J)
   PetscCall(VecCreate(comm, &vd_nz));
   PetscCall(VecSetSizes(vd_nz, localSize, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(vd_nz));
-  PetscCall(VecSet(vd_nz, 0.0));
   PetscCall(VecDuplicate(vd_nz, &vo_nz));
 
   /* Set preallocation for edges */

@@ -117,9 +117,6 @@ int main(int argc, char **args)
   PetscCall(VecDuplicate(u, &q));
   PetscCall(PetscObjectSetName((PetscObject)q, "Right hand side 2"));
   PetscCall(VecDuplicate(b, &ustar));
-  PetscCall(VecSet(u, 0.0));
-  PetscCall(VecSet(b, 0.0));
-  PetscCall(VecSet(q, 0.0));
 
   /* Assemble nodal right-hand side and soln vector  */
   for (i = start; i < end; i++) {

@@ -79,7 +79,6 @@ static PetscErrorCode testCallbacks(PetscBool separate)
   app.obj_and_grad_count = 0;
   app.hess_count         = 0;
   PetscCall(VecCreateMPI(comm, PETSC_DECIDE, N, &sol));
-  PetscCall(VecZeroEntries(sol));
   PetscCall(VecDuplicate(sol, &grad));
   PetscCall(MatCreateAIJ(comm, PETSC_DECIDE, PETSC_DECIDE, N, N, 1, NULL, 0, NULL, &H));
   PetscCall(MatDuplicate(H, MAT_DO_NOT_COPY_VALUES, &Hpre));

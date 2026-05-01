@@ -83,8 +83,6 @@ int main(int argc, char **args)
   PetscCall(VecDuplicate(u, &b));
   PetscCall(PetscObjectSetName((PetscObject)b, "Right hand side"));
   PetscCall(VecDuplicate(b, &ustar));
-  PetscCall(VecSet(u, 0.0));
-  PetscCall(VecSet(b, 0.0));
 
   /*
      Assemble right-hand-side vector

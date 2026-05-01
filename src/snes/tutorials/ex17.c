@@ -653,7 +653,6 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(SetupFE(dm, "displacement", SetupPrimalProblem, &user));
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "displacement"));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));

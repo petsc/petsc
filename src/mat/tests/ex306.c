@@ -56,8 +56,6 @@ int main(int argc, char **args)
   PetscCall(MatCreateVecs(A, &b, &x_pristine));
   PetscCall(VecDuplicate(x_pristine, &x_poisoned));
   PetscCall(VecSet(b, 1.0));
-  PetscCall(VecSet(x_pristine, 0.0));
-  PetscCall(VecSet(x_poisoned, 0.0));
 
   /* First MatSOR() call: triggers MatInvertDiagonalForSOR_SeqAIJ_Inode() and
      populates a->inode.ibdiag with correctly inverted blocks. */

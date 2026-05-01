@@ -488,7 +488,6 @@ int main(int argc, char **args)
   if (user.random_initial_guess) {
     /* Solving A x = 0 with random initial guess allows Arnoldi to run for more iterations, thereby yielding a more
      * complete Hessenberg matrix and more accurate eigenvalues. */
-    PetscCall(VecZeroEntries(b));
     PetscCall(VecSetRandom(x, NULL));
     if (user.random_real) PetscCall(VecRealPart(x));
     if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, x));

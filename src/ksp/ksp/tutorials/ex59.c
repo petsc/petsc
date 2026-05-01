@@ -1075,7 +1075,6 @@ int main(int argc, char **args)
       PetscCall(KSPGetOperators(KSPwithFETIDP, &F, NULL));
       PetscCall(MatCreateVecs(F, &fetidp_solution, &fetidp_rhs));
       PetscCall(PCBDDCMatFETIDPGetRHS(F, bddc_rhs, fetidp_rhs));
-      PetscCall(VecSet(fetidp_solution, 0.0));
       /* test ksp with FETIDP */
       PetscCall(KSPSolve(KSPwithFETIDP, fetidp_rhs, fetidp_solution));
       /* assemble fetidp solution on physical domain */

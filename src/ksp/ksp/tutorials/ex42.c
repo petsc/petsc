@@ -2015,7 +2015,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx, PetscInt my, PetscInt
   /* assemble A11 */
   PetscCall(MatZeroEntries(A));
   PetscCall(MatZeroEntries(B));
-  PetscCall(VecZeroEntries(f));
 
   PetscCall(AssembleA_Stokes(A, da_Stokes, cell_properties));
   PetscCall(MatViewFromOptions(A, NULL, "-amat_view"));

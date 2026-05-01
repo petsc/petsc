@@ -163,10 +163,8 @@ int main(int argc, char **argv)
     Vec       metrics[2];
 
     PetscCall(VecDuplicate(metric, &metric1));
-    PetscCall(VecSet(metric1, 0));
     PetscCall(VecAXPY(metric1, 0.625, metric));
     PetscCall(VecDuplicate(metric, &metric2));
-    PetscCall(VecSet(metric2, 0));
     PetscCall(VecAXPY(metric2, 2.5, metric));
     metrics[0] = metric1;
     metrics[1] = metric2;

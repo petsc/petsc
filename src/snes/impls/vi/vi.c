@@ -85,7 +85,6 @@ static PetscErrorCode SNESVIMonitorActive(SNES snes, PetscInt its, PetscReal fgn
   PetscCall(SNESVIGetActiveSetIS(snes, X, F, &isactive));
   PetscCall(VecDuplicate(F, &A));
   PetscCall(PetscObjectCompose((PetscObject)A, "__Vec_bc_zero__", (PetscObject)snes));
-  PetscCall(VecSet(A, 0.));
   PetscCall(VecISSet(A, isactive, 1.));
   PetscCall(ISDestroy(&isactive));
   PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));

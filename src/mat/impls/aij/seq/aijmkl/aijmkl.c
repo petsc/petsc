@@ -841,7 +841,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Ma
   PetscCall(MatTranspose(C, MAT_INITIAL_MATRIX, &Ct));
   PetscCall(MatCreateVecs(C, &zeros, NULL));
   PetscCall(VecSetFromOptions(zeros));
-  PetscCall(VecZeroEntries(zeros));
   PetscCall(MatDiagonalSet(Ct, zeros, INSERT_VALUES));
   PetscCall(MatAXPY(C, 1.0, Ct, DIFFERENT_NONZERO_PATTERN));
   /* Note: The MatAXPY() call destroys the MatProduct, so we must recreate it. */

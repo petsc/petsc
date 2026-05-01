@@ -215,7 +215,6 @@ int main(int argc, char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMCreateGlobalVector(da, &U));
   PetscCall(VecDuplicate(U, &Udot));
-  PetscCall(VecSet(Udot, 0.0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

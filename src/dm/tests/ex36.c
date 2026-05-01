@@ -440,7 +440,6 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my)
     PetscInt  N;
 
     PetscCall(DMCreateGlobalVector(daf, &afexact));
-    PetscCall(VecZeroEntries(afexact));
     PetscCall(DADefineXLinearField2D(daf, afexact));
     PetscCall(VecAXPY(afexact, -1.0, af)); /* af <= af - afinterp */
     PetscCall(VecNorm(afexact, NORM_2, &nrm));
@@ -519,11 +518,9 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
   PetscCall(DMCreateInterpolation(dac, daf, &INTERP, NULL));
 
   PetscCall(DMCreateGlobalVector(dac, &ac));
-  PetscCall(VecZeroEntries(ac));
   PetscCall(DADefineXLinearField3D(dac, ac));
 
   PetscCall(DMCreateGlobalVector(daf, &af));
-  PetscCall(VecZeroEntries(af));
 
   PetscCall(MatMult(INTERP, ac, af));
 
@@ -533,7 +530,6 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
     PetscInt  N;
 
     PetscCall(DMCreateGlobalVector(daf, &afexact));
-    PetscCall(VecZeroEntries(afexact));
     PetscCall(DADefineXLinearField3D(daf, afexact));
     PetscCall(VecAXPY(afexact, -1.0, af)); /* af <= af - afinterp */
     PetscCall(VecNorm(afexact, NORM_2, &nrm));

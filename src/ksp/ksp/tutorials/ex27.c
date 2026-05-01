@@ -245,8 +245,6 @@ int main(int argc, char **args)
     PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, array, &C));
     if (!sbaij) PetscCall(MatNestSetVecType(C, VECNEST));
     PetscCall(MatCreateVecs(C, v + 1, v));
-    PetscCall(VecSet(v[0], 0.0));
-    PetscCall(VecSet(v[1], 0.0));
     if (!sbaij) {
       PetscCall(VecNestGetSubVec(v[0], 0, &view));
       PetscCall(VecCopy(b, view));

@@ -23,10 +23,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt, TS ts, PetscReal h, Pets
     DM dm;
 
     PetscCall(TSGetSolution(ts, &X));
-    if (!glee->Y && adapt->glee_use_local) {
-      PetscCall(VecDuplicate(X, &glee->Y)); /*create vector to store previous step global error*/
-      PetscCall(VecZeroEntries(glee->Y));   /*set error to zero on the first step - may not work if error is not zero initially*/
-    }
+    if (!glee->Y && adapt->glee_use_local) PetscCall(VecDuplicate(X, &glee->Y)); /*create vector to store previous step global error*/
     PetscCall(TSGetDM(ts, &dm));
     PetscCall(DMGetGlobalVector(dm, &E));
     PetscCall(TSGetTimeError(ts, 0, &E));

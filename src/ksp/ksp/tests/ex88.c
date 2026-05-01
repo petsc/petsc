@@ -47,7 +47,6 @@ int main(int argc, char **args)
   PetscCall(VecSetSizes(x, n, PETSC_DETERMINE));
   PetscCall(VecSetFromOptions(x));
   PetscCall(VecDuplicate(x, &b));
-  PetscCall(VecSet(x, 0.0));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(VecSetRandom(b, rctx));
   PetscCall(PetscRandomDestroy(&rctx));

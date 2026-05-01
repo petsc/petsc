@@ -188,8 +188,6 @@ int main(int argc, char *argv[])
   PetscCall(DMCreateGlobalVector(ctx.dm_stress, &stress));
 
   /* Initial State */
-  PetscCall(VecSet(velocity, 0.0));
-  PetscCall(VecSet(stress, 0.0));
   PetscCall(ForceStress(&ctx, stress, 0.0));
   if (ctx.dump_output) {
     PetscCall(DumpVelocity(&ctx, velocity, 0));

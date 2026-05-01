@@ -48,7 +48,6 @@ int main(int argc, char **argv)
     PetscCall(MatCreateVecs(ctx.A, &sol, &ctx.b));
   }
   PetscCall(VecDuplicate(ctx.b, &ctx.r));
-  PetscCall(VecZeroEntries(sol));
 
   PetscRandom rand;
   PetscCall(PetscRandomCreate(comm, &rand));

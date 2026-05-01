@@ -43,8 +43,6 @@ int main(int argc, char **args)
   PetscCall(VecSetFromOptions(u));
   PetscCall(VecDuplicate(u, &b));
   PetscCall(VecDuplicate(u, &x));
-  PetscCall(VecSet(u, 0.0));
-  PetscCall(VecSet(b, 0.0));
 
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));

@@ -20,7 +20,6 @@ int main(int argc, char **argv)
   PetscCall(DMSetUp(dm));
 
   PetscCall(DMCreateLocalVector(dm, &x));
-  PetscCall(VecZeroEntries(x));
 
   /* Set the second component of all vertex dof to 2.0 */
   PetscCall(DMStagGetCorners(dm, &s_x, &s_y, &s_z, &n_x, &n_y, &n_z, &n_e_x, &n_e_y, &n_e_z));

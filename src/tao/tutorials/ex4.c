@@ -617,7 +617,6 @@ int main(int argc, char **argv)
   PetscCall(MatDuplicate(ctx->W, MAT_SHARE_NONZERO_PATTERN, &H));
   PetscCall(TaoSetHessian(tao, H, H, HessianComplete, (void *)ctx));
   PetscCall(MatCreateVecs(ctx->F, NULL, &x));
-  PetscCall(VecSet(x, 0.));
   PetscCall(TaoSetSolution(tao, x));
   PetscCall(TaoSetFromOptions(tao));
   if (ctx->use_admm) PetscCall(TaoSolveADMM(ctx, x));

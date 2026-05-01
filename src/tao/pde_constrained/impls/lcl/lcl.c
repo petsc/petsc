@@ -110,8 +110,6 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscCall(VecDuplicate(tao->constraints, &lclP->lambda0));
   PetscCall(VecDuplicate(tao->constraints, &lclP->con1));
 
-  PetscCall(VecSet(lclP->lambda, 0.0));
-
   PetscCall(VecGetSize(tao->solution, &lclP->n));
   PetscCall(VecGetSize(tao->constraints, &lclP->m));
 
