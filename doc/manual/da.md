@@ -323,6 +323,15 @@ type `MATAIJKOKKOS`, otherwise a plain CPU build path is used. Select the
 kernel at runtime with
 `-petscda_letkf_localization_type {none,gaspari_cohn,gaussian,boxcar}`.
 
+```{note}
+The CPU analysis path is currently single-rank only. The unlocalized fast path
+(`PETSCDA_LETKF_LOC_NONE`) factors the m × m T matrix with LAPACK on each
+rank's local slice, and the per-vertex CPU path lacks the cross-rank
+observation scatter (which is built only by the Kokkos backend). For
+multi-rank runs configure PETSc with `--download-kokkos-kernels` and use a
+localized kernel; otherwise restrict the run to a single MPI rank.
+```
+
 (sec_da_options)=
 
 ## Command-line options

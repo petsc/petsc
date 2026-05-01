@@ -30,7 +30,7 @@ PetscDA Object: 3 MPI processes
   CFL number            : 0.0403
   Total steps           : 10
   Observation frequency : 2
-  Init perturb std      : 0.050
+  Init perturb amp      : 0.050
   Init height bias      : 0.000
   Observation noise std : 0.030
   Random seed           : 12345

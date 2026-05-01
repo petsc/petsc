@@ -12,26 +12,26 @@ static char help[] = "2D shallow water LETKF data assimilation example.\n"
 const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
 
 /* Default parameter values */
-#define DEFAULT_NX                  40
-#define DEFAULT_NY                  40
-#define DEFAULT_STEPS               100
-#define DEFAULT_OBS_FREQ            5
-#define DEFAULT_RANDOM_SEED         12345
-#define DEFAULT_G                   9.81
-#define DEFAULT_DT                  0.02
-#define DEFAULT_LX                  80.0
-#define DEFAULT_LY                  80.0
-#define DEFAULT_H0                  1.5
-#define DEFAULT_AX                  0.2
-#define DEFAULT_AY                  0.2
-#define DEFAULT_OBS_ERROR_STD       0.01
-#define DEFAULT_INIT_PERTURB_STD    0.05
-#define DEFAULT_INIT_H_BIAS         0.0
-#define DEFAULT_ENSEMBLE_SIZE       30
-#define DEFAULT_PROGRESS_FREQ       10
-#define DEFAULT_OBS_STRIDE          2
-#define DEFAULT_LOCALIZATION_RADIUS 20.0 /* kernel half-width; effective cutoff is 2*radius for gaspari_cohn/gaussian and radius for boxcar (~10 obs spacings on the default 80x80 domain with obs_stride=2) */
-#define SPINUP_STEPS                0
+#define DEFAULT_NX                     40
+#define DEFAULT_NY                     40
+#define DEFAULT_STEPS                  100
+#define DEFAULT_OBS_FREQ               5
+#define DEFAULT_RANDOM_SEED            12345
+#define DEFAULT_G                      9.81
+#define DEFAULT_DT                     0.02
+#define DEFAULT_LX                     80.0
+#define DEFAULT_LY                     80.0
+#define DEFAULT_H0                     1.5
+#define DEFAULT_AX                     0.2
+#define DEFAULT_AY                     0.2
+#define DEFAULT_OBS_ERROR_STD          0.01
+#define DEFAULT_INIT_PERTURB_AMPLITUDE 0.05
+#define DEFAULT_INIT_H_BIAS            0.0
+#define DEFAULT_ENSEMBLE_SIZE          30
+#define DEFAULT_PROGRESS_FREQ          10
+#define DEFAULT_OBS_STRIDE             2
+#define DEFAULT_LOCALIZATION_RADIUS    20.0 /* kernel half-width; effective cutoff is 2*radius for gaspari_cohn/gaussian and radius for boxcar (~10 obs spacings on the default 80x80 domain with obs_stride=2) */
+#define SPINUP_STEPS                   0
 
 /* Minimum valid parameter values */
 #define MIN_ENSEMBLE_SIZE 2
@@ -104,31 +104,41 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscRandom rng, PetscInt nx, PetscInt ny, PetscInt ensemble_size, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscReal init_perturb_std, PetscReal init_h_bias)
+static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscInt random_seed, PetscInt nx, PetscInt ny, PetscInt ensemble_size, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscReal init_perturb_amplitude, PetscReal init_h_bias)
 {
-  Vec        member;
-  PetscReal *alpha_x = NULL, *alpha_y = NULL, *beta_x = NULL, *beta_y = NULL;
-  PetscReal  mean_ax = 0.0, mean_ay = 0.0, mean_bx = 0.0, mean_by = 0.0;
+  Vec         member;
+  PetscRandom coef_rng;
+  PetscReal  *alpha_x, *alpha_y, *beta_x, *beta_y;
+  PetscReal   mean_ax = 0.0, mean_ay = 0.0, mean_bx = 0.0, mean_by = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscMalloc4(ensemble_size, &alpha_x, ensemble_size, &alpha_y, ensemble_size, &beta_x, ensemble_size, &beta_y));
 
+  /* The per-member coefficients are sampled redundantly on every rank because they parameterize a
+     globally smooth perturbation written into a parallel Vec. Use a PETSC_COMM_SELF rng with a
+     rank-independent seed so that all ranks observe identical coefficient sequences and the
+     ensemble member fields remain continuous across rank partitions. */
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &coef_rng));
+  PetscCall(PetscRandomSetSeed(coef_rng, (unsigned long)random_seed));
+  PetscCall(PetscRandomSeed(coef_rng));
+
   for (PetscInt e = 0; e < ensemble_size; e++) {
     PetscReal r;
 
-    PetscCall(PetscRandomGetValueReal(rng, &r));
-    alpha_x[e] = init_perturb_std * r;
+    PetscCall(PetscRandomGetValueReal(coef_rng, &r));
+    alpha_x[e] = init_perturb_amplitude * r;
     mean_ax += alpha_x[e];
-    PetscCall(PetscRandomGetValueReal(rng, &r));
-    alpha_y[e] = init_perturb_std * r;
+    PetscCall(PetscRandomGetValueReal(coef_rng, &r));
+    alpha_y[e] = init_perturb_amplitude * r;
     mean_ay += alpha_y[e];
-    PetscCall(PetscRandomGetValueReal(rng, &r));
-    beta_x[e] = init_perturb_std * r;
+    PetscCall(PetscRandomGetValueReal(coef_rng, &r));
+    beta_x[e] = init_perturb_amplitude * r;
     mean_bx += beta_x[e];
-    PetscCall(PetscRandomGetValueReal(rng, &r));
-    beta_y[e] = init_perturb_std * r;
+    PetscCall(PetscRandomGetValueReal(coef_rng, &r));
+    beta_y[e] = init_perturb_amplitude * r;
     mean_by += beta_y[e];
   }
+  PetscCall(PetscRandomDestroy(&coef_rng));
 
   mean_ax /= ensemble_size;
   mean_ay /= ensemble_size;
@@ -204,28 +214,28 @@ static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *n
 int main(int argc, char **argv)
 {
   /* Configuration parameters */
-  const PetscInt ndof                = 3; /* h, hu, hv */
-  PetscInt       nx                  = DEFAULT_NX;
-  PetscInt       ny                  = DEFAULT_NY;
-  PetscInt       steps               = DEFAULT_STEPS;
-  PetscInt       obs_freq            = DEFAULT_OBS_FREQ;
-  PetscInt       random_seed         = DEFAULT_RANDOM_SEED;
-  PetscInt       ensemble_size       = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt       n_spin              = SPINUP_STEPS;
-  PetscInt       progress_freq       = DEFAULT_PROGRESS_FREQ;
-  PetscInt       obs_stride          = DEFAULT_OBS_STRIDE;
-  PetscReal      g                   = DEFAULT_G;
-  PetscReal      dt                  = DEFAULT_DT;
-  PetscReal      Lx                  = DEFAULT_LX;
-  PetscReal      Ly                  = DEFAULT_LY;
-  PetscReal      h0                  = DEFAULT_H0;
-  PetscReal      Ax                  = DEFAULT_AX;
-  PetscReal      Ay                  = DEFAULT_AY;
-  PetscReal      init_perturb_std    = DEFAULT_INIT_PERTURB_STD;
-  PetscReal      init_h_bias         = DEFAULT_INIT_H_BIAS;
-  PetscReal      obs_error_std       = DEFAULT_OBS_ERROR_STD;
-  PetscReal      localization_radius = DEFAULT_LOCALIZATION_RADIUS;
-  Ex4FluxType    flux_type           = EX4_FLUX_RUSANOV;
+  const PetscInt ndof                   = 3; /* h, hu, hv */
+  PetscInt       nx                     = DEFAULT_NX;
+  PetscInt       ny                     = DEFAULT_NY;
+  PetscInt       steps                  = DEFAULT_STEPS;
+  PetscInt       obs_freq               = DEFAULT_OBS_FREQ;
+  PetscInt       random_seed            = DEFAULT_RANDOM_SEED;
+  PetscInt       ensemble_size          = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt       n_spin                 = SPINUP_STEPS;
+  PetscInt       progress_freq          = DEFAULT_PROGRESS_FREQ;
+  PetscInt       obs_stride             = DEFAULT_OBS_STRIDE;
+  PetscReal      g                      = DEFAULT_G;
+  PetscReal      dt                     = DEFAULT_DT;
+  PetscReal      Lx                     = DEFAULT_LX;
+  PetscReal      Ly                     = DEFAULT_LY;
+  PetscReal      h0                     = DEFAULT_H0;
+  PetscReal      Ax                     = DEFAULT_AX;
+  PetscReal      Ay                     = DEFAULT_AY;
+  PetscReal      init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE;
+  PetscReal      init_h_bias            = DEFAULT_INIT_H_BIAS;
+  PetscReal      obs_error_std          = DEFAULT_OBS_ERROR_STD;
+  PetscReal      localization_radius    = DEFAULT_LOCALIZATION_RADIUS;
+  Ex4FluxType    flux_type              = EX4_FLUX_RUSANOV;
   char           output_file[PETSC_MAX_PATH_LEN];
   PetscBool      output_enabled = PETSC_FALSE;
   PetscBool      isletkf        = PETSC_FALSE;
@@ -267,7 +277,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-h0", "Mean water height", "", h0, &h0, NULL));
   PetscCall(PetscOptionsReal("-Ax", "Wave amplitude in x", "", Ax, &Ax, NULL));
   PetscCall(PetscOptionsReal("-Ay", "Wave amplitude in y", "", Ay, &Ay, NULL));
-  PetscCall(PetscOptionsReal("-init_perturb_std", "Initial ensemble perturbation standard deviation", "", init_perturb_std, &init_perturb_std, NULL));
+  PetscCall(PetscOptionsReal("-init_perturb_amplitude", "Initial ensemble perturbation amplitude (uniform on [-amplitude/2, amplitude/2) after centering)", "", init_perturb_amplitude, &init_perturb_amplitude, NULL));
   PetscCall(PetscOptionsReal("-init_h_bias", "Initial ensemble-mean bias applied to height", "", init_h_bias, &init_h_bias, NULL));
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
@@ -281,7 +291,7 @@ int main(int argc, char **argv)
   nobs = ((nx + obs_stride - 1) / obs_stride) * ((ny + obs_stride - 1) / obs_stride);
 
   PetscCall(ValidateParameters(&nx, &ny, &nobs, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
-  PetscCheck(init_perturb_std > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation std must be positive");
+  PetscCheck(init_perturb_amplitude > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation amplitude must be positive");
 
   PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &da_state, &sw_ctx, &x0));
 
@@ -414,7 +424,7 @@ int main(int argc, char **argv)
   }
 
   /* Initialize ensemble members with perturbations */
-  PetscCall(InitializeBalancedEnsemble(da, da_state, rng, nx, ny, ensemble_size, Lx, Ly, g, h0, Ax, Ay, init_perturb_std, init_h_bias));
+  PetscCall(InitializeBalancedEnsemble(da, da_state, random_seed, nx, ny, ensemble_size, Lx, Ly, g, h0, Ax, Ay, init_perturb_amplitude, init_h_bias));
   PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
 
   /* Print configuration summary */
@@ -446,11 +456,11 @@ int main(int argc, char **argv)
                           "  CFL number            : %.4f\n"
                           "  Total steps           : %" PetscInt_FMT "\n"
                           "  Observation frequency : %" PetscInt_FMT "\n"
-                          "  Init perturb std      : %.3f\n"
+                          "  Init perturb amp      : %.3f\n"
                           "  Init height bias      : %.3f\n"
                           "  Observation noise std : %.3f\n"
                           "  Random seed           : %" PetscInt_FMT "\n",
-                          flux_name, nx, ny, nx * ny * ndof, nx * ny, (int)ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_std, (double)init_h_bias, (double)obs_error_std, random_seed));
+                          flux_name, nx, ny, nx * ny * ndof, nx * ny, (int)ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_amplitude, (double)init_h_bias, (double)obs_error_std, random_seed));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   }
 
@@ -607,30 +617,34 @@ int main(int argc, char **argv)
 
   testset:
     requires: !complex
-    args: -steps 10 -progress_freq 1 -petscda_view -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03 -nx 21 -ny 21
+    args: -petscda_type letkf -steps 10 -progress_freq 1 -petscda_view -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03 -nx 21 -ny 21
 
     test:
       suffix: letkf_wave2d
+      args: -petscda_ensemble_size 7
+
+    test:
+      suffix: kokkos_wave2d_serial
       requires: kokkos_kernels
-      args: -petscda_type letkf -petscda_ensemble_size 7
+      args: -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 7
+      output_file: output/ex4_letkf_wave2d.out
+      filter: sed -e "s/Local analysis: Kokkos/Local analysis: CPU/" -e "/GPU batch size:/d"
 
     test:
       nsize: 3
       suffix: kokkos_wave2d
       requires: kokkos_kernels
-      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
+      args: -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 
     test:
       suffix: letkf_none
-      args: -petscda_type letkf -petscda_ensemble_size 7 -petscda_letkf_localization_type none
+      args: -petscda_ensemble_size 7 -petscda_letkf_localization_type none
 
     test:
       suffix: letkf_gaussian
-      requires: kokkos_kernels
-      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 7 -petscda_letkf_localization_type gaussian -petscda_letkf_localization_radius 10.0
+      args: -petscda_ensemble_size 7 -petscda_letkf_localization_type gaussian -petscda_letkf_localization_radius 10.0
 
     test:
       suffix: letkf_boxcar
-      requires: kokkos_kernels
-      args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 3 -petscda_letkf_localization_type boxcar -petscda_letkf_localization_radius 15.0
+      args: -petscda_ensemble_size 3 -petscda_letkf_localization_type boxcar -petscda_letkf_localization_radius 15.0
 TEST*/

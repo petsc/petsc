@@ -3,10 +3,7 @@
 #include <petsc/private/daensembleimpl.h>
 #include <../src/ml/da/impls/ensemble/letkf/letkf.h>
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix_Internal(PetscDALETKFLocalizationType, PetscReal, Vec[], PetscReal[], Mat, Mat *);
-static PetscErrorCode       PetscDALETKFInstallQ(PetscDA, Mat, Mat);
-#endif
+static PetscErrorCode PetscDALETKFInstallQ(PetscDA, Mat);
 
 /* Names must match the PetscDALETKFLocalizationType enum order in include/petscda.h. */
 static const char *const PetscDALETKFLocalizationTypes[] = {"none", "gaspari_cohn", "gaussian", "boxcar", "PetscDALETKFLocalizationType", "PETSCDA_LETKF_LOC_", NULL};
@@ -393,7 +390,9 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
   PetscDA_LETKF *impl = (PetscDA_LETKF *)da->data;
   Mat            X;
   PetscInt       m;
-  PetscBool      reallocate = PETSC_FALSE;
+  PetscMPIInt    comm_size;
+  PetscBool      reallocate     = PETSC_FALSE;
+  PetscBool      path_is_kokkos = PETSC_FALSE;
   PetscReal      sqrt_m_minus_1, scale;
 
   PetscFunctionBegin;
@@ -401,20 +400,32 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
   sqrt_m_minus_1 = PetscSqrtReal((PetscReal)(m - 1));
   scale          = 1.0 / sqrt_m_minus_1;
 
-  /* Lazily build Q for built-in distance-based kernels using cached coordinates. */
-  if (impl->type != PETSCDA_LETKF_LOC_NONE && (!impl->Q || impl->Q_dirty)) {
+  /* Reject multi-rank runs that would hit a CPU-only code path before we waste work on Q
+     construction. The NONE fast path factors the m x m T matrix with LAPACK on each rank's local
+     slice, and the per-vertex CPU path lacks the cross-rank observation scatter built only by
+     PetscDALETKFSetupLocalization_Kokkos(). The Kokkos backend handles both. */
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da), &comm_size));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (impl->type != PETSCDA_LETKF_LOC_NONE && impl->coord_H) PetscCall(PetscObjectTypeCompareAny((PetscObject)impl->coord_H, &path_is_kokkos, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
+#endif
+  PetscCheck(comm_size == 1 || path_is_kokkos, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "LETKF analysis on this configuration is single-rank only. Run on one MPI rank, or configure PETSc with --download-kokkos-kernels and use a Kokkos observation operator (MATAIJKOKKOS) with a localized kernel for multi-rank support.");
+
+  /* Lazily build Q for built-in distance-based kernels using cached coordinates. When PETSc is
+     built with Kokkos kernels and the observation operator is a Kokkos matrix, use the device
+     build; otherwise fall back to the CPU build. */
+  if (impl->type != PETSCDA_LETKF_LOC_NONE && (!impl->Q || impl->Q_dirty)) {
     Mat Q_new = NULL;
 
     PetscCheck(impl->coord_H, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Coordinates not set; call PetscDALETKFSetLocalizationCoordinates() before analysis.");
     PetscCheck(impl->localization_radius > 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Localization radius not set; call PetscDALETKFSetLocalizationRadius() before analysis.");
-    PetscCall(PetscDALETKFBuildLocalizationMatrix_Internal(impl->type, impl->localization_radius, impl->coord_xyz, impl->coord_bd, impl->coord_H, &Q_new));
-    PetscCall(PetscDALETKFInstallQ(da, Q_new, impl->coord_H));
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (path_is_kokkos) PetscCall(PetscDALETKFBuildLocalizationMatrix_Kokkos(impl->type, impl->localization_radius, impl->coord_xyz, impl->coord_bd, impl->coord_H, &Q_new));
+    else
+#endif
+      PetscCall(PetscDALETKFBuildLocalizationMatrix(impl->type, impl->localization_radius, impl->coord_xyz, impl->coord_bd, impl->coord_H, &Q_new));
+    PetscCall(PetscDALETKFInstallQ(da, Q_new));
     PetscCall(MatDestroy(&Q_new));
     impl->Q_dirty = PETSC_FALSE;
-#else
-    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "LETKF built-in localization kernels require --download-kokkos-kernels; configure with Kokkos or use -petscda_letkf_localization_type none");
-#endif
   }
 
   /* For non-NONE kernels: Cholesky sqrt produces an asymmetric T^{-1/2} = L^{-T}, which is
@@ -651,7 +662,6 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
     }
   }
 #else
-  /* Without Kokkos, use CPU version */
   {
     PetscInt n_local;
     PetscCall(MatGetLocalSize(impl->Q, &n_local, NULL));
@@ -736,12 +746,13 @@ static PetscErrorCode PetscDALETKFGetLocalizationRadius_LETKF(PetscDA da, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
 /*
-  Install a freshly built localization matrix Q (validate sizes, cache row nnz
-  bounds, wire Kokkos device buffers). Only called from the lazy-build path.
+  Install a freshly built localization matrix Q (validate sizes, cache row nnz bounds, wire Kokkos
+  device buffers when applicable). Only called from the lazy-build path. The Kokkos device-side
+  setup runs only when PETSc was built with Kokkos kernels; the bare CPU analysis path (used by
+  serial non-Kokkos builds) needs only the size validation and nnz bookkeeping below.
 */
-static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, Mat H)
+static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q)
 {
   PetscDA_LETKF *impl = (PetscDA_LETKF *)da->data;
   PetscInt       nrows, ncols, rstart, rend, nnz, mm[2];
@@ -751,7 +762,9 @@ static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, Mat H)
   PetscCheck(nrows == da->state_size / da->ndof, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Localization matrix rows (%" PetscInt_FMT ") must match state size (%" PetscInt_FMT ")", nrows, da->state_size);
   PetscCheck(ncols == da->obs_size, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Localization matrix columns (%" PetscInt_FMT ") must match observation size (%" PetscInt_FMT ")", ncols, da->obs_size);
 
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
   if (impl->Q) PetscCall(PetscDALETKFDestroyLocalization_Kokkos(impl));
+#endif
 
   PetscCall(MatDestroy(&impl->Q));
   PetscCall(PetscObjectReference((PetscObject)Q));
@@ -774,10 +787,11 @@ static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, Mat H)
   impl->max_nnz_per_row = mm[0];
   impl->min_nnz_per_row = -mm[1];
 
-  PetscCall(PetscDALETKFSetupLocalization_Kokkos(impl, H));
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  PetscCall(PetscDALETKFSetupLocalization_Kokkos(impl, impl->coord_H));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
 static PetscErrorCode PetscDAView_LETKF(PetscDA da, PetscViewer viewer)
 {
