@@ -9737,6 +9737,9 @@ PetscErrorCode MatStashGetInfo(Mat mat, PetscInt *nstash, PetscInt *reallocs, Pe
 
   These are new vectors which are not owned by the `mat`, they should be destroyed with `VecDestroy()` when no longer needed.
 
+  PETSc `Vec` always have all zero entries when created with `MatCreateVecs()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
+
 .seealso: [](ch_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`, `MatSetVecType()`
 @*/
 PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)

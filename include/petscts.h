@@ -1383,9 +1383,12 @@ PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
 
 /*J
-   TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX `TSARKIMEX` type
+  TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX `TSARKIMEX` type
 
-   Level: beginner
+  Options Database Key:
+. -ts_arkimex_type (1bee|a2|l2|ars122|2c|2d|2e|prssp2|3|bpr3|ars443|4|5) - set `TSARKIMEX` scheme type, see `TSARKIMEXType`
+
+  Level: beginner
 
 .seealso: [](ch_ts), `TSARKIMEXSetType()`, `TS`, `TSARKIMEX`, `TSARKIMEXRegister()`
 J*/

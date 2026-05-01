@@ -1754,6 +1754,9 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 
   The vectors are new vectors that are not owned by the `KSP`, they should be destroyed with calls to `VecDestroyVecs()` when no longer needed.
 
+  PETSc `Vec` always have all zero entries when created with `KSPCreateVecs()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
+
   Developer Note:
   First tries to duplicate the rhs and solution vectors of the `KSP`, if they do not exist tries to get them from the matrix with `MatCreateVecs()`, if
   that does not exist tries to get them from the `DM` (if it is provided) with `DMCreateGlobalVectors()`.
