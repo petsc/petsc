@@ -2429,7 +2429,8 @@ static PetscErrorCode MatInvertDiagonalForSOR_SeqAIJ_Inode(Mat A, PetscScalar om
   const PetscInt  *sizes          = a->inode.size_csr, *diag;
 
   PetscFunctionBegin;
-  if (a->idiagState == ((PetscObject)A)->state) PetscFunctionReturn(PETSC_SUCCESS);
+  if (a->inode.ibdiagState == ((PetscObject)A)->state) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscInfo(A, "%s inode block-diagonal inverse for SOR\n", a->inode.ibdiag ? "Recomputing" : "Computing"));
   PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &diag, NULL));
   if (!a->inode.ibdiag) {
     /* calculate space needed for diagonal blocks */
@@ -2504,6 +2505,12 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
 
   PetscFunctionBegin;
   PetscCheck(a->inode.size_csr, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing Inode Structure");
+  /* The PetscChecks below guarantee omega == 1.0 and fshift == 0.0 by the
+     time MatInvertDiagonalForSOR_SeqAIJ_Inode() runs, so that helper's cache
+     key omits omega and fshift. If these checks are ever relaxed to support
+     omega != 1.0 or fshift != 0.0 on the inode path, the cache there must
+     also be re-keyed on (state, omega, fshift) the way
+     MatInvertDiagonalForSOR_SeqAIJ() in aij.c does. */
   PetscCheck(omega == 1.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for omega != 1.0; use -mat_no_inode");
   PetscCheck(fshift == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for fshift != 0.0; use -mat_no_inode");
   PetscCall(MatInvertDiagonalForSOR_SeqAIJ_Inode(A, omega, fshift));
