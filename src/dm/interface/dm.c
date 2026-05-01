@@ -1028,6 +1028,10 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
 
   Level: beginner
 
+  Note:
+  PETSc `Vec` always have all zero entries when created with `DMCreateGlobalVector()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
+
 .seealso: [](ch_dmbase), `DM`, `Vec`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 @*/
@@ -1059,8 +1063,11 @@ PetscErrorCode DMCreateGlobalVector(DM dm, Vec *vec)
 
   Level: beginner
 
-  Note:
+  Notes:
   A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
+
+  PETSc `Vec` always have all zero entries when created with `DMCreateLocalVector()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
 
 .seealso: [](ch_dmbase), `DM`, `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
