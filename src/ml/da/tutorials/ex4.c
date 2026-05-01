@@ -192,7 +192,7 @@ static PetscErrorCode InitializeBalancedEnsemble(PetscDA da, DM da_state, PetscI
 /*
   ValidateParameters - Validate input parameters
 */
-static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *nobs, PetscInt *steps, PetscInt *obs_freq, PetscInt *ensemble_size, PetscReal *dt, PetscReal *g, PetscReal *obs_error_std)
+static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *steps, PetscInt *obs_freq, PetscInt *ensemble_size, PetscReal *dt, PetscReal *g, PetscReal *obs_error_std)
 {
   PetscFunctionBeginUser;
   PetscCheck(*nx > 0 && *ny > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Grid dimensions must be positive");
@@ -238,7 +238,6 @@ int main(int argc, char **argv)
   Ex4FluxType    flux_type              = EX4_FLUX_RUSANOV;
   char           output_file[PETSC_MAX_PATH_LEN];
   PetscBool      output_enabled = PETSC_FALSE;
-  PetscBool      isletkf        = PETSC_FALSE;
   FILE          *fp             = NULL;
 
   /* PETSc objects */
@@ -287,10 +286,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
-  /* Calculate number of observations */
-  nobs = ((nx + obs_stride - 1) / obs_stride) * ((ny + obs_stride - 1) / obs_stride);
-
-  PetscCall(ValidateParameters(&nx, &ny, &nobs, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
+  PetscCall(ValidateParameters(&nx, &ny, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
   PetscCheck(init_perturb_amplitude > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation amplitude must be positive");
 
   PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &da_state, &sw_ctx, &x0));
@@ -312,18 +308,6 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(x0, &truth_state));
   PetscCall(VecCopy(x0, truth_state));
   PetscCall(VecDuplicate(x0, &rmse_work));
-
-  if (init_h_bias != 0.0) {
-    PetscScalar ***x_array;
-    PetscInt       xs, ys, xm, ym, i, j;
-
-    PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
-    PetscCall(DMDAVecGetArrayDOFWrite(da_state, x0, &x_array));
-    for (j = ys; j < ys + ym; j++) {
-      for (i = xs; i < xs + xm; i++) x_array[j][i][0] += init_h_bias;
-    }
-    PetscCall(DMDAVecRestoreArrayDOFWrite(da_state, x0, &x_array));
-  }
 
   /* Spinup if needed */
   if (n_spin > 0) {
@@ -361,10 +345,6 @@ int main(int argc, char **argv)
   PetscCall(PetscDAEnsembleGetSize(da, &ensemble_size));
   PetscCall(PetscDASetUp(da));
 
-  /* LETKF requires the symmetric eigen square root for the local update. */
-  PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
-  if (isletkf) PetscCall(PetscDAEnsembleSetSqrtType(da, PETSCDA_SQRT_EIGEN));
-
   /* Initialize ensemble statistics vectors */
   PetscCall(VecDuplicate(x0, &x_mean));
   PetscCall(VecDuplicate(x0, &x_forecast));
@@ -375,7 +355,7 @@ int main(int argc, char **argv)
   /* Configure localization for LETKF. Built-in distance-based kernels (Gaspari-Cohn,
      Gaussian, boxcar) are wired through SetLocalizationCoordinates and the matrix Q
      is built lazily on the first analysis; the NONE kernel needs no setup. */
-  if (isletkf) {
+  {
     PetscDALETKFLocalizationType loc_type;
 
     PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));

@@ -8,6 +8,9 @@
    that are intentionally duplicated per translation unit (tutorial isolation - ex4.c and
    ex4fwd.c stay independent). */
 
+/* Wet/dry threshold: cells with h below this fall back to zero flux to avoid division by ~0. */
+#define EX4_DRY_TOL 1e-10
+
 typedef enum {
   EX4_FLUX_RUSANOV,
   EX4_FLUX_MC
@@ -74,7 +77,7 @@ static inline void ManufacturedSource2D(PetscReal Lx, PetscReal Ly, PetscReal x,
 
 static inline void ComputeFluxX(PetscReal g, PetscReal h, PetscReal hu, PetscReal hv, PetscReal *F_h, PetscReal *F_hu, PetscReal *F_hv, PetscReal *u, PetscReal *c)
 {
-  if (h > 1e-10) {
+  if (h > EX4_DRY_TOL) {
     *u    = hu / h;
     *c    = PetscSqrtReal(g * h);
     *F_h  = hu;
@@ -91,7 +94,7 @@ static inline void ComputeFluxX(PetscReal g, PetscReal h, PetscReal hu, PetscRea
 
 static inline void ComputeFluxY(PetscReal g, PetscReal h, PetscReal hu, PetscReal hv, PetscReal *G_h, PetscReal *G_hu, PetscReal *G_hv, PetscReal *v, PetscReal *c)
 {
-  if (h > 1e-10) {
+  if (h > EX4_DRY_TOL) {
     *v    = hv / h;
     *c    = PetscSqrtReal(g * h);
     *G_h  = hv;

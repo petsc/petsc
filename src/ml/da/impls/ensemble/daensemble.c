@@ -4,7 +4,7 @@
 #include <petsc/private/daensembleimpl.h>
 
 /*
-     Code that is shared between multiple PetscDA ensemble methods including PETSCDAETKF and PETSCDALETKF
+     Code that is shared by PETSCDALETKF (and any future ensemble methods).
 
 */
 /*  T-Matrix Factorization and Application Methods [Alg 6.4 line 7] */
@@ -15,57 +15,6 @@
    in multiple matrix operations (Y^T * T * Y involves 3 matrix multiplications).
    A tolerance of 1e-2 (1%) is reasonable for numerical verification. */
 #define MATRIX_SQRT_TOLERANCE_FACTOR 1.0e-2
-
-/*
-  PetscDAEnsembleTFactor_Cholesky - Computes Cholesky factorization of T
-
-  Input Parameters:
-+ da - the PetscDA context
-- S  - normalized innovation matrix (obs_size x m)
-
-  Notes:
-  Computes the lower triangular Cholesky factor L such that T = L * L^T.
-  Then zeros out the upper triangular part to ensure L is strictly lower triangular.
-*/
-static PetscErrorCode PetscDAEnsembleTFactor_Cholesky(PetscDA da)
-{
-  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-  PetscBLASInt      n, lda, info;
-  PetscScalar      *a_array;
-  PetscInt          m_T, N_T, i, j;
-
-  PetscFunctionBegin;
-  /* Initialize or update L_cholesky matrix */
-  if (!en->L_cholesky) {
-    PetscCall(MatDuplicate(en->I_StS, MAT_COPY_VALUES, &en->L_cholesky));
-  } else {
-    PetscCall(MatCopy(en->I_StS, en->L_cholesky, SAME_NONZERO_PATTERN));
-  }
-
-  /* Get matrix dimensions and convert to BLAS int */
-  PetscCall(MatGetSize(en->L_cholesky, &m_T, &N_T));
-  PetscCheck(m_T == N_T, PetscObjectComm((PetscObject)en->L_cholesky), PETSC_ERR_ARG_WRONG, "Matrix must be square for Cholesky");
-  PetscCall(PetscBLASIntCast(N_T, &n));
-  lda = n;
-
-  /* Get array from dense matrix */
-  PetscCall(MatDenseGetArrayWrite(en->L_cholesky, &a_array));
-
-  /* Compute Cholesky factorization: A = L * L^T (lower triangular) */
-  PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("L", &n, a_array, &lda, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky factorization (xPOTRF): info=%" PetscBLASInt_FMT ". Matrix T is not positive definite.", info);
-
-  /* Zero out upper triangular part (LAPACK leaves it unchanged) */
-  for (j = 0; j < n; j++) {
-    for (i = 0; i < j; i++) a_array[i + j * lda] = 0.0;
-  }
-
-  /* Restore array and finalize matrix */
-  PetscCall(MatDenseRestoreArrayWrite(en->L_cholesky, &a_array));
-  PetscCall(MatAssemblyBegin(en->L_cholesky, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(en->L_cholesky, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 /*
   PetscDAEnsembleTFactor_Eigen - Computes Eigendecomposition of T
@@ -186,18 +135,16 @@ static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 - S  - normalized innovation matrix (obs_size x m)
 
   Notes:
-  This function computes $T = I + S^T * S$ and stores its factorization based on
-  the selected `PetscDASqrtType`.
-
-  - For CHOLESKY mode: computes the lower triangular Cholesky factor $L$ such that $T = L * L^T$.
-  - For EIGEN mode: computes eigenvectors $V$ and eigenvalues $D$ such that $T = V * D * V^T$.
+  This function computes $T = (1/\rho) I + S^T * S$ (where $\rho$ is the inflation factor set via
+  `PetscDAEnsembleSetInflation()`) and stores its symmetric eigendecomposition, i.e. eigenvectors
+  $V$ and eigenvalues $D$ such that $T = V * D * V^T$.
 
   The implementation uses matrix reuse (`MAT_REUSE_MATRIX`) to minimize memory allocation
   overhead when the ensemble size remains constant across analysis cycles.
 
   Level: advanced
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleApplyTInverse()`, `PetscDAEnsembleApplySqrtTInverse()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleApplyTInverse()`, `PetscDAEnsembleApplySqrtTInverse()`
 @*/
 PetscErrorCode PetscDAEnsembleTFactor(PetscDA da, Mat S)
 {
@@ -219,20 +166,17 @@ PetscErrorCode PetscDAEnsembleTFactor(PetscDA da, Mat S)
     PetscInt t_rows, t_cols;
     PetscCall(MatGetSize(en->I_StS, &t_rows, &t_cols));
 
-    /* If dimensions have changed, we must fully reallocate */
+    /* If dimensions have changed, drop the stale T/V/eigen state so the MAT_INITIAL_MATRIX
+       initializer at declaration takes effect; otherwise switch to MAT_REUSE_MATRIX. */
     if (t_rows != m || t_cols != m) {
       PetscCall(MatDestroy(&en->I_StS));
       PetscCall(MatDestroy(&en->V));
-      PetscCall(MatDestroy(&en->L_cholesky));
       PetscCall(VecDestroy(&en->sqrt_eigen_vals));
-      scall = MAT_INITIAL_MATRIX;
       PetscCall(PetscInfo(da, "Ensemble size changed (old: %" PetscInt_FMT ", new: %" PetscInt_FMT "), reallocating T matrix and factors\n", t_rows, m));
-    } else {
-      scall = MAT_REUSE_MATRIX;
-    }
+    } else scall = MAT_REUSE_MATRIX;
   }
 
-  /* 3. Compute T = I + S^T * S */
+  /* 3. Compute T = (1/rho)I + S^T * S (the (1/rho) shift is added below). */
   /*
      MatTransposeMatMult computes C = A^T * B (here C = S^T * S).
      When using MAT_REUSE_MATRIX, the existing C is overwritten with the new result.
@@ -242,55 +186,8 @@ PetscErrorCode PetscDAEnsembleTFactor(PetscDA da, Mat S)
   /* Add Identity: T = (1/rho)I + S^T*S */
   PetscCall(MatShift(en->I_StS, 1.0 / en->inflation));
 
-  /* 4. Compute Factorization based on strategy */
-  switch (en->sqrt_type) {
-  case PETSCDA_SQRT_CHOLESKY:
-    PetscCall(PetscDAEnsembleTFactor_Cholesky(da));
-    break;
-  case PETSCDA_SQRT_EIGEN:
-    PetscCall(PetscDAEnsembleTFactor_Eigen(da));
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PetscDA square-root type %" PetscInt_FMT, (PetscInt)en->sqrt_type);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  ApplyTInverse_Cholesky - Helper for Cholesky solver path
-*/
-static PetscErrorCode ApplyTInverse_Cholesky(PetscDA da, Vec sdel, Vec w)
-{
-  PetscDA_Ensemble  *en = (PetscDA_Ensemble *)da->data;
-  PetscBLASInt       n, lda, nrhs, info;
-  const PetscScalar *a_array;
-  PetscScalar       *b_array;
-  PetscInt           m_L, N_L;
-
-  PetscFunctionBegin;
-  PetscCheck(en->L_cholesky, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cholesky factor not computed");
-
-  /* Get dimensions */
-  PetscCall(MatGetSize(en->L_cholesky, &m_L, &N_L));
-  PetscCall(PetscBLASIntCast(N_L, &n));
-  lda  = n;
-  nrhs = 1;
-
-  /* Copy sdel to w for in-place solve */
-  PetscCall(VecCopy(sdel, w));
-
-  /* Get arrays */
-  PetscCall(MatDenseGetArrayRead(en->L_cholesky, &a_array));
-  PetscCall(VecGetArray(w, &b_array));
-
-  /* Solve L * L^T * w = sdel using LAPACK's Cholesky solve (xPOTRS) */
-  /* Note: POTRS expects the input B (w) to contain the RHS, and overwrites it with the solution */
-  PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("L", &n, &nrhs, a_array, &lda, b_array, &n, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky solve (xPOTRS): info=%" PetscBLASInt_FMT, info);
-
-  /* Restore arrays */
-  PetscCall(MatDenseRestoreArrayRead(en->L_cholesky, &a_array));
-  PetscCall(VecRestoreArray(w, &b_array));
+  /* 4. Compute symmetric eigendecomposition T = V * D * V^T */
+  PetscCall(PetscDAEnsembleTFactor_Eigen(da));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -336,14 +233,13 @@ static PetscErrorCode ApplyTInverse_Eigen(PetscDA da, Vec sdel, Vec w)
   Output Parameter:
 . w - output vector w = T^{-1} * sdel
 
-  Notes:
-  This function applies the inverse of T = I + S^T S using the stored
-  factorization. For CHOLESKY mode, it uses triangular solves. For EIGEN mode,
-  it uses the eigendecomposition (T^{-1} = V D^{-1} V^T).
-
   Level: advanced
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleTFactor()`, `PetscDAEnsembleApplySqrtTInverse()`
+  Notes:
+  This function applies the inverse of $T = (1/\rho) I + S^T S$ (with $\rho$ the inflation factor)
+  using the stored symmetric eigendecomposition: $T^{-1} = V D^{-1} V^T$.
+
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleTFactor()`, `PetscDAEnsembleApplySqrtTInverse()`
 @*/
 PetscErrorCode PetscDAEnsembleApplyTInverse(PetscDA da, Vec sdel, Vec w)
 {
@@ -355,88 +251,7 @@ PetscErrorCode PetscDAEnsembleApplyTInverse(PetscDA da, Vec sdel, Vec w)
   PetscValidHeaderSpecific(w, VEC_CLASSID, 3);
 
   PetscCheck(en->I_StS, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "T matrix not factored. Call PetscDAEnsembleTFactor first");
-
-  switch (en->sqrt_type) {
-  case PETSCDA_SQRT_CHOLESKY:
-    PetscCall(ApplyTInverse_Cholesky(da, sdel, w));
-    break;
-  case PETSCDA_SQRT_EIGEN:
-    PetscCall(ApplyTInverse_Eigen(da, sdel, w));
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PetscDA square-root type %" PetscInt_FMT, (PetscInt)en->sqrt_type);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  ApplySqrtTInverse_Cholesky - Computes Y = L^{-T} * U using Cholesky factorization
-
-  Notes:
-  For T = L * L^T (Cholesky factorization), this computes the ASYMMETRIC square root
-  T^{-1/2} = L^{-T} (upper triangular).
-
-  This satisfies the product property:
-    T^{-1/2} * (T^{-1/2})^T = L^{-T} * L^{-1} = (L * L^T)^{-1} = T^{-1}
-
-  WARNING: L^{-T} is upper triangular and NOT symmetric. This is valid for ETKF where
-  the global ensemble transform W = X_a * T^{-1/2} does not require symmetry. However,
-  LETKF requires a SYMMETRIC square root T^{-1/2} = V * D^{-1/2} * V^T for the local
-  ensemble perturbation update. Use PETSCDA_SQRT_EIGEN for LETKF.
-
-  This requires solving L^T * Y = U for Y.
-*/
-static PetscErrorCode ApplySqrtTInverse_Cholesky(PetscDA da, Mat U, Mat Y)
-{
-  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-
-  PetscBLASInt       n, lda, nrhs, info;
-  const PetscScalar *l_array;
-  PetscScalar       *y_array;
-  PetscInt           m_L, N_L, m_U, N_U;
-  Mat                U_identity = NULL;
-
-  PetscFunctionBegin;
-  PetscCheck(en->L_cholesky, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cholesky factor not computed");
-
-  PetscCall(MatGetSize(en->L_cholesky, &m_L, &N_L));
-
-  /* Handle NULL U (identity matrix case) */
-  if (!U) {
-    /* Create identity matrix of size m_L x m_L */
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)en->L_cholesky), PETSC_DECIDE, PETSC_DECIDE, m_L, m_L, NULL, &U_identity));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)U_identity, "dense_"));
-    PetscCall(MatSetFromOptions(U_identity));
-    PetscCall(MatSetUp(U_identity));
-    PetscCall(MatShift(U_identity, 1.0)); /* Set diagonal to 1 */
-    U = U_identity;
-  }
-
-  PetscCall(MatGetSize(U, &m_U, &N_U));
-  PetscCheck(m_L == m_U, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Cholesky factor rows (%" PetscInt_FMT ") must match U rows (%" PetscInt_FMT ")", m_L, m_U);
-
-  PetscCall(PetscBLASIntCast(N_L, &n));
-  PetscCall(PetscBLASIntCast(N_U, &nrhs));
-  lda = n;
-
-  /* Initialize Y with U for in-place solve */
-  PetscCall(MatCopy(U, Y, SAME_NONZERO_PATTERN));
-
-  /* Get direct array access */
-  PetscCall(MatDenseGetArrayRead(en->L_cholesky, &l_array));
-  PetscCall(MatDenseGetArrayWrite(Y, &y_array));
-
-  /* Solve L^T * Y = U using LAPACK triangular solve (L is lower, so L^T is upper)
-     TRTRS args: UPLO='L', TRANS='T', DIAG='N' */
-  PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("L", "T", "N", &n, &nrhs, (PetscScalar *)l_array, &lda, y_array, &n, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK triangular solve (xTRTRS): info=%" PetscBLASInt_FMT, info);
-
-  /* Restore arrays */
-  PetscCall(MatDenseRestoreArrayRead(en->L_cholesky, &l_array));
-  PetscCall(MatDenseRestoreArrayWrite(Y, &y_array));
-
-  /* Cleanup temporary identity matrix if created */
-  PetscCall(MatDestroy(&U_identity));
+  PetscCall(ApplyTInverse_Eigen(da, sdel, w));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -517,18 +332,14 @@ static PetscErrorCode ApplySqrtTInverse_Eigen(PetscDA da, Mat U, Mat Y)
   Output Parameter:
 . Y - output matrix Y = T^{-1/2} * U
 
-  Notes:
-  This function applies the inverse square root of T = I + S^T * S using the
-  stored factorization.
-
-  - For CHOLESKY mode: Computes Y = L^{-T} U
-  - For EIGEN mode: Computes Y = V D^{-1/2} V^T U
-
-  Both results satisfy Y^T * T * Y = U^T * U, preserving the metric.
-
   Level: advanced
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleTFactor()`, `PetscDAEnsembleApplyTInverse()`
+  Notes:
+  This function applies the symmetric inverse square root of $T = (1/\rho) I + S^T * S$ (with $\rho$
+  the inflation factor) using the stored eigendecomposition: $Y = V D^{-1/2} V^T U$. The result
+  satisfies $Y^T * T * Y = U^T * U$, preserving the metric.
+
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleTFactor()`, `PetscDAEnsembleApplyTInverse()`
 @*/
 PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA da, Mat U, Mat Y)
 {
@@ -540,17 +351,7 @@ PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA da, Mat U, Mat Y)
   PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
 
   PetscCheck(en->I_StS, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "I_StS matrix not created. Call PetscDAEnsembleTFactor first");
-
-  switch (en->sqrt_type) {
-  case PETSCDA_SQRT_CHOLESKY:
-    PetscCall(ApplySqrtTInverse_Cholesky(da, U, Y));
-    break;
-  case PETSCDA_SQRT_EIGEN:
-    PetscCall(ApplySqrtTInverse_Eigen(da, U, Y));
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PetscDA square-root type %" PetscInt_FMT, (PetscInt)en->sqrt_type);
-  }
+  PetscCall(ApplySqrtTInverse_Eigen(da, U, Y));
 
   /* Debugging verification: Check that metric is preserved
      Verify that Y^T * T * Y = U^T * U (or Y^T * T * Y = I if U is NULL) */
@@ -583,60 +384,6 @@ PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA da, Mat U, Mat Y)
 }
 
 /*@
-  PetscDAEnsembleSetSqrtType - Selects the reduced-space square-root algorithm used during analysis.
-
-  Logically Collective
-
-  Input Parameters:
-+ da   - the `PetscDA` object
-- type - either `PETSCDA_SQRT_CHOLESKY` or `PETSCDA_SQRT_EIGEN`
-
-  Options Database Key:
-. -petscda_ensemble_sqrt_type <cholesky or eigen> - set the `PetscDASqrtType`
-
-  Level: advanced
-
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDASqrtType`, `PetscDAEnsembleGetSqrtType()`
-@*/
-PetscErrorCode PetscDAEnsembleSetSqrtType(PetscDA da, PetscDASqrtType type)
-{
-  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
-  PetscCheck(type == PETSCDA_SQRT_CHOLESKY || type == PETSCDA_SQRT_EIGEN, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Invalid PetscDA square-root type %" PetscInt_FMT, (PetscInt)type);
-
-  en->sqrt_type = type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  PetscDAEnsembleGetSqrtType - Retrieves the current square-root implementation configured for analysis.
-
-  Not Collective
-
-  Input Parameters:
-. da - the `PetscDA` object
-
-  Output Parameter:
-. type - on output, the configured `PetscDASqrtType`
-
-  Level: advanced
-
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleSetSqrtType()`
-@*/
-PetscErrorCode PetscDAEnsembleGetSqrtType(PetscDA da, PetscDASqrtType *type)
-{
-  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
-  PetscAssertPointer(type, 2);
-  *type = en->sqrt_type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
   PetscDAEnsembleSetInflation - Sets the inflation factor for the data assimilation method.
 
   Logically Collective
@@ -647,7 +394,7 @@ PetscErrorCode PetscDAEnsembleGetSqrtType(PetscDA da, PetscDASqrtType *type)
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleGetInflation()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleGetInflation()`
 @*/
 PetscErrorCode PetscDAEnsembleSetInflation(PetscDA da, PetscReal inflation)
 {
@@ -674,7 +421,7 @@ PetscErrorCode PetscDAEnsembleSetInflation(PetscDA da, PetscReal inflation)
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleSetInflation()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleSetInflation()`
 @*/
 PetscErrorCode PetscDAEnsembleGetInflation(PetscDA da, PetscReal *inflation)
 {
@@ -701,7 +448,7 @@ PetscErrorCode PetscDAEnsembleGetInflation(PetscDA da, PetscReal *inflation)
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleRestoreMember()`, `PetscDAEnsembleSetMember()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleRestoreMember()`, `PetscDAEnsembleSetMember()`
 @*/
 PetscErrorCode PetscDAEnsembleGetMember(PetscDA da, PetscInt member_idx, Vec *member)
 {
@@ -729,7 +476,7 @@ PetscErrorCode PetscDAEnsembleGetMember(PetscDA da, PetscInt member_idx, Vec *me
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleGetMember()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleGetMember()`
 @*/
 PetscErrorCode PetscDAEnsembleRestoreMember(PetscDA da, PetscInt member_idx, Vec *member)
 {
@@ -756,7 +503,7 @@ PetscErrorCode PetscDAEnsembleRestoreMember(PetscDA da, PetscInt member_idx, Vec
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleGetMember()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleGetMember()`
 @*/
 PetscErrorCode PetscDAEnsembleSetMember(PetscDA da, PetscInt member_idx, Vec member)
 {
@@ -788,7 +535,7 @@ PetscErrorCode PetscDAEnsembleSetMember(PetscDA da, PetscInt member_idx, Vec mem
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleComputeAnomalies()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleComputeAnomalies()`
 @*/
 PetscErrorCode PetscDAEnsembleComputeMean(PetscDA da, Vec mean)
 {
@@ -823,7 +570,7 @@ PetscErrorCode PetscDAEnsembleComputeMean(PetscDA da, Vec mean)
   Notes:
   Each ensemble member is initialized as x0 + Gaussian(0, obs_error_std)
 
-.seealso: [](ch_da), `PETSCDAETKF`, `PETSCDALETKF`, `PetscDA`
+.seealso: [](ch_da), `PETSCDALETKF`, `PetscDA`
 @*/
 PetscErrorCode PetscDAEnsembleInitialize(PetscDA da, Vec x0, PetscReal obs_error_std, PetscRandom rng)
 {
@@ -879,15 +626,15 @@ PetscErrorCode PetscDAEnsembleInitialize(PetscDA da, Vec x0, PetscReal obs_error
   Output Parameter:
 . anomalies_out - location to store the newly created anomalies matrix
 
+  Level: intermediate
+
   Notes:
   If `mean` is `NULL`, the function will create a temporary vector and compute
   the ensemble mean using `PetscDAEnsembleComputeMean()`. If `mean` is provided,
   it will be used directly, which can improve performance when the mean has
   already been computed.
 
-  Level: intermediate
-
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleComputeMean()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleComputeMean()`
 @*/
 PetscErrorCode PetscDAEnsembleComputeAnomalies(PetscDA da, Vec mean_in, Mat *anomalies_out)
 {
@@ -984,7 +731,7 @@ PetscErrorCode PetscDAEnsembleComputeAnomalies(PetscDA da, Vec mean_in, Mat *ano
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleForecast()`, `PetscDASetObsErrorVariance()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleForecast()`, `PetscDASetObsErrorVariance()`
 @*/
 PetscErrorCode PetscDAEnsembleAnalysis(PetscDA da, Vec observation, Mat H)
 {
@@ -1020,7 +767,7 @@ PetscErrorCode PetscDAEnsembleAnalysis(PetscDA da, Vec observation, Mat H)
 
   Level: intermediate
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAEnsembleAnalysis()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleAnalysis()`
 @*/
 PetscErrorCode PetscDAEnsembleForecast(PetscDA da, PetscErrorCode (*model)(Vec, Vec, PetscCtx), PetscCtx ctx)
 {
@@ -1043,7 +790,6 @@ PetscErrorCode PetscDAView_Ensemble(PetscDA da, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Ensemble size: %" PetscInt_FMT "\n", en->size));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Assembled: %s\n", en->assembled ? "true" : "false"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Inflation: %g\n", (double)en->inflation));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Square root type: %s\n", (en->sqrt_type == PETSCDA_SQRT_EIGEN) ? "eigen" : "cholesky"));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1081,14 +827,14 @@ PetscErrorCode PetscDASetUp_Ensemble(PetscDA da)
 - ensemble_size - number of ensemble members
 
   Options Database Key:
-. -petscda_ensemble_size <size> - number of ensemble members
+. -petscda_ensemble_size size - number of ensemble members
 
   Level: beginner
 
   Note:
   The size must be greater than or equal to two. See the scale factor in `PetscDAEnsembleInitialize()` and `PetscDALETKFLocalAnalysis()`
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDAGetSizes()`, `PetscDASetSizes()`, `PetscDASetUp()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAGetSizes()`, `PetscDASetSizes()`, `PetscDASetUp()`
 @*/
 PetscErrorCode PetscDAEnsembleSetSize(PetscDA da, PetscInt ensemble_size)
 {
@@ -1116,7 +862,7 @@ PetscErrorCode PetscDAEnsembleSetSize(PetscDA da, PetscInt ensemble_size)
 
   Level: beginner
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDASetSizes()`, `PetscDAGetSizes()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDASetSizes()`, `PetscDAGetSizes()`
 @*/
 PetscErrorCode PetscDAEnsembleGetSize(PetscDA da, PetscInt *ensemble_size)
 {
@@ -1133,12 +879,8 @@ PetscErrorCode PetscDASetFromOptions_Ensemble(PetscDA da, PetscOptionItems *Pets
 {
   PetscDA_Ensemble *en                 = (PetscDA_Ensemble *)da->data;
   PetscOptionItems  PetscOptionsObject = *PetscOptionsObjectPtr;
-  char              sqrt_type_name[256];
-  PetscBool         sqrt_set = PETSC_FALSE, flg;
-  const char       *sqrt_default;
-  PetscDASqrtType   sqrt_type;
-  PetscReal         inflation_val = en->inflation;
-  PetscBool         inflation_set;
+  PetscReal         inflation_val      = en->inflation;
+  PetscBool         inflation_set, flg;
   PetscInt          ensemble_size;
 
   PetscFunctionBegin;
@@ -1147,19 +889,6 @@ PetscErrorCode PetscDASetFromOptions_Ensemble(PetscDA da, PetscOptionItems *Pets
   PetscCall(PetscOptionsReal("-petscda_ensemble_inflation", "Inflation factor", "PetscDAEnsembleSetInflation", en->inflation, &inflation_val, &inflation_set));
   if (inflation_set) PetscCall(PetscDAEnsembleSetInflation(da, inflation_val));
 
-  sqrt_default = (en->sqrt_type == PETSCDA_SQRT_EIGEN) ? "eigen" : "cholesky";
-  PetscCall(PetscOptionsString("-petscda_ensemble_sqrt_type", "Matrix square root factorization", "PetscDASetSqrtType", sqrt_default, sqrt_type_name, sizeof(sqrt_type_name), &sqrt_set));
-  if (sqrt_set) {
-    PetscBool match_cholesky, match_eigen;
-    PetscCall(PetscStrcmp(sqrt_type_name, "cholesky", &match_cholesky));
-    PetscCall(PetscStrcmp(sqrt_type_name, "eigen", &match_eigen));
-    if (match_cholesky) {
-      sqrt_type = PETSCDA_SQRT_CHOLESKY;
-    } else if (match_eigen) {
-      sqrt_type = PETSCDA_SQRT_EIGEN;
-    } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDA square-root type \"%s\"", sqrt_type_name);
-    PetscCall(PetscDAEnsembleSetSqrtType(da, sqrt_type));
-  }
   PetscCall(PetscOptionsInt("-petscda_ensemble_size", "Number of ensemble members", "PetscDAEnsembleSetSize", en->size, &ensemble_size, &flg));
   if (flg) PetscCall(PetscDAEnsembleSetSize(da, ensemble_size));
   PetscOptionsHeadEnd();
@@ -1177,7 +906,6 @@ PetscErrorCode PetscDADestroy_Ensemble(PetscDA da)
 
   /* Destroy T-matrix factorization data */
   PetscCall(MatDestroy(&en->V));
-  PetscCall(MatDestroy(&en->L_cholesky));
   PetscCall(VecDestroy(&en->sqrt_eigen_vals));
   PetscCall(MatDestroy(&en->I_StS));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1194,9 +922,7 @@ PetscErrorCode PetscDACreate_Ensemble(PetscDA da)
   en->inflation = 1.0;
 
   /* Initialize T-matrix factorization fields */
-  en->sqrt_type       = PETSCDA_SQRT_EIGEN;
   en->V               = NULL;
-  en->L_cholesky      = NULL;
   en->sqrt_eigen_vals = NULL;
   en->I_StS           = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1219,7 +945,7 @@ PetscErrorCode PetscDACreate_Ensemble(PetscDA da)
 
   Level: developer
 
-.seealso: [](ch_da), `PetscDA`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDASetSizes()`, `PetscDAGetSizes()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDASetSizes()`, `PetscDAGetSizes()`
 @*/
 PetscErrorCode PetscDAEnsembleComputeNormalizedInnovationMatrix(Mat Z, Vec y_mean, Vec r_inv_sqrt, PetscInt m, PetscScalar scale, Mat S)
 {
@@ -1295,7 +1021,6 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscEr
     PetscCall(VecCopy(temp, col_out));
     PetscCall(MatDenseRestoreColumnVecWrite(en->ensemble, i, &col_out));
   }
-
   PetscCall(VecDestroy(&temp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

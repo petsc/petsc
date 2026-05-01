@@ -6,7 +6,6 @@ PetscDA Object: 1 MPI process
   Ensemble size: 7
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
   Local analysis: CPU
   Localization type: none (global ETKF)
 2D Shallow Water LETKF Example

@@ -38,11 +38,9 @@ typedef struct {
   PetscBool assembled; /* Is the PetscDA object assembled/ready */
 
   /* T-matrix factorization data (shared across implementations) */
-  PetscDASqrtType sqrt_type;       /* Square root factorization type */
-  Mat             V;               /* Eigen vectors (LAPACK column-major storage) */
-  Mat             L_cholesky;      /* Lower triangular Cholesky factor */
-  Vec             sqrt_eigen_vals; /* Square root of eigen values */
-  Mat             I_StS;           /* T = I + S^T * S matrix */
+  Mat V;               /* Eigen vectors (LAPACK column-major storage) */
+  Vec sqrt_eigen_vals; /* Square root of eigen values */
+  Mat I_StS;           /* T = (1/rho)I + S^T * S matrix (rho = inflation) */
 } PetscDA_Ensemble;
 
 /* Internal utility functions shared across PetscDA implementations */

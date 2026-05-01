@@ -523,7 +523,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "Gaspari-Cohn localization cutoff radius (must be positive)", "", localization_radius, &localization_radius, NULL));
+  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   /* Parse test type option */
   {
     char        testTypeName[256];
@@ -894,8 +894,8 @@ int main(int argc, char **argv)
       args: -petscda_type letkf -petscda_ensemble_size 7
 
     test:
-      suffix: etkf_dam
-      args: -petscda_ensemble_sqrt_type cholesky -petscda_type etkf
+      suffix: letkf_dam_loc_none
+      args: -petscda_type letkf -petscda_letkf_localization_type none
 
     test:
       nsize: 3
@@ -917,7 +917,7 @@ int main(int argc, char **argv)
       args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_letkf_batch_size 13 -info :vec -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 
     test:
-      suffix: wave_mc
-      args: -ex3_flux mc -petscda_type etkf
+      suffix: letkf_wave_mc
+      args: -ex3_flux mc -petscda_type letkf -petscda_letkf_localization_type none
 
 TEST*/

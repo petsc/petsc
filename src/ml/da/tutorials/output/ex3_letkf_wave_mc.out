@@ -1,11 +1,12 @@
 PetscDA Object: 1 MPI process
-  type: etkf
+  type: letkf
   State size: 160
   Observation size: 40
   Ensemble size: 10
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
+  Local analysis: CPU
+  Localization type: none (global ETKF)
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Traveling wave

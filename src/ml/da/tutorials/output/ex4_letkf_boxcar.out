@@ -6,7 +6,6 @@ PetscDA Object: 1 MPI process
   Ensemble size: 3
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
   Local analysis: CPU
   Localization type: boxcar
   Localization radius: 15.

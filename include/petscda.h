@@ -15,39 +15,20 @@
 
    Some planned work for `PetscDA` is available as GitLab Issue #1882
 
-   Currently we supply two ensemble-based assimilators: `PETSCDAETKF` and `PETSCDALETKF`
+   Currently we supply one ensemble-based assimilator: `PETSCDALETKF`
 
-.seealso: [](ch_da), `PetscDAType`, `PETSCDAETKF`, `PETSCDALETKF`, `PetscDASqrtType`, `PetscDACreate()`, `PetscDASetType()`,
+.seealso: [](ch_da), `PetscDAType`, `PETSCDALETKF`, `PetscDACreate()`, `PetscDASetType()`,
           `PetscDASetSizes()`, `PetscDAEnsembleSetSize()`, `PetscDAEnsembleAnalysis()`, `PetscDAEnsembleForecast()`,
           `PetscDADestroy()`, `PetscDAView()`
 S*/
 typedef struct _p_PetscDA *PetscDA;
 
 /*E
-  PetscDASqrtType - Type of square root of matrices to use the data assimilation algorithms
-
-  Values:
-+  `PETSCDA_SQRT_CHOLESKY` - Use the Cholesky factorization
--  `PETSCDA_SQRT_EIGEN`    - Use the eigenvalue decomposition
-
-  Option Database Key:
-. -petscda_ensemble_sqrt_type <cholesky, eigen> - select the square root type at run time
-
-  Level: intermediate
-
-.seealso: [](ch_da), `PetscDA`, `PetscDAEnsembleSetSqrtType()`, `PetscDAEnsembleGetSqrtType()`
-E*/
-typedef enum {
-  PETSCDA_SQRT_CHOLESKY = 0,
-  PETSCDA_SQRT_EIGEN    = 1
-} PetscDASqrtType;
-
-/*E
   PetscDALETKFLocalizationType - Type of localization kernel used by `PETSCDALETKF`
 
   Values:
 + `PETSCDA_LETKF_LOC_NONE`         - No localization. Each vertex sees every observation with weight one;
-                                     the per-vertex loop is replaced by a single global analysis equivalent to `PETSCDAETKF`.
+                                     the per-vertex loop reduces to a single global analysis (the classic ETKF).
 . `PETSCDA_LETKF_LOC_GASPARI_COHN` - Gaspari-Cohn fifth-order piecewise rational kernel with compact support at twice the radius
 . `PETSCDA_LETKF_LOC_GAUSSIAN`     - Gaussian kernel exp(-d^2 / (2 r^2)) truncated at twice the radius
 - `PETSCDA_LETKF_LOC_BOXCAR`       - Uniform weight one inside the radius, zero outside
@@ -73,10 +54,9 @@ typedef enum {
 
   Level: beginner
 
-.seealso: [](ch_da), `PetscDA`, `PetscDASetType()`, `PETSCDAETKF`, `PETSCDALETKF`
+.seealso: [](ch_da), `PetscDA`, `PetscDASetType()`, `PETSCDALETKF`
 J*/
 typedef const char *PetscDAType;
-#define PETSCDAETKF  "etkf"
 #define PETSCDALETKF "letkf"
 
 PETSC_EXTERN PetscErrorCode PetscDAInitializePackage(void);
@@ -123,8 +103,6 @@ PETSC_EXTERN PetscErrorCode PetscDAEnsembleForecast(PetscDA, PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleInitialize(PetscDA, Vec, PetscReal, PetscRandom);
 
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleComputeNormalizedInnovationMatrix(Mat, Vec, Vec, PetscInt, PetscScalar, Mat);
-PETSC_EXTERN PetscErrorCode PetscDAEnsembleSetSqrtType(PetscDA, PetscDASqrtType);
-PETSC_EXTERN PetscErrorCode PetscDAEnsembleGetSqrtType(PetscDA, PetscDASqrtType *);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleTFactor(PetscDA, Mat);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplyTInverse(PetscDA, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA, Mat, Mat);

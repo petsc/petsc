@@ -5,7 +5,6 @@ PetscDA Object: 1 MPI process
   Ensemble size: 5
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
   Local analysis: CPU
   Localization type: gaspari_cohn
   Localization radius: 100.

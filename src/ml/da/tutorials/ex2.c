@@ -206,8 +206,9 @@ int main(int argc, char **argv)
   PetscReal obs_error_std       = DEFAULT_OBS_ERROR_STD;
   PetscReal ensemble_init_std   = -1;    /* Initial ensemble spread */
   PetscReal localization_radius = 100.0; /* Large value = effectively no localization for domain size 40 */
-  PetscBool isletkf;
-  PetscReal bd[3] = {DEFAULT_N, 0, 0};
+  PetscReal bd[3]               = {DEFAULT_N, 0, 0};
+  Vec       xyz[3]              = {NULL, NULL, NULL};
+  Vec       coord;
 
   /* PETSc objects */
   Lorenz96Ctx *l95_ctx = NULL, *truth_ctx = NULL;
@@ -242,7 +243,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
   PetscCall(PetscOptionsReal("-ensemble_init_std", "Initial ensemble spread standard deviation", "", ensemble_init_std, &ensemble_init_std, NULL));
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "Gaspari-Cohn localization cutoff radius (must be positive)", "", localization_radius, &localization_radius, NULL));
+  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
   if (ensemble_init_std < 0) ensemble_init_std = obs_error_std;
@@ -311,22 +312,17 @@ int main(int argc, char **argv)
   PetscCall(PetscDAEnsembleGetSize(da, &ensemble_size));
   PetscCall(PetscDASetUp(da));
   PetscCall(PetscDASetObsErrorVariance(da, obs_error_var));
-  PetscCall(PetscObjectTypeCompare((PetscObject)da, PETSCDALETKF, &isletkf));
 
-  /* Configure localization for LETKF (Q is built lazily on first analysis). */
-  if (isletkf) {
-    Vec xyz[3] = {NULL, NULL, NULL};
-    Vec coord;
-
-    PetscCall(DMGetCoordinates(da_state, &coord));
-    PetscCall(DMCreateGlobalVector(da_state, &xyz[0]));
-    PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
-    PetscCall(VecStrideGather(coord, 0, xyz[0], INSERT_VALUES));
-    PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-    PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H));
-    PetscCall(VecDestroy(&xyz[0]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization configured: %" PetscInt_FMT " vertices, radius=%g\n", n, (double)localization_radius));
-  }
+  /* Configure localization for LETKF (Q is built lazily on first analysis). PETSCDALETKF is
+     now the only registered PetscDAType, so we can call the setters unconditionally. */
+  PetscCall(DMGetCoordinates(da_state, &coord));
+  PetscCall(DMCreateGlobalVector(da_state, &xyz[0]));
+  PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
+  PetscCall(VecStrideGather(coord, 0, xyz[0], INSERT_VALUES));
+  PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+  PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H));
+  PetscCall(VecDestroy(&xyz[0]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization configured: %" PetscInt_FMT " vertices, radius=%g\n", n, (double)localization_radius));
 
   /* Initialize ensemble members from spun-up truth state */
   PetscCall(PetscDAEnsembleInitialize(da, truth_state, ensemble_init_std, rng));
@@ -349,7 +345,7 @@ int main(int argc, char **argv)
                         "  Ensemble init std      : %.3f\n"
                         "  Random seed            : %" PetscInt_FMT "\n"
                         "  Localization radius    : %g\n\n",
-                        n, ensemble_size, (double)F, (double)dt, steps, burn, SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, (double)localization_radius));
+                        n, ensemble_size, (double)F, (double)dt, steps, burn, (PetscInt)SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, (double)localization_radius));
 
   /* Main assimilation cycle: forecast and analysis steps */
   for (step = 0; step <= steps; step++) {
@@ -448,8 +444,8 @@ int main(int argc, char **argv)
     args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5
 
     test:
-      suffix: chol
-      args: -petscda_type letkf -petscda_ensemble_sqrt_type eigen
+      suffix: letkf_serial
+      args: -petscda_type letkf
 
     test:
       nsize: 3
@@ -457,11 +453,7 @@ int main(int argc, char **argv)
       args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -info :vec -petscda_letkf_localization_radius 5.0
 
     test:
-      suffix: etkf
-      args: -petscda_type etkf -petscda_ensemble_sqrt_type eigen
-
-    test:
-      suffix: etkf2
-      args: -petscda_type etkf -petscda_ensemble_sqrt_type cholesky
+      suffix: letkf_loc_none
+      args: -petscda_type letkf -petscda_letkf_localization_type none
 
   TEST*/

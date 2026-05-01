@@ -1,13 +1,14 @@
 Spinning up truth for 0 steps...
 PetscDA Object: 1 MPI process
-  type: etkf
+  type: letkf
   State size: 40
   Observation size: 40
   Ensemble size: 30
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
-Lorenz-96 ETKF Example
+  Local analysis: CPU
+  Localization type: none (global ETKF)
+Lorenz-96 LETKF Example
 ======================
   State dimension       : 40
   Ensemble size         : 30

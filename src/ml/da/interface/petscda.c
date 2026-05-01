@@ -74,7 +74,6 @@ PetscErrorCode PetscDARegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscDACreate_ETKF(PetscDA);
 PETSC_INTERN PetscErrorCode PetscDACreate_LETKF(PetscDA);
 
 /*@
@@ -91,7 +90,6 @@ PetscErrorCode PetscDARegisterAll(void)
   PetscFunctionBegin;
   if (PetscDARegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDARegisterAllCalled = PETSC_TRUE;
-  PetscCall(PetscDARegister(PETSCDAETKF, PetscDACreate_ETKF));
   PetscCall(PetscDARegister(PETSCDALETKF, PetscDACreate_LETKF));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -195,7 +193,7 @@ PetscErrorCode PetscDACreate(MPI_Comm comm, PetscDA *da_out)
   da->R                = NULL;
   da->data             = NULL;
   *da_out              = da;
-  PetscCall(PetscDASetType(da, PETSCDAETKF));
+  PetscCall(PetscDASetType(da, PETSCDALETKF));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -232,7 +230,7 @@ PetscErrorCode PetscDADestroy(PetscDA *da)
 
   Input Parameters:
 + da   - the `PetscDA` context
-- type - name of the implementation (for example `PETSCDAETKF`)
+- type - name of the implementation (for example `PETSCDALETKF`)
 
   Level: intermediate
 

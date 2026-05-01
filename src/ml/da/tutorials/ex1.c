@@ -5,7 +5,7 @@
 #include <petscts.h>
 #include <petscvec.h>
 
-static char help[] = "Deterministic ETKF example for the Lorenz-96 model. See "
+static char help[] = "Deterministic LETKF (NONE-localization) example for the Lorenz-96 model. See "
                      "Algorithm 6.4 of \n"
                      "Asch, Bocquet, and Nodet (2016) \"Data Assimilation\" "
                      "(SIAM, doi:10.1137/1.9781611974546).\n\n"
@@ -311,7 +311,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Parse command-line options */
-  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Lorenz-96 ETKF Quick Example", NULL);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Lorenz-96 LETKF Quick Example", NULL);
   PetscCall(PetscOptionsInt("-n", "State dimension", "", n, &n, NULL));
   PetscCall(PetscOptionsInt("-steps", "Number of time steps", "", steps, &steps, NULL));
   PetscCall(PetscOptionsInt("-burn", "Burn-in steps excluded from statistics", "", burn, &burn, NULL));
@@ -375,7 +375,8 @@ int main(int argc, char **argv)
 
   /* Create and configure PetscDA for ensemble data assimilation */
   PetscCall(PetscDACreate(PETSC_COMM_WORLD, &da));
-  PetscCall(PetscDASetType(da, PETSCDAETKF)); /* Set ETKF type */
+  PetscCall(PetscDASetType(da, PETSCDALETKF));
+  PetscCall(PetscDALETKFSetLocalizationType(da, PETSCDA_LETKF_LOC_NONE));
   PetscCall(PetscDASetSizes(da, n, n));
   PetscCall(PetscDAEnsembleSetSize(da, ensemble_size));
   PetscCall(PetscDASetFromOptions(da));
@@ -388,7 +389,7 @@ int main(int argc, char **argv)
   PetscCall(PetscDAEnsembleInitialize(da, truth_state, ensemble_init_std, rng));
 
   /* Print configuration summary */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Lorenz-96 ETKF Example\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Lorenz-96 LETKF Example\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "======================\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                         "  State dimension       : %" PetscInt_FMT "\n"
@@ -572,10 +573,5 @@ int main(int argc, char **argv)
     test:
       requires: !complex
       suffix: eigen
-      args: -petscda_ensemble_sqrt_type eigen
-
-    test:
-      suffix: chol
-      args: -petscda_ensemble_sqrt_type cholesky
 
 TEST*/

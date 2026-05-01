@@ -7,7 +7,6 @@ PetscDA Object: 3 MPI processes
   Ensemble size: 5
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
   Local analysis: Kokkos
   Localization type: gaspari_cohn
   Localization radius: 5.
