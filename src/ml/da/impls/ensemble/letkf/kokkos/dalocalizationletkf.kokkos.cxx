@@ -1,10 +1,6 @@
 #include <petsc.h>
 #include <petscmat.h>
 #include <petsc_kokkos.hpp>
-#include <cmath>
-#include <cstdlib>
-#include <algorithm>
-#include <Kokkos_Core.hpp>
 
 typedef struct {
   PetscReal distance;

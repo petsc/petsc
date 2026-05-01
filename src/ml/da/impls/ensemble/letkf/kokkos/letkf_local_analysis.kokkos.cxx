@@ -1,12 +1,6 @@
 #include "../src/ml/da/impls/ensemble/letkf/letkf.h"
-#include <petscblaslapack.h>
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>
-#include <KokkosBatched_SVD_Decl.hpp>
-#include <KokkosBatched_SVD_Serial_Impl.hpp>
-#include <KokkosBatched_Gemm_Decl.hpp>
-#include <KokkosBatched_Gemm_Serial_Impl.hpp>
-#include <KokkosBatched_Util.hpp>
 
 #if defined(KOKKOS_ENABLE_CUDA)
   #include <cusolverDn.h>
@@ -19,7 +13,6 @@
 #elif defined(KOKKOS_ENABLE_SYCL)
   #include <oneapi/mkl.hpp>
   #include <sycl/sycl.hpp>
-  #include <petscdevice_sycl.h>
 #endif
 
 /* ========================================================================== */
@@ -124,6 +117,7 @@ struct EigenWorkspace {
   Uses LAPACK's syev routine to compute eigendecomposition sequentially on host.
 */
 #if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL)
+  #include <petscblaslapack.h>
 static PetscErrorCode BatchedEigenSolve_Host(Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> T_batch, Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> Lambda_batch, Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> V_batch, PetscInt n_batch, PetscInt n_size, EigenWorkspace *work)
 {
   PetscFunctionBegin;
@@ -256,8 +250,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j]; // CUDA-12.6 nvcc compiler hangs if we put this line before the V_batch loop
       }
     });
   Kokkos::fence();
@@ -316,8 +310,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
       }
     });
   Kokkos::fence();
@@ -345,15 +339,17 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   /* oneMKL doesn't have a native batched syevd, so we loop over batch */
   /* Use oneapi::mkl::lapack::syevd which computes eigenvalues and eigenvectors */
   for (int i = 0; i < n_batch; i++) {
-    PetscScalar *A_ptr    = d_A_contig + i * n_size * n_size;
-    PetscScalar *W_ptr    = d_W_contig + i * n_size;
-    int         *info_ptr = d_info + i;
+    PetscScalar *A_ptr = d_A_contig + i * n_size * n_size;
+    PetscScalar *W_ptr = d_W_contig + i * n_size;
+    // int         *info_ptr = d_info + i;
 
     try {
     #if defined(PETSC_USE_REAL_SINGLE)
-      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
+      // oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
+      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device);
     #else
-      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
+      // oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
+      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device);
     #endif
       q->wait();
     } catch (sycl::exception const &e) {
@@ -374,8 +370,8 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   Kokkos::parallel_for(
     "CopyResultsBack", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
       for (int j = 0; j < n_size; j++) {
-        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
         for (int k = 0; k < n_size; k++) V_batch(i, j, k) = d_A_contig[i * n_size * n_size + k * n_size + j];
+        Lambda_batch(i, j) = d_W_contig[i * n_size + j];
       }
     });
   Kokkos::fence();
