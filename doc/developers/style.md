@@ -577,6 +577,13 @@ Even with the use of `clang-format` there are still many decisions about code fo
     PetscPrintf(PETSC_COMM_WORLD, "Norm %g\n", (double)norm);
     ```
 
+19. When appropriate, ensure that each `XXXSetYYY()` function has a corresponding `XXXGetYYY()` function for obtaining
+    the object or value that was set.
+
+20. For `XXXGetYYY()` functions that temporarily provide a resource or object to the user, ensure, when appropriate, that there is
+    a corresponding `XXXRestoreYYY()` to return that resource. See, for example, `VecGetArray()` and `VecRestoreArray()`.
+    Note that the Fortran API sometimes has a restore API function that is not needed in C.
+
 ## Formatted Comments
 
 PETSc uses formatted comments and the Sowing packages {cite}`gropp1993sowing` {cite}`gropp1993sowing2`
