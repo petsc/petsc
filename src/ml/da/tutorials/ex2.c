@@ -390,7 +390,7 @@ int main(int argc, char **argv)
                         "  Ensemble init std      : %.3f\n"
                         "  Random seed            : %" PetscInt_FMT "\n"
                         "  Localization (obs/vert): %" PetscInt_FMT " \n\n",
-                        n, ensemble_size, (double)F, (double)dt, steps, burn, SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, n_obs_vertex));
+                        n, ensemble_size, (double)F, (double)dt, steps, burn, (PetscInt)SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, n_obs_vertex));
 
   /* Main assimilation cycle: forecast and analysis steps */
   for (step = 0; step <= steps; step++) {

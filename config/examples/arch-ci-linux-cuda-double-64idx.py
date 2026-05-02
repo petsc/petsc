@@ -14,6 +14,10 @@ if __name__ == '__main__':
     '--download-openmpi=1',
     '--download-hypre=1',
     '--download-hwloc=1',
+    '--download-kokkos=1',
+    '--download-kokkos-commit=1557870d70d5ac0a636d3e8873d5b4ce1bb0375b', # develop as of 5/1/2026
+    '--download-kokkos-kernels=1',
+    '--download-kokkos-kernels-commit=90ce916124f86173481944db6c810d67e8978bd0', # develop as of 5/1/2026
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',

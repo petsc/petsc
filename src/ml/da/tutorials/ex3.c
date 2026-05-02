@@ -747,7 +747,7 @@ int main(int argc, char **argv)
                           "  Observation frequency : %" PetscInt_FMT "\n"
                           "  Observation noise std : %.3f\n"
                           "  Random seed           : %" PetscInt_FMT "\n"
-                          "  Localization          : None/Global (%d obs per vertex)\n\n",
+                          "  Localization          : None/Global (%" PetscInt_FMT " obs per vertex)\n\n",
                           test_name, flux_name, n_vert * ndof, n_vert, (int)ndof, nobs, ensemble_size, (double)L, (double)g, (double)dt, steps, obs_freq, (double)obs_error_std, random_seed, num_observations_vertex));
   }
 

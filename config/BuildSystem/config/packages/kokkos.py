@@ -105,7 +105,6 @@ class Configure(config.package.CMakePackage):
       # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.
       lang = 'cuda'
       args.append('-DKokkos_ENABLE_CUDA=ON')
-      args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
       # Use of cudaMallocAsync() is turned off by default since Kokkos-4.5.0, see https://github.com/kokkos/kokkos/pull/7353,
       # since it interferes with the CUDA aware MPI. We also turn it off for older versions.
       args.append('-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC:BOOL=OFF')
@@ -214,7 +213,6 @@ class Configure(config.package.CMakePackage):
     import os
     if self.cuda.found:
       self.buildLanguages = ['CUDA']
-      oldFlags = self.setCompilers.CUDAPPFLAGS
       if self.cuda.cudaclang:
         self.addMakeMacro('KOKKOS_USE_CUDACLANG_COMPILER',1) # use the clang compiler to compile PETSc Kokkos code
       else:
@@ -233,21 +231,4 @@ class Configure(config.package.CMakePackage):
 
     config.package.CMakePackage.configureLibrary(self)
 
-    if self.cuda.found:
-      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
-      self.logWrite('Checking if Kokkos is configured with CUDA lambda\n')
-      self.pushLanguage('CUDA')
-      cuda_lambda_test = '''
-         #include <Kokkos_Macros.hpp>
-         #if !defined(KOKKOS_ENABLE_CUDA_LAMBDA)
-         #error "Kokkos is not configured with CUDA lambda"
-         #endif
-      '''
-
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
-      if self.checkPreprocess(cuda_lambda_test):
-        self.logPrint('Kokkos is configured with CUDA lambda\n')
-      else:
-        raise RuntimeError('Kokkos is not configured with -DKokkos_ENABLE_CUDA_LAMBDA. PETSc usage requires Kokkos to be configured with that')
-      self.setCompilers.CUDAPPFLAGS = oldFlags
-      self.popLanguage()
+    self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))

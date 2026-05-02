@@ -15,6 +15,10 @@ if __name__ == '__main__':
     '--with-mpi-dir=/nfs/gce/projects/petsc/soft/u22.04/mpich-4.0.2',
     '--with-mpi-ftn-module=mpi_f08',
     '--with-strict-petscerrorcode',
+    '--download-kokkos=1',
+    '--download-kokkos-commit=1557870d70d5ac0a636d3e8873d5b4ce1bb0375b', # develop as of 5/1/2026
+    '--download-kokkos-kernels=1',
+    '--download-kokkos-kernels-commit=90ce916124f86173481944db6c810d67e8978bd0', # develop as of 5/1/2026
     '--with-coverage',
   ]
   configure.petsc_configure(configure_options)
