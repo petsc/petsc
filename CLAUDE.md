@@ -33,6 +33,11 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Private PETSc functions generally end in `_Private` or include an implementation suffix such as `MatMult_SeqAIJ`.
 - Implementation functions should start with the interface operation name and then the implementation name, for example `KSPSolve_GMRES()`.
 - Options database keys are lowercase with underscores and usually mirror the setter name without `set`, for example `-ksp_gmres_restart`.
+- Options-line syntax (applies in **all** documentation — `/*@ @*/` blocks, `/*MC M*/` blocks, `.md` chapters, and prose comments):
+  - Enumerated values use `(choice1|choice2|choice3)`, **never** `<a, b>` or `{a, b}`.
+  - Free-form arguments use plain words (e.g. `radius`, `size`, `name`), **never** `<radius>` and never backticks around the arg.
+  - Inside the `Options Database Keys:` linter block (the bullet entries `+ -opt val - desc`), the option-name is **bare** — no backticks. Example: `. -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel`.
+  - In inline prose elsewhere (Notes blocks, `.md` chapters, `/*MC M*/` body), wrap the option in backticks as code: `` `-petscda_type name` ``, `` `-log_view` ``. This matches the convention used throughout `doc/manual/` and PETSc's docstring prose.
 - Function typedef names should end in `Fn`.
 
 ## PETSc Data Type Rules
@@ -61,7 +66,7 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Do not decorate multiline comments with leading `*` on each line.
 - Always append `()` to function names when mentioning them in comments, for example `MatAssemblyEnd_MPIAIJ()`.
 - Use correct grammar and spelling in comments and messages.
-- Follow C90-style declarations at the start of a block, except loop indices declared in `for (...)` initializers and small-scope declarations inside nested blocks when appropriate.
+- Follow C90-style declarations at the start of a block. The only allowed exceptions are (a) loop indices in `for (...)` initializers and (b) declarations introducing a genuinely new nested `{ ... }` scope. Do **not** sprinkle `const T x = ...;` lines between statements — even after an early-return guard. Hoist all locals to the top of the function and assign them after the guards.
 
 ## Error Handling And PETSc Idioms
 
@@ -70,6 +75,41 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Check object validity and arguments using the usual PETSc validation macros when working in code paths that already use them.
 - Reuse existing PETSc utility routines and macros before adding custom helpers.
 - Do not wrap `PetscCheck()` in an outer `if (...)` when the condition can be expressed directly in the check. Prefer a single guard such as `PetscCheck(!use_mms || sw->Ax == sw->Ay, ...)` over `if (use_mms) PetscCheck(sw->Ax == sw->Ay, ...)`.
+
+## Kokkos / Device Code
+
+For an unreachable guard (a `default:` arm or "can't happen" branch) inside a `KOKKOS_INLINE_FUNCTION`, use `Kokkos::abort("message")`. `SETERRQ`/`SETERRABORT` are not device-callable.
+
+## Docstring Conventions (`/*@ ... @*/`)
+
+`petsclinter` (run by `make lint`) enforces docstring formatting.
+
+- **Section order.** Sections in `/*@ ... @*/` always appear in this order:
+  1. One-line synopsis (`FunctionName - one-line description`)
+  2. Collectivity (`Collective`, `Logically Collective`, `Not Collective`, `Asynchronous`)
+  3. `Input Parameter(s):`
+  4. `Output Parameter(s):`
+  5. `Options Database Key(s):`
+  6. `Level:`  ← always before Notes
+  7. `Notes:` / `Note:`
+  8. `Example Usage:`
+  9. `Fortran Notes:`
+  10. `.seealso:`
+
+Two recurring traps the linter catches:
+
+- **Param-list alignment.** In `Input Parameters:` / `Output Parameters:` blocks, every entry's `-` must sit exactly one space past the longest valid argument name. With args `da, xyz, bd, H` (longest is `xyz`), the correct form is:
+  ```
+  + da  - the `PetscDA` context
+  . xyz - array of coordinate vectors
+  . bd  - array of periodic-domain extents
+  - H   - the observation operator
+  ```
+  Continuation lines for a multi-line description must be indented to line up under the description (i.e., the column right after `- `), not under the argument name.
+
+- **Stray paragraphs in `Notes:`.** A bare paragraph that starts with a capitalized word and no trailing colon can be misparsed as a section header (`-fdoc-section-header-maybe-header`). Keep follow-up sentences in the same paragraph as the existing Notes text (no blank line between them), or rephrase so the line cannot look like a heading.
+
+When in doubt, pattern-match against existing well-formatted docstrings in the same file. `make lint` requires the `clang` Python package; if it isn't installed, eyeball the alignment carefully before pushing.
 
 ## Testing Requirements
 
