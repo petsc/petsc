@@ -336,7 +336,6 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
 
 int main(int argc, char **argv)
 {
-  MPI_Comm     comm;
   DM           dm;
   AppCtx       ctx;
   Vec          U, Uloc, V, Vloc;
@@ -345,9 +344,9 @@ int main(int argc, char **argv)
   CeedData     ceeddata;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  comm = PETSC_COMM_WORLD;
-  PetscCall(ProcessOptions(comm, &ctx));
-  PetscCall(CreateMesh(comm, &ctx, &dm));
+  PetscCall(PetscMemzero(&ctx, sizeof(ctx)));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   PetscCall(SetupDiscretization(dm));
 
   PetscCall(LibCeedSetupByDegree(dm, &ctx, &ceeddata));
@@ -375,12 +374,12 @@ int main(int argc, char **argv)
     PetscReal error = PetscAbsReal(area - ctx.areaExact);
     PetscReal tol   = PETSC_SMALL;
 
-    PetscCall(PetscPrintf(comm, "Exact mesh surface area    : % .*f\n", PetscAbsReal(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double)ctx.areaExact));
-    PetscCall(PetscPrintf(comm, "Computed mesh surface area : % .*f\n", PetscAbsScalar(area - round(area)) > 1E-15 ? 14 : 1, (double)PetscRealPart(area)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Exact mesh surface area    : % .*f\n", PetscAbsReal(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double)ctx.areaExact));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computed mesh surface area : % .*f\n", PetscAbsScalar(area - round(area)) > 1E-15 ? 14 : 1, (double)PetscRealPart(area)));
     if (error > tol) {
-      PetscCall(PetscPrintf(comm, "Area error                 : % .14g\n", (double)error));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Area error                 : % .14g\n", (double)error));
     } else {
-      PetscCall(PetscPrintf(comm, "Area verifies!\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Area verifies!\n"));
     }
   }
 
