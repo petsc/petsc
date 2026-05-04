@@ -3,20 +3,19 @@
 #include <petsc_kokkos.hpp>
 #include <cmath>
 #include <Kokkos_Core.hpp>
+#include <../src/ml/da/impls/ensemble/letkf/letkf.h>
 #include <../src/ml/da/impls/ensemble/letkf/letkf_kernels.h>
 
 /*
-  PetscDALETKFBuildLocalizationMatrix_Kokkos - Kokkos-backed build of the localization weight matrix `Q`.
+  PetscDALETKFCreateLocalizationMat_Kokkos - Kokkos (`MATAIJKOKKOS`) implementation of the localization
+  weight Mat `Q`.
 
-  Used by the lazy Q construction inside `PetscDAEnsembleAnalysis_LETKF()` when the observation operator is a
-  Kokkos matrix type. The CPU counterpart `PetscDALETKFBuildLocalizationMatrix()` produces a numerically
-  identical Q for the polynomial kernels (`PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_BOXCAR`) and a
-  bit-comparable Q for `PETSCDA_LETKF_LOC_GAUSSIAN` modulo `exp()` rounding.
-
-  `type` must be one of `PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_GAUSSIAN`, `PETSCDA_LETKF_LOC_BOXCAR`.
-  `PETSCDA_LETKF_LOC_NONE` is a caller error.
+  Selected by the `PetscDALETKFCreateLocalizationMat()` dispatcher when `H` is a Kokkos matrix type. The
+  host counterpart `PetscDALETKFCreateLocalizationMat_AIJ()` produces a numerically identical Q for the
+  polynomial kernels (`PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_BOXCAR`) and a bit-comparable
+  Q for `PETSCDA_LETKF_LOC_GAUSSIAN` modulo `exp()` rounding.
 */
-PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix_Kokkos(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
+PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
 {
   PetscInt                           dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
   PetscInt                           rstart, cstart, cend;
@@ -24,28 +23,19 @@ PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix_Kokkos(PetscDALE
   PetscInt                          *d_nnz, *o_nnz;
   Vec                               *obs_vecs;
   MPI_Comm                           comm;
-  PetscLayout                        cmap;
   const PetscReal                    cutoff2   = LETKFCutoffSquared(type, radius);
   const PetscDALETKFLocalizationType kern_type = type;
   const PetscReal                    kern_r    = radius;
 
   PetscFunctionBegin;
-  PetscAssertPointer(xyz, 3);
-  PetscAssertPointer(bd, 4);
-  PetscValidHeaderSpecific(H, MAT_CLASSID, 5);
-  PetscAssertPointer(Q, 6);
-
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
-  PetscCheck(type == PETSCDA_LETKF_LOC_GASPARI_COHN || type == PETSCDA_LETKF_LOC_GAUSSIAN || type == PETSCDA_LETKF_LOC_BOXCAR, comm, PETSC_ERR_ARG_WRONG, "Built-in kernel required, got localization type %d.", (int)type);
-  PetscCheck(radius > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g.", (double)radius);
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
   for (d = 0; d < 3; ++d) {
     if (xyz[d]) dim++;
     else break;
   }
-  PetscCheck(dim > 0, comm, PETSC_ERR_ARG_WRONG, "At least one coordinate vector (xyz[0]) must be non-NULL; got dim=%" PetscInt_FMT, dim);
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
 
   /* Compute observation coordinates: obs_locs[d] = H * xyz[d] */
@@ -185,20 +175,14 @@ PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix_Kokkos(PetscDALE
   Kokkos::deep_copy(col_indices_host, col_indices_dev);
   Kokkos::deep_copy(values_host, values_dev);
 
-  /* Create Q matrix with variable nnz preallocation */
-  PetscCall(VecGetOwnershipRange(xyz[0], &rstart, NULL));
-
-  /* Determine column ownership range for diagonal/off-diagonal preallocation split */
-  PetscCall(PetscLayoutCreate(comm, &cmap));
-  PetscCall(PetscLayoutSetLocalSize(cmap, n_obs_local));
-  PetscCall(PetscLayoutSetSize(cmap, n_obs_global));
-  PetscCall(PetscLayoutSetUp(cmap));
-  PetscCall(PetscLayoutGetRange(cmap, &cstart, &cend));
-  PetscCall(PetscLayoutDestroy(&cmap));
+  /* Create Q matrix with variable nnz preallocation. Q's row layout matches xyz[0] (one row
+     per local vertex); columns index global observations matching H's row layout. */
+  PetscCall(MatGetOwnershipRange(H, &cstart, &cend));
 
   PetscCall(MatCreate(comm, Q));
   PetscCall(MatSetSizes(*Q, n_vert_local, n_obs_local, PETSC_DETERMINE, n_obs_global));
   PetscCall(MatSetType(*Q, MATAIJKOKKOS));
+  PetscCall(MatGetOwnershipRange(*Q, &rstart, NULL));
   PetscCall(PetscCalloc1(n_vert_local, &d_nnz));
   PetscCall(PetscCalloc1(n_vert_local, &o_nnz));
   for (PetscInt i = 0; i < n_vert_local; ++i) {
@@ -239,7 +223,9 @@ PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix_Kokkos(PetscDALE
     if (row_counts_host(i) < local_min) local_min = row_counts_host(i);
     if (row_counts_host(i) > local_max) local_max = row_counts_host(i);
   }
-  PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%d, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", (int)type, (double)radius, n_vert_local, n_obs_global, local_min, local_max));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_min, 1, MPIU_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_max, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
 
   /* Cleanup */
   for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));

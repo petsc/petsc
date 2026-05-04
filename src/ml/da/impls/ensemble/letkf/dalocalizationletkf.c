@@ -4,13 +4,13 @@
 #include <../src/ml/da/impls/ensemble/letkf/letkf_kernels.h>
 
 /*
-  PetscDALETKFBuildLocalizationMatrix - default (CPU) build of the localization weight matrix `Q`.
+  PetscDALETKFCreateLocalizationMat_AIJ - host (`MATAIJ`) implementation of the localization-weight Mat `Q`.
 
-  Counterpart to `PetscDALETKFBuildLocalizationMatrix_Kokkos()`; same two-pass count/fill structure but plain C
-  with no Kokkos dependency. Selected by `PetscDAEnsembleAnalysis_LETKF()` when the observation operator is not
+  Counterpart to `PetscDALETKFCreateLocalizationMat_Kokkos()`; same two-pass count/fill structure but plain C
+  with no Kokkos dependency. Selected by the `PetscDALETKFCreateLocalizationMat()` dispatcher when `H` is not
   a Kokkos matrix type.
 */
-PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
+static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
 {
   PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
   PetscInt     rstart, cstart, cend;
@@ -21,31 +21,23 @@ PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix(PetscDALETKFLoca
   PetscReal   *vertex_coords, *obs_coords;
   Vec         *obs_vecs;
   MPI_Comm     comm;
-  PetscMPIInt  comm_size;
+  PetscMPIInt  size;
   PetscReal    cutoff2;
 
   PetscFunctionBegin;
-  PetscAssertPointer(xyz, 3);
-  PetscAssertPointer(bd, 4);
-  PetscValidHeaderSpecific(H, MAT_CLASSID, 5);
-  PetscAssertPointer(Q, 6);
-
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
-  PetscCheck(type == PETSCDA_LETKF_LOC_GASPARI_COHN || type == PETSCDA_LETKF_LOC_GAUSSIAN || type == PETSCDA_LETKF_LOC_BOXCAR, comm, PETSC_ERR_ARG_WRONG, "Built-in kernel required, got localization type %d.", (int)type);
-  PetscCheck(radius > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g.", (double)radius);
-  /* Defense-in-depth: the analysis function (PetscDAEnsembleAnalysis_LETKF) already gates the CPU path
-     to comm_size == 1, but this build function uses VecScatterCreateToAll, which would balloon to
-     n_obs_global * dim per rank at scale. Re-check here so this assumption stays load-bearing if the
-     caller-side gate is ever relaxed without porting to a neighbor-only obs exchange. */
-  PetscCallMPI(MPI_Comm_size(comm, &comm_size));
-  PetscCheck(comm_size == 1, comm, PETSC_ERR_SUP, "PetscDALETKFBuildLocalizationMatrix() (CPU) is single-rank only; multi-rank requires the Kokkos backend.");
+  /* Defense-in-depth: PetscDAEnsembleAnalysis_LETKF() already gates the host path to size == 1, but
+     this routine uses VecScatterCreateToAll, which would balloon to n_obs_global * dim per rank at
+     scale. Re-check here so the assumption stays load-bearing if the caller-side gate is ever
+     relaxed without porting to a neighbor-only obs exchange. */
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCheck(size == 1, comm, PETSC_ERR_SUP, "Host (MATAIJ) localization Mat build is single-rank only; multi-rank requires the Kokkos backend.");
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
   for (d = 0; d < 3; ++d) {
     if (xyz[d]) dim++;
     else break;
   }
-  PetscCheck(dim > 0, comm, PETSC_ERR_ARG_WRONG, "At least one coordinate vector (xyz[0]) must be non-NULL; got dim=%" PetscInt_FMT, dim);
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
 
   /* Compute observation coordinates: obs_locs[d] = H * xyz[d] */
@@ -208,5 +200,45 @@ PETSC_INTERN PetscErrorCode PetscDALETKFBuildLocalizationMatrix(PetscDALETKFLoca
 
   PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscDALETKFCreateLocalizationMat - construct the LETKF localization-weight Mat `Q` for a built-in
+  distance kernel. Validates the common arguments and dispatches to a backend matching the type of the
+  observation operator `H` (`MATAIJKOKKOS` -> Kokkos backend, otherwise the host `MATAIJ` backend).
+
+  Output `Q` has rows indexed by local grid vertices and columns indexed by global observations; the
+  caller owns the returned Mat.
+*/
+PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
+{
+  MPI_Comm comm;
+  PetscInt dim = 0, d;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(xyz, 3);
+  PetscAssertPointer(bd, 4);
+  PetscValidHeaderSpecific(H, MAT_CLASSID, 5);
+  PetscAssertPointer(Q, 6);
+  PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
+  PetscCheck(type == PETSCDA_LETKF_LOC_GASPARI_COHN || type == PETSCDA_LETKF_LOC_GAUSSIAN || type == PETSCDA_LETKF_LOC_BOXCAR, comm, PETSC_ERR_ARG_WRONG, "Built-in kernel required, got localization type %d", (int)type);
+  PetscCheck(radius > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
+  for (d = 0; d < 3; ++d) {
+    if (xyz[d]) dim++;
+    else break;
+  }
+  PetscCheck(dim > 0, comm, PETSC_ERR_ARG_WRONG, "At least one coordinate vector (xyz[0]) must be non-NULL; got dim=%" PetscInt_FMT, dim);
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  {
+    PetscBool is_kokkos = PETSC_FALSE;
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)H, &is_kokkos, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
+    if (is_kokkos) {
+      PetscCall(PetscDALETKFCreateLocalizationMat_Kokkos(type, radius, xyz, bd, H, Q));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+#endif
+  PetscCall(PetscDALETKFCreateLocalizationMat_AIJ(type, radius, xyz, bd, H, Q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
