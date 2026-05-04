@@ -1628,6 +1628,20 @@ cdef class TS(Object):
         CHKERR(PetscINCREF(snes.obj))
         return snes
 
+    def isImplicit(self) -> bool:
+        """Indicates the `TS` is using an implicit method.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.TSIsImplicit
+
+        """
+        cdef PetscBool implicit = PETSC_FALSE
+        CHKERR(TSIsImplicit(self.ts, &implicit))
+        return toBool(implicit)
+
     def getKSP(self) -> KSP:
         """Return the `KSP` associated with the `TS`.
 
