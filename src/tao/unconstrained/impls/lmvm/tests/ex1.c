@@ -24,14 +24,13 @@ static PetscErrorCode LSObjAndGrad(Tao tao, Vec x, PetscReal *obj, Vec g, void *
 int main(int argc, char **argv)
 {
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  MPI_Comm  comm = PETSC_COMM_WORLD;
   AppCtx    ctx;
   Vec       sol;
   PetscBool flg, cuda = PETSC_FALSE;
 
   PetscInt M = 10;
   PetscInt N = 10;
-  PetscOptionsBegin(comm, "", help, "TAO");
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", help, "TAO");
   PetscCall(PetscOptionsInt("-m", "data size", NULL, M, &M, NULL));
   PetscCall(PetscOptionsInt("-n", "data size", NULL, N, &N, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-cuda", &cuda, &flg));
@@ -39,25 +38,25 @@ int main(int argc, char **argv)
 
   if (cuda) {
     VecType vec_type;
-    PetscCall(VecCreateSeqCUDA(comm, N, &ctx.b));
+    PetscCall(VecCreateSeqCUDA(PETSC_COMM_WORLD, N, &ctx.b));
     PetscCall(VecGetType(ctx.b, &vec_type));
-    PetscCall(MatCreateDenseFromVecType(comm, vec_type, M, N, PETSC_DECIDE, PETSC_DECIDE, -1, NULL, &ctx.A));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, vec_type, M, N, PETSC_DECIDE, PETSC_DECIDE, -1, NULL, &ctx.A));
     PetscCall(MatCreateVecs(ctx.A, &sol, NULL));
   } else {
-    PetscCall(MatCreateDense(comm, PETSC_DECIDE, PETSC_DECIDE, M, N, NULL, &ctx.A));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, M, N, NULL, &ctx.A));
     PetscCall(MatCreateVecs(ctx.A, &sol, &ctx.b));
   }
   PetscCall(VecDuplicate(ctx.b, &ctx.r));
 
   PetscRandom rand;
-  PetscCall(PetscRandomCreate(comm, &rand));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
   PetscCall(PetscRandomSetFromOptions(rand));
   PetscCall(MatSetRandom(ctx.A, rand));
   PetscCall(VecSetRandom(ctx.b, rand));
   PetscCall(PetscRandomDestroy(&rand));
 
   Tao tao;
-  PetscCall(TaoCreate(comm, &tao));
+  PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetSolution(tao, sol));
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, LSObjAndGrad, &ctx));
   PetscCall(TaoSetType(tao, TAOLMVM));

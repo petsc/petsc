@@ -61,7 +61,6 @@ static PetscErrorCode hessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 
 static PetscErrorCode testCallbacks(PetscBool separate)
 {
-  MPI_Comm    comm = PETSC_COMM_WORLD;
   Tao         tao;
   TaoTerm     term;
   TaoTermType type;
@@ -78,30 +77,28 @@ static PetscErrorCode testCallbacks(PetscBool separate)
   app.grad_count         = 0;
   app.obj_and_grad_count = 0;
   app.hess_count         = 0;
-  PetscCall(VecCreateMPI(comm, PETSC_DECIDE, N, &sol));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &sol));
   PetscCall(VecDuplicate(sol, &grad));
-  PetscCall(MatCreateAIJ(comm, PETSC_DECIDE, PETSC_DECIDE, N, N, 1, NULL, 0, NULL, &H));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, N, N, 1, NULL, 0, NULL, &H));
   PetscCall(MatDuplicate(H, MAT_DO_NOT_COPY_VALUES, &Hpre));
-  PetscCall(TaoCreate(comm, &tao));
+  PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetSolution(tao, sol));
   PetscCall(TaoGetTerm(tao, NULL, &term, NULL, NULL));
   PetscCall(TaoTermGetType(term, &type));
   PetscCall(PetscStrcmp(type, TAOTERMCALLBACKS, &same));
-  PetscCheck(same, comm, PETSC_ERR_PLIB, "wrong TaoTermType");
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong TaoTermType");
 
   if (separate) {
     PetscCall(TaoSetObjective(tao, objective, (void *)&app));
     PetscCall(TaoSetGradient(tao, grad, gradient, (void *)&app));
-  } else {
-    PetscCall(TaoSetObjectiveAndGradient(tao, grad, objective_and_gradient, (void *)&app));
-  }
+  } else PetscCall(TaoSetObjectiveAndGradient(tao, grad, objective_and_gradient, (void *)&app));
   PetscCall(TaoSetHessian(tao, H, Hpre, hessian, (void *)&app));
 
   {
     PetscBool is_defined;
 
     PetscCall(TaoTermIsHessianDefined(term, &is_defined));
-    PetscCheck(is_defined == PETSC_TRUE, comm, PETSC_ERR_PLIB, "Hessian should be defined after setting it");
+    PetscCheck(is_defined == PETSC_TRUE, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hessian should be defined after setting it");
   }
 
   if (separate) {
@@ -110,16 +107,16 @@ static PetscErrorCode testCallbacks(PetscBool separate)
 
     PetscCall(TaoGetObjective(tao, &_objective, NULL));
     PetscCall(TaoGetGradient(tao, NULL, &_gradient, NULL));
-    PetscCheck(_objective == objective, comm, PETSC_ERR_PLIB, "wrong objective callback");
-    PetscCheck(_gradient == gradient, comm, PETSC_ERR_PLIB, "wrong gradient callback");
+    PetscCheck(_objective == objective, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong objective callback");
+    PetscCheck(_gradient == gradient, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong gradient callback");
   } else {
     PetscErrorCode (*_objective_and_gradient)(Tao, Vec, PetscReal *, Vec, void *);
 
     PetscCall(TaoGetObjectiveAndGradient(tao, NULL, &_objective_and_gradient, NULL));
-    PetscCheck(_objective_and_gradient == objective_and_gradient, comm, PETSC_ERR_PLIB, "wrong objective and gradient callback");
+    PetscCheck(_objective_and_gradient == objective_and_gradient, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong objective and gradient callback");
   }
   PetscCall(TaoGetHessian(tao, NULL, NULL, &_hessian, NULL));
-  PetscCheck(_hessian == hessian, comm, PETSC_ERR_PLIB, "wrong hessian callback");
+  PetscCheck(_hessian == hessian, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong hessian callback");
 
   PetscCall(TaoComputeObjective(tao, sol, &value));
   (void)value;
@@ -129,15 +126,15 @@ static PetscErrorCode testCallbacks(PetscBool separate)
   PetscCall(TaoComputeHessian(tao, sol, H, Hpre));
 
   if (separate) {
-    PetscCheck(app.obj_count == 2, comm, PETSC_ERR_PLIB, "Incorrect number of objective evaluations");
-    PetscCheck(app.grad_count == 2, comm, PETSC_ERR_PLIB, "Incorrect number of gradient evaluations");
-    PetscCheck(app.obj_and_grad_count == 0, comm, PETSC_ERR_PLIB, "Incorrect number of objective+gradient evaluations");
+    PetscCheck(app.obj_count == 2, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of objective evaluations");
+    PetscCheck(app.grad_count == 2, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of gradient evaluations");
+    PetscCheck(app.obj_and_grad_count == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of objective+gradient evaluations");
   } else {
-    PetscCheck(app.obj_count == 0, comm, PETSC_ERR_PLIB, "Incorrect number of objective evaluations");
-    PetscCheck(app.grad_count == 0, comm, PETSC_ERR_PLIB, "Incorrect number of gradient evaluations");
-    PetscCheck(app.obj_and_grad_count == 3, comm, PETSC_ERR_PLIB, "Incorrect number of objective+gradient evaluations");
+    PetscCheck(app.obj_count == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of objective evaluations");
+    PetscCheck(app.grad_count == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of gradient evaluations");
+    PetscCheck(app.obj_and_grad_count == 3, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of objective+gradient evaluations");
   }
-  PetscCheck(app.hess_count == 1, comm, PETSC_ERR_PLIB, "Incorrect number of hessian evaluations");
+  PetscCheck(app.hess_count == 1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect number of hessian evaluations");
 
   PetscCall(TaoDestroy(&tao));
   PetscCall(MatDestroy(&Hpre));

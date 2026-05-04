@@ -659,7 +659,6 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm, PetscOptions options, const
 @*/
 PetscErrorCode PetscOptionsInsertArgs(PetscOptions options, int argc, const char *const args[])
 {
-  MPI_Comm           comm  = PETSC_COMM_WORLD;
   int                left  = PetscMax(argc, 0);
   const char *const *eargs = args;
 
@@ -677,12 +676,12 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options, int argc, const char
       left--;
     } else if (isfile) {
       PetscCheck(left > 1 && eargs[1][0] != '-', PETSC_COMM_SELF, PETSC_ERR_USER, "Missing filename for -options_file filename option");
-      PetscCall(PetscOptionsInsertFile(comm, options, eargs[1], PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFile(PETSC_COMM_WORLD, options, eargs[1], PETSC_TRUE));
       eargs += 2;
       left -= 2;
     } else if (isfileyaml) {
       PetscCheck(left > 1 && eargs[1][0] != '-', PETSC_COMM_SELF, PETSC_ERR_USER, "Missing filename for -options_file_yaml filename option");
-      PetscCall(PetscOptionsInsertFileYAML(comm, options, eargs[1], PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD, options, eargs[1], PETSC_TRUE));
       eargs += 2;
       left -= 2;
     } else if (isstringyaml) {
@@ -834,7 +833,6 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options, con
 @*/
 PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args, const char file[]) PeNS
 {
-  MPI_Comm    comm = PETSC_COMM_WORLD;
   PetscMPIInt rank;
   PetscBool   hasArgs     = (argc && *argc) ? PETSC_TRUE : PETSC_FALSE;
   PetscBool   skipPetscrc = PETSC_FALSE, skipPetscrcSet = PETSC_FALSE;
@@ -842,8 +840,8 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
   size_t      len      = 0;
 
   PetscFunctionBegin;
-  PetscCheck(!hasArgs || (args && *args), comm, PETSC_ERR_ARG_NULL, "*argc > 1 but *args not given");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCheck(!hasArgs || (args && *args), PETSC_COMM_WORLD, PETSC_ERR_ARG_NULL, "*argc > 1 but *args not given");
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   if (!options) {
     PetscCall(PetscOptionsCreateDefault());
@@ -855,7 +853,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-petsc_ci", &PetscCIEnabled, NULL));
   }
   if (file && file[0]) {
-    PetscCall(PetscOptionsInsertFile(comm, options, file, PETSC_TRUE));
+    PetscCall(PetscOptionsInsertFile(PETSC_COMM_WORLD, options, file, PETSC_TRUE));
     /* if -skip_petscrc has not been set from command line, check whether it has been set in the file */
     if (!skipPetscrcSet) PetscCall(PetscOptionsGetBool(options, NULL, "-skip_petscrc", &skipPetscrc, NULL));
   }
@@ -863,11 +861,11 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
     char filename[PETSC_MAX_PATH_LEN];
 
     PetscCall(PetscGetHomeDirectory(filename, sizeof(filename)));
-    PetscCallMPI(MPI_Bcast(filename, (int)sizeof(filename), MPI_CHAR, 0, comm));
+    PetscCallMPI(MPI_Bcast(filename, (int)sizeof(filename), MPI_CHAR, 0, PETSC_COMM_WORLD));
     if (filename[0]) PetscCall(PetscStrlcat(filename, "/.petscrc", sizeof(filename)));
-    PetscCall(PetscOptionsInsertFile(comm, options, filename, PETSC_FALSE));
-    PetscCall(PetscOptionsInsertFile(comm, options, ".petscrc", PETSC_FALSE));
-    PetscCall(PetscOptionsInsertFile(comm, options, "petscrc", PETSC_FALSE));
+    PetscCall(PetscOptionsInsertFile(PETSC_COMM_WORLD, options, filename, PETSC_FALSE));
+    PetscCall(PetscOptionsInsertFile(PETSC_COMM_WORLD, options, ".petscrc", PETSC_FALSE));
+    PetscCall(PetscOptionsInsertFile(PETSC_COMM_WORLD, options, "petscrc", PETSC_FALSE));
   }
 
   /* insert environment options */
@@ -875,10 +873,10 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
     eoptions = getenv("PETSC_OPTIONS");
     PetscCall(PetscStrlen(eoptions, &len));
   }
-  PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, comm));
+  PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, PETSC_COMM_WORLD));
   if (len) {
     if (rank) PetscCall(PetscMalloc1(len + 1, &eoptions));
-    PetscCallMPI(MPI_Bcast(eoptions, (PetscMPIInt)len, MPI_CHAR, 0, comm));
+    PetscCallMPI(MPI_Bcast(eoptions, (PetscMPIInt)len, MPI_CHAR, 0, PETSC_COMM_WORLD));
     if (rank) eoptions[len] = 0;
     PetscCall(PetscOptionsInsertString_Private(options, eoptions, PETSC_OPT_ENVIRONMENT));
     if (rank) PetscCall(PetscFree(eoptions));
@@ -889,10 +887,10 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
     eoptions = getenv("PETSC_OPTIONS_YAML");
     PetscCall(PetscStrlen(eoptions, &len));
   }
-  PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, comm));
+  PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, PETSC_COMM_WORLD));
   if (len) {
     if (rank) PetscCall(PetscMalloc1(len + 1, &eoptions));
-    PetscCallMPI(MPI_Bcast(eoptions, (PetscMPIInt)len, MPI_CHAR, 0, comm));
+    PetscCallMPI(MPI_Bcast(eoptions, (PetscMPIInt)len, MPI_CHAR, 0, PETSC_COMM_WORLD));
     if (rank) eoptions[len] = 0;
     PetscCall(PetscOptionsInsertStringYAML_Private(options, eoptions, PETSC_OPT_ENVIRONMENT));
     if (rank) PetscCall(PetscFree(eoptions));
@@ -2075,13 +2073,12 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
       PetscCall(PetscViewerASCIIPrintf(viewer, "Setting option: %s = %s (source: %s)\n", name, value, PetscOptionSources[source]));
     }
   } else {
-    MPI_Comm comm = PETSC_COMM_WORLD;
     if (!value) {
-      PetscCall(PetscPrintf(comm, "Removing option: %s\n", name));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Removing option: %s\n", name));
     } else if (!value[0]) {
-      PetscCall(PetscPrintf(comm, "Setting option: %s (no value) (source: %s)\n", name, PetscOptionSources[source]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Setting option: %s (no value) (source: %s)\n", name, PetscOptionSources[source]));
     } else {
-      PetscCall(PetscPrintf(comm, "Setting option: %s = %s (source: %s)\n", name, value, PetscOptionSources[source]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Setting option: %s = %s (source: %s)\n", name, value, PetscOptionSources[source]));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

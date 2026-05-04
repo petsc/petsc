@@ -1253,10 +1253,8 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm, const char fieldname[]
 @*/
 PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm, const char fieldname[], Vec *vec)
 {
-  MPI_Comm comm = PETSC_COMM_SELF;
-
   PetscFunctionBegin;
-  PetscCall(DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec));
+  PetscCall(DMSwarmCreateVectorFromField_Private(dm, fieldname, PETSC_COMM_SELF, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1365,10 +1363,8 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromFields(DM dm, PetscInt Nf, const ch
 @*/
 PetscErrorCode DMSwarmCreateLocalVectorFromFields(DM dm, PetscInt Nf, const char *fieldnames[], Vec *vec)
 {
-  MPI_Comm comm = PETSC_COMM_SELF;
-
   PetscFunctionBegin;
-  PetscCall(DMSwarmCreateVectorFromFields_Private(dm, Nf, fieldnames, comm, vec));
+  PetscCall(DMSwarmCreateVectorFromFields_Private(dm, Nf, fieldnames, PETSC_COMM_SELF, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
