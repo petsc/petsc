@@ -183,7 +183,6 @@ int main(int argc, char **args)
   PetscCall(PetscObjectSetName((PetscObject)x, "Solution vector"));
   PetscCall(VecDuplicate(b, &u));
   PetscCall(PetscObjectSetName((PetscObject)u, "True Solution vector"));
-  PetscCall(VecSet(x, 0.0));
 
   if (ckerror) { /* Set true solution */
     PetscCall(VecSet(u, 1.0));

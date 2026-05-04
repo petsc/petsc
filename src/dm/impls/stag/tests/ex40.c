@@ -1728,7 +1728,6 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &x));
   PetscCall(VecDuplicate(x, &b));
   PetscCall(VecSet(x, 2.0)); // Initial guess
-  PetscCall(VecSet(b, 0.0)); // RHS
   PetscCall(SNESSolve(snes, b, x));
 
   PetscCall(SNESDestroy(&snes));

@@ -1071,7 +1071,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   PetscCall(VecSetFromOptions(user->ytrue));
   user->c_formed = PETSC_TRUE;
   PetscCall(VecCopy(user->utrue, user->u)); /*  Set u=utrue temporarily for StateMatInv */
-  PetscCall(VecSet(user->ytrue, 0.0));      /*  Initial guess */
   PetscCall(StateMatInvMult(user->Js, user->q, user->ytrue));
   PetscCall(VecCopy(user->ur, user->u)); /*  Reset u=ur */
 

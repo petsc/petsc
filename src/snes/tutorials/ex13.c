@@ -368,7 +368,6 @@ static PetscErrorCode ComputeAdjoint(Vec u, AppCtx *user)
   PetscCall(SNESSetDM(snesAdj, dmAdj));
   PetscCall(SetupDiscretization(dmAdj, "adjoint", SetupAdjointProblem, user));
   PetscCall(DMCreateGlobalVector(dmAdj, &uAdj));
-  PetscCall(VecSet(uAdj, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)uAdj, "adjoint"));
   PetscCall(DMPlexSetSNESLocalFEM(dmAdj, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snesAdj));
@@ -498,7 +497,6 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "potential"));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));

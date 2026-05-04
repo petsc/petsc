@@ -182,7 +182,6 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(VecCreate(PETSC_COMM_WORLD, &user->x));
   PetscCall(VecSetSizes(user->x, nloc, user->n));
   PetscCall(VecSetFromOptions(user->x));
-  PetscCall(VecSet(user->x, 0.0));
 
   /* create and set lower and upper bound vectors */
   PetscCall(VecDuplicate(user->x, &user->xl));

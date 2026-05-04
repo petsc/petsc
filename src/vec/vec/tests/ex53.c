@@ -35,8 +35,6 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(x, PETSC_DECIDE, 10));
   PetscCall(VecSetFromOptions(x));
 
-  PetscCall(VecZeroEntries(x));
-
   // get a copy of the vectors array, anything we do to the vector via VecShift we will also do
   // to the copy, and hence they should always match
   PetscCall(VecGetLocalSize(x, &n));

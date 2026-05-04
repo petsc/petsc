@@ -290,8 +290,6 @@ int main(int argc, char **argv)
   PetscCall(MatCreateVecs(A, &lambda[0], NULL));
   PetscCall(MatCreateVecs(A, &lambda[1], NULL));
   /*   Set initial conditions for the adjoint integration */
-  PetscCall(VecZeroEntries(lambda[0]));
-  PetscCall(VecZeroEntries(lambda[1]));
   PetscCall(VecGetArray(lambda[0], &u));
   u[0] = 1.;
   PetscCall(VecRestoreArray(lambda[0], &u));
@@ -301,8 +299,6 @@ int main(int argc, char **argv)
 
   PetscCall(MatCreateVecs(Ap, &mu[0], NULL));
   PetscCall(MatCreateVecs(Ap, &mu[1], NULL));
-  PetscCall(VecZeroEntries(mu[0]));
-  PetscCall(VecZeroEntries(mu[1]));
   PetscCall(TSSetCostGradients(ts, 2, lambda, mu));
 
   PetscCall(TSAdjointSolve(ts));

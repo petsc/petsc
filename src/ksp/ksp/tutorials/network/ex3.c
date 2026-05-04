@@ -139,7 +139,6 @@ int main(int argc, char **argv)
 
   /* Create a global vector */
   PetscCall(DMCreateGlobalVector(dmnetwork, &X));
-  PetscCall(VecSet(X, 0.0));
 
   /* Set X values at shared vertex */
   PetscCall(DMNetworkGetSharedVertices(dmnetwork, &nv, &vtx));

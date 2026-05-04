@@ -1437,7 +1437,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   /* assemble A11 */
   PetscCall(MatZeroEntries(A));
   PetscCall(MatZeroEntries(B));
-  PetscCall(VecZeroEntries(f));
 
   PetscCall(AssembleA_Stokes(A, da_Stokes, da_prop, properties));
   PetscCall(AssembleA_PCStokes(B, da_Stokes, da_prop, properties));

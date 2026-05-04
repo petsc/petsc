@@ -751,7 +751,6 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   PetscCall(VecDuplicateVecs(ts->vec_sol, s, &glee->YdotStage));
   PetscCall(VecDuplicate(ts->vec_sol, &glee->Ydot));
   PetscCall(VecDuplicate(ts->vec_sol, &glee->yGErr));
-  PetscCall(VecZeroEntries(glee->yGErr));
   PetscCall(VecDuplicate(ts->vec_sol, &glee->W));
   PetscCall(PetscMalloc2(s, &glee->swork, r, &glee->rwork));
   PetscCall(TSGetDM(ts, &dm));

@@ -50,7 +50,6 @@ int main(int argc, char **args)
 
   PetscCall(VecDuplicate(b, &x));
   PetscCall(VecDuplicate(b, &u));
-  PetscCall(VecSet(x, 0.0));
 
   /* Test MatGetMultiProcBlock() */
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nsubcomm", &nsubcomm, NULL));

@@ -980,7 +980,6 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Flux(DMAdaptor adaptor, Vec
 
   PetscCall(DMCreateGlobalVector(mdm, &mu));
   PetscCall(PetscObjectSetName((PetscObject)mu, "Mixed Solution"));
-  PetscCall(VecSet(mu, 0.0));
   PetscCall(SNESSolve(msnes, NULL, mu));
   PetscCall(VecViewFromOptions(mu, (PetscObject)adaptor, "-adapt_mixed_sol_vec_view"));
 

@@ -2746,7 +2746,6 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     PetscCall(VecAssemblyBegin(pcis->vec2_N));
     PetscCall(VecAssemblyEnd(pcis->vec2_N));
     PetscCall(VecDuplicate(pcis->vec1_N, &vec3_N));
-    PetscCall(VecSet(vec3_N, 0.));
     PetscCall(MatISGetLocalMat(pc->pmat, &A));
     PetscCall(MatMult(A, pcis->vec1_N, vec3_N));
     PetscCall(VecDot(vec3_N, pcis->vec2_N, &vals[0]));
@@ -2913,7 +2912,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
       PetscCall(ISGetLocalSize(zerodiag, &nl));
       PetscCall(ISGetIndices(zerodiag, &idxs));
       /* work[0] = 1_p */
-      PetscCall(VecSet(work[0], 0.));
       PetscCall(VecGetArray(work[0], &array));
       for (j = 0; j < nl; j++) array[idxs[j]] = 1.;
       PetscCall(VecRestoreArray(work[0], &array));

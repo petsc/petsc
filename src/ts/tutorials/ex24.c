@@ -114,7 +114,6 @@ static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X,
   /* Compute norm of gradient */
   PetscCall(VecDuplicate(X, &Xdot));
   PetscCall(VecDuplicate(X, &F));
-  PetscCall(VecZeroEntries(Xdot));
   PetscCall(FormIFunction(ts, t, X, Xdot, F, ictx));
   PetscCall(VecNorm(F, NORM_2, &gnorm));
   PetscCall(VecDestroy(&Xdot));

@@ -26,7 +26,6 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
   PetscCall(VecSetFromOptions(x));
 
-  PetscCall(VecZeroEntries(x));
   PetscCall(CheckVecSumReturn(x, 0.0));
 
   PetscCall(VecSet(x, 1.0));

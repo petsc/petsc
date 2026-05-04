@@ -10791,14 +10791,9 @@ static PetscErrorCode DMCreateAffineInterpolationCorrection_Plex(DM dmc, DM dmf,
   PetscCall(DMCreateInterpolation(dmco, dmfo, &interpo, &rscale));
   PetscCall(DMCreateGlobalVector(dmco, &cglobalo));
   PetscCall(DMCreateLocalVector(dmc, &clocal));
-  PetscCall(VecSet(cglobalo, 0.));
-  PetscCall(VecSet(clocal, 0.));
   PetscCall(DMCreateGlobalVector(dmf, &fglobal));
   PetscCall(DMCreateGlobalVector(dmfo, &fglobalo));
   PetscCall(DMCreateLocalVector(dmf, &flocal));
-  PetscCall(VecSet(fglobal, 0.));
-  PetscCall(VecSet(fglobalo, 0.));
-  PetscCall(VecSet(flocal, 0.));
   PetscCall(DMPlexInsertBoundaryValues(dmc, PETSC_TRUE, clocal, 0., NULL, NULL, NULL));
   PetscCall(DMLocalToGlobalBegin(dmco, clocal, INSERT_VALUES, cglobalo));
   PetscCall(DMLocalToGlobalEnd(dmco, clocal, INSERT_VALUES, cglobalo));

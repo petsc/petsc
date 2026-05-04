@@ -109,7 +109,6 @@ int main(int argc, char **argv)
   /* Test global to local*/
   Vec l;
   PetscCall(DMCreateLocalVector(forest, &l));
-  PetscCall(VecZeroEntries(l));
   PetscCall(DMGlobalToLocal(forest, g, INSERT_VALUES, l));
   PetscCall(VecZeroEntries(g));
   PetscCall(DMLocalToGlobal(forest, l, INSERT_VALUES, g));
@@ -123,7 +122,6 @@ int main(int argc, char **argv)
   /* Load another vector to load into*/
   PetscCall(DMCreateGlobalVector(forest, &g2));
   PetscCall(PetscObjectSetName((PetscObject)g2, "g"));
-  PetscCall(VecZeroEntries(g2));
 
   /*  Load a vector*/
   PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_READ, &viewer));

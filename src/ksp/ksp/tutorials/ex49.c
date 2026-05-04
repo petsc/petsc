@@ -969,7 +969,6 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
 
   /* assemble A11 */
   PetscCall(MatZeroEntries(A));
-  PetscCall(VecZeroEntries(f));
 
   PetscCall(AssembleA_Elasticity(A, elas_da, da_prop, properties));
   /* build force vector */

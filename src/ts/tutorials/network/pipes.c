@@ -321,7 +321,6 @@ PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X)
   PetscCall(VecCreate(comm, &Xto));
   PetscCall(VecSetSizes(Xto, n, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(Xto));
-  PetscCall(VecSet(Xto, 0.0));
 
   /* 3. Create scatter */
   PetscCall(VecScatterCreate(X, isfrom_q, Xto, NULL, &ctx));
@@ -359,7 +358,6 @@ PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X)
   PetscCall(VecCreate(comm, &Xto));
   PetscCall(VecSetSizes(Xto, n, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(Xto));
-  PetscCall(VecSet(Xto, 0.0));
 
   PetscCall(VecScatterCreate(X, isfrom, Xto, NULL, &ctx));
   PetscCall(VecScatterBegin(ctx, X, Xto, INSERT_VALUES, SCATTER_FORWARD));

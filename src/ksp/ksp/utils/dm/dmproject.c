@@ -91,7 +91,6 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   if (isPlex) {
     /* mark points in the closure */
     PetscCall(DMCreateLocalVector(dm, &mask));
-    PetscCall(VecSet(mask, 0.0));
     PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
     if (cEnd > cStart) {
       PetscScalar *ones;

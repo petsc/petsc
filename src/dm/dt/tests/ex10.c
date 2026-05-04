@@ -235,7 +235,6 @@ int main(int argc, char **argv)
 
   /* Set up and solve the system using standard approach. */
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "solution"));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &ctx));
   PetscCall(SNESSetFromOptions(snes));
@@ -246,7 +245,6 @@ int main(int argc, char **argv)
 
   /* Set up and solve the sum space system */
   PetscCall(DMCreateGlobalVector(dm_sum, &u_sum));
-  PetscCall(VecSet(u_sum, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u_sum, "solution_sum"));
   PetscCall(DMPlexSetSNESLocalFEM(dm_sum, PETSC_FALSE, &ctx));
   PetscCall(SNESSetFromOptions(snes_sum));

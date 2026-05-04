@@ -1831,14 +1831,12 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
       PetscInt    *jj, *garray = aij->garray;
 
       PetscCall(MatCreateVecs(mat, &col, NULL));
-      PetscCall(VecSet(col, 0.0));
       PetscCall(VecGetArrayWrite(col, &array));
       v  = amata;
       jj = amat->j;
       for (j = 0; j < amat->nz; j++) array[*jj++] += PetscAbsScalar(*v++);
       PetscCall(VecRestoreArrayWrite(col, &array));
       PetscCall(MatCreateVecs(aij->B, &bcol, NULL));
-      PetscCall(VecSet(bcol, 0.0));
       PetscCall(VecGetArrayWrite(bcol, &array));
       v  = bmata;
       jj = bmat->j;

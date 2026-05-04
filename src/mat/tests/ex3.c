@@ -24,7 +24,6 @@ int main(int argc, char **args)
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &u));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &e));
   PetscCall(VecSet(u, 1.0));
-  PetscCall(VecSet(x, 0.0));
 
   v[0] = -1.;
   v[1] = 2.;

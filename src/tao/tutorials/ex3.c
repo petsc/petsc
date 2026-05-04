@@ -339,10 +339,8 @@ int main(int argc, char **argv)
   PetscCall(CreateCtx(dm, &user));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(VecDuplicate(u, &lb));
   PetscCall(VecDuplicate(u, &ub));
-  PetscCall(VecSet(lb, 0.0)); /* satisfied at the minimum anyway */
   PetscCall(VecSet(ub, 0.8)); /* a nontrivial upper bound */
 
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));

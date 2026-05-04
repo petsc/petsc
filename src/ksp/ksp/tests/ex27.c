@@ -71,7 +71,6 @@ int main(int argc, char **args)
   }
   PetscCall(VecDuplicate(b, &x));
   PetscCall(VecDuplicate(b, &u));
-  PetscCall(VecSet(x, 0.0));
 
   /* Create dense matrices B and X. Set B as an identity matrix */
   PetscCall(MatGetSize(A, &M, &N));

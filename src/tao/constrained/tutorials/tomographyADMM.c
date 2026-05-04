@@ -259,8 +259,6 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(VecDuplicate(user->x, &user->xlb));
   PetscCall(VecDuplicate(user->x, &user->xub));
   PetscCall(VecDuplicate(user->x, &user->c));
-  PetscCall(VecSet(user->xlb, 0.0));
-  PetscCall(VecSet(user->c, 0.0));
   PetscCall(VecSet(user->xub, PETSC_INFINITY));
 
   PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->ATA));

@@ -29,9 +29,6 @@ int main(int argc, char **argv)
   PetscCall(DMCreateLocalVector(dm, &l1));
   PetscCall(VecDuplicate(l1, &l2));
 
-  PetscCall(VecSet(l1, 0.0));
-  PetscCall(VecSet(l2, 0.0));
-
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(VecGetOwnershipRange(g, &start, &end));
   for (i = start; i < end; ++i) {

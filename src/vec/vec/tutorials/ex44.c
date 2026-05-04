@@ -102,7 +102,6 @@ int main(int argc, char **args)
   /* ---------- using VecScatter to communicate data from Y to X[i] for all i ----------- */
   for (i = 0; i < nx; i++) {
     PetscCall(VecDuplicate(x[i], &x_test));
-    PetscCall(VecZeroEntries(x_test));
     PetscCall(VecScatterCreate(y, x_is[i], x[i], NULL, &y_to_x));
     PetscCall(VecScatterBegin(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD));

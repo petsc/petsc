@@ -773,7 +773,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* Initial guess and reference model */
   PetscCall(VecDuplicate(user->utrue, &user->ur));
-  PetscCall(VecSet(user->ur, 0.0));
 
   /* Generate Grad matrix */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &user->Grad));

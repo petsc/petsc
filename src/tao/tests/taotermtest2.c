@@ -138,7 +138,6 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(target, &cb_ctx->Ax_p));
 
   PetscCall(MatCreateVecs(A, &x2, NULL));
-  PetscCall(VecZeroEntries(x2));
 
   /* Create Hessian matrix A^T * A */
   if (is_diag) {

@@ -66,7 +66,6 @@ int main(int argc, char **args)
   PetscCall(VecSetFromOptions(u));
   PetscCall(VecDuplicate(u, &b));
   PetscCall(VecDuplicate(u, &r));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(VecSet(b, 1.0));
 
   /* solve linear system C*u = b */

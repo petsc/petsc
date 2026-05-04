@@ -68,7 +68,6 @@ PetscErrorCode test_solve(void)
   PetscCall(MatCreateVecs(A12, &h, &f));
 
   PetscCall(VecSet(f, 1.0));
-  PetscCall(VecSet(h, 0.0));
 
   /* Create block vector */
   tmp_x[0] = f;

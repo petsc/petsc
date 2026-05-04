@@ -85,7 +85,6 @@ int main(int argc, char **argv)
   PetscCall(DMDASetUniformCoordinates(da, -2.0, 2.0, -2.0, 2.0, 0.0, 1.0));
 
   PetscCall(DMCreateGlobalVector(da, &u));
-  PetscCall(VecSet(u, 0.0));
 
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
   PetscCall(SNESSetDM(snes, da));

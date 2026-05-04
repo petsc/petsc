@@ -72,10 +72,8 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
   if (0) {
     PetscCall(DMCreateGlobalVector(dac, &ac));
-    PetscCall(VecZeroEntries(ac));
 
     PetscCall(DMCreateGlobalVector(daf, &af));
-    PetscCall(VecZeroEntries(af));
 
     PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtu", &vv));
     PetscCall(VecView(ac, vv));

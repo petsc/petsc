@@ -719,7 +719,6 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
       PetscInt    *jj, *garray = baij->garray;
 
       PetscCall(MatCreateVecs(mat, &col, NULL));
-      PetscCall(VecSet(col, 0.0));
       PetscCall(VecGetArrayWrite(col, &array));
       v  = amat->a;
       jj = amat->j;
@@ -733,7 +732,6 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
       }
       PetscCall(VecRestoreArrayWrite(col, &array));
       PetscCall(MatCreateVecs(baij->B, &bcol, NULL));
-      PetscCall(VecSet(bcol, 0.0));
       PetscCall(VecGetArrayWrite(bcol, &array));
       v  = bmat->a;
       jj = bmat->j;

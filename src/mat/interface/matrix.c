@@ -240,7 +240,6 @@ PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal
     PetscCall(MatGetOwnershipRange(mat, &st, NULL));
     PetscCall(MatGetSize(mat, &N, NULL));
     PetscCall(MatGetLocalSize(mat, &n, NULL));
-    PetscCall(VecSet(l, 0.0));
     PetscCall(VecSetRandom(r, NULL));
     PetscCall(MatMult(mat, r, l));
     PetscCall(VecGetArrayRead(l, &al));

@@ -1383,10 +1383,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCt
   PetscCall(TSSetPostStep(ts, NULL));
   PetscCall(MatCreateVecs(ctx->J, &lambda[0], NULL));
   /*   Set initial conditions for the adjoint integration */
-  PetscCall(VecZeroEntries(lambda[0]));
 
   PetscCall(MatCreateVecs(ctx->Jacp, &mu[0], NULL));
-  PetscCall(VecZeroEntries(mu[0]));
   PetscCall(TSSetCostGradients(ts, 1, lambda, mu));
 
   PetscCall(TSAdjointSetSteps(ts, steps3));

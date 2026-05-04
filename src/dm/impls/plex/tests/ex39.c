@@ -458,7 +458,6 @@ int main(int argc, char **argv)
    * solution from SNES */
   PetscCall(DMCreateGlobalVector(mesh, &computed));
   PetscCall(PetscObjectSetName((PetscObject)computed, "computedSolution"));
-  PetscCall(VecSet(computed, 0.0));
   PetscCall(SNESSolve(snes, NULL, computed));
   PetscCall(SNESGetSolution(snes, &computed));
   PetscCall(VecViewFromOptions(computed, NULL, "-computedSolution_view"));

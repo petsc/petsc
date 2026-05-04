@@ -190,7 +190,6 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(VecCreate(comm, &user->bin));
   PetscCall(VecSetType(user->bin, VECMPI));
   PetscCall(VecSetSizes(user->bin, PETSC_DECIDE, user->mi));
-  PetscCall(VecSet(user->bin, 0.0));
   PetscCall(VecSetFromOptions(user->bin));
   user->m = user->me + user->mi;
   PetscFunctionReturn(PETSC_SUCCESS);

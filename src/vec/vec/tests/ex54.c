@@ -38,7 +38,6 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(x, &y));
   PetscCall(VecDuplicate(x, &z));
 
-  PetscCall(VecSet(x, 0.0));
   PetscCall(VecSet(y, 10.0));
 
   // Basic correctness tests, z should always match abs(y) exactly

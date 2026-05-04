@@ -91,8 +91,6 @@ int main(int argc, char **args)
   /* create right-hand side and solution */
   PetscCall(MatCreateVecs(C, &u, &b));
   PetscCall(VecDuplicate(u, &ustar));
-  PetscCall(VecSet(u, 0.0));
-  PetscCall(VecSet(b, 0.0));
 
   /* assemble the right-hand side: only MPI process with rank 0 adds the values, this is not scalable */
   if (rank == 0) {

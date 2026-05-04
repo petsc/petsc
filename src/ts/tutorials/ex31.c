@@ -1186,7 +1186,6 @@ PetscErrorCode SolveODE(char *ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscCall(VecCreate(PETSC_COMM_WORLD, &Y));
   PetscCall(VecSetSizes(Y, N, PETSC_DECIDE));
   PetscCall(VecSetUp(Y));
-  PetscCall(VecSet(Y, 0));
 
   /* Initialize the problem */
   PetscCall(Initialize(Y, &ptype[0]));
@@ -1231,7 +1230,6 @@ PetscErrorCode SolveODE(char *ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Get the estimated error, if available */
   PetscCall(VecDuplicate(Y, &Yerr));
-  PetscCall(VecZeroEntries(Yerr));
   PetscCall(TSGetTimeError(ts, 0, &Yerr));
   PetscCall(VecNorm(Yerr, NORM_2, &err_norm));
   PetscCall(VecDestroy(&Yerr));

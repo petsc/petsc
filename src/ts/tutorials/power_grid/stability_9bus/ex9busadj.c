@@ -966,7 +966,6 @@ int main(int argc, char **argv)
   PetscCall(TSSetPostStep(ts, NULL));
   PetscCall(MatCreateVecs(J, &lambda[0], NULL));
   /*   Set initial conditions for the adjoint integration */
-  PetscCall(VecZeroEntries(lambda[0]));
   PetscCall(VecGetArray(lambda[0], &y_ptr));
   y_ptr[0] = 1.0;
   PetscCall(VecRestoreArray(lambda[0], &y_ptr));

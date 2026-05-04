@@ -29,7 +29,6 @@ static void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *I
     Vec yydot;
 
     PetscCallAbort(PETSC_COMM_SELF, VecDuplicate(cvode->work, &yydot));
-    PetscCallAbort(PETSC_COMM_SELF, VecZeroEntries(yydot));
     PetscCallAbort(PETSC_COMM_SELF, TSComputeIFunction(ts, *X, cvode->work, yydot, cvode->workf, PETSC_FALSE));
     PetscCallAbort(PETSC_COMM_SELF, VecScale(cvode->workf, -1.));
     PetscCallAbort(PETSC_COMM_SELF, VecDestroy(&yydot));
@@ -51,7 +50,6 @@ static void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY,
   PetscCallAbort(PETSC_COMM_SELF, VecDuplicate(cvode->work, &yydot));
   PetscCallAbort(PETSC_COMM_SELF, VecGetSize(yydot, &n));
   PetscCallAbort(PETSC_COMM_SELF, MatCreateSeqDense(PETSC_COMM_SELF, n, n, DFY, &mat));
-  PetscCallAbort(PETSC_COMM_SELF, VecZeroEntries(yydot));
   PetscCallAbort(PETSC_COMM_SELF, TSComputeIJacobian(ts, *X, cvode->work, yydot, 0, mat, mat, PETSC_FALSE));
   PetscCallAbort(PETSC_COMM_SELF, MatScale(mat, -1.0));
   PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&mat));

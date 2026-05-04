@@ -52,8 +52,6 @@ int main(int argc, char **args)
   PetscCall(PetscViewerDestroy(&viewer));
 
   PetscCall(MatCreateVecs(A, &x, &b));
-  PetscCall(VecZeroEntries(x));
-  PetscCall(VecZeroEntries(b));
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));

@@ -670,7 +670,6 @@ int main(int argc, char **argv)
   PetscCall(SetupPrimalDiscretization(dm, &user));
   PetscCall(SetupPrimalProblem(dm, &user));
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(VecSet(u, 0.0));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
@@ -702,7 +701,6 @@ int main(int argc, char **argv)
     PetscCall(SetupMixedDiscretization(mdm, &user));
     PetscCall(SetupMixedProblem(mdm, &user));
     PetscCall(DMCreateGlobalVector(mdm, &mu));
-    PetscCall(VecSet(mu, 0.0));
     PetscCall(DMPlexSetSNESLocalFEM(mdm, PETSC_FALSE, &user));
     PetscCall(SNESSetFromOptions(msnes));
 

@@ -96,7 +96,6 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &b));
   PetscCall(AssembleSystem(dm, A, b));
   PetscCall(VecDuplicate(b, &x));
-  PetscCall(VecSet(x, 0.0));
 
   /* Create Linear Solver */
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)dm), &ksp));
