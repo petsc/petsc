@@ -14,7 +14,7 @@ PetscErrorCode PetscViewerCGNSRegisterLogEvents_Internal()
 {
   static PetscBool is_initialized = PETSC_FALSE;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (is_initialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventRegister("CGNSOpen", PETSC_VIEWER_CLASSID, &PETSC_VIEWER_CGNS_Open));
   PetscCall(PetscLogEventRegister("CGNSClose", PETSC_VIEWER_CLASSID, &PETSC_VIEWER_CGNS_Close));
@@ -51,6 +51,18 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
+  if (cgv->file_num && cgv->base && cgv->num_descriptors > 0) {
+    int cgns_ier;
+
+    cgns_ier = cg_goto(cgv->file_num, cgv->base, NULL);
+    if (cgns_ier == CG_OK) {
+      for (PetscInt i = 0; i < cgv->num_descriptors; i++) {
+        PetscCallCGNSWrite(cg_descriptor_write(cgv->descriptor_names[i], cgv->descriptor_values[i]), viewer, 0);
+      }
+      // Don't throw error if base isn't written to file
+    } else if (cgns_ier != CG_NODE_NOT_FOUND) PetscCallCGNS(cgns_ier);
+  }
+
   if (cgv->output_times) {
     PetscCount size, width = 32, *steps;
     char      *solnames;
@@ -60,7 +72,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
     PetscCall(PetscSegBufferExtractInPlace(cgv->output_times, &times));
     PetscCall(PetscSegBufferExtractInPlace(cgv->output_steps, &steps));
     num_times = size;
-    PetscCallCGNSWrite(cg_biter_write(cgv->file_num, cgv->base, "TimeIterValues", num_times), viewer, 0);
+    PetscCallCGNSWrite(cg_biter_write(cgv->file_num, cgv->base, "TimeIterValues", (int)num_times), viewer, 0);
     PetscCallCGNS(cg_goto(cgv->file_num, cgv->base, "BaseIterativeData_t", 1, NULL));
     PetscCallCGNSWrite(cg_array_write("TimeValues", CGNS_ENUMV(RealDouble), 1, &num_times, times), viewer, 0);
     { // Cast output_steps to long for writing into file
@@ -154,6 +166,12 @@ static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
   PetscCall(PetscViewerFileClose_CGNS(viewer));
   PetscCall(PetscFree(cgv->solution_name));
   PetscCall(PetscFree(cgv->filename_template));
+  for (PetscInt i = 0; i < cgv->num_descriptors; i++) {
+    PetscCall(PetscFree(cgv->descriptor_names[i]));
+    PetscCall(PetscFree(cgv->descriptor_values[i]));
+  }
+  PetscCall(PetscFree(cgv->descriptor_names));
+  PetscCall(PetscFree(cgv->descriptor_values));
   PetscCall(PetscFree(cgv));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
@@ -344,7 +362,7 @@ PetscErrorCode PetscViewerCGNSSetSolutionIndex(PetscViewer viewer, PetscInt solu
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(viewer, solution_id, 2);
   PetscCheck((solution_id != 0) && (solution_id > -2), PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER_INPUT, "Solution index must be either -1 or greater than 0, not %" PetscInt_FMT, solution_id);
@@ -375,7 +393,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionIndex(PetscViewer viewer, PetscInt *sol
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscAssertPointer(solution_id, 2);
   *solution_id = cgv->solution_index;
@@ -391,7 +409,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
   char              buffer[CGIO_MAX_NAME_LENGTH + 1];
   CGNS_ENUMT(GridLocation_t) gridloc; // Throwaway
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (cgv->solution_file_index > 0) {
     *sol_index = cgv->solution_file_index;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -424,10 +442,10 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
       PetscCheck(cgv->solution_index == -1 || cgv->solution_index <= size[1], comm, PETSC_ERR_ARG_OUTOFRANGE, "CGNS Solution index (%" PetscInt_FMT ") not in range of FlowSolutionPointers [1, %" PRIdCGSIZE "]", cgv->solution_index, size[1]);
       PetscCall(PetscCalloc1(size[0] * size[1] + 1, &pointer_names)); // Need the +1 for (possibly) setting \0 for the last pointer name if it's full
       PetscCallCGNSRead(cg_array_read_as(1, CGNS_ENUMV(Character), pointer_names), viewer, 0);
-      cgv->solution_file_pointer_index = cgv->solution_index == -1 ? size[1] : cgv->solution_index;
+      cgv->solution_file_pointer_index = cgv->solution_index == -1 ? (int)size[1] : cgv->solution_index;
       pointer_id_name_ref              = &pointer_names[size[0] * (cgv->solution_file_pointer_index - 1)];
       { // Set last non-whitespace character of the pointer name to \0 (CGNS pads with spaces)
-        int str_idx;
+        cgsize_t str_idx;
         for (str_idx = size[0] - 1; str_idx > 0; str_idx--) {
           if (!isspace((unsigned char)pointer_id_name_ref[str_idx])) break;
         }
@@ -478,7 +496,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *tim
   PetscReal        *times;
   cgsize_t          size[12];
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscAssertPointer(time, 2);
   PetscAssertPointer(set, 3);
@@ -523,7 +541,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionIteration(PetscViewer viewer, PetscInt 
   int              *steps;
   cgsize_t          size[12];
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscAssertPointer(iteration, 2);
   PetscAssertPointer(set, 3);
@@ -567,7 +585,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionName(PetscViewer viewer, const char *na
   char              buffer[CGIO_MAX_NAME_LENGTH + 1];
   CGNS_ENUMT(GridLocation_t) gridloc; // Throwaway
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscAssertPointer(name, 2);
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id));
@@ -576,5 +594,147 @@ PetscErrorCode PetscViewerCGNSGetSolutionName(PetscViewer viewer, const char *na
   PetscCall(PetscFree(cgv->solution_name));
   PetscCall(PetscStrallocpy(buffer, &cgv->solution_name));
   *name = cgv->solution_name;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscViewerCGNSGetDescriptors - Get all descriptors set at the base level of the CGNS viewer
+
+  Logically collective
+
+  Input Parameter:
+. viewer - `PETSCVIEWERCGNS` `PetscViewer` for CGNS input/output to use with the specified file
+
+  Output Parameters:
++ num_descriptors - Number of descriptors set on the file
+. names           - Pointer to store array of descriptor names
+- values          - Pointer to store array of descriptor values
+
+  Level: intermediate
+
+  Note:
+  Memory must be freed via calling `PetscViewerCGNSRestoreDescriptors()`
+
+.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSRestoreDescriptors()`, `PetscViewerCGNSSetDescriptor()`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionTime()`
+@*/
+PetscErrorCode PetscViewerCGNSGetDescriptors(PetscViewer viewer, PetscInt *num_descriptors, char ***names, char ***values)
+{
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  int               ndesc, cgns_ier;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(num_descriptors, 2);
+  PetscAssertPointer(names, 3);
+  PetscAssertPointer(values, 4);
+
+  cgns_ier = cg_goto(cgv->file_num, cgv->base, NULL);
+  if (cgns_ier == CG_NODE_NOT_FOUND) {
+    *num_descriptors = 0;
+    *names           = NULL;
+    *values          = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  } else PetscCallCGNS(cgns_ier);
+
+  PetscCallCGNSRead(cg_ndescriptors(&ndesc), viewer, 0);
+  *num_descriptors = ndesc;
+
+  PetscCall(PetscCalloc2(ndesc, values, ndesc, names));
+
+  for (PetscInt i = 1; i <= ndesc; i++) {
+    char  namebuf[PETSC_MAX_OPTION_NAME] = {0};
+    char *desc;
+
+    PetscCallCGNSRead(cg_descriptor_read(i, namebuf, &desc), viewer, 0);
+    if (desc != NULL) {
+      PetscCall(PetscStrallocpy(desc, &(*values)[i - 1]));
+      PetscCallCGNS(cg_free(desc));
+    }
+    PetscCall(PetscStrallocpy(namebuf, &(*names)[i - 1]));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscViewerCGNSRestoreDescriptors - Free memory allocated by `PetscViewerCGNSGetDescriptors()`
+
+  Logically collective
+
+  Input Parameter:
+. viewer - `PETSCVIEWERCGNS` `PetscViewer` for CGNS input/output to use with the specified file
+
+  Output Parameters:
++ num_descriptors - Number of descriptors set on the file
+. names           - Pointer to store array of descriptor names
+- values          - Pointer to store array of descriptor values
+
+  Level: intermediate
+
+.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSGetDescriptors()`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionTime()`
+@*/
+PetscErrorCode PetscViewerCGNSRestoreDescriptors(PetscViewer viewer, PetscInt *num_descriptors, char ***names, char ***values)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(num_descriptors, 2);
+  PetscAssertPointer(names, 3);
+  PetscAssertPointer(values, 4);
+  for (PetscInt i = 0; i < *num_descriptors; i++) {
+    PetscCall(PetscFree((*values)[i]));
+    PetscCall(PetscFree((*names)[i]));
+  }
+  PetscCall(PetscFree2(*values, *names));
+  *num_descriptors = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscViewerCGNSSetDescriptor - Set a descriptor at the base level of the CGNS viewer
+
+  Logically collective
+
+  Input Parameters:
++ viewer - `PETSCVIEWERCGNS` `PetscViewer` for CGNS input/output to use with the specified file
+. name   - Name of descriptor, must be null terminated with length less than `PETSC_MAX_OPTION_NAME`
+- value  - Value of descriptor, must be null terminated
+
+  Level: intermediate
+
+.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSGetDescriptors()`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionTime()`
+@*/
+PetscErrorCode PetscViewerCGNSSetDescriptor(PetscViewer viewer, const char name[], const char value[])
+{
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  PetscSizeT        name_len;
+  PetscInt          name_idx;
+  PetscBool         found;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(value, 3);
+
+  if (cgv->descriptor_capacity == 0) {
+    cgv->descriptor_capacity = 2;
+    PetscCall(PetscCalloc1(cgv->descriptor_capacity, &cgv->descriptor_names));
+    PetscCall(PetscCalloc1(cgv->descriptor_capacity, &cgv->descriptor_values));
+  } else if (cgv->num_descriptors == cgv->descriptor_capacity) {
+    cgv->descriptor_capacity *= 2;
+    PetscCall(PetscRealloc(cgv->descriptor_capacity * sizeof(char *), &cgv->descriptor_names));
+    PetscCall(PetscRealloc(cgv->descriptor_capacity * sizeof(char *), &cgv->descriptor_values));
+  }
+
+  PetscCall(PetscStrlen(name, &name_len));
+  PetscCheck(name_len < PETSC_MAX_OPTION_NAME, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_OUTOFRANGE, "Descriptor name must be shorter than %" PetscInt_FMT, (PetscInt)PETSC_MAX_OPTION_NAME);
+
+  PetscCall(PetscEListFind(cgv->num_descriptors, (const char *const *)cgv->descriptor_names, name, &name_idx, &found));
+  if (found) {
+    PetscCall(PetscFree(cgv->descriptor_values[name_idx]));
+    PetscCall(PetscStrallocpy(value, &cgv->descriptor_values[name_idx]));
+  } else {
+    PetscCall(PetscStrallocpy(name, &cgv->descriptor_names[cgv->num_descriptors]));
+    PetscCall(PetscStrallocpy(value, &cgv->descriptor_values[cgv->num_descriptors]));
+    cgv->num_descriptors++;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
