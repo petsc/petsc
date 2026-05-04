@@ -99,7 +99,7 @@ PETSC_EXTERN PetscErrorCode PetscDAEnsembleSetMember(PetscDA, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleComputeMean(PetscDA, Vec);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleComputeAnomalies(PetscDA, Vec, Mat *);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleAnalysis(PetscDA, Vec, Mat);
-PETSC_EXTERN PetscErrorCode PetscDAEnsembleForecast(PetscDA, PetscErrorCode (*)(Vec, Vec, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode PetscDAEnsembleForecast(PetscDA, PetscErrorCode (*)(Mat, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleInitialize(PetscDA, Vec, PetscReal, PetscRandom);
 
 PETSC_EXTERN PetscErrorCode PetscDAEnsembleComputeNormalizedInnovationMatrix(Mat, Vec, Vec, PetscInt, PetscScalar, Mat);

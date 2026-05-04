@@ -202,27 +202,38 @@ gain computations, and posterior updates.
 
 ## Forecast step
 
-`PetscDAEnsembleForecast()` wraps the forecast step. The user supplies a function that advances a single ensemble member:
+`PetscDAEnsembleForecast()` wraps the forecast step. The user supplies a function that advances the entire ensemble matrix in one call:
 
 Calling sequence for model:
 
-- `input` - the vector to be evolved, forecasted, time-stepped, or otherwise advanced
-- `output` - the forecast, evolved, or time-stepped result
+- `ensemble` - the ensemble matrix whose columns are the states to be advanced in place
 - `ctx` - the context for the model function
 
+A model that can advance the whole ensemble at once (e.g. a vectorized RHS, a Kokkos-resident propagator, or a single time integrator over a stacked state) writes directly to the columns of `ensemble`. A model that can only advance one state at a time, such as a `TS`-driven step, loops over the columns itself. Use `MatDenseGetColumnVec()` / `MatDenseRestoreColumnVec()` (the read-write pair) for the common case where the model reads the current column as an initial condition and writes the advanced state back; reach for `MatDenseGetColumnVecRead()` / `MatDenseGetColumnVecWrite()` only when the kernel is truly read-only or write-only (e.g. a write-only resampler):
+
 ```c
-/* Prototype for model forecast M(x) */
-PetscErrorCode ModelForecast(Vec input, Vec output, PetscCtx ctx) {
-  /* Advance input by dt to produce output */
-  /* (e.g., step a TS object) */
-  return PETSC_SUCCESS;
+/* Prototype for model forecast M(X) */
+PetscErrorCode ModelForecast(Mat ensemble, PetscCtx ctx) {
+  PetscInt n, j;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetSize(ensemble, NULL, &n));
+  for (j = 0; j < n; j++) {
+    Vec col;
+
+    PetscCall(MatDenseGetColumnVec(ensemble, j, &col));
+    /* Advance col by dt (e.g., step a TS object) */
+    PetscCall(MatDenseRestoreColumnVec(ensemble, j, &col));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscCall(PetscDAEnsembleForecast(da, ModelForecast, ctx));
 ```
 
+No `MatAssemblyBegin()`/`MatAssemblyEnd()` call is needed after `MatDenseRestoreColumnVec()`: the dense `Get`/`Restore` pair is itself the assembled write path, and the matrix stays assembled across it.
+
 `ModelForecast` can call PETSc time integrators ({any}`ch_ts`), nonlinear solvers ({any}`ch_snes`), or bespoke device kernels.
-The `PetscDA` layer orchestrates calls across the entire ensemble, issuing them in rank-local loops while ensuring that ownership and recycling semantics remain correct.
 
 (sec_da_inflation)=
 

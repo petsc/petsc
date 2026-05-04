@@ -29,7 +29,7 @@ struct _p_PetscDA {
 /* data common to all the ensemble based PetscDAType */
 typedef struct {
   PetscErrorCode (*analysis)(PetscDA, Vec, Mat);
-  PetscErrorCode (*forecast)(PetscDA, PetscErrorCode (*)(Vec, Vec, PetscCtx), PetscCtx);
+  PetscErrorCode (*forecast)(PetscDA, PetscErrorCode (*)(Mat, PetscCtx), PetscCtx);
   PetscInt  size;      /* Number of ensemble members (m) */
   Mat       ensemble;  /* Ensemble matrix (n x m) */
   PetscReal inflation; /* Inflation factor */

@@ -250,18 +250,36 @@ static inline PetscErrorCode ShallowWater2DContextDestroy(ShallowWater2DCtx **ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode ShallowWaterStep2D(Vec input, Vec output, PetscCtx ctx)
+/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of ShallowWaterStep2D(). */
+static inline PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, Vec x)
 {
-  ShallowWater2DCtx *sw = (ShallowWater2DCtx *)ctx;
-
   PetscFunctionBeginUser;
-  if (input != output) PetscCall(VecCopy(input, output));
   PetscCall(TSSetTime(sw->ts, 0.0));
   PetscCall(TSSetStepNumber(sw->ts, 0));
   PetscCall(TSSetTimeStep(sw->ts, sw->dt));
   PetscCall(TSSetMaxSteps(sw->ts, 1));
   PetscCall(TSSetMaxTime(sw->ts, sw->dt));
-  PetscCall(TSSolve(sw->ts, output));
+  PetscCall(TSSolve(sw->ts, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode ShallowWaterStep2D(Mat ensemble, PetscCtx ctx)
+{
+  ShallowWater2DCtx *sw = (ShallowWater2DCtx *)ctx;
+  PetscInt           n, j;
+  PetscBool          isdense;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)ensemble, &isdense, MATSEQDENSE, MATMPIDENSE, MATDENSE, ""));
+  PetscCheck(isdense, PetscObjectComm((PetscObject)ensemble), PETSC_ERR_SUP, "ShallowWaterStep2D requires a dense ensemble Mat (got non-dense type)");
+  PetscCall(MatGetSize(ensemble, NULL, &n));
+  for (j = 0; j < n; j++) {
+    Vec col;
+
+    PetscCall(MatDenseGetColumnVecWrite(ensemble, j, &col));
+    PetscCall(ShallowWaterStep2DVec(sw, col));
+    PetscCall(MatDenseRestoreColumnVecWrite(ensemble, j, &col));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

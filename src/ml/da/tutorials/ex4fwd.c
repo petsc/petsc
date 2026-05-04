@@ -81,7 +81,7 @@ static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt ste
   PetscFunctionBeginUser;
   PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, A, A, PETSC_TRUE, flux_type, &da_state, &sw_ctx, &x_numerical));
   PetscCall(SetInitialCondition(da_state, x_numerical, sw_ctx, PETSC_TRUE));
-  for (PetscInt step = 0; step < steps; step++) PetscCall(ShallowWaterStep2D(x_numerical, x_numerical, sw_ctx));
+  for (PetscInt step = 0; step < steps; step++) PetscCall(ShallowWaterStep2DVec(sw_ctx, x_numerical));
   PetscCall(ComputeManufacturedError(x_numerical, da_state, steps * dt, Lx, Ly, h0, A, L1_err, L2_err, Linf_err));
   PetscCall(VecDestroy(&x_numerical));
   PetscCall(ShallowWater2DContextDestroy(&sw_ctx));
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     for (PetscInt step = 1; step <= steps; step++) {
       PetscReal time          = step * dt;
       PetscBool emit_progress = (PetscBool)(step == steps || (progress_freq > 0 && step % progress_freq == 0));
-      PetscCall(ShallowWaterStep2D(x_numerical, x_numerical, sw_ctx));
+      PetscCall(ShallowWaterStep2DVec(sw_ctx, x_numerical));
       if (verify_mms && (step % verification_freq == 0 || step == steps)) {
         PetscReal L1_err, L2_err, Linf_err;
         PetscCall(ComputeManufacturedError(x_numerical, da_state, time, Lx, Ly, h0, Ax, &L1_err, &L2_err, &Linf_err));

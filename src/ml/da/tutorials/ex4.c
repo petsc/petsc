@@ -249,7 +249,7 @@ int main(int argc, char **argv)
   Vec                observation, obs_noise, obs_error_var;
   PetscRandom        rng;
   Mat                H = NULL, H1 = NULL;
-  PetscInt           nobs;
+  PetscInt           nobs = 0;
 
   /* Statistics tracking */
   PetscReal rmse_initial  = 0.0;
@@ -314,7 +314,7 @@ int main(int argc, char **argv)
     PetscInt spinup_progress_interval = (n_spin >= 10) ? (n_spin / 10) : 1;
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth trajectory for %" PetscInt_FMT " steps...\n", n_spin));
     for (PetscInt k = 0; k < n_spin; k++) {
-      PetscCall(ShallowWaterStep2D(truth_state, truth_state, sw_ctx));
+      PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_state));
       if ((k + 1) % spinup_progress_interval == 0 || (k + 1) == n_spin) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Spinup progress: %" PetscInt_FMT "/%" PetscInt_FMT "\n", k + 1, n_spin));
     }
     PetscCall(VecCopy(truth_state, x0));
@@ -488,7 +488,7 @@ int main(int argc, char **argv)
 
     /* Propagate ensemble and truth trajectory */
     PetscCall(PetscDAEnsembleForecast(da, ShallowWaterStep2D, sw_ctx));
-    PetscCall(ShallowWaterStep2D(truth_state, truth_state, sw_ctx));
+    PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_state));
 
     /* Forecast step: compute ensemble mean and forecast RMSE */
     PetscCall(PetscDAEnsembleComputeMean(da, x_mean));

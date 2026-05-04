@@ -259,23 +259,36 @@ static PetscErrorCode ShallowWaterContextDestroy(ShallowWaterCtx **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  ShallowWaterStep - Advance state vector one time step using shallow water dynamics
-*/
-static PetscErrorCode ShallowWaterStep(Vec input, Vec output, PetscCtx ctx)
+/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of ShallowWaterStep(). */
+static PetscErrorCode ShallowWaterStepVec(ShallowWaterCtx *sw, Vec x)
 {
-  ShallowWaterCtx *sw = (ShallowWaterCtx *)ctx;
-
   PetscFunctionBeginUser;
-  /* Copy input to output if they are different vectors */
-  if (input != output) PetscCall(VecCopy(input, output));
-
   /* Reset the TS time for each integration (required for proper RK4 stepping) */
   PetscCall(TSSetTime(sw->ts, 0.0));
   PetscCall(TSSetStepNumber(sw->ts, 0));
   PetscCall(TSSetMaxTime(sw->ts, sw->dt));
-  /* Solve one time step: advances output from t=0 to t=dt */
-  PetscCall(TSSolve(sw->ts, output));
+  PetscCall(TSSolve(sw->ts, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  ShallowWaterStep - Advance every column of the ensemble matrix one time step using shallow water dynamics.
+  TS only advances one state at a time, so loop over columns here.
+*/
+static PetscErrorCode ShallowWaterStep(Mat ensemble, PetscCtx ctx)
+{
+  ShallowWaterCtx *sw = (ShallowWaterCtx *)ctx;
+  PetscInt         n;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetSize(ensemble, NULL, &n));
+  for (PetscInt j = 0; j < n; j++) {
+    Vec col;
+
+    PetscCall(MatDenseGetColumnVec(ensemble, j, &col));
+    PetscCall(ShallowWaterStepVec(sw, col));
+    PetscCall(MatDenseRestoreColumnVec(ensemble, j, &col));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -606,7 +619,7 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth trajectory for %" PetscInt_FMT " steps...\n", n_spin));
 
     for (PetscInt k = 0; k < n_spin; k++) {
-      PetscCall(ShallowWaterStep(truth_state, truth_state, sw_ctx));
+      PetscCall(ShallowWaterStepVec(sw_ctx, truth_state));
 
       /* Progress reporting for long spinups */
       if ((k + 1) % spinup_progress_interval == 0 || (k + 1) == n_spin) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Spinup progress: %" PetscInt_FMT "/%" PetscInt_FMT " (%.0f%%)\n", k + 1, n_spin, 100.0 * (k + 1) / n_spin));
@@ -760,7 +773,7 @@ int main(int argc, char **argv)
 
     /* Propagate ensemble and truth trajectory from t_{k-1} to t_k */
     PetscCall(PetscDAEnsembleForecast(da, ShallowWaterStep, sw_ctx));
-    PetscCall(ShallowWaterStep(truth_state, truth_state, sw_ctx));
+    PetscCall(ShallowWaterStepVec(sw_ctx, truth_state));
 
     /* Forecast step: compute ensemble mean and forecast RMSE */
     PetscCall(PetscDAEnsembleComputeMean(da, x_mean));
