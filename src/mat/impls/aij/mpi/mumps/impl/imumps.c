@@ -3013,6 +3013,8 @@ static PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F, Mat A, PETSC_UNUSED I
   F->ops->lufactornumeric   = MatFactorNumeric_MUMPS;
   F->ops->solve             = MatSolve_MUMPS;
   F->ops->solvetranspose    = MatSolveTranspose_MUMPS;
+  F->ops->matsolve          = MatMatSolve_MUMPS;
+  F->ops->mattransposesolve = MatMatTransposeSolve_MUMPS;
   F->ops->matsolvetranspose = MatMatSolveTranspose_MUMPS;
 
   mumps->matstruc = SAME_NONZERO_PATTERN;
