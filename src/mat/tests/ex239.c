@@ -8,14 +8,13 @@ int main(int argc, char **argv)
   PetscInt  global_size = 100;
   Mat       cuda_matrix;
   Vec       input, output;
-  MPI_Comm  comm = PETSC_COMM_SELF;
-  PetscReal nrm  = 1;
+  PetscReal nrm = 1;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(MatCreateDenseCUDA(comm, global_size, global_size, global_size, global_size, NULL, &cuda_matrix));
+  PetscCall(MatCreateDenseCUDA(PETSC_COMM_SELF, global_size, global_size, global_size, global_size, NULL, &cuda_matrix));
 
-  PetscCall(VecCreateSeqCUDA(comm, global_size, &input));
+  PetscCall(VecCreateSeqCUDA(PETSC_COMM_SELF, global_size, &input));
   PetscCall(VecDuplicate(input, &output));
   PetscCall(VecSet(input, 1.));
   PetscCall(VecSet(output, 2.));

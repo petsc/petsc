@@ -234,7 +234,6 @@ PETSC_INTERN PetscBool PetscObjectsLog;
 PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 {
   char        string[64];
-  MPI_Comm    comm = PETSC_COMM_WORLD;
   PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flag, hasHelp;
   PetscBool   checkstack = PETSC_FALSE;
   PetscReal   si;
@@ -244,7 +243,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   char        version[256];
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) checkstack = PETSC_TRUE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkstack", &checkstack, NULL));
@@ -321,8 +320,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   */
   PetscCall(PetscOptionsHasHelp(NULL, &hasHelp));
   if (help && hasHelp) {
-    PetscCall(PetscPrintf(comm, "%s", help));
-    PetscCall(PetscPrintf(comm, "----------------------------------------\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s", help));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "----------------------------------------\n"));
   }
 
   /*
@@ -333,16 +332,16 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     /*
        Print "higher-level" package version message
     */
-    if (PetscExternalVersionFunction) PetscCall((*PetscExternalVersionFunction)(comm));
+    if (PetscExternalVersionFunction) PetscCall((*PetscExternalVersionFunction)(PETSC_COMM_WORLD));
 
     PetscCall(PetscGetVersion(version, 256));
-    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(comm, "%s\n", version));
-    PetscCall((*PetscHelpPrintf)(comm, "%s", PETSC_AUTHOR_INFO));
-    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/changes for recent updates.\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/faq for problems.\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/manualpages for help.\n"));
-    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(comm, "Libraries linked from %s\n", PETSC_LIB_DIR));
-    PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n"));
+    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "%s\n", version));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "%s", PETSC_AUTHOR_INFO));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "See https://petsc.org/release/changes for recent updates.\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "See https://petsc.org/release/faq for problems.\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "See https://petsc.org/release/manualpages for help.\n"));
+    if (!PetscCIEnabledPortableErrorOutput) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "Libraries linked from %s\n", PETSC_LIB_DIR));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "----------------------------------------\n"));
   }
 
   /*
@@ -351,7 +350,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (hasHelp) {
     PetscBool hasHelpIntro;
 
-    if (PetscExternalHelpFunction) PetscCall((*PetscExternalHelpFunction)(comm));
+    if (PetscExternalHelpFunction) PetscCall((*PetscExternalHelpFunction)(PETSC_COMM_WORLD));
     PetscCall(PetscOptionsHasHelpIntro_Internal(NULL, &hasHelpIntro));
     if (hasHelpIntro) {
       PetscCall(PetscOptionsDestroyDefault());
@@ -367,7 +366,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-on_error_abort", &flg1, NULL));
   if (flg1) {
-    PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_ARE_FATAL));
+    PetscCallMPI(MPI_Comm_set_errhandler(PETSC_COMM_WORLD, MPI_ERRORS_ARE_FATAL));
     PetscCall(PetscPushErrorHandler(PetscAbortErrorHandler, NULL));
   }
   flg1 = PETSC_FALSE;
@@ -375,7 +374,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flg1) PetscCall(PetscPushErrorHandler(PetscMPIAbortErrorHandler, NULL));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-mpi_return_on_error", &flg1, NULL));
-  if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN));
+  if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(PETSC_COMM_WORLD, MPI_ERRORS_RETURN));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
   if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, NULL));
@@ -390,7 +389,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
     PetscCall(PetscSetDebuggerFromString(string));
     PetscCallMPI(MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError, &err_handler));
-    PetscCallMPI(MPI_Comm_set_errhandler(comm, err_handler));
+    PetscCallMPI(MPI_Comm_set_errhandler(PETSC_COMM_WORLD, err_handler));
     PetscCall(PetscPushErrorHandler(PetscAttachDebuggerErrorHandler, NULL));
   }
   PetscCall(PetscOptionsGetString(NULL, NULL, "-debug_terminal", string, sizeof(string), &flg1));
@@ -407,15 +406,15 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program.
     */
-    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
     if (size > 2) {
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i = 0; i < size; i++) {
-        if (rank != i) PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, comm));
+        if (rank != i) PetscCallMPI(MPI_Send(&dummy, 1, MPI_INT, i, 109, PETSC_COMM_WORLD));
       }
       for (i = 0; i < size; i++) {
-        if (rank != i) PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, comm, &status));
+        if (rank != i) PetscCallMPI(MPI_Recv(&dummy, 1, MPI_INT, i, 109, PETSC_COMM_WORLD, &status));
       }
     }
     /* check if this processor node should be in debugger */
@@ -441,7 +440,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
         PetscCall(PetscStrlcat(msg, " (Silence this warning with ", sizeof(msg)));
         PetscCall(PetscStrlcat(msg, quietopt, sizeof(msg)));
         PetscCall(PetscStrlcat(msg, ")\n", sizeof(msg)));
-        PetscCall(PetscPrintf(comm, "%s", msg));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s", msg));
       }
     } else {
       lsize = size;
@@ -464,7 +463,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
         PetscCall(PetscStopForDebugger());
       }
       PetscCallMPI(MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError, &err_handler));
-      PetscCallMPI(MPI_Comm_set_errhandler(comm, err_handler));
+      PetscCallMPI(MPI_Comm_set_errhandler(PETSC_COMM_WORLD, err_handler));
     } else {
       PetscCall(PetscWaitOnError());
     }
@@ -565,7 +564,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscLogTraceBegin(file));
     }
 
-    PetscCall(PetscOptionsCreateViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
+    PetscCall(PetscOptionsCreateViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
     if (n_max > 0) {
       PetscBool any_nested  = PETSC_FALSE;
       PetscBool any_default = PETSC_FALSE;
@@ -595,63 +594,63 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
        Print basic help message
   */
   if (hasHelp) {
-    PetscCall((*PetscHelpPrintf)(comm, "Options for all PETSc programs:\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -version: prints PETSc version\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -help intro: prints example description and PETSc version, and exits\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -help: prints example description, PETSc version, and available options for used routines\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_abort: cause an abort when an error is detected. Useful \n "));
-    PetscCall((*PetscHelpPrintf)(comm, "       only when run in the debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "       start the debugger in new xterm\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "       unless noxterm is given\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -start_in_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "       start all processes in the debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_emacs machinename\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "    emacs jumps to error file\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -debugger_ranks n1,n2,.. Ranks to start in debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -debugger_pause secs : delay (in seconds) to attach debugger\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -stop_for_debugger : prints message on how to attach debugger manually\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "                      waits the delay for you to attach\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -display display: Location where X window graphics and debuggers are displayed\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -no_signal_handler: do not trap error signals\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -fp_trap: stop on floating point exceptions\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "           note on IBM RS6000 this slows run greatly\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump [filename]: dump list of unfreed memory at conclusion\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug (true|false): enables or disables extended checking for memory corruption\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -options_view: dump list of options inputted\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -options_left: dump list of unused options\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -options_left no: don't dump list of unused options\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -memory_view: print memory usage at end of run\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "Options for all PETSc programs:\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -version: prints PETSc version\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -help intro: prints example description and PETSc version, and exits\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -help: prints example description, PETSc version, and available options for used routines\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -on_error_abort: cause an abort when an error is detected. Useful \n "));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "       only when run in the debugger\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "       start the debugger in new xterm\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "       unless noxterm is given\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -start_in_debugger [(noxterm)],[(gdb|lldb|...)]\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "       start all processes in the debugger\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -on_error_emacs machinename\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "    emacs jumps to error file\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -debugger_ranks n1,n2,.. Ranks to start in debugger\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -debugger_pause secs : delay (in seconds) to attach debugger\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -stop_for_debugger : prints message on how to attach debugger manually\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "                      waits the delay for you to attach\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -display display: Location where X window graphics and debuggers are displayed\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -no_signal_handler: do not trap error signals\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -fp_trap: stop on floating point exceptions\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "           note on IBM RS6000 this slows run greatly\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -malloc_dump [filename]: dump list of unfreed memory at conclusion\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -malloc_debug (true|false): enables or disables extended checking for memory corruption\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_view: dump list of options inputted\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_left: dump list of unused options\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_left no: don't dump list of unused options\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -memory_view: print memory usage at end of run\n"));
 #if defined(PETSC_USE_LOG)
-    PetscCall((*PetscHelpPrintf)(comm, " -get_total_flops: total flops over all processors\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_view [:filename:[format]]: logging objects and events\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_trace [filename]: prints trace of all PETSc calls\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_exclude classname1,classname2,...: exclude given classes from logging\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -get_total_flops: total flops over all processors\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view [:filename:[format]]: logging objects and events\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_trace [filename]: prints trace of all PETSc calls\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_exclude classname1,classname2,...: exclude given classes from logging\n"));
   #if defined(PETSC_HAVE_DEVICE)
-    PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_time: log the GPU time for each event\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_energy: log the GPU energy (estimated) for each event\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_energy_meter: log the GPU energy (readings from meters) for each event\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_time: log the GPU time for each event\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy: log the GPU energy (estimated) for each event\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy_meter: log the GPU energy (readings from meters) for each event\n"));
   #endif
   #if defined(PETSC_HAVE_MPE)
-    PetscCall((*PetscHelpPrintf)(comm, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
   #endif
   #if PetscDefined(HAVE_CUDA)
-    PetscCall((*PetscHelpPrintf)(comm, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
   #endif
   #if PetscDefined(HAVE_HIP)
-    PetscCall((*PetscHelpPrintf)(comm, " -log_roctx: Create roctx event ranges for rocprof\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_roctx: Create roctx event ranges for rocprof\n"));
   #endif
 #endif
 #if defined(PETSC_USE_INFO)
-    PetscCall((*PetscHelpPrintf)(comm, " -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names\n"));
 #endif
-    PetscCall((*PetscHelpPrintf)(comm, " -options_file filename: reads options from file\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -options_monitor_cancel: cancels all hardwired option monitors\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -petsc_sleep n: sleeps n seconds before running program\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_file filename: reads options from file\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_monitor_cancel: cancels all hardwired option monitors\n"));
+    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -petsc_sleep n: sleeps n seconds before running program\n"));
   }
 
 #if defined(PETSC_HAVE_POPEN)

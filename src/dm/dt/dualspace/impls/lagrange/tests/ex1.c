@@ -160,7 +160,6 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
 PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensorCell, PetscBool continuous, PetscInt nCopies)
 {
   PetscDualSpace  sp;
-  MPI_Comm        comm = PETSC_COMM_SELF;
   PetscInt        Nk;
   PetscHashLagKey key;
   PetscHashIter   iter;
@@ -169,7 +168,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
 
   PetscFunctionBegin;
   PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nk));
-  PetscCall(PetscDualSpaceCreate(comm, &sp));
+  PetscCall(PetscDualSpaceCreate(PETSC_COMM_SELF, &sp));
   PetscCall(PetscDualSpaceSetType(sp, PETSCDUALSPACELAGRANGE));
   PetscCall(PetscDualSpaceSetDM(sp, K));
   PetscCall(PetscDualSpaceSetOrder(sp, order));
