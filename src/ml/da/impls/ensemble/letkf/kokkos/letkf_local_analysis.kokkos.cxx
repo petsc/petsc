@@ -1051,42 +1051,26 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
 #endif
   }
 
-  /* Create aliases for current function use */
-  view_3d Z_batch_alloc               = eigen_work->Z_batch;
-  view_3d S_batch_alloc               = eigen_work->S_batch;
-  view_3d T_batch_alloc               = eigen_work->T_batch;
-  view_3d V_batch_alloc               = eigen_work->V_batch;
-  view_2d Lambda_batch_alloc          = eigen_work->Lambda_batch;
-  view_3d T_sqrt_batch_alloc          = eigen_work->T_sqrt_batch;
-  view_2d w_batch_alloc               = eigen_work->w_batch;
-  view_2d delta_batch_alloc           = eigen_work->delta_batch;
-  view_2d y_batch_alloc               = eigen_work->y_batch;
-  view_2d y_mean_batch_alloc          = eigen_work->y_mean_batch;
-  view_2d r_inv_sqrt_batch_alloc      = eigen_work->r_inv_sqrt_batch;
-  view_2d temp1_batch_alloc           = eigen_work->temp1_batch;
-  view_2d temp2_batch_alloc           = eigen_work->temp2_batch;
-  view_2d inv_sqrt_lambda_batch_alloc = eigen_work->inv_sqrt_lambda_batch;
+  /* Local aliases so KOKKOS_LAMBDAs capture views by value, not via eigen_work-> */
+  view_3d Z_batch               = eigen_work->Z_batch;
+  view_3d S_batch               = eigen_work->S_batch;
+  view_3d T_batch               = eigen_work->T_batch;
+  view_3d V_batch               = eigen_work->V_batch;
+  view_2d Lambda_batch          = eigen_work->Lambda_batch;
+  view_3d T_sqrt_batch          = eigen_work->T_sqrt_batch;
+  view_2d w_batch               = eigen_work->w_batch;
+  view_2d delta_batch           = eigen_work->delta_batch;
+  view_2d y_batch               = eigen_work->y_batch;
+  view_2d y_mean_batch          = eigen_work->y_mean_batch;
+  view_2d r_inv_sqrt_batch      = eigen_work->r_inv_sqrt_batch;
+  view_2d temp1_batch           = eigen_work->temp1_batch;
+  view_2d temp2_batch           = eigen_work->temp2_batch;
+  view_2d inv_sqrt_lambda_batch = eigen_work->inv_sqrt_lambda_batch;
 
   /* Loop over chunks */
   for (PetscInt chunk_start = 0; chunk_start < n_vertices; chunk_start += chunk_size) {
     PetscInt chunk_end       = (chunk_start + chunk_size > n_vertices) ? n_vertices : chunk_start + chunk_size;
     PetscInt n_batch_current = chunk_end - chunk_start;
-
-    /* Create subviews for current batch size */
-    auto Z_batch               = Kokkos::subview(Z_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL(), Kokkos::ALL());
-    auto S_batch               = Kokkos::subview(S_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL(), Kokkos::ALL());
-    auto T_batch               = Kokkos::subview(T_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL(), Kokkos::ALL());
-    auto V_batch               = Kokkos::subview(V_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL(), Kokkos::ALL());
-    auto Lambda_batch          = Kokkos::subview(Lambda_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto T_sqrt_batch          = Kokkos::subview(T_sqrt_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL(), Kokkos::ALL());
-    auto w_batch               = Kokkos::subview(w_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto delta_batch           = Kokkos::subview(delta_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto y_batch               = Kokkos::subview(y_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto y_mean_batch          = Kokkos::subview(y_mean_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto r_inv_sqrt_batch      = Kokkos::subview(r_inv_sqrt_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto temp1_batch           = Kokkos::subview(temp1_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto temp2_batch           = Kokkos::subview(temp2_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
-    auto inv_sqrt_lambda_batch = Kokkos::subview(inv_sqrt_lambda_batch_alloc, Kokkos::make_pair((PetscInt)0, n_batch_current), Kokkos::ALL());
 
     /* Zero batch views to ensure clean padding beyond each row's ncols */
     Kokkos::deep_copy(S_batch, 0.0);
