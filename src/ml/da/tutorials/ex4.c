@@ -213,51 +213,30 @@ static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *s
 
 int main(int argc, char **argv)
 {
-  /* Configuration parameters */
-  const PetscInt ndof                   = 3; /* h, hu, hv */
-  PetscInt       nx                     = DEFAULT_NX;
-  PetscInt       ny                     = DEFAULT_NY;
-  PetscInt       steps                  = DEFAULT_STEPS;
-  PetscInt       obs_freq               = DEFAULT_OBS_FREQ;
-  PetscInt       random_seed            = DEFAULT_RANDOM_SEED;
-  PetscInt       ensemble_size          = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt       n_spin                 = SPINUP_STEPS;
-  PetscInt       progress_freq          = DEFAULT_PROGRESS_FREQ;
-  PetscInt       obs_stride             = DEFAULT_OBS_STRIDE;
-  PetscReal      g                      = DEFAULT_G;
-  PetscReal      dt                     = DEFAULT_DT;
-  PetscReal      Lx                     = DEFAULT_LX;
-  PetscReal      Ly                     = DEFAULT_LY;
-  PetscReal      h0                     = DEFAULT_H0;
-  PetscReal      Ax                     = DEFAULT_AX;
-  PetscReal      Ay                     = DEFAULT_AY;
-  PetscReal      init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE;
-  PetscReal      init_h_bias            = DEFAULT_INIT_H_BIAS;
-  PetscReal      obs_error_std          = DEFAULT_OBS_ERROR_STD;
-  PetscReal      localization_radius    = DEFAULT_LOCALIZATION_RADIUS;
-  Ex4FluxType    flux_type              = EX4_FLUX_RUSANOV;
-  char           output_file[PETSC_MAX_PATH_LEN];
-  PetscBool      output_enabled = PETSC_FALSE;
-  FILE          *fp             = NULL;
-
-  /* PETSc objects */
   ShallowWater2DCtx *sw_ctx = NULL;
   DM                 da_state;
   PetscDA            da;
   Vec                x0, x_mean, x_forecast;
   Vec                truth_state, rmse_work;
   Vec                observation, obs_noise, obs_error_var;
-  PetscRandom        rng;
   Mat                H = NULL, H1 = NULL;
-  PetscInt           nobs = 0;
-
-  /* Statistics tracking */
-  PetscReal rmse_initial  = 0.0;
-  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
-  PetscInt  n_stat_steps = 0;
-  PetscInt  obs_count    = 0;
-  PetscInt  step;
+  PetscRandom        rng;
+  Ex4FluxType        flux_type      = EX4_FLUX_RUSANOV;
+  PetscBool          output_enabled = PETSC_FALSE;
+  FILE              *fp             = NULL;
+  char               output_file[PETSC_MAX_PATH_LEN];
+  const PetscInt     ndof = 3; /* h, hu, hv */
+  PetscInt           nx = DEFAULT_NX, ny = DEFAULT_NY, steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ;
+  PetscInt           random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt           n_spin = SPINUP_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ, obs_stride = DEFAULT_OBS_STRIDE;
+  PetscInt           nobs = 0, n_stat_steps = 0, obs_count = 0, step;
+  PetscReal          g = DEFAULT_G, dt = DEFAULT_DT;
+  PetscReal          Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0;
+  PetscReal          Ax = DEFAULT_AX, Ay = DEFAULT_AY;
+  PetscReal          init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
+  PetscReal          obs_error_std = DEFAULT_OBS_ERROR_STD, localization_radius = DEFAULT_LOCALIZATION_RADIUS;
+  PetscReal          rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal          sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

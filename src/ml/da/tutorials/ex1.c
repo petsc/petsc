@@ -290,34 +290,21 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
 
 int main(int argc, char **argv)
 {
-  /* Configuration parameters */
-  PetscInt  n                 = DEFAULT_N;
-  PetscInt  steps             = DEFAULT_STEPS;
-  PetscInt  burn              = DEFAULT_BURN;
-  PetscInt  obs_freq          = DEFAULT_OBS_FREQ;
-  PetscInt  random_seed       = DEFAULT_RANDOM_SEED;
-  PetscInt  ensemble_size     = DEFAULT_ENSEMBLE_SIZE;
-  PetscReal F                 = DEFAULT_F;
-  PetscReal dt                = DEFAULT_DT;
-  PetscReal obs_error_std     = DEFAULT_OBS_ERROR_STD;
-  PetscReal ensemble_init_std = 1; /* Initial ensemble spread */
-
-  /* PETSc objects */
   Lorenz96Ctx *l95_ctx = NULL, *truth_ctx = NULL;
   DM           da_state;
   PetscDA      da;
   Vec          x0, x_mean, x_forecast;
   Vec          truth_state, rmse_work;
   Vec          observation, obs_noise, obs_error_var;
-  PetscRandom  rng;
   Mat          H = NULL; /* Observation operator matrix */
-
-  /* Statistics tracking */
-  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
-  PetscInt  n_stat_steps = 0;
-  PetscInt  obs_count    = 0;
-  PetscInt  step, progress_interval;
+  PetscRandom  rng;
+  PetscInt     n = DEFAULT_N, steps = DEFAULT_STEPS, burn = DEFAULT_BURN, obs_freq = DEFAULT_OBS_FREQ;
+  PetscInt     random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt     n_stat_steps = 0, obs_count = 0, step, progress_interval;
+  PetscReal    F = DEFAULT_F, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal    ensemble_init_std = 1; /* Initial ensemble spread */
+  PetscReal    rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

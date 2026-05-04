@@ -480,42 +480,29 @@ static PetscErrorCode Ex3TestFinalizePackage(void)
 
 int main(int argc, char **argv)
 {
-  /* Configuration parameters */
-  const PetscInt ndof                = 2; /* Degrees of freedom per grid point: h and hu */
-  PetscInt       n_vert              = DEFAULT_N;
-  PetscInt       steps               = DEFAULT_STEPS;
-  PetscInt       obs_freq            = DEFAULT_OBS_FREQ;
-  PetscInt       random_seed         = DEFAULT_RANDOM_SEED;
-  PetscInt       ensemble_size       = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt       n_spin              = SPINUP_STEPS;
-  PetscInt       progress_freq       = DEFAULT_PROGRESS_FREQ;
-  PetscReal      g                   = DEFAULT_G;
-  PetscReal      dt                  = DEFAULT_DT;
-  PetscReal      obs_error_std       = DEFAULT_OBS_ERROR_STD;
-  PetscReal      localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
-  PetscReal      L                   = (PetscReal)DEFAULT_N; /* Domain length */
-  Ex3TestType    test_type           = EX3_TEST_DAM;         /* Default to dam-break */
-  Ex3FluxType    flux_type           = EX3_FLUX_RUSANOV;     /* Default to first-order Rusanov */
-  char           output_file[PETSC_MAX_PATH_LEN];
-  PetscBool      output_enabled = PETSC_FALSE;
-  FILE          *fp             = NULL;
-
-  /* PETSc objects */
   ShallowWaterCtx *sw_ctx = NULL;
   DM               da_state;
   PetscDA          da;
   Vec              x0, x_mean, x_forecast;
   Vec              truth_state, rmse_work;
   Vec              observation, obs_noise, obs_error_var;
-  PetscRandom      rng;
   Mat              H = NULL, H1 = NULL; /* Observation operator matrix (h at every other grid point) and scalar version */
-
-  /* Statistics tracking */
-  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
-  PetscInt  n_stat_steps = 0;
-  PetscInt  obs_count    = 0;
-  PetscInt  step;
+  PetscRandom      rng;
+  Ex3TestType      test_type      = EX3_TEST_DAM;     /* Default to dam-break */
+  Ex3FluxType      flux_type      = EX3_FLUX_RUSANOV; /* Default to first-order Rusanov */
+  PetscBool        output_enabled = PETSC_FALSE;
+  FILE            *fp             = NULL;
+  char             output_file[PETSC_MAX_PATH_LEN];
+  const PetscInt   ndof   = 2; /* Degrees of freedom per grid point: h and hu */
+  PetscInt         n_vert = DEFAULT_N, steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ;
+  PetscInt         random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt         n_spin = SPINUP_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ;
+  PetscInt         n_stat_steps = 0, obs_count = 0, step;
+  PetscReal        g = DEFAULT_G, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal        localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
+  PetscReal        L                   = (PetscReal)DEFAULT_N; /* Domain length */
+  PetscReal        rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal        sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
