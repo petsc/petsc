@@ -195,7 +195,10 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
-$(OBJDIR)/%.o : %.sycl.cxx | $$(@D)/.DIR
+$(OBJDIR)/src/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.sycl.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/src/%.o : src/%.c | $$(@D)/.DIR
@@ -204,7 +207,10 @@ $(OBJDIR)/src/%.o : src/%.c | $$(@D)/.DIR
 $(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.kokkos.cxx | $$(@D)/.DIR
+$(OBJDIR)/src/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.kokkos.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/src/%.o : src/%.cxx | $$(@D)/.DIR
@@ -213,7 +219,10 @@ $(OBJDIR)/src/%.o : src/%.cxx | $$(@D)/.DIR
 $(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.hip.cxx | $$(@D)/.DIR
+$(OBJDIR)/src/%.o : src/%.hip.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.hip.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.hip.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
