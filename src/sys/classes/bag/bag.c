@@ -944,7 +944,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char name[], const char help[
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`,
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
+PetscErrorCode PetscBagGetName(PetscBag bag, const char *name[])
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);

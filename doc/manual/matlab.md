@@ -174,7 +174,7 @@ PetscObjectSetName((PetscObject)A,"name");
 Text responses can be returned from MATLAB via
 
 ```
-PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+PetscMatlabEngineGetOutput(PetscMatlabEngine,const char *[]);
 ```
 
 or

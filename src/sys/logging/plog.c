@@ -1883,7 +1883,7 @@ PetscErrorCode PetscLogClassGetClassId(const char name[], PetscClassId *classid)
 
 .seealso: [](ch_profiling), `PetscLogClassRegister()`, `PetscLogClassBegin()`, `PetscLogClassEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadClass()`
 @*/
-PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char **name)
+PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char *name[])
 {
   PetscLogClass     log_class;
   PetscLogClassInfo class_info;

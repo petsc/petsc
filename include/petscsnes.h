@@ -461,7 +461,7 @@ PETSC_EXTERN PetscErrorCode SNESConvergedDefault(SNES, PetscInt, PetscReal, Pets
 PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, PetscCtx);
 PETSC_EXTERN PetscErrorCode SNESConvergedCorrectPressure(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, PetscCtx);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES, SNESConvergedReason *);
-PETSC_EXTERN PetscErrorCode SNESGetConvergedReasonString(SNES, const char **);
+PETSC_EXTERN PetscErrorCode SNESGetConvergedReasonString(SNES, const char *[]);
 PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES, SNESConvergedReason);
 
 PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void SNESSkipConverged(void)

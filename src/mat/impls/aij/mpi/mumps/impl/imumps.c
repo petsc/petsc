@@ -3445,7 +3445,7 @@ PetscErrorCode MatMumpsSetOocTmpDir(Mat F, const char *tmpdir)
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetOocTmpDir`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
-PetscErrorCode MatMumpsGetOocTmpDir(Mat F, const char **tmpdir)
+PetscErrorCode MatMumpsGetOocTmpDir(Mat F, const char *tmpdir[])
 {
   Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
 

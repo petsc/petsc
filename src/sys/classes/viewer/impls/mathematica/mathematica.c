@@ -410,7 +410,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 
 .seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
-PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
+PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char *name[])
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
 
