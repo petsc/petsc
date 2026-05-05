@@ -448,7 +448,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
 PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, PetscScalar *val)
 {
   DM_Stag *const     stag = (DM_Stag *)dm->data;
-  PetscInt           nLocal, idx;
+  PetscInt           nLocal;
   PetscInt          *ix;
   PetscScalar const *arr;
 
@@ -460,7 +460,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
   PetscCall(PetscMalloc1(n, &ix));
   PetscCall(DMStagStencilToIndexLocal(dm, dm->dim, n, pos, ix));
   PetscCall(VecGetArrayRead(vec, &arr));
-  for (idx = 0; idx < n; ++idx) val[idx] = arr[ix[idx]];
+  for (PetscInt idx = 0; idx < n; ++idx) val[idx] = arr[ix[idx]];
   PetscCall(VecRestoreArrayRead(vec, &arr));
   PetscCall(PetscFree(ix));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -188,7 +188,6 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
-  PetscInt l;
 #endif
 
   PetscFunctionBegin;
@@ -243,7 +242,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
       col = garray[Bbaij->j[j]] * bs;
       for (k = 0; k < bs; k++) {
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
-        for (l = 0; l < bs; l++) atmp[l] = a[j * bs2 + l];
+        for (PetscInt l = 0; l < bs; l++) atmp[l] = a[j * bs2 + l];
 #else
         atmp = a + j * bs2 + k * bs;
 #endif

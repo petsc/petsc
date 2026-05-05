@@ -200,7 +200,7 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
 */
 static PetscErrorCode CreateLocalizationMatrix(PetscInt n, Mat *Q)
 {
-  PetscInt i, j;
+  PetscInt i;
 
   PetscFunctionBeginUser;
   /* Create Q matrix (n x n for identity observation operator)
@@ -211,7 +211,7 @@ static PetscErrorCode CreateLocalizationMatrix(PetscInt n, Mat *Q)
   /* Initialize with full localization (all weights = 1.0)
      Each vertex i uses all n observations */
   for (i = 0; i < n; i++) {
-    for (j = 0; j < n; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
+    for (PetscInt j = 0; j < n; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
@@ -343,12 +343,11 @@ int main(int argc, char **argv)
 
   /* Create and set localization matrix Q */
   if (!use_fake_localization && isletkf) {
-    Vec      Vecxyz[3] = {NULL, NULL, NULL};
-    Vec      coord;
-    PetscInt d;
+    Vec Vecxyz[3] = {NULL, NULL, NULL};
+    Vec coord;
 
     PetscCall(DMGetCoordinates(da_state, &coord));
-    for (d = 0; d < 1; d++) {
+    for (PetscInt d = 0; d < 1; d++) {
       PetscCall(DMCreateGlobalVector(da_state, &Vecxyz[d]));
       PetscCall(PetscObjectSetName((PetscObject)Vecxyz[d], "x_coordinate"));
       PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));

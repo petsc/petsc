@@ -554,7 +554,6 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   Vec       f, rhs, fhat, grad; /* Particle field f, \int phi_i f, FEM field */
   PetscReal pmoments[3];        /* \int f, \int x f, \int r^2 f */
   PetscReal fmoments[3];        /* \int \hat f, \int x \hat f, \int r^2 \hat f */
-  PetscInt  m;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -592,7 +591,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(computeParticleMoments(sw, pmoments, user));
   PetscCall(computeFEMMoments(dm, grad, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
-  for (m = 0; m < 3; ++m) {
+  for (PetscInt m = 0; m < 3; ++m) {
     PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->momentTol, comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]), user->momentTol);
   }
 

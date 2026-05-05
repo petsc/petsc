@@ -4,10 +4,8 @@ static char help[] = "Test metric utils in the uniform, isotropic case.\n\n";
 
 static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-
   *u = 0.0;
-  for (d = 0; d < dim; d++) *u += 0.5 * (x[d] - 0.5) * (x[d] - 0.5);
+  for (PetscInt d = 0; d < dim; d++) *u += 0.5 * (x[d] - 0.5) * (x[d] - 0.5);
 
   return PETSC_SUCCESS;
 }

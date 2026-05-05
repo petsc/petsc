@@ -231,7 +231,6 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
 PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 {
   PetscMPIInt rank;
-  PetscInt    p;
 
   PetscFunctionBegin;
   PetscCheck(!map->setupcalled || !(map->n != map->oldn || map->N != map->oldN), map->comm, PETSC_ERR_ARG_WRONGSTATE, "Layout is already setup with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT "), cannot call setup again with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT ")",
@@ -251,7 +250,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscCallMPI(MPI_Allgather(&map->n, 1, MPIU_INT, map->range + 1, 1, MPIU_INT, map->comm));
 
   map->range[0] = 0;
-  for (p = 2; p <= map->size; p++) map->range[p] += map->range[p - 1];
+  for (PetscInt p = 2; p <= map->size; p++) map->range[p] += map->range[p - 1];
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank + 1];

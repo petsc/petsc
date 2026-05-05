@@ -51,10 +51,8 @@ static PetscErrorCode MultiaffineFunction(PetscInt dim, PetscReal time, const Pe
 
 static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], PetscCtx ctx)
 {
-  PetscInt f;
-
   PetscFunctionBeginUser;
-  for (f = 0; f < Nf; f++) u[f] = x[f];
+  for (PetscInt f = 0; f < Nf; f++) u[f] = x[f];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

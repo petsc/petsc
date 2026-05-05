@@ -1354,10 +1354,9 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
 PetscErrorCode PetscSFResetPackFields(PetscSF sf)
 {
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  for (i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
+  for (PetscInt i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_HOST, &sf->leafpackopt[i]));
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_HOST, &bas->rootpackopt[i]));
 #if defined(PETSC_HAVE_DEVICE)

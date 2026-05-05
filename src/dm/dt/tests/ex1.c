@@ -110,14 +110,13 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
   {
     PetscReal *x2, *w2;
     PetscReal  eps;
-    PetscInt   i;
 
     eps = PETSC_SMALL;
     PetscCall(PetscMalloc2(npoints, &x2, npoints, &w2));
     PetscCall((*func)(npoints, -1., 1., alpha, beta, x2, w2));
     PetscCall(CheckQuadrature_Basics(npoints, alpha, beta, x2, w2));
     PetscCall(CheckQuadrature(npoints, alpha, beta, x2, w2, nexact));
-    for (i = 0; i < npoints; i++) {
+    for (PetscInt i = 0; i < npoints; i++) {
       PetscReal xdiff, xtol, wdiff, wtol;
 
       xdiff = PetscAbsReal(x[i] - x2[i]);
@@ -185,11 +184,11 @@ int main(int argc, char **argv)
   PetscCall(PetscRealView(npoints, weights, PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscReal a = interval[0], b = interval[1], zeroth, first, second;
-    PetscInt  i;
+
     zeroth = b - a;
     first  = (b * b - a * a) / 2;
     second = (b * b * b - a * a * a) / 3;
-    for (i = 0; i < npoints; i++) {
+    for (PetscInt i = 0; i < npoints; i++) {
       zeroth -= weights[i];
       first -= weights[i] * points[i];
       second -= weights[i] * PetscSqr(points[i]);
@@ -201,9 +200,7 @@ int main(int argc, char **argv)
   }
   PetscCall(CheckPoints("Gauss points", npoints, points, ndegrees, degrees));
   {
-    PetscInt i;
-
-    for (i = minpoints; i <= maxpoints; i++) {
+    for (PetscInt i = minpoints; i <= maxpoints; i++) {
       PetscReal a1, b1, a2, b2;
 
 #if defined(PETSC_HAVE_LGAMMA)

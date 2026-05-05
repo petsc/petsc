@@ -4,14 +4,14 @@
 static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
-  PetscInt          bs, i;
+  PetscInt          bs;
   VecTaggerBox     *bxs;
 
   PetscFunctionBegin;
   PetscCall(VecTaggerGetBlockSize(tagger, &bs));
   *numBoxes = 1;
   PetscCall(PetscMalloc1(bs, &bxs));
-  for (i = 0; i < bs; i++) {
+  for (PetscInt i = 0; i < bs; i++) {
     bxs[i].min = smpl->box[i].min;
     bxs[i].max = smpl->box[i].max;
   }

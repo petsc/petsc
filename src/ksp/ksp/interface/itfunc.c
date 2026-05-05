@@ -401,7 +401,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   /* scale the matrix if requested */
   if (ksp->dscale) {
     PetscScalar *xx;
-    PetscInt     i, n;
+    PetscInt     n;
     PetscBool    zeroflag = PETSC_FALSE;
 
     if (!ksp->diagonal) { /* allocate vector to hold diagonal */
@@ -410,7 +410,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     PetscCall(MatGetDiagonal(pmat, ksp->diagonal));
     PetscCall(VecGetLocalSize(ksp->diagonal, &n));
     PetscCall(VecGetArray(ksp->diagonal, &xx));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       if (xx[i] != 0.0) xx[i] = 1.0 / PetscSqrtReal(PetscAbsScalar(xx[i]));
       else {
         xx[i]    = 1.0;
@@ -1179,7 +1179,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
 {
   Mat        A, R;
   PetscReal *norms;
-  PetscInt   i, N;
+  PetscInt   N;
   PetscBool  flg;
 
   PetscFunctionBegin;
@@ -1193,7 +1193,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
     PetscCall(PetscMalloc1(N, &norms));
     PetscCall(MatGetColumnNorms(R, NORM_2, norms));
     PetscCall(MatDestroy(&R));
-    for (i = 0; i < N; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, "%s #%" PetscInt_FMT " %g\n", i == 0 ? "KSP final norm of residual" : "                          ", shift + i, (double)norms[i]));
+    for (PetscInt i = 0; i < N; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, "%s #%" PetscInt_FMT " %g\n", i == 0 ? "KSP final norm of residual" : "                          ", shift + i, (double)norms[i]));
     PetscCall(PetscFree(norms));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2386,11 +2386,9 @@ PetscErrorCode KSPMonitorSet(KSP ksp, KSPMonitorFn *monitor, PetscCtx ctx, Petsc
 @*/
 PetscErrorCode KSPMonitorCancel(KSP ksp)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  for (i = 0; i < ksp->numbermonitors; i++) {
+  for (PetscInt i = 0; i < ksp->numbermonitors; i++) {
     if (ksp->monitordestroy[i]) PetscCall((*ksp->monitordestroy[i])(&ksp->monitorcontext[i]));
   }
   ksp->numbermonitors = 0;
@@ -2617,7 +2615,7 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
 {
   PetscReal const *hist;
   PetscReal       *x, *y, slope, intercept, mean = 0.0, var = 0.0, res = 0.0;
-  PetscInt         n, k;
+  PetscInt         n;
 
   PetscFunctionBegin;
   if (cr || rRsq) {
@@ -2627,14 +2625,14 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
       if (rRsq) *rRsq = -1.0;
     } else {
       PetscCall(PetscMalloc2(n, &x, n, &y));
-      for (k = 0; k < n; ++k) {
+      for (PetscInt k = 0; k < n; ++k) {
         x[k] = k;
         y[k] = PetscLogReal(hist[k]);
         mean += y[k];
       }
       mean /= n;
       PetscCall(PetscLinearRegression(n, x, y, &slope, &intercept));
-      for (k = 0; k < n; ++k) {
+      for (PetscInt k = 0; k < n; ++k) {
         res += PetscSqr(y[k] - (slope * x[k] + intercept));
         var += PetscSqr(y[k] - mean);
       }
@@ -2650,14 +2648,14 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
       if (eRsq) *eRsq = -1.0;
     } else {
       PetscCall(PetscMalloc2(n, &x, n, &y));
-      for (k = 0; k < n; ++k) {
+      for (PetscInt k = 0; k < n; ++k) {
         x[k] = k;
         y[k] = PetscLogReal(hist[k]);
         mean += y[k];
       }
       mean /= n;
       PetscCall(PetscLinearRegression(n, x, y, &slope, &intercept));
-      for (k = 0; k < n; ++k) {
+      for (PetscInt k = 0; k < n; ++k) {
         res += PetscSqr(y[k] - (slope * x[k] + intercept));
         var += PetscSqr(y[k] - mean);
       }

@@ -298,14 +298,14 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
 @*/
 PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local)
 {
-  PetscInt i, j;
+  PetscInt i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidType(is, 1);
   for (i = 0; i < IS_INFO_MAX; i++) {
     if (clear_permanent_local) is->info_permanent[IS_LOCAL][i] = PETSC_FALSE;
-    for (j = 0; j < 2; j++) {
+    for (PetscInt j = 0; j < 2; j++) {
       if (!is->info_permanent[j][i]) is->info[j][i] = IS_INFO_UNKNOWN;
     }
   }
@@ -1298,10 +1298,8 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
     if (sorted) {
       PetscCall(PetscFindInt(key, numIdx, idx, location));
     } else {
-      PetscInt i;
-
       *location = -1;
-      for (i = 0; i < numIdx; i++) {
+      for (PetscInt i = 0; i < numIdx; i++) {
         if (idx[i] == key) {
           *location = i;
           break;
@@ -2034,13 +2032,13 @@ PetscErrorCode ISGetCompressOutput(IS is, PetscBool *compress)
 
 static PetscErrorCode ISGetIndicesCopy_Private(IS is, PetscInt idx[])
 {
-  PetscInt        len, i;
+  PetscInt        len;
   const PetscInt *ptr;
 
   PetscFunctionBegin;
   PetscCall(ISGetLocalSize(is, &len));
   PetscCall(ISGetIndices(is, &ptr));
-  for (i = 0; i < len; i++) idx[i] = ptr[i];
+  for (PetscInt i = 0; i < len; i++) idx[i] = ptr[i];
   PetscCall(ISRestoreIndices(is, &ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

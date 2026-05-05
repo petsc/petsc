@@ -393,11 +393,9 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
   if (!special) PetscCall(PetscStrcmp(value, "true", &special));
   if (!special) PetscCall(PetscStrcmp(value, "false", &special));
   if (!special) {
-    PetscInt i;
-
     PetscCall(PetscStrlen(value, &len));
     special = PETSC_TRUE;
-    for (i = 0; i < (int)len; i++) {
+    for (PetscInt i = 0; i < (int)len; i++) {
       if (!isdigit(value[i])) {
         special = PETSC_FALSE;
         break;

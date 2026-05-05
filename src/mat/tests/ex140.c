@@ -45,7 +45,6 @@ PetscErrorCode RunHasOperationTest(void)
   for (matop = 0; matop < nop; matop++) {
     char      opts[256];
     PetscBool hasop;
-    PetscInt  i;
 
     PetscCall(PetscSNPrintf(opts, 256, "-enable %s", optstr[matop]));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Testing with %s\n", opts));
@@ -54,7 +53,7 @@ PetscErrorCode RunHasOperationTest(void)
     PetscCall(MatSetType(A, MATPYTHON));
     PetscCall(MatPythonSetType(A, "ex140.py:Matrix"));
     /* default case, no user implementation */
-    for (i = 0; i < nop; i++) {
+    for (PetscInt i = 0; i < nop; i++) {
       PetscCall(MatHasOperation(A, optenum[i], &hasop));
       if (hasop) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error: %s present\n", optstr[i]));
@@ -65,7 +64,7 @@ PetscErrorCode RunHasOperationTest(void)
     /* customize Matrix class at a later stage and add support for optenum[matop] */
     PetscCall(PetscOptionsInsertString(NULL, opts));
     PetscCall(MatSetFromOptions(A));
-    for (i = 0; i < nop; i++) {
+    for (PetscInt i = 0; i < nop; i++) {
       PetscCall(MatHasOperation(A, optenum[i], &hasop));
       if (hasop && i != matop) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error: %s present\n", optstr[i]));

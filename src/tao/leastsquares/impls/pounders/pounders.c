@@ -920,7 +920,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
-  PetscInt      i, j;
   IS            isfloc, isfglob, isxloc, isxglob;
 
   PetscFunctionBegin;
@@ -935,7 +934,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
 
   PetscCall(PetscMalloc1(tao->max_funcs + 100, &mfqP->Xhist));
   PetscCall(PetscMalloc1(tao->max_funcs + 100, &mfqP->Fhist));
-  for (i = 0; i < mfqP->n + 1; i++) {
+  for (PetscInt i = 0; i < mfqP->n + 1; i++) {
     PetscCall(VecDuplicate(tao->solution, &mfqP->Xhist[i]));
     PetscCall(VecDuplicate(tao->ls_res, &mfqP->Fhist[i]));
   }
@@ -982,8 +981,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   PetscCall(PetscMalloc1(PetscMax(mfqP->m, mfqP->n), &mfqP->indices));
   PetscCall(PetscMalloc1(mfqP->n, &mfqP->iwork));
   PetscCall(PetscMalloc1(mfqP->m * mfqP->m, &mfqP->w));
-  for (i = 0; i < mfqP->m; i++) {
-    for (j = 0; j < mfqP->m; j++) {
+  for (PetscInt i = 0; i < mfqP->m; i++) {
+    for (PetscInt j = 0; j < mfqP->m; j++) {
       if (i == j) {
         mfqP->w[i + mfqP->m * j] = 1.0;
       } else {
@@ -991,7 +990,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
       }
     }
   }
-  for (i = 0; i < PetscMax(mfqP->m, mfqP->n); i++) mfqP->indices[i] = i;
+  for (PetscInt i = 0; i < PetscMax(mfqP->m, mfqP->n); i++) mfqP->indices[i] = i;
   PetscCallMPI(MPI_Comm_size(((PetscObject)tao)->comm, &mfqP->size));
   if (mfqP->size > 1) {
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, mfqP->n, &mfqP->localx));
@@ -1044,7 +1043,6 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
 static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
-  PetscInt      i;
 
   PetscFunctionBegin;
   if (!mfqP->usegqt) {
@@ -1094,7 +1092,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
   PetscCall(PetscFree(mfqP->indices));
   PetscCall(PetscFree(mfqP->iwork));
   PetscCall(PetscFree(mfqP->w));
-  for (i = 0; i < mfqP->nHist; i++) {
+  for (PetscInt i = 0; i < mfqP->nHist; i++) {
     PetscCall(VecDestroy(&mfqP->Xhist[i]));
     PetscCall(VecDestroy(&mfqP->Fhist[i]));
   }

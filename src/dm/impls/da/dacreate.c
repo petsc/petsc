@@ -206,7 +206,6 @@ static PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt
 
 static PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
 {
-  PetscInt i;
   DM_DA   *dd  = (DM_DA *)dm->data;
   PetscInt dof = dd->w;
 
@@ -221,12 +220,12 @@ static PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char *
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(DMRestoreGlobalVector(dm, &v));
     PetscCall(PetscMalloc1(dof, islist));
-    for (i = 0; i < dof; i++) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i]));
+    for (PetscInt i = 0; i < dof; i++) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), n / dof, rstart + i, dof, &(*islist)[i]));
   }
   if (namelist) {
     PetscCall(PetscMalloc1(dof, namelist));
     PetscCheck(dd->fieldname, PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently DMDA must have fieldnames");
-    for (i = 0; i < dof; i++) PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i]));
+    for (PetscInt i = 0; i < dof; i++) PetscCall(PetscStrallocpy(dd->fieldname[i], &(*namelist)[i]));
   }
   if (dmlist) {
     DM da;
@@ -241,8 +240,8 @@ static PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char *
     PetscCall(DMDASetStencilWidth(da, dd->s));
     PetscCall(DMSetUp(da));
     PetscCall(PetscMalloc1(dof, dmlist));
-    for (i = 0; i < dof - 1; i++) PetscCall(PetscObjectReference((PetscObject)da));
-    for (i = 0; i < dof; i++) (*dmlist)[i] = da;
+    for (PetscInt i = 0; i < dof - 1; i++) PetscCall(PetscObjectReference((PetscObject)da));
+    for (PetscInt i = 0; i < dof; i++) (*dmlist)[i] = da;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

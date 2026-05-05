@@ -43,7 +43,6 @@ int main(int argc, char **argv)
   AppCtx            user;
   MPI_Comm          comm;
   PetscMPIInt       gsize, grank, mycolor;
-  PetscInt          i;
   PetscBool         flg;
   const char        exampleDMPlexName[] = "DMPlex Object";
   const char       *infilename;
@@ -55,7 +54,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &gsize));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &grank));
 
-  for (i = 0; i < user.ntimes; i++) {
+  for (PetscInt i = 0; i < user.ntimes; i++) {
     if (i == 0) {
       /* Use infile/informat for the initial load */
       infilename = user.infile;

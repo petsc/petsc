@@ -12,7 +12,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
 {
   TSTrajectory_Basic *tjbasic = (TSTrajectory_Basic *)tj->data;
   char                filename[PETSC_MAX_PATH_LEN];
-  PetscInt            ns, i;
+  PetscInt            ns;
 
   PetscFunctionBegin;
   PetscCall(PetscSNPrintf(filename, sizeof(filename), tj->dirfiletemplate, stepnum));
@@ -24,7 +24,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     Vec      *Y;
     PetscReal tprev;
     PetscCall(TSGetStages(ts, &ns, &Y));
-    for (i = 0; i < ns; i++) {
+    for (PetscInt i = 0; i < ns; i++) {
       /* For stiffly accurate TS methods, the last stage Y[ns-1] is the same as the solution X, thus does not need to be saved again. */
       if (ts->stifflyaccurate && i == ns - 1) continue;
       PetscCall(VecView(Y[i], tjbasic->viewer));
@@ -40,7 +40,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     PetscCall(MatView(A, tjbasic->viewer));
     if (stepnum) {
       PetscCall(TSForwardGetStages(ts, &ns, &S));
-      for (i = 0; i < ns; i++) PetscCall(MatView(S[i], tjbasic->viewer));
+      for (PetscInt i = 0; i < ns; i++) PetscCall(MatView(S[i], tjbasic->viewer));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -59,7 +59,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt ste
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
   Vec         Sol;
-  PetscInt    ns, i;
+  PetscInt    ns;
 
   PetscFunctionBegin;
   PetscCall(PetscSNPrintf(filename, sizeof(filename), tj->dirfiletemplate, stepnum));
@@ -72,7 +72,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     Vec      *Y;
     PetscReal timepre;
     PetscCall(TSGetStages(ts, &ns, &Y));
-    for (i = 0; i < ns; i++) {
+    for (PetscInt i = 0; i < ns; i++) {
       /* For stiffly accurate TS methods, the last stage Y[ns-1] is the same as the solution X, thus does not need to be loaded again. */
       if (ts->stifflyaccurate && i == ns - 1) continue;
       PetscCall(VecLoad(Y[i], viewer));
@@ -90,7 +90,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt ste
     if (stepnum) {
       Mat *S;
       PetscCall(TSForwardGetStages(ts, &ns, &S));
-      for (i = 0; i < ns; i++) PetscCall(MatLoad(S[i], viewer));
+      for (PetscInt i = 0; i < ns; i++) PetscCall(MatLoad(S[i], viewer));
     }
   }
   PetscCall(PetscViewerDestroy(&viewer));

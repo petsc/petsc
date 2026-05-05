@@ -18,11 +18,10 @@ static PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 
 static PetscErrorCode KSPSolve_Richardson(KSP ksp)
 {
-  PetscInt        i, maxit;
   PetscReal       rnorm = 0.0, abr;
   PetscScalar     scale, rdot;
   Vec             x, b, r, z, w = NULL, y = NULL;
-  PetscInt        xs, ws;
+  PetscInt        i, maxit, xs, ws;
   Mat             Amat, Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
   PetscBool       exists, diagonalscale;

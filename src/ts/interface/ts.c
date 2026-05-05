@@ -5820,9 +5820,8 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
   t->ops[0] = tsin->ops[0];
 
   if (((PetscObject)tsin)->fortran_func_pointers) {
-    PetscInt i;
     PetscCall(PetscMalloc((10) * sizeof(PetscFortranCallbackFn *), &((PetscObject)t)->fortran_func_pointers));
-    for (i = 0; i < 10; i++) ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i];
+    for (PetscInt i = 0; i < 10; i++) ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i];
   }
   *tsout = t;
   PetscFunctionReturn(PETSC_SUCCESS);

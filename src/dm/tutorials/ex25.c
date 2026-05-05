@@ -49,7 +49,6 @@ int main(int argc, char **argv)
   if (rank == 0) {
     Field       **vars;
     DMDALocalInfo info;
-    PetscInt      i, j;
     PetscScalar   sum = 0;
 
     /* The vector entries of the patch are displayed in the "natural" ordering on the two grid; interlaced x and y with the x variable increasing more rapidly */
@@ -58,8 +57,8 @@ int main(int argc, char **argv)
     PetscCall(DMDAGetLocalInfo(sda, &info));
     PetscCall(DMDAVecGetArray(sda, sxy, &vars));
     /* Loop over the patch of the entire domain */
-    for (j = info.ys; j < info.ys + info.ym; j++) {
-      for (i = info.xs; i < info.xs + info.xm; i++) sum += vars[j][i].x;
+    for (PetscInt j = info.ys; j < info.ys + info.ym; j++) {
+      for (PetscInt i = info.xs; i < info.xs + info.xm; i++) sum += vars[j][i].x;
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "The sum of the x coordinates is %g\n", (double)PetscRealPart(sum)));
     PetscCall(DMDAVecRestoreArray(sda, sxy, &vars));

@@ -98,7 +98,6 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   PetscDraw   draw;
   DM_Network *network = (DM_Network *)dm->data;
   PetscReal   drawPause, viewPadding = 1.0;
-  PetscInt    i;
 #if defined(PETSC_HAVE_MKSTEMP)
   PetscBool isSharedTmp;
 #endif
@@ -215,7 +214,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
         PetscCall(ISGetTotalIndices(network->vieweroptions.viewranks, &viewranks));
         PetscCall(ISGetSize(network->vieweroptions.viewranks, &viewrankssize));
         PetscCall(PetscStrlcat(options, " -drr ", sizeof(options)));
-        for (i = 0; i < viewrankssize; i++) {
+        for (PetscInt i = 0; i < viewrankssize; i++) {
           PetscCall(PetscSNPrintf(rankbuffer, sizeof(rankbuffer), "%" PetscInt_FMT, viewranks[i]));
           PetscCall(PetscStrlcat(options, rankbuffer, sizeof(options)));
         }

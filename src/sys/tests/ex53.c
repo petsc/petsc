@@ -10,7 +10,6 @@ static char help[] = "Test resource recycling and MPI_Comm and keyval creation i
 int main(int argc, char **argv)
 {
   int         err;
-  PetscInt    i;
   PetscMPIInt key1, key2, attr1 = 100, attr2 = 200, *attr, iflg;
   MPI_Comm    newcomm;
 
@@ -18,7 +17,7 @@ int main(int argc, char **argv)
   CHKMPIERR(err);
 
   /* Repeated keyval or comm create/free should not blow up MPI */
-  for (i = 0; i < 500; i++) {
+  for (PetscInt i = 0; i < 500; i++) {
     err = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &key1, NULL);
     CHKMPIERR(err);
     err = MPI_Comm_free_keyval(&key1);
@@ -64,7 +63,7 @@ int main(int argc, char **argv)
   CHKMPIERR(err);
 
   /* Init/Finalize PETSc multiple times when MPI is initialized */
-  for (i = 0; i < 500; i++) {
+  for (PetscInt i = 0; i < 500; i++) {
     PetscFunctionBeginUser;
     PetscCall(PetscInitialize(&argc, &argv, NULL, help));
     PetscCall(PetscFinalize(); if (err) return err);

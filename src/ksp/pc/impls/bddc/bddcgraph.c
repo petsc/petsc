@@ -259,9 +259,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     nvc = 0;
     for (i = 0; i < graph->ncc; i++) {
       if (!mark[i]) {
-        PetscInt j;
-
-        for (j = graph->cptr[i]; j < graph->cptr[i + 1]; j++) {
+        for (PetscInt j = graph->cptr[i]; j < graph->cptr[i + 1]; j++) {
           idx[nvc] = graph->queue[j];
           nvc++;
         }
@@ -856,9 +854,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCall(ISGetBlockSize(ISForDofs[i], &bs));
     PetscCall(ISGetIndices(ISForDofs[i], &is_indices));
     for (j = 0; j < is_size / bs; j++) {
-      PetscInt b;
-
-      for (b = 0; b < bs; b++) {
+      for (PetscInt b = 0; b < bs; b++) {
         PetscInt jj = bs * j + b;
 
         if (is_indices[jj] > -1 && is_indices[jj] < nvtxs) { /* out of bounds indices (if any) are skipped */

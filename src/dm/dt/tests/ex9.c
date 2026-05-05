@@ -104,9 +104,8 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   for (i = 0; i < dim; i++) PetscCall(PetscRandomGetValueReal(rand, &point[i]));
   for (i = dim - 1; i > 0; i--) {
     PetscReal val = point[i];
-    PetscInt  j;
 
-    for (j = 0; j < i; j++) point[j] = (point[j] + 1.) * (1. - val) * 0.5 - 1.;
+    for (PetscInt j = 0; j < i; j++) point[j] = (point[j] + 1.) * (1. - val) * 0.5 - 1.;
   }
 
   PetscCall(PetscMalloc3(Nk * Np, &pkd_jet_basis, Nk, &lgndre_jet, Nk, &pkd_jet));
@@ -114,7 +113,8 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   PetscCall(PetscDTPKDEvalJet(dim, 1, point, deg, k, pkd_jet_basis));
   for (i = 0; i < Nk; i++) {
     PetscReal val = 0.;
-    for (j = 0; j < Np; j++) val += pkd_coeffs[j] * pkd_jet_basis[j * Nk + i];
+
+    for (PetscInt j = 0; j < Np; j++) val += pkd_coeffs[j] * pkd_jet_basis[j * Nk + i];
     pkd_jet[i] = val;
   }
 
@@ -125,12 +125,12 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
     PetscCall(PetscDTJacobiEvalJet(0., 0., 1, &point[i], deg, k, D[i]));
   }
   /* compile the 1D Legendre jets into the tensor Legendre jet */
-  for (j = 0; j < Nk; j++) lgndre_jet[j] = 0.;
+  for (PetscInt j = 0; j < Nk; j++) lgndre_jet[j] = 0.;
   for (i = 0; i < Np; i++) {
     PetscReal mul = lgndre_coeffs[i];
 
     PetscCall(PetscDTIndexToGradedOrder(dim, i, degtup));
-    for (j = 0; j < Nk; j++) {
+    for (PetscInt j = 0; j < Nk; j++) {
       PetscReal val = 1.;
 
       PetscCall(PetscDTIndexToGradedOrder(dim, j, ktup));

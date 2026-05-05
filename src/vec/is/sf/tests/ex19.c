@@ -84,7 +84,7 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
 
 PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
 {
-  PetscInt     j, k;
+  PetscInt     j;
   PetscInt     nLeaves = ctx->nLeavesPerRank * ctx->size;
   PetscInt     nroots  = ctx->nLeavesPerRank;
   PetscSF      sf;
@@ -100,7 +100,7 @@ PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
   PetscCall(PetscSFCreate(ctx->comm, &sf));
   j = nLeaves - 1;
   for (PetscMPIInt r = 0; r < ctx->size; r++) {
-    for (k = 0; k < ctx->nLeavesPerRank; k++, j--) {
+    for (PetscInt k = 0; k < ctx->nLeavesPerRank; k++, j--) {
       ilocal[j]        = ilocal[j + 1] + ctx->leaveStep;
       iremote[j].rank  = r;
       iremote[j].index = k;
@@ -124,7 +124,7 @@ PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
 
 PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
 {
-  PetscInt     j, k;
+  PetscInt     j;
   PetscInt    *ilocal = NULL;
   PetscSFNode *iremote;
   PetscInt     nLeaves = ctx->nLeavesPerRank * ctx->size;
@@ -138,7 +138,7 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
   PetscCall(PetscSFCreate(ctx->comm, &sf));
   j = 0;
   for (PetscMPIInt r = 0; r < ctx->size; r++) {
-    for (k = 0; k < ctx->nLeavesPerRank; k++, j++) {
+    for (PetscInt k = 0; k < ctx->nLeavesPerRank; k++, j++) {
       if (!ctx->contiguousLeaves) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
       iremote[j].rank  = r;
       iremote[j].index = k;

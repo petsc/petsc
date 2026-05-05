@@ -263,13 +263,13 @@ PetscErrorCode JunctionDestroyJacobian(DM dm, PetscInt v, Junction junc)
 {
   Mat            *Jv = junc->jacobian;
   const PetscInt *edges;
-  PetscInt        nedges, e;
+  PetscInt        nedges;
 
   PetscFunctionBegin;
   if (!Jv) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(DMNetworkGetSupportingEdges(dm, v, &nedges, &edges));
-  for (e = 0; e < nedges; e++) {
+  for (PetscInt e = 0; e < nedges; e++) {
     PetscCall(MatDestroy(&Jv[2 * e + 1]));
     PetscCall(MatDestroy(&Jv[2 * e + 2]));
   }

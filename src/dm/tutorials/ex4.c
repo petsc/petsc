@@ -11,10 +11,8 @@ static char help[] = "Demonstrates various vector routines for DMDA.\n\n";
 
 PetscErrorCode myfunction(PetscCtx ctx, PetscInt n, const PetscScalar *xy, PetscScalar *u)
 {
-  PetscInt i;
-
   PetscFunctionBeginUser;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     u[2 * i]     = xy[2 * i];
     u[2 * i + 1] = xy[2 * i + 1];
   }

@@ -687,7 +687,6 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx
         }
       } else if (key == 4) {
         if (!ghostvtex) {
-          PetscInt     k;
           PetscInt     ld_nsegsp;
           PetscInt     ld_nsegsq;
           PetscScalar *ld_alphap;
@@ -711,8 +710,8 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx
           Vm2 = Vm * Vm;
           Vm0 = PetscSqrtScalar(Vr0 * Vr0 + Vi0 * Vi0);
           PD = QD = 0.0;
-          for (k = 0; k < ld_nsegsp; k++) PD += ld_alphap[k] * PD0 * PetscPowScalar(Vm / Vm0, ld_betap[k]);
-          for (k = 0; k < ld_nsegsq; k++) QD += ld_alphaq[k] * QD0 * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
+          for (PetscInt k = 0; k < ld_nsegsp; k++) PD += ld_alphap[k] * PD0 * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+          for (PetscInt k = 0; k < ld_nsegsq; k++) QD += ld_alphaq[k] * QD0 * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
 
           /* Load currents */
           IDr = (PD * Vr + QD * Vi) / Vm2;

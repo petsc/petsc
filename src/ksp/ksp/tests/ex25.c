@@ -7,7 +7,7 @@ int main(int argc, char **args)
   Mat         C;
   PetscScalar none = -1.0;
   PetscMPIInt rank, size;
-  PetscInt    its, k;
+  PetscInt    its;
   PetscReal   err_norm, res_norm;
   Vec         x, b, u, u_tmp;
   PC          pc;
@@ -47,7 +47,7 @@ int main(int argc, char **args)
 
   /* Setup and solve for system */
   PetscCall(VecDuplicate(b, &x));
-  for (k = 0; k < 3; k++) {
+  for (PetscInt k = 0; k < 3; k++) {
     if (k == 0) { /* CG  */
       PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
       PetscCall(KSPSetType(ksp, KSPCG));

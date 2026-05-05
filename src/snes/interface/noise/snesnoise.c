@@ -215,7 +215,6 @@ static PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
   Vec         f;
   PetscScalar alpha;
   PetscReal   yy1n, yy2n, enorm;
-  PetscInt    i;
   PetscBool   printv = PETSC_FALSE;
   char        filename[32];
   MPI_Comm    comm;
@@ -249,7 +248,7 @@ static PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
   /* Test Jacobian-vector product computation */
   alpha = -1.0;
   h     = 0.01 * hopt;
-  for (i = 0; i < 5; i++) {
+  for (PetscInt i = 0; i < 5; i++) {
     /* Set differencing parameter for matrix-free multiplication */
     PetscCall(MatSNESMFMoreSetParameters(Jmf, PETSC_DEFAULT, PETSC_DEFAULT, h));
 

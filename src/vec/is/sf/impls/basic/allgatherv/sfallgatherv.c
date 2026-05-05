@@ -33,7 +33,6 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf)
 {
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
   PetscMPIInt         size;
-  PetscInt            i;
   const PetscInt     *range;
   MPI_Comm            comm;
 
@@ -48,7 +47,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf)
     PetscCall(PetscMalloc1(size, &dat->displs));
     PetscCall(PetscLayoutGetRanges(sf->map, &range));
 
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < size; i++) {
       PetscCall(PetscMPIIntCast(range[i], &dat->displs[i]));
       PetscCall(PetscMPIIntCast(range[i + 1] - range[i], &dat->recvcounts[i]));
     }

@@ -190,10 +190,9 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
   PetscInt d    = user->dir;
 
   if (Nc > 1) {
-    PetscInt e;
     for (d = 0; d < Nc; ++d) {
       u[d] = 0.0;
-      for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+      for (PetscInt e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
     }
   } else {
     u[0] = n[d];

@@ -441,7 +441,6 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
   PetscScalar        IGr, IGi, IDr, IDi;
   PetscScalar        Zdq_inv[4], det;
   PetscScalar        PD, QD, Vm0, *v0;
-  PetscInt           k;
 
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(F));
@@ -526,8 +525,8 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     Vm2 = Vm * Vm;
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
-    for (k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
 
     /* Load currents */
     IDr = (PD * Vr + QD * Vi) / Vm2;
@@ -705,7 +704,6 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, PetscCtx ctx)
   PetscInt           ncols;
   const PetscInt    *cols;
   const PetscScalar *yvals;
-  PetscInt           k;
   PetscScalar        PD, QD, Vm0, Vm4;
   const PetscScalar *v0;
   PetscScalar        dPD_dVr, dPD_dVi, dQD_dVr, dQD_dVi;
@@ -906,7 +904,7 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, PetscCtx ctx)
   for (i = 0; i < nbus; i++) {
     PetscCall(MatGetRow(user->Ybus, 2 * i, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -915,7 +913,7 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, PetscCtx ctx)
 
     PetscCall(MatGetRow(user->Ybus, 2 * i + 1, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i + 1;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -936,12 +934,12 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, PetscCtx ctx)
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) {
       PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
       dPD_dVr += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vr * PetscPowScalar(Vm, ld_betap[k] - 2);
       dPD_dVi += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vi * PetscPowScalar(Vm, ld_betap[k] - 2);
     }
-    for (k = 0; k < ld_nsegsq[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) {
       QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
       dQD_dVr += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vr * PetscPowScalar(Vm, ld_betaq[k] - 2);
       dQD_dVi += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vi * PetscPowScalar(Vm, ld_betaq[k] - 2);
@@ -1068,7 +1066,6 @@ int main(int argc, char **argv)
   PetscBool         *terminate;
   const PetscInt    *idx3;
   PetscScalar       *vatoli;
-  PetscInt           k;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, "petscoptions", help));
@@ -1233,7 +1230,7 @@ int main(int argc, char **argv)
     PetscCall(VecSet(vatol, 100000.0));
     PetscCall(VecGetArray(vatol, &vatoli));
     PetscCall(ISGetIndices(user.is_diff, &idx3));
-    for (k = 0; k < 7 * ngen; k++) vatoli[idx3[k]] = 1e-2;
+    for (PetscInt k = 0; k < 7 * ngen; k++) vatoli[idx3[k]] = 1e-2;
     PetscCall(VecRestoreArray(vatol, &vatoli));
   }
 

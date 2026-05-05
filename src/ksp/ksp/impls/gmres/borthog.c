@@ -30,7 +30,6 @@
 PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
 {
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
-  PetscInt     j;
   PetscScalar *hh, *hes;
 
   PetscFunctionBegin;
@@ -38,7 +37,7 @@ PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it
   /* update Hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0, it);
   hes = HES(0, it);
-  for (j = 0; j <= it; j++) {
+  for (PetscInt j = 0; j <= it; j++) {
     /* (vv(it+1), vv(j)) */
     PetscCall(VecDot(VEC_VV(it + 1), VEC_VV(j), hh));
     KSPCheckDot(ksp, *hh);

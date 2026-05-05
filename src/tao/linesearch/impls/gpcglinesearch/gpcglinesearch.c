@@ -26,8 +26,7 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
 
 static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
-  TaoLineSearch_GPCG *neP = (TaoLineSearch_GPCG *)ls->data;
-  PetscInt            i;
+  TaoLineSearch_GPCG *neP        = (TaoLineSearch_GPCG *)ls->data;
   PetscBool           g_computed = PETSC_FALSE; /* to prevent extra gradient computation */
   PetscReal           d1, finit, actred, prered, rho, gdx;
 
@@ -88,7 +87,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 
   /* Initialization */
   finit = *f;
-  for (i = 0; i < ls->max_funcs; i++) {
+  for (PetscInt i = 0; i < ls->max_funcs; i++) {
     /* Force the step to be within the bounds */
     ls->step = PetscMax(ls->step, ls->stepmin);
     ls->step = PetscMin(ls->step, ls->stepmax);

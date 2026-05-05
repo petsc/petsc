@@ -31,7 +31,7 @@ int main(int argc, char **args)
   PetscScalar s;
   PetscRandom rdm;
   PetscReal   norm, enorm;
-  PetscInt    func, ii;
+  PetscInt    func;
   FuncType    function = TANH;
   DM          da, da1, coordsda;
   PetscBool   view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
@@ -94,7 +94,7 @@ int main(int argc, char **args)
   PetscCall(DMGetGlobalVector(da, &zz));
   PetscCall(PetscObjectSetName((PetscObject)zz, "FFTW reconstructed vector"));
   /* Split vectors for FFTW */
-  for (ii = 0; ii < 3; ++ii) {
+  for (PetscInt ii = 0; ii < 3; ++ii) {
     PetscCall(DMGetGlobalVector(da1, &xxsplit[ii]));
     PetscCall(PetscObjectSetName((PetscObject)xxsplit[ii], "Real space split vector"));
     PetscCall(DMGetGlobalVector(da1, &yysplit[ii]));
@@ -144,13 +144,13 @@ int main(int argc, char **args)
 
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
   PetscCall(MatMult(A, x, z));
-  for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], zzsplit[ii]));
+  for (PetscInt ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], zzsplit[ii]));
   /* Now apply USFFT and FFTW forward several (3) times */
   for (i = 0; i < 3; ++i) {
     PetscCall(MatMult(A, x, y));
-    for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], yysplit[ii]));
+    for (PetscInt ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, xxsplit[ii], yysplit[ii]));
     PetscCall(MatMultTranspose(A, y, z));
-    for (ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, yysplit[ii], zzsplit[ii]));
+    for (PetscInt ii = 0; ii < 3; ++ii) PetscCall(MatMult(AA, yysplit[ii], zzsplit[ii]));
   }
   /* Unsplit yy */
   PetscCall(VecStrideScatterAll(yysplit, yy, INSERT_VALUES)); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */

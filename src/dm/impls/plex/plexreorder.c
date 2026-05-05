@@ -274,11 +274,11 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   /* Ignore globalVertexNumbers, globalCellNumbers */
   /* Reorder labels */
   {
-    PetscInt numLabels, l;
+    PetscInt numLabels;
     DMLabel  label, labelNew;
 
     PetscCall(DMGetNumLabels(dm, &numLabels));
-    for (l = 0; l < numLabels; ++l) {
+    for (PetscInt l = 0; l < numLabels; ++l) {
       PetscCall(DMGetLabelByNum(dm, l, &label));
       PetscCall(DMLabelPermute(label, perm, &labelNew));
       PetscCall(DMAddLabel(*pdm, labelNew));

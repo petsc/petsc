@@ -528,8 +528,6 @@ static PetscErrorCode GmshMeshCreate(GmshMesh **mesh)
 
 static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
 {
-  PetscInt r;
-
   PetscFunctionBegin;
   if (!*mesh) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(GmshEntitiesDestroy(&(*mesh)->entities));
@@ -538,7 +536,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   PetscCall(PetscFree((*mesh)->periodMap));
   PetscCall(PetscFree((*mesh)->vertexMap));
   PetscCall(PetscSegBufferDestroy(&(*mesh)->segbuf));
-  for (r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
+  for (PetscInt r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
   PetscCall(PetscFree3((*mesh)->regionDims, (*mesh)->regionTags, (*mesh)->regionNames));
   PetscCall(PetscFree(*mesh));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1258,10 +1256,10 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
   }
 
   { /* Support for sparse node tags */
-    PetscInt   n, t;
+    PetscInt   n;
     GmshNodes *nodes = mesh->nodelist;
     PetscCall(PetscMalloc1(gmsh->nodeEnd - gmsh->nodeStart, &gmsh->nbuf));
-    for (t = 0; t < gmsh->nodeEnd - gmsh->nodeStart; ++t) gmsh->nbuf[t] = PETSC_INT_MIN;
+    for (PetscInt t = 0; t < gmsh->nodeEnd - gmsh->nodeStart; ++t) gmsh->nbuf[t] = PETSC_INT_MIN;
     gmsh->nodeMap = gmsh->nbuf - gmsh->nodeStart;
     for (n = 0; n < mesh->numNodes; ++n) {
       const PetscInt tag = nodes->id[n];
@@ -1889,16 +1887,15 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       for (v = 0; v < numNodes; ++v) {
         const PetscInt  vv   = mesh->vertexMap[v];
         const PetscInt *tags = &mesh->nodelist->tag[v * GMSH_MAX_TAGS];
-        PetscInt        r, t;
 
         if (vv < 0) continue;
-        for (t = 0; t < GMSH_MAX_TAGS; ++t) {
+        for (PetscInt t = 0; t < GMSH_MAX_TAGS; ++t) {
           const PetscInt  tag     = tags[t];
           const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
 
           if (tag == -1) continue;
           if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
-          for (r = 0; r < Nr; ++r) {
+          for (PetscInt r = 0; r < Nr; ++r) {
             if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
           }
         }

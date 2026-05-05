@@ -9,13 +9,12 @@ int main(int argc, char **args)
   KSPHPDDMType type;
   PetscBool    flg;
 #endif
-  PetscInt    i;
   const char *common[] = {KSPGMRES, KSPCG, KSPPREONLY};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  for (i = 0; i < 3; i++) {
+  for (PetscInt i = 0; i < 3; i++) {
     PetscCall(KSPSetType(ksp, common[i]));
     PetscCall(KSPSetType(ksp, KSPHPDDM));
 #if defined(PETSC_HAVE_HPDDM)

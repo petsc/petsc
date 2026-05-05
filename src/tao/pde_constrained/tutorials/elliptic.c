@@ -102,7 +102,6 @@ int main(int argc, char **argv)
   Tao      tao;
   AppCtx   user;
   PetscInt ntests = 1;
-  PetscInt i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -158,7 +157,7 @@ int main(int argc, char **argv)
   /* SOLVE THE APPLICATION */
   PetscCall(PetscLogStageRegister("Trials", &user.stages[1]));
   PetscCall(PetscLogStagePush(user.stages[1]));
-  for (i = 0; i < ntests; i++) {
+  for (PetscInt i = 0; i < ntests; i++) {
     PetscCall(TaoSolve(tao));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "KSP Iterations = %" PetscInt_FMT "\n", user.ksp_its));
     PetscCall(VecCopy(x0, user.x));
@@ -1164,8 +1163,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
 PetscErrorCode EllipticDestroy(AppCtx *user)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCall(MatDestroy(&user->DSG));
   PetscCall(KSPDestroy(&user->solver));
@@ -1216,7 +1213,7 @@ PetscErrorCode EllipticDestroy(AppCtx *user)
   PetscCall(VecDestroy(&user->subq));
   PetscCall(VecScatterDestroy(&user->state_scatter));
   PetscCall(VecScatterDestroy(&user->design_scatter));
-  for (i = 0; i < user->ns; i++) {
+  for (PetscInt i = 0; i < user->ns; i++) {
     PetscCall(VecScatterDestroy(&user->yi_scatter[i]));
     PetscCall(VecScatterDestroy(&user->di_scatter[i]));
   }

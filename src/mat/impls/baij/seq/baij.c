@@ -3407,8 +3407,7 @@ static PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, 
       const PetscScalar *svals = values + (V ? (bs * bs * ii[i]) : 0);
       PetscCall(MatSetValuesBlocked_SeqBAIJ(B, 1, &i, ncols, icols, svals, INSERT_VALUES));
     } else {
-      PetscInt j;
-      for (j = 0; j < ncols; j++) {
+      for (PetscInt j = 0; j < ncols; j++) {
         const PetscScalar *svals = values + (V ? (bs * bs * (ii[i] + j)) : 0);
         PetscCall(MatSetValuesBlocked_SeqBAIJ(B, 1, &i, 1, &icols[j], svals, INSERT_VALUES));
       }

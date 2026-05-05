@@ -176,7 +176,7 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
 static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 {
   PetscViewerFormat format;
-  PetscInt          pdim, f;
+  PetscInt          pdim;
 
   PetscFunctionBegin;
   PetscCall(PetscDualSpaceGetDimension(sp, &pdim));
@@ -191,7 +191,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscCall(PetscViewerGetFormat(v, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     PetscCall(PetscViewerASCIIPushTab(v));
-    for (f = 0; f < pdim; ++f) {
+    for (PetscInt f = 0; f < pdim; ++f) {
       PetscCall(PetscViewerASCIIPrintf(v, "Dual basis vector %" PetscInt_FMT "\n", f));
       PetscCall(PetscViewerASCIIPushTab(v));
       PetscCall(PetscQuadratureView(sp->functional[f], v));
@@ -352,16 +352,12 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscCall(DMPlexGetDepth(dm, &depth));
 
   if (sp->pointSpaces) {
-    PetscInt i;
-
-    for (i = 0; i < pEnd - pStart; i++) PetscCall(PetscDualSpaceDestroy(&sp->pointSpaces[i]));
+    for (PetscInt i = 0; i < pEnd - pStart; i++) PetscCall(PetscDualSpaceDestroy(&sp->pointSpaces[i]));
   }
   PetscCall(PetscFree(sp->pointSpaces));
 
   if (sp->heightSpaces) {
-    PetscInt i;
-
-    for (i = 0; i <= depth; i++) PetscCall(PetscDualSpaceDestroy(&sp->heightSpaces[i]));
+    for (PetscInt i = 0; i <= depth; i++) PetscCall(PetscDualSpaceDestroy(&sp->heightSpaces[i]));
   }
   PetscCall(PetscFree(sp->heightSpaces));
 
@@ -393,7 +389,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
 @*/
 PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 {
-  PetscInt dim, f;
+  PetscInt dim;
   DM       dm;
 
   PetscFunctionBegin;
@@ -412,7 +408,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscTryTypeMethod(*sp, destroy);
   PetscCall(PetscDualSpaceClearDMData_Internal(*sp, dm));
 
-  for (f = 0; f < dim; ++f) PetscCall(PetscQuadratureDestroy(&(*sp)->functional[f]));
+  for (PetscInt f = 0; f < dim; ++f) PetscCall(PetscQuadratureDestroy(&(*sp)->functional[f]));
   PetscCall(PetscFree((*sp)->functional));
   PetscCall(DMDestroy(&(*sp)->dm));
   PetscCall(PetscHeaderDestroy(sp));
@@ -782,14 +778,14 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt *numDof
   PetscCheck(sp->uniform, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform space does not have a fixed number of dofs for each height");
   if (!sp->numDof) {
     DM           dm;
-    PetscInt     depth, d;
+    PetscInt     depth;
     PetscSection section;
 
     PetscCall(PetscDualSpaceGetDM(sp, &dm));
     PetscCall(DMPlexGetDepth(dm, &depth));
     PetscCall(PetscCalloc1(depth + 1, &sp->numDof));
     PetscCall(PetscDualSpaceGetSection(sp, &section));
-    for (d = 0; d <= depth; d++) {
+    for (PetscInt d = 0; d <= depth; d++) {
       PetscInt dStart, dEnd;
 
       PetscCall(DMPlexGetDepthStratum(dm, d, &dStart, &dEnd));
@@ -997,7 +993,7 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
     PetscReal      detJ, hdetJ;
     PetscDualSpace ssp;
     PetscInt       dof, off, f, sdim;
-    PetscInt       i, j;
+    PetscInt       i;
     DM             sdm;
 
     PetscCall(PetscDualSpaceGetPointSubspace(sp, s, &ssp));
@@ -1011,7 +1007,7 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
     PetscCall(DMPlexComputeCellGeometryAffineFEM(dm, s, v0, J, NULL, &detJ));
     /* compactify Jacobian */
     for (i = 0; i < dim; i++)
-      for (j = 0; j < sdim; j++) J[i * sdim + j] = J[i * dim + j];
+      for (PetscInt j = 0; j < sdim; j++) J[i * sdim + j] = J[i * dim + j];
     for (f = 0; f < dof; f++) {
       PetscQuadrature fn;
 
@@ -1319,14 +1315,14 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, nrows, ncols, maxNumPoints * Nc, NULL, &A));
   for (f = 0, offset = 0; f < spdim; f++) {
     const PetscReal *p, *w;
-    PetscInt         Np, i;
+    PetscInt         Np;
     PetscInt         fnc;
 
     PetscCall(PetscDualSpaceGetFunctional(sp, f, &q));
     PetscCall(PetscQuadratureGetData(q, NULL, &fnc, &Np, &p, &w));
     PetscCheck(fnc == Nc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "functional component mismatch");
-    for (i = 0; i < Np * dim; i++) points[offset * dim + i] = p[i];
-    for (i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(A, f, offset * Nc, w[i], INSERT_VALUES));
+    for (PetscInt i = 0; i < Np * dim; i++) points[offset * dim + i] = p[i];
+    for (PetscInt i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(A, f, offset * Nc, w[i], INSERT_VALUES));
     offset += Np;
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -1457,12 +1453,12 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
     for (d = 0; d < dof; d++, off++, f++) {
       const PetscReal *p;
       const PetscReal *w;
-      PetscInt         Np, i;
+      PetscInt         Np;
 
       PetscCall(PetscDualSpaceGetFunctional(sp, off, &q));
       PetscCall(PetscQuadratureGetData(q, NULL, NULL, &Np, &p, &w));
-      for (i = 0; i < Np * dim; i++) points[offset + i] = p[i];
-      for (i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(imat, f, matoffset + i, w[i], INSERT_VALUES));
+      for (PetscInt i = 0; i < Np * dim; i++) points[offset + i] = p[i];
+      for (PetscInt i = 0; i < Np * Nc; i++) PetscCall(MatSetValue(imat, f, matoffset + i, w[i], INSERT_VALUES));
       offset += Np * dim;
       matoffset += Np * Nc;
     }
@@ -1625,10 +1621,9 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sp->heightSpaces) {
-    PetscInt h;
     PetscCall(PetscCalloc1(depth + 1, &sp->heightSpaces));
 
-    for (h = 0; h <= depth; h++) {
+    for (PetscInt h = 0; h <= depth; h++) {
       if (h == 0 && cEnd == cStart + 1) continue;
       if (sp->ops->createheightsubspace) PetscUseTypeMethod(sp, createheightsubspace, height, &sp->heightSpaces[h]);
       else if (sp->pointSpaces) {
@@ -1696,10 +1691,9 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sp->pointSpaces) {
-    PetscInt p;
     PetscCall(PetscCalloc1(pEnd - pStart, &sp->pointSpaces));
 
-    for (p = 0; p < pEnd - pStart; p++) {
+    for (PetscInt p = 0; p < pEnd - pStart; p++) {
       if (p + pStart == cStart && cEnd == cStart + 1) continue;
       if (sp->ops->createpointsubspace) PetscUseTypeMethod(sp, createpointsubspace, p + pStart, &sp->pointSpaces[p]);
       else if (sp->heightSpaces || sp->ops->createheightsubspace) {
@@ -2067,7 +2061,6 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
   const PetscInt dim = dsp->dm->dim, dE = fegeom->dimEmbed;
-  PetscInt       v, c;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
@@ -2076,8 +2069,8 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   PetscAssert(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
   /* Transform Hessian: J^{-T}_{ik} J^{-T}_{jl} H(f)_{kl} = J^{-T}_{ik} H(f)_{kl} J^{-1}_{lj} */
   if (dim == dE) {
-    for (v = 0; v < Nv; ++v) {
-      for (c = 0; c < Nc; ++c) {
+    for (PetscInt v = 0; v < Nv; ++v) {
+      for (PetscInt c = 0; c < Nc; ++c) {
         switch (dim) {
         case 1:
           vals[(v * Nc + c) * dim * dim] *= PetscSqr(fegeom->invJ[0]);
@@ -2094,8 +2087,8 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
       }
     }
   } else {
-    for (v = 0; v < Nv; ++v) {
-      for (c = 0; c < Nc; ++c) DMPlex_PTAPReal_Internal(fegeom->invJ, dim, dE, &vals[(v * Nc + c) * dE * dE], &vals[(v * Nc + c) * dE * dE]);
+    for (PetscInt v = 0; v < Nv; ++v) {
+      for (PetscInt c = 0; c < Nc; ++c) DMPlex_PTAPReal_Internal(fegeom->invJ, dim, dE, &vals[(v * Nc + c) * dE * dE], &vals[(v * Nc + c) * dE * dE]);
     }
   }
   /* Assume its a vector, otherwise assume its a bunch of scalars */

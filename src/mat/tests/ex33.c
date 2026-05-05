@@ -28,7 +28,6 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
 PetscErrorCode TestMPIDerivedDataType(void)
 {
   MPI_Datatype type1, type2, rtype1, rtype2;
-  PetscInt     i, j;
   PetscScalar  buffer[24]; /* An array of 4 rows, 6 cols */
   MPI_Status   status;
   PetscMPIInt  rank, size, disp[2];
@@ -40,7 +39,7 @@ PetscErrorCode TestMPIDerivedDataType(void)
 
   if (rank == 0) {
     /* proc[0] sends 2 rows to proc[1] */
-    for (i = 0; i < 24; i++) buffer[i] = (PetscScalar)i;
+    for (PetscInt i = 0; i < 24; i++) buffer[i] = (PetscScalar)i;
 
     disp[0] = 0;
     disp[1] = 2;
@@ -52,7 +51,7 @@ PetscErrorCode TestMPIDerivedDataType(void)
 
   } else if (rank == 1) {
     /* proc[1] receives 2 rows from proc[0], and put them into contiguous rows, starting at the row 1 (disp[0]) */
-    for (i = 0; i < 24; i++) buffer[i] = 0.0;
+    for (PetscInt i = 0; i < 24; i++) buffer[i] = 0.0;
 
     disp[0] = 1;
     PetscCallMPI(MPI_Type_create_indexed_block(1, 2, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
@@ -60,8 +59,8 @@ PetscErrorCode TestMPIDerivedDataType(void)
 
     PetscCallMPI(MPI_Type_commit(&rtype2));
     PetscCallMPI(MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status));
-    for (i = 0; i < 4; i++) {
-      for (j = 0; j < 6; j++) PetscCall(PetscPrintf(MPI_COMM_SELF, "  %g", (double)PetscRealPart(buffer[i + j * 4])));
+    for (PetscInt i = 0; i < 4; i++) {
+      for (PetscInt j = 0; j < 6; j++) PetscCall(PetscPrintf(MPI_COMM_SELF, "  %g", (double)PetscRealPart(buffer[i + j * 4])));
       PetscCall(PetscPrintf(MPI_COMM_SELF, "\n"));
     }
   }

@@ -1347,10 +1347,10 @@ static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoars
     PetscCall(PetscMalloc1(nloc, &tmp_ldata));
     for (jj = 0; jj < col_bs; jj++) {
       for (kk = 0; kk < bs; kk++) {
-        PetscInt         ii, stride;
+        PetscInt         stride;
         const PetscReal *tp = PetscSafePointerPlusOffset(pc_gamg->data, jj * bs * nloc + kk);
 
-        for (ii = 0; ii < nloc; ii++, tp += bs) tmp_ldata[ii] = *tp;
+        for (PetscInt ii = 0; ii < nloc; ii++, tp += bs) tmp_ldata[ii] = *tp;
 
         PetscCall(PCGAMGGetDataWithGhosts(Gmat, 1, tmp_ldata, &stride, &tmp_gdata));
 
@@ -1359,7 +1359,7 @@ static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoars
           nbnodes = bs * stride;
         }
         tp2 = PetscSafePointerPlusOffset(data_w_ghost, jj * bs * stride + kk);
-        for (ii = 0; ii < stride; ii++, tp2 += bs) *tp2 = tmp_gdata[ii];
+        for (PetscInt ii = 0; ii < stride; ii++, tp2 += bs) *tp2 = tmp_gdata[ii];
         PetscCall(PetscFree(tmp_gdata));
       }
     }
@@ -1425,8 +1425,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   PC_MG       *mg          = (PC_MG *)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
   PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
-  PetscInt     jj;
-  Mat          Prol = *a_P;
+  Mat          Prol        = *a_P;
   MPI_Comm     comm;
   KSP          eksp;
   Vec          bb, xx;
@@ -1507,7 +1506,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
     PetscCall(MatGetDiagonal(Amat, diag)); /* effectively PCJACOBI */
     PetscCall(VecReciprocal(diag));
 
-    for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
+    for (PetscInt jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
       Mat tMat;
 
       PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_OPTSM], 0, 0, 0, 0));

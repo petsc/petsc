@@ -12,7 +12,6 @@ int main(int argc, char **argv)
   PetscScalar *bufAout;
   PetscMPIInt  rank, size;
   PetscInt     nroots, nleaves;
-  PetscInt     i;
   PetscInt    *ilocal;
   PetscSFNode *iremote;
   PetscBool    test_dupped_type;
@@ -37,7 +36,7 @@ int main(int argc, char **argv)
   nroots  = 1;
   PetscCall(PetscMalloc1(nleaves, &ilocal));
 
-  for (i = 0; i < nleaves; i++) ilocal[i] = i;
+  for (PetscInt i = 0; i < nleaves; i++) ilocal[i] = i;
 
   PetscCall(PetscMalloc1(nleaves, &iremote));
   iremote[0].rank  = 0;
@@ -52,7 +51,7 @@ int main(int argc, char **argv)
 
   PetscCall(VecDuplicate(A, &Aout));
   PetscCall(VecGetArray(A, &bufA));
-  for (i = 0; i < 4; i++) bufA[i] = (PetscScalar)i;
+  for (PetscInt i = 0; i < 4; i++) bufA[i] = (PetscScalar)i;
   PetscCall(VecRestoreArray(A, &bufA));
 
   PetscCall(VecGetArrayRead(A, (const PetscScalar **)&bufA));
@@ -68,7 +67,7 @@ int main(int argc, char **argv)
     contig = tmp;
   }
   PetscCall(PetscSFRegisterPersistent(sf, contig, bufA, bufAout));
-  for (i = 0; i < 10000; i++) {
+  for (PetscInt i = 0; i < 10000; i++) {
     PetscCall(PetscSFBcastBegin(sf, contig, bufA, bufAout, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, contig, bufA, bufAout, MPI_REPLACE));
   }

@@ -16,7 +16,6 @@ int main(int argc, char **args)
   PetscReal        rnorm;
   PetscInt         n    = 20; /* size of the matrix */
   PetscInt         nmat = 3;  /* number of matrices */
-  PetscInt         i;
   PetscRandom      rctx;
   MatCompositeType type;
   PetscScalar      scalings[5] = {2, 3, 4, 5, 6};
@@ -32,9 +31,9 @@ int main(int argc, char **args)
   PetscCall(PetscMalloc1(nmat + 3, &A));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n / 2, 3, NULL, 3, NULL, &A[0]));
-  for (i = 1; i < nmat + 1; i++) PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 3, NULL, 3, NULL, &A[i]));
+  for (PetscInt i = 1; i < nmat + 1; i++) PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 3, NULL, 3, NULL, &A[i]));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n / 2, n, 3, NULL, 3, NULL, &A[nmat + 1]));
-  for (i = 0; i < nmat + 2; i++) PetscCall(MatSetRandom(A[i], rctx));
+  for (PetscInt i = 0; i < nmat + 2; i++) PetscCall(MatSetRandom(A[i], rctx));
 
   PetscCall(MatCreateVecs(A[1], &x, &y));
   PetscCall(VecDuplicate(y, &z));
@@ -48,7 +47,7 @@ int main(int argc, char **args)
   PetscCall(VecSet(x, 1.0));
   PetscCall(MatMult(A[1], x, z));
   PetscCall(VecScale(z, scalings[1]));
-  for (i = 2; i < nmat + 1; i++) {
+  for (PetscInt i = 2; i < nmat + 1; i++) {
     PetscCall(MatMult(A[i], x, z2));
     PetscCall(VecAXPY(z, scalings[i], z2));
   }
@@ -82,7 +81,7 @@ int main(int argc, char **args)
   PetscCall(VecSet(v, 1.0));
   PetscCall(MatMult(A[0], v, z));
   PetscCall(VecScale(z, scalings[0]));
-  for (i = 1; i < nmat; i++) {
+  for (PetscInt i = 1; i < nmat; i++) {
     PetscCall(MatMult(A[i], z, y));
     PetscCall(VecScale(y, scalings[i]));
     PetscCall(VecCopy(y, z));
@@ -109,7 +108,7 @@ int main(int argc, char **args)
   */
   PetscCall(VecSet(x, 1.0));
   PetscCall(MatMult(A[2], x, z));
-  for (i = 3; i < nmat + 1; i++) {
+  for (PetscInt i = 3; i < nmat + 1; i++) {
     PetscCall(MatMult(A[i], z, y));
     PetscCall(VecCopy(y, z));
   }
@@ -150,7 +149,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&z));
   PetscCall(VecDestroy(&z2));
   PetscCall(PetscRandomDestroy(&rctx));
-  for (i = 0; i < nmat + 2; i++) PetscCall(MatDestroy(&A[i]));
+  for (PetscInt i = 0; i < nmat + 2; i++) PetscCall(MatDestroy(&A[i]));
   PetscCall(PetscFree(A));
 
   PetscCall(PetscFinalize());

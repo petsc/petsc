@@ -524,14 +524,13 @@ done:
 @*/
 PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
 {
-  PetscInt i;
-  void   **iptr = (void **)vptr, *iarray_start = NULL;
-  DM_DA   *dd = (DM_DA *)da->data;
+  void **iptr = (void **)vptr, *iarray_start = NULL;
+  DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   if (ghosted) {
-    for (i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
+    for (PetscInt i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedout[i] == *iptr) {
         iarray_start           = dd->startghostedout[i];
         dd->arrayghostedout[i] = NULL;
@@ -539,7 +538,7 @@ PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
         break;
       }
     }
-    for (i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
+    for (PetscInt i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayghostedin[i]) {
         dd->arrayghostedin[i] = *iptr;
         dd->startghostedin[i] = iarray_start;
@@ -547,7 +546,7 @@ PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
       }
     }
   } else {
-    for (i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
+    for (PetscInt i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayout[i] == *iptr) {
         iarray_start    = dd->startout[i];
         dd->arrayout[i] = NULL;
@@ -555,7 +554,7 @@ PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
         break;
       }
     }
-    for (i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
+    for (PetscInt i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayin[i]) {
         dd->arrayin[i] = *iptr;
         dd->startin[i] = iarray_start;

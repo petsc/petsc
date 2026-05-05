@@ -225,11 +225,9 @@ PetscErrorCode DMClearGlobalVectors(DM dm)
 @*/
 PetscErrorCode DMClearLocalVectors(DM dm)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  for (i = 0; i < DM_MAX_WORK_VECTORS; i++) {
+  for (PetscInt i = 0; i < DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
     PetscCheck(!dm->localout[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
@@ -265,13 +263,11 @@ PetscErrorCode DMClearLocalVectors(DM dm)
 @*/
 PetscErrorCode DMRestoreGlobalVector(DM dm, Vec *g)
 {
-  PetscInt i, j;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(g, 2);
   PetscCall(VecSetErrorIfLocked(*g, 2));
-  for (j = 0; j < DM_MAX_WORK_VECTORS; j++) {
+  for (PetscInt j = 0; j < DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
       DM vdm;
 
@@ -279,7 +275,7 @@ PetscErrorCode DMRestoreGlobalVector(DM dm, Vec *g)
       PetscCheck(vdm == dm, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Invalid vector");
       PetscCall(VecSetDM(*g, NULL));
       dm->globalout[j] = NULL;
-      for (i = 0; i < DM_MAX_WORK_VECTORS; i++) {
+      for (PetscInt i = 0; i < DM_MAX_WORK_VECTORS; i++) {
         if (!dm->globalin[i]) {
           dm->globalin[i] = *g;
           goto alldone;

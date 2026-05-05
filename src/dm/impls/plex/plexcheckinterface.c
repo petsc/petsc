@@ -181,7 +181,6 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   Vec               *sntCoordinatesPerRank;
   Vec               *refCoordinatesPerRank;
   Vec               *recCoordinatesPerRank = NULL;
-  PetscInt           r;
   PetscMPIInt        size, rank;
   PetscBool          same;
   PetscBool          verbose = PETSC_FALSE;
@@ -228,7 +227,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
     PetscCall(PetscViewerASCIIPrintf(v, "============\nDMPlexCheckInterfaceCones output\n============\n"));
     PetscCall(PetscViewerASCIIPushSynchronized(v));
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", rank));
-    for (r = 0; r < size; r++) {
+    for (PetscInt r = 0; r < size; r++) {
       if (r < nranks) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]));
         PetscCall(PetscViewerASCIIPushTab(v));
@@ -242,7 +241,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
       }
     }
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
-    for (r = 0; r < size; r++) {
+    for (PetscInt r = 0; r < size; r++) {
       if (r < niranks) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]));
         PetscCall(PetscViewerASCIIPushTab(v));
@@ -256,7 +255,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
       }
     }
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
-    for (r = 0; r < size; r++) {
+    for (PetscInt r = 0; r < size; r++) {
       if (r < niranks) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]));
         PetscCall(PetscViewerASCIIPushTab(v));
@@ -273,24 +272,24 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */
-  for (r = 0; r < niranks; r++) {
+  for (PetscInt r = 0; r < niranks; r++) {
     PetscCall(VecEqual(refCoordinatesPerRank[r], recCoordinatesPerRank[r], &same));
     PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "interface cones do not conform for remote rank %d", iranks[r]);
   }
 
   /* destroy sent stuff */
-  for (r = 0; r < nranks; r++) PetscCall(VecDestroy(&sntCoordinatesPerRank[r]));
+  for (PetscInt r = 0; r < nranks; r++) PetscCall(VecDestroy(&sntCoordinatesPerRank[r]));
   PetscCall(PetscFree(sntCoordinatesPerRank));
   PetscCall(PetscFree2(rmine1, rremote1));
   PetscCall(PetscSFDestroy(&imsf));
 
   /* destroy referenced stuff */
-  for (r = 0; r < niranks; r++) PetscCall(VecDestroy(&refCoordinatesPerRank[r]));
+  for (PetscInt r = 0; r < niranks; r++) PetscCall(VecDestroy(&refCoordinatesPerRank[r]));
   PetscCall(PetscFree(refCoordinatesPerRank));
   PetscCall(PetscFree(mine_orig_numbering));
 
   /* destroy received stuff */
-  for (r = 0; r < niranks; r++) PetscCall(VecDestroy(&recCoordinatesPerRank[r]));
+  for (PetscInt r = 0; r < niranks; r++) PetscCall(VecDestroy(&recCoordinatesPerRank[r]));
   PetscCall(PetscFree(recCoordinatesPerRank));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

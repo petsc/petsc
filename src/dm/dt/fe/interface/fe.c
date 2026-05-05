@@ -299,10 +299,10 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   ((PetscObject)*fem)->refct = 0;
 
   if ((*fem)->subspaces) {
-    PetscInt dim, d;
+    PetscInt dim;
 
     PetscCall(PetscDualSpaceGetDimension((*fem)->dualSpace, &dim));
-    for (d = 0; d < dim; ++d) PetscCall(PetscFEDestroy(&(*fem)->subspaces[d]));
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(PetscFEDestroy(&(*fem)->subspaces[d]));
   }
   PetscCall(PetscFree((*fem)->subspaces));
   PetscCall(PetscFree((*fem)->invV));
@@ -979,7 +979,6 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   PetscInt       Nb;   /* Dimension of FE space P */
   PetscInt       Nc;   /* Field components */
   PetscInt       cdim; /* Reference coordinate dimension */
-  PetscInt       k;
 
   PetscFunctionBegin;
   if (!npoints || !fem->dualSpace || K < 0) {
@@ -1002,7 +1001,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   (*T)->Nc   = Nc;
   (*T)->cdim = cdim;
   PetscCall(PetscMalloc1((*T)->K + 1, &(*T)->T));
-  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscCalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
+  for (PetscInt k = 0; k <= (*T)->K; ++k) PetscCall(PetscCalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
   PetscUseTypeMethod(fem, computetabulation, nrepl * npoints, points, K, *T);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1077,12 +1076,10 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
 @*/
 PetscErrorCode PetscTabulationDestroy(PetscTabulation *T)
 {
-  PetscInt k;
-
   PetscFunctionBegin;
   PetscAssertPointer(T, 1);
   if (!T || !*T) PetscFunctionReturn(PETSC_SUCCESS);
-  for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscFree((*T)->T[k]));
+  for (PetscInt k = 0; k <= (*T)->K; ++k) PetscCall(PetscFree((*T)->T[k]));
   PetscCall(PetscFree((*T)->T));
   PetscCall(PetscFree(*T));
   *T = NULL;
@@ -2419,7 +2416,7 @@ PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf,
   /* f is the field number in the DS */
   for (f = 0; f < Nf; ++f) {
     PetscBool isCohesive;
-    PetscInt  Ns, s;
+    PetscInt  Ns;
 
     if (!Tab[f]) continue;
     PetscCall(PetscDSGetCohesive(ds, f, &isCohesive));
@@ -2433,7 +2430,7 @@ PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf,
       const PetscInt  Nbf = T->Nb;
       const PetscInt  Ncf = T->Nc;
 
-      for (s = 0; s < Ns; ++s) {
+      for (PetscInt s = 0; s < Ns; ++s) {
         const PetscInt   r  = isCohesive ? rc : rf[s];
         const PetscInt   q  = isCohesive ? qc : qf[s];
         const PetscReal *Bq = &T->T[0][(r * Nq + q) * Nbf * Ncf];

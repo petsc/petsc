@@ -8,7 +8,6 @@ int main(int argc, char **argv)
   IS                     rows[2];
   ISLocalToGlobalMapping cmap, rmap;
   const PetscInt         indices[3] = {0, 1, 2};
-  PetscInt               i;
   PetscMPIInt            size;
 
   PetscFunctionBeginUser;
@@ -47,15 +46,14 @@ int main(int argc, char **argv)
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatView(C, NULL));
   PetscCall(MatNestGetISs(C, rows, NULL));
-  for (i = 0; i < 2; i++) {
-    Mat      submat;
-    IS       cols[3];
-    PetscInt j;
+  for (PetscInt i = 0; i < 2; i++) {
+    Mat submat;
+    IS  cols[3];
     PetscCall(ISView(rows[i], NULL));
     PetscCall(MatCreateSubMatrix(C, rows[i], NULL, MAT_INITIAL_MATRIX, &submat));
     PetscCall(MatView(submat, NULL));
     PetscCall(MatNestGetISs(submat, NULL, cols));
-    for (j = 0; j < 3; j++) PetscCall(ISView(cols[j], NULL));
+    for (PetscInt j = 0; j < 3; j++) PetscCall(ISView(cols[j], NULL));
     PetscCall(MatDestroy(&submat));
   }
   PetscCall(MatDestroy(&C));

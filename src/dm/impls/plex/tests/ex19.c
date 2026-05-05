@@ -263,7 +263,6 @@ int main(int argc, char *argv[])
   MPI_Comm comm;
   DM       dma, odm;
   Vec      metric;
-  PetscInt r;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -277,7 +276,7 @@ int main(int argc, char *argv[])
     dm = odm;
   } else PetscCall(DMDestroy(&odm));
 
-  for (r = 0; r < user.Nr; ++r) {
+  for (PetscInt r = 0; r < user.Nr; ++r) {
     DMLabel label;
 
     PetscCall(ComputeMetric(dm, &user, &metric));

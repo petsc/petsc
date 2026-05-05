@@ -1576,7 +1576,6 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
   if (ins == ADD_VALUES) {
     for (i = 0; i < nr; i++) {
       if (rows[i] >= 0) {
-        PetscInt  j;
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if (!nzc) continue;
@@ -1586,7 +1585,7 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
           if (hA->donotstash) continue;
         }
         PetscCheck((PetscInt)hnc == nzc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hypre overflow! number of columns %" PetscInt_FMT " for row %" PetscInt_FMT, nzc, rows[i]);
-        for (j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
+        for (PetscInt j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
         PetscCallHYPRE(HYPRE_IJMatrixAddToValues(hA->ij, 1, &hnc, (HYPRE_BigInt *)(rows + i), (HYPRE_BigInt *)cscr[0], sscr));
       }
       vals += nc;
@@ -1594,12 +1593,11 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
   } else { /* INSERT_VALUES */
     for (i = 0; i < nr; i++) {
       if (rows[i] >= 0) {
-        PetscInt  j;
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if (!nzc) continue;
         PetscCheck((PetscInt)hnc == nzc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hypre overflow! number of columns %" PetscInt_FMT " for row %" PetscInt_FMT, nzc, rows[i]);
-        for (j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
+        for (PetscInt j = 0; j < nzc; j++) PetscCall(PetscHYPREScalarCast(vals[cscr[1][j]], &sscr[j]));
         /* nonlocal values */
         if (rows[i] < rst || rows[i] >= ren) {
           PetscCheck(!A->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set", rows[i]);
@@ -1991,7 +1989,6 @@ static PetscErrorCode MatZeroEntries_HYPRE(Mat A)
 
 static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt N, const PetscInt rows[], HYPRE_Complex diag)
 {
-  PetscInt       ii;
   HYPRE_Int     *i, *j;
   HYPRE_Complex *a;
 
@@ -2015,7 +2012,7 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
   } else
 #endif
   {
-    for (ii = 0; ii < N; ii++) {
+    for (PetscInt ii = 0; ii < N; ii++) {
       HYPRE_Int jj, ibeg, iend, irow;
 
       irow = (HYPRE_Int)rows[ii];
@@ -2135,7 +2132,6 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
 static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
   Mat_HYPRE    *hA = (Mat_HYPRE *)A->data;
-  PetscInt      i;
   HYPRE_Int     hypre_host_n;
   HYPRE_BigInt  hypre_host_idxm;
   HYPRE_BigInt *device_idxm = NULL, *device_idxn = NULL, *hypre_host_idxn;
@@ -2175,7 +2171,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
-  for (i = 0; i < m; i++) {
+  for (PetscInt i = 0; i < m; i++) {
     if (idxm[i] >= 0) {
       HYPRE_BigInt  *rows, *cols;
       HYPRE_Int     *ncols;

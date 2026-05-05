@@ -9,7 +9,6 @@ int main(int argc, char **argv)
   Vec         x_mean_forecast, x_mean_analysis;
   PetscInt    state_size = 10, obs_size = 10, ensemble_size = 20;
   PetscRandom rng;
-  PetscInt    i;
   PetscReal   norm;
 
   PetscFunctionBeginUser;
@@ -46,7 +45,7 @@ int main(int argc, char **argv)
   PetscCall(VecCopy(x_true, y_obs));
 
   /* Initialize ensemble with some spread around 0 (far from truth 1.0) */
-  for (i = 0; i < ensemble_size; i++) {
+  for (PetscInt i = 0; i < ensemble_size; i++) {
     Vec member;
     PetscCall(VecDuplicate(x_true, &member));
     PetscCall(VecSetRandom(member, rng)); /* Uniform random [0, 1] */

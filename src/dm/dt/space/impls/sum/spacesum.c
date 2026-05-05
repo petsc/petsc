@@ -372,11 +372,9 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
   for (i = 0; i < Ns; ++i) PetscCall(PetscSpaceDestroy(&sum->sumspaces[i]));
   PetscCall(PetscFree(sum->sumspaces));
   if (sum->heightsubspaces) {
-    PetscInt d;
-
     /* sp->Nv is the spatial dimension, so it is equal to the number
      * of subspaces on higher co-dimension points */
-    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&sum->heightsubspaces[d]));
+    for (PetscInt d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&sum->heightsubspaces[d]));
   }
   PetscCall(PetscFree(sum->heightsubspaces));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetSubspace_C", NULL));
@@ -453,13 +451,10 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
     if (s == 0 || !sum->uniform) PetscCall(PetscSpaceEvaluate(sum->sumspaces[s], npoints, points, sB, sD, sH));
     if (B || D || H) {
       for (p = 0; p < npoints; ++p) {
-        PetscInt j;
-
-        for (j = 0; j < spdim; ++j) {
-          PetscInt c;
+        for (PetscInt j = 0; j < spdim; ++j) {
           PetscInt b = sum->interleave_basis ? (j * Ns + s) : (j + offset);
 
-          for (c = 0; c < sNc; ++c) {
+          for (PetscInt c = 0; c < sNc; ++c) {
             PetscInt compoffset, BInd, sBInd;
 
             compoffset = concatenate ? (sum->interleave_components ? (c * Ns + s) : (c + ncoffset)) : c;
@@ -467,18 +462,14 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
             sBInd      = (p * spdim + j) * sNc + c;
             if (B) B[BInd] = sB[sBInd];
             if (D || H) {
-              PetscInt v;
-
-              for (v = 0; v < Nv; ++v) {
+              for (PetscInt v = 0; v < Nv; ++v) {
                 PetscInt DInd, sDInd;
 
                 DInd  = BInd * Nv + v;
                 sDInd = sBInd * Nv + v;
                 if (D) D[DInd] = sD[sDInd];
                 if (H) {
-                  PetscInt v2;
-
-                  for (v2 = 0; v2 < Nv; ++v2) {
+                  for (PetscInt v2 = 0; v2 < Nv; ++v2) {
                     PetscInt HInd, sHInd;
 
                     HInd    = DInd * Nv + v2;

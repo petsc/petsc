@@ -611,7 +611,6 @@ PetscErrorCode PetscFindCount(PetscCount key, PetscCount n, const PetscCount X[]
 @*/
 PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups)
 {
-  PetscInt   i;
   PetscHSetI ht;
   PetscBool  missing;
 
@@ -622,7 +621,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
   if (n > 1) {
     PetscCall(PetscHSetICreate(&ht));
     PetscCall(PetscHSetIResize(ht, n));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       PetscCall(PetscHSetIQueryAdd(ht, X[i], &missing));
       if (!missing) {
         *dups = PETSC_TRUE;

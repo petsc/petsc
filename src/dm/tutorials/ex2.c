@@ -54,16 +54,16 @@ int main(int argc, char **argv)
   { /* Initialize */
     DMDALocalInfo info;
     PetscScalar **x;
-    PetscInt      i, j;
+    PetscInt      j;
 
     PetscCall(DMDAGetLocalInfo(da, &info));
     PetscCall(DMDAVecGetArray(da, Xlocal, &x));
     for (j = info.ys; j < info.ys + info.ym; j++) {
-      for (i = info.xs; i < info.xs + info.xm; i++) {
+      for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
         if (has_glider && i == glider_loc[0] && j == glider_loc[1]) {
-          PetscInt ii, jj;
+          PetscInt ii;
           for (ii = -1; ii <= 1; ii++)
-            for (jj = -1; jj <= 1; jj++) x[j + jj][i + ii] = GLIDER[1 - jj][ii + 1];
+            for (PetscInt jj = -1; jj <= 1; jj++) x[j + jj][i + ii] = GLIDER[1 - jj][ii + 1];
         }
         if (has_blinker && i == blinker_loc[0] && j == blinker_loc[1]) {
           x[j - 1][i] = 1;
@@ -80,20 +80,17 @@ int main(int argc, char **argv)
   PetscCall(VecView(Xglobal, viewer));
 
   { /* Play */
-    PetscInt step;
-
-    for (step = 0; step < steps; step++) {
+    for (PetscInt step = 0; step < steps; step++) {
       const PetscScalar **x;
       PetscScalar       **y;
       DMDALocalInfo       info;
-      PetscInt            i, j;
 
       PetscCall(DMGlobalToLocal(da, Xglobal, INSERT_VALUES, Xlocal));
       PetscCall(DMDAGetLocalInfo(da, &info));
       PetscCall(DMDAVecGetArrayRead(da, Xlocal, (void *)&x));
       PetscCall(DMDAVecGetArrayWrite(da, Xglobal, &y));
-      for (j = info.ys; j < info.ys + info.ym; j++) {
-        for (i = info.xs; i < info.xs + info.xm; i++) {
+      for (PetscInt j = info.ys; j < info.ys + info.ym; j++) {
+        for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
           PetscInt live_neighbors = 0;
           live_neighbors += PetscRealPart(x[j - 1][i - 1]) > 0;
           live_neighbors += PetscRealPart(x[j - 1][i]) > 0;

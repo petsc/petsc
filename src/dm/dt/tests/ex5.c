@@ -45,7 +45,6 @@ int main(int argc, char **argv)
       PetscReal      *testSub, *testFull;
       PetscTabulation Tsub, Tfull;
       PetscReal       J[9], detJ;
-      PetscInt        i, j;
       PetscSection    sectionFull;
       Vec             vecFull;
       PetscScalar    *arrayFull, *arraySub;
@@ -62,17 +61,17 @@ int main(int argc, char **argv)
       PetscCall(PetscRandomSetFromOptions(rand));
       PetscCall(PetscRandomSetInterval(rand, -1., 1.));
       /* create a random point in the trace domain */
-      for (i = 0; i < dim - 1; i++) PetscCall(PetscRandomGetValueReal(rand, &testSub[i]));
+      for (PetscInt i = 0; i < dim - 1; i++) PetscCall(PetscRandomGetValueReal(rand, &testSub[i]));
       PetscCall(DMPlexComputeCellGeometryFEM(dm, point, NULL, testFull, J, NULL, &detJ));
       /* project it into the full domain */
-      for (i = 0; i < dim; i++) {
-        for (j = 0; j < dim - 1; j++) testFull[i] += J[i * dim + j] * (testSub[j] - xi0[j]);
+      for (PetscInt i = 0; i < dim; i++) {
+        for (PetscInt j = 0; j < dim - 1; j++) testFull[i] += J[i * dim + j] * (testSub[j] - xi0[j]);
       }
       /* create a random vector in the full domain */
       PetscCall(PetscFEGetDimension(fe, &nFull));
       PetscCall(VecCreateSeq(PETSC_COMM_SELF, nFull, &vecFull));
       PetscCall(VecGetArray(vecFull, &arrayFull));
-      for (i = 0; i < nFull; i++) PetscCall(PetscRandomGetValue(rand, &arrayFull[i]));
+      for (PetscInt i = 0; i < nFull; i++) PetscCall(PetscRandomGetValue(rand, &arrayFull[i]));
       PetscCall(VecRestoreArray(vecFull, &arrayFull));
       /* create a vector on the trace domain */
       PetscCall(PetscFEGetDimension(traceFE, &nSub));
@@ -85,17 +84,17 @@ int main(int argc, char **argv)
       /* get the tabulations */
       PetscCall(PetscFECreateTabulation(traceFE, 1, 1, testSub, 0, &Tsub));
       PetscCall(PetscFECreateTabulation(fe, 1, 1, testFull, 0, &Tfull));
-      for (i = 0; i < Nc; i++) {
+      for (PetscInt i = 0; i < Nc; i++) {
         outSub[i] = 0.0;
-        for (j = 0; j < nSub; j++) outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
+        for (PetscInt j = 0; j < nSub; j++) outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
       }
       PetscCall(VecGetArray(vecFull, &arrayFull));
       err = 0.0;
-      for (i = 0; i < Nc; i++) {
+      for (PetscInt i = 0; i < Nc; i++) {
         PetscScalar diff;
 
         outFull[i] = 0.0;
-        for (j = 0; j < nFull; j++) outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j];
+        for (PetscInt j = 0; j < nFull; j++) outFull[i] += Tfull->T[0][j * Nc + i] * arrayFull[j];
         diff = outFull[i] - outSub[i];
         err += PetscRealPart(PetscConj(diff) * diff);
       }

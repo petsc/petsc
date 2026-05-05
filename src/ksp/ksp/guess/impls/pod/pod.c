@@ -305,8 +305,7 @@ complete_request:
   }
   /* syevx changes the input matrix */
   for (i = 0; i < pod->n; i++) {
-    PetscInt j;
-    for (j = i; j < pod->n; j++) pod->swork[i * pod->n + j] = pod->corr[i * pod->maxn + j];
+    for (PetscInt j = i; j < pod->n; j++) pod->swork[i * pod->n + j] = pod->corr[i * pod->maxn + j];
   }
   PetscCall(PetscBLASIntCast(pod->n, &bN));
 #if !defined(PETSC_USE_COMPLEX)
@@ -336,9 +335,8 @@ complete_request:
   for (i = pod->st; i < pod->n; i++) {
     const PetscReal v  = 1.0 / PetscSqrtReal(pod->eigs[i]);
     const PetscInt  st = pod->n * i;
-    PetscInt        j;
 
-    for (j = 0; j < pod->n; j++) pod->eigv[st + j] *= v;
+    for (PetscInt j = 0; j < pod->n; j++) pod->eigv[st + j] *= v;
   }
 
   /* compute S * V^T * X^T * A * X * V * S if needed */
@@ -374,7 +372,6 @@ complete_request:
     if (PetscDefined(USE_DEBUG)) {
       for (i = 0; i < pod->n; i++) {
         Vec          v;
-        PetscInt     j;
         PetscBLASInt bNen, ione = 1;
 
         PetscCall(VecDuplicate(pod->xsnap[i], &v));
@@ -382,7 +379,7 @@ complete_request:
         PetscCall(PetscBLASIntCast(pod->nen, &bNen));
         PetscCallBLAS("BLASgemv", BLASgemv_("T", &bN, &bNen, &one, pod->eigv + pod->st * pod->n, &bN, pod->corr + pod->maxn * i, &ione, &zero, pod->swork, &ione));
         PetscCallBLAS("BLASgemv", BLASgemv_("N", &bN, &bNen, &one, pod->eigv + pod->st * pod->n, &bN, pod->swork, &ione, &zero, pod->swork + pod->n, &ione));
-        for (j = 0; j < pod->n; j++) pod->swork[j] = -pod->swork[pod->n + j];
+        for (PetscInt j = 0; j < pod->n; j++) pod->swork[j] = -pod->swork[pod->n + j];
         PetscCall(VecMAXPY(v, pod->n, pod->swork, pod->xsnap));
         PetscCall(VecDot(v, v, pod->swork));
         PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 1, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));

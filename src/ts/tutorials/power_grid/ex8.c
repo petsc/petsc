@@ -225,7 +225,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ct
   DM            cda;
   DMDACoor2d  **coors;
   PetscScalar **p, **f, **pdot;
-  PetscInt      i, j;
+  PetscInt      j;
   PetscInt      xs, ys, xm, ym, M, N;
   Vec           localX, gc, localXdot;
   PetscScalar   p_adv1 = 0.0, p_adv2 = 0.0, p_diff = 0;
@@ -255,7 +255,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ct
   diffuse1         = user->lambda * user->lambda * user->q / (user->lambda * gamma + 1) * (1.0 - PetscExpScalar(-t * (gamma + 1.0) / user->lambda));
   user->disper_coe = user->ws * user->ws / (4 * user->H * user->H) * diffuse1;
 
-  for (i = xs; i < xs + xm; i++) {
+  for (PetscInt i = xs; i < xs + xm; i++) {
     for (j = ys; j < ys + ym; j++) {
       PetscCall(adv1(p, coors[j][i].y, i, j, M, &p_adv1, user));
       PetscCall(adv2(p, coors[j][i].x, coors[j][i].y, i, j, N, &p_adv2, user));
@@ -277,7 +277,6 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
   AppCtx      *user = (AppCtx *)ctx;
   DM           cda;
   DMDACoor2d **coors;
-  PetscInt     i, j;
   PetscInt     xs, ys, xm, ym, M, N;
   Vec          gc;
   PetscScalar  val[5], xi, yi;
@@ -291,8 +290,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
 
   PetscCall(DMGetCoordinatesLocal(user->da, &gc));
   PetscCall(DMDAVecGetArrayRead(cda, gc, &coors));
-  for (i = xs; i < xs + xm; i++) {
-    for (j = ys; j < ys + ym; j++) {
+  for (PetscInt i = xs; i < xs + xm; i++) {
+    for (PetscInt j = ys; j < ys + ym; j++) {
       PetscInt nc = 0;
       xi          = coors[j][i].x;
       yi          = coors[j][i].y;

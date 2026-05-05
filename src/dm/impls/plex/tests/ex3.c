@@ -653,14 +653,13 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   cEndInterior = (cEndInterior < 0) ? cEnd : cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec                locX;
-    PetscInt           c;
     PetscScalar        trueGrad[3][3] = {{0.}};
     const PetscScalar *gradArray;
     PetscReal          maxDiff, maxDiffGlob;
 
     PetscCall(DMGetLocalVector(dmfv, &locX));
     /* get the local projection of the rigid body mode */
-    for (c = cStart; c < cEnd; c++) {
+    for (PetscInt c = cStart; c < cEnd; c++) {
       PetscFVCellGeom *cg;
       PetscScalar      cx[3] = {0., 0., 0.};
 
@@ -688,7 +687,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       trueGrad[(w + 2) % dim][(w + 1) % dim] = -1.;
     }
     maxDiff = 0.;
-    for (c = cStart; c < cEndInterior; c++) {
+    for (PetscInt c = cStart; c < cEndInterior; c++) {
       PetscScalar *compGrad;
       PetscInt     i, j, k;
       PetscReal    FrobDiff = 0.;

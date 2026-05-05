@@ -113,7 +113,6 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
   PetscReal      *x;
-  PetscInt        i;
   Vec             Xmur = nm->Xmur, Xmue = nm->Xmue, Xmuc = nm->Xmuc, Xbar = nm->Xbar;
   PetscReal       fr, fe, fc;
   PetscInt        shrink;
@@ -131,7 +130,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   PetscCall(VecCopy(tao->solution, nm->simplex[0]));
   PetscCall(TaoComputeObjective(tao, nm->simplex[0], &nm->f_values[0]));
   nm->indices[0] = 0;
-  for (i = 1; i < nm->N + 1; i++) {
+  for (PetscInt i = 1; i < nm->N + 1; i++) {
     PetscCall(VecCopy(tao->solution, nm->simplex[i]));
     PetscCall(VecGetOwnershipRange(nm->simplex[i], &low, &high));
     if (i - 1 >= low && i - 1 < high) {
@@ -147,7 +146,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   /*  Xbar  = (Sum of all simplex vectors - worst vector)/N */
   PetscCall(NelderMeadSort(nm));
   PetscCall(VecSet(Xbar, 0.0));
-  for (i = 0; i < nm->N; i++) PetscCall(VecAXPY(Xbar, 1.0, nm->simplex[nm->indices[i]]));
+  for (PetscInt i = 0; i < nm->N; i++) PetscCall(VecAXPY(Xbar, 1.0, nm->simplex[nm->indices[i]]));
   PetscCall(VecScale(Xbar, nm->oneOverN));
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
@@ -204,7 +203,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
       nm->nshrink++;
       PetscCall(PetscInfo(0, "Shrink\n"));
 
-      for (i = 1; i < nm->N + 1; i++) {
+      for (PetscInt i = 1; i < nm->N + 1; i++) {
         PetscCall(VecAXPBY(nm->simplex[nm->indices[i]], 1.5, -0.5, nm->simplex[nm->indices[0]]));
         PetscCall(TaoComputeObjective(tao, nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]));
       }

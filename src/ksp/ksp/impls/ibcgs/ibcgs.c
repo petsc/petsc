@@ -38,7 +38,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 #define zn_1 zn
 static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 {
-  PetscInt  i, N;
+  PetscInt  N;
   PetscReal rnorm = 0.0, rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
@@ -175,7 +175,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     PetscCall(PetscLogEventBegin(VEC_Ops, 0, 0, 0, 0));
     tmp1 = (alphan / alphan_1) * betan;
     tmp2 = alphan * deltan;
-    for (i = 0; i < N; i++) {
+    for (PetscInt i = 0; i < N; i++) {
       zn[i] = alphan * rn_1[i] + tmp1 * zn_1[i] - tmp2 * vn_1[i];
       vn[i] = un_1[i] + betan * vn_1[i] - deltan * qn_1[i];
       sn[i] = rn_1[i] - alphan * vn[i];
@@ -203,7 +203,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     */
     PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
     phin = pin = gamman = etan = thetan = kappan = 0.0;
-    for (i = 0; i < N; i++) {
+    for (PetscInt i = 0; i < N; i++) {
       phin += r0[i] * sn[i];
       pin += r0[i] * qn[i];
       gamman += f0[i] * sn[i];
@@ -264,7 +264,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     */
     PetscCall(PetscLogEventBegin(VEC_Ops, 0, 0, 0, 0));
     rnormin = 0.0;
-    for (i = 0; i < N; i++) {
+    for (PetscInt i = 0; i < N; i++) {
       rn[i] = sn[i] - omegan * tn[i];
       rnormin += PetscRealPart(PetscConj(rn[i]) * rn[i]);
       xn[i] += zn[i] + omegan * sn[i];

@@ -277,13 +277,12 @@ int main(int argc, char **argv)
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     if (testShell) {
       Vec          ctxVec;
-      PetscInt     i;
       PetscScalar *array;
 
       PetscCall(VecCreateSeq(PETSC_COMM_SELF, nc, &ctxVec));
       PetscCall(VecSetUp(ctxVec));
       PetscCall(VecGetArray(ctxVec, &array));
-      for (i = 0; i < nc; i++) array[i] = i + 1.;
+      for (PetscInt i = 0; i < nc; i++) array[i] = i + 1.;
       PetscCall(VecRestoreArray(ctxVec, &array));
       PetscCall(DMFieldCreateShell(dm, nc, DMFIELD_VERTEX, (void *)ctxVec, &field));
       PetscCall(DMFieldShellSetEvaluate(field, TestShellEvaluate));
@@ -308,7 +307,6 @@ int main(int argc, char **argv)
       PetscCall(VecDestroy(&fieldvec));
     }
   } else if (isda) {
-    PetscInt     i;
     PetscScalar *cv;
 
     switch (dim) {
@@ -325,7 +323,7 @@ int main(int argc, char **argv)
     PetscCall(DMSetUp(dm));
     PetscCall(DMDAGetHeightStratum(dm, 0, &cStart, &cEnd));
     PetscCall(PetscMalloc1(nc * (1 << dim), &cv));
-    for (i = 0; i < nc * (1 << dim); i++) {
+    for (PetscInt i = 0; i < nc * (1 << dim); i++) {
       PetscReal rv;
 
       PetscCall(PetscRandomGetValueReal(rand, &rv));

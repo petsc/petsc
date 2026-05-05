@@ -221,14 +221,14 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
 PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 {
   PetscDS  ds;
-  PetscInt Nds, n;
+  PetscInt Nds;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->coordinates[0].dim = dim;
   if (dm->dim >= 0) {
     PetscCall(DMGetNumDS(dm, &Nds));
-    for (n = 0; n < Nds; ++n) {
+    for (PetscInt n = 0; n < Nds; ++n) {
       PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds, NULL));
       PetscCall(PetscDSSetCoordinateDimension(ds, dim));
     }

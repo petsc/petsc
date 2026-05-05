@@ -200,15 +200,13 @@ static PetscErrorCode Lorenz96Step(Vec input, Vec output, PetscCtx ctx)
 */
 static PetscErrorCode CreateIdentityObservationMatrix(PetscInt n, Mat *H)
 {
-  PetscInt i;
-
   PetscFunctionBeginUser;
   /* Create identity observation matrix H (n x n) */
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 1, NULL, 0, NULL, H));
   PetscCall(MatSetFromOptions(*H));
 
   /* Set diagonal entries to 1.0 for identity mapping */
-  for (i = 0; i < n; i++) PetscCall(MatSetValue(*H, i, i, 1.0, INSERT_VALUES));
+  for (PetscInt i = 0; i < n; i++) PetscCall(MatSetValue(*H, i, i, 1.0, INSERT_VALUES));
 
   PetscCall(MatAssemblyBegin(*H, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*H, MAT_FINAL_ASSEMBLY));
@@ -470,7 +468,6 @@ int main(int argc, char **argv)
     PetscReal    mean_target = 2.0, std_target = 1.5;
     PetscReal    sample_mean = 0.0, sample_variance = 0.0, sample_std;
     PetscReal    skewness = 0.0, kurtosis = 0.0;
-    PetscInt     i;
     PetscBool    test_gaussian = PETSC_FALSE;
 
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_gaussian", &test_gaussian, NULL));
@@ -492,11 +489,11 @@ int main(int argc, char **argv)
       PetscCall(VecGetArray(test_vec, &array));
 
       /* Compute sample mean */
-      for (i = 0; i < test_size; i++) sample_mean += PetscRealPart(array[i]);
+      for (PetscInt i = 0; i < test_size; i++) sample_mean += PetscRealPart(array[i]);
       sample_mean /= test_size;
 
       /* Compute sample variance and higher moments */
-      for (i = 0; i < test_size; i++) {
+      for (PetscInt i = 0; i < test_size; i++) {
         PetscReal diff  = PetscRealPart(array[i]) - sample_mean;
         PetscReal diff2 = diff * diff;
         sample_variance += diff2;

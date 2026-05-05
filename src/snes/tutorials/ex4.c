@@ -548,7 +548,6 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
 
 PetscErrorCode FormBoundaryConditions_Sins(SNES snes, AppCtx **ouser)
 {
-  PetscInt     i, j;
   PetscInt     mx, my;
   PetscInt     limit, bsize = 0, lsize = 0, tsize = 0, rsize = 0;
   PetscScalar  hx, hy, xt = 0, yt = 0;
@@ -576,7 +575,7 @@ PetscErrorCode FormBoundaryConditions_Sins(SNES snes, AppCtx **ouser)
   hx = 1.0 / (mx + 1.0);
   hy = 1.0 / (my + 1.0);
 
-  for (j = 0; j < 4; j++) {
+  for (PetscInt j = 0; j < 4; j++) {
     if (j == 0) {
       yt       = b;
       xt       = l;
@@ -599,7 +598,7 @@ PetscErrorCode FormBoundaryConditions_Sins(SNES snes, AppCtx **ouser)
       boundary = user->right;
     }
 
-    for (i = 0; i < limit; i++) {
+    for (PetscInt i = 0; i < limit; i++) {
       if (j == 0) { /* bottom */
         boundary[i] = -0.5 * PetscSinReal(pi2 * xt);
       } else if (j == 1) { /* top */

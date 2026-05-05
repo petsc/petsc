@@ -105,15 +105,13 @@ typedef struct {
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-  for (d = 0; d < Nc; ++d) u[d] = 0.0;
+  for (PetscInt d = 0; d < Nc; ++d) u[d] = 0.0;
   return PETSC_SUCCESS;
 }
 
 static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-  for (d = 0; d < Nc; ++d) u[d] = 1.0;
+  for (PetscInt d = 0; d < Nc; ++d) u[d] = 1.0;
   return PETSC_SUCCESS;
 }
 
@@ -1008,12 +1006,11 @@ static void g1_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   const PetscReal p_th = PetscRealPart(constants[P_TH]);
   const PetscInt  NcI  = dim;
   const PetscInt  NcJ  = dim;
-  PetscInt        c, d, e;
 
   // \phi^c_i \rho u^e \frac{\partial \psi^d_j}{\partial x^e}
-  for (c = 0; c < NcI; ++c) {
-    for (d = 0; d < NcJ; ++d) {
-      for (e = 0; e < dim; ++e) {
+  for (PetscInt c = 0; c < NcI; ++c) {
+    for (PetscInt d = 0; d < NcJ; ++d) {
+      for (PetscInt e = 0; e < dim; ++e) {
         if (c == d) g1[(c * NcJ + d) * dim + e] += p_th / u[uOff[TEMP]] * u[uOff[VEL] + e];
       }
     }
@@ -1025,10 +1022,9 @@ static void g3_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   const PetscReal Re = PetscRealPart(constants[REYNOLDS]);
   const PetscReal mu = PetscRealPart(constants[MU]);
   const PetscInt  Nc = dim;
-  PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) {
       // \frac{\partial \phi^c_i}{\partial x^d} \mu/Re \frac{\partial \psi^c_i}{\partial x^d}
       g3[((c * Nc + c) * dim + d) * dim + d] += mu / Re; // gradU
       // \frac{\partial \phi^c_i}{\partial x^d} \mu/Re \frac{\partial \psi^d_i}{\partial x^c}
@@ -1041,8 +1037,7 @@ static void g3_conduct_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 
 static void g2_conduct_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d * dim + d] = -1.0;
+  for (PetscInt d = 0; d < dim; ++d) g2[d * dim + d] = -1.0;
 }
 
 static void g0_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
@@ -1085,34 +1080,29 @@ static void g0_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   const PetscReal S    = PetscRealPart(constants[STROUHAL]);
   const PetscReal p_th = PetscRealPart(constants[P_TH]);
   const PetscReal c_p  = PetscRealPart(constants[C_P]);
-  PetscInt        d;
 
   // \psi_i C_p S p^{th}\T \psi_{j}
   g0[0] += c_p * S * p_th / u[uOff[TEMP]] * u_tShift;
   // - \phi_i C_p S p^{th}/T^2 T_t \psi_j
   g0[0] -= c_p * S * p_th / PetscSqr(u[uOff[TEMP]]) * u_t[uOff[TEMP]];
   // - \phi_i C_p p^{th}/T^2 \vb{u} \cdot \nabla T \psi_j
-  for (d = 0; d < dim; ++d) g0[0] -= c_p * p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d];
+  for (PetscInt d = 0; d < dim; ++d) g0[0] -= c_p * p_th / PetscSqr(u[uOff[TEMP]]) * u[uOff[VEL] + d] * u_x[uOff_x[TEMP] + d];
 }
 
 static void g1_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
   const PetscReal p_th = PetscRealPart(constants[P_TH]);
   const PetscReal c_p  = PetscRealPart(constants[C_P]);
-  PetscInt        d;
-
   // \phi_i C_p p^{th}/T \vb{u} \cdot \nabla \psi_j
-  for (d = 0; d < dim; ++d) g1[d] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d];
+  for (PetscInt d = 0; d < dim; ++d) g1[d] += c_p * p_th / u[uOff[TEMP]] * u[uOff[VEL] + d];
 }
 
 static void g3_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscReal Pe = PetscRealPart(constants[PECLET]);
   const PetscReal k  = PetscRealPart(constants[K]);
-  PetscInt        d;
-
   // \nabla \phi_i \frac{k}{Pe} \nabla \phi_j
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = k / Pe;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = k / Pe;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -1555,10 +1545,8 @@ static PetscErrorCode RemoveDiscretePressureNullspace(TS ts)
 
 static void divergence(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar divu[])
 {
-  PetscInt d;
-
   divu[0] = 0.;
-  for (d = 0; d < dim; ++d) divu[0] += u_x[d * dim + d];
+  for (PetscInt d = 0; d < dim; ++d) divu[0] += u_x[d * dim + d];
 }
 
 static PetscErrorCode SetInitialConditions(TS ts, Vec u)
@@ -1585,13 +1573,12 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscDS       ds;
   Vec           v, divu;
   PetscReal     ferrors[3], massFlux;
-  PetscInt      f;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetDS(dm, &ds));
 
-  for (f = 0; f < 3; ++f) PetscCall(PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]));
+  for (PetscInt f = 0; f < 3; ++f) PetscCall(PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]));
   PetscCall(DMComputeL2FieldDiff(dm, crtime, exactFuncs, ctxs, u, ferrors));
   PetscCall(GetCellDM(dm, (AppCtx *)ctx, &dmCell));
   PetscCall(DMGetGlobalVector(dmCell, &divu));

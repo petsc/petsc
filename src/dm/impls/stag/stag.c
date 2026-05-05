@@ -952,7 +952,7 @@ M*/
 PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
 {
   DM_Stag *stag;
-  PetscInt i, dim;
+  PetscInt dim;
 
   PetscFunctionBegin;
   PetscAssertPointer(dm, 1);
@@ -962,13 +962,13 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->gtol           = NULL;
   stag->ltog_injective = NULL;
   stag->ltol           = NULL;
-  for (i = 0; i < DMSTAG_MAX_STRATA; ++i) stag->dof[i] = 0;
-  for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->l[i] = NULL;
+  for (PetscInt i = 0; i < DMSTAG_MAX_STRATA; ++i) stag->dof[i] = 0;
+  for (PetscInt i = 0; i < DMSTAG_MAX_DIM; ++i) stag->l[i] = NULL;
   stag->stencilType  = DMSTAG_STENCIL_NONE;
   stag->stencilWidth = 0;
-  for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->nRanks[i] = -1;
+  for (PetscInt i = 0; i < DMSTAG_MAX_DIM; ++i) stag->nRanks[i] = -1;
   stag->coordinateDMType = NULL;
-  for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->refineFactor[i] = 2;
+  for (PetscInt i = 0; i < DMSTAG_MAX_DIM; ++i) stag->refineFactor[i] = 2;
 
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(dim == 1 || dim == 2 || dim == 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMSetDimension() must be called to set a dimension with value 1, 2, or 3");

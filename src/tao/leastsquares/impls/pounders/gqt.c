@@ -4,20 +4,20 @@
 static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z)
 {
   PetscBLASInt blas1 = 1, blasn, blasnmi, blasj, blasldr;
-  PetscInt     i, j;
+  PetscInt     j;
   PetscReal    e, temp, w, wm, ynorm, znorm, s, sm;
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(n, &blasn));
   PetscCall(PetscBLASIntCast(ldr, &blasldr));
-  for (i = 0; i < n; i++) z[i] = 0.0;
+  for (PetscInt i = 0; i < n; i++) z[i] = 0.0;
   e = PetscAbs(r[0]);
   if (e == 0.0) {
     *svmin = 0.0;
     z[0]   = 1.0;
   } else {
     /* Solve R'*y = e */
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       /* Scale y. The scaling factor (0.01) reduces the number of scalings */
       if (z[i] >= 0.0) e = -PetscAbs(e);
       else e = PetscAbs(e);

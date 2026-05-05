@@ -842,8 +842,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
   if (dim == 1) {
     for (i = offset[0]; i < offset[0] + n[0] + nExtra[0]; ++i) {
       PetscInt d = 0, dTo = 0, b = 0, bTo = 0;
-      PetscInt si;
-      for (si = 0; si < 2; ++si) {
+      for (PetscInt si = 0; si < 2; ++si) {
         b += stag->dof[si];
         bTo += stagTo->dof[si];
         for (; d < b && dTo < bTo; ++d, ++dTo) arrTo[i * epeTo + dTo] = arr[i * epe + d];
@@ -860,8 +859,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
         const PetscInt baseTo = j * eprTo + i * epeTo;
         PetscInt       d = 0, dTo = 0, b = 0, bTo = 0;
         const PetscInt s[4] = {0, 1, 1, 2}; /* Dimensions of points, in order */
-        PetscInt       si;
-        for (si = 0; si < 4; ++si) {
+        for (PetscInt si = 0; si < 4; ++si) {
           b += stag->dof[s[si]];
           bTo += stagTo->dof[s[si]];
           for (; d < b && dTo < bTo; ++d, ++dTo) arrTo[baseTo + dTo] = arr[base + d];
@@ -882,8 +880,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
           const PetscInt base   = k * epl + j * epr + i * epe;
           const PetscInt baseTo = k * eplTo + j * eprTo + i * epeTo;
           const PetscInt s[8]   = {0, 1, 1, 2, 1, 2, 2, 3}; /* dimensions of points, in order */
-          PetscInt       is;
-          for (is = 0; is < 8; ++is) {
+          for (PetscInt is = 0; is < 8; ++is) {
             b += stag->dof[s[is]];
             bTo += stagTo->dof[s[is]];
             for (; d < b && dTo < bTo; ++d, ++dTo) arrTo[baseTo + dTo] = arr[base + d];

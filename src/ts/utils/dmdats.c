@@ -390,10 +390,10 @@ PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscReal *areal;
-    PetscInt   i, n;
+    PetscInt   n;
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(PetscMalloc1(n, &areal));
-    for (i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
+    for (PetscInt i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
     PetscCall(PetscDrawLGAddCommonPoint(lgctx->lg, ptime, areal));
     PetscCall(PetscFree(areal));
   }

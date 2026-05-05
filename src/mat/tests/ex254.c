@@ -4,7 +4,6 @@ static char help[] = "Test MatSetValuesCOO() for MPIAIJ and its subclasses \n\n"
 int main(int argc, char **args)
 {
   Mat            A, B, C;
-  PetscInt       k;
   const PetscInt M = 18, N = 18;
   PetscBool      equal, isHypre;
   PetscScalar   *vals;
@@ -74,7 +73,7 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(A, MAT_IGNORE_OFF_PROC_ENTRIES, flg));
 
   PetscCall(PetscMalloc1(mycoo.n, &vals));
-  for (k = 0; k < mycoo.n; k++) {
+  for (PetscInt k = 0; k < mycoo.n; k++) {
     vals[k] = mycoo.j[k];
     PetscCall(MatSetValue(A, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
   }

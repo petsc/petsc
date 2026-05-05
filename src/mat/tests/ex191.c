@@ -8,7 +8,6 @@ int main(int argc, char **args)
   PetscViewer  fd;
   PetscMPIInt  rank;
   PetscScalar *Av;
-  PetscInt     i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -16,7 +15,7 @@ int main(int argc, char **args)
 
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, 6, 6, 12, 12, NULL, &A));
   PetscCall(MatDenseGetArrayAndMemType(A, &Av, NULL));
-  for (i = 0; i < 6 * 12; i++) Av[i] = (PetscScalar)i;
+  for (PetscInt i = 0; i < 6 * 12; i++) Av[i] = (PetscScalar)i;
   PetscCall(MatDenseRestoreArrayAndMemType(A, &Av));
 
   /* Load matrices */

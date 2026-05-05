@@ -785,7 +785,7 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 @*/
 PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
 {
-  PetscInt Nk, i;
+  PetscInt Nk;
 
   PetscFunctionBegin;
   PetscCheck(k >= 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
@@ -797,12 +797,12 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
     if (pow & 1) {
       PetscReal mult[3] = {1., -1., 1.};
 
-      for (i = 0; i < Nk; i++) starw[Nk - 1 - i] = w[i] * mult[i];
+      for (PetscInt i = 0; i < Nk; i++) starw[Nk - 1 - i] = w[i] * mult[i];
     } else {
-      for (i = 0; i < Nk; i++) starw[i] = w[i];
+      for (PetscInt i = 0; i < Nk; i++) starw[i] = w[i];
     }
     if (pow > 1 && ((k * (N - k)) & 1)) {
-      for (i = 0; i < Nk; i++) starw[i] = -starw[i];
+      for (PetscInt i = 0; i < Nk; i++) starw[i] = -starw[i];
     }
   } else {
     PetscInt *subset;
@@ -810,7 +810,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
     PetscCall(PetscMalloc1(N, &subset));
     if (pow % 2) {
       PetscInt l = (pow == 1) ? k : N - k;
-      for (i = 0; i < Nk; i++) {
+      for (PetscInt i = 0; i < Nk; i++) {
         PetscBool sOdd;
         PetscInt  j, idx;
 
@@ -820,11 +820,11 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
         starw[j] = sOdd ? -w[idx] : w[idx];
       }
     } else {
-      for (i = 0; i < Nk; i++) starw[i] = w[i];
+      for (PetscInt i = 0; i < Nk; i++) starw[i] = w[i];
     }
     /* star^2 = -1^(k * (N - k)) */
     if (pow > 1 && (k * (N - k)) % 2) {
-      for (i = 0; i < Nk; i++) starw[i] = -starw[i];
+      for (PetscInt i = 0; i < Nk; i++) starw[i] = -starw[i];
     }
     PetscCall(PetscFree(subset));
   }

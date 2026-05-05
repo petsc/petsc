@@ -41,10 +41,9 @@ int main(int argc, char **argv)
   PetscCall(VecScatterCreate(x, is1, y, is2, &ctx));
   for (i = 0; i < 100; i++) {
     PetscReal ynorm;
-    PetscInt  j;
     PetscCall(VecNormBegin(y, NORM_2, &ynorm));
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)y)));
-    for (j = 0; j < 3; j++) {
+    for (PetscInt j = 0; j < 3; j++) {
       PetscCall(VecScatterBegin(ctx, x, y, ADD_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(ctx, x, y, ADD_VALUES, SCATTER_FORWARD));
     }

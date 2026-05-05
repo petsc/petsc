@@ -801,7 +801,7 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
   for (i = 0; i < npoints; i++) {
     PetscReal pm1, pm2, x;
     PetscReal cnm1, cnm1x, cnm2;
-    PetscInt  j, m;
+    PetscInt  j;
 
     x   = points[i];
     pm2 = 1.;
@@ -811,12 +811,12 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
     while (l < ndegree && degrees[l] - k < 0) p[l++] = 0.;
     while (l < ndegree && degrees[l] - k == 0) {
       p[l] = pm2;
-      for (m = 0; m < k; m++) p[l] *= (abk1 + m) * 0.5;
+      for (PetscInt m = 0; m < k; m++) p[l] *= (abk1 + m) * 0.5;
       l++;
     }
     while (l < ndegree && degrees[l] - k == 1) {
       p[l] = pm1;
-      for (m = 0; m < k; m++) p[l] *= (abk1 + 1 + m) * 0.5;
+      for (PetscInt m = 0; m < k; m++) p[l] *= (abk1 + 1 + m) * 0.5;
       l++;
     }
     for (j = 2; j <= maxdegree; j++) {
@@ -828,7 +828,7 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
       pm1 = pp;
       while (l < ndegree && degrees[l] - k == j) {
         p[l] = pp;
-        for (m = 0; m < k; m++) p[l] *= (abk1 + j + m) * 0.5;
+        for (PetscInt m = 0; m < k; m++) p[l] *= (abk1 + j + m) * 0.5;
         l++;
       }
     }
@@ -1036,11 +1036,9 @@ PetscErrorCode PetscDTGradedOrderToIndex(PetscInt len, const PetscInt degtup[], 
     total = (total * (len + i)) / (i + 1);
   }
   for (i = 0; i < len - 1; i++) {
-    PetscInt c;
-
     total = 1;
     sum -= degtup[i];
-    for (c = 0; c < sum; c++) {
+    for (PetscInt c = 0; c < sum; c++) {
       idx += total;
       total = (total * (len - 1 - i + c)) / (c + 1);
     }
@@ -1113,7 +1111,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
     initscale = PetscPowReal(2., scaleexp * 0.5);
   }
   for (degidx = 0; degidx < Ndeg; degidx++) {
-    PetscInt  e, i;
+    PetscInt  e;
     PetscInt  m1idx = -1, m2idx = -1;
     PetscInt  n;
     PetscInt  degsum;
@@ -1130,8 +1128,8 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
         PetscCall(PetscDTJacobiNorm(e, 0., 0, &norm));
         scales[degidx] /= norm;
       }
-      for (i = 0; i < npoints; i++) p[degidx * Nk * npoints + i] = 1.;
-      for (i = 0; i < (Nk - 1) * npoints; i++) p[(degidx * Nk + 1) * npoints + i] = 0.;
+      for (PetscInt i = 0; i < npoints; i++) p[degidx * Nk * npoints + i] = 1.;
+      for (PetscInt i = 0; i < (Nk - 1) * npoints; i++) p[(degidx * Nk + 1) * npoints + i] = 0.;
       continue;
     }
     n = degtup[d];
@@ -1149,12 +1147,11 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 
     scales[degidx] = initscale;
     for (e = 0, degsum = 0; e < dim; e++) {
-      PetscInt  f;
       PetscReal ealpha;
       PetscReal enorm;
 
       ealpha = 2 * degsum + e;
-      for (f = 0; f < degsum; f++) scales[degidx] *= 2.;
+      for (PetscInt f = 0; f < degsum; f++) scales[degidx] *= 2.;
       PetscCall(PetscDTJacobiNorm(ealpha, 0., degtup[e], &enorm));
       scales[degidx] /= enorm;
       degsum += degtup[e];
@@ -1173,14 +1170,12 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
       thetanm2 = thetanm1 * thetanm1;
 
       for (kidx = 0; kidx < Nk; kidx++) {
-        PetscInt f;
-
         PetscCall(PetscDTIndexToGradedOrder(dim, kidx, ktup));
         /* first sum in the same derivative terms */
         p[(degidx * Nk + kidx) * npoints + pt] = (cnm1 * thetanm1 + cnm1x * thetanm1x) * p[(m1idx * Nk + kidx) * npoints + pt];
         if (m2idx >= 0) p[(degidx * Nk + kidx) * npoints + pt] -= cnm2 * thetanm2 * p[(m2idx * Nk + kidx) * npoints + pt];
 
-        for (f = d; f < dim; f++) {
+        for (PetscInt f = d; f < dim; f++) {
           PetscInt km1idx, mplty = ktup[f];
 
           if (!mplty) continue;
@@ -1191,13 +1186,11 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
           /* the derivative of  cnm1  * thetanm1   wrt x variable f is 0 if f == d, otherwise it is -0.5 * cnm1 */
           /* the derivative of -cnm2  * thetanm2   wrt x variable f is 0 if f == d, otherwise it is cnm2 * thetanm1 */
           if (f > d) {
-            PetscInt f2;
-
             p[(degidx * Nk + kidx) * npoints + pt] += mplty * 0.5 * (cnm1x - cnm1) * p[(m1idx * Nk + km1idx) * npoints + pt];
             if (m2idx >= 0) {
               p[(degidx * Nk + kidx) * npoints + pt] += mplty * cnm2 * thetanm1 * p[(m2idx * Nk + km1idx) * npoints + pt];
               /* second derivatives of -cnm2  * thetanm2   wrt x variable f,f2 is like - 0.5 * cnm2 */
-              for (f2 = f; f2 < dim; f2++) {
+              for (PetscInt f2 = f; f2 < dim; f2++) {
                 PetscInt km2idx, mplty2 = ktup[f2];
                 PetscInt factor;
 
@@ -1221,9 +1214,8 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
   }
   for (degidx = 0; degidx < Ndeg; degidx++) {
     PetscReal scale = scales[degidx];
-    PetscInt  i;
 
-    for (i = 0; i < Nk * npoints; i++) p[degidx * Nk * npoints + i] *= scale;
+    for (PetscInt i = 0; i < Nk * npoints; i++) p[degidx * Nk * npoints + i] *= scale;
   }
   PetscCall(PetscFree(scales));
   PetscCall(PetscFree2(degtup, ktup));
@@ -1509,7 +1501,6 @@ static inline PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, Pets
 {
   PetscReal pn1, pn2;
   PetscReal cnm1, cnm1x, cnm2;
-  PetscInt  k;
 
   PetscFunctionBegin;
   if (!n) {
@@ -1524,7 +1515,7 @@ static inline PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, Pets
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   *P = 0.0;
-  for (k = 2; k < n + 1; ++k) {
+  for (PetscInt k = 2; k < n + 1; ++k) {
     PetscDTJacobiRecurrence_Internal(k, a, b, cnm1, cnm1x, cnm2);
 
     *P  = (cnm1 + cnm1x * x) * pn1 - cnm2 * pn2;
@@ -1554,7 +1545,6 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   PetscInt  maxIter = 100;
   PetscReal eps     = PetscExpReal(0.75 * PetscLogReal(PETSC_MACHINE_EPSILON));
   PetscReal a1, a6, gf;
-  PetscInt  k;
 
   PetscFunctionBegin;
   a1 = PetscPowReal(2.0, a + b + 1);
@@ -1575,9 +1565,9 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
     ib = (PetscInt)b;
     gf = 1.;
     if (ia == a && ia >= 0) { /* compute ratio of rising factorals wrt a */
-      for (k = 0; k < ia; k++) gf *= (npoints + 1. + k) / (npoints + b + 1. + k);
+      for (PetscInt k = 0; k < ia; k++) gf *= (npoints + 1. + k) / (npoints + b + 1. + k);
     } else if (b == b && ib >= 0) { /* compute ratio of rising factorials wrt b */
-      for (k = 0; k < ib; k++) gf *= (npoints + 1. + k) / (npoints + a + 1. + k);
+      for (PetscInt k = 0; k < ib; k++) gf *= (npoints + 1. + k) / (npoints + a + 1. + k);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "lgamma() - math routine is unavailable.");
   }
 #endif
@@ -1585,12 +1575,11 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   a6 = a1 * gf;
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
-  for (k = 0; k < npoints; ++k) {
+  for (PetscInt k = 0; k < npoints; ++k) {
     PetscReal r = PetscCosReal(PETSC_PI * (1. - (4. * k + 3. + 2. * b) / (4. * npoints + 2. * (a + b + 1.)))), dP;
-    PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k - 1]);
-    for (j = 0; j < maxIter; ++j) {
+    for (PetscInt j = 0; j < maxIter; ++j) {
       PetscReal s = 0.0, delta, f, fp;
       PetscInt  i;
 
@@ -1760,8 +1749,6 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt npoints, PetscReal a, Petsc
 
 static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoints, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[], PetscBool newton)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCheck(npoints >= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of points must be positive");
   /* If asking for a 1D Lobatto point, just return the non-Lobatto 1D point */
@@ -1771,7 +1758,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
   x[0]           = -1.;
   x[npoints - 1] = 1.;
   if (npoints > 2) PetscCall(PetscDTGaussJacobiQuadrature_Internal(npoints - 2, alpha + 1., beta + 1., &x[1], &w[1], newton));
-  for (i = 1; i < npoints - 1; i++) w[i] /= (1. - x[i] * x[i]);
+  for (PetscInt i = 1; i < npoints - 1; i++) w[i] /= (1. - x[i] * x[i]);
   PetscCall(PetscDTGaussLobattoJacobiEndweights_Internal(npoints, alpha, beta, &w[0], &w[npoints - 1]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1802,12 +1789,10 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 @*/
 PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCall(PetscDTGaussLobattoJacobiQuadrature_Internal(npoints, alpha, beta, x, w, PetscDTGaussQuadratureNewton_Internal));
   if (a != -1. || b != 1.) { /* shift */
-    for (i = 0; i < npoints; i++) {
+    for (PetscInt i = 0; i < npoints; i++) {
       x[i] = (x[i] + 1.) * ((b - a) / 2.) + a;
       w[i] *= (b - a) / 2.;
     }
@@ -1838,12 +1823,10 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a
 @*/
 PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal x[], PetscReal w[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCall(PetscDTGaussJacobiQuadrature_Internal(npoints, 0., 0., x, w, PetscDTGaussQuadratureNewton_Internal));
   if (a != -1. || b != 1.) { /* shift */
-    for (i = 0; i < npoints; i++) {
+    for (PetscInt i = 0; i < npoints; i++) {
       x[i] = (x[i] + 1.) * ((b - a) / 2.) + a;
       w[i] *= (b - a) / 2.;
     }
@@ -3186,11 +3169,11 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, Petsc
   PetscReal      **D;
   const PetscReal *gllweights = weights;
   const PetscInt   glln       = n;
-  PetscInt         i, j;
+  PetscInt         j;
 
   PetscFunctionBegin;
   PetscCall(PetscGaussLobattoLegendreElementGradientCreate(n, nodes, weights, &D, NULL));
-  for (i = 0; i < glln; i++) {
+  for (PetscInt i = 0; i < glln; i++) {
     for (j = 0; j < glln; j++) D[i][j] = gllweights[i] * D[i][j];
   }
   *AA = D;
@@ -3226,15 +3209,14 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt n, PetscReal 
   PetscReal      **A;
   const PetscReal *gllweights = weights;
   const PetscInt   glln       = n;
-  PetscInt         i, j;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(glln, &A));
   PetscCall(PetscMalloc1(glln * glln, &A[0]));
-  for (i = 1; i < glln; i++) A[i] = A[i - 1] + glln;
+  for (PetscInt i = 1; i < glln; i++) A[i] = A[i - 1] + glln;
   if (glln == 1) A[0][0] = 0.;
-  for (i = 0; i < glln; i++) {
-    for (j = 0; j < glln; j++) {
+  for (PetscInt i = 0; i < glln; i++) {
+    for (PetscInt j = 0; j < glln; j++) {
       A[i][j] = 0.;
       if (j == i) A[i][j] = gllweights[i];
     }

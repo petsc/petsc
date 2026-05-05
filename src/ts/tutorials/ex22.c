@@ -176,7 +176,6 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   DM            da;
   Vec           Xloc;
   DMDALocalInfo info;
-  PetscInt      i, j;
   PetscReal     hx;
   Field        *f;
   const Field  *x;
@@ -201,12 +200,12 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscCall(DMDAVecGetArray(da, F, &f));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     const PetscReal *a = user->a;
     PetscReal        u0t[2];
     u0t[0] = 1.0 - PetscPowRealInt(PetscSinReal(12 * t), 4);
     u0t[1] = 0.0;
-    for (j = 0; j < 2; j++) {
+    for (PetscInt j = 0; j < 2; j++) {
       if (i == 0) f[i][j] = a[j] / hx * (1. / 3 * u0t[j] + 0.5 * x[i][j] - x[i + 1][j] + 1. / 6 * x[i + 2][j]);
       else if (i == 1) f[i][j] = a[j] / hx * (-1. / 12 * u0t[j] + 2. / 3 * x[i - 1][j] - 2. / 3 * x[i + 1][j] + 1. / 12 * x[i + 2][j]);
       else if (i == info.mx - 2) f[i][j] = a[j] / hx * (-1. / 6 * x[i - 2][j] + x[i - 1][j] - 0.5 * x[i][j] - 1. / 3 * x[i + 1][j]);
@@ -230,7 +229,6 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
 {
   User          user = (User)ptr;
   DMDALocalInfo info;
-  PetscInt      i;
   DM            da;
   const Field  *x, *xdot;
 
@@ -243,7 +241,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   PetscCall(DMDAVecGetArrayRead(da, Xdot, (void *)&xdot));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     const PetscReal *k = user->k;
     PetscScalar      v[2][2];
 
@@ -271,7 +269,6 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
 {
   User          user = (User)ctx;
   DM            da;
-  PetscInt      i;
   DMDALocalInfo info;
   Field        *x;
   PetscReal     hx;
@@ -285,7 +282,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
   PetscCall(DMDAVecGetArray(da, X, &x));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     PetscReal r = (i + 1) * hx, ik = user->k[1] != 0.0 ? 1.0 / user->k[1] : 1.0;
     x[i][0] = 1 + user->s[1] * r;
     x[i][1] = user->k[0] * ik * x[i][0] + user->s[1] * ik;

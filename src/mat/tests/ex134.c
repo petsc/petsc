@@ -13,7 +13,6 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   MatSolverType stype = MATSOLVERPETSC;
   PetscRandom   rdm;
   Vec           b, x, y;
-  PetscInt      i, j;
   PetscReal     norm2, tol = 100 * PETSC_SQRT_MACHINE_EPSILON;
   PetscBool     issbaij;
 #endif
@@ -43,7 +42,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   PetscCall(PetscRandomSetFromOptions(rdm));
   PetscCall(MatCreateVecs(A, &x, &y));
   PetscCall(VecDuplicate(x, &b));
-  for (j = 0; j < 2; j++) {
+  for (PetscInt j = 0; j < 2; j++) {
   #if defined(PETSC_HAVE_MUMPS)
     if (j == 0) stype = MATSOLVERMUMPS;
     if (PetscDefined(USE_REAL___FLOAT128)) tol = 1e-10;
@@ -67,7 +66,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
       PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
       PetscCall(MatLUFactorNumeric(F, A, NULL));
     }
-    for (i = 0; i < 10; i++) {
+    for (PetscInt i = 0; i < 10; i++) {
       PetscCall(VecSetRandom(b, rdm));
       PetscCall(MatSolve(F, b, y));
       /* Check the error */

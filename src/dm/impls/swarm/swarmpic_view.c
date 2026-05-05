@@ -339,14 +339,14 @@ static PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[])
 {
   Vec         dvec;
-  PetscInt    f, N;
+  PetscInt    N;
   PetscViewer viewer;
 
   PetscFunctionBegin;
   PetscCall(private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm), filename, &viewer));
   PetscCall(private_DMSwarmView_XDMF(dm, viewer));
   PetscCall(DMSwarmGetLocalSize(dm, &N));
-  for (f = 0; f < nfields; f++) {
+  for (PetscInt f = 0; f < nfields; f++) {
     void         *data;
     PetscDataType type;
 
@@ -398,13 +398,12 @@ PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
 {
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
   Vec         dvec;
-  PetscInt    f;
   PetscViewer viewer;
 
   PetscFunctionBegin;
   PetscCall(private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm), filename, &viewer));
   PetscCall(private_DMSwarmView_XDMF(dm, viewer));
-  for (f = 4; f < swarm->db->nfields; f++) { /* only examine user defined fields - the first 4 are internally created by DMSwarmPIC */
+  for (PetscInt f = 4; f < swarm->db->nfields; f++) { /* only examine user defined fields - the first 4 are internally created by DMSwarmPIC */
     DMSwarmDataField field;
 
     /* query field type - accept all those of type PETSC_DOUBLE */

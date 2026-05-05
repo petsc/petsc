@@ -1030,7 +1030,7 @@ PetscErrorCode MatMFFDCheckPositivity(void *dummy, Vec U, Vec a, PetscScalar *h)
 {
   PetscReal    val, minval;
   PetscScalar *u_vec, *a_vec;
-  PetscInt     i, n;
+  PetscInt     n;
   MPI_Comm     comm;
 
   PetscFunctionBegin;
@@ -1042,7 +1042,7 @@ PetscErrorCode MatMFFDCheckPositivity(void *dummy, Vec U, Vec a, PetscScalar *h)
   PetscCall(VecGetArray(a, &a_vec));
   PetscCall(VecGetLocalSize(U, &n));
   minval = PetscAbsScalar(*h) * PetscRealConstant(1.01);
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     if (PetscRealPart(u_vec[i] + *h * a_vec[i]) <= 0.0) {
       val = PetscAbsScalar(u_vec[i] / a_vec[i]);
       if (val < minval) minval = val;

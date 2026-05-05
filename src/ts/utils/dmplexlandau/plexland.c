@@ -282,11 +282,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             /* get f & df */
             for (f = 0; f < loc_Nf; ++f) {
               const PetscInt idx = b_id * IPf_sz_glb + ipf_offset[grid] + f * loc_nip + loc_elem * Nq + qi;
-              PetscInt       b, e;
+              PetscInt       e;
               PetscReal      refSpaceDer[LANDAU_DIM];
               ff[idx] = 0.0;
               for (PetscInt d = 0; d < LANDAU_DIM; ++d) refSpaceDer[d] = 0.0;
-              for (b = 0; b < Nb; ++b) {
+              for (PetscInt b = 0; b < Nb; ++b) {
                 const PetscInt cidx = b;
                 ff[idx] += Bq[cidx] * PetscRealPart(coef[f * Nb + cidx]);
                 for (PetscInt d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx * dim + d] * PetscRealPart(coef[f * Nb + cidx]);
@@ -802,12 +802,11 @@ typedef struct {
 static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
 {
   MaxwellianCtx *mctx = (MaxwellianCtx *)actx;
-  PetscInt       i;
   PetscReal      v2 = 0, theta = 2 * mctx->kT_m / (mctx->v_0 * mctx->v_0), shift; /* theta = 2kT/mc^2 */
 
   PetscFunctionBegin;
   /* compute the exponents, v^2 */
-  for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
+  for (PetscInt i = 0; i < dim; ++i) v2 += x[i] * x[i];
   /* evaluate the Maxwellian */
   if (mctx->shift < 0) shift = -mctx->shift;
   else {
@@ -816,7 +815,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
   }
   if (shift != 0.) {
     v2 = 0;
-    for (i = 0; i < dim - 1; ++i) v2 += x[i] * x[i];
+    for (PetscInt i = 0; i < dim - 1; ++i) v2 += x[i] * x[i];
     v2 += (x[dim - 1] - shift) * (x[dim - 1] - shift);
     /* evaluate the shifted Maxwellian */
     u[0] += mctx->n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta));
@@ -1013,12 +1012,10 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
 // forest goes in (ctx->plex[grid]), plex comes out
 static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
 {
-  PetscInt adaptIter;
-
   PetscFunctionBegin;
   PetscInt type, limits[5] = {(grid == 0) ? ctx->numRERefine : 0, (grid == 0) ? ctx->nZRefine1 : 0, ctx->numAMRRefine[grid], (grid == 0) ? ctx->nZRefine2 : 0, ctx->postAMRRefine[grid]};
   for (type = 0; type < 5; type++) {
-    for (adaptIter = 0; adaptIter < limits[type]; adaptIter++) {
+    for (PetscInt adaptIter = 0; adaptIter < limits[type]; adaptIter++) {
       DM newForest = NULL;
       PetscCall(adaptToleranceFEM(ctx->fe[0], *uu, type, grid, ctx, &newForest));
       if (newForest) {
@@ -1569,13 +1566,13 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], con
                       jj++;
                     }
                     if (PetscAbs(sum - 1.0) > 10 * PETSC_MACHINE_EPSILON) { // debug
-                      PetscInt  d, f;
+                      PetscInt  d;
                       PetscReal tmp = 0;
                       PetscCall(
                         PetscPrintf(PETSC_COMM_SELF, "\t\t%" PetscInt_FMT ".%" PetscInt_FMT ".%" PetscInt_FMT ") ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%" PetscInt_FMT ")\n", eidx, q, fieldA, (double)sum, LANDAU_MAX_Q_FACE, maps[grid].num_face));
                       for (d = 0, tmp = 0; d < numindices; ++d) {
                         if (tmp != 0 && PetscAbs(tmp - 1.0) > 10 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%3" PetscInt_FMT ") %3" PetscInt_FMT ": ", d, indices[d]));
-                        for (f = 0; f < numindices; ++f) tmp += PetscRealPart(elMat[d * numindices + f]);
+                        for (PetscInt f = 0; f < numindices; ++f) tmp += PetscRealPart(elMat[d * numindices + f]);
                         if (tmp != 0) PetscCall(PetscPrintf(ctx->comm, " | %22.16e\n", (double)tmp));
                       }
                     }
@@ -1976,9 +1973,8 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
 static void LandauSphereMapping(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
   PetscReal u_max = 0, u_norm = 0, scale, square_inner_radius = PetscRealPart(constants[0]), square_radius = PetscRealPart(constants[1]);
-  PetscInt  d;
 
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     PetscReal val = PetscAbsReal(PetscRealPart(u[d]));
     if (val > u_max) u_max = val;
     u_norm += PetscRealPart(u[d]) * PetscRealPart(u[d]);
@@ -1986,7 +1982,7 @@ static void LandauSphereMapping(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   u_norm = PetscSqrtReal(u_norm);
 
   if (u_max < square_inner_radius) {
-    for (d = 0; d < dim; ++d) f[d] = u[d];
+    for (PetscInt d = 0; d < dim; ++d) f[d] = u[d];
     return;
   }
 
@@ -2009,7 +2005,7 @@ static void LandauSphereMapping(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
     PetscReal rho_prime = (1.0 - t) * u_0_norm + t * R_max;
     scale               = rho_prime / u_norm;
   }
-  for (d = 0; d < dim; ++d) f[d] = u[d] * scale;
+  for (PetscInt d = 0; d < dim; ++d) f[d] = u[d] * scale;
 }
 
 static PetscErrorCode LandauSphereMesh(DM dm, PetscReal inner, PetscReal radius)

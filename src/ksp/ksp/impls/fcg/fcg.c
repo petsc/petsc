@@ -13,7 +13,6 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP, PetscInt, PetscReal *, Petsc
 
 static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
-  PetscInt i;
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
   PetscInt nnewvecs, nvecsprev;
 
@@ -25,7 +24,7 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &fcg->pCvecs[fcg->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &fcg->pPvecs[fcg->nchunks], 0, NULL));
     fcg->nvecs += nnewvecs;
-    for (i = 0; i < nnewvecs; ++i) {
+    for (PetscInt i = 0; i < nnewvecs; ++i) {
       fcg->Cvecs[nvecsprev + i] = fcg->pCvecs[fcg->nchunks][i];
       fcg->Pvecs[nvecsprev + i] = fcg->pPvecs[fcg->nchunks][i];
     }
@@ -269,13 +268,12 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
 static PetscErrorCode KSPReset_FCG(KSP ksp)
 {
-  PetscInt i;
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
   /* Destroy P and C vectors and the arrays that manage pointers to them */
   if (fcg->nvecs) {
-    for (i = 0; i < fcg->nchunks; ++i) {
+    for (PetscInt i = 0; i < fcg->nchunks; ++i) {
       PetscCall(VecDestroyVecs(fcg->chunksizes[i], &fcg->pPvecs[i]));
       PetscCall(VecDestroyVecs(fcg->chunksizes[i], &fcg->pCvecs[i]));
     }

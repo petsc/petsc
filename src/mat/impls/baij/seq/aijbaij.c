@@ -70,7 +70,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ_Preallocate(Mat A, PetscIn
     for (PetscInt i = 0; i < m; i++) (*nnz)[i] = ai[i + 1] - ai[i];
   } else {
     PetscHSetIJ    ht;
-    PetscInt       k;
     PetscHashIJKey key;
     PetscBool      missing;
 
@@ -78,7 +77,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ_Preallocate(Mat A, PetscIn
     PetscCall(PetscCalloc1(m / bs, nnz));
     for (PetscInt i = 0; i < m; i++) {
       key.i = i / bs;
-      for (k = ai[i]; k < ai[i + 1]; k++) {
+      for (PetscInt k = ai[i]; k < ai[i + 1]; k++) {
         key.j = aj[k] / bs;
         PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
         if (missing) (*nnz)[key.i]++;

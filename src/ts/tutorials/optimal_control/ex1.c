@@ -233,10 +233,9 @@ int main(int argc, char **argv)
   KSP                ksp;
   PC                 pc;
   PetscScalar       *u, *p;
-  PetscInt           i;
 
-  /* Initialize program */
   PetscFunctionBeginUser;
+  /* Initialize program */
   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
@@ -332,7 +331,7 @@ int main(int argc, char **argv)
   /* Set initial solution guess */
   PetscCall(MatCreateVecs(aircraft.Jacp, &P, NULL));
   PetscCall(VecGetArray(P, &p));
-  for (i = 0; i < aircraft.nsteps; i++) {
+  for (PetscInt i = 0; i < aircraft.nsteps; i++) {
     p[2 * i]     = 2.0;
     p[2 * i + 1] = PETSC_PI / 2.0;
   }
@@ -340,13 +339,13 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(P, &PU));
   PetscCall(VecDuplicate(P, &PL));
   PetscCall(VecGetArray(PU, &p));
-  for (i = 0; i < aircraft.nsteps; i++) {
+  for (PetscInt i = 0; i < aircraft.nsteps; i++) {
     p[2 * i]     = 2.0;
     p[2 * i + 1] = PETSC_PI;
   }
   PetscCall(VecRestoreArray(PU, &p));
   PetscCall(VecGetArray(PL, &p));
-  for (i = 0; i < aircraft.nsteps; i++) {
+  for (PetscInt i = 0; i < aircraft.nsteps; i++) {
     p[2 * i]     = 0.0;
     p[2 * i + 1] = -PETSC_PI;
   }
@@ -536,13 +535,12 @@ PetscErrorCode MatrixFreeObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, PetscCtx ct
   Aircraft           actx = (Aircraft)ctx;
   PetscScalar       *v, *w;
   const PetscScalar *p;
-  PetscInt           i;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(P, &p));
   PetscCall(VecGetArray(actx->V, &v));
   PetscCall(VecGetArray(actx->W, &w));
-  for (i = 0; i < actx->nsteps; i++) {
+  for (PetscInt i = 0; i < actx->nsteps; i++) {
     v[i] = p[2 * i];
     w[i] = p[2 * i + 1];
   }
@@ -571,7 +569,6 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir, PetscScalar arr[], Aircraft act
   const PetscScalar *z_ptr;
   PetscScalar       *u;
   Vec                Q;
-  PetscInt           i;
 
   PetscFunctionBeginUser;
   /* Reset TSAdjoint so that AdjointSetUp will be called again */
@@ -613,7 +610,7 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir, PetscScalar arr[], Aircraft act
 
   /* initial condition does not depend on p, so that lambda is not needed to assemble G */
   PetscCall(VecGetArrayRead(actx->Mup2[0], &z_ptr));
-  for (i = 0; i < 2 * actx->nsteps; i++) arr[i] = z_ptr[i];
+  for (PetscInt i = 0; i < 2 * actx->nsteps; i++) arr[i] = z_ptr[i];
   PetscCall(VecRestoreArrayRead(actx->Mup2[0], &z_ptr));
 
   /* Disable second-order adjoint mode */

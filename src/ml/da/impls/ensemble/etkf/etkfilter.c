@@ -363,7 +363,6 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscEr
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
   Vec               col_in, col_out, temp;
-  PetscInt          i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
@@ -371,7 +370,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscEr
   /* Create temp vector from ensemble matrix (right vector = state space) */
   PetscCall(MatCreateVecs(en->ensemble, NULL, &temp));
 
-  for (i = 0; i < en->size; i++) {
+  for (PetscInt i = 0; i < en->size; i++) {
     PetscCall(MatDenseGetColumnVecRead(en->ensemble, i, &col_in));
     PetscCall(model(col_in, temp, ctx));
     PetscCall(MatDenseRestoreColumnVecRead(en->ensemble, i, &col_in));

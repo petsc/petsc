@@ -16,10 +16,9 @@ PETSC_EXTERN PetscErrorCode pyramidNormal(PetscInt, PetscReal, const PetscReal[]
 PetscErrorCode pyramidNormal(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], PetscCtx ctx)
 {
   PetscReal apex[3] = {0.5, 0.5, -1.0};
-  PetscInt  d;
 
-  for (d = 0; d < dim; ++d) u[d] = x[d] - apex[d];
-  for (d = dim; d < 3; ++d) u[d] = 0.0 - apex[d];
+  for (PetscInt d = 0; d < dim; ++d) u[d] = x[d] - apex[d];
+  for (PetscInt d = dim; d < 3; ++d) u[d] = 0.0 - apex[d];
   return PETSC_SUCCESS;
 }
 
@@ -65,8 +64,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 
 static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
 {
-  DMLabel  label;
-  PetscInt b;
+  DMLabel label;
 
   PetscFunctionBegin;
   if (!ctx->Nbd) {
@@ -75,16 +73,16 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
   }
   PetscCall(DMGetLabel(dm, ctx->bdLabel, &label));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Adaptation Label", adaptLabel));
-  for (b = 0; b < ctx->Nbd; ++b) {
+  for (PetscInt b = 0; b < ctx->Nbd; ++b) {
     IS              bdIS;
     const PetscInt *points;
-    PetscInt        n, i;
+    PetscInt        n;
 
     PetscCall(DMLabelGetStratumIS(label, ctx->bd[b], &bdIS));
     if (!bdIS) continue;
     PetscCall(ISGetLocalSize(bdIS, &n));
     PetscCall(ISGetIndices(bdIS, &points));
-    for (i = 0; i < n; ++i) PetscCall(DMLabelSetValue(*adaptLabel, points[i], DM_ADAPT_REFINE));
+    for (PetscInt i = 0; i < n; ++i) PetscCall(DMLabelSetValue(*adaptLabel, points[i], DM_ADAPT_REFINE));
     PetscCall(ISRestoreIndices(bdIS, &points));
     PetscCall(ISDestroy(&bdIS));
   }

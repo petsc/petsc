@@ -53,14 +53,12 @@ static PetscErrorCode quad_u(PetscInt dim, PetscReal time, const PetscReal x[], 
 
 static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   f0[0] += u[0];
-  for (d = 0; d < dim; ++d) f0[0] -= 4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]) + PetscSinReal(2.0 * PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] -= 4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]) + PetscSinReal(2.0 * PETSC_PI * x[d]);
 }
 
 static void f0_quad_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   switch (dim) {
   case 1:
     f0[0] = 1.0;
@@ -76,13 +74,12 @@ static void f0_quad_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
     break;
   }
   f0[0] += u[0];
-  for (d = 0; d < dim; ++d) f0[0] -= (d + 1) * PetscSqr(x[d]);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] -= (d + 1) * PetscSqr(x[d]);
 }
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static PetscErrorCode ProcessOptions(DM dm, AppCtx *options)

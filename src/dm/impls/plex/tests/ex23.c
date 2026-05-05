@@ -29,8 +29,7 @@ static PetscErrorCode linear2(PetscInt dim, PetscReal time, const PetscReal x[],
 /* {u_x, u_y, u_z} */
 static void linear_vector(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
-  PetscInt d;
-  for (d = 0; d < uOff[1] - uOff[0]; ++d) f[d] = u[d + uOff[0]];
+  for (PetscInt d = 0; d < uOff[1] - uOff[0]; ++d) f[d] = u[d + uOff[0]];
 }
 
 /* p */
@@ -42,9 +41,8 @@ static void linear_scalar(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 /* {div u, p^2} */
 static void divergence_sq(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
-  PetscInt d;
   f[0] = 0.0;
-  for (d = 0; d < dim; ++d) f[0] += u_x[uOff_x[0] + d * dim + d];
+  for (PetscInt d = 0; d < dim; ++d) f[0] += u_x[uOff_x[0] + d * dim + d];
   f[1] = PetscSqr(u[uOff[1]]);
 }
 
@@ -176,7 +174,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
 {
   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   Vec      x, lx;
-  PetscInt Nf, f;
+  PetscInt Nf;
   PetscInt val[1] = {1};
   char     lname[PETSC_MAX_PATH_LEN];
 
@@ -184,7 +182,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscMalloc1(Nf, &funcs));
-  for (f = 0; f < Nf; ++f) funcs[f] = linear;
+  for (PetscInt f = 0; f < Nf; ++f) funcs[f] = linear;
   PetscCall(DMGetGlobalVector(dm, &x));
   PetscCall(PetscStrncpy(lname, "Function ", sizeof(lname)));
   PetscCall(PetscStrlcat(lname, name, sizeof(lname)));
@@ -211,7 +209,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
   Vec      lx, lu;
-  PetscInt Nf, f;
+  PetscInt Nf;
   PetscInt val[1] = {1};
   char     lname[PETSC_MAX_PATH_LEN];
 
@@ -219,7 +217,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscMalloc2(Nf, &funcs, Nf, &afuncs));
-  for (f = 0; f < Nf; ++f) afuncs[f] = linear;
+  for (PetscInt f = 0; f < Nf; ++f) afuncs[f] = linear;
   funcs[0] = linear_vector;
   funcs[1] = linear_scalar;
   PetscCall(DMGetLocalVector(dm, &lu));

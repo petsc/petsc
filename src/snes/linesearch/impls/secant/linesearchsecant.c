@@ -18,7 +18,7 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
   PetscReal        lambda, lambda_old, lambda_mid, lambda_update, delLambda;
   PetscReal        fnrm, fnrm_old, fnrm_mid;
   PetscReal        delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt         i, max_it;
+  PetscInt         max_it;
   SNESObjectiveFn *objective;
 
   PetscFunctionBegin;
@@ -43,7 +43,7 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
   }
   lambda_mid = 0.5 * (lambda + lambda_old);
 
-  for (i = 0; i < max_it; i++) {
+  for (PetscInt i = 0; i < max_it; i++) {
     /* repeatedly cut lambda until the norm or objective function is not infinity or NaN or lambda is too small */
     while (PETSC_TRUE) {
       PetscCall(VecWAXPY(W, -lambda_mid, Y, X));

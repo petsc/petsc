@@ -356,16 +356,14 @@ static PetscErrorCode MatMKLPardisoScatterSchur_Private(Mat_MKL_PARDISO *mpardis
   if (reduce) { /* data given for the whole matrix */
     PetscInt i, m = 0, p = 0;
     for (i = 0; i < mpardiso->nrhs; i++) {
-      PetscInt j;
-      for (j = 0; j < mpardiso->schur_size; j++) schur[p + j] = whole[m + mpardiso->schur_idxs[j]];
+      for (PetscInt j = 0; j < mpardiso->schur_size; j++) schur[p + j] = whole[m + mpardiso->schur_idxs[j]];
       m += mpardiso->n;
       p += mpardiso->schur_size;
     }
   } else { /* from Schur to whole */
     PetscInt i, m = 0, p = 0;
     for (i = 0; i < mpardiso->nrhs; i++) {
-      PetscInt j;
-      for (j = 0; j < mpardiso->schur_size; j++) whole[m + mpardiso->schur_idxs[j]] = schur[p + j];
+      for (PetscInt j = 0; j < mpardiso->schur_size; j++) whole[m + mpardiso->schur_idxs[j]] = schur[p + j];
       m += mpardiso->n;
       p += mpardiso->schur_size;
     }
@@ -707,12 +705,12 @@ static PetscErrorCode MatSetFromOptions_MKL_PARDISO(Mat F, Mat A)
 
 static PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype, Mat_MKL_PARDISO *mat_mkl_pardiso)
 {
-  PetscInt  i, bs;
+  PetscInt  bs;
   PetscBool match;
 
   PetscFunctionBegin;
-  for (i = 0; i < IPARM_SIZE; i++) mat_mkl_pardiso->iparm[i] = 0;
-  for (i = 0; i < IPARM_SIZE; i++) mat_mkl_pardiso->pt[i] = 0;
+  for (PetscInt i = 0; i < IPARM_SIZE; i++) mat_mkl_pardiso->iparm[i] = 0;
+  for (PetscInt i = 0; i < IPARM_SIZE; i++) mat_mkl_pardiso->pt[i] = 0;
 #if defined(PETSC_USE_REAL_SINGLE)
   mat_mkl_pardiso->iparm[27] = 1;
 #else
@@ -844,7 +842,6 @@ static PetscErrorCode MatView_MKL_PARDISO(Mat A, PetscViewer viewer)
   PetscBool         isascii;
   PetscViewerFormat format;
   Mat_MKL_PARDISO  *mat_mkl_pardiso = (Mat_MKL_PARDISO *)A->data;
-  PetscInt          i;
 
   PetscFunctionBegin;
   if (A->ops->solve != MatSolve_MKL_PARDISO) PetscFunctionReturn(PETSC_SUCCESS);
@@ -855,7 +852,7 @@ static PetscErrorCode MatView_MKL_PARDISO(Mat A, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO run parameters:\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO phase:             %" PetscInt_FMT "\n", (PetscInt)mat_mkl_pardiso->phase));
-      for (i = 1; i <= 64; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO iparm[%" PetscInt_FMT "]:     %" PetscInt_FMT "\n", i, (PetscInt)mat_mkl_pardiso->iparm[i - 1]));
+      for (PetscInt i = 1; i <= 64; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO iparm[%" PetscInt_FMT "]:     %" PetscInt_FMT "\n", i, (PetscInt)mat_mkl_pardiso->iparm[i - 1]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO maxfct:     %" PetscInt_FMT "\n", (PetscInt)mat_mkl_pardiso->maxfct));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO mnum:     %" PetscInt_FMT "\n", (PetscInt)mat_mkl_pardiso->mnum));
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL PARDISO mtype:     %" PetscInt_FMT "\n", (PetscInt)mat_mkl_pardiso->mtype));

@@ -202,13 +202,11 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
 */
 PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
-  PetscInt d;
-
   PetscFunctionBegin;
   if (!dm->maxCell) {
-    for (d = 0; d < dim; ++d) out[d] += in[d];
+    for (PetscInt d = 0; d < dim; ++d) out[d] += in[d];
   } else {
-    for (d = 0; d < dim; ++d) {
+    for (PetscInt d = 0; d < dim; ++d) {
       const PetscReal maxC = dm->maxCell[d];
 
       if ((dm->L[d] > 0.0) && (PetscAbsScalar(anchor[d] - in[d]) > maxC)) {

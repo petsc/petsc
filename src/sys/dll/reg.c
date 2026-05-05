@@ -63,7 +63,7 @@ PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 {
   char     *libname[32];
-  PetscInt  nmax, i;
+  PetscInt  nmax;
   PetscBool preload = PETSC_FALSE;
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscBool PetscInitialized = PetscInitializeCalled;
@@ -77,7 +77,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 
   nmax = 32;
   PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-dll_prepend", libname, &nmax, NULL));
-  for (i = 0; i < nmax; i++) {
+  for (PetscInt i = 0; i < nmax; i++) {
     PetscCall(PetscDLLibraryPrepend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, libname[i]));
     PetscCall(PetscFree(libname[i]));
   }
@@ -148,7 +148,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 
   nmax = 32;
   PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-dll_append", libname, &nmax, NULL));
-  for (i = 0; i < nmax; i++) {
+  for (PetscInt i = 0; i < nmax; i++) {
     PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, libname[i]));
     PetscCall(PetscFree(libname[i]));
   }

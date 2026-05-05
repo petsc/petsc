@@ -3,10 +3,9 @@
 static PetscErrorCode DMDestroy_Product(DM dm)
 {
   DM_Product *product = (DM_Product *)dm->data;
-  PetscInt    d;
 
   PetscFunctionBeginUser;
-  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) PetscCall(DMDestroy(&product->dm[d]));
+  for (PetscInt d = 0; d < DMPRODUCT_MAX_DIM; ++d) PetscCall(DMDestroy(&product->dm[d]));
   PetscCall(PetscFree(product));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -14,10 +13,9 @@ static PetscErrorCode DMDestroy_Product(DM dm)
 static PetscErrorCode DMView_Product(DM dm, PetscViewer viewer)
 {
   DM_Product *product = (DM_Product *)dm->data;
-  PetscInt    d;
 
   PetscFunctionBegin;
-  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) {
+  for (PetscInt d = 0; d < DMPRODUCT_MAX_DIM; ++d) {
     if (product->dm[d]) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  DM that defines dimension %" PetscInt_FMT "\n", d));
       PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -63,15 +61,14 @@ M*/
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
 {
   DM_Product *product;
-  PetscInt    d;
 
   PetscFunctionBegin;
   PetscAssertPointer(dm, 1);
   PetscCall(PetscNew(&product));
   dm->data = product;
 
-  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dm[d] = NULL;
-  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dim[d] = -1;
+  for (PetscInt d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dm[d] = NULL;
+  for (PetscInt d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dim[d] = -1;
 
   dm->ops->destroy = DMDestroy_Product;
   dm->ops->view    = DMView_Product;

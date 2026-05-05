@@ -57,12 +57,12 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
   while (!DMPlexPointQueueEmpty(queue)) {
     PetscInt        p = -1;
     const PetscInt *support;
-    PetscInt        supportSize, s;
+    PetscInt        supportSize;
 
     PetscCall(DMPlexPointQueueDequeue(queue, &p));
     PetscCall(DMPlexGetSupport(dm, p, &support));
     PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
-    for (s = 0; s < supportSize; ++s) {
+    for (PetscInt s = 0; s < supportSize; ++s) {
       const PetscInt  cell = support[s];
       const PetscInt *cone;
       PetscInt        coneSize, c;
@@ -179,11 +179,11 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
       PetscCall(DMPlexPointQueueEnqueue(queue, cell));
     } else {
       PetscInt *closure = NULL;
-      PetscInt  Ncl, cl;
+      PetscInt  Ncl;
 
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, depth));
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-      for (cl = 0; cl < Ncl; cl += 2) {
+      for (PetscInt cl = 0; cl < Ncl; cl += 2) {
         const PetscInt edge = closure[cl];
 
         if (edge >= eStart && edge < eEnd) {

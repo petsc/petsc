@@ -5,7 +5,7 @@ static PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
 {
   void       *ctx;
   SNES        snes;
-  PetscInt    n, i;
+  PetscInt    n;
   VecScatter *oscatter;
   SNES       *subsnes;
   PetscBool   match;
@@ -32,8 +32,8 @@ static PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
   PetscCall(VecSet(Y, 0));
   PetscCall(MatMult(npc->jacobian_pre, X, W));
 
-  for (i = 0; i < n; i++) PetscCall(VecScatterBegin(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD));
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) PetscCall(VecScatterBegin(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD));
+  for (PetscInt i = 0; i < n; i++) {
     PetscCall(VecScatterEnd(oscatter[i], W, b[i], INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecSet(x[i], 0.));
     PetscCall(SNESGetJacobian(subsnes[i], &subJ, &subpJ, NULL, NULL));

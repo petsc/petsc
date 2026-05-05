@@ -79,7 +79,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
   const char            *height_name[] = {"cells", "faces"};
   DMLabel                domain_label  = NULL;
   DM                     cdm;
-  PetscInt               Nf, f;
+  PetscInt               Nf;
   ISLocalToGlobalMapping ltog;
 
   PetscFunctionBeginUser;
@@ -89,7 +89,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
   if (user->closure_tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
-  for (f = 0; f < Nf; ++f) {
+  for (PetscInt f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
     char         name[PETSC_MAX_PATH_LEN];

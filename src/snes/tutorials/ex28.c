@@ -157,13 +157,12 @@ static PetscErrorCode FormJacobianLocal_K(User user, DMDALocalInfo *info, const 
 static PetscErrorCode FormJacobianLocal_UK(User user, DMDALocalInfo *info, DMDALocalInfo *infok, const PetscScalar u[], const PetscScalar k[], Mat Buk)
 {
   PetscReal   hx = 1. / info->mx;
-  PetscInt    i;
   PetscInt    row, cols[2];
   PetscScalar vals[2];
 
   PetscFunctionBeginUser;
   if (!Buk) PetscFunctionReturn(PETSC_SUCCESS); /* Not assembling this block */
-  for (i = info->xs; i < info->xs + info->xm; i++) {
+  for (PetscInt i = info->xs; i < info->xs + info->xm; i++) {
     if (i == 0 || i == info->mx - 1) continue;
     row     = i - info->gxs;
     cols[0] = i - 1 - infok->gxs;
@@ -177,12 +176,11 @@ static PetscErrorCode FormJacobianLocal_UK(User user, DMDALocalInfo *info, DMDAL
 
 static PetscErrorCode FormJacobianLocal_KU(User user, DMDALocalInfo *info, DMDALocalInfo *infok, const PetscScalar u[], const PetscScalar k[], Mat Bku)
 {
-  PetscInt  i;
   PetscReal hx = 1. / (info->mx - 1);
 
   PetscFunctionBeginUser;
   if (!Bku) PetscFunctionReturn(PETSC_SUCCESS); /* Not assembling this block */
-  for (i = infok->xs; i < infok->xs + infok->xm; i++) {
+  for (PetscInt i = infok->xs; i < infok->xs + infok->xm; i++) {
     PetscInt    row = i - infok->gxs, cols[2];
     PetscScalar vals[2];
     const PetscScalar ubar = 0.5 * (u[i] + u[i + 1]), ubar_L = 0.5, ubar_R = 0.5, gradu = (u[i + 1] - u[i]) / hx, gradu_L = -1. / hx, gradu_R = 1. / hx, g = 1. + PetscSqr(gradu), g_gradu = 2. * gradu, w = 1. / (1. + ubar) + 1. / g, w_ubar = -1. / PetscSqr(1. + ubar), w_gradu = -g_gradu / PetscSqr(g), iw = 1. / w, iw_ubar = -w_ubar * PetscSqr(iw), iw_gradu = -w_gradu * PetscSqr(iw);
@@ -280,7 +278,6 @@ static PetscErrorCode FormInitial_Coupled(User user, Vec X)
   DMDALocalInfo infou, infok;
   Vec           Xu, Xk;
   PetscScalar  *u, *k, hx;
-  PetscInt      i;
 
   PetscFunctionBeginUser;
   PetscCall(DMCompositeGetEntries(user->pack, &dau, &dak));
@@ -290,8 +287,8 @@ static PetscErrorCode FormInitial_Coupled(User user, Vec X)
   PetscCall(DMDAGetLocalInfo(dau, &infou));
   PetscCall(DMDAGetLocalInfo(dak, &infok));
   hx = 1. / (infok.mx);
-  for (i = infou.xs; i < infou.xs + infou.xm; i++) u[i] = (PetscScalar)i * hx * (1. - (PetscScalar)i * hx);
-  for (i = infok.xs; i < infok.xs + infok.xm; i++) k[i] = 1.0 + 0.5 * PetscSinScalar(2 * PETSC_PI * i * hx);
+  for (PetscInt i = infou.xs; i < infou.xs + infou.xm; i++) u[i] = (PetscScalar)i * hx * (1. - (PetscScalar)i * hx);
+  for (PetscInt i = infok.xs; i < infok.xs + infok.xm; i++) k[i] = 1.0 + 0.5 * PetscSinScalar(2 * PETSC_PI * i * hx);
   PetscCall(DMDAVecRestoreArray(dau, Xu, &u));
   PetscCall(DMDAVecRestoreArray(dak, Xk, &k));
   PetscCall(DMCompositeRestoreAccess(user->pack, X, &Xu, &Xk));

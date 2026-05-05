@@ -260,7 +260,7 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   const char     *labelName;
   IS              pointsIS;
   const PetscInt *points;
-  PetscInt        i, n;
+  PetscInt        n;
   PetscBool       fail = PETSC_FALSE;
   MPI_Comm        comm;
   PetscMPIInt     rank;
@@ -280,7 +280,7 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   PetscCall(ISGetIndices(pointsIS, &points));
   PetscCall(ISGetLocalSize(pointsIS, &n));
   if (verbose > 1) PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     const PetscInt p = points[i];
     PetscBool      has;
     PetscInt       v;
@@ -324,10 +324,8 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
   if (ctx->num_labels != actualNum) {
     fail = PETSC_TRUE;
     if (ctx->verbose) {
-      PetscInt i;
-
       PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Asserted number of labels: %" PetscInt_FMT ", actual: %" PetscInt_FMT "\n", rank, ctx->num_labels, actualNum));
-      for (i = 0; i < actualNum; i++) {
+      for (PetscInt i = 0; i < actualNum; i++) {
         DMLabel     label;
         const char *name;
 

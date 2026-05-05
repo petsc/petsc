@@ -44,7 +44,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
 {
   PetscMPIInt size;
   Mat         FFT;
-  PetscInt    N, i;
+  PetscInt    N;
   Mat_FFT    *fft;
 
   PetscFunctionBegin;
@@ -57,7 +57,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
   PetscCall(PetscNew(&fft));
   FFT->data = (void *)fft;
   N         = 1;
-  for (i = 0; i < ndim; i++) {
+  for (PetscInt i = 0; i < ndim; i++) {
     PetscCheck(dim[i] >= 1, PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%" PetscInt_FMT "]=%" PetscInt_FMT " must be > 0", i, dim[i]);
     N *= dim[i];
   }

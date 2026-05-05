@@ -8,13 +8,13 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
 {
   DMLabel     label;
   const char *labelName, *typeName;
-  PetscInt    numLabels, l;
+  PetscInt    numLabels;
 
   PetscFunctionBegin;
   /* query the number and name of labels*/
   PetscCall(DMGetNumLabels(dm, &numLabels));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Number of labels: %" PetscInt_FMT "\n", numLabels));
-  for (l = 0; l < numLabels; ++l) {
+  for (PetscInt l = 0; l < numLabels; ++l) {
     IS labelIS, tmpIS;
 
     PetscCall(DMGetLabelName(dm, l, &labelName));

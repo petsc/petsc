@@ -54,7 +54,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
   Mat_MPIBAIJ       *mpimat = (Mat_MPIBAIJ *)A->data;
   Mat_SeqBAIJ       *Aa = (Mat_SeqBAIJ *)mpimat->A->data, *Ba = (Mat_SeqBAIJ *)mpimat->B->data;
   PetscInt          *d_nnz, *o_nnz;
-  PetscInt           i, nz;
+  PetscInt           nz;
   PetscInt           m, n, lm, ln;
   PetscInt           rstart, rend;
   const PetscScalar *vwork;
@@ -69,7 +69,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
     PetscCall(PetscMalloc2(lm / bs, &d_nnz, lm / bs, &o_nnz));
 
     PetscCall(MatGetDiagonalMarkers_SeqBAIJ(mpimat->A, &adiag, NULL));
-    for (i = 0; i < lm / bs; i++) {
+    for (PetscInt i = 0; i < lm / bs; i++) {
       d_nnz[i] = Aa->i[i + 1] - adiag[i];
       o_nnz[i] = Ba->i[i + 1] - Ba->i[i];
     }
@@ -85,7 +85,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
 
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   PetscCall(MatSetOption(M, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
-  for (i = rstart; i < rend; i++) {
+  for (PetscInt i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(A, i, &nz, &cwork, &vwork));
     PetscCall(MatSetValues(M, 1, &i, nz, cwork, vwork, INSERT_VALUES));
     PetscCall(MatRestoreRow(A, i, &nz, &cwork, &vwork));

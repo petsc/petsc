@@ -623,7 +623,6 @@ static PetscErrorCode PetscMUMPSIntCSRCast(PETSC_UNUSED Mat_MUMPS *mumps, PetscI
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
   {
-    PetscInt i;
     if (nrow + 1 > mumps->cur_ilen) { /* realloc ia_alloc/ja_alloc to fit ia/ja */
       PetscCall(PetscFree(mumps->ia_alloc));
       PetscCall(PetscMalloc1(nrow + 1, &mumps->ia_alloc));
@@ -634,8 +633,8 @@ static PetscErrorCode PetscMUMPSIntCSRCast(PETSC_UNUSED Mat_MUMPS *mumps, PetscI
       PetscCall(PetscMalloc1(nnz, &mumps->ja_alloc));
       mumps->cur_jlen = nnz;
     }
-    for (i = 0; i < nrow + 1; i++) PetscCall(PetscMUMPSIntCast(ia[i], &mumps->ia_alloc[i]));
-    for (i = 0; i < nnz; i++) PetscCall(PetscMUMPSIntCast(ja[i], &mumps->ja_alloc[i]));
+    for (PetscInt i = 0; i < nrow + 1; i++) PetscCall(PetscMUMPSIntCast(ia[i], &mumps->ia_alloc[i]));
+    for (PetscInt i = 0; i < nnz; i++) PetscCall(PetscMUMPSIntCast(ja[i], &mumps->ja_alloc[i]));
     *ia_mumps = mumps->ia_alloc;
     *ja_mumps = mumps->ja_alloc;
   }
@@ -1925,7 +1924,6 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
   const PetscScalar *barray = NULL;
   PetscScalar       *array;
   IS                 is_iden, is_petsc;
-  PetscInt           i;
   PetscBool          second_solve = PETSC_FALSE;
   static PetscBool   cite1 = PETSC_FALSE, cite2 = PETSC_FALSE;
 
@@ -1989,7 +1987,7 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
   if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A, PETSC_TRUE));
   else if (mumps->id.ICNTL(26) == 1) { // condense the right hand side
     PetscCall(MatMumpsSolveSchur_Private(A));
-    for (i = 0; i < mumps->id.size_schur; ++i) array[mumps->id.listvar_schur[i] - 1] = ID_FIELD_GET(mumps->id, redrhs, i);
+    for (PetscInt i = 0; i < mumps->id.size_schur; ++i) array[mumps->id.listvar_schur[i] - 1] = ID_FIELD_GET(mumps->id, redrhs, i);
   }
 
   if (mumps->petsc_size > 1) { /* convert mumps distributed solution to PETSc mpi x */
@@ -2001,7 +1999,7 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
       PetscInt *isol2_loc = NULL;
       PetscCall(ISCreateStride(PETSC_COMM_SELF, mumps->id.lsol_loc, 0, 1, &is_iden)); /* from */
       PetscCall(PetscMalloc1(mumps->id.lsol_loc, &isol2_loc));
-      for (i = 0; i < mumps->id.lsol_loc; i++) isol2_loc[i] = mumps->id.isol_loc[i] - 1;                        /* change Fortran style to C style */
+      for (PetscInt i = 0; i < mumps->id.lsol_loc; i++) isol2_loc[i] = mumps->id.isol_loc[i] - 1;               /* change Fortran style to C style */
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, mumps->id.lsol_loc, isol2_loc, PETSC_OWN_POINTER, &is_petsc)); /* to */
       PetscCall(VecScatterCreate(mumps->x_seq, is_iden, x, is_petsc, &mumps->scat_sol));
       PetscCall(ISDestroy(&is_iden));
@@ -2928,11 +2926,10 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
         mumps->id.ICNTL(7) = 1;
         if (!mumps->myid) {
           const PetscInt *idx;
-          PetscInt        i;
 
           PetscCall(PetscMalloc1(M, &mumps->id.perm_in));
           PetscCall(ISGetIndices(r, &idx));
-          for (i = 0; i < M; i++) PetscCall(PetscMUMPSIntCast(idx[i] + 1, &mumps->id.perm_in[i])); /* perm_in[]: start from 1, not 0! */
+          for (PetscInt i = 0; i < M; i++) PetscCall(PetscMUMPSIntCast(idx[i] + 1, &mumps->id.perm_in[i])); /* perm_in[]: start from 1, not 0! */
           PetscCall(ISRestoreIndices(r, &idx));
         }
       }
@@ -3185,8 +3182,7 @@ static PetscErrorCode MatView_MUMPS(Mat A, PetscViewer viewer)
         PetscCall(PetscViewerFlush(viewer));
 
         if (mumps->ninfo && mumps->ninfo <= 80) {
-          PetscInt i;
-          for (i = 0; i < mumps->ninfo; i++) {
+          for (PetscInt i = 0; i < mumps->ninfo; i++) {
             PetscCall(PetscViewerASCIIPrintf(viewer, "  INFO(%" PetscInt_FMT "):\n", mumps->info[i]));
             PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "    [%d] %d\n", mumps->myid, mumps->id.INFO(mumps->info[i])));
             PetscCall(PetscViewerFlush(viewer));

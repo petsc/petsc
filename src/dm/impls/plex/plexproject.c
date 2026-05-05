@@ -1009,9 +1009,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       PetscCall(ISRestoreIndices(fieldIS, &fields));
     }
     if (label) {
-      PetscInt i;
-
-      for (i = 0; i < numIds; ++i) {
+      for (PetscInt i = 0; i < numIds; ++i) {
         IS              pointIS, isectIS;
         const PetscInt *points;
         PetscInt        n;

@@ -96,7 +96,6 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
 @*/
 PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 {
-  PetscInt          i, j;
   PetscBool         isdraw, isascii;
   PetscViewerFormat format;
 
@@ -120,13 +119,13 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_INFO) {
       PetscInt row, col, nz;
       nz = 0;
-      for (i = 0; i < c->ncolors; i++) {
+      for (PetscInt i = 0; i < c->ncolors; i++) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Information for color %" PetscInt_FMT "\n", i));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of columns %" PetscInt_FMT "\n", c->ncolumns[i]));
-        for (j = 0; j < c->ncolumns[i]; j++) PetscCall(PetscViewerASCIIPrintf(viewer, "      %" PetscInt_FMT "\n", c->columns[i][j]));
+        for (PetscInt j = 0; j < c->ncolumns[i]; j++) PetscCall(PetscViewerASCIIPrintf(viewer, "      %" PetscInt_FMT "\n", c->columns[i][j]));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    Number of rows %" PetscInt_FMT "\n", c->nrows[i]));
         if (c->matentry) {
-          for (j = 0; j < c->nrows[i]; j++) {
+          for (PetscInt j = 0; j < c->nrows[i]; j++) {
             row = c->matentry[nz].row;
             col = c->matentry[nz++].col;
             PetscCall(PetscViewerASCIIPrintf(viewer, "      %" PetscInt_FMT " %" PetscInt_FMT " \n", row, col));
@@ -487,7 +486,6 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
 @*/
 PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
 {
-  PetscInt      i;
   MatFDColoring color = *c;
 
   PetscFunctionBegin;
@@ -498,7 +496,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
   }
 
   /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
-  for (i = 0; i < color->ncolors; i++) PetscCall(ISDestroy(&color->isa[i]));
+  for (PetscInt i = 0; i < color->ncolors; i++) PetscCall(ISDestroy(&color->isa[i]));
   PetscCall(PetscFree(color->isa));
   PetscCall(PetscFree2(color->ncolumns, color->columns));
   PetscCall(PetscFree(color->nrows));

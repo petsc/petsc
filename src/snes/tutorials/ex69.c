@@ -71,10 +71,9 @@ static void f0_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscReal mu = PetscExpReal(2.0 * PetscRealPart(constants[2]) * x[0]);
-  PetscInt        c, d;
 
-  for (c = 0; c < dim; ++c) {
-    for (d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
+  for (PetscInt c = 0; c < dim; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= u[dim];
   }
 }
@@ -82,39 +81,34 @@ static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const 
 static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscReal mu = x[0] < PetscRealPart(constants[4]) ? PetscRealPart(constants[2]) : PetscRealPart(constants[3]);
-  PetscInt        c, d;
 
-  for (c = 0; c < dim; ++c) {
-    for (d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
+  for (PetscInt c = 0; c < dim; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= u[dim];
   }
 }
 
 static void stokes_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   f0[0] = 0.0;
-  for (d = 0; d < dim; ++d) f0[0] -= u_x[d * dim + d];
+  for (PetscInt d = 0; d < dim; ++d) f0[0] -= u_x[d * dim + d];
 }
 
 static void f1_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim * dim; ++d) f1[d] = 0.0;
+  for (PetscInt d = 0; d < dim * dim; ++d) f1[d] = 0.0;
 }
 
 /* < q, \nabla\cdot u >, J_{pu} */
 static void stokes_mass_J(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d * dim + d] = -1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
+  for (PetscInt d = 0; d < dim; ++d) g1[d * dim + d] = -1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
 }
 
 /* -< \nabla\cdot v, p >, J_{up} */
 static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d * dim + d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
+  for (PetscInt d = 0; d < dim; ++d) g2[d * dim + d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
 }
 
 /* < \nabla v, \nabla u + {\nabla u}^T >, J_{uu}
@@ -122,10 +116,9 @@ static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux, co
 static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscReal mu = PetscExpReal(2.0 * PetscRealPart(constants[2]) * x[0]);
-  PetscInt        cI, d;
 
-  for (cI = 0; cI < dim; ++cI) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt cI = 0; cI < dim; ++cI) {
+    for (PetscInt d = 0; d < dim; ++d) {
       g3[((cI * dim + cI) * dim + d) * dim + d] += mu; /*g3[cI, cI, d, d]*/
       g3[((cI * dim + d) * dim + d) * dim + cI] += mu; /*g3[cI, d, d, cI]*/
     }
@@ -134,10 +127,9 @@ static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, 
 static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscReal mu = x[0] < PetscRealPart(constants[4]) ? PetscRealPart(constants[2]) : PetscRealPart(constants[3]);
-  PetscInt        cI, d;
 
-  for (cI = 0; cI < dim; ++cI) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt cI = 0; cI < dim; ++cI) {
+    for (PetscInt d = 0; d < dim; ++d) {
       g3[((cI * dim + cI) * dim + d) * dim + d] += mu; /*g3[cI, cI, d, d]*/
       g3[((cI * dim + d) * dim + d) * dim + cI] += mu; /*g3[cI, d, d, cI]*/
     }
@@ -3042,10 +3034,9 @@ static PetscErrorCode CreateSplitLabels(DM dm)
   PetscInt    ids[4]   = {1, 2, 3, 4};
   DMLabel     label;
   IS          is;
-  PetscInt    f;
 
   PetscFunctionBeginUser;
-  for (f = 0; f < 4; ++f) {
+  for (PetscInt f = 0; f < 4; ++f) {
     PetscCall(DMCreateLabel(dm, names[f]));
     PetscCall(DMGetStratumIS(dm, "marker", ids[f], &is));
     if (!is) continue;

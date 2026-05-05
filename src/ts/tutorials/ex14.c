@@ -728,7 +728,7 @@ static PetscErrorCode THIInitial(THI thi, DM pack, Vec X)
 
 static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const PetscReal phi[restrict 3], PetscReal dphi[restrict 8][3], PetscScalar *restrict u, PetscScalar *restrict v, PetscScalar du[restrict 3], PetscScalar dv[restrict 3], PetscReal *eta, PetscReal *deta)
 {
-  PetscInt    l, ll;
+  PetscInt    l;
   PetscScalar gam;
 
   du[0] = du[1] = du[2] = 0;
@@ -738,7 +738,7 @@ static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const Petsc
   for (l = 0; l < 8; l++) {
     *u += phi[l] * n[l].u;
     *v += phi[l] * n[l].v;
-    for (ll = 0; ll < 3; ll++) {
+    for (PetscInt ll = 0; ll < 3; ll++) {
       du[ll] += dphi[l][ll] * n[l].u;
       dv[ll] += dphi[l][ll] * n[l].v;
     }
@@ -1520,7 +1520,7 @@ int main(int argc, char *argv[])
   THI       thi;
   Vec       X;
   Mat       B;
-  PetscInt  i, steps;
+  PetscInt  steps;
   PetscReal ftime;
 
   PetscFunctionBeginUser;
@@ -1556,7 +1556,7 @@ int main(int argc, char *argv[])
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
   PetscCall(MatSetOptionsPrefix(B, "thi_"));
 
-  for (i = 0; i < thi->nlevels; i++) {
+  for (PetscInt i = 0; i < thi->nlevels; i++) {
     PetscReal Lx = thi->Lx / thi->units->meter, Ly = thi->Ly / thi->units->meter, Lz = thi->Lz / thi->units->meter;
     PetscInt  Mx, My, Mz;
     PetscCall(DMCompositeGetEntries(pack, &da3, &da2));

@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
   PetscInt       start, end;
   PetscMPIInt    rank;
   PetscInt      *app_indices, *petsc_indices, *ia, *ia0;
-  PetscInt       i;
   AO             app2petsc;
   IS             app_is, petsc_is;
   const PetscInt n_loc = 8;
@@ -37,7 +36,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscMalloc1(local_size, &app_indices));
   PetscCall(PetscMalloc1(local_size, &petsc_indices));
   /*  Add values for local indices for usual states */
-  for (i = 0; i < local_size; ++i) {
+  for (PetscInt i = 0; i < local_size; ++i) {
     app_indices[i]   = start + i;
     petsc_indices[i] = end - 1 - i;
   }
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
 
   PetscCall(AOApplicationToPetsc(app2petsc, n_loc, ia));
 
-  for (i = 0; i < n_loc; ++i) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
+  for (PetscInt i = 0; i < n_loc; ++i) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscCall(AODestroy(&app2petsc));
   PetscCall(PetscLayoutDestroy(&layout));

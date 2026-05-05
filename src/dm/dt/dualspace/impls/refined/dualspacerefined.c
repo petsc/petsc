@@ -64,7 +64,6 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
 {
   PetscInt     pStart, pEnd, depth;
   PetscInt     cStart, cEnd, c, spdim;
-  PetscInt     h;
   DM           dm;
   PetscSection section;
 
@@ -92,12 +91,12 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
     if ((c > cStart) && sp->pointSpaces[c - pStart] != sp->pointSpaces[c - 1 - pStart]) break;
   }
   if (c < cEnd) sp->uniform = PETSC_FALSE;
-  for (h = 0; h < depth; h++) {
+  for (PetscInt h = 0; h < depth; h++) {
     PetscInt hStart, hEnd;
 
     PetscCall(DMPlexGetHeightStratum(dm, h, &hStart, &hEnd));
     for (c = hStart; c < hEnd; c++) {
-      PetscInt        coneSize, e;
+      PetscInt        coneSize;
       PetscDualSpace  cspace = sp->pointSpaces[c - pStart];
       const PetscInt *cone;
       const PetscInt *refCone;
@@ -106,7 +105,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
       PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
       PetscCall(DMPlexGetCone(dm, c, &cone));
       PetscCall(DMPlexGetCone(cspace->dm, 0, &refCone));
-      for (e = 0; e < coneSize; e++) {
+      for (PetscInt e = 0; e < coneSize; e++) {
         PetscInt       point    = cone[e];
         PetscInt       refpoint = refCone[e];
         PetscDualSpace espace;

@@ -268,7 +268,7 @@ PetscErrorCode ex1_3(void)
   }
   {
     PetscReal *array_x, *array_y;
-    PetscInt   npoints, p;
+    PetscInt   npoints;
     FILE      *fp = NULL;
     char       name[PETSC_MAX_PATH_LEN];
 
@@ -278,7 +278,7 @@ PetscErrorCode ex1_3(void)
     PetscCall(DMSwarmGetLocalSize(dms, &npoints));
     PetscCall(DMSwarmGetField(dms, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dms, "coory", NULL, NULL, (void **)&array_y));
-    for (p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
+    for (PetscInt p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
     PetscCall(DMSwarmRestoreField(dms, "coory", NULL, NULL, (void **)&array_y));
     PetscCall(DMSwarmRestoreField(dms, "coorx", NULL, NULL, (void **)&array_x));
     fclose(fp);
@@ -296,7 +296,7 @@ typedef struct {
 PetscErrorCode collect_zone(DM dm, PetscCtx ctx, PetscInt *nfound, PetscInt **foundlist)
 {
   CollectZoneCtx *zone = (CollectZoneCtx *)ctx;
-  PetscInt        p, npoints;
+  PetscInt        npoints;
   PetscReal      *array_x, *array_y, r2;
   PetscInt        p2collect, *plist;
   PetscMPIInt     rank;
@@ -309,7 +309,7 @@ PetscErrorCode collect_zone(DM dm, PetscCtx ctx, PetscInt *nfound, PetscInt **fo
 
   r2        = zone->radius * zone->radius;
   p2collect = 0;
-  for (p = 0; p < npoints; p++) {
+  for (PetscInt p = 0; p < npoints; p++) {
     PetscReal sep2;
 
     sep2 = (array_x[p] - zone->cx[0]) * (array_x[p] - zone->cx[0]);
@@ -319,7 +319,7 @@ PetscErrorCode collect_zone(DM dm, PetscCtx ctx, PetscInt *nfound, PetscInt **fo
 
   PetscCall(PetscMalloc1(p2collect + 1, &plist));
   p2collect = 0;
-  for (p = 0; p < npoints; p++) {
+  for (PetscInt p = 0; p < npoints; p++) {
     PetscReal sep2;
 
     sep2 = (array_x[p] - zone->cx[0]) * (array_x[p] - zone->cx[0]);
@@ -458,7 +458,7 @@ PetscErrorCode ex1_4(void)
   }
   {
     PetscReal *array_x, *array_y;
-    PetscInt   npoints, p;
+    PetscInt   npoints;
     FILE      *fp = NULL;
     char       name[PETSC_MAX_PATH_LEN];
 
@@ -468,7 +468,7 @@ PetscErrorCode ex1_4(void)
     PetscCall(DMSwarmGetLocalSize(dms, &npoints));
     PetscCall(DMSwarmGetField(dms, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dms, "coory", NULL, NULL, (void **)&array_y));
-    for (p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
+    for (PetscInt p = 0; p < npoints; p++) fprintf(fp, "%+1.4e %+1.4e %1.4e\n", array_x[p], array_y[p], (double)rank);
     PetscCall(DMSwarmRestoreField(dms, "coory", NULL, NULL, (void **)&array_y));
     PetscCall(DMSwarmRestoreField(dms, "coorx", NULL, NULL, (void **)&array_x));
     fclose(fp);

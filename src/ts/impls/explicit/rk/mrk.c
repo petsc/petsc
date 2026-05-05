@@ -370,25 +370,24 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
   Vec              Yslow, Yfast; /* subvectors store the stges of slow components and fast components respectively                           */
   const PetscInt   s = tab->s;
   const PetscReal *A = tab->A, *c = tab->c;
-  PetscScalar     *w = rk->work;
-  PetscInt         i, j;
+  PetscScalar     *w              = rk->work;
   PetscReal        next_time_step = ts->time_step, t = ts->ptime, h = ts->time_step;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
-  for (i = 0; i < s; i++) {
+  for (PetscInt i = 0; i < s; i++) {
     PetscCall(VecGetSubVector(YdotRHS[i], rk->is_slow, &YdotRHS_slow[i]));
     PetscCall(VecGetSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i]));
   }
   PetscCall(VecCopy(ts->vec_sol, rk->X0));
   /* propagate both slow and fast components using large time steps */
-  for (i = 0; i < s; i++) {
+  for (PetscInt i = 0; i < s; i++) {
     rk->stage_time = t + h * c[i];
     PetscCall(TSPreStage(ts, rk->stage_time));
     PetscCall(VecCopy(ts->vec_sol, Y[i]));
     PetscCall(VecGetSubVector(Y[i], rk->is_fast, &Yfast));
     PetscCall(VecGetSubVector(Y[i], rk->is_slow, &Yslow));
-    for (j = 0; j < i; j++) w[j] = h * A[i * s + j];
+    for (PetscInt j = 0; j < i; j++) w[j] = h * A[i * s + j];
     PetscCall(VecMAXPY(Yfast, i, w, YdotRHS_fast));
     PetscCall(VecMAXPY(Yslow, i, w, YdotRHS_slow));
     PetscCall(VecRestoreSubVector(Y[i], rk->is_fast, &Yfast));
@@ -401,7 +400,7 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
   /* update the slow components of the solution using slow time step */
   PetscCall(TSEvaluateStep_RK_MultirateSplit(ts, tab->order, ts->vec_sol, NULL));
   /* YdotRHS will be used for interpolation during refinement */
-  for (i = 0; i < s; i++) {
+  for (PetscInt i = 0; i < s; i++) {
     PetscCall(VecRestoreSubVector(YdotRHS[i], rk->is_slow, &YdotRHS_slow[i]));
     PetscCall(VecRestoreSubVector(YdotRHS[i], rk->is_fast, &YdotRHS_fast[i]));
   }

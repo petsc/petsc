@@ -766,12 +766,10 @@ PetscErrorCode DMSwarmCreatePointPerCellCount(DM sw, PetscInt *ncells, PetscInt 
   PetscCall(DMSwarmSortGetIsValid(sw, &isvalid));
   nel = 0;
   if (isvalid) {
-    PetscInt e;
-
     PetscCall(DMSwarmSortGetSizes(sw, &nel, NULL));
 
     PetscCall(PetscMalloc1(nel, &sum));
-    for (e = 0; e < nel; e++) PetscCall(DMSwarmSortGetNumberOfPointsPerCell(sw, e, &sum[e]));
+    for (PetscInt e = 0; e < nel; e++) PetscCall(DMSwarmSortGetNumberOfPointsPerCell(sw, e, &sum[e]));
   } else {
     DM        dm;
     PetscBool isda, isplex, isshell;

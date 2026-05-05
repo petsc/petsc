@@ -113,7 +113,6 @@ int main(int argc, char **argv)
   const PetscReal bounds[28] = {0.0, 1.0, 0.0, 1.0, 0.0, PETSC_PI / 2., 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, PETSC_PI / 2., 0.0, PETSC_PI / 2., 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
   const PetscReal analytic[14] = {0.250000000000000, 0.210657251225806988108092302182988001695680805674, 1.905238690482675827736517833351916563195085437332, 0.514041895890070761397629739576882871630921844127, -.444444444444444444444444444444444444444444444444, 0.785398163397448309615660845819875721049292349843, 1.198140234735592207439922492280323878227212663216, 2.000000000000000000000000000000000000000000000000, -1.08879304515180106525034444911880697366929185018, 2.221441469079183123507940495030346849307310844687, 1.570796326794896619231321691639751442098584699687, 1.772453850905516027298167483341145182797549456122, 1.253314137315500251207882642405522626503493370304, 0.500000000000000000000000000000000000000000000000};
   void (*funcs[14])(const PetscReal[], void *, PetscReal *) = {func1, func2, func3, func4, func5, func6, func7, func8, func9, func10, func11, func12, func13, func14};
-  PetscInt f;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -122,7 +121,7 @@ int main(int argc, char **argv)
   PetscOptionsEnd();
 
   /* Integrate each function */
-  for (f = 0; f < 14; ++f) {
+  for (PetscInt f = 0; f < 14; ++f) {
     PetscReal integral;
 
     /* These can only be integrated accuractely using MPFR */
@@ -136,7 +135,7 @@ int main(int argc, char **argv)
     }
   }
 #if defined(PETSC_HAVE_MPFR)
-  for (f = 0; f < 14; ++f) {
+  for (PetscInt f = 0; f < 14; ++f) {
     PetscReal integral;
 
     PetscCall(PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f * 2 + 0], bounds[f * 2 + 1], digits, NULL, &integral));

@@ -33,12 +33,12 @@ static PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
 
 static PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace spNew)
 {
-  PetscInt dim, d;
+  PetscInt dim;
 
   PetscFunctionBegin;
   PetscCall(PetscDualSpaceGetDimension(sp, &dim));
   PetscCall(PetscDualSpaceSimpleSetDimension(spNew, dim));
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     PetscQuadrature q;
 
     PetscCall(PetscDualSpaceGetFunctional(sp, d, &q));
@@ -51,10 +51,10 @@ static PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp,
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *)sp->data;
   DM                     dm;
-  PetscInt               spatialDim, f;
+  PetscInt               spatialDim;
 
   PetscFunctionBegin;
-  for (f = 0; f < s->dim; ++f) PetscCall(PetscQuadratureDestroy(&sp->functional[f]));
+  for (PetscInt f = 0; f < s->dim; ++f) PetscCall(PetscQuadratureDestroy(&sp->functional[f]));
   PetscCall(PetscFree(sp->functional));
   s->dim = dim;
   PetscCall(PetscCalloc1(s->dim, &sp->functional));

@@ -220,7 +220,7 @@ static PetscErrorCode CheckGaussLaw(DM dm, PetscInt cell)
 static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx, PetscReal faceCentroidEx[], PetscReal faceNormalEx[], PetscReal faceVolEx[])
 {
   const PetscInt *cone;
-  PetscInt        coneSize, c;
+  PetscInt        coneSize;
   PetscInt        dim, depth, cdim;
 
   PetscFunctionBegin;
@@ -234,7 +234,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
     if (faceCentroidEx) {
       PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
       PetscCall(DMPlexGetCone(dm, cell, &cone));
-      for (c = 0; c < coneSize; ++c) PetscCall(CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c * dim], &faceNormalEx[c * dim], faceVolEx[c]));
+      for (PetscInt c = 0; c < coneSize; ++c) PetscCall(CheckFVMGeometry(dm, cone[c], dim, &faceCentroidEx[c * dim], &faceNormalEx[c * dim], faceVolEx[c]));
     }
   }
   if (transform) {
@@ -252,7 +252,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
     PetscCall(PetscMalloc2(coordSize, &origCoords, coordSize, &newCoords));
     PetscCall(PetscMalloc5(cdim, &v0ExT, cdim * cdim, &JExT, cdim * cdim, &invJExT, cdim, &centroidExT, cdim, &normalExT));
     PetscCall(PetscMalloc2(cdim, &faceCentroidExT, cdim, &faceNormalExT));
-    for (c = 0; c < coordSize; ++c) origCoords[c] = coords[c];
+    for (PetscInt c = 0; c < coordSize; ++c) origCoords[c] = coords[c];
     PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
     numCorners = coordSize / cdim;
 
@@ -271,7 +271,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
       PetscReal   scale, phi, theta, psi = 0.0, norm;
       PetscInt    d, e, f, p;
 
-      for (c = 0; c < coordSize; ++c) newCoords[c] = origCoords[c];
+      for (PetscInt c = 0; c < coordSize; ++c) newCoords[c] = origCoords[c];
       PetscCall(PetscRandomGetValueReal(r, &scale));
       PetscCall(PetscRandomGetValueReal(ang, &phi));
       PetscCall(PetscRandomGetValueReal(ang2, &theta));
@@ -390,7 +390,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
         if (faceCentroidEx) {
           PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
           PetscCall(DMPlexGetCone(dm, cell, &cone));
-          for (c = 0; c < coneSize; ++c) {
+          for (PetscInt c = 0; c < coneSize; ++c) {
             PetscInt off = c * cdim;
 
             faceVolExT = faceVolEx[c];

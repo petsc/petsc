@@ -763,10 +763,8 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   vertices[2] = faces[2] + 1;
   numVertices = vertices[0] * vertices[1] * vertices[2];
   if (rank == 0) {
-    PetscInt f;
-
     PetscCall(DMPlexSetChart(dm, 0, numFaces + numVertices));
-    for (f = 0; f < numFaces; ++f) PetscCall(DMPlexSetConeSize(dm, f, 4));
+    for (PetscInt f = 0; f < numFaces; ++f) PetscCall(DMPlexSetConeSize(dm, f, 4));
     PetscCall(DMSetUp(dm)); /* Allocate space for cones */
 
     /* Side 0 (Top) */
@@ -2513,13 +2511,12 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   PetscInt       *edg;
   PetscReal      *low, *upp;
   DMBoundaryType *bdt;
-  PetscInt        d;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(PetscMalloc4(dim, &edg, dim, &low, dim, &upp, dim, &bdt));
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     edg[d] = edges ? edges[d] : 1;
     low[d] = lower ? lower[d] : 0.;
     upp[d] = upper ? upper[d] : 1.;
@@ -2827,7 +2824,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     Vec             coordinates;
     PetscSection    coordSection;
     PetscScalar    *coords;
-    PetscInt        coordSize, v;
+    PetscInt        coordSize;
     const PetscReal dis = 1.0 / PetscSqrtReal(2.0);
     const PetscReal ds2 = dis / 2.0;
 
@@ -2836,7 +2833,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscCall(PetscSectionSetNumFields(coordSection, 1));
     PetscCall(PetscSectionSetFieldComponents(coordSection, 0, dim));
     PetscCall(PetscSectionSetChart(coordSection, numCells, numCells + numVertices));
-    for (v = numCells; v < numCells + numVertices; ++v) {
+    for (PetscInt v = numCells; v < numCells + numVertices; ++v) {
       PetscCall(PetscSectionSetDof(coordSection, v, dim));
       PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, dim));
     }
@@ -3101,7 +3098,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
     Vec          coordinates;
     PetscSection coordSection;
     PetscScalar *coords;
-    PetscInt     coordSize, c;
+    PetscInt     coordSize;
 
     /* Build coordinates */
     PetscCall(DMGetCoordinateSection(dm, &coordSection));
@@ -3120,7 +3117,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
     PetscCall(VecSetBlockSize(coordinates, dim));
     PetscCall(VecSetType(coordinates, VECSTANDARD));
     PetscCall(VecGetArray(coordinates, &coords));
-    for (c = 0; c < numCells; c++) {
+    for (PetscInt c = 0; c < numCells; c++) {
       coords[(c + 0 * n) * dim + 0] = PetscCosReal(2.0 * c * PETSC_PI / n);
       coords[(c + 0 * n) * dim + 1] = PetscSinReal(2.0 * c * PETSC_PI / n);
       coords[(c + 0 * n) * dim + 2] = 1.0;
@@ -3176,16 +3173,14 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
 static inline PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
-  PetscInt  i;
-  for (i = 0; i < dim; ++i) prod += PetscSqr(x[i] - y[i]);
+  for (PetscInt i = 0; i < dim; ++i) prod += PetscSqr(x[i] - y[i]);
   return PetscSqrtReal(prod);
 }
 
 static inline PetscReal DotReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
-  PetscInt  i;
-  for (i = 0; i < dim; ++i) prod += x[i] * y[i];
+  for (PetscInt i = 0; i < dim; ++i) prod += x[i] * y[i];
   return prod;
 }
 
@@ -3310,12 +3305,11 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
                   {{0, 1, 0},  {-1, 0, 0}, {0, 0, 0} }
                 };
                 PetscReal normal[3];
-                PetscInt  e, f;
 
                 for (d = 0; d < embedDim; ++d) {
                   normal[d] = 0.0;
-                  for (e = 0; e < embedDim; ++e) {
-                    for (f = 0; f < embedDim; ++f) normal[d] += epsilon[d][e][f] * (coordsIn[j * embedDim + e] - coordsIn[i * embedDim + e]) * (coordsIn[k * embedDim + f] - coordsIn[i * embedDim + f]);
+                  for (PetscInt e = 0; e < embedDim; ++e) {
+                    for (PetscInt f = 0; f < embedDim; ++f) normal[d] += epsilon[d][e][f] * (coordsIn[j * embedDim + e] - coordsIn[i * embedDim + e]) * (coordsIn[k * embedDim + f] - coordsIn[i * embedDim + f]);
                   }
                 }
                 if (DotReal(embedDim, normal, &coordsIn[i * embedDim]) < 0) {
@@ -4647,13 +4641,13 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     SETERRQ(PetscObjectComm((PetscObject)rdm), PETSC_ERR_ARG_WRONG, "Cannot create reference cell for cell type %s", DMPolytopeTypes[ct]);
   }
   {
-    PetscInt Nv, v;
+    PetscInt Nv;
 
     /* Must create the celltype label here so that we do not automatically try to compute the types */
     PetscCall(DMCreateLabel(rdm, "celltype"));
     PetscCall(DMPlexSetCellType(rdm, 0, ct));
     PetscCall(DMPlexGetChart(rdm, NULL, &Nv));
-    for (v = 1; v < Nv; ++v) PetscCall(DMPlexSetCellType(rdm, v, DM_POLYTOPE_POINT));
+    for (PetscInt v = 1; v < Nv; ++v) PetscCall(DMPlexSetCellType(rdm, v, DM_POLYTOPE_POINT));
   }
   PetscCall(DMPlexInterpolateInPlace_Internal(rdm));
   PetscCall(PetscObjectSetName((PetscObject)rdm, DMPolytopeTypes[ct]));
@@ -4865,10 +4859,10 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
       PetscReal      upper[3]  = {1, 1, 1};
       DMBoundaryType bdt[3]    = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
       PetscBool      isAnnular = shape == DM_SHAPE_ANNULUS ? PETSC_TRUE : PETSC_FALSE;
-      PetscInt       i, n;
+      PetscInt       n;
 
       n = dim;
-      for (i = 0; i < dim; ++i) faces[i] = (dim == 1 ? 1 : 4 - dim);
+      for (PetscInt i = 0; i < dim; ++i) faces[i] = (dim == 1 ? 1 : 4 - dim);
       PetscCall(PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", faces, &n, &flg));
       n = 3;
       PetscCall(PetscOptionsRealArray("-dm_plex_box_lower", "Lower left corner of box", "", lower, &n, &flg));
@@ -4882,7 +4876,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
 
       PetscCheck(!isAnnular || dim == 2, comm, PETSC_ERR_ARG_OUTOFRANGE, "Only two dimensional annuli have been implemented");
       if (isAnnular)
-        for (i = 0; i < dim - 1; ++i) bdt[i] = DM_BOUNDARY_PERIODIC;
+        for (PetscInt i = 0; i < dim - 1; ++i) bdt[i] = DM_BOUNDARY_PERIODIC;
 
       switch (cell) {
       case DM_POLYTOPE_TRI_PRISM_TENSOR:
@@ -4918,10 +4912,10 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
       PetscInt  faces[3] = {0, 0, 0};
       PetscReal lower[3] = {0, 0, 0};
       PetscReal upper[3] = {1, 1, 1};
-      PetscInt  i, n;
+      PetscInt  n;
 
       n = dim + 1;
-      for (i = 0; i < dim + 1; ++i) faces[i] = (dim + 1 == 1 ? 1 : 4 - (dim + 1));
+      for (PetscInt i = 0; i < dim + 1; ++i) faces[i] = (dim + 1 == 1 ? 1 : 4 - (dim + 1));
       PetscCall(PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", faces, &n, &flg));
       n = 3;
       PetscCall(PetscOptionsRealArray("-dm_plex_box_lower", "Lower left corner of box", "", lower, &n, &flg));
@@ -4989,11 +4983,11 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
       PetscInt       *edges, overlap = 1;
       PetscReal      *lower, *upper;
       DMBoundaryType *bdt;
-      PetscInt        n, d;
+      PetscInt        n;
 
       *useCoordSpace = PETSC_FALSE;
       PetscCall(PetscMalloc4(dim, &edges, dim, &lower, dim, &upper, dim, &bdt));
-      for (d = 0; d < dim; ++d) {
+      for (PetscInt d = 0; d < dim; ++d) {
         edges[d] = 1;
         lower[d] = 0.;
         upper[d] = 1.;
@@ -5862,7 +5856,6 @@ M*/
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 {
   DM_Plex *mesh;
-  PetscInt unit;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(PlexCitation, &Plexcite));
@@ -5886,7 +5879,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   PetscCall(PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner));
   mesh->remeshBd = PETSC_FALSE;
 
-  for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
+  for (PetscInt unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
   mesh->depthState    = -1;
   mesh->celltypeState = -1;
@@ -6282,9 +6275,8 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 #if defined(PETSC_USE_COMPLEX)
     {
       PetscScalar *svertexCoords;
-      PetscInt     i;
       PetscCall(PetscMalloc1(numVertices * spaceDim, &svertexCoords));
-      for (i = 0; i < numVertices * spaceDim; i++) svertexCoords[i] = vertexCoords[i];
+      for (PetscInt i = 0; i < numVertices * spaceDim; i++) svertexCoords[i] = vertexCoords[i];
       PetscCall(PetscSFBcastBegin(sfVert, coordtype, svertexCoords, coords, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sfVert, coordtype, svertexCoords, coords, MPI_REPLACE));
       PetscCall(PetscFree(svertexCoords));

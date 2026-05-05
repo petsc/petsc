@@ -4026,16 +4026,15 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A, MatDuplicateOption cpvalues, Mat
 
 static inline PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols, PetscInt nzl, PetscInt nzu, PetscInt nz, const PetscInt *ai, const PetscInt *aj, const PetscInt *adiag, PetscInt row)
 {
-  PetscInt        k;
   const PetscInt *vi;
 
   PetscFunctionBegin;
   vi = aj + ai[row];
-  for (k = 0; k < nzl; k++) cols[k] = vi[k];
+  for (PetscInt k = 0; k < nzl; k++) cols[k] = vi[k];
   vi        = aj + adiag[row];
   cols[nzl] = vi[0];
   vi        = aj + adiag[row + 1] + 1;
-  for (k = 0; k < nzu; k++) cols[nzl + 1 + k] = vi[k];
+  for (PetscInt k = 0; k < nzu; k++) cols[nzl + 1 + k] = vi[k];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*

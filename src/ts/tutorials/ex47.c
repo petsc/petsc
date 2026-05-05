@@ -89,8 +89,7 @@ static void f0_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
 /* <grad psi, u phi> */
 static void f1_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = a[d] * u[0];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = a[d] * u[0];
 }
 
 /* <psi, phi_t> */
@@ -102,15 +101,13 @@ static void g0_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 /* <psi, u . grad phi> */
 static void g1_prim_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d] = a[d];
+  for (PetscInt d = 0; d < dim; ++d) g1[d] = a[d];
 }
 
 /* <grad psi, u phi> */
 static void g2_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d] = a[d];
+  for (PetscInt d = 0; d < dim; ++d) g2[d] = a[d];
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)

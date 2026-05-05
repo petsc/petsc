@@ -231,7 +231,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
 static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
 {
-  PetscInt                     i;
   TaoLineSearchConvergedReason ls_reason;
   PetscReal                    actred = -1.0, actred_max = 0.0;
   PetscReal                    f_new;
@@ -243,7 +242,7 @@ static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
   */
 
   PetscFunctionBegin;
-  for (i = 0; i < tron->maxgpits; ++i) {
+  for (PetscInt i = 0; i < tron->maxgpits; ++i) {
     if (-actred <= (tron->pg_ftol) * actred_max) break;
 
     ++tron->gp_iterates;

@@ -136,7 +136,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscMPIInt    size, rank;
   MPI_Comm       comm;
-  PetscInt       j;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -151,11 +150,11 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   if (!stag->l[0]) {
     /* Divide equally, giving an extra elements to higher ranks */
     PetscCall(PetscMalloc1(stag->nRanks[0], &stag->l[0]));
-    for (j = 0; j < stag->nRanks[0]; ++j) stag->l[0][j] = stag->N[0] / stag->nRanks[0] + (stag->N[0] % stag->nRanks[0] > j ? 1 : 0);
+    for (PetscInt j = 0; j < stag->nRanks[0]; ++j) stag->l[0][j] = stag->N[0] / stag->nRanks[0] + (stag->N[0] % stag->nRanks[0] > j ? 1 : 0);
   }
   {
     PetscInt Nchk = 0;
-    for (j = 0; j < size; ++j) Nchk += stag->l[0][j];
+    for (PetscInt j = 0; j < size; ++j) Nchk += stag->l[0][j];
     PetscCheck(Nchk == stag->N[0], comm, PETSC_ERR_ARG_OUTOFRANGE, "Sum of specified local sizes (%" PetscInt_FMT ") is not equal to global size (%" PetscInt_FMT ")", Nchk, stag->N[0]);
   }
   stag->n[0] = stag->l[0][rank];
@@ -181,7 +180,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
 
   /* Starting element */
   stag->start[0] = 0;
-  for (j = 0; j < stag->rank[0]; ++j) stag->start[0] += stag->l[0][j];
+  for (PetscInt j = 0; j < stag->rank[0]; ++j) stag->start[0] += stag->l[0][j];
 
   /* Local/ghosted size and starting element */
   switch (stag->boundaryType[0]) {
@@ -503,14 +502,14 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal1d_Internal(DM dm)
 {
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt      *idxRemap;
-  PetscInt       i, leftGhostEntries;
+  PetscInt       leftGhostEntries;
 
   PetscFunctionBegin;
   PetscCall(VecScatterCopy(stag->gtol, &stag->ltol));
   PetscCall(PetscMalloc1(stag->entries, &idxRemap));
 
   leftGhostEntries = (stag->start[0] - stag->startGhost[0]) * stag->entriesPerElement;
-  for (i = 0; i < stag->entries; ++i) idxRemap[i] = leftGhostEntries + i;
+  for (PetscInt i = 0; i < stag->entries; ++i) idxRemap[i] = leftGhostEntries + i;
 
   PetscCall(VecScatterRemap(stag->ltol, idxRemap, NULL));
   PetscCall(PetscFree(idxRemap));

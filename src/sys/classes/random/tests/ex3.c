@@ -65,11 +65,10 @@ int main(int argc, char **argv)
   PetscCall(PetscRandomView(random, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscMalloc1(n, &X));
   for (i = 0; i < n; i++) {
-    PetscInt   j;
     PetscInt64 bin  = 0;
     PetscInt64 mult = 1;
 
-    for (j = 0; j < t; j++, mult *= d) {
+    for (PetscInt j = 0; j < t; j++, mult *= d) {
       PetscReal  x;
       PetscInt64 slot;
 

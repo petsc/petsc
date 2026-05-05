@@ -288,8 +288,7 @@ void g3_analytic_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 
 void g3_field_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = a[0];
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = a[0];
 }
 
 /*
@@ -312,9 +311,8 @@ void f0_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   PetscScalar nu = 0.0;
-  PetscInt    d;
-  for (d = 0; d < dim; ++d) nu += u_x[d] * u_x[d];
-  for (d = 0; d < dim; ++d) f1[d] = 0.5 * nu * u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) nu += u_x[d] * u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = 0.5 * nu * u_x[d];
 }
 
 /*
@@ -328,11 +326,10 @@ void f1_analytic_nonlinear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   PetscScalar nu = 0.0;
-  PetscInt    d, e;
-  for (d = 0; d < dim; ++d) nu += u_x[d] * u_x[d];
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) nu += u_x[d] * u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) {
     g3[d * dim + d] = 0.5 * nu;
-    for (e = 0; e < dim; ++e) g3[d * dim + e] += u_x[d] * u_x[e];
+    for (PetscInt e = 0; e < dim; ++e) g3[d * dim + e] += u_x[d] * u_x[e];
   }
 }
 

@@ -140,7 +140,6 @@ PetscErrorCode FormOperator(DM networkdm, Mat A, Vec b)
   Vec             localb;
   Branch         *branch;
   Node           *node;
-  PetscInt        e;
   PetscInt        v, vStart, vEnd;
   PetscInt        eStart, eEnd;
   PetscBool       ghost;
@@ -171,7 +170,7 @@ PetscErrorCode FormOperator(DM networkdm, Mat A, Vec b)
   PetscCall(DMNetworkGetEdgeRange(networkdm, &eStart, &eEnd));
   PetscCall(DMNetworkGetVertexRange(networkdm, &vStart, &vEnd));
 
-  for (e = 0; e < eEnd; e++) {
+  for (PetscInt e = 0; e < eEnd; e++) {
     PetscCall(DMNetworkGetComponent(networkdm, e, 0, &key, (void **)&branch, NULL));
     PetscCall(DMNetworkGetEdgeOffset(networkdm, e, &lofst));
 

@@ -159,8 +159,7 @@ static void Limit_CadaTorrilhon3R(PetscReal r, LimitInfo info, const PetscScalar
 { /* Cada-Torrilhon 2009, Eq 22 */
   /* They recommend 0.001 < r < 1, but larger values are more accurate in smooth regions */
   const PetscReal eps = 1e-7, hx = info->hx;
-  PetscInt        i;
-  for (i = 0; i < info->m; i++) {
+  for (PetscInt i = 0; i < info->m; i++) {
     const PetscReal eta = (Sqr(jL[i]) + Sqr(jR[i])) / Sqr(r * hx);
     lmt[i] = ((eta < 1 - eps) ? (jL[i] + 2 * jR[i]) / 3 : ((eta > 1 + eps) ? CadaTorrilhonPhiHatR_Eq13(jL[i], jR[i]) : 0.5 * ((1 - (eta - 1) / eps) * (jL[i] + 2 * jR[i]) / 3 + (1 + (eta + 1) / eps) * CadaTorrilhonPhiHatR_Eq13(jL[i], jR[i]))));
   }
@@ -264,11 +263,9 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist, const char *name, Re
 /* First a few functions useful to several different physics */
 static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx, PetscInt m, const PetscScalar *u, PetscScalar *X, PetscScalar *Xi, PetscReal *speeds)
 {
-  PetscInt i, j;
-
   PetscFunctionBeginUser;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < m; j++) Xi[i * m + j] = X[i * m + j] = (PetscScalar)(i == j);
+  for (PetscInt i = 0; i < m; i++) {
+    for (PetscInt j = 0; j < m; j++) Xi[i * m + j] = X[i * m + j] = (PetscScalar)(i == j);
     speeds[i] = PETSC_MAX_REAL; /* Indicates invalid */
   }
   PetscFunctionReturn(PETSC_SUCCESS);

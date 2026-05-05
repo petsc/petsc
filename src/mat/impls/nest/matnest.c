@@ -1850,9 +1850,8 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReu
     for (j = 0; j < nest->nc; ++j) {
       if (aii[i * nest->nc + j]) {
         PetscInt *nii = aii[i * nest->nc + j];
-        PetscInt  ir;
 
-        for (ir = rst; ir < ncr + rst; ++ir) {
+        for (PetscInt ir = rst; ir < ncr + rst; ++ir) {
           ii[ir + 1] += nii[1] - nii[0];
           nii++;
         }
@@ -1873,14 +1872,14 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReu
         PetscScalar *nvv = avv[i * nest->nc + j], vscale = 1.0, vshift = 0.0;
         PetscInt    *nii = aii[i * nest->nc + j];
         PetscInt    *njj = ajj[i * nest->nc + j];
-        PetscInt     ir, cst;
+        PetscInt     cst;
 
         if (trans[i * nest->nc + j]) {
           vscale = ((Mat_Shell *)nest->m[i][j]->data)->vscale;
           vshift = ((Mat_Shell *)nest->m[i][j]->data)->vshift;
         }
         PetscCall(ISStrideGetInfo(nest->isglobal.col[j], &cst, NULL));
-        for (ir = rst; ir < ncr + rst; ++ir) {
+        for (PetscInt ir = rst; ir < ncr + rst; ++ir) {
           PetscInt ij, rsize = nii[1] - nii[0], ist = ii[ir] + ci[ir];
 
           for (ij = 0; ij < rsize; ij++) {

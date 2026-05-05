@@ -75,10 +75,9 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
     PetscDrawCollectiveBegin(draw);
     /* first processor draws all node lines */
     if (rank == 0) {
-      PetscInt xmin_tmp;
       ymin = 0.0;
       ymax = 0.3;
-      for (xmin_tmp = 0; xmin_tmp < dd->M; xmin_tmp++) PetscCall(PetscDrawLine(draw, (double)xmin_tmp, ymin, (double)xmin_tmp, ymax, PETSC_DRAW_BLACK));
+      for (PetscInt xmin_tmp = 0; xmin_tmp < dd->M; xmin_tmp++) PetscCall(PetscDrawLine(draw, (double)xmin_tmp, ymin, (double)xmin_tmp, ymax, PETSC_DRAW_BLACK));
       xmin = 0.0;
       xmax = dd->M - 1;
       PetscCall(PetscDrawLine(draw, xmin, ymin, xmax, ymin, PETSC_DRAW_BLACK));

@@ -260,11 +260,10 @@ static PetscErrorCode CapsuleCreate(Capsule old, Capsule *newcapsule)
 
 static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const char parent[])
 {
-  PetscInt  t;
   PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  for (t = 0; t < c->ntypes; t++) {
+  for (PetscInt t = 0; t < c->ntypes; t++) {
     PetscCall(shouldExist(c->names[t], PETSC_FALSE, &flg));
     if (!flg) continue;
     PetscCall(PetscViewerHDF5WriteAttribute(v, parent, c->names[t], c->types[t], c->vals[t]));
@@ -275,8 +274,7 @@ static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const cha
 static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, const char parent[])
 {
   const char *group;
-  int         gd = 0;
-  PetscInt    t;
+  int         gd  = 0;
   PetscBool   flg = PETSC_FALSE, hasAttr = PETSC_FALSE;
   MPI_Comm    comm;
 
@@ -285,7 +283,7 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
   PetscCall(PetscViewerHDF5GetGroup(v, NULL, &group));
   PetscCall(hasGroupOrDataset(v, parent, &gd));
   /* check correct existence of attributes */
-  for (t = 0; t < c->ntypes; t++) {
+  for (PetscInt t = 0; t < c->ntypes; t++) {
     const char *attribute = c->names[t];
     PetscCall(shouldExist(attribute, PETSC_FALSE, &flg));
     PetscCall(PetscViewerHDF5HasAttribute(v, parent, attribute, &hasAttr));
@@ -325,11 +323,9 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
 
 static PetscErrorCode CapsuleDestroy(Capsule *c)
 {
-  PetscInt t;
-
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(PETSC_SUCCESS);
-  for (t = 0; t < (*c)->ntypes; t++) PetscCall(PetscFree((*c)->vals[t]));
+  for (PetscInt t = 0; t < (*c)->ntypes; t++) PetscCall(PetscFree((*c)->vals[t]));
   PetscCall(PetscFree(*c));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -580,7 +576,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
 static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
 {
   Capsule   capsules[nap][ns], c = NULL, old = NULL;
-  PetscInt  p, s;
+  PetscInt  p;
   int       gd;
   PetscBool flg = PETSC_FALSE, flg1 = PETSC_FALSE;
   MPI_Comm  comm;
@@ -606,7 +602,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
     if (flg || flg1) continue;
 
     /* assume here that groups and datasets are already in the file */
-    for (s = 0; s < ns; s++) {
+    for (PetscInt s = 0; s < ns; s++) {
       PetscCall(hasGroupOrDataset(viewer, datasets[s], &gd));
       if (!gd) continue;
       if (verbose) PetscCall(PetscPrintf(comm, "Write attributes to %s/%s\n", apaths[paths2apaths[p]], datasets[s]));
@@ -630,7 +626,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
       PetscCall(PetscViewerHDF5PushGroup(viewer, paths[p]));
     }
     PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
-    for (s = 0; s < ns; s++) {
+    for (PetscInt s = 0; s < ns; s++) {
       PetscCall(hasGroupOrDataset(viewer, datasets[s], &gd));
       if (verbose) PetscCall(PetscPrintf(comm, "%s/%s   %s\n", group, datasets[s], gd ? (gd == 1 ? "is group" : "is dataset") : "does not exist"));
 
@@ -648,7 +644,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
   }
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
+    for (PetscInt s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testAttributesPushedPath\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -657,7 +653,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
 static PetscErrorCode testObjectAttributes(PetscViewer viewer)
 {
   Capsule   capsules[nap][ns], c = NULL, old = NULL;
-  PetscInt  p, s;
+  PetscInt  p;
   PetscBool flg = PETSC_FALSE, flg1 = PETSC_FALSE;
   MPI_Comm  comm;
 
@@ -682,7 +678,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
     if (flg || flg1) continue;
 
     /* assume here that groups and datasets are already in the file */
-    for (s = 0; s < ns; s++) {
+    for (PetscInt s = 0; s < ns; s++) {
       Vec         v;
       size_t      len;
       const char *name = datasets[s];
@@ -716,7 +712,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
       PetscCall(PetscViewerHDF5PushGroup(viewer, paths[p]));
     }
     PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
-    for (s = 0; s < ns; s++) {
+    for (PetscInt s = 0; s < ns; s++) {
       Vec         v;
       size_t      len;
       const char *name = datasets[s];
@@ -741,7 +737,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
   }
   PetscCall(PetscViewerFlush(viewer));
   for (p = 0; p < nap; p++)
-    for (s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
+    for (PetscInt s = 0; s < ns; s++) PetscCall(CapsuleDestroy(&capsules[p][s]));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testObjectAttributes\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -754,7 +750,6 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   PetscReal reals[nv];
   char     *strings[nv];
   PetscBool flg;
-  PetscInt  i;
   MPI_Comm  comm;
 
   PetscFunctionBegin;
@@ -793,7 +788,7 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "%s = strings[2] != strings[0] = %s", strings[2], strings[0]);
   PetscCall(PetscStrcmp(strings[3], strings[1], &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "%s = strings[3] != strings[1] = %s", strings[3], strings[1]);
-  for (i = 0; i < nv; i++) PetscCall(PetscFree(strings[i]));
+  for (PetscInt i = 0; i < nv; i++) PetscCall(PetscFree(strings[i]));
 
   PetscCall(PetscViewerFlush(viewer));
   if (verbose) PetscCall(PetscPrintf(comm, "# END  testAttributesDefaultValue\n"));

@@ -266,11 +266,11 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
   PetscInt     count  = PETSC_STATIC_ARRAY_LENGTH(filterlist);
   PetscInt     index  = 2; /* PI42 */
   PetscReal    pid[3] = {1, 0, 0};
-  PetscInt     i, n;
+  PetscInt     n;
   PetscBool    set;
 
   PetscFunctionBegin;
-  for (i = 0; i < count; i++) names[i] = filterlist[i].name;
+  for (PetscInt i = 0; i < count; i++) names[i] = filterlist[i].name;
   PetscOptionsHeadBegin(PetscOptionsObject, "DSP adaptive controller options");
 
   PetscCall(PetscOptionsEList("-ts_adapt_dsp_filter", "Filter name", "TSAdaptDSPSetFilter", names, count, names[index], &index, &set));
@@ -283,12 +283,12 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
   PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_kbeta", "Filter parameters", "", dsp->kBeta, (n = 3, &n), &set));
   PetscCheck(!set || n, PetscObjectComm((PetscObject)adapt), PETSC_ERR_ARG_WRONG, "Must provide at least one value for parameter kbeta");
   if (set)
-    for (i = n; i < 3; i++) dsp->kBeta[i] = 0;
+    for (PetscInt i = n; i < 3; i++) dsp->kBeta[i] = 0;
 
   PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_alpha", "Filter parameters", "", dsp->Alpha, (n = 2, &n), &set));
   PetscCheck(!set || n, PetscObjectComm((PetscObject)adapt), PETSC_ERR_ARG_WRONG, "Must provide at least one value for parameter alpha");
   if (set)
-    for (i = n; i < 2; i++) dsp->Alpha[i] = 0;
+    for (PetscInt i = n; i < 2; i++) dsp->Alpha[i] = 0;
 
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

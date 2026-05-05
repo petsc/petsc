@@ -675,7 +675,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   if (!dm) PetscCall(SNESMonitorDefault(snes, its, fgnorm, vf));
   else {
     PetscSection s, gs;
-    PetscInt     Nf, f;
+    PetscInt     Nf;
 
     PetscCall(DMGetLocalSection(dm, &s));
     PetscCall(DMGetGlobalSection(dm, &gs));
@@ -687,7 +687,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     PetscCall(PetscViewerPushFormat(viewer, vf->format));
     PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e [", its, (double)fgnorm));
-    for (f = 0; f < Nf; ++f) {
+    for (PetscInt f = 0; f < Nf; ++f) {
       if (f) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
       PetscCall(PetscViewerASCIIPrintf(viewer, "%14.12e", (double)res[f]));
     }

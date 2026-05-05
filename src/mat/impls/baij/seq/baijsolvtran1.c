@@ -63,7 +63,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx)
   IS                 iscol = a->col, isrow = a->row;
   const PetscInt    *r, *c, *rout, *cout;
   const PetscInt    *diag = a->diag, n = a->mbs, *vi, *ai = a->i, *aj = a->j;
-  PetscInt           i, nz;
+  PetscInt           nz;
   const MatScalar   *aa = a->a, *v;
   PetscScalar        s1, *x, *t;
   const PetscScalar *b;
@@ -79,10 +79,10 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx)
   c = cout;
 
   /* copy the b into temp work space according to permutation */
-  for (i = 0; i < n; i++) t[i] = b[c[i]];
+  for (PetscInt i = 0; i < n; i++) t[i] = b[c[i]];
 
   /* forward solve the U^T */
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     v = aa + diag[i];
     /* multiply by the inverse of the block diagonal */
     s1 = (*v++) * t[i];
@@ -92,7 +92,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx)
     t[i] = s1;
   }
   /* backward solve the L^T */
-  for (i = n - 1; i >= 0; i--) {
+  for (PetscInt i = n - 1; i >= 0; i--) {
     v  = aa + diag[i] - 1;
     vi = aj + diag[i] - 1;
     nz = diag[i] - ai[i];
@@ -101,7 +101,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A, Vec bb, Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for (i = 0; i < n; i++) x[r[i]] = t[i];
+  for (PetscInt i = 0; i < n; i++) x[r[i]] = t[i];
 
   PetscCall(ISRestoreIndices(isrow, &rout));
   PetscCall(ISRestoreIndices(iscol, &cout));

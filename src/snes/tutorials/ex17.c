@@ -306,18 +306,16 @@ static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 static void g0_mass_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   const PetscInt Nc = dim;
-  PetscInt       c;
 
-  for (c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
 static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscInt Nc = dim;
-  PetscInt       c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) g3[((c * Nc + c) * dim + d) * dim + d] = 1.0;
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) g3[((c * Nc + c) * dim + d) * dim + d] = 1.0;
   }
 }
 

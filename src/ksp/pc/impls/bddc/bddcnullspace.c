@@ -107,11 +107,11 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscCall(MatFindZeroRows(shell_ctx->inv_smat, &zerorows));
   if (zerorows) { /* linearly dependent basis */
     const PetscInt *idxs;
-    PetscInt        i, nz;
+    PetscInt        nz;
 
     PetscCall(ISGetLocalSize(zerorows, &nz));
     PetscCall(ISGetIndices(zerorows, &idxs));
-    for (i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 1.0, INSERT_VALUES));
+    for (PetscInt i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 1.0, INSERT_VALUES));
     PetscCall(ISRestoreIndices(zerorows, &idxs));
     PetscCall(MatAssemblyBegin(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
@@ -120,11 +120,11 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscCall(MatSeqDenseInvertFactors_Private(shell_ctx->inv_smat));
   if (zerorows) { /* linearly dependent basis */
     const PetscInt *idxs;
-    PetscInt        i, nz;
+    PetscInt        nz;
 
     PetscCall(ISGetLocalSize(zerorows, &nz));
     PetscCall(ISGetIndices(zerorows, &idxs));
-    for (i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 0.0, INSERT_VALUES));
+    for (PetscInt i = 0; i < nz; i++) PetscCall(MatSetValue(shell_ctx->inv_smat, idxs[i], idxs[i], 0.0, INSERT_VALUES));
     PetscCall(ISRestoreIndices(zerorows, &idxs));
     PetscCall(MatAssemblyBegin(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(shell_ctx->inv_smat, MAT_FINAL_ASSEMBLY));

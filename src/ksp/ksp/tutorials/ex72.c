@@ -110,15 +110,14 @@ int main(int argc, char **args)
   if (nearnulldim) {
     MatNullSpace nullsp;
     Vec         *nullvecs;
-    PetscInt     i;
     PetscCall(PetscMalloc1(nearnulldim, &nullvecs));
-    for (i = 0; i < nearnulldim; i++) {
+    for (PetscInt i = 0; i < nearnulldim; i++) {
       PetscCall(VecCreate(PETSC_COMM_WORLD, &nullvecs[i]));
       PetscCall(VecLoad(nullvecs[i], viewer));
     }
     PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nearnulldim, nullvecs, &nullsp));
     PetscCall(MatSetNearNullSpace(A, nullsp));
-    for (i = 0; i < nearnulldim; i++) PetscCall(VecDestroy(&nullvecs[i]));
+    for (PetscInt i = 0; i < nearnulldim; i++) PetscCall(VecDestroy(&nullvecs[i]));
     PetscCall(PetscFree(nullvecs));
     PetscCall(MatNullSpaceDestroy(&nullsp));
   }

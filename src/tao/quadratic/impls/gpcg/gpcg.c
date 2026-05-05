@@ -205,8 +205,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 
 static PetscErrorCode GPCGGradProjections(Tao tao)
 {
-  TAO_GPCG                    *gpcg = (TAO_GPCG *)tao->data;
-  PetscInt                     i;
+  TAO_GPCG                    *gpcg   = (TAO_GPCG *)tao->data;
   PetscReal                    actred = -1.0, actred_max = 0.0, gAg, gtg = gpcg->gnorm, alpha;
   PetscReal                    f_new, gdx, stepsize;
   Vec                          DX = tao->stepdirection, XL = tao->XL, XU = tao->XU, Work = gpcg->Work;
@@ -217,7 +216,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
-  for (i = 0; i < gpcg->maxgpits; i++) {
+  for (PetscInt i = 0; i < gpcg->maxgpits; i++) {
     if (-actred <= (gpcg->pg_ftol) * actred_max) break;
     PetscCall(VecBoundGradientProjection(G, X, XL, XU, DX));
     PetscCall(VecScale(DX, -1.0));

@@ -20,9 +20,8 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheck(size > 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is an example with more than one process");
   if (rank) {
-    PetscInt i;
-    for (i = 0; i < 3; i++) ia[i] = 0;
-    for (i = 0; i < 5; i++) ia2[i] = 0;
+    for (PetscInt i = 0; i < 3; i++) ia[i] = 0;
+    for (PetscInt i = 0; i < 5; i++) ia2[i] = 0;
   }
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rect", &rect, NULL));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &ssbaij));

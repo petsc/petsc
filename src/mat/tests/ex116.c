@@ -127,7 +127,6 @@ int main(int argc, char **args)
     PetscScalar *arrayU, *arrayVT, *arrayErr, alpha = 1.0, beta = -1.0;
     Mat          Err;
     PetscBLASInt minMN, maxMN, im, in;
-    PetscInt     j;
     PetscReal    norm;
 
     PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &A_dense));
@@ -161,7 +160,7 @@ int main(int argc, char **args)
 
     /* Check Err = (U*Sigma*V^T - A) using BLASgemm() */
     /* U = U*Sigma */
-    for (j = 0; j < minMN; j++) { /* U[:,j] = sigma[j]*U[:,j] */
+    for (PetscInt j = 0; j < minMN; j++) { /* U[:,j] = sigma[j]*U[:,j] */
       for (i = 0; i < m; i++) arrayU[j * m + i] *= evals[j];
     }
     /* Err = U*VT - A = alpha*U*VT + beta*Err */

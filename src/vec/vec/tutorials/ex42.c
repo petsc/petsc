@@ -6,13 +6,12 @@ int main(int argc, char **args)
 {
   Vec         b;
   PetscViewer fd; /* viewer */
-  PetscInt    i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
-  for (i = 0; i < 1000; i++) {
+  for (PetscInt i = 0; i < 1000; i++) {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
     PetscCall(VecLoad(b, fd));
     PetscCall(VecView(b, fd));

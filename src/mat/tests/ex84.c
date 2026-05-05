@@ -52,7 +52,6 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
 
 int main(int argc, char **argv)
 {
-  PetscInt          i;
   PetscReal         norms0[NNORMS], norms1[NNORMS];
   PetscViewer       inp_viewer;
   PetscViewerFormat fmt;
@@ -87,7 +86,7 @@ int main(int argc, char **argv)
   PetscCall(MatViewFromOptions(data_mat, NULL, "-view_parallel_mat"));
   PetscCall(MatDestroy(&data_mat));
 
-  for (i = 0; i < NNORMS; i++) PetscCheck(PetscAbs(norms0[i] - norms1[i]) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
+  for (PetscInt i = 0; i < NNORMS; i++) PetscCheck(PetscAbs(norms0[i] - norms1[i]) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
 
   PetscCall(PetscFinalize());
   return 0;

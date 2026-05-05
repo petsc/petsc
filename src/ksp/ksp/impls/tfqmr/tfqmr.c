@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 
 static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
 {
-  PetscInt    i, m;
+  PetscInt    i;
   PetscScalar rho, rhoold, a, s, b, eta, etaold, psiold, cf;
   PetscReal   dp, dpold, w, dpest, tau, psi, cm;
   Vec         X, B, V, P, R, RP, T, T1, Q, U, D, AUQ;
@@ -74,7 +74,7 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
     PetscCall(VecAXPY(R, -a, AUQ)); /* r <- r - a K (u + q) */
     PetscCall(VecNorm(R, NORM_2, &dp));
     KSPCheckNorm(ksp, dp);
-    for (m = 0; m < 2; m++) {
+    for (PetscInt m = 0; m < 2; m++) {
       if (!m) w = PetscSqrtReal(dp * dpold);
       else w = dp;
       psi = w / tau;

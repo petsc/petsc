@@ -44,13 +44,13 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
           PetscCall(PetscDualSpaceGetNumDof(dspace, &numDof));
           if (perms || flips) {
             DM              K;
-            PetscInt        sph, spdepth;
+            PetscInt        spdepth;
             PetscSectionSym sym;
 
             PetscCall(PetscDualSpaceGetDM(dspace, &K));
             PetscCall(DMPlexGetDepth(K, &spdepth));
             PetscCall(PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)*section), depthLabel, &sym));
-            for (sph = 0; sph <= spdepth; sph++) {
+            for (PetscInt sph = 0; sph <= spdepth; sph++) {
               PetscDualSpace      hspace;
               PetscInt            kStart, kEnd;
               PetscInt            kConeSize, h = sph + (depth - spdepth);
@@ -336,12 +336,12 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
     for (d = 0; d < maxDof; ++d) indices[d] = d;
     PetscCall(PetscSectionGetChart(aSec, &aStart, &aEnd));
     for (a = aStart; a < aEnd; a++) {
-      PetscInt dof, f;
+      PetscInt dof;
 
       PetscCall(PetscSectionGetDof(aSec, a, &dof));
       if (dof) {
         /* if there are point-to-point constraints, then all dofs are constrained */
-        for (f = 0; f < Nf; f++) PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices));
+        for (PetscInt f = 0; f < Nf; f++) PetscCall(PetscSectionSetFieldConstraintIndices(section, a, f, indices));
       }
     }
   }
@@ -362,7 +362,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   PetscCall(PetscMalloc1(maxDof, &indices));
   for (d = 0; d < maxDof; ++d) indices[d] = -1;
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt cdof, d;
+    PetscInt cdof;
 
     PetscCall(PetscSectionGetConstraintDof(section, p, &cdof));
     if (cdof) {
@@ -377,13 +377,13 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
           PetscCall(PetscSectionGetFieldConstraintDof(section, p, f, &fcdof));
           /* Change constraint numbering from field component to local dof number */
           PetscCall(PetscSectionGetFieldConstraintIndices(section, p, f, &find));
-          for (d = 0; d < fcdof; ++d) indices[numConst + d] = find[d] + foff;
+          for (PetscInt d = 0; d < fcdof; ++d) indices[numConst + d] = find[d] + foff;
           numConst += fcdof;
           foff += fdof;
         }
         if (cdof != numConst) PetscCall(PetscSectionSetConstraintDof(section, p, numConst));
       } else {
-        for (d = 0; d < cdof; ++d) indices[d] = d;
+        for (PetscInt d = 0; d < cdof; ++d) indices[d] = d;
       }
       PetscCall(PetscSectionSetConstraintIndices(section, p, indices));
     }
@@ -474,12 +474,12 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS  dsBC;
-    PetscInt numBd, bd;
+    PetscInt numBd;
 
     PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC, NULL));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
     PetscCheck(Nf || !numBd, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
-    for (bd = 0; bd < numBd; ++bd) {
+    for (PetscInt bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;
       DMLabel                 label;
@@ -509,11 +509,11 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS  dsBC;
-    PetscInt numBd, bd;
+    PetscInt numBd;
 
     PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC, NULL));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
-    for (bd = 0; bd < numBd; ++bd) {
+    for (PetscInt bd = 0; bd < numBd; ++bd) {
       DMLabel                 label;
       const PetscInt         *comps;
       const PetscInt         *values;
@@ -587,12 +587,12 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     if (isFE[f]) {
       PetscFE         fe = (PetscFE)dm->fields[f].disc;
       const PetscInt *numFieldDof;
-      PetscInt        fedim, d;
+      PetscInt        fedim;
 
       PetscCall(PetscFEGetNumComponents(fe, &numComp[f]));
       PetscCall(PetscFEGetNumDof(fe, &numFieldDof));
       PetscCall(PetscFEGetSpatialDimension(fe, &fedim));
-      for (d = 0; d < PetscMin(dim, fedim) + 1; ++d) numDof[f * (dim + 1) + d] = numFieldDof[d];
+      for (PetscInt d = 0; d < PetscMin(dim, fedim) + 1; ++d) numDof[f * (dim + 1) + d] = numFieldDof[d];
     } else {
       PetscFV fv = (PetscFV)dm->fields[f].disc;
 
@@ -602,8 +602,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   }
   PetscCall(DMPlexGetDepth(dm, &depth));
   for (f = 0; f < Nf; ++f) {
-    PetscInt d;
-    for (d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+    for (PetscInt d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
   }
   PetscCall(DMCreateSectionPermutation(dm, &permIS, &blockStarts));
   PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, permIS, &section));

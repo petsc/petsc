@@ -277,7 +277,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMGetStratumIS(*dm, "boundary", 1, &is));
     if (is) {
       PetscReal faceCoord;
-      PetscInt  v;
 
       PetscCall(ISGetLocalSize(is, &Nf));
       PetscCall(ISGetIndices(is, &faces));
@@ -293,7 +292,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         for (d = 0; d < dim; ++d) {
           const PetscInt Nv = csize / dim;
           faceCoord         = 0.0;
-          for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
+          for (PetscInt v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
             if (PetscAbs(faceCoord - b * 1.0) < PETSC_SMALL) PetscCall(DMSetLabelValue(*dm, "Faces", faces[f], d * 2 + b + 1));
@@ -370,8 +369,7 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
 
 static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
 {
-  DM       dmAux, coordDM;
-  PetscInt f;
+  DM dmAux, coordDM;
 
   PetscFunctionBegin;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
@@ -379,7 +377,7 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
   if (!feAux) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMClone(dm, &dmAux));
   PetscCall(DMSetCoordinateDM(dmAux, coordDM));
-  for (f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject)feAux[f]));
+  for (PetscInt f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject)feAux[f]));
   PetscCall(DMCreateDS(dmAux));
   PetscCall(SetupMaterial(dm, dmAux, user));
   PetscCall(DMDestroy(&dmAux));

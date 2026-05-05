@@ -98,7 +98,7 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscScalar       *x, sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a, *v;
-  PetscInt           i, nz;
+  PetscInt           nz;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
@@ -107,7 +107,7 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(VecGetArray(xx, &x));
 
   /* backward solve the upper triangular */
-  for (i = n - 1; i >= 0; i--) {
+  for (PetscInt i = n - 1; i >= 0; i--) {
     v   = aa + adiag[i + 1] + 1;
     vi  = aj + adiag[i + 1] + 1;
     nz  = adiag[i] - adiag[i + 1] - 1;
@@ -129,7 +129,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscScalar       *x, sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a, *v;
-  PetscInt           i, nz;
+  PetscInt           nz;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
@@ -141,7 +141,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   x[0] = b[0];
   v    = aa;
   vi   = aj;
-  for (i = 1; i < n; i++) {
+  for (PetscInt i = 1; i < n; i++) {
     nz  = ai[i + 1] - ai[i];
     sum = b[i];
     PetscSparseDenseMinusDot(sum, x, v, vi, nz);
@@ -151,7 +151,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   }
 
   /* backward solve the upper triangular */
-  for (i = n - 1; i >= 0; i--) {
+  for (PetscInt i = n - 1; i >= 0; i--) {
     v   = aa + adiag[i + 1] + 1;
     vi  = aj + adiag[i + 1] + 1;
     nz  = adiag[i] - adiag[i + 1] - 1;

@@ -132,7 +132,6 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
     MPI_Aint     *aaddrs, *baddrs;
     MPIU_Count   *acounts, *bcounts;
     MPI_Datatype *atypes, *btypes;
-    PetscInt      i;
     PetscBool     same;
 
     PetscCall(PetscMalloc4(aintcount, &aints, aaddrcount, &aaddrs, acountcount, &acounts, atypecount, &atypes));
@@ -150,7 +149,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
           if (!same) {
             /* If the atype or btype were not predefined data types, then the types returned from MPI_Type_get_contents
            * will merely be equivalent to the types used in the construction, so we must recursively compare. */
-            for (i = 0; i < atypecount; i++) {
+            for (PetscInt i = 0; i < atypecount; i++) {
               PetscCall(MPIPetsc_Type_compare(atypes[i], btypes[i], &same));
               if (!same) break;
             }
@@ -158,7 +157,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
         }
       }
     }
-    for (i = 0; i < atypecount; i++) {
+    for (PetscInt i = 0; i < atypecount; i++) {
       PetscCall(MPIPetsc_Type_free(&atypes[i]));
       PetscCall(MPIPetsc_Type_free(&btypes[i]));
     }

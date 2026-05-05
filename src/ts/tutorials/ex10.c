@@ -928,7 +928,6 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
                           (double)PetscRealPart(dxD.T - fdxD.T)));
   }
   {
-    PetscInt    i;
     PetscReal   hx = 1.;
     PetscScalar a0;
     RDNode      n0[3], n1[3], d[3], fd[3];
@@ -940,7 +939,7 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     n0[2].E = 4.;
     n0[2].T = 2.;
     a0      = RDDiffusion(rd, hx, n0, 1, d);
-    for (i = 0; i < 3; i++) {
+    for (PetscInt i = 0; i < 3; i++) {
       PetscCall(PetscMemcpy(n1, n0, sizeof(n0)));
       n1[i].E += epsilon;
       fd[i].E = (RDDiffusion(rd, hx, n1, 1, 0) - a0) / epsilon;

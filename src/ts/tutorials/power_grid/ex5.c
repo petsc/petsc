@@ -94,7 +94,6 @@ PetscErrorCode SaveSolution(TS ts)
 PetscErrorCode WindSpeeds(AppCtx *user)
 {
   PetscScalar *x, *t, avg_dev, sum;
-  PetscInt     i;
 
   PetscFunctionBegin;
   user->cw       = 5;
@@ -115,7 +114,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscCall(VecDuplicate(user->wind_data, &user->t_wind));
 
   PetscCall(VecGetArray(user->t_wind, &t));
-  for (i = 0; i < user->nsamples; i++) t[i] = (i + 1) * tmax / user->nsamples;
+  for (PetscInt i = 0; i < user->nsamples; i++) t[i] = (i + 1) * tmax / user->nsamples;
   PetscCall(VecRestoreArray(user->t_wind, &t));
 
   /* Wind speed deviation = (-log(rand)/cw)^(1/kw) */
@@ -123,7 +122,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscCall(VecLog(user->wind_data));
   PetscCall(VecScale(user->wind_data, -1 / user->cw));
   PetscCall(VecGetArray(user->wind_data, &x));
-  for (i = 0; i < user->nsamples; i++) x[i] = PetscPowScalar(x[i], 1 / user->kw);
+  for (PetscInt i = 0; i < user->nsamples; i++) x[i] = PetscPowScalar(x[i], 1 / user->kw);
   PetscCall(VecRestoreArray(user->wind_data, &x));
   PetscCall(VecSum(user->wind_data, &sum));
   avg_dev = sum / user->nsamples;

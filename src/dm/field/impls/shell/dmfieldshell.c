@@ -52,35 +52,29 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
   if (D) {
     if (type == PETSC_SCALAR) {
       PetscScalar *sD = (PetscScalar *)D;
-      PetscInt     q;
 
       for (p = 0; p < numPoints * Nq; p++) {
-        for (q = 0; q < Nc; q++) {
+        for (PetscInt q = 0; q < Nc; q++) {
           PetscScalar d[3];
 
-          PetscInt i, j;
-
-          for (i = 0; i < dimC; i++) d[i] = sD[(p * Nc + q) * dimC + i];
-          for (i = 0; i < dimC; i++) sD[(p * Nc + q) * dimC + i] = 0.;
-          for (i = 0; i < dimC; i++) {
-            for (j = 0; j < dimC; j++) sD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
+          for (PetscInt i = 0; i < dimC; i++) d[i] = sD[(p * Nc + q) * dimC + i];
+          for (PetscInt i = 0; i < dimC; i++) sD[(p * Nc + q) * dimC + i] = 0.;
+          for (PetscInt i = 0; i < dimC; i++) {
+            for (PetscInt j = 0; j < dimC; j++) sD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
           }
         }
       }
     } else {
       PetscReal *rD = (PetscReal *)D;
-      PetscInt   q;
 
       for (p = 0; p < numPoints * Nq; p++) {
-        for (q = 0; q < Nc; q++) {
+        for (PetscInt q = 0; q < Nc; q++) {
           PetscReal d[3];
 
-          PetscInt i, j;
-
-          for (i = 0; i < dimC; i++) d[i] = rD[(p * Nc + q) * dimC + i];
-          for (i = 0; i < dimC; i++) rD[(p * Nc + q) * dimC + i] = 0.;
-          for (i = 0; i < dimC; i++) {
-            for (j = 0; j < dimC; j++) rD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
+          for (PetscInt i = 0; i < dimC; i++) d[i] = rD[(p * Nc + q) * dimC + i];
+          for (PetscInt i = 0; i < dimC; i++) rD[(p * Nc + q) * dimC + i] = 0.;
+          for (PetscInt i = 0; i < dimC; i++) {
+            for (PetscInt j = 0; j < dimC; j++) rD[(p * Nc + q) * dimC + i] += geom->J[(p * dimC + j) * dimC + i] * d[j];
           }
         }
       }
@@ -89,10 +83,9 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
   if (H) {
     if (type == PETSC_SCALAR) {
       PetscScalar *sH = (PetscScalar *)H;
-      PetscInt     q;
 
       for (p = 0; p < numPoints * Nq; p++) {
-        for (q = 0; q < Nc; q++) {
+        for (PetscInt q = 0; q < Nc; q++) {
           PetscScalar d[3][3];
 
           PetscInt i, j, k, l;
@@ -112,10 +105,9 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
       }
     } else {
       PetscReal *rH = (PetscReal *)H;
-      PetscInt   q;
 
       for (p = 0; p < numPoints * Nq; p++) {
-        for (q = 0; q < Nc; q++) {
+        for (PetscInt q = 0; q < Nc; q++) {
           PetscReal d[3][3];
 
           PetscInt i, j, k, l;

@@ -300,10 +300,9 @@ static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt, PetscInt n, cons
     PetscInt  id;
     PetscReal h, eff;
   } best = {-1, 0, 0}, trial = {-1, 0, 0}, current = {-1, 0, 0};
-  PetscInt i;
 
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     PetscReal optimal;
     trial.id  = i;
     optimal   = PetscPowReal((PetscReal)errors[i], (PetscReal)-1. / (safe * orders[i]));

@@ -5,24 +5,22 @@ static char help[] = "Tests MATH2OPUS\n\n";
 
 static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], PetscCtx ctx)
 {
-  PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0;
 
-  for (d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
+  for (PetscInt d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
   dist = PetscSqrtReal(diff);
   return PetscExpReal(-dist / clength);
 }
 
 static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], PetscCtx ctx)
 {
-  PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0, nx = 0.0, ny = 0.0;
 
-  for (d = 0; d < sdim; d++) nx += x[d] * x[d];
-  for (d = 0; d < sdim; d++) ny += y[d] * y[d];
-  for (d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
+  for (PetscInt d = 0; d < sdim; d++) nx += x[d] * x[d];
+  for (PetscInt d = 0; d < sdim; d++) ny += y[d] * y[d];
+  for (PetscInt d = 0; d < sdim; d++) diff += (x[d] - y[d]) * (x[d] - y[d]);
   dist = PetscSqrtReal(diff);
   return nx > ny ? PetscExpReal(-dist / clength) : PetscExpReal(-dist / clength) + 1.;
 }

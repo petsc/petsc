@@ -108,20 +108,17 @@ void f0_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], cons
 /* a \nabla u */
 void f1_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u[1] * u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u[1] * u_x[d];
 }
 /* \nabla u */
 void g2_la(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) g2[d] = u_x[d];
 }
 /* a */
 void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = u[1];
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = u[1];
 }
 
 /*
@@ -184,7 +181,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM             cdm = dm;
   const PetscInt dim = 2;
   PetscFE        fe[3];
-  PetscInt       f;
   MPI_Comm       comm;
 
   PetscFunctionBeginUser;
@@ -199,14 +195,14 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscCall(PetscObjectSetName((PetscObject)fe[2], "multiplier"));
   PetscCall(PetscFECopyQuadrature(fe[0], fe[2]));
   /* Set discretization and boundary conditions for each mesh */
-  for (f = 0; f < 3; ++f) PetscCall(DMSetField(dm, f, NULL, (PetscObject)fe[f]));
+  for (PetscInt f = 0; f < 3; ++f) PetscCall(DMSetField(dm, f, NULL, (PetscObject)fe[f]));
   PetscCall(DMCreateDS(dm));
   PetscCall(SetupProblem(dm, user));
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  for (f = 0; f < 3; ++f) PetscCall(PetscFEDestroy(&fe[f]));
+  for (PetscInt f = 0; f < 3; ++f) PetscCall(PetscFEDestroy(&fe[f]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

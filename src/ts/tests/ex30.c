@@ -347,18 +347,17 @@ PetscErrorCode gridToParticles_private(DM grid_dm[], DM globSwarmArray[], const 
 
 static void maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscReal shift, PetscScalar *u)
 {
-  PetscInt  i;
   PetscReal v2 = 0, theta = 2.0 * kt_m; /* theta = 2kT/mc^2 */
 
   if (shift != 0.) {
     v2 = 0;
-    for (i = 0; i < dim - 1; ++i) v2 += x[i] * x[i];
+    for (PetscInt i = 0; i < dim - 1; ++i) v2 += x[i] * x[i];
     v2 += (x[dim - 1] - shift) * (x[dim - 1] - shift);
     /* evaluate the shifted Maxwellian */
     u[0] += n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta));
   } else {
     /* compute the exponents, v^2 */
-    for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
+    for (PetscInt i = 0; i < dim; ++i) v2 += x[i] * x[i];
     /* evaluate the Maxwellian */
     u[0] += n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta));
   }

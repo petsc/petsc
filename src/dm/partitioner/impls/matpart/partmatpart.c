@@ -145,10 +145,8 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
 
   /* calculate vertex weights */
   if (vertSection) {
-    PetscInt v;
-
     PetscCall(PetscMalloc1(numVertices, &vwgt));
-    for (v = 0; v < numVertices; ++v) PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v]));
+    for (PetscInt v = 0; v < numVertices; ++v) PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v]));
   }
   PetscCall(MatPartitioningSetVertexWeights(p->mp, vwgt));
 
@@ -157,11 +155,10 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
 
   /* construct the PetscSection */
   {
-    PetscInt        v;
     const PetscInt *assignment_arr;
 
     PetscCall(ISGetIndices(is1, &assignment_arr));
-    for (v = 0; v < numVertices; ++v) PetscCall(PetscSectionAddDof(partSection, assignment_arr[v], 1));
+    for (PetscInt v = 0; v < numVertices; ++v) PetscCall(PetscSectionAddDof(partSection, assignment_arr[v], 1));
     PetscCall(ISRestoreIndices(is1, &assignment_arr));
   }
 

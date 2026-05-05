@@ -23,13 +23,12 @@ static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const 
 {
   PetscToken           t;
   const char          *ts;
-  PetscInt             i;
   PetscInt             ti[3];
   DMPlexStorageVersion v;
 
   PetscFunctionBegin;
   PetscCall(PetscTokenCreate(str, '.', &t));
-  for (i = 0; i < 3; i++) {
+  for (PetscInt i = 0; i < 3; i++) {
     PetscCall(PetscTokenFind(t, &ts));
     PetscCheck(ts, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
     PetscCall(PetscOptionsStringToInt(ts, &ti[i]));
@@ -539,12 +538,12 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)gv, VECSEQ, &isseq));
   if (format == PETSC_VIEWER_HDF5_VIZ) {
     /* Output visualization representation */
-    PetscInt numFields, f;
+    PetscInt numFields;
     DMLabel  cutLabel, cutVertexLabel = NULL;
 
     PetscCall(PetscSectionGetNumFields(section, &numFields));
     PetscCall(DMGetLabel(dm, "periodic_cut", &cutLabel));
-    for (f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       Vec                      subv;
       IS                       is;
       const char              *fname, *fgroup, *componentName, *fname_def = "unnamed";
@@ -861,13 +860,13 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
   for (p = pStart, c = 0, s = 0; p < pEnd; ++p) {
     if (gpoint[p] >= 0) {
       const PetscInt *cone, *ornt;
-      PetscInt        coneSize, cp;
+      PetscInt        coneSize;
 
       PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
       PetscCall(DMPlexGetCone(dm, p, &cone));
       PetscCall(DMPlexGetConeOrientation(dm, p, &ornt));
       coneSizes[s] = coneSize;
-      for (cp = 0; cp < coneSize; ++cp, ++c) {
+      for (PetscInt cp = 0; cp < coneSize; ++cp, ++c) {
         cones[c]        = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]] + 1) : gpoint[cone[cp]];
         orientations[c] = ornt[cp];
       }
@@ -981,7 +980,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Private(DM dm, IS globalPointNumbe
 {
   IS          globalPointNumbers0, strataPermutation;
   const char *coneSizesName, *conesName, *orientationsName;
-  PetscInt    depth, d;
+  PetscInt    depth;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -1022,7 +1021,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Private(DM dm, IS globalPointNumbe
   PetscCall(PetscObjectSetName((PetscObject)strataPermutation, "permutation"));
   PetscCall(ISView(strataPermutation, viewer));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "strata"));
-  for (d = 0; d <= depth; d++) {
+  for (PetscInt d = 0; d <= depth; d++) {
     PetscInt pStart, pEnd;
     char     group[128];
 
@@ -1476,7 +1475,7 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
     const char     *name;
     IS              valueIS, pvalueIS, globalValueIS;
     const PetscInt *values;
-    PetscInt        numValues, v;
+    PetscInt        numValues;
     PetscBool       isDepth, isCelltype, output;
 
     PetscCall(DMGetLabelByNum(dm, l, &label));
@@ -1498,7 +1497,7 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
     PetscCall(ISSortRemoveDups(globalValueIS));
     PetscCall(ISGetLocalSize(globalValueIS, &numValues));
     PetscCall(ISGetIndices(globalValueIS, &values));
-    for (v = 0; v < numValues; ++v) {
+    for (PetscInt v = 0; v < numValues; ++v) {
       IS              stratumIS, globalStratumIS;
       const PetscInt *spoints = NULL;
       PetscInt       *gspoints, n = 0, gn, p;
@@ -2521,10 +2520,10 @@ static PetscErrorCode DMPlexTopologyBuildFromLayers_Private(DM dm, PetscInt dept
     PetscCall(DMPlexGetConeSection(dm, &coneSection));
     for (d = 0; d <= depth; d++) {
       const PlexLayer l = layers[d];
-      PetscInt        n, q;
+      PetscInt        n;
 
       PetscCall(PetscSectionGetChart(l->coneSizesSection, NULL, &n));
-      for (q = 0; q < n; q++) {
+      for (PetscInt q = 0; q < n; q++) {
         const PetscInt p = l->offset + q;
         PetscInt       coneSize;
 
@@ -2544,7 +2543,7 @@ static PetscErrorCode DMPlexTopologyBuildFromLayers_Private(DM dm, PetscInt dept
     PetscCall(DMPlexGetConeOrientations(dm, &ornts));
     for (d = 1; d <= depth; d++) {
       const PlexLayer l = layers[d];
-      PetscInt        i, lConesSize;
+      PetscInt        lConesSize;
       PetscInt       *lCones;
       const PetscInt *lOrnts;
       PetscInt       *pCones = &cones[l->conesOffset];
@@ -2574,7 +2573,7 @@ static PetscErrorCode DMPlexTopologyBuildFromLayers_Private(DM dm, PetscInt dept
       }
       PetscCall(ISGetIndices(l->orientationsIS, &lOrnts));
       /* Set cones, need to add stratum offset */
-      for (i = 0; i < lConesSize; i++) {
+      for (PetscInt i = 0; i < lConesSize; i++) {
         pCones[i] = lCones[i] + layers[d - 1]->offset; /* cone points of current layer are points of previous layer */
         pOrnts[i] = lOrnts[i];
       }

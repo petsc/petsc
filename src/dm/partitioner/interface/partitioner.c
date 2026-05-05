@@ -345,7 +345,6 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   if (part->viewerGraph) {
     PetscViewer viewer = part->viewerGraph;
     PetscBool   isascii;
-    PetscInt    v, i;
     PetscMPIInt rank;
 
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
@@ -353,12 +352,12 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     if (isascii) {
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %" PetscInt_FMT "\n", rank, numVertices));
-      for (v = 0; v < numVertices; ++v) {
+      for (PetscInt v = 0; v < numVertices; ++v) {
         const PetscInt s = start[v];
         const PetscInt e = start[v + 1];
 
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]  ", rank));
-        for (i = s; i < e; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " ", adjacency[i]));
+        for (PetscInt i = s; i < e; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " ", adjacency[i]));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%" PetscInt_FMT "-%" PetscInt_FMT ")\n", s, e));
       }
       PetscCall(PetscViewerFlush(viewer));

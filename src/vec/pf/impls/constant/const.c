@@ -2,12 +2,11 @@
 
 static PetscErrorCode PFApply_Constant(void *value, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
-  PetscInt    i;
   PetscScalar v = ((PetscScalar *)value)[0];
 
   PetscFunctionBegin;
   n *= (PetscInt)PetscRealPart(((PetscScalar *)value)[1]);
-  for (i = 0; i < n; i++) y[i] = v;
+  for (PetscInt i = 0; i < n; i++) y[i] = v;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -78,11 +77,9 @@ PETSC_INTERN PetscErrorCode PFCreate_Quick(PF pf, PetscErrorCode (*function)(voi
 
 static PetscErrorCode PFApply_Identity(void *value, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   n *= *(PetscInt *)value;
-  for (i = 0; i < n; i++) y[i] = x[i];
+  for (PetscInt i = 0; i < n; i++) y[i] = x[i];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

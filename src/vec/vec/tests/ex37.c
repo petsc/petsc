@@ -241,7 +241,6 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
 {
   PetscMPIInt size;
   Vec         v;
-  PetscInt    i;
   PetscScalar vx;
 
   PetscFunctionBegin;
@@ -251,7 +250,7 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   if (size == 1) PetscCall(VecSetType(v, VECSEQ));
   else PetscCall(VecSetType(v, VECMPI));
 
-  for (i = 0; i < length; i++) {
+  for (PetscInt i = 0; i < length; i++) {
     vx = (PetscScalar)(start_value + i * stride);
     PetscCall(VecSetValue(v, i, vx, INSERT_VALUES));
   }

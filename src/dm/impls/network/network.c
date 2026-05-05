@@ -923,12 +923,11 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
   DM_Network         *network   = (DM_Network *)dm->data;
   DMNetworkComponent *component = NULL, *newcomponent = NULL;
   PetscBool           flg = PETSC_FALSE;
-  PetscInt            i;
 
   PetscFunctionBegin;
   if (!network->component) PetscCall(PetscCalloc1(network->max_comps_registered, &network->component));
 
-  for (i = 0; i < network->ncomponent; i++) {
+  for (PetscInt i = 0; i < network->ncomponent; i++) {
     PetscCall(PetscStrcmp(network->component[i].name, name, &flg));
     if (flg) {
       *key = i;
@@ -941,7 +940,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
     network->max_comps_registered += 2;
     PetscCall(PetscCalloc1(network->max_comps_registered, &newcomponent));
     /* Copy over the previous component info */
-    for (i = 0; i < network->ncomponent; i++) {
+    for (PetscInt i = 0; i < network->ncomponent; i++) {
       PetscCall(PetscStrncpy(newcomponent[i].name, network->component[i].name, sizeof(newcomponent[i].name)));
       newcomponent[i].size = network->component[i].size;
     }
@@ -2709,7 +2708,6 @@ static PetscErrorCode DMNetworkDestroyComponentData(DM dm)
 PetscErrorCode DMDestroy_Network(DM dm)
 {
   DM_Network *network = (DM_Network *)dm->data;
-  PetscInt    j;
 
   PetscFunctionBegin;
   /*
@@ -2762,7 +2760,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
     /* Developer Note: I'm not sure if vltog can be reused or not, as I'm not sure what it's purpose is. I
      naively think it can be reused. */
     PetscCall(PetscFree(network->cloneshared->vltog));
-    for (j = 0; j < network->cloneshared->Nsvtx; j++) PetscCall(PetscFree(network->cloneshared->svtx[j].sv));
+    for (PetscInt j = 0; j < network->cloneshared->Nsvtx; j++) PetscCall(PetscFree(network->cloneshared->svtx[j].sv));
     PetscCall(PetscFree(network->cloneshared->svtx));
     PetscCall(PetscFree2(network->cloneshared->subnetedge, network->cloneshared->subnetvtx));
     PetscCall(PetscHMapIDestroy(&network->cloneshared->svtable));

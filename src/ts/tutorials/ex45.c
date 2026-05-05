@@ -115,10 +115,8 @@ Exact 3D solution:
 */
 static PetscErrorCode mms_trig_lin(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-
   *u = dim * PetscSqr(PETSC_PI) * time;
-  for (d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
   return PETSC_SUCCESS;
 }
 
@@ -130,9 +128,8 @@ static PetscErrorCode mms_trig_lin_t(PetscInt dim, PetscReal time, const PetscRe
 
 static void f0_trig_lin(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   f0[0] = u_t[0];
-  for (d = 0; d < dim; ++d) f0[0] += PetscSqr(PETSC_PI) * (PetscCosReal(PETSC_PI * x[d]) - 1.0);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += PetscSqr(PETSC_PI) * (PetscCosReal(PETSC_PI * x[d]) - 1.0);
 }
 
 /*
@@ -152,10 +149,8 @@ Exact 3D solution:
 */
 static PetscErrorCode mms_trig_trig(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-
   *u = PetscSqr(PETSC_PI) * PetscCosReal(time);
-  for (d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
   return PETSC_SUCCESS;
 }
 
@@ -167,9 +162,8 @@ static PetscErrorCode mms_trig_trig_t(PetscInt dim, PetscReal time, const PetscR
 
 static void f0_trig_trig_exp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   f0[0] -= PetscSqr(PETSC_PI) * PetscSinReal(t);
-  for (d = 0; d < dim; ++d) f0[0] += PetscSqr(PETSC_PI) * PetscCosReal(PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += PetscSqr(PETSC_PI) * PetscCosReal(PETSC_PI * x[d]);
 }
 static void f0_trig_trig(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {

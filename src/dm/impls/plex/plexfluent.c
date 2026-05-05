@@ -59,9 +59,8 @@ static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *bu
 
 static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary, PetscInt *numClosingParens)
 {
-  int      fdes = 0;
-  FILE    *file;
-  PetscInt i;
+  int   fdes = 0;
+  FILE *file;
 
   PetscFunctionBegin;
   *numClosingParens = 0;
@@ -77,7 +76,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     unsigned int ibuf;
     int          snum;
     /* Parse hexadecimal ascii integers */
-    for (i = 0; i < count; i++) {
+    for (PetscInt i = 0; i < count; i++) {
       size_t len;
 
       PetscCall(PetscViewerRead(viewer, cbuf, 1, NULL, PETSC_STRING));
@@ -97,7 +96,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     PetscCall(PetscMalloc1(count, &ibuf));
     PetscCall(PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM));
     PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, count));
-    for (i = 0; i < count; i++) ((PetscInt *)data)[i] = ibuf[i];
+    for (PetscInt i = 0; i < count; i++) ((PetscInt *)data)[i] = ibuf[i];
     PetscCall(PetscFree(ibuf));
 
   } else if (binary && dtype == PETSC_SCALAR) {
@@ -106,7 +105,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     PetscCall(PetscMalloc1(count, &fbuf));
     PetscCall(PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT));
     PetscCall(PetscByteSwap(fbuf, PETSC_FLOAT, count));
-    for (i = 0; i < count; i++) ((PetscScalar *)data)[i] = fbuf[i];
+    for (PetscInt i = 0; i < count; i++) ((PetscScalar *)data)[i] = fbuf[i];
     PetscCall(PetscFree(fbuf));
   } else {
     PetscCall(PetscViewerASCIIRead(viewer, data, count, NULL, dtype));

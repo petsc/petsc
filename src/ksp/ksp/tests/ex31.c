@@ -85,9 +85,8 @@ int main(int argc, char **args)
     PetscCall(ISPartitioningCount(mis, size, count));
     PetscCall(ISDestroy(&mis));
     if (displayIS && rank == 0) {
-      PetscInt i;
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "[ %d ] count:\n", rank));
-      for (i = 0; i < size; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, count[i]));
+      for (PetscInt i = 0; i < size; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, count[i]));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
     }
 

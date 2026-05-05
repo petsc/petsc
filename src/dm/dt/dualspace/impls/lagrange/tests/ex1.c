@@ -270,7 +270,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       }
     }
     if (dim <= 2 && spintdim) {
-      PetscInt numFaces, o;
+      PetscInt numFaces;
 
       {
         DMPolytopeType ct;
@@ -278,7 +278,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         PetscCall(DMPlexGetCellType(K, 0, &ct));
         numFaces = DMPolytopeTypeGetNumArrangements(ct) / 2;
       }
-      for (o = -numFaces; o < numFaces; ++o) {
+      for (PetscInt o = -numFaces; o < numFaces; ++o) {
         Mat symMat;
 
         PetscCall(PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(sp, o, &symMat));
@@ -330,9 +330,7 @@ int main(int argc, char **argv)
     PetscInt formDegree;
 
     for (formDegree = PetscMin(0, -dim + 1); formDegree <= dim; formDegree++) {
-      PetscInt nCopies;
-
-      for (nCopies = 1; nCopies <= 3; nCopies++) PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, tensorCell, continuous, nCopies));
+      for (PetscInt nCopies = 1; nCopies <= 3; nCopies++) PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, tensorCell, continuous, nCopies));
     }
   }
   PetscCall(DMDestroy(&dm));

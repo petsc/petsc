@@ -830,7 +830,6 @@ PetscErrorCode PetscDAEnsembleInitialize(PetscDA da, Vec x0, PetscReal obs_error
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
 
   Vec       member, col, x_mean;
-  PetscInt  i;
   PetscReal scale;
 
   PetscFunctionBegin;
@@ -849,14 +848,14 @@ PetscErrorCode PetscDAEnsembleInitialize(PetscDA da, Vec x0, PetscReal obs_error
   scale = PetscSqrtReal((PetscReal)en->size / (PetscReal)(en->size - 1));
 
   /* Populate the Gaussian draws with scaled standard deviation */
-  for (i = 0; i < en->size; i++) {
+  for (PetscInt i = 0; i < en->size; i++) {
     PetscCall(VecSetRandomGaussian(member, rng, 0.0, obs_error_std * scale));
     PetscCall(PetscDAEnsembleSetMember(da, i, member));
   }
   /* get mean of perturbations */
   PetscCall(PetscDAEnsembleComputeMean(da, x_mean));
   /* remove mean and add x0 */
-  for (i = 0; i < en->size; i++) {
+  for (PetscInt i = 0; i < en->size; i++) {
     PetscCall(MatDenseGetColumnVecWrite(en->ensemble, i, &col));
     PetscCall(VecAXPY(col, -1.0, x_mean));
     PetscCall(VecAXPY(col, 1.0, x0));

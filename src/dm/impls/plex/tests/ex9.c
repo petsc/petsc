@@ -63,10 +63,8 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
 
   /* We are specifying the scalar dof, so augment it for multiple components */
   {
-    PetscInt f, d;
-
-    for (f = 0; f < options->numFields; ++f) {
-      for (d = 0; d <= options->dim; ++d) options->numDof[f * (options->dim + 1) + d] *= options->numComponents[f];
+    for (PetscInt f = 0; f < options->numFields; ++f) {
+      for (PetscInt d = 0; d <= options->dim; ++d) options->numDof[f * (options->dim + 1) + d] *= options->numComponents[f];
     }
   }
 

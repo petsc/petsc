@@ -14,7 +14,6 @@ int main(int argc, char **argv)
   TaoTerm     data_term;
   PetscRandom rand;
   Tao         tao;
-  PetscInt    i, j;
   PetscReal   val, density = 0.3;
   PetscBool   test_quad_mat = PETSC_FALSE;
 
@@ -40,8 +39,8 @@ int main(int argc, char **argv)
   PetscCall(MatSetType(A, MATAIJ));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
+  for (PetscInt i = 0; i < m; i++) {
+    for (PetscInt j = 0; j < n; j++) {
       PetscCall(PetscRandomGetValueReal(rand, &val));
       // Optionally make it sparse: only insert some entries
       if (val < density) PetscCall(MatSetValue(A, i, j, val, INSERT_VALUES));

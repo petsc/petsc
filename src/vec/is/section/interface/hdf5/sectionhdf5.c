@@ -98,7 +98,7 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
   for (f = 0; f < numFields; ++f) {
     char        fname[PETSC_MAX_PATH_LEN];
     const char *fieldName;
-    PetscInt    fieldComponents, c;
+    PetscInt    fieldComponents;
 
     PetscCall(PetscSNPrintf(fname, sizeof(fname), "field%" PetscInt_FMT, f));
     PetscCall(PetscViewerHDF5PushGroup(viewer, fname));
@@ -106,7 +106,7 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
     PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "fieldName", PETSC_STRING, fieldName));
     PetscCall(PetscSectionGetFieldComponents(s, f, &fieldComponents));
     PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "fieldComponents", PETSC_INT, (void *)&fieldComponents));
-    for (c = 0; c < fieldComponents; ++c) {
+    for (PetscInt c = 0; c < fieldComponents; ++c) {
       char        cname[PETSC_MAX_PATH_LEN];
       const char *componentName;
 
@@ -293,7 +293,7 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
   for (f = 0; f < numFields; ++f) {
     char     fname[PETSC_MAX_PATH_LEN];
     char    *fieldName;
-    PetscInt fieldComponents, c;
+    PetscInt fieldComponents;
 
     PetscCall(PetscSNPrintf(fname, sizeof(fname), "field%" PetscInt_FMT, f));
     PetscCall(PetscViewerHDF5PushGroup(viewer, fname));
@@ -302,7 +302,7 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
     PetscCall(PetscFree(fieldName));
     PetscCall(PetscViewerHDF5ReadAttribute(viewer, NULL, "fieldComponents", PETSC_INT, NULL, (void *)&fieldComponents));
     PetscCall(PetscSectionSetFieldComponents(s, f, fieldComponents));
-    for (c = 0; c < fieldComponents; ++c) {
+    for (PetscInt c = 0; c < fieldComponents; ++c) {
       char  cname[PETSC_MAX_PATH_LEN];
       char *componentName;
 

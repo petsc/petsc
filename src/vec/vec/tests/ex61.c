@@ -4,7 +4,6 @@ static char help[] = "Test VecSetValuesCOO\n\n";
 int main(int argc, char **args)
 {
   Vec            x, y;
-  PetscInt       k;
   const PetscInt M = 18;
   PetscMPIInt    rank, size;
   PetscBool      equal;
@@ -38,7 +37,7 @@ int main(int argc, char **args)
   PetscCall(VecSetOption(x, VEC_IGNORE_OFF_PROC_ENTRIES, ignoreRemote));
   PetscCall(VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE));
 
-  for (k = 0; k < coo[rank].n; k++) {
+  for (PetscInt k = 0; k < coo[rank].n; k++) {
     PetscScalar val = (PetscScalar)coo[rank].i[k];
     PetscCall(VecSetValues(x, 1, &coo[rank].i[k], &val, ADD_VALUES));
   }
@@ -53,7 +52,7 @@ int main(int argc, char **args)
   PetscCall(VecSetPreallocationCOO(y, coo[rank].n, coo[rank].i));
 
   PetscCall(PetscMalloc1(coo[rank].n, &vals));
-  for (k = 0; k < coo[rank].n; k++) vals[k] = (PetscScalar)coo[rank].i[k];
+  for (PetscInt k = 0; k < coo[rank].n; k++) vals[k] = (PetscScalar)coo[rank].i[k];
   PetscCall(VecSetValuesCOO(y, vals, ADD_VALUES));
 
   PetscCall(VecEqual(x, y, &equal));

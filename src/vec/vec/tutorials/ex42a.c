@@ -6,7 +6,6 @@ int main(int argc, char **args)
 {
   Vec         b;
   PetscViewer fd;
-  PetscInt    i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -14,7 +13,7 @@ int main(int argc, char **args)
   PetscCall(PetscViewerSocketOpen(PETSC_COMM_WORLD, "server", PETSC_DEFAULT, &fd));
 
   PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 10000, PETSC_DECIDE, &b));
-  for (i = 0; i < 1000; i++) {
+  for (PetscInt i = 0; i < 1000; i++) {
     PetscCall(VecView(b, fd));
     PetscCall(VecDestroy(&b));
     PetscCall(VecCreate(PETSC_COMM_WORLD, &b));

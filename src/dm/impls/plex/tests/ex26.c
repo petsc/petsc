@@ -417,14 +417,14 @@ int main(int argc, char **argv)
       /* We know that all cells in a cell set have the same type, so we can dimension cval and xyz once for each cell set */
       IS              cellIS;
       const PetscInt *cellID;
-      PetscInt        numCells, cell;
+      PetscInt        numCells;
       PetscScalar    *cval = NULL, *xyz = NULL;
       PetscInt        clSize, cdimCoord, c;
 
       PetscCall(DMGetStratumIS(dmS, "Cell Sets", csID[set], &cellIS));
       PetscCall(ISGetIndices(cellIS, &cellID));
       PetscCall(ISGetSize(cellIS, &numCells));
-      for (cell = 0; cell < numCells; cell++) {
+      for (PetscInt cell = 0; cell < numCells; cell++) {
         PetscCall(DMPlexVecGetClosure(dmS, NULL, S, cellID[cell], &clSize, &cval));
         PetscCall(DMPlexVecGetClosure(dmS, coordSection, coord, cellID[cell], &cdimCoord, &xyz));
         cval[0] = rank;

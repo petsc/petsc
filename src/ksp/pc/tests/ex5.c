@@ -332,14 +332,14 @@ PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat)
 
 PetscErrorCode CalculateRhs(Vec u)
 {
-  PetscInt    i, n;
+  PetscInt    n;
   PetscReal   h;
   PetscScalar uu;
 
   PetscFunctionBegin;
   PetscCall(VecGetSize(u, &n));
   h = 1.0 / ((PetscReal)(n + 1));
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     uu = 2.0 * h * h;
     PetscCall(VecSetValues(u, 1, &i, &uu, INSERT_VALUES));
   }
@@ -348,14 +348,13 @@ PetscErrorCode CalculateRhs(Vec u)
 
 PetscErrorCode CalculateSolution(PetscInt n, Vec *solution)
 {
-  PetscInt    i;
   PetscReal   h, x = 0.0;
   PetscScalar uu;
 
   PetscFunctionBegin;
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, solution));
   h = 1.0 / ((PetscReal)(n + 1));
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     x += h;
     uu = x * (1. - x);
     PetscCall(VecSetValues(*solution, 1, &i, &uu, INSERT_VALUES));

@@ -149,7 +149,7 @@ static PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscReal   q1, q2, xnorm, step1, step2, rnrm = 0.0, btx, xtax;
   PetscReal   ptasp, rtr, wtasp, bstp;
   PetscReal   dzero = 0.0, bsnrm = 0.0;
-  PetscInt    i, maxit;
+  PetscInt    maxit;
   PC          pc = ksp->pc;
   PetscBool   diagonalscale;
 
@@ -199,7 +199,7 @@ static PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscCall(VecCopy(R, P));
   PetscCall(VecDotRealPart(R, R, &rtr));
 
-  for (i = 0; i <= maxit; i++) {
+  for (PetscInt i = 0; i <= maxit; i++) {
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));

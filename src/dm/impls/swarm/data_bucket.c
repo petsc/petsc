@@ -3,11 +3,9 @@
 /* string helpers */
 PetscErrorCode DMSwarmDataFieldStringInList(const char name[], const PetscInt N, const DMSwarmDataField gfield[], PetscBool *val)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   *val = PETSC_FALSE;
-  for (i = 0; i < N; ++i) {
+  for (PetscInt i = 0; i < N; ++i) {
     PetscBool flg;
     PetscCall(PetscStrcmp(name, gfield[i]->name, &flg));
     if (flg) {
@@ -20,11 +18,9 @@ PetscErrorCode DMSwarmDataFieldStringInList(const char name[], const PetscInt N,
 
 PetscErrorCode DMSwarmDataFieldStringFindInList(const char name[], const PetscInt N, const DMSwarmDataField gfield[], PetscInt *index)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   *index = -1;
-  for (i = 0; i < N; ++i) {
+  for (PetscInt i = 0; i < N; ++i) {
     PetscBool flg;
     PetscCall(PetscStrcmp(name, gfield[i]->name, &flg));
     if (flg) {
@@ -675,14 +671,14 @@ PetscErrorCode DMSwarmDataBucketDuplicateFields(DMSwarmDataBucket dbA, DMSwarmDa
 PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1, DMSwarmDataBucket db2)
 {
   PetscInt n_mp_points1, n_mp_points2;
-  PetscInt n_mp_points1_new, p;
+  PetscInt n_mp_points1_new;
 
   PetscFunctionBegin;
   PetscCall(DMSwarmDataBucketGetSizes(db1, &n_mp_points1, NULL, NULL));
   PetscCall(DMSwarmDataBucketGetSizes(db2, &n_mp_points2, NULL, NULL));
   n_mp_points1_new = n_mp_points1 + n_mp_points2;
   PetscCall(DMSwarmDataBucketSetSizes(db1, n_mp_points1_new, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
-  for (p = 0; p < n_mp_points2; ++p) {
+  for (PetscInt p = 0; p < n_mp_points2; ++p) {
     /* db1 <<== db2 */
     PetscCall(DMSwarmDataBucketCopyPoint(db2, p, db1, n_mp_points1 + p));
   }
@@ -692,13 +688,12 @@ PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1, DMSwarmDataB
 /* helpers for parallel send/recv */
 PetscErrorCode DMSwarmDataBucketCreatePackedArray(DMSwarmDataBucket db, size_t *bytes, void **buf)
 {
-  PetscInt f;
-  size_t   sizeof_marker_contents;
-  void    *buffer;
+  size_t sizeof_marker_contents;
+  void  *buffer;
 
   PetscFunctionBegin;
   sizeof_marker_contents = 0;
-  for (f = 0; f < db->nfields; ++f) {
+  for (PetscInt f = 0; f < db->nfields; ++f) {
     DMSwarmDataField df = db->field[f];
     sizeof_marker_contents += df->atomic_size;
   }
@@ -721,13 +716,12 @@ PetscErrorCode DMSwarmDataBucketDestroyPackedArray(DMSwarmDataBucket db, void **
 
 PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db, const PetscInt index, void *buf)
 {
-  PetscInt f;
-  void    *data, *data_p;
-  size_t   asize, offset;
+  void  *data, *data_p;
+  size_t asize, offset;
 
   PetscFunctionBegin;
   offset = 0;
-  for (f = 0; f < db->nfields; ++f) {
+  for (PetscInt f = 0; f < db->nfields; ++f) {
     DMSwarmDataField df = db->field[f];
 
     asize  = df->atomic_size;
@@ -741,13 +735,12 @@ PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db, const Pets
 
 PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket db, const PetscInt idx, void *data)
 {
-  PetscInt f;
-  void    *data_p;
-  size_t   offset;
+  void  *data_p;
+  size_t offset;
 
   PetscFunctionBegin;
   offset = 0;
-  for (f = 0; f < db->nfields; ++f) {
+  for (PetscInt f = 0; f < db->nfields; ++f) {
     DMSwarmDataField df = db->field[f];
 
     data_p = (void *)((char *)data + offset);

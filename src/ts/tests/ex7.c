@@ -17,7 +17,7 @@ PetscErrorCode f(PetscReal t, Vec UV, Vec F)
 {
   const PetscScalar *u, *v;
   PetscScalar       *f;
-  PetscInt           n, i;
+  PetscInt           n;
 
   PetscFunctionBeginUser;
   PetscCall(VecGetLocalSize(UV, &n));
@@ -25,7 +25,7 @@ PetscErrorCode f(PetscReal t, Vec UV, Vec F)
   PetscCall(VecGetArrayRead(UV, &u));
   v = u + n;
   PetscCall(VecGetArrayWrite(F, &f));
-  for (i = 0; i < n; i++) f[i] = u[i] + v[i];
+  for (PetscInt i = 0; i < n; i++) f[i] = u[i] + v[i];
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -38,7 +38,7 @@ PetscErrorCode F(PetscReal t, Vec UV, Vec F)
 {
   const PetscScalar *u, *v;
   PetscScalar       *f;
-  PetscInt           n, i;
+  PetscInt           n;
 
   PetscFunctionBeginUser;
   PetscCall(VecGetLocalSize(UV, &n));
@@ -46,7 +46,7 @@ PetscErrorCode F(PetscReal t, Vec UV, Vec F)
   PetscCall(VecGetArrayRead(UV, &u));
   v = u + n;
   PetscCall(VecGetArrayWrite(F, &f));
-  for (i = 0; i < n; i++) f[i] = u[i] - v[i];
+  for (PetscInt i = 0; i < n; i++) f[i] = u[i] - v[i];
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
   PetscFunctionReturn(PETSC_SUCCESS);

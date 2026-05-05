@@ -66,11 +66,10 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
 PetscErrorCode ConstructProblem2(Mat A, Vec b)
 {
   PetscInt N = 10, constraintSize = 4;
-  PetscInt row;
 
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, -3.0));
-  for (row = 0; row < constraintSize; ++row) {
+  for (PetscInt row = 0; row < constraintSize; ++row) {
     PetscScalar vals[2] = {1.0, 1.0};
     PetscInt    cols[2];
 
@@ -78,12 +77,12 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
     cols[1] = row + N - constraintSize;
     PetscCall(MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES));
   }
-  for (row = constraintSize; row < N - constraintSize; ++row) {
+  for (PetscInt row = constraintSize; row < N - constraintSize; ++row) {
     PetscScalar val = 1.0;
 
     PetscCall(MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES));
   }
-  for (row = N - constraintSize; row < N; ++row) {
+  for (PetscInt row = N - constraintSize; row < N; ++row) {
     PetscInt    col = row - (N - constraintSize);
     PetscScalar val = 1.0;
 

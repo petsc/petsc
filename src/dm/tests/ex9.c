@@ -13,7 +13,6 @@ int main(int argc, char **argv)
   DM                      packer;
   DM                      da, dmred;
   Mat                     M;
-  PetscInt                i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
   PetscCall(ISLocalToGlobalMappingView(ltog[0], PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Local to global mapping of da vector\n"));
   PetscCall(ISLocalToGlobalMappingView(ltog[1], PETSC_VIEWER_STDOUT_WORLD));
-  for (i = 0; i < 2; i++) PetscCall(ISLocalToGlobalMappingDestroy(&ltog[i]));
+  for (PetscInt i = 0; i < 2; i++) PetscCall(ISLocalToGlobalMappingDestroy(&ltog[i]));
 
   PetscCall(PetscFree(ltog));
   PetscCall(DMDestroy(&packer));

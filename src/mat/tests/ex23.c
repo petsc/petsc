@@ -790,11 +790,8 @@ int main(int argc, char **args)
           PetscCall(ISLocalToGlobalMappingDestroy(&map));
           PetscCall(MatISSetPreallocation(Abd, bs, NULL, 0, NULL));
           for (i = 0; i < nl; i++) {
-            PetscInt b1, b2;
-
-            for (b1 = 0; b1 < bs; b1++) {
-              for (b2 = 0; b2 < bs; b2++) vals[b1 * bs + b2] = i * bs * bs + b1 * bs + b2 + 1 + (b1 == b2 ? 1.0 : 0);
-            }
+            for (PetscInt b1 = 0; b1 < bs; b1++)
+              for (PetscInt b2 = 0; b2 < bs; b2++) vals[b1 * bs + b2] = i * bs * bs + b1 * bs + b2 + 1 + (b1 == b2 ? 1.0 : 0);
             PetscCall(MatSetValuesBlockedLocal(Abd, 1, &i, 1, &i, vals, INSERT_VALUES));
           }
           PetscCall(MatAssemblyBegin(Abd, MAT_FINAL_ASSEMBLY));
@@ -805,10 +802,8 @@ int main(int argc, char **args)
           PetscCall(MatGetLocalSize(Bbd, &nl, NULL));
           ok = PETSC_TRUE;
           for (i = 0; i < nl / bs; i++) {
-            PetscInt b1, b2;
-
-            for (b1 = 0; b1 < bs; b1++) {
-              for (b2 = 0; b2 < bs; b2++) {
+            for (PetscInt b1 = 0; b1 < bs; b1++) {
+              for (PetscInt b2 = 0; b2 < bs; b2++) {
                 if (PetscAbsScalar(isbd[i * bs * bs + b1 * bs + b2] - aijbd[i * bs * bs + b1 * bs + b2]) > PETSC_SMALL) ok = PETSC_FALSE;
                 if (!ok) {
                   PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] ERROR block %" PetscInt_FMT ", entry %" PetscInt_FMT " %" PetscInt_FMT ": %g %g\n", rank, i, b1, b2, (double)PetscAbsScalar(isbd[i * bs * bs + b1 * bs + b2]), (double)PetscAbsScalar(aijbd[i * bs * bs + b1 * bs + b2])));

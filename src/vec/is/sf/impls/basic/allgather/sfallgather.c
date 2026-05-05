@@ -5,11 +5,10 @@ typedef PetscSF_Allgatherv PetscSF_Allgather;
 
 PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
 {
-  PetscInt           i;
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
 
   PetscFunctionBegin;
-  for (i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
+  for (PetscInt i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
     sf->leafbuflen[i]  = 0;
     sf->leafstart[i]   = 0;
     sf->leafcontig[i]  = PETSC_TRUE;

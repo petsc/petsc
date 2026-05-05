@@ -255,16 +255,12 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscCall(VecGetArray(ctx->coords, &a));
   for (p = 0, q = 0, i = 0; p < N; ++p) {
     if (globalProcs[p] == rank) {
-      PetscInt d;
-
-      for (d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p * ctx->dim + d];
+      for (PetscInt d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p * ctx->dim + d];
       ctx->cells[q] = foundCells[q].index;
       ++q;
     }
     if (globalProcs[p] == size && rank == 0) {
-      PetscInt d;
-
-      for (d = 0; d < ctx->dim; ++d, ++i) a[i] = 0.;
+      for (PetscInt d = 0; d < ctx->dim; ++d, ++i) a[i] = 0.;
       ctx->cells[q] = -1;
       ++q;
     }
@@ -371,7 +367,7 @@ static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo c
   const PetscScalar *coords;
   PetscScalar       *a;
   PetscReal          v0, J, invJ, detJ, xir[1];
-  PetscInt           xSize, comp;
+  PetscInt           xSize;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
@@ -381,9 +377,9 @@ static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo c
   xir[0] = invJ * PetscRealPart(coords[p] - v0);
   PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
   if (2 * dof == xSize) {
-    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
   } else if (dof == xSize) {
-    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2 * dof, dof);
   PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(VecRestoreArray(v, &a));
@@ -882,7 +878,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
   if (useDS) {
     const PetscScalar *coords;
     PetscScalar       *interpolant;
-    PetscInt           cdim, d;
+    PetscInt           cdim;
 
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(VecGetArrayRead(ctx->coords, &coords));
@@ -893,7 +889,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
       PetscInt     coff = 0, foff = 0, clSize;
 
       if (ctx->cells[p] < 0) continue;
-      for (d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p * cdim + d]);
+      for (PetscInt d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p * cdim + d]);
       PetscCall(DMPlexCoordinatesToReference(dm, ctx->cells[p], 1, pcoords, xi));
       PetscCall(DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa));
       for (field = 0; field < Nf; ++field) {

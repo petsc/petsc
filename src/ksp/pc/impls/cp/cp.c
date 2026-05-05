@@ -62,26 +62,25 @@ static PetscErrorCode PCApply_CP(PC pc, Vec bb, Vec xx)
 {
   PC_CP       *cp = (PC_CP *)pc->data;
   PetscScalar *b, *x, xt;
-  PetscInt     i, j;
 
   PetscFunctionBegin;
   PetscCall(VecCopy(bb, cp->work));
   PetscCall(VecGetArray(cp->work, &b));
   PetscCall(VecGetArray(xx, &x));
 
-  for (i = 0; i < cp->n; i++) { /* over columns */
+  for (PetscInt i = 0; i < cp->n; i++) { /* over columns */
     xt = 0.;
-    for (j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
+    for (PetscInt j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
     xt *= cp->d[i];
     x[i] = xt;
-    for (j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
+    for (PetscInt j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
   }
-  for (i = cp->n - 1; i > -1; i--) { /* over columns */
+  for (PetscInt i = cp->n - 1; i > -1; i--) { /* over columns */
     xt = 0.;
-    for (j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
+    for (PetscInt j = cp->i[i]; j < cp->i[i + 1]; j++) xt += cp->a[j] * b[cp->j[j]]; /* over rows in column */
     xt *= cp->d[i];
     x[i] = xt;
-    for (j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
+    for (PetscInt j = cp->i[i]; j < cp->i[i + 1]; j++) b[cp->j[j]] -= xt * cp->a[j]; /* over rows in column updating b*/
   }
 
   PetscCall(VecRestoreArray(cp->work, &b));

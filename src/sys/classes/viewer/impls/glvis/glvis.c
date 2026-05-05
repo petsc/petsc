@@ -507,10 +507,9 @@ PetscErrorCode PetscViewerGLVisInitWindow_Internal(PetscViewer viewer, PetscBool
 static PetscErrorCode PetscViewerDestroy_GLVis(PetscViewer viewer)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscInt         i;
 
   PetscFunctionBegin;
-  for (i = 0; i < socket->nwindow; i++) {
+  for (PetscInt i = 0; i < socket->nwindow; i++) {
     PetscCall(PetscViewerDestroy(&socket->window[i]));
     PetscCall(PetscFree(socket->windowtitle[i]));
     PetscCall(PetscFree(socket->fec_type[i]));

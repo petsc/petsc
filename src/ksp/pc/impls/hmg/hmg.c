@@ -93,7 +93,6 @@ static PetscErrorCode PCSetUp_HMG(PC pc)
   PC_MG           *mg  = (PC_MG *)pc->data;
   PC_HMG          *hmg = (PC_HMG *)mg->innerctx;
   MPI_Comm         comm;
-  PetscInt         level;
   PetscInt         num_levels;
   Mat             *operators, *interpolations;
   PetscInt         blocksize;
@@ -160,7 +159,7 @@ static PetscErrorCode PCSetUp_HMG(PC pc)
   hmg->innerpc = NULL;
   PetscCall(PCMGSetLevels_MG(pc, num_levels, NULL));
   /* Set coarse matrices and interpolations to PCMG */
-  for (level = num_levels - 1; level > 0; level--) {
+  for (PetscInt level = num_levels - 1; level > 0; level--) {
     Mat P = NULL, pmat = NULL;
     Vec b, x, r;
     if (hmg->subcoarsening) {

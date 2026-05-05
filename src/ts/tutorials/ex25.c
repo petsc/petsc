@@ -189,7 +189,6 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   User          user = (User)ptr;
   DM            da;
   DMDALocalInfo info;
-  PetscInt      i;
   PetscReal     hx;
   Field        *x, *f;
 
@@ -203,7 +202,7 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscCall(DMDAVecGetArray(da, F, &f));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     PetscScalar u = x[i].u, v = x[i].v;
     f[i].u = hx * (user->A + u * u * v - (user->B + 1) * u);
     f[i].v = hx * (user->B * u - u * u * v);
@@ -223,7 +222,6 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
 {
   User          user = (User)ptr;
   DMDALocalInfo info;
-  PetscInt      i;
   PetscReal     hx;
   DM            da;
   Field        *x, *xdot;
@@ -238,7 +236,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   PetscCall(DMDAVecGetArrayRead(da, Xdot, &xdot));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     if (i == 0 || i == info.mx - 1) {
       const PetscInt    row = i, col = i;
       const PetscScalar vals[2][2] = {
@@ -274,7 +272,6 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
 {
   User          user = (User)ctx;
   DM            da;
-  PetscInt      i;
   DMDALocalInfo info;
   Field        *x;
   PetscReal     hx;
@@ -288,7 +285,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, PetscCtx ctx)
   PetscCall(DMDAVecGetArray(da, X, &x));
 
   /* Compute function over the locally owned part of the grid */
-  for (i = info.xs; i < info.xs + info.xm; i++) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; i++) {
     PetscReal xi = i * hx;
     x[i].u       = user->uleft * (1. - xi) + user->uright * xi + PetscSinReal(2. * PETSC_PI * xi);
     x[i].v       = user->vleft * (1. - xi) + user->vright * xi;

@@ -86,7 +86,6 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
       PetscScalar xn[] = {-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0};
       PetscScalar yn[] = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};
       PetscScalar zn[] = {-0.1, -4.0, -0.2, -1.0, 0.1, 4.0, 0.2, 1.0};
-      PetscInt    p;
 
       Ni[0] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 - zeta);
       Ni[1] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 - zeta);
@@ -99,7 +98,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
       Ni[7] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 + zeta);
 
       xx = yy = zz = 0.0;
-      for (p = 0; p < 8; p++) {
+      for (PetscInt p = 0; p < 8; p++) {
         xx += Ni[p] * xn[p];
         yy += Ni[p] * yn[p];
         zz += Ni[p] * zn[p];
@@ -168,7 +167,6 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
       PetscScalar eta  = XX[dim * i + 1];
       PetscScalar xn[] = {0.0, 2.0, 0.2, 3.5};
       PetscScalar yn[] = {-1.3, 0.0, 2.0, 4.0};
-      PetscInt    p;
 
       Ni[0] = 0.25 * (1.0 - xi) * (1.0 - eta);
       Ni[1] = 0.25 * (1.0 + xi) * (1.0 - eta);
@@ -176,7 +174,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
       Ni[3] = 0.25 * (1.0 + xi) * (1.0 + eta);
 
       xx = yy = 0.0;
-      for (p = 0; p < 4; p++) {
+      for (PetscInt p = 0; p < 4; p++) {
         xx += Ni[p] * xn[p];
         yy += Ni[p] * yn[p];
       }
@@ -215,7 +213,6 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
         PetscScalar xn[] = {0.0, 2.0, 0.2, 3.5, 0.0, 2.1, 0.23, 3.125};
         PetscScalar yn[] = {-1.3, 0.0, 2.0, 4.0, -1.45, -0.1, 2.24, 3.79};
         PetscScalar zn[] = {0.0, 0.3, -0.1, 0.123, 0.956, 1.32, 1.12, 0.798};
-        PetscInt    p;
 
         Ni[0] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 - zeta);
         Ni[1] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 - zeta);
@@ -228,7 +225,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
         Ni[7] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 + zeta);
 
         xx = yy = zz = 0.0;
-        for (p = 0; p < 8; p++) {
+        for (PetscInt p = 0; p < 8; p++) {
           xx += Ni[p] * xn[p];
           yy += Ni[p] * yn[p];
           zz += Ni[p] * zn[p];

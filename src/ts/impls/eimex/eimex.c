@@ -76,7 +76,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   const PetscInt ns  = ext->nstages;
   Vec           *T = ext->T, Y = ext->Y;
   SNES           snes;
-  PetscInt       i, j;
+  PetscInt       j;
   PetscBool      accept = PETSC_FALSE;
   PetscReal      alpha, local_error, local_error_a, local_error_r;
 
@@ -93,7 +93,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
     PetscCall(VecCopy(Y, T[j]));
   }
 
-  for (i = 1; i < ns; i++) {
+  for (PetscInt i = 1; i < ns; i++) {
     for (j = i; j < ns; j++) {
       alpha = -(PetscReal)ext->N[j] / ext->N[j - i];
       PetscCall(VecAXPBYPCZ(T[Map(j, i, ns)], alpha, 1.0, 0, T[Map(j, i - 1, ns)], T[Map(j - 1, i - 1, ns)])); /* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */
@@ -117,7 +117,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
         ext->col_ind++;
         /*T table need to be recycled*/
         PetscCall(VecDuplicateVecs(ts->vec_sol, (1 + ext->nstages) * ext->nstages / 2, &ext->T));
-        for (i = 0; i < ext->nstages - 1; i++) {
+        for (PetscInt i = 0; i < ext->nstages - 1; i++) {
           for (j = 0; j <= i; j++) PetscCall(VecCopy(T[Map(i, j, ext->nstages - 1)], ext->T[Map(i, j, ext->nstages)]));
         }
         PetscCall(VecDestroyVecs(ext->nstages * (ext->nstages - 1) / 2, &T));
@@ -125,7 +125,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
         /*recycling finished, store the new solution*/
         PetscCall(VecCopy(Y, T[ext->nstages - 1]));
         /*extrapolation for the newly added stage*/
-        for (i = 1; i < ext->nstages; i++) {
+        for (PetscInt i = 1; i < ext->nstages; i++) {
           alpha = -(PetscReal)ext->N[ext->nstages - 1] / ext->N[ext->nstages - 1 - i];
           PetscCall(VecAXPBYPCZ(T[Map(ext->nstages - 1, i, ext->nstages)], alpha, 1.0, 0, T[Map(ext->nstages - 1, i - 1, ext->nstages)], T[Map(ext->nstages - 1 - 1, i - 1, ext->nstages)])); /*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/
           alpha = 1.0 / (1.0 + alpha);
@@ -444,14 +444,13 @@ PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts, PetscInt nrows)
 {
   TS_EIMEX *ext = (TS_EIMEX *)ts->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscCheck(nrows >= 0 && nrows <= 100, ((PetscObject)ts)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Max number of rows (current value %" PetscInt_FMT ") should be an integer number between 1 and 100", nrows);
   PetscCall(PetscFree(ext->N));
   ext->max_rows = nrows;
   PetscCall(PetscMalloc1(nrows, &ext->N));
-  for (i = 0; i < nrows; i++) ext->N[i] = i + 1;
+  for (PetscInt i = 0; i < nrows; i++) ext->N[i] = i + 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

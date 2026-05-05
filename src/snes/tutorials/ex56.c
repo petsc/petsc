@@ -24,8 +24,8 @@ static void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
 static void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscInt Ncomp = dim;
-  PetscInt       comp, d;
-  for (comp = 0; comp < Ncomp; ++comp) {
+  PetscInt       d;
+  for (PetscInt comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) f1[comp * dim + d] = 0.0;
   }
 }
@@ -125,9 +125,9 @@ void g3_uu_3d_private(PetscScalar g3[], const PetscReal mu, const PetscReal lamb
 
 static void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscReal mu = s_mu, lambda = s_lambda, rad;
-  PetscInt  i;
-  for (i = 0, rad = 0.; i < dim; i++) {
+  PetscReal mu = s_mu, lambda = s_lambda, rad = 0.0;
+
+  for (PetscInt i = 0; i < dim; i++) {
     PetscReal t = x[i];
     rad += t * t;
   }
@@ -152,9 +152,9 @@ static void g3_lap(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOf
 
 static void g3_lap_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscReal lambda = 1, rad;
-  PetscInt  i;
-  for (i = 0, rad = 0.; i < dim; i++) {
+  PetscReal lambda = 1, rad = 0.0;
+
+  for (PetscInt i = 0; i < dim; i++) {
     PetscReal t = x[i];
     rad += t * t;
   }
@@ -166,9 +166,8 @@ static void g3_lap_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscInt Ncomp = dim;
-  PetscInt       comp;
 
-  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
+  for (PetscInt comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
 }
 
 /* PI_i (x_i^4 - x_i^2) */
@@ -183,9 +182,8 @@ static void f0_u_x4(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, PetscCtx ctx)
 {
   const PetscInt Ncomp = dim;
-  PetscInt       comp;
 
-  for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0;
+  for (PetscInt comp = 0; comp < Ncomp; ++comp) u[comp] = 0;
   return PETSC_SUCCESS;
 }
 
@@ -261,16 +259,15 @@ int main(int argc, char **args)
         /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
         for (f = 0; f < Nf; ++f) {
           PetscReal    faceCoord;
-          PetscInt     b, v;
           PetscScalar *coords = NULL;
           PetscInt     Nv;
           PetscCall(DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords));
           Nv = csize / dim; /* Calculate mean coordinate vector */
           for (d = 0; d < dim; ++d) {
             faceCoord = 0.0;
-            for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
+            for (PetscInt v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v * dim + d]);
             faceCoord /= Nv;
-            for (b = 0; b < 2; ++b) {
+            for (PetscInt b = 0; b < 2; ++b) {
               if (PetscAbs(faceCoord - b) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
                 PetscCall(DMSetLabelValue(dm, "Faces", faces[f], d * 2 + b + 1));
               }
@@ -316,13 +313,13 @@ int main(int argc, char **args)
         PetscCall(PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d));
       } else if (run_type == 0) { //twisted not maintained
         PetscWeakForm wf;
-        PetscInt      bd, i;
+        PetscInt      bd;
         PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d_alpha));
         PetscCall(PetscDSSetResidual(prob, 0, f0_u, f1_u_3d_alpha));
         PetscCall(DMGetLabel(dm, "Faces", &label));
         PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "traction", label, Npid, pid, 0, Ncomp, components, NULL, NULL, NULL, &bd));
         PetscCall(PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-        for (i = 0; i < Npid; ++i) PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, 0, f0_bd_u_3d, 0, f1_bd_u));
+        for (PetscInt i = 0; i < Npid; ++i) PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, 0, f0_bd_u_3d, 0, f1_bd_u));
       } else if (run_type == 2) { // Laplacian
         PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_lap));
         PetscCall(PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_lap));

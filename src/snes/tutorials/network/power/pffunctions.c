@@ -350,7 +350,6 @@ PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt
 PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
 {
   VERTEX_Power   bus;
-  PetscInt       i;
   GEN            gen;
   PetscBool      ghostvtex, sharedv;
   PetscScalar   *xarr;
@@ -364,7 +363,7 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, Pets
   PetscCall(PetscObjectGetComm((PetscObject)networkdm, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(VecGetArray(localX, &xarr));
-  for (i = 0; i < nv; i++) {
+  for (PetscInt i = 0; i < nv; i++) {
     PetscCall(DMNetworkIsGhostVertex(networkdm, vtx[i], &ghostvtex));
     PetscCall(DMNetworkIsSharedVertex(networkdm, vtx[i], &sharedv));
     if (ghostvtex || sharedv) continue;

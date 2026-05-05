@@ -231,12 +231,10 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM, IS, PetscSection, I
 
 static PetscErrorCode PortableBoundaryDestroy(PortableBoundary *bnd)
 {
-  PetscInt d;
-
   PetscFunctionBegin;
   if (!*bnd) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecDestroy(&(*bnd)->coordinates));
-  for (d = 0; d < (*bnd)->depth; d++) PetscCall(PetscSectionDestroy(&(*bnd)->sections[d]));
+  for (PetscInt d = 0; d < (*bnd)->depth; d++) PetscCall(PetscSectionDestroy(&(*bnd)->sections[d]));
   PetscCall(PetscFree((*bnd)->sections));
   PetscCall(PetscFree(*bnd));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -965,13 +963,12 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
 
 static PetscErrorCode DMPlexExpandedVerticesToFaces_Private(DM dm, IS boundary_expanded_is, PetscInt depth, PetscSection sections[], IS *boundary_is)
 {
-  PetscInt d;
-  IS       is, newis;
+  IS is, newis;
 
   PetscFunctionBegin;
   is = boundary_expanded_is;
   PetscCall(PetscObjectReference((PetscObject)is));
-  for (d = 0; d < depth - 1; ++d) {
+  for (PetscInt d = 0; d < depth - 1; ++d) {
     PetscCall(DMPlexExpandedConesToFaces_Private(dm, is, sections[d], &newis));
     PetscCall(ISDestroy(&is));
     is = newis;
@@ -1101,7 +1098,6 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
   MPI_Comm               comm;
   DM                     idm;
   DMLabel                label;
-  PetscInt               d;
   const char             boundaryName[] = "DMPlexDistributeInterpolateMarkInterface_boundary";
   IS                     boundary_is;
   IS                    *boundary_expanded_iss;
@@ -1184,7 +1180,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
   bnd->depth = bnd0->depth;
   PetscCallMPI(MPI_Bcast(&bnd->depth, 1, MPIU_INT, rootrank, comm));
   PetscCall(PetscMalloc1(bnd->depth, &bnd->sections));
-  for (d = 0; d < bnd->depth; d++) PetscCall(PetscSectionReplicate_Private(comm, rootrank, (rank == rootrank) ? bnd0->sections[d] : NULL, &bnd->sections[d]));
+  for (PetscInt d = 0; d < bnd->depth; d++) PetscCall(PetscSectionReplicate_Private(comm, rootrank, (rank == rootrank) ? bnd0->sections[d] : NULL, &bnd->sections[d]));
 
   if (rank == rootrank) PetscCall(DMPlexRestoreConeRecursive(idm, boundary_is, &bnd0->depth, &boundary_expanded_iss, &bnd0->sections));
   PetscCall(PortableBoundaryDestroy(&bnd0));

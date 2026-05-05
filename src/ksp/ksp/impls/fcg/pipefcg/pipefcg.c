@@ -21,7 +21,6 @@ static const char citation[] = "@article{SSM2016,\n"
 
 static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
-  PetscInt     i;
   KSP_PIPEFCG *pipefcg;
   PetscInt     nnewvecs, nvecsprev;
 
@@ -37,7 +36,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pPvecs[pipefcg->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipefcg->pSvecs[pipefcg->nchunks], 0, NULL));
     pipefcg->nvecs += nnewvecs;
-    for (i = 0; i < nnewvecs; ++i) {
+    for (PetscInt i = 0; i < nnewvecs; ++i) {
       pipefcg->Qvecs[nvecsprev + i]    = pipefcg->pQvecs[pipefcg->nchunks][i];
       pipefcg->ZETAvecs[nvecsprev + i] = pipefcg->pZETAvecs[pipefcg->nchunks][i];
       pipefcg->Pvecs[nvecsprev + i]    = pipefcg->pPvecs[pipefcg->nchunks][i];
@@ -331,7 +330,6 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 
 static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 {
-  PetscInt     i;
   KSP_PIPEFCG *pipefcg;
 
   PetscFunctionBegin;
@@ -342,7 +340,7 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 
   /* Destroy vectors of old directions and the arrays that manage pointers to them */
   if (pipefcg->nvecs) {
-    for (i = 0; i < pipefcg->nchunks; ++i) {
+    for (PetscInt i = 0; i < pipefcg->nchunks; ++i) {
       PetscCall(VecDestroyVecs(pipefcg->chunksizes[i], &pipefcg->pPvecs[i]));
       PetscCall(VecDestroyVecs(pipefcg->chunksizes[i], &pipefcg->pSvecs[i]));
       PetscCall(VecDestroyVecs(pipefcg->chunksizes[i], &pipefcg->pQvecs[i]));

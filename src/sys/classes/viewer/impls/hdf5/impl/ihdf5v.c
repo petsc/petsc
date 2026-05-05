@@ -26,7 +26,6 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   const char rootGroupName[] = "/";
   hid_t      h5;
   PetscBool  exists = PETSC_FALSE;
-  PetscInt   i;
   int        n;
   char     **hierarchy;
   char       buf[PETSC_MAX_PATH_LEN] = "";
@@ -60,7 +59,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
     PetscCall(PetscStrToArrayDestroy(n, hierarchy));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     PetscCall(PetscStrlcat(buf, "/", sizeof(buf)));
     PetscCall(PetscStrlcat(buf, hierarchy[i], sizeof(buf)));
     PetscCall(PetscViewerHDF5Traverse_Inner_Internal(h5, buf, createGroup, &exists));

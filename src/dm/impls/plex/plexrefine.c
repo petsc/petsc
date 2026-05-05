@@ -412,14 +412,13 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
 PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
 {
   DM        cdm = dm;
-  PetscInt  r;
   PetscBool isUniform, localized, useCeed;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetRefinementUniform(dm, &isUniform));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   if (isUniform) {
-    for (r = 0; r < nlevels; ++r) {
+    for (PetscInt r = 0; r < nlevels; ++r) {
       DMPlexTransform tr;
       DM              codm, rcodm;
       const char     *prefix;
@@ -457,7 +456,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       PetscCall(DMPlexTransformDestroy(&tr));
     }
   } else {
-    for (r = 0; r < nlevels; ++r) {
+    for (PetscInt r = 0; r < nlevels; ++r) {
       PetscCall(DMRefine(cdm, PetscObjectComm((PetscObject)dm), &rdm[r]));
       PetscCall(DMPlexGetUseCeed(dm, &useCeed));
       PetscCall(DMPlexSetUseCeed(rdm[r], useCeed));

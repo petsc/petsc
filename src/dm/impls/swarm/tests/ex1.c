@@ -21,7 +21,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
   PetscReal low[3], high[3];
-  PetscInt  cdim, d;
+  PetscInt  cdim;
 
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
@@ -39,7 +39,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMGetCoordinateDim(*dm, &cdim));
   PetscCall(DMGetBoundingBox(*dm, low, high));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim: %" PetscInt_FMT "\n", cdim));
-  for (d = 0; d < cdim; ++d) user->L[d] = high[d] - low[d];
+  for (PetscInt d = 0; d < cdim; ++d) user->L[d] = high[d] - low[d];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
