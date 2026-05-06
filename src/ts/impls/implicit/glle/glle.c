@@ -1008,22 +1008,20 @@ static PetscErrorCode TSReset_GLLE(TS ts)
     PetscCall(VecDestroy(&gl->Y));
     PetscCall(VecDestroy(&gl->Z));
   }
+  PetscCall(TSGLLEAdaptDestroy(&gl->adapt));
+  if (gl->Destroy) PetscCall((*gl->Destroy)(gl));
   gl->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_GLLE(TS ts)
 {
-  TS_GLLE *gl = (TS_GLLE *)ts->data;
-
   PetscFunctionBegin;
   PetscCall(TSReset_GLLE(ts));
   if (ts->dm) {
     PetscCall(DMCoarsenHookRemove(ts->dm, DMCoarsenHook_TSGLLE, DMRestrictHook_TSGLLE, ts));
     PetscCall(DMSubDomainHookRemove(ts->dm, DMSubDomainHook_TSGLLE, DMSubDomainRestrictHook_TSGLLE, ts));
   }
-  PetscCall(TSGLLEAdaptDestroy(&gl->adapt));
-  if (gl->Destroy) PetscCall((*gl->Destroy)(gl));
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSGLLESetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSGLLESetAcceptType_C", NULL));
@@ -1078,6 +1076,7 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
   DM       dm;
 
   PetscFunctionBegin;
+  if (!gl->type_name[0]) PetscCall(TSGLLESetType(ts, TSGLLE_IRKS));
   gl->setupcalled = PETSC_TRUE;
   PetscCall(TSGLLEGetMaxSizes(ts, &max_r, &max_s));
   PetscCall(VecDuplicateVecs(ts->vec_sol, max_r, &gl->X));

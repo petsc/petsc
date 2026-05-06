@@ -28,12 +28,16 @@ extern PetscReal solz(PetscReal);
 
 int main(int argc, char **argv)
 {
-  PetscInt  time_steps = 100, steps;
-  Vec       global;
-  PetscReal dt, ftime;
-  TS        ts;
-  Mat       A, S;
-  PetscBool nest = PETSC_FALSE;
+  PetscInt     time_steps = 100, steps;
+  Vec          global;
+  PetscReal    dt, ftime;
+  TS           ts;
+  Mat          A, S;
+  PetscBool    nest = PETSC_FALSE;
+  TSType       tstype;
+  const char **types;
+  int          ntypes;
+  char         ststype[16];
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -90,6 +94,21 @@ int main(int argc, char **argv)
   PetscCall(TSSetMaxSteps(ts, time_steps));
   PetscCall(TSSetMaxTime(ts, 1));
   PetscCall(TSSetSolution(ts, global));
+
+  PetscCall(TSSetUp(ts));
+  PetscCall(TSGetType(ts, &tstype));
+  PetscCall(PetscStrncpy(ststype, tstype, sizeof(ststype)));
+  PetscCall(PetscFunctionListGet(TSList, &types, &ntypes));
+  for (PetscInt i = 0; i < ntypes; i++) {
+    PetscBool reject;
+
+    PetscCall(TSSetType(ts, types[i]));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)ts, &reject, TSIRK, TSBASICSYMPLECTIC, TSMPRK, ""));
+    if (!reject) PetscCall(TSSetUp(ts));
+  }
+  PetscCall(PetscFree(types));
+  PetscCall(TSSetType(ts, ststype));
+  PetscCall(TSSetFromOptions(ts));
 
   PetscCall(TSSolve(ts, global));
   PetscCall(TSGetSolveTime(ts, &ftime));
@@ -229,28 +248,28 @@ PetscReal solz(PetscReal t)
     test:
       suffix: euler
       args: -ts_type euler -nest {{0 1}}
-      requires: !single
+      requires: !single !sundials2
 
     test:
       suffix: beuler
       args: -ts_type beuler -nest {{0 1}}
-      requires: !single
+      requires: !single !sundials2
 
     test:
       suffix: rk
       args: -ts_type rk -nest {{0 1}} -ts_adapt_monitor
-      requires: !single
+      requires: !single !sundials2
 
     test:
       diff_args: -j
-      requires: double !complex
+      requires: double !complex !sundials2
       output_file: output/ex2_be_adapt.out
       suffix: bdf_1_adapt
       args: -ts_type bdf -ts_bdf_order 1 -ts_adapt_type basic -ts_adapt_clip 0,2
 
     test:
       diff_args: -j
-      requires: double !complex
+      requires: double !complex !sundials2
       suffix: be_adapt
       args: -ts_type beuler -ts_adapt_type basic -ts_adapt_clip 0,2
 

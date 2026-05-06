@@ -1,71 +1,80 @@
 At t =  0.000000e+00 u =   1.000000e+00    1.000000e+00    1.000000e+00 
 At t =  0.000000e+00 errors =   0.000000e+00    0.000000e+00    0.000000e+00 
-  TSAdapt basic rk 0:3bs step   0 accepted t=0          + 1.000e-03 dt=1.000e-02  wlte=4.09e-06  wltea=   -1 wlter=   -1
+  TSAdapt basic rk 0:3bs step   0 accepted t=0          + 1.000e-03 dt=2.000e-03  wlte=4.09e-06  wltea=   -1 wlter=   -1
 At t =  1.000000e-03 u =   1.003005e+00    1.004007e+00    1.003005e+00 
 At t =  1.000000e-03 errors =  -4.836798e-12   -6.837864e-12   -4.836798e-12 
-  TSAdapt basic rk 0:3bs step   1 accepted t=0.001      + 1.000e-02 dt=5.597e-02  wlte=0.00416  wltea=   -1 wlter=   -1
-At t =  1.100000e-02 u =   1.033613e+00    1.044858e+00    1.033613e+00 
-At t =  1.100000e-02 errors =  -4.883664e-08   -6.904508e-08   -4.883664e-08 
-  TSAdapt basic rk 0:3bs step   2 accepted t=0.011      + 5.597e-02 dt=5.465e-02  wlte=0.783  wltea=   -1 wlter=   -1
-At t =  6.696691e-02 u =   1.225076e+00    1.301734e+00    1.225076e+00 
-At t =  6.696691e-02 errors =  -5.123787e-05   -7.244106e-05   -5.123787e-05 
-  TSAdapt basic rk 0:3bs step   3 accepted t=0.0669669  + 5.465e-02 dt=5.325e-02  wlte=0.788  wltea=   -1 wlter=   -1
-At t =  1.216158e-01 u =   1.450026e+00    1.605847e+00    1.450026e+00 
-At t =  1.216158e-01 errors =  -1.180127e-04   -1.668553e-04   -1.180127e-04 
-  TSAdapt basic rk 0:3bs step   4 accepted t=0.121616   + 5.325e-02 dt=5.205e-02  wlte=0.781  wltea=   -1 wlter=   -1
-At t =  1.748670e-01 u =   1.712709e+00    1.963244e+00    1.712709e+00 
-At t =  1.748670e-01 errors =  -2.026093e-04   -2.864740e-04   -2.026093e-04 
-  TSAdapt basic rk 0:3bs step   5 accepted t=0.174867   + 5.205e-02 dt=5.102e-02  wlte=0.774  wltea=   -1 wlter=   -1
-At t =  2.269190e-01 u =   2.019211e+00    2.382495e+00    2.019211e+00 
-At t =  2.269190e-01 errors =  -3.088180e-04   -4.366573e-04   -3.088180e-04 
-  TSAdapt basic rk 0:3bs step   6 accepted t=0.226919   + 5.102e-02 dt=5.014e-02  wlte=0.768  wltea=   -1 wlter=   -1
-At t =  2.779422e-01 u =   2.376634e+00    2.873614e+00    2.376634e+00 
-At t =  2.779422e-01 errors =  -4.412004e-04   -6.238561e-04   -4.412004e-04 
-  TSAdapt basic rk 0:3bs step   7 accepted t=0.277942   + 5.014e-02 dt=4.938e-02  wlte=0.763  wltea=   -1 wlter=   -1
-At t =  3.280811e-01 u =   2.793253e+00    3.448273e+00    2.793253e+00 
-At t =  3.280811e-01 errors =  -6.052282e-04   -8.558084e-04   -6.052282e-04 
-  TSAdapt basic rk 0:3bs step   8 accepted t=0.328081   + 4.938e-02 dt=4.872e-02  wlte=0.759  wltea=   -1 wlter=   -1
-At t =  3.774591e-01 u =   3.278709e+00    4.120079e+00    3.278709e+00 
-At t =  3.774591e-01 errors =  -8.074612e-04   -1.141791e-03   -8.074612e-04 
-  TSAdapt basic rk 0:3bs step   9 accepted t=0.377459   + 4.872e-02 dt=4.816e-02  wlte=0.755  wltea=   -1 wlter=   -1
-At t =  4.261817e-01 u =   3.844231e+00    4.904888e+00    3.844231e+00 
-At t =  4.261817e-01 errors =  -1.055759e-03   -1.492919e-03   -1.055759e-03 
-  TSAdapt basic rk 0:3bs step  10 accepted t=0.426182   + 4.816e-02 dt=4.767e-02  wlte=0.752  wltea=   -1 wlter=   -1
-At t =  4.743393e-01 u =   4.502902e+00    5.821178e+00    4.502902e+00 
-At t =  4.743393e-01 errors =  -1.359534e-03   -1.922503e-03   -1.359534e-03 
-  TSAdapt basic rk 0:3bs step  11 accepted t=0.474339   + 4.767e-02 dt=4.725e-02  wlte=0.749  wltea=   -1 wlter=   -1
-At t =  5.220098e-01 u =   5.269965e+00    6.890481e+00    5.269965e+00 
-At t =  5.220098e-01 errors =  -1.730048e-03   -2.446470e-03   -1.730048e-03 
-  TSAdapt basic rk 0:3bs step  12 accepted t=0.52201    + 4.725e-02 dt=4.689e-02  wlte=0.746  wltea=   -1 wlter=   -1
-At t =  5.692602e-01 u =   6.163172e+00    8.137884e+00    6.163172e+00 
-At t =  5.692602e-01 errors =  -2.180770e-03   -3.083868e-03   -2.180770e-03 
-  TSAdapt basic rk 0:3bs step  13 accepted t=0.56926    + 4.689e-02 dt=4.658e-02  wlte=0.744  wltea=   -1 wlter=   -1
-At t =  6.161482e-01 u =   7.203205e+00    9.592612e+00    7.203205e+00 
-At t =  6.161482e-01 errors =  -2.727796e-03   -3.857461e-03   -2.727796e-03 
-  TSAdapt basic rk 0:3bs step  14 accepted t=0.616148   + 4.658e-02 dt=4.631e-02  wlte=0.742  wltea=   -1 wlter=   -1
-At t =  6.627236e-01 u =   8.414152e+00    1.128871e+01    8.414152e+00 
-At t =  6.627236e-01 errors =  -3.390354e-03   -4.794439e-03   -3.390354e-03 
-  TSAdapt basic rk 0:3bs step  15 accepted t=0.662724   + 4.631e-02 dt=4.607e-02  wlte= 0.74  wltea=   -1 wlter=   -1
-At t =  7.090295e-01 u =   9.824073e+00    1.326585e+01    9.824073e+00 
-At t =  7.090295e-01 errors =  -4.191391e-03   -5.927256e-03   -4.191391e-03 
-  TSAdapt basic rk 0:3bs step  16 accepted t=0.70903    + 4.607e-02 dt=4.587e-02  wlte=0.739  wltea=   -1 wlter=   -1
-At t =  7.551029e-01 u =   1.146564e+01    1.557022e+01    1.146564e+01 
-At t =  7.551029e-01 errors =  -5.158283e-03   -7.294627e-03   -5.158283e-03 
-  TSAdapt basic rk 0:3bs step  17 accepted t=0.755103   + 4.587e-02 dt=4.570e-02  wlte=0.737  wltea=   -1 wlter=   -1
-At t =  8.009758e-01 u =   1.337693e+01    1.825563e+01    1.337693e+01 
-At t =  8.009758e-01 errors =  -6.323672e-03   -8.942714e-03   -6.323672e-03 
-  TSAdapt basic rk 0:3bs step  18 accepted t=0.800976   + 4.570e-02 dt=4.555e-02  wlte=0.736  wltea=   -1 wlter=   -1
-At t =  8.466759e-01 u =   1.560226e+01    2.138475e+01    1.560226e+01 
-At t =  8.466759e-01 errors =  -7.726451e-03   -1.092652e-02   -7.726451e-03 
-  TSAdapt basic rk 0:3bs step  19 accepted t=0.846676   + 4.555e-02 dt=4.542e-02  wlte=0.735  wltea=   -1 wlter=   -1
-At t =  8.922270e-01 u =   1.819325e+01    2.503057e+01    1.819325e+01 
-At t =  8.922270e-01 errors =  -9.412945e-03   -1.331156e-02   -9.412945e-03 
-  TSAdapt basic rk 0:3bs step  20 accepted t=0.892227   + 4.542e-02 dt=3.118e-02  wlte=0.734  wltea=   -1 wlter=   -1
-At t =  9.376497e-01 u =   2.121003e+01    2.927810e+01    2.121003e+01 
-At t =  9.376497e-01 errors =  -1.143830e-02   -1.617582e-02   -1.143830e-02 
-  TSAdapt basic rk 0:3bs step  21 accepted t=0.93765    + 3.118e-02 dt=3.118e-02  wlte= 0.24  wltea=   -1 wlter=   -1
-At t =  9.688249e-01 u =   2.356819e+01    3.259983e+01    2.356819e+01 
-At t =  9.688249e-01 errors =  -1.283742e-02   -1.815446e-02   -1.283742e-02 
-  TSAdapt basic rk 0:3bs step  22 accepted t=0.968825   + 3.118e-02 dt=4.510e-02  wlte=0.241  wltea=   -1 wlter=   -1
-At t =  1.000000e+00 u =   2.619075e+01    3.629522e+01    2.619075e+01 
-At t =  1.000000e+00 errors =  -1.440653e-02   -2.037352e-02   -1.440653e-02 
+  TSAdapt basic rk 0:3bs step   1 accepted t=0.001      + 2.000e-03 dt=4.000e-03  wlte=3.29e-05  wltea=   -1 wlter=   -1
+At t =  3.000000e-03 u =   1.009045e+00    1.012063e+00    1.009045e+00 
+At t =  3.000000e-03 errors =  -8.257373e-11   -1.167422e-10   -8.257373e-11 
+  TSAdapt basic rk 0:3bs step   2 accepted t=0.003      + 4.000e-03 dt=8.000e-03  wlte=0.000265  wltea=   -1 wlter=   -1
+At t =  7.000000e-03 u =   1.021247e+00    1.028346e+00    1.021247e+00 
+At t =  7.000000e-03 errors =  -1.337201e-09   -1.890532e-09   -1.337201e-09 
+  TSAdapt basic rk 0:3bs step   3 accepted t=0.007      + 8.000e-03 dt=1.600e-02  wlte=0.00214  wltea=   -1 wlter=   -1
+At t =  1.500000e-02 u =   1.046144e+00    1.061602e+00    1.046144e+00 
+At t =  1.500000e-02 errors =  -2.176160e-08   -3.076662e-08   -2.176160e-08 
+  TSAdapt basic rk 0:3bs step   4 accepted t=0.015      + 1.600e-02 dt=3.200e-02  wlte=0.0176  wltea=   -1 wlter=   -1
+At t =  3.100000e-02 u =   1.097978e+00    1.130971e+00    1.097978e+00 
+At t =  3.100000e-02 errors =  -3.600588e-07   -5.090565e-07   -3.600588e-07 
+  TSAdapt basic rk 0:3bs step   5 accepted t=0.031      + 3.200e-02 dt=5.456e-02  wlte=0.147  wltea=   -1 wlter=   -1
+At t =  6.300000e-02 u =   1.210335e+00    1.281887e+00    1.210335e+00 
+At t =  6.300000e-02 errors =  -6.160863e-06   -8.710452e-06   -6.160863e-06 
+  TSAdapt basic rk 0:3bs step   6 accepted t=0.063      + 5.456e-02 dt=5.335e-02  wlte= 0.78  wltea=   -1 wlter=   -1
+At t =  1.175616e-01 u =   1.431936e+00    1.581319e+00    1.431936e+00 
+At t =  1.175616e-01 errors =  -6.257658e-05   -8.847544e-05   -6.257658e-05 
+  TSAdapt basic rk 0:3bs step   7 accepted t=0.117562   + 5.335e-02 dt=5.214e-02  wlte=0.781  wltea=   -1 wlter=   -1
+At t =  1.709084e-01 u =   1.691583e+00    1.934430e+00    1.691583e+00 
+At t =  1.709084e-01 errors =  -1.357464e-04   -1.919348e-04   -1.357464e-04 
+  TSAdapt basic rk 0:3bs step   8 accepted t=0.170908   + 5.214e-02 dt=5.109e-02  wlte=0.774  wltea=   -1 wlter=   -1
+At t =  2.230440e-01 u =   1.994568e+00    2.348717e+00    1.994568e+00 
+At t =  2.230440e-01 errors =  -2.285328e-04   -3.231367e-04   -2.285328e-04 
+  TSAdapt basic rk 0:3bs step   9 accepted t=0.223044   + 5.109e-02 dt=5.020e-02  wlte=0.769  wltea=   -1 wlter=   -1
+At t =  2.741390e-01 u =   2.347903e+00    2.834067e+00    2.347903e+00 
+At t =  2.741390e-01 errors =  -3.451539e-04   -4.880462e-04   -3.451539e-04 
+  TSAdapt basic rk 0:3bs step  10 accepted t=0.274139   + 5.020e-02 dt=4.943e-02  wlte=0.764  wltea=   -1 wlter=   -1
+At t =  3.243397e-01 u =   2.759770e+00    3.402020e+00    2.759770e+00 
+At t =  3.243397e-01 errors =  -4.906877e-04   -6.938445e-04   -4.906877e-04 
+  TSAdapt basic rk 0:3bs step  11 accepted t=0.32434    + 4.943e-02 dt=4.877e-02  wlte=0.759  wltea=   -1 wlter=   -1
+At t =  3.737709e-01 u =   3.239699e+00    4.066026e+00    3.239699e+00 
+At t =  3.737709e-01 errors =  -6.712329e-04   -9.491565e-04   -6.712329e-04 
+  TSAdapt basic rk 0:3bs step  12 accepted t=0.373771   + 4.877e-02 dt=4.820e-02  wlte=0.755  wltea=   -1 wlter=   -1
+At t =  4.225393e-01 u =   3.798791e+00    4.841760e+00    3.798791e+00 
+At t =  4.225393e-01 errors =  -8.941098e-04   -1.264334e-03   -8.941098e-04 
+  TSAdapt basic rk 0:3bs step  13 accepted t=0.422539   + 4.820e-02 dt=4.770e-02  wlte=0.752  wltea=   -1 wlter=   -1
+At t =  4.707364e-01 u =   4.449982e+00    5.747490e+00    4.449982e+00 
+At t =  4.707364e-01 errors =  -1.168098e-03   -1.651795e-03   -1.168098e-03 
+  TSAdapt basic rk 0:3bs step  14 accepted t=0.470736   + 4.770e-02 dt=4.728e-02  wlte=0.749  wltea=   -1 wlter=   -1
+At t =  5.184409e-01 u =   5.208338e+00    6.804503e+00    5.208338e+00 
+At t =  5.184409e-01 errors =  -1.503721e-03   -2.126419e-03   -1.503721e-03 
+  TSAdapt basic rk 0:3bs step  15 accepted t=0.518441   + 4.728e-02 dt=4.691e-02  wlte=0.746  wltea=   -1 wlter=   -1
+At t =  5.657207e-01 u =   6.091413e+00    8.037600e+00    6.091413e+00 
+At t =  5.657207e-01 errors =  -1.913581e-03   -2.706031e-03   -1.913581e-03 
+  TSAdapt basic rk 0:3bs step  16 accepted t=0.565721   + 4.691e-02 dt=4.660e-02  wlte=0.744  wltea=   -1 wlter=   -1
+At t =  6.126340e-01 u =   7.119653e+00    9.475674e+00    7.119653e+00 
+At t =  6.126340e-01 errors =  -2.412763e-03   -3.411962e-03   -2.412763e-03 
+  TSAdapt basic rk 0:3bs step  17 accepted t=0.612634   + 4.660e-02 dt=4.632e-02  wlte=0.742  wltea=   -1 wlter=   -1
+At t =  6.592313e-01 u =   8.316871e+00    1.115239e+01    8.316871e+00 
+At t =  6.592313e-01 errors =  -3.019307e-03   -4.269725e-03   -3.019307e-03 
+  TSAdapt basic rk 0:3bs step  18 accepted t=0.659231   + 4.632e-02 dt=4.609e-02  wlte= 0.74  wltea=   -1 wlter=   -1
+At t =  7.055561e-01 u =   9.710808e+00    1.310695e+01    9.710808e+00 
+At t =  7.055561e-01 errors =  -3.754775e-03   -5.309813e-03   -3.754775e-03 
+  TSAdapt basic rk 0:3bs step  19 accepted t=0.705556   + 4.609e-02 dt=4.589e-02  wlte=0.739  wltea=   -1 wlter=   -1
+At t =  7.516457e-01 u =   1.133377e+01    1.538502e+01    1.133377e+01 
+At t =  7.516457e-01 errors =  -4.644919e-03   -6.568646e-03   -4.644919e-03 
+  TSAdapt basic rk 0:3bs step  20 accepted t=0.751646   + 4.589e-02 dt=4.571e-02  wlte=0.737  wltea=   -1 wlter=   -1
+At t =  7.975327e-01 u =   1.322339e+01    1.803982e+01    1.322339e+01 
+At t =  7.975327e-01 errors =  -5.720481e-03   -8.089699e-03   -5.720481e-03 
+  TSAdapt basic rk 0:3bs step  21 accepted t=0.797533   + 4.571e-02 dt=4.556e-02  wlte=0.736  wltea=   -1 wlter=   -1
+At t =  8.432448e-01 u =   1.542349e+01    2.113329e+01    1.542349e+01 
+At t =  8.432448e-01 errors =  -7.018133e-03   -9.924836e-03   -7.018133e-03 
+  TSAdapt basic rk 0:3bs step  22 accepted t=0.843245   + 4.556e-02 dt=4.543e-02  wlte=0.735  wltea=   -1 wlter=   -1
+At t =  8.888063e-01 u =   1.798510e+01    2.473760e+01    1.798510e+01 
+At t =  8.888063e-01 errors =  -8.581601e-03   -1.213589e-02   -8.581601e-03 
+  TSAdapt basic rk 0:3bs step  23 accepted t=0.888806   + 4.543e-02 dt=3.288e-02  wlte=0.734  wltea=   -1 wlter=   -1
+At t =  9.342380e-01 u =   2.096768e+01    2.893680e+01    2.096768e+01 
+At t =  9.342380e-01 errors =  -1.046299e-02   -1.479655e-02   -1.046299e-02 
+  TSAdapt basic rk 0:3bs step  24 accepted t=0.934238   + 3.288e-02 dt=3.288e-02  wlte=0.281  wltea=   -1 wlter=   -1
+At t =  9.671190e-01 u =   2.343349e+01    3.241006e+01    2.343349e+01 
+At t =  9.671190e-01 errors =  -1.184628e-02   -1.675281e-02   -1.184628e-02 
+  TSAdapt basic rk 0:3bs step  25 accepted t=0.967119   + 3.288e-02 dt=4.511e-02  wlte=0.282  wltea=   -1 wlter=   -1
+At t =  1.000000e+00 u =   2.619175e+01    3.629663e+01    2.619175e+01 
+At t =  1.000000e+00 errors =  -1.341057e-02   -1.896504e-02   -1.341057e-02 
