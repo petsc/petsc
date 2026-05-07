@@ -113,7 +113,7 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexMarkBoundaryFaces(PetscDM, PetscInt, PetscDMLabel)
     PetscErrorCode DMPlexLabelComplete(PetscDM, PetscDMLabel)
     PetscErrorCode DMPlexLabelCompleteStar(PetscDM, PetscDMLabel)
-    PetscErrorCode DMPlexLabelCohesiveComplete(PetscDM, PetscDMLabel, PetscDMLabel, PetscInt, PetscBool, PetscBool, PetscDM)
+    PetscErrorCode DMPlexLabelCohesiveComplete(PetscDM, PetscDMLabel, PetscDMLabel, PetscInt, PetscBool, PetscDM)
 
     PetscErrorCode DMPlexGetRefinementLimit(PetscDM, PetscReal*)
     PetscErrorCode DMPlexSetRefinementLimit(PetscDM, PetscReal)

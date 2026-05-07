@@ -253,6 +253,7 @@ typedef struct {
   PetscInt  printFEM;
   PetscInt  printFVM;
   PetscInt  printL2;
+  PetscInt  printOrient;
   PetscInt  printLocate;
   PetscInt  printProject;
   PetscInt  printCohesive;

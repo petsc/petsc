@@ -250,3 +250,156 @@ Label 'fault':
 [0]: 1 (-102)
 [0]: 15 (-101)
 [0]: 16 (-101)
+Label 'fault':
+[0]: 2 (1)
+[0]: 19 (1)
+[0]: 20 (1)
+[0]: 7 (0)
+[0]: 8 (0)
+[0]: 9 (0)
+[0]: 10 (0)
+[0]: 11 (0)
+[0]: 12 (0)
+[0]: 0 (102)
+[0]: 13 (101)
+[0]: 14 (101)
+[0]: 1 (-102)
+[0]: 15 (-101)
+[0]: 16 (-101)
+PetscSection Object: 1 MPI process
+  type not yet set
+2 fields
+  field 0 "displacement" with 2 components
+Process 0:
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  0 offset   0
+  (   3) dof  2 offset   0
+  (   4) dof  2 offset   2
+  (   5) dof  2 offset   4
+  (   6) dof  2 offset   6
+  (   7) dof  2 offset   8
+  (   8) dof  2 offset  10
+  (   9) dof  2 offset  12
+  (  10) dof  2 offset  14
+  (  11) dof  0 offset  16
+  (  12) dof  0 offset  16
+  (  13) dof  0 offset  16
+  (  14) dof  0 offset  16
+  (  15) dof  0 offset  16
+  (  16) dof  0 offset  16
+  (  17) dof  0 offset  16
+  (  18) dof  0 offset  16
+  (  19) dof  0 offset  16
+  (  20) dof  0 offset  16
+  field 1 "fault traction" with 2 components
+Process 0:
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  0 offset   0
+  (   3) dof  0 offset   2
+  (   4) dof  0 offset   4
+  (   5) dof  0 offset   6
+  (   6) dof  0 offset   8
+  (   7) dof  0 offset  10
+  (   8) dof  0 offset  12
+  (   9) dof  0 offset  14
+  (  10) dof  0 offset  16
+  (  11) dof  0 offset  16
+  (  12) dof  0 offset  16
+  (  13) dof  0 offset  16
+  (  14) dof  0 offset  16
+  (  15) dof  0 offset  16
+  (  16) dof  0 offset  16
+  (  17) dof  0 offset  16
+  (  18) dof  0 offset  16
+  (  19) dof  0 offset  16
+  (  20) dof  0 offset  16
+Vec Object: Local Solution 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Discrete System with 1 fields
+    cell total dim 8 total comp 2
+  Field displacement FEM 2 components (implicit) (Nq 4 Nqc 1) 1-jet
+    PetscFE Object: displacement (displacement_) 1 MPI process
+      type: vector
+      Vector Finite Element in 2 dimensions with 2 components
+      PetscSpace Object: displacement (displacement_) 1 MPI process
+        type: sum
+        Space in 2 variables with 2 components, size 8
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: Q1 (displacement_sumcomp_) 1 MPI process
+            type: tensor
+            Space in 2 variables with 1 components, size 4
+            Tensor space of 2 subspaces (all identical)
+              PetscSpace Object: sum component tensor component (displacement_sumcomp_tensorcomp_) 1 MPI process
+                type: poly
+                Space in 1 variables with 1 components, size 2
+                Polynomial space of degree 1
+      PetscDualSpace Object: displacement (displacement_) 1 MPI process
+        type: sum
+        Dual space with 2 components, size 8
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: Q1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 4
+            Continuous tensor Lagrange dual space
+        Quadrature on a quadrilateral of order 3 on 4 points (dim 2)
+  Weak Form System with 1 fields
+    boundary_residual_f0
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
+    boundary_jacobian_g0
+      (material, 1) (1, 0) 
+      (material, 2) (1, 0) 
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Mat Object: Jacobian 1 MPI process
+  type: seqaij
+row 0: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 1: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 2: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (12, 0.)  (13, 0.) 
+row 3: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (12, 0.)  (13, 0.) 
+row 4: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 5: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 6: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (12, 0.)  (13, 0.) 
+row 7: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (12, 0.)  (13, 0.) 
+row 8: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 9: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 10: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 11: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 12: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 13: (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 14: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 15: (0, 0.)  (1, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 

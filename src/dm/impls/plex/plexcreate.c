@@ -95,6 +95,7 @@ PetscErrorCode DMPlexCopyFlags(DM dmin, DM dmout)
   ((DM_Plex *)dmout->data)->printFEM        = ((DM_Plex *)dmin->data)->printFEM;
   ((DM_Plex *)dmout->data)->printFVM        = ((DM_Plex *)dmin->data)->printFVM;
   ((DM_Plex *)dmout->data)->printL2         = ((DM_Plex *)dmin->data)->printL2;
+  ((DM_Plex *)dmout->data)->printOrient     = ((DM_Plex *)dmin->data)->printOrient;
   ((DM_Plex *)dmout->data)->printLocate     = ((DM_Plex *)dmin->data)->printLocate;
   ((DM_Plex *)dmout->data)->printProject    = ((DM_Plex *)dmin->data)->printProject;
   ((DM_Plex *)dmout->data)->printCohesive   = ((DM_Plex *)dmin->data)->printCohesive;
@@ -5039,22 +5040,28 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
   //   Faces are input, completed, and all points are marked with their depth
   PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_cohesive_label_", &option, NULL, &flg));
   if (flg) {
-    DMLabel   label;
-    PetscInt  points[1024], n, pStart, pEnd, Nl = 1;
-    PetscBool noCreate = PETSC_FALSE;
-    char      fulloption[PETSC_MAX_PATH_LEN];
-    char      name[PETSC_MAX_PATH_LEN];
-    size_t    len;
+    DMLabel    label;
+    PetscInt   points[1024], n, pStart, pEnd, Nl = 1;
+    PetscBool  noCreate = PETSC_FALSE;
+    char       fulloption[PETSC_MAX_PATH_LEN];
+    char       name[PETSC_MAX_PATH_LEN];
+    const char opt[] = "dm_plex_cohesive_label_";
+    char      *suffix;
+    size_t     len;
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-    PetscCall(PetscStrncpy(name, &option[23], PETSC_MAX_PATH_LEN));
+    PetscCall(PetscStrstr(option, opt, &suffix));
+    PetscCheck(suffix, comm, PETSC_ERR_PLIB, "Unexpected option name '%s'", option);
+    PetscCall(PetscStrncpy(name, suffix + (sizeof(opt) - 1), sizeof(name)));
     PetscCall(PetscStrlen(name, &len));
     if (name[len - 1] == '0') Nl = 10;
     for (PetscInt l = 0; l < Nl; ++l) {
       if (l > 0) name[len - 1] = (char)('0' + l);
       fulloption[0] = 0;
-      PetscCall(PetscStrlcat(fulloption, "-dm_plex_cohesive_label_", 32));
-      PetscCall(PetscStrlcat(fulloption, name, PETSC_MAX_PATH_LEN - 32));
+      PetscCall(PetscStrlcat(fulloption, "-", sizeof(fulloption)));
+      if (((PetscObject)dm)->prefix) PetscCall(PetscStrlcat(fulloption, ((PetscObject)dm)->prefix, sizeof(fulloption)));
+      PetscCall(PetscStrlcat(fulloption, opt, sizeof(fulloption)));
+      PetscCall(PetscStrlcat(fulloption, name, sizeof(fulloption)));
       n = 1024;
       PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, &flg));
       if (!flg) break;
@@ -5085,8 +5092,6 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
         if (pStart >= pEnd) n = 0;
         PetscCall(ProcessCohesiveLabel_Faces(dm, label, n, points));
       }
-      PetscCall(DMPlexOrientLabel(dm, label));
-      PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, PETSC_FALSE, NULL));
     }
   }
   PetscCall(DMViewFromOptions(dm, NULL, "-created_dm_view"));
@@ -5108,6 +5113,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fvm", "Debug output level for all fvm computations", "DMPlexSNESComputeResidualFVM", 0, &mesh->printFVM, NULL, 0));
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_orient", "Debug output level all orientation computations", "DMPlexOrient", 0, &mesh->printOrient, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_project", "Debug output level all projection computations", "DMPlexProject", 0, &mesh->printProject, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_cohesive", "Debug output level all cohesive computations", "DMPlexLabelCohesiveComplete", 0, &mesh->printCohesive, NULL, 0));
@@ -5215,6 +5221,7 @@ PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems PetscOption
 static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionList    ordlist;
+  const char          *option;
   char                 oname[256];
   char                 sublabelname[PETSC_MAX_PATH_LEN] = "";
   DMReorderDefaultFlag reorder;
@@ -5420,6 +5427,37 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     PetscCall(PetscOptionsInt("-dm_localize_height", "Localize edges and faces in addition to cells", "", height, &height, &flg));
     if (flg) PetscCall(DMPlexSetMaxProjectionHeight(cdm, height));
     if (localize) PetscCall(DMLocalizeCoordinates(dm));
+  }
+  // Handle cohesive label orientation and completion (this must be done after distribution)
+  PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_cohesive_label_", &option, NULL, &flg));
+  if (flg) {
+    DMLabel    label;
+    PetscInt   points[1024], n, Nl = 1;
+    char       fulloption[PETSC_MAX_PATH_LEN];
+    char       name[PETSC_MAX_PATH_LEN];
+    const char opt[] = "dm_plex_cohesive_label_";
+    char      *suffix;
+    size_t     len;
+
+    PetscCall(PetscStrstr(option, opt, &suffix));
+    PetscCheck(suffix, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Unexpected option name '%s'", option);
+    PetscCall(PetscStrncpy(name, suffix + (sizeof(opt) - 1), sizeof(name)));
+    PetscCall(PetscStrlen(name, &len));
+    if (name[len - 1] == '0') Nl = 10;
+    for (PetscInt l = 0; l < Nl; ++l) {
+      if (l > 0) name[len - 1] = (char)('0' + l);
+      fulloption[0] = 0;
+      PetscCall(PetscStrlcat(fulloption, "-", sizeof(fulloption)));
+      if (((PetscObject)dm)->prefix) PetscCall(PetscStrlcat(fulloption, ((PetscObject)dm)->prefix, sizeof(fulloption)));
+      PetscCall(PetscStrlcat(fulloption, opt, sizeof(fulloption)));
+      PetscCall(PetscStrlcat(fulloption, name, sizeof(fulloption)));
+      n = 1024;
+      PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, &flg));
+      if (!flg) break;
+      PetscCall(DMGetLabel(dm, name, &label));
+      PetscCall(DMPlexOrientLabel(dm, label));
+      PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, NULL));
+    }
   }
   /* Handle DMPlex refinement */
   remap = PETSC_TRUE;

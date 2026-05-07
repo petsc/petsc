@@ -2281,13 +2281,14 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 }
 
 /*@C
-  DMLabelPropagatePush - Tear down a cycle of label propagation
+  DMLabelPropagatePush - Execute a cycle of label propagation
 
   Collective
 
   Input Parameters:
 + label     - The `DMLabel` to propagate across processes
 . pointSF   - The `PetscSF` describing parallel layout of the label points
+. merge     - The operator which merges label values
 . markPoint - An optional callback that is called when a point is marked, or `NULL`
 - ctx       - An optional user context for the callback, or `NULL`
 
@@ -2301,7 +2302,7 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 
 .seealso: `DMLabel`, `DM`, `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
 @*/
-PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel label, PetscInt p, PetscInt val, PetscCtx ctx), PetscCtx ctx)
+PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, MPI_Op merge, PetscErrorCode (*markPoint)(DMLabel label, PetscInt p, PetscInt val, PetscCtx ctx), PetscCtx ctx)
 {
   PetscInt   *valArray = label->propArray, Nr;
   PetscMPIInt size;
@@ -2324,8 +2325,8 @@ PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCo
        edge to the queue.
     */
     PetscCall(DMLabelPropagateInit_Internal(label, pointSF, valArray));
-    PetscCall(PetscSFReduceBegin(pointSF, MPIU_INT, valArray, valArray, MPI_MAX));
-    PetscCall(PetscSFReduceEnd(pointSF, MPIU_INT, valArray, valArray, MPI_MAX));
+    PetscCall(PetscSFReduceBegin(pointSF, MPIU_INT, valArray, valArray, merge));
+    PetscCall(PetscSFReduceEnd(pointSF, MPIU_INT, valArray, valArray, merge));
     PetscCall(PetscSFBcastBegin(pointSF, MPIU_INT, valArray, valArray, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(pointSF, MPIU_INT, valArray, valArray, MPI_REPLACE));
     PetscCall(DMLabelPropagateFini_Internal(label, pointSF, valArray, markPoint, ctx));

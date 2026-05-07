@@ -215,7 +215,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
            values will have 1+0=1 and old values will have 1+1=2. Loop over these, resetting the values to 1, and adding any new
            edge to the queue.
     */
-    PetscCall(DMLabelPropagatePush(sbr->splitPoints, pointSF, splitPoint, queue));
+    PetscCall(DMLabelPropagatePush(sbr->splitPoints, pointSF, MPI_MAX, splitPoint, queue));
     PetscCall(DMPlexPointQueueEmptyCollective((PetscObject)dm, queue, &empty));
   }
   PetscCall(DMLabelPropagateEnd(sbr->splitPoints, pointSF));

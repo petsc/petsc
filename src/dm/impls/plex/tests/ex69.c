@@ -592,16 +592,19 @@ cell   |         |   |         |   | cell 9
 */
 
 typedef struct {
-  PetscInt testNum; // The mesh to test
+  PetscInt testNum;        // The mesh to test
+  PetscInt cohesiveFields; // The number of fault fields
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBegin;
-  options->testNum = 0;
+  options->testNum        = 0;
+  options->cohesiveFields = 1;
 
   PetscOptionsBegin(comm, "", "Cohesive Meshing Options", "DMPLEX");
-  PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", __FILE__, options->testNum, &options->testNum, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", __FILE__, options->cohesiveFields, &options->cohesiveFields, NULL, 0));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -732,7 +735,7 @@ static PetscErrorCode CreateQuadMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
     break;
   }
   PetscCall(DMPlexOrientLabel(*dm, label));
-  PetscCall(DMPlexLabelCohesiveComplete(*dm, label, NULL, 1, PETSC_FALSE, PETSC_FALSE, NULL));
+  PetscCall(DMPlexLabelCohesiveComplete(*dm, label, NULL, 1, PETSC_FALSE, NULL));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -943,7 +946,7 @@ static PetscErrorCode CreateHexMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
     break;
   }
   PetscCall(DMPlexOrientLabel(*dm, label));
-  PetscCall(DMPlexLabelCohesiveComplete(*dm, label, NULL, 1, PETSC_FALSE, PETSC_FALSE, NULL));
+  PetscCall(DMPlexLabelCohesiveComplete(*dm, label, NULL, 1, PETSC_FALSE, NULL));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -980,6 +983,392 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Create a displacement field, and some number of vector fault fields
+static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
+{
+  PetscSection   s;
+  DMLabel        fault, faultSpace;
+  PetscFE        fe;
+  DMPolytopeType ct, fct;
+  PetscInt       dim, cStart, fStart, Ncf = user->cohesiveFields;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMGetLabel(dm, "fault", &fault));
+  if (!fault) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMLabelView(fault, PETSC_VIEWER_STDOUT_WORLD));
+
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, dim, ct, "displacement_", PETSC_DETERMINE, &fe));
+  PetscCall(PetscFESetName(fe, "displacement"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+  PetscCall(PetscFEDestroy(&fe));
+
+  // Make label for fault space definition
+  PetscCall(DMCreateLabel(dm, "faultSpace"));
+  PetscCall(DMGetLabel(dm, "faultSpace", &faultSpace));
+  for (PetscInt d = 0; d <= dim; ++d) {
+    PetscInt pStart, pEnd, pMax;
+
+    PetscCall(DMPlexGetSimplexOrBoxCells(dm, d, NULL, &pMax));
+    PetscCall(DMPlexGetHeightStratum(dm, d, &pStart, &pEnd));
+    for (PetscInt p = pMax; p < pEnd; ++p) PetscCall(DMLabelSetValue(faultSpace, p, 1));
+  }
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, fStart, &fct));
+  if (Ncf > 0) {
+    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim - 1, dim, fct, "faulttraction_", PETSC_DETERMINE, &fe));
+    PetscCall(PetscFESetName(fe, "fault traction"));
+    PetscCall(DMAddField(dm, faultSpace, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+  }
+  for (PetscInt f = 1; f < Ncf; ++f) {
+    char name[256], opt[256];
+
+    PetscCall(PetscSNPrintf(name, 256, "fault field %" PetscInt_FMT, f));
+    PetscCall(PetscSNPrintf(opt, 256, "faultfield_%" PetscInt_FMT "_", f));
+    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim - 1, dim, fct, opt, PETSC_DETERMINE, &fe));
+    PetscCall(PetscFESetName(fe, name));
+    PetscCall(DMAddField(dm, faultSpace, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+  }
+  PetscCall(DMCreateDS(dm));
+
+  PetscCall(DMGetLocalSection(dm, &s));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)s, NULL, "-local_section_view"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Label cells 1 for negative side, and 2 for positive side
+static PetscErrorCode CreateMaterialLabel(DM dm)
+{
+  DMLabel         fault, material;
+  IS              faceIS;
+  const PetscInt *faces;
+  PetscReal       fvol, fcentroid[3], fnormal[3];
+  PetscInt        dim, cStart, cEnd, Nf;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetLabel(dm, "fault", &fault));
+  PetscCall(DMCreateLabel(dm, "material"));
+  PetscCall(DMGetLabel(dm, "material", &material));
+  for (PetscInt s = 1; s < 3; ++s) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        n;
+
+    PetscCall(DMLabelGetStratumIS(fault, s > 1 ? 100 + dim : -(100 + dim), &pointIS));
+    if (!pointIS) continue;
+    PetscCall(ISGetLocalSize(pointIS, &n));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt i = 0; i < n; ++i) {
+      PetscCall(DMLabelSetValue(material, points[i], s));
+    }
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+  }
+  // This simple algorithm will work for now (note that cohesive cells get added into this label)
+  PetscCall(DMLabelGetStratumIS(fault, dim - 1, &faceIS));
+  PetscCall(ISGetLocalSize(faceIS, &Nf));
+  PetscCheck(Nf > 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Fault label must contain at least one face");
+  PetscCall(ISGetIndices(faceIS, &faces));
+  for (PetscInt i = 0; i < Nf; ++i) {
+    const PetscInt face = faces[i];
+    DMPolytopeType ct;
+
+    PetscCall(DMPlexGetCellType(dm, face, &ct));
+    if (DMPolytopeTypeGetDim(ct) != dim - 1) continue;
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, face, &fvol, fcentroid, fnormal));
+    break;
+  }
+  PetscCall(ISRestoreIndices(faceIS, &faces));
+  PetscCall(ISDestroy(&faceIS));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    PetscReal vol, centroid[3];
+    PetscInt  val;
+
+    PetscCall(DMLabelGetValue(fault, c, &val));
+    if (val >= 0) continue;
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL));
+    for (PetscInt e = 0; e < dim; ++e) centroid[e] -= fcentroid[e];
+    if (DMPlex_DotRealD_Internal(dim, centroid, fnormal) > 0) PetscCall(DMLabelSetValue(material, c, 1));
+    else PetscCall(DMLabelSetValue(material, c, 2));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Label cohesive cells and endcap faces 1
+static PetscErrorCode CreateFaultLabel(DM dm)
+{
+  DMLabel  fault;
+  PetscInt cMax, cEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreateLabel(dm, "faultCells"));
+  PetscCall(DMGetLabel(dm, "faultCells", &fault));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cEnd, &cMax));
+  for (PetscInt c = cMax; c < cEnd; ++c) {
+    const PetscInt *cone;
+
+    PetscCall(DMLabelSetValue(fault, c, 1));
+    PetscCall(DMPlexGetCone(dm, c, &cone));
+    PetscCall(DMLabelSetValue(fault, cone[0], 1));
+    PetscCall(DMLabelSetValue(fault, cone[1], 1));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode r(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) u[d] = x[d];
+  return PETSC_SUCCESS;
+}
+
+static PetscErrorCode rp1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) u[d] = x[d] + (d > 0 ? 1.0 : 0.0);
+  return PETSC_SUCCESS;
+}
+
+static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
+{
+  PetscInt d;
+  u[0] = -x[1];
+  u[1] = x[0];
+  for (d = 2; d < dim; ++d) u[d] = x[d];
+  return PETSC_SUCCESS;
+}
+
+static void add_fields(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscInt       d;
+  const PetscInt offN = 0;
+  const PetscInt offP = dim;
+  for (d = 0; d < dim; ++d) f[d] = u[offN + d] + u[offP + d];
+}
+
+static void normal_field(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) f[d] = n[d];
+}
+
+/* \lambda \cdot (\psi_u^- - \psi_u^+) */
+static void f0_bd_u_neg(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = -u[uOff[1] + c];
+}
+
+static void f0_bd_u_pos(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = u[uOff[1] + c];
+}
+
+/* (d - u^+ + u^-) \cdot \psi_\lambda */
+static void f0_bd_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = uOff[2] - uOff[1];
+
+  for (PetscInt c = 0; c < Nc; ++c) f0[c] = (c > 0 ? 1.0 : 0.0) + u[c] - u[Nc + c];
+}
+
+/* \psi_lambda \cdot (\psi_u^- - \psi_u^+) */
+static void g0_bd_ul_neg(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = -1.0;
+}
+
+static void g0_bd_ul_pos(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscInt Nc = dim + 1;
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
+}
+
+/* (-\psi_u^+ + \psi_u^-) \cdot \psi_\lambda */
+static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscInt Nc = uOff[2] - uOff[1];
+
+  for (PetscInt c = 0; c < Nc; ++c) {
+    g0[c * Nc + c]           = -1.0;
+    g0[Nc * Nc + c * Nc + c] = 1.0;
+  }
+}
+
+static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
+{
+  Mat           J;
+  Vec           locX, locF, locW;
+  PetscDS       probh;
+  DMLabel       fault, material;
+  DM            dmFault;
+  IS            cohesiveCells;
+  PetscFE       fe;
+  PetscWeakForm wf;
+  PetscFormKey  keys[3];
+  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx);
+  DMPolytopeType fct;
+  PetscInt       dim, fStart, Nf, cMax, cEnd, id;
+  PetscMPIInt    rank, size;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetNumFields(dm, &Nf));
+  if (Nf <= 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, NULL, &cMax));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
+  if (size > 1) {
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt       *points;
+    PetscInt        Nl, l, Ncoh = 0;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+    for (PetscInt c = cMax; c < cEnd; ++c) {
+      PetscCall(PetscFindInt(c, Nl, leaves, &l));
+      if (l < 0) ++Ncoh;
+    }
+    PetscCall(PetscMalloc1(Ncoh, &points));
+    Ncoh = 0;
+    for (PetscInt c = cMax; c < cEnd; ++c) {
+      PetscCall(PetscFindInt(c, Nl, leaves, &l));
+      if (l < 0) points[Ncoh++] = c;
+    }
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncoh, points, PETSC_OWN_POINTER, &cohesiveCells));
+  } else {
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, cEnd - cMax, cMax, 1, &cohesiveCells));
+  }
+  PetscCall(CreateFaultLabel(dm));
+  PetscCall(DMGetLabel(dm, "faultCells", &fault));
+  PetscCall(DMGetLocalVector(dm, &locX));
+  PetscCall(PetscObjectSetName((PetscObject)locX, "Local Solution"));
+  PetscCall(DMGetLocalVector(dm, &locF));
+  PetscCall(PetscObjectSetName((PetscObject)locF, "Local Residual"));
+  PetscCall(DMCreateMatrix(dm, &J));
+  PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
+
+  /* The initial guess has displacement shifted by one unit in each fault parallel direction across the fault */
+  PetscCall(CreateMaterialLabel(dm));
+  PetscCall(DMGetLabel(dm, "material", &material));
+  id              = 1;
+  initialGuess[0] = r;
+  initialGuess[1] = NULL;
+  PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
+  id              = 2;
+  initialGuess[0] = rp1;
+  initialGuess[1] = NULL;
+  PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
+  id              = 1;
+  initialGuess[0] = NULL;
+  initialGuess[1] = phi;
+  PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
+  PetscCall(PetscObjectViewSynchronizedFromOptions((PetscObject)locX, (PetscObject)dm, "-local_solution_view"));
+
+  // Test projection to fault mesh
+  if (cMax < cEnd) {
+    PetscCall(DMPlexCreateCohesiveSubmesh(dm, PETSC_FALSE, NULL, 0, &dmFault));
+    PetscCall(PetscObjectSetName((PetscObject)dmFault, "Fault Mesh"));
+    PetscCall(DMViewFromOptions(dmFault, NULL, "-fault_view"));
+    PetscCall(DMPlexOrient(dmFault));
+    PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, NULL));
+    PetscCall(DMPlexGetCellType(dm, fStart, &fct));
+    //PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim - 1, dim, fct, "fault_field_", PETSC_DETERMINE, &fe));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim - 1, dim, PETSC_TRUE, "fault_field_", PETSC_DETERMINE, &fe));
+    PetscCall(PetscFESetName(fe, "fault_field"));
+    PetscCall(DMAddField(dmFault, NULL, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+    PetscCall(DMCreateDS(dmFault));
+    PetscCall(DMGetLocalVector(dmFault, &locW));
+    PetscCall(DMViewFromOptions(dmFault, NULL, "-cohesive_view"));
+    void (*faultFuncs[1])(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
+    DMLabel  depthLabel;
+    PetscInt depth;
+    PetscCall(DMPlexGetDepthLabel(dmFault, &depthLabel));
+    PetscCall(DMPlexGetDepth(dmFault, &depth));
+    id = depth - 1;
+    /* w = r + rp1 */
+    faultFuncs[0] = add_fields;
+    PetscCall(DMProjectBdFieldLabelLocal(dmFault, 0.0, depthLabel, 1, &id, PETSC_DETERMINE, NULL, locX, faultFuncs, INSERT_VALUES, locW));
+    PetscCall(PetscObjectViewSynchronizedFromOptions((PetscObject)locW, (PetscObject)dm, "-local_projection_view"));
+
+    /* w = fault_normal */
+    faultFuncs[0] = normal_field;
+    PetscCall(DMProjectBdFieldLabelLocal(dmFault, 0.0, depthLabel, 1, &id, PETSC_DETERMINE, NULL, locX, faultFuncs, INSERT_VALUES, locW));
+    PetscCall(PetscObjectViewSynchronizedFromOptions((PetscObject)locW, (PetscObject)dm, "-local_projection_view"));
+    PetscCall(DMRestoreLocalVector(dmFault, &locW));
+    PetscCall(DMDestroy(&dmFault));
+  }
+
+  PetscCall(DMGetCellDS(dm, cMax, &probh, NULL));
+  PetscCall(PetscDSGetWeakForm(probh, &wf));
+  PetscCall(PetscDSGetNumFields(probh, &Nf));
+  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u_neg, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 2, 0, 0, 0, f0_bd_u_pos, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 1, 0, 1, 0, 0, g0_bd_ul_neg, 0, NULL, 0, NULL, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexBdJacobian(wf, material, 2, 0, 1, 0, 0, g0_bd_ul_pos, 0, NULL, 0, NULL, 0, NULL));
+  if (Nf > 1) {
+    PetscCall(PetscWeakFormSetIndexBdResidual(wf, fault, 1, 1, 0, 0, f0_bd_l, 0, NULL));
+    PetscCall(PetscWeakFormSetIndexBdJacobian(wf, fault, 1, 1, 0, 0, 0, g0_bd_lu, 0, NULL, 0, NULL, 0, NULL));
+  }
+  if (rank == 0) PetscCall(PetscDSView(probh, NULL));
+
+  keys[0].label = material;
+  keys[0].value = 1;
+  keys[0].field = 0;
+  keys[0].part  = 0;
+  keys[1].label = material;
+  keys[1].value = 2;
+  keys[1].field = 0;
+  keys[1].part  = 0;
+  keys[2].label = fault;
+  keys[2].value = 1;
+  keys[2].field = 1;
+  keys[2].part  = 0;
+  PetscCall(VecSet(locF, 0.));
+  PetscCall(DMPlexComputeResidualHybridByKey(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user));
+  PetscCall(PetscObjectViewSynchronizedFromOptions((PetscObject)locF, (PetscObject)dm, "-local_residual_view"));
+  PetscCall(MatZeroEntries(J));
+  PetscCall(DMPlexComputeJacobianHybridByKey(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user));
+  PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(J, NULL, "-local_jacobian_view"));
+
+  PetscCall(DMRestoreLocalVector(dm, &locX));
+  PetscCall(DMRestoreLocalVector(dm, &locF));
+  PetscCall(MatDestroy(&J));
+  PetscCall(ISDestroy(&cohesiveCells));
+
+  if (cMax < cEnd) {
+    PetscDS         ds;
+    PetscFE         fe;
+    PetscQuadrature quad;
+    IS             *perm;
+    const PetscInt *cone;
+    PetscInt        Na, a;
+
+    PetscCall(DMPlexGetCone(dm, cMax, &cone));
+    PetscCall(DMGetCellDS(dm, cMax, &ds, NULL));
+    PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&fe));
+    PetscCall(PetscFEGetQuadrature(fe, &quad));
+    PetscCall(PetscQuadratureComputePermutations(quad, &Na, &perm));
+    for (a = 0; a < Na; ++a) PetscCall(ISDestroy(&perm[a]));
+    PetscCall(PetscFree(perm));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   DM     dm;
@@ -989,6 +1378,8 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(CreateDiscretization(dm, &user));
+  PetscCall(TestAssembly(dm, &user));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -1000,7 +1391,10 @@ int main(int argc, char **argv)
     requires: triangle
     args: -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
-          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
+          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
     test:
       suffix: tri_0
@@ -1013,6 +1407,11 @@ int main(int argc, char **argv)
       suffix: tri_2
       args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15
     test:
+      suffix: tri_2_perm
+      args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15 \
+            -dm_reorder_section -dm_reorder_section_type cohesive
+    # Note that the mesh is not parallel when the cohesive label is oriented
+    test:
       suffix: tri_3
       nsize: 2
       args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15 \
@@ -1020,11 +1419,36 @@ int main(int argc, char **argv)
               -petscpartitioner_shell_points 0,3,1,2
 
   testset:
+    requires: triangle
+    args: -dm_plex_option_phases coh_,ref_ \
+            -coh_dm_refine 1 -coh_dm_plex_transform_type cohesive_extrude \
+              -coh_dm_plex_transform_active fault \
+            -ref_dm_refine 1 -ref_dm_plex_transform_type refine_regular \
+          -dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    test:
+      suffix: tri_0_ref
+      args: -dm_plex_box_faces 1,1 -dm_plex_cohesive_label_fault 8
+    test:
+      suffix: tri_2_ref
+      args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15
+    test:
+      suffix: tri_2_ref_perm
+      args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15 \
+            -dm_reorder_section -dm_reorder_section_type cohesive
+
+  testset:
     args: -dm_plex_simplex 0 -dm_plex_box_faces 2,1 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 13 \
             -dm_plex_save_transform -dm_plex_check_transform \
-          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
+          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
     test:
       suffix: quad_0
@@ -1043,7 +1467,10 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
-          -orientation_view -orientation_view_synchronized
+          -orientation_view -orientation_view_synchronized \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: quad_4
@@ -1051,7 +1478,10 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 22,23 \
             -dm_plex_save_transform -dm_plex_check_transform \
-          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
+          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: quad_5
@@ -1064,6 +1494,7 @@ int main(int argc, char **argv)
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
           -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: quad_6
@@ -1076,6 +1507,7 @@ int main(int argc, char **argv)
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
           -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: quad_6w
@@ -1090,13 +1522,31 @@ int main(int argc, char **argv)
             -f1_dm_plex_transform_cohesive_width 0.05 \
           -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 2,1 -dm_plex_cohesive_label_fault 13 \
+          -dm_plex_option_phases coh_,ref_ \
+            -coh_dm_refine 1 -coh_dm_plex_transform_type cohesive_extrude \
+              -coh_dm_plex_transform_active fault \
+            -ref_dm_refine 1 -ref_dm_plex_transform_type refine_regular \
+          -dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    test:
+      suffix: quad_0_ref
 
   testset:
     args: -dm_plex_dim 3 -dm_plex_shape doublet \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 7 \
             -dm_plex_save_transform -dm_plex_check_transform \
-          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
+          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
     test:
       suffix: tet_0
@@ -1106,11 +1556,28 @@ int main(int argc, char **argv)
       args: -petscpartitioner_type simple
 
   testset:
+    args: -dm_plex_dim 3 -dm_plex_shape doublet -dm_plex_cohesive_label_fault 7 \
+          -dm_plex_option_phases coh_,ref_ \
+            -coh_dm_refine 1 -coh_dm_plex_transform_type cohesive_extrude \
+              -coh_dm_plex_transform_active fault \
+            -ref_dm_refine 1 -ref_dm_plex_transform_type refine_regular \
+          -dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    test:
+      suffix: tet_0_ref
+
+  testset:
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,1,1 -dm_plex_box_upper 2,1,1 \
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_cohesive_label_fault 15 \
             -dm_plex_save_transform -dm_plex_check_transform \
-          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail
+          -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
     test:
       suffix: hex_0
@@ -1126,7 +1593,10 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
-          -orientation_view -orientation_view_synchronized
+          -orientation_view -orientation_view_synchronized \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: hex_3
@@ -1139,6 +1609,7 @@ int main(int argc, char **argv)
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
           -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
   test:
     suffix: hex_4
@@ -1151,5 +1622,20 @@ int main(int argc, char **argv)
             -f1_dm_plex_transform_active fault1  -f1_coarse_dm_view ::ascii_info_detail \
           -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,1,1 -dm_plex_box_upper 2,1,1 -dm_plex_cohesive_label_fault 15 \
+          -dm_plex_option_phases coh_,ref_ \
+            -coh_dm_refine 1 -coh_dm_plex_transform_type cohesive_extrude \
+              -coh_dm_plex_transform_active fault \
+            -ref_dm_refine 1 -ref_dm_plex_transform_type refine_regular \
+          -dm_view ::ascii_info_detail \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    test:
+      suffix: hex_0_ref
 
 TEST*/
