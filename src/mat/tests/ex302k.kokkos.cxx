@@ -1,4 +1,4 @@
-static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and building Mat on the device.\n\n";
+static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and various read/write Kokkos view APIs on the device.\n\n";
 
 #include <petscvec_kokkos.hpp>
 #include <petscdevice.h>
@@ -145,6 +145,81 @@ int main(int argc, char **argv)
     PetscCall(MatRestoreRowIJ(AB, 0, PETSC_FALSE, PETSC_FALSE, &nd, (const PetscInt **)&oi, (const PetscInt **)&oj, &done));
     PetscCall(MatSeqAIJRestoreArray(AB, &oa));
     PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Likely a bug in MatCreateSeqAIJKokkosWithKokkosViews()");
+
+    // ~~~~~~~~~~~~~~~~~
+    // Test MatSeqAIJ{Get,Restore}KokkosView{,Write}
+    // ~~~~~~~~~~~~~~~~~
+
+    PetscReal   norm_before, norm_after;
+    PetscInt    nnz_AA   = 0;
+    PetscScalar host_sum = 0.0;
+
+    PetscCall(MatNorm(AA, NORM_FROBENIUS, &norm_before));
+
+    /* Const overload: read-only access. Sum the values and check it matches a host-side reference. */
+    {
+      Kokkos::View<const PetscScalar *> ro_view;
+      PetscCall(MatSeqAIJGetKokkosView(AA, &ro_view));
+      nnz_AA = (PetscInt)ro_view.extent(0);
+
+      PetscScalar device_sum = 0.0;
+      Kokkos::parallel_reduce("ex302k_sum", nnz_AA, KOKKOS_LAMBDA(const PetscInt k, PetscScalar &lsum) { lsum += ro_view(k); }, device_sum);
+
+      const PetscScalar *aa_host;
+      PetscCall(MatSeqAIJGetArrayRead(AA, &aa_host));
+      for (PetscInt k = 0; k < nnz_AA; k++) host_sum += aa_host[k];
+      PetscCall(MatSeqAIJRestoreArrayRead(AA, &aa_host));
+
+      PetscCheck(PetscAbsScalar(device_sum - host_sum) <= PETSC_SMALL * PetscAbsScalar(host_sum), PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatSeqAIJGetKokkosView (const) device/host mismatch");
+      PetscCall(MatSeqAIJRestoreKokkosView(AA, &ro_view));
+    }
+
+    /* Snapshot the original values into a host Kokkos view so we can restore them later via the write-only overload. */
+    Kokkos::View<PetscScalar *, HostMirrorMemorySpace> saved_h("saved_h", nnz_AA);
+    {
+      const PetscScalar *aa_host;
+      PetscCall(MatSeqAIJGetArrayRead(AA, &aa_host));
+      for (PetscInt k = 0; k < nnz_AA; k++) saved_h(k) = aa_host[k];
+      PetscCall(MatSeqAIJRestoreArrayRead(AA, &aa_host));
+    }
+
+    /* Write-only overload: overwrite all entries with zero (no read of the prior contents). */
+    {
+      Kokkos::View<PetscScalar *> rw_view;
+      PetscCall(MatSeqAIJGetKokkosViewWrite(AA, &rw_view));
+      PetscCallCXX(Kokkos::deep_copy(rw_view, (PetscScalar)0.0));
+      PetscCall(MatSeqAIJRestoreKokkosViewWrite(AA, &rw_view));
+    }
+    {
+      PetscReal norm_zero;
+      PetscCall(MatNorm(AA, NORM_FROBENIUS, &norm_zero));
+      PetscCheck(norm_zero == 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatSeqAIJ{Get,Restore}KokkosViewWrite did not propagate device write");
+    }
+
+    /* Write-only overload again: restore the original values from the host snapshot. */
+    {
+      Kokkos::View<PetscScalar *> rw_view;
+      PetscCall(MatSeqAIJGetKokkosViewWrite(AA, &rw_view));
+      PetscCallCXX(Kokkos::deep_copy(rw_view, saved_h));
+      PetscCall(MatSeqAIJRestoreKokkosViewWrite(AA, &rw_view));
+    }
+
+    /* Read-write overload: scale by 2, then by 1/2 to undo. */
+    {
+      Kokkos::View<PetscScalar *> rw_view;
+      PetscCall(MatSeqAIJGetKokkosView(AA, &rw_view));
+      Kokkos::parallel_for("ex302k_scale_up", nnz_AA, KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)2.0; });
+      PetscCall(MatSeqAIJRestoreKokkosView(AA, &rw_view));
+    }
+    {
+      Kokkos::View<PetscScalar *> rw_view;
+      PetscCall(MatSeqAIJGetKokkosView(AA, &rw_view));
+      Kokkos::parallel_for("ex302k_scale_down", nnz_AA, KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)0.5; });
+      PetscCall(MatSeqAIJRestoreKokkosView(AA, &rw_view));
+    }
+
+    PetscCall(MatNorm(AA, NORM_FROBENIUS, &norm_after));
+    PetscCheck(PetscAbsReal(norm_after - norm_before) <= PETSC_SMALL * norm_before, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatSeqAIJ{Get,Restore}KokkosView round trip changed AA");
   }
 
   PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &BT));

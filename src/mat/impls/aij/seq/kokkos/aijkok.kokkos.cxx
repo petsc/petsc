@@ -1173,7 +1173,7 @@ static PetscErrorCode MatGetDiagonal_SeqAIJKokkos(Mat A, Vec x)
 }
 
 /* Get a Kokkos View from a mat of type MatSeqAIJKokkos */
-PetscErrorCode MatSeqAIJGetKokkosView(Mat A, ConstMatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJGetKokkosView(Mat A, Kokkos::View<const PetscScalar *> *kv)
 {
   Mat_SeqAIJKokkos *aijkok;
 
@@ -1187,7 +1187,7 @@ PetscErrorCode MatSeqAIJGetKokkosView(Mat A, ConstMatScalarKokkosView *kv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, ConstMatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, Kokkos::View<const PetscScalar *> *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -1196,7 +1196,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, ConstMatScalarKokkosView *kv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJGetKokkosView(Mat A, MatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJGetKokkosView(Mat A, Kokkos::View<PetscScalar *> *kv)
 {
   Mat_SeqAIJKokkos *aijkok;
 
@@ -1210,7 +1210,7 @@ PetscErrorCode MatSeqAIJGetKokkosView(Mat A, MatScalarKokkosView *kv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, MatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, Kokkos::View<PetscScalar *> *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -1220,7 +1220,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A, MatScalarKokkosView *kv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat A, Kokkos::View<PetscScalar *> *kv)
 {
   Mat_SeqAIJKokkos *aijkok;
 
@@ -1233,7 +1233,7 @@ PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
+PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A, Kokkos::View<PetscScalar *> *kv)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -1391,11 +1391,11 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
 
 static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A, const PetscScalar v[], InsertMode imode)
 {
-  MatScalarKokkosView        Aa;
-  ConstMatScalarKokkosView   kv;
-  PetscMemType               memtype;
-  PetscContainer             container;
-  MatCOOStruct_SeqAIJKokkos *coo;
+  Kokkos::View<PetscScalar *> Aa;
+  ConstMatScalarKokkosView    kv;
+  PetscMemType                memtype;
+  PetscContainer              container;
+  MatCOOStruct_SeqAIJKokkos  *coo;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));

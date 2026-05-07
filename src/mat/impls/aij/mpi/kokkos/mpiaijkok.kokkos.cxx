@@ -1578,7 +1578,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
 {
   Mat_MPIAIJ                   *mpiaij = static_cast<Mat_MPIAIJ *>(mat->data);
   Mat                           A = mpiaij->A, B = mpiaij->B;
-  MatScalarKokkosView           Aa, Ba;
+  Kokkos::View<PetscScalar *>   Aa, Ba;
   MatScalarKokkosView           v1;
   PetscMemType                  memtype;
   PetscContainer                container;

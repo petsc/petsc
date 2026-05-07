@@ -52,6 +52,7 @@
 ## Mat
 
 - Add `MATPRODUCT_PtAP` support for `MATDIAGONAL`
+- Add `MatSeqAIJGetKokkosView()`, `MatSeqAIJRestoreKokkosView()`, `MatSeqAIJGetKokkosViewWrite()` and `MatSeqAIJRestoreKokkosViewWrite()` to the public API
 
 ## MatCoarsen
 
