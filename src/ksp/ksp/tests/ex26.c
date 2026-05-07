@@ -114,12 +114,11 @@ int main(int argc, char **argv)
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPPREONLY, &flg));
   if ((flg || nrhs == 1) && !Brand) {
-    PetscInt           n;
     const PetscScalar *xx, *XX;
 
     PetscCall(VecGetArrayRead(fine_ctx.x, &xx));
     PetscCall(MatDenseGetArrayRead(X, &XX));
-    for (n = 0; n < nrhs; n++) {
+    for (PetscInt n = 0; n < nrhs; n++) {
       for (i = 0; i < nlocal; i++) {
         if (PetscAbsScalar(xx[i] - XX[nlocal * n + i]) > PETSC_SMALL) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Error local solve %" PetscInt_FMT ", entry %" PetscInt_FMT " -> %g + i %g != %g + i %g\n", PetscGlobalRank, n, i, (double)PetscRealPart(xx[i]), (double)PetscImaginaryPart(xx[i]), (double)PetscRealPart(XX[i]), (double)PetscImaginaryPart(XX[i])));

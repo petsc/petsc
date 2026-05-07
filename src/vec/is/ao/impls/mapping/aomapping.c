@@ -28,7 +28,6 @@ static PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscMPIInt rank;
-  PetscInt    i;
   PetscBool   isascii;
 
   PetscFunctionBegin;
@@ -38,7 +37,7 @@ static PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N));
     PetscCall(PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n"));
-    for (i = 0; i < aomap->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]));
+    for (PetscInt i = 0; i < aomap->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -52,7 +51,6 @@ static PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *
   PetscInt    N     = aomap->N;
   PetscInt    low, high, mid = 0;
   PetscInt    idex;
-  PetscInt    i;
 
   /* It would be possible to use a single bisection search, which
      recursively divided the indices to be converted, and searched
@@ -60,7 +58,7 @@ static PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */
@@ -87,7 +85,6 @@ static PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *
   PetscInt    N     = aomap->N;
   PetscInt    low, high, mid = 0;
   PetscInt    idex;
-  PetscInt    i;
 
   /* It would be possible to use a single bisection search, which
      recursively divided the indices to be converted, and searched
@@ -95,7 +92,7 @@ static PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */

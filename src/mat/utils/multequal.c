@@ -580,7 +580,6 @@ PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg)
   Vec         x, y, s1, s2;
   PetscRandom rctx;
   PetscScalar a;
-  PetscInt    k;
   PetscReal   norm, normA;
   MPI_Comm    comm;
   PetscMPIInt rank;
@@ -597,7 +596,7 @@ PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg)
   PetscCall(VecDuplicate(s1, &s2));
 
   *flg = PETSC_TRUE;
-  for (k = 0; k < n; k++) {
+  for (PetscInt k = 0; k < n; k++) {
     PetscCall(VecSetRandom(x, rctx));
     PetscCall(VecSetRandom(y, rctx));
     if (rank == 0) PetscCall(PetscRandomGetValue(rctx, &a));

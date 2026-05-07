@@ -140,7 +140,6 @@ PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r
 
 PetscErrorCode readData(MPI_Comm comm, himaInfo *hinfo)
 {
-  PetscInt    i;
   FILE       *fd;
   char        temp[50];
   PetscMPIInt rank;
@@ -151,7 +150,7 @@ PetscErrorCode readData(MPI_Comm comm, himaInfo *hinfo)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     PetscCall(PetscFOpen(PETSC_COMM_SELF, DATAFILENAME, "r", &fd));
-    for (i = 0; i < num; i++) {
+    for (PetscInt i = 0; i < num; i++) {
       double vv, tt;
       PetscCheck(fscanf(fd, "%s%lf%lf", temp, &vv, &tt) == 3, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Badly formatted input file");
       v[i] = vv;

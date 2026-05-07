@@ -12,7 +12,6 @@ int main(int argc, char **argv)
   const PetscScalar *arrayR;
   PetscScalar       *arrayW;
   PetscMPIInt        size;
-  PetscInt           i;
   PetscInt           maxleafB;
   PetscBool          flag = PETSC_FALSE;
 
@@ -43,7 +42,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1(nleavesB, &ilocalB));
   PetscCall(PetscMalloc1(nleavesB, &iremoteB));
 
-  for (i = 0; i < nleavesA; i++) {
+  for (PetscInt i = 0; i < nleavesA; i++) {
     iremoteA[i].rank  = 0;
     iremoteA[i].index = i;
     if (flag) {
@@ -53,7 +52,7 @@ int main(int argc, char **argv)
     }
   }
 
-  for (i = 0; i < nleavesB; i++) {
+  for (PetscInt i = 0; i < nleavesB; i++) {
     iremoteB[i].rank = 0;
     if (flag) {
       ilocalB[i]        = nleavesB - i;
@@ -76,7 +75,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSFGetLeafRange(sfB, NULL, &maxleafB));
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD, maxleafB + 1, &ba));
   PetscCall(VecGetArray(a, &arrayW));
-  for (i = 0; i < nrootsA; i++) arrayW[i] = (PetscScalar)i;
+  for (PetscInt i = 0; i < nrootsA; i++) arrayW[i] = (PetscScalar)i;
   PetscCall(VecRestoreArray(a, &arrayW));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Vec A\n"));

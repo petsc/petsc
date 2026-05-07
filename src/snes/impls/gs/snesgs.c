@@ -215,7 +215,6 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
   Vec              F;
   Vec              X;
   Vec              B;
-  PetscInt         i;
   PetscReal        fnorm;
   SNESNormSchedule normschedule;
 
@@ -259,7 +258,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
   /* Call general purpose update function */
   PetscTryTypeMethod(snes, update, snes->iter);
 
-  for (i = 0; i < snes->max_its; i++) {
+  for (PetscInt i = 0; i < snes->max_its; i++) {
     PetscCall(SNESComputeNGS(snes, B, X));
     /* only compute norms if requested or about to exit due to maximum iterations */
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {

@@ -1058,25 +1058,22 @@ static PetscErrorCode rp1(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 
 static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
   u[0] = -x[1];
   u[1] = x[0];
-  for (d = 2; d < dim; ++d) u[d] = x[d];
+  for (PetscInt d = 2; d < dim; ++d) u[d] = x[d];
   return PETSC_SUCCESS;
 }
 
 static void add_fields(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
-  PetscInt       d;
   const PetscInt offN = 0;
   const PetscInt offP = dim;
-  for (d = 0; d < dim; ++d) f[d] = u[offN + d] + u[offP + d];
+  for (PetscInt d = 0; d < dim; ++d) f[d] = u[offN + d] + u[offP + d];
 }
 
 static void normal_field(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f[d] = n[d];
+  for (PetscInt d = 0; d < dim; ++d) f[d] = n[d];
 }
 
 /* \lambda \cdot (\psi_u^- - \psi_u^+) */
@@ -1245,14 +1242,14 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
     PetscQuadrature quad;
     IS             *perm;
     const PetscInt *cone;
-    PetscInt        Na, a;
+    PetscInt        Na;
 
     PetscCall(DMPlexGetCone(dm, cMax, &cone));
     PetscCall(DMGetCellDS(dm, cMax, &ds, NULL));
     PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&fe));
     PetscCall(PetscFEGetQuadrature(fe, &quad));
     PetscCall(PetscQuadratureComputePermutations(quad, &Na, &perm));
-    for (a = 0; a < Na; ++a) PetscCall(ISDestroy(&perm[a]));
+    for (PetscInt a = 0; a < Na; ++a) PetscCall(ISDestroy(&perm[a]));
     PetscCall(PetscFree(perm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

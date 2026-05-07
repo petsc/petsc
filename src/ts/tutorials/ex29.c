@@ -221,7 +221,6 @@ PetscErrorCode FormDiffusionCoefficient(DM da, PetscCtx ctx, Vec X)
 
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, PetscCtx ctx)
 {
-  PetscInt    i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx, scale;
   PetscScalar u, uxx, uyy;
   PetscScalar ux, uy, bx, by;
@@ -244,8 +243,8 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **
   hydhx = hy / hx;
   scale = hx * hy;
 
-  for (j = info->ys; j < info->ys + info->ym; j++) {
-    for (i = info->xs; i < info->xs + info->xm; i++) {
+  for (PetscInt j = info->ys; j < info->ys + info->ym; j++) {
+    for (PetscInt i = info->xs; i < info->xs + info->xm; i++) {
       f[j][i].u = xt[j][i].u * scale;
 
       u = x[j][i].u;

@@ -659,7 +659,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
   PetscDS  prob;
-  PetscInt Nf, f;
+  PetscInt Nf;
 
   PetscFunctionBegin;
   PetscCall(DMGetDS(adaptor->idm, &prob));
@@ -667,7 +667,7 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   PetscCall(VecTaggerSetUp(adaptor->coarsenTag));
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscMalloc2(Nf, &adaptor->exactSol, Nf, &adaptor->exactCtx));
-  for (f = 0; f < Nf; ++f) {
+  for (PetscInt f = 0; f < Nf; ++f) {
     PetscCall(PetscDSGetExactSolution(prob, f, &adaptor->exactSol[f], &adaptor->exactCtx[f]));
     /* TODO Have a flag that forces projection rather than using the exact solution */
     if (adaptor->exactSol[0]) PetscCall(DMAdaptorSetTransferFunction(adaptor, DMAdaptorTransferSolution_Exact_Private));
@@ -839,11 +839,10 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 static PetscErrorCode DMAdaptorComputeCellErrorIndicator_Gradient(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, PetscCtx ctx)
 {
   PetscReal err = 0.;
-  PetscInt  c, d;
 
   PetscFunctionBeginHot;
-  for (c = 0; c < Nc; c++) {
-    for (d = 0; d < dim; ++d) err += PetscSqr(PetscRealPart(gradient[c * dim + d]));
+  for (PetscInt c = 0; c < Nc; c++) {
+    for (PetscInt d = 0; d < dim; ++d) err += PetscSqr(PetscRealPart(gradient[c * dim + d]));
   }
   *errInd = cg->volume * err;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -100,7 +100,6 @@ int main(int argc, char **argv)
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx    *user = (AppCtx *)ptr;
-  PetscInt   i;
   PetscReal *x, *f;
 
   PetscFunctionBegin;
@@ -108,7 +107,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscCall(VecGetArray(F, &f));
   if (user->size == 1) {
     /* Single processor */
-    for (i = 0; i < NOBSERVATIONS; i++) PetscCall(RunSimulation(x, i, &f[i], user));
+    for (PetscInt i = 0; i < NOBSERVATIONS; i++) PetscCall(RunSimulation(x, i, &f[i], user));
   } else {
     /* Multiprocessor main */
     PetscMPIInt tag;

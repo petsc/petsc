@@ -4,7 +4,6 @@ static char help[] = "Test Mat products \n\n";
 int main(int argc, char **args)
 {
   Mat            A = NULL, B = NULL, C = NULL, D = NULL, E = NULL;
-  PetscInt       k;
   const PetscInt M = 18, N = 18;
   PetscMPIInt    rank;
 
@@ -31,7 +30,7 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
   if (rank == 0) {
-    for (k = 0; k < Annz; k++) PetscCall(MatSetValue(A, Ai[k], Aj[k], Ai[k] + Aj[k] + 1.0, INSERT_VALUES));
+    for (PetscInt k = 0; k < Annz; k++) PetscCall(MatSetValue(A, Ai[k], Aj[k], Ai[k] + Aj[k] + 1.0, INSERT_VALUES));
   }
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -45,7 +44,7 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
   if (rank == 0) {
-    for (k = 0; k < Bnnz; k++) PetscCall(MatSetValue(B, Bi[k], Bj[k], Bi[k] + Bj[k] + 2.0, INSERT_VALUES));
+    for (PetscInt k = 0; k < Bnnz; k++) PetscCall(MatSetValue(B, Bi[k], Bj[k], Bi[k] + Bj[k] + 2.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));

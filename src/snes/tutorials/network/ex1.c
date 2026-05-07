@@ -657,14 +657,14 @@ int main(int argc, char **argv)
 
   /* Test DMNetworkGetSubnetwork() and DMNetworkGetSubnetworkSharedVertices() */
   if (test) {
-    PetscInt v, gidx;
+    PetscInt gidx;
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     for (i = 0; i < Nsubnet; i++) {
       PetscCall(DMNetworkGetSubnetwork(networkdm, i, &nv, &ne, &vtx, &edges));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] After distribute, subnet[%" PetscInt_FMT "] ne %" PetscInt_FMT ", nv %" PetscInt_FMT "\n", rank, i, ne, nv));
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
-      for (v = 0; v < nv; v++) {
+      for (PetscInt v = 0; v < nv; v++) {
         PetscCall(DMNetworkIsGhostVertex(networkdm, vtx[v], &ghost));
         PetscCall(DMNetworkGetGlobalVertexIndex(networkdm, vtx[v], &gidx));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] subnet[%" PetscInt_FMT "] v %" PetscInt_FMT " %" PetscInt_FMT "; ghost %d\n", rank, i, vtx[v], gidx, ghost));
@@ -675,7 +675,7 @@ int main(int argc, char **argv)
 
     PetscCall(DMNetworkGetSharedVertices(networkdm, &nv, &vtx));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] After distribute, num of shared vertices nsv = %" PetscInt_FMT "\n", rank, nv));
-    for (v = 0; v < nv; v++) {
+    for (PetscInt v = 0; v < nv; v++) {
       PetscCall(DMNetworkGetGlobalVertexIndex(networkdm, vtx[v], &gidx));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] sv %" PetscInt_FMT ", gidx=%" PetscInt_FMT "\n", rank, vtx[v], gidx));
     }

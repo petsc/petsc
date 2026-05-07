@@ -221,12 +221,10 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
 
 PetscErrorCode MatCreateSubMatrices_SMF(Mat A, PetscInt n, IS *irow, IS *icol, MatReuse scall, Mat **B)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
-  for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SMF(A, irow[i], icol[i], scall, &(*B)[i]));
+  for (PetscInt i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SMF(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

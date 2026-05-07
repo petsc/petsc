@@ -7,14 +7,14 @@ static PetscErrorCode TestInsertion(void)
 {
   DMLabel        label, label2;
   const PetscInt values[5] = {0, 3, 4, -1, 176}, N = 10000;
-  PetscInt       i, v;
+  PetscInt       v;
 
   PetscFunctionBegin;
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
   PetscCall(DMLabelSetDefaultValue(label, -100));
-  for (i = 0; i < N; ++i) PetscCall(DMLabelSetValue(label, i, values[i % 5]));
+  for (PetscInt i = 0; i < N; ++i) PetscCall(DMLabelSetValue(label, i, values[i % 5]));
   /* Test get in hash mode */
-  for (i = 0; i < N; ++i) {
+  for (PetscInt i = 0; i < N; ++i) {
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
@@ -30,12 +30,12 @@ static PetscErrorCode TestInsertion(void)
     PetscCheck(stratum, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %" PetscInt_FMT " is empty!", v);
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(ISGetLocalSize(stratum, &n));
-    for (i = 0; i < n; ++i) PetscCheck(points[i] == i * 5 + v, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i * 5 + v);
+    for (PetscInt i = 0; i < n; ++i) PetscCheck(points[i] == i * 5 + v, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i * 5 + v);
     PetscCall(ISRestoreIndices(stratum, &points));
     PetscCall(ISDestroy(&stratum));
   }
   /* Test get in array mode */
-  for (i = 0; i < N; ++i) {
+  for (PetscInt i = 0; i < N; ++i) {
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
@@ -43,7 +43,7 @@ static PetscErrorCode TestInsertion(void)
   }
   /* Test Duplicate */
   PetscCall(DMLabelDuplicate(label, &label2));
-  for (i = 0; i < N; ++i) {
+  for (PetscInt i = 0; i < N; ++i) {
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label2, i, &val));
@@ -121,9 +121,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     PetscCall(DMCreateLabel(dm, "depth"));
     PetscCall(DMPlexGetDepthLabel(dm, &label));
     if (rank == 0) {
-      PetscInt i;
-
-      for (i = 0; i < 25; ++i) {
+      for (PetscInt i = 0; i < 25; ++i) {
         if (i < 2) PetscCall(DMLabelSetValue(label, i, 3));
         else if (i < 13) PetscCall(DMLabelSetValue(label, i, 2));
         else {
@@ -256,11 +254,11 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   PetscCall(PetscObjectViewFromOptions((PetscObject)ulabel, NULL, "-universal_view"));
 
   if (!notFile) {
-    PetscInt Nl, l;
+    PetscInt Nl;
 
     PetscCall(DMClone(dm1, &dm2));
     PetscCall(DMGetNumLabels(dm2, &Nl));
-    for (l = Nl - 1; l >= 0; --l) {
+    for (PetscInt l = Nl - 1; l >= 0; --l) {
       PetscBool   isdepth, iscelltype;
       const char *name;
 

@@ -162,7 +162,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
     if (tpwgts) {
       Vec          v;
       PetscScalar *array;
-      PetscInt     st, j;
+      PetscInt     st;
       PetscMPIInt  rank;
 
       PetscCall(VecCreate(comm, &v));
@@ -171,14 +171,14 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       for (np = 0, st = 0; np < nparts; ++np) {
         if (rank == np || (rank == size - 1 && size < nparts && np >= size)) {
-          for (j = 0; j < tpwgts[np]; j++) PetscCall(VecSetValue(v, st + j, np, INSERT_VALUES));
+          for (PetscInt j = 0; j < tpwgts[np]; j++) PetscCall(VecSetValue(v, st + j, np, INSERT_VALUES));
         }
         st += tpwgts[np];
       }
       PetscCall(VecAssemblyBegin(v));
       PetscCall(VecAssemblyEnd(v));
       PetscCall(VecGetArray(v, &array));
-      for (j = 0; j < numVertices; ++j) PetscCall(PetscSectionAddDof(partSection, PetscRealPart(array[j]), 1));
+      for (PetscInt j = 0; j < numVertices; ++j) PetscCall(PetscSectionAddDof(partSection, PetscRealPart(array[j]), 1));
       PetscCall(VecRestoreArray(v, &array));
       PetscCall(VecDestroy(&v));
     } else {

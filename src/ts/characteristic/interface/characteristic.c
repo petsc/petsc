@@ -575,13 +575,13 @@ PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D 
 PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic c)
 {
   PetscMPIInt rank, tag = 121;
-  PetscInt    i, n;
+  PetscInt    n;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank));
   PetscCall(CharacteristicHeapSort(c, c->queue, c->queueSize));
   PetscCall(PetscArrayzero(c->needCount, c->numNeighbors));
-  for (i = 0; i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
+  for (PetscInt i = 0; i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
   c->fillCount[0] = 0;
   for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPIU_Irecv(&c->fillCount[n], 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &c->request[n - 1]));
   for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPIU_Send(&c->needCount[n], 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));

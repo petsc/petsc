@@ -152,10 +152,9 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A, PetscBool values, cholmod_s
 #if defined(PETSC_USE_COMPLEX)
     /* we need to pass CHOLMOD the conjugate matrix */
     PetscScalar *v;
-    PetscInt     i;
 
     PetscCall(PetscMalloc1(sbaij->maxnz, &v));
-    for (i = 0; i < sbaij->maxnz; i++) v[i] = PetscConj(sbaij->a[i]);
+    for (PetscInt i = 0; i < sbaij->maxnz; i++) v[i] = PetscConj(sbaij->a[i]);
     C->x     = v;
     vallocin = PETSC_TRUE;
 #else
@@ -299,7 +298,6 @@ static PetscErrorCode MatView_Info_CHOLMOD(Mat F, PetscViewer viewer)
 {
   Mat_CHOLMOD          *chol = (Mat_CHOLMOD *)F->data;
   const cholmod_common *c    = chol->common;
-  PetscInt              i;
 
   PetscFunctionBegin;
   if (F->ops->solve != MatSolve_CHOLMOD) PetscFunctionReturn(PETSC_SUCCESS);
@@ -323,7 +321,7 @@ static PetscErrorCode MatView_Info_CHOLMOD(Mat F, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Common.nrelax            [%u,%u,%u]\n", (unsigned)c->nrelax[0], (unsigned)c->nrelax[1], (unsigned)c->nrelax[2]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Common.prefer_upper      %d\n", c->prefer_upper));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Common.print             %d\n", c->print));
-  for (i = 0; i < c->nmethods; i++) {
+  for (PetscInt i = 0; i < c->nmethods; i++) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Ordering method %" PetscInt_FMT "%s:\n", i, i == c->selected ? " [SELECTED]" : ""));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  lnz %g, fl %g, prune_dense %g, prune_dense2 %g\n", c->method[i].lnz, c->method[i].fl, c->method[i].prune_dense, c->method[i].prune_dense2));
   }

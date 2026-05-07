@@ -4,7 +4,6 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc, ISColoring *iscolor
 {
   Mat         m = mc->mat, mp, ms;
   MatColoring imc;
-  PetscInt    i;
   const char *optionsprefix;
 
   PetscFunctionBegin;
@@ -13,7 +12,7 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc, ISColoring *iscolor
     mp = m;
   } else {
     PetscCall(MatMatMult(m, m, MAT_INITIAL_MATRIX, 2.0, &mp));
-    for (i = 2; i < mc->dist; i++) {
+    for (PetscInt i = 2; i < mc->dist; i++) {
       ms = mp;
       PetscCall(MatMatMult(m, ms, MAT_INITIAL_MATRIX, 2.0, &mp));
       PetscCall(MatDestroy(&ms));

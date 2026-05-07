@@ -110,7 +110,6 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
 {
   int         fdes;
   PetscScalar buffer[VEC_LEN];
-  PetscInt    i;
   PetscMPIInt rank;
   PetscBool   dataverified = PETSC_TRUE;
 
@@ -121,7 +120,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
     PetscCall(PetscBinaryRead(fdes, buffer, VEC_LEN, NULL, PETSC_SCALAR));
     PetscCall(PetscBinaryClose(fdes));
 
-    for (i = 0; i < VEC_LEN; i++) {
+    for (PetscInt i = 0; i < VEC_LEN; i++) {
       PetscScalar v;
       v = PetscAbsScalar(test_values[i] - buffer[i]);
 #if defined(PETSC_USE_COMPLEX)

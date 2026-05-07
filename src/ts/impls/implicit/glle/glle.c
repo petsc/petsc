@@ -1163,7 +1163,6 @@ static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems PetscOptions
 static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 {
   TS_GLLE  *gl = (TS_GLLE *)ts->data;
-  PetscInt  i;
   PetscBool isascii, details;
 
   PetscFunctionBegin;
@@ -1181,7 +1180,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
     details = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_gl_view_detailed", &details, NULL));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    for (i = 0; i < gl->nschemes; i++) PetscCall(TSGLLESchemeView(gl->schemes[i], details, viewer));
+    for (PetscInt i = 0; i < gl->nschemes; i++) PetscCall(TSGLLESchemeView(gl->schemes[i], details, viewer));
     if (gl->View) PetscCall((*gl->View)(gl, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }

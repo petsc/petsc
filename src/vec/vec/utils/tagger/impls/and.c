@@ -103,9 +103,7 @@ static PetscErrorCode VecTaggerComputeBoxes_And(VecTagger tagger, Vec vec, Petsc
           if (isSub) break;
           PetscCall(VecTaggerAndOrIsSubBox_Private(bs, &isect[l * bs], &isect[m * bs], &isSub));
           if (isSub) {
-            PetscInt r;
-
-            for (r = 0; r < bs; r++) isect[m * bs + r] = isect[l * bs + r];
+            for (PetscInt r = 0; r < bs; r++) isect[m * bs + r] = isect[l * bs + r];
             break;
           }
         }
@@ -126,7 +124,7 @@ static PetscErrorCode VecTaggerComputeBoxes_And(VecTagger tagger, Vec vec, Petsc
 
 static PetscErrorCode VecTaggerComputeIS_And(VecTagger tagger, Vec vec, IS *is, PetscBool *listed)
 {
-  PetscInt   nsubs, i;
+  PetscInt   nsubs;
   VecTagger *subs;
   IS         isectIS;
   PetscBool  boxlisted;
@@ -144,7 +142,7 @@ static PetscErrorCode VecTaggerComputeIS_And(VecTagger tagger, Vec vec, IS *is, 
   }
   PetscCall(VecTaggerComputeIS(subs[0], vec, &isectIS, &boxlisted));
   PetscCheck(boxlisted, PetscObjectComm((PetscObject)tagger), PETSC_ERR_SUP, "Does not support VecTaggerComputeIS()");
-  for (i = 1; i < nsubs; i++) {
+  for (PetscInt i = 1; i < nsubs; i++) {
     IS subIS, newIsectIS;
 
     PetscCall(VecTaggerComputeIS(subs[i], vec, &subIS, &boxlisted));

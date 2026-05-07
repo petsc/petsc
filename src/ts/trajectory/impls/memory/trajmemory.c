@@ -519,8 +519,7 @@ static PetscErrorCode LoadSingle(TSTrajectory tj, TS ts, Stack *stack, PetscInt 
 
 static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt stepnum, PetscBool adjoint_mode)
 {
-  Vec     *Y;
-  PetscInt i;
+  Vec *Y;
 
   PetscFunctionBegin;
   /* In adjoint mode we do not need to copy solution if the stepnum is the same */
@@ -528,7 +527,7 @@ static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt ste
   if (HaveStages(e->cptype)) {
     PetscCall(TSGetStages(ts, &stack->numY, &Y));
     if (e->stepnum && e->stepnum == stepnum) {
-      for (i = 0; i < stack->numY; i++) PetscCall(VecCopy(e->Y[i], Y[i]));
+      for (PetscInt i = 0; i < stack->numY; i++) PetscCall(VecCopy(e->Y[i], Y[i]));
     } else if (ts->stifflyaccurate) {
       PetscCall(VecCopy(e->Y[stack->numY - 1], ts->vec_sol));
     }
@@ -546,13 +545,12 @@ static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt ste
 
 static PetscErrorCode ReCompute(TS ts, TJScheduler *tjsch, PetscInt stepnumbegin, PetscInt stepnumend)
 {
-  Stack   *stack = &tjsch->stack;
-  PetscInt i;
+  Stack *stack = &tjsch->stack;
 
   PetscFunctionBegin;
   tjsch->recompute = PETSC_TRUE;                           /* hints TSTrajectorySet() that it is in recompute mode */
   PetscCall(TSSetStepNumber(ts, stepnumbegin));            /* global step number */
-  for (i = stepnumbegin; i < stepnumend; i++) {            /* assume fixed step size */
+  for (PetscInt i = stepnumbegin; i < stepnumend; i++) {   /* assume fixed step size */
     if (stack->solution_only && !tjsch->skip_trajectory) { /* revolve online need this */
       /* don't use the public interface as it will update the TSHistory: this need a better fix */
       PetscCall(TSTrajectorySet_Memory(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
@@ -1040,7 +1038,7 @@ static PetscErrorCode TSTrajectoryMemorySet_RON(TSTrajectory tj, TS ts, TJSchedu
 {
   Stack          *stack = &tjsch->stack;
   Vec            *Y;
-  PetscInt        i, store;
+  PetscInt        store;
   PetscReal       timeprev;
   StackElement    e;
   RevolveCTX     *rctx = tjsch->rctx;
@@ -1059,7 +1057,7 @@ static PetscErrorCode TSTrajectoryMemorySet_RON(TSTrajectory tj, TS ts, TJSchedu
       if (HaveSolution(e->cptype)) PetscCall(VecCopy(X, e->X));
       if (HaveStages(e->cptype)) {
         PetscCall(TSGetStages(ts, &stack->numY, &Y));
-        for (i = 0; i < stack->numY; i++) PetscCall(VecCopy(Y[i], e->Y[i]));
+        for (PetscInt i = 0; i < stack->numY; i++) PetscCall(VecCopy(Y[i], e->Y[i]));
       }
       e->stepnum = stepnum;
       e->time    = time;

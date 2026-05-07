@@ -96,8 +96,6 @@ PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
 @*/
 PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat RT_Pi[], Mat ND_PiFull, Mat ND_Pi[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (RT_PiFull) {
@@ -106,7 +104,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
   }
   if (RT_Pi) {
     PetscAssertPointer(RT_Pi, 4);
-    for (i = 0; i < dim; ++i) {
+    for (PetscInt i = 0; i < dim; ++i) {
       if (RT_Pi[i]) {
         PetscValidHeaderSpecific(RT_Pi[i], MAT_CLASSID, 4);
         PetscCheckSameComm(pc, 1, RT_Pi[i], 4);
@@ -119,7 +117,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
   }
   if (ND_Pi) {
     PetscAssertPointer(ND_Pi, 6);
-    for (i = 0; i < dim; ++i) {
+    for (PetscInt i = 0; i < dim; ++i) {
       if (ND_Pi[i]) {
         PetscValidHeaderSpecific(ND_Pi[i], MAT_CLASSID, 6);
         PetscCheckSameComm(pc, 1, ND_Pi[i], 6);

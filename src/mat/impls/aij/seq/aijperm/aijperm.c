@@ -295,7 +295,6 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
    * begin and end in iperm. */
   PetscInt *nzgroup;
   PetscInt  ngroup;
-  PetscInt  igroup;
   PetscInt  jstart, jend;
   /* jstart is used in loops to denote the position in iperm where a
    * group starts; jend denotes the position where it ends.
@@ -323,7 +322,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
 
-  for (igroup = 0; igroup < ngroup; igroup++) {
+  for (PetscInt igroup = 0; igroup < ngroup; igroup++) {
     jstart = xgroup[igroup];
     jend   = xgroup[igroup + 1] - 1;
     nz     = nzgroup[igroup];
@@ -472,7 +471,6 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
    * begin and end in iperm. */
   PetscInt *nzgroup;
   PetscInt  ngroup;
-  PetscInt  igroup;
   PetscInt  jstart, jend;
   /* jstart is used in loops to denote the position in iperm where a
    * group starts; jend denotes the position where it ends.
@@ -504,7 +502,7 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
   xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
 
-  for (igroup = 0; igroup < ngroup; igroup++) {
+  for (PetscInt igroup = 0; igroup < ngroup; igroup++) {
     jstart = xgroup[igroup];
     jend   = xgroup[igroup + 1] - 1;
 

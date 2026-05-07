@@ -633,7 +633,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz
   const PetscScalar *x;
   PetscScalar       *y, *z;
   PetscInt           n = A->cmap->n;
-  PetscInt           i;
   PetscObjectState   state;
 
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
@@ -665,7 +664,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
     PetscCallExternal(mkl_sparse_x_mv, SPARSE_OPERATION_TRANSPOSE, 1.0, aijmkl->csrA, aijmkl->descr, x, 0.0, z);
-    for (i = 0; i < n; i++) z[i] += y[i];
+    for (PetscInt i = 0; i < n; i++) z[i] += y[i];
   }
 
   PetscCall(PetscLogFlops(2.0 * a->nz));

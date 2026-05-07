@@ -15,7 +15,6 @@ int main(int argc, char **argv)
   PetscScalar *bufBout;
   PetscMPIInt  rank, size;
   PetscInt     nroots, nleaves;
-  PetscInt     i;
   PetscInt    *ilocal;
   PetscSFNode *iremote;
 
@@ -33,7 +32,7 @@ int main(int argc, char **argv)
   nroots  = 1;
   PetscCall(PetscMalloc1(nleaves, &ilocal));
 
-  for (i = 0; i < nleaves; i++) ilocal[i] = i;
+  for (PetscInt i = 0; i < nleaves; i++) ilocal[i] = i;
 
   PetscCall(PetscMalloc1(nleaves, &iremote));
   if (rank == 0) {
@@ -60,7 +59,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(A, &Bout));
   PetscCall(VecGetArray(A, &bufA));
   PetscCall(VecGetArray(B, &bufB));
-  for (i = 0; i < 2; i++) {
+  for (PetscInt i = 0; i < 2; i++) {
     bufA[i] = (PetscScalar)rank;
     bufB[i] = (PetscScalar)rank + 10.0;
   }

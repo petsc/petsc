@@ -104,7 +104,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscBLASInt *select = agmres->select;
   PetscInt     *perm   = agmres->perm;
   PetscBLASInt  sdim   = 0;
-  PetscInt      i, j;
+  PetscInt      j;
   PetscBLASInt  info;
   PetscBLASInt *iwork = agmres->iwork;
   PetscBLASInt  N;
@@ -132,7 +132,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   }
 
   /* We should avoid computing these ratio...  */
-  for (i = 0; i < KspSize; i++) {
+  for (PetscInt i = 0; i < KspSize; i++) {
     if (beta[i] != 0.0) {
       wr[i] /= beta[i];
       wi[i] /= beta[i];
@@ -160,7 +160,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   PetscCall(PetscArrayzero(Sr, (N + 1) * r));
   for (j = 0; j < r; j++) {
-    for (i = 0; i < KspSize; i++) Sr[j * (N + 1) + i] = Z[j * N + i];
+    for (PetscInt i = 0; i < KspSize; i++) Sr[j * (N + 1) + i] = Z[j * N + i];
   }
 
   /* Broadcast Sr to all other processes to have consistent data;
@@ -185,7 +185,6 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscScalar *MatEigR = agmres->MatEigR;
   PetscScalar *Sr      = agmres->Sr;
   PetscScalar  alpha, beta;
-  PetscInt     i, j;
   PetscInt     max_k = agmres->max_k; /* size of the non - augmented subspace */
   PetscInt     CurNeig;               /* Current number of extracted eigenvalues */
   PetscInt     N = MAXKSPSIZE;
@@ -207,16 +206,16 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &bKspSize, &bKspSize, &blC, &alpha, agmres->hes_origin, &blC, agmres->hes_origin, &blC, &beta, MatEigL, &bN));
   if (!agmres->ritz) {
     /* Form TmpU = V*H where V is the Newton basis orthogonalized  with roddec*/
-    for (j = 0; j < KspSize; j++) {
+    for (PetscInt j = 0; j < KspSize; j++) {
       /* Apply the elementary reflectors (stored in Qloc) on H */
       PetscCall(KSPAGMRESRodvec(ksp, KspSize + 1, &agmres->hes_origin[j * lC], TmpU[j]));
     }
     /* Now form MatEigR = TmpU^T*W where W is [VEC_V(1:max_k); U] */
-    for (j = 0; j < max_k; j++) PetscCall(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j * N]));
-    for (j = max_k; j < KspSize; j++) PetscCall(VecMDot(U[j - max_k], KspSize, TmpU, &MatEigR[j * N]));
+    for (PetscInt j = 0; j < max_k; j++) PetscCall(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j * N]));
+    for (PetscInt j = max_k; j < KspSize; j++) PetscCall(VecMDot(U[j - max_k], KspSize, TmpU, &MatEigR[j * N]));
   } else { /* Form H^T */
-    for (j = 0; j < N; j++) {
-      for (i = 0; i < N; i++) MatEigR[j * N + i] = agmres->hes_origin[i * lC + j];
+    for (PetscInt j = 0; j < N; j++) {
+      for (PetscInt i = 0; i < N; i++) MatEigR[j * N + i] = agmres->hes_origin[i * lC + j];
     }
   }
   /* Obtain the Schur form of  the generalized eigenvalue problem MatEigL*y = \lambda*MatEigR*y */
@@ -233,11 +232,11 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/
-  for (j = 0; j < PrevNeig; j++) { /* First, copy U to a temporary place */
+  for (PetscInt j = 0; j < PrevNeig; j++) { /* First, copy U to a temporary place */
     PetscCall(VecCopy(U[j], TmpU[j]));
   }
 
-  for (j = 0; j < CurNeig; j++) {
+  for (PetscInt j = 0; j < CurNeig; j++) {
     PetscCall(VecMAXPBY(U[j], max_k, &Sr[j * (N + 1)], 0, &VEC_V(0)));
     PetscCall(VecMAXPY(U[j], PrevNeig, &Sr[j * (N + 1) + max_k], TmpU));
   }

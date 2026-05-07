@@ -112,12 +112,12 @@ static PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt bloc
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
-  PetscInt   i, j;
+  PetscInt   i;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(ao->N * block, &temp));
   for (i = 0; i < ao->N; i++) {
-    for (j = 0; j < block; j++) temp[i * block + j] = array[aobasic->petsc[i] * block + j];
+    for (PetscInt j = 0; j < block; j++) temp[i * block + j] = array[aobasic->petsc[i] * block + j];
   }
   PetscCall(PetscArraycpy(array, temp, ao->N * block));
   PetscCall(PetscFree(temp));
@@ -128,12 +128,12 @@ static PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt bloc
 {
   AO_Basic  *aobasic = (AO_Basic *)ao->data;
   PetscReal *temp;
-  PetscInt   i, j;
+  PetscInt   i;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(ao->N * block, &temp));
   for (i = 0; i < ao->N; i++) {
-    for (j = 0; j < block; j++) temp[i * block + j] = array[aobasic->app[i] * block + j];
+    for (PetscInt j = 0; j < block; j++) temp[i * block + j] = array[aobasic->app[i] * block + j];
   }
   PetscCall(PetscArraycpy(array, temp, ao->N * block));
   PetscCall(PetscFree(temp));

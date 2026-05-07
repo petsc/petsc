@@ -89,14 +89,14 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 {
   DM       plex;
   Vec      faceGeometryFVM = NULL;
-  PetscInt Nf, f;
+  PetscInt Nf;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMGetNumFields(plex, &Nf));
   if (!locX_t) {
     /* This is the RHS part */
-    for (f = 0; f < Nf; f++) {
+    for (PetscInt f = 0; f < Nf; f++) {
       PetscObject  obj;
       PetscClassId id;
 
@@ -193,13 +193,13 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   DM        plex;
   IS        allcellIS;
   PetscBool hasJac, hasPrec;
-  PetscInt  Nds, s;
+  PetscInt  Nds;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
-  for (s = 0; s < Nds; ++s) {
+  for (PetscInt s = 0; s < Nds; ++s) {
     PetscDS      ds;
     IS           cellIS;
     PetscFormKey key;
@@ -253,13 +253,13 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 {
   DM       plex;
   IS       allcellIS;
-  PetscInt Nds, s;
+  PetscInt Nds;
 
   PetscFunctionBegin;
   PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
-  for (s = 0; s < Nds; ++s) {
+  for (PetscInt s = 0; s < Nds; ++s) {
     PetscDS      ds;
     IS           cellIS;
     PetscFormKey key;

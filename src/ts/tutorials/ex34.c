@@ -69,7 +69,6 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
   Vec           Uloc, C;
   Field        *u, *udot, *f;
   PetscScalar  *x;
-  PetscInt      i;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
@@ -83,7 +82,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
   PetscCall(DMDAVecGetArrayRead(dm, Udot, &udot));
   PetscCall(DMDAVecGetArray(dm, F, &f));
   PetscCall(DMDAVecGetArrayRead(cdm, C, &x));
-  for (i = info.xs; i < info.xs + info.xm; ++i) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; ++i) {
     if (i == 0) {
       const PetscScalar hx = x[i + 1] - x[i];
       f[i].u               = hx * udot[i].u;
@@ -118,7 +117,6 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
   Vec           C;
   Field        *u, *udot;
   PetscScalar  *x;
-  PetscInt      i;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
@@ -128,7 +126,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
   PetscCall(DMDAVecGetArrayRead(dm, U, &u));
   PetscCall(DMDAVecGetArrayRead(dm, Udot, &udot));
   PetscCall(DMDAVecGetArrayRead(cdm, C, &x));
-  for (i = info.xs; i < info.xs + info.xm; ++i) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; ++i) {
     if (i == 0) {
       const PetscScalar hx  = x[i + 1] - x[i];
       const PetscInt    row = i, col[] = {i, i + 1};
@@ -185,7 +183,6 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, PetscCtx ctx)
   Field          *u;
   PetscScalar    *x;
   const PetscReal sigma = 1.0;
-  PetscInt        i;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
@@ -194,7 +191,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, PetscCtx ctx)
   PetscCall(DMDAGetLocalInfo(dm, &info));
   PetscCall(DMDAVecGetArray(dm, U, &u));
   PetscCall(DMDAVecGetArrayRead(cdm, C, &x));
-  for (i = info.xs; i < info.xs + info.xm; ++i) {
+  for (PetscInt i = info.xs; i < info.xs + info.xm; ++i) {
     u[i].u  = 1.5 * PetscExpScalar(-PetscSqr(x[i] - 10) / PetscSqr(sigma));
     u[i].v  = 0.0;
     u[i].th = 0.0;

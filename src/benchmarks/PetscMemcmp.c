@@ -5,11 +5,10 @@ int main(int argc, char **argv)
 {
   PetscLogDouble x, y, z;
   PetscScalar    A[10000], B[10000];
-  PetscInt       i;
   PetscBool      flg;
 
   PetscCall(PetscInitialize(&argc, &argv, 0, 0));
-  for (i = 0; i < 10000; i++) {
+  for (PetscInt i = 0; i < 10000; i++) {
     A[i] = i % 61897;
     B[i] = i % 61897;
   }

@@ -24,10 +24,8 @@ PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugpro
 
   static PetscErrorCode PetscSortSFNode(PetscInt n, PetscSFNode A[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  for (i = 1; i < n; ++i) {
+  for (PetscInt i = 1; i < n; ++i) {
     PetscSFNode x = A[i];
     PetscInt    j;
 
@@ -929,7 +927,6 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
 
 static PetscErrorCode IntArrayViewFromOptions(MPI_Comm comm, const char opt[], const char name[], const char idxname[], const char valname[], PetscInt n, const PetscInt a[])
 {
-  PetscInt    idx;
   PetscMPIInt rank;
   PetscBool   flg;
 
@@ -938,14 +935,13 @@ static PetscErrorCode IntArrayViewFromOptions(MPI_Comm comm, const char opt[], c
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s:\n", rank, name));
-  for (idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s %" PetscInt_FMT " %s %" PetscInt_FMT "\n", rank, idxname, idx, valname, a[idx]));
+  for (PetscInt idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s %" PetscInt_FMT " %s %" PetscInt_FMT "\n", rank, idxname, idx, valname, a[idx]));
   PetscCall(PetscSynchronizedFlush(comm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SFNodeArrayViewFromOptions(MPI_Comm comm, const char opt[], const char name[], const char idxname[], PetscInt n, const PetscSFNode a[])
 {
-  PetscInt    idx;
   PetscMPIInt rank;
   PetscBool   flg;
 
@@ -955,9 +951,9 @@ static PetscErrorCode SFNodeArrayViewFromOptions(MPI_Comm comm, const char opt[]
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s:\n", rank, name));
   if (idxname) {
-    for (idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s %" PetscInt_FMT " rank %" PetscInt_FMT " index %" PetscInt_FMT "\n", rank, idxname, idx, a[idx].rank, a[idx].index));
+    for (PetscInt idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]%s %" PetscInt_FMT " rank %" PetscInt_FMT " index %" PetscInt_FMT "\n", rank, idxname, idx, a[idx].rank, a[idx].index));
   } else {
-    for (idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]rank %" PetscInt_FMT " index %" PetscInt_FMT "\n", rank, a[idx].rank, a[idx].index));
+    for (PetscInt idx = 0; idx < n; ++idx) PetscCall(PetscSynchronizedPrintf(comm, "[%d]rank %" PetscInt_FMT " index %" PetscInt_FMT "\n", rank, a[idx].rank, a[idx].index));
   }
   PetscCall(PetscSynchronizedFlush(comm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1295,9 +1291,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     PetscCall(PetscHMapIJKLRemoteCreate(&faceTable));
     /* There is a section point for every leaf attached to a given root point */
     for (r = 0, idx = 0, idx2 = 0; r < Nr; ++r) {
-      PetscInt deg;
-
-      for (deg = 0; deg < rootdegree[r]; ++deg, ++idx) {
+      for (PetscInt deg = 0; deg < rootdegree[r]; ++deg, ++idx) {
         PetscInt offset, dof, d;
 
         PetscCall(PetscSectionGetDof(candidateRemoteSection, idx, &dof));
@@ -1368,7 +1362,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
         }
       }
       /* Put back faces for this root */
-      for (deg = 0; deg < rootdegree[r]; ++deg, ++idx2) {
+      for (PetscInt deg = 0; deg < rootdegree[r]; ++deg, ++idx2) {
         PetscInt offset, dof, d;
 
         PetscCall(PetscSectionGetDof(candidateRemoteSection, idx2, &dof));

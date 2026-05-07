@@ -454,9 +454,8 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
     const PetscScalar *v     = &u[(p * 2 + 1) * dim];
     const PetscReal    xe[3] = {r0 * ct, r0 * st, 0.0};
     const PetscReal    ve[3] = {-v0 * st, v0 * ct, 0.0};
-    PetscInt           d;
 
-    for (d = 0; d < dim; ++d) {
+    for (PetscInt d = 0; d < dim; ++d) {
       e[(p * 2 + 0) * dim + d] = x[d] - xe[d];
       e[(p * 2 + 1) * dim + d] = v[d] - ve[d];
     }

@@ -11,7 +11,7 @@ PetscErrorCode TestInitialMatrix(void)
   Mat            A, Atranspose, B, C;
   Mat            subs[2 * 3], **block;
   Vec            x, y, Ax, ATy;
-  PetscInt       i, j;
+  PetscInt       j;
   PetscScalar    dot1, dot2, zero = 0.0, one = 1.0, *valsB, *valsC;
   PetscReal      norm;
   PetscRandom    rctx;
@@ -22,7 +22,7 @@ PetscErrorCode TestInitialMatrix(void)
   /* Force the random numbers to have imaginary part 0 so printed results are the same for --with-scalar-type=real or --with-scalar-type=complex */
   PetscCall(PetscRandomSetInterval(rctx, zero, one));
   PetscCall(PetscRandomSetFromOptions(rctx));
-  for (i = 0; i < (nr * nc); i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, arow[i], acol[i], NULL, &subs[i]));
+  for (PetscInt i = 0; i < (nr * nc); i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, arow[i], acol[i], NULL, &subs[i]));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, nr, NULL, nc, NULL, subs, &A));
   PetscCall(MatCreateVecs(A, &x, NULL));
   PetscCall(MatCreateVecs(A, NULL, &y));
@@ -33,18 +33,18 @@ PetscErrorCode TestInitialMatrix(void)
 
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNestGetSubMats(A, NULL, NULL, &block));
-  for (i = 0; i < nr; i++) {
+  for (PetscInt i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
   }
 
   PetscCall(MatView(Atranspose, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNestGetSubMats(Atranspose, NULL, NULL, &block));
-  for (i = 0; i < nc; i++) {
+  for (PetscInt i = 0; i < nc; i++) {
     for (j = 0; j < nr; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Check <Ax, y> = <x, A^Ty> */
-  for (i = 0; i < 10; i++) {
+  for (PetscInt i = 0; i < 10; i++) {
     PetscCall(VecSetRandom(x, rctx));
     PetscCall(VecSetRandom(y, rctx));
 
@@ -69,7 +69,7 @@ PetscErrorCode TestInitialMatrix(void)
 
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatGetLocalSize(A, &m, &n));
-  for (i = 0; i < nk; i++) {
+  for (PetscInt i = 0; i < nk; i++) {
     PetscCall(MatDenseGetColumn(B, i, &valsB));
     PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, n, N, valsB, &x));
     PetscCall(MatCreateVecs(A, NULL, &Ax));
@@ -88,7 +88,7 @@ PetscErrorCode TestInitialMatrix(void)
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&B));
 
-  for (i = 0; i < (nr * nc); i++) PetscCall(MatDestroy(&subs[i]));
+  for (PetscInt i = 0; i < (nr * nc); i++) PetscCall(MatDestroy(&subs[i]));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&Atranspose));
   PetscCall(VecDestroy(&ATy));
@@ -101,7 +101,6 @@ PetscErrorCode TestReuseMatrix(void)
   const PetscInt n = 2;
   Mat            A;
   Mat            subs[2 * 2], **block;
-  PetscInt       i, j;
   PetscRandom    rctx;
   PetscScalar    zero = 0.0, one = 1.0;
 
@@ -109,23 +108,23 @@ PetscErrorCode TestReuseMatrix(void)
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(PetscRandomSetInterval(rctx, zero, one));
   PetscCall(PetscRandomSetFromOptions(rctx));
-  for (i = 0; i < (n * n); i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, n, n, NULL, &subs[i]));
+  for (PetscInt i = 0; i < (n * n); i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, n, n, NULL, &subs[i]));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, n, NULL, n, NULL, subs, &A));
   PetscCall(MatSetRandom(A, rctx));
 
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNestGetSubMats(A, NULL, NULL, &block));
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < n; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
+  for (PetscInt i = 0; i < n; i++) {
+    for (PetscInt j = 0; j < n; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(MatTranspose(A, MAT_INPLACE_MATRIX, &A));
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNestGetSubMats(A, NULL, NULL, &block));
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < n; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
+  for (PetscInt i = 0; i < n; i++) {
+    for (PetscInt j = 0; j < n; j++) PetscCall(MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  for (i = 0; i < (n * n); i++) PetscCall(MatDestroy(&subs[i]));
+  for (PetscInt i = 0; i < (n * n); i++) PetscCall(MatDestroy(&subs[i]));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscRandomDestroy(&rctx));
   PetscFunctionReturn(PETSC_SUCCESS);

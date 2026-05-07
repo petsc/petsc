@@ -372,17 +372,13 @@ static void g2_bd_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 /* g0_bd_up[c*1+0] = n[c]  (velocity-pressure coupling: df0_u/dp) */
 static void g0_bd_up(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt c;
-
-  for (c = 0; c < dim; ++c) g0[c] = n[c];
+  for (PetscInt c = 0; c < dim; ++c) g0[c] = n[c];
 }
 
 /* g0_bd_pu[0*Nc+d] = n[d]  (pressure-velocity coupling: df0_p/du) */
 static void g0_bd_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt d;
-
-  for (d = 0; d < dim; ++d) g0[d] = n[d];
+  for (PetscInt d = 0; d < dim; ++d) g0[d] = n[d];
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -555,14 +551,12 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt c;
-  for (c = 0; c < Nc; ++c) u[c] = 0.0;
+  for (PetscInt c = 0; c < Nc; ++c) u[c] = 0.0;
   return PETSC_SUCCESS;
 }
 static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt c;
-  for (c = 0; c < Nc; ++c) u[c] = 1.0;
+  for (PetscInt c = 0; c < Nc; ++c) u[c] = 1.0;
   return PETSC_SUCCESS;
 }
 

@@ -625,13 +625,13 @@ static PetscErrorCode MatSetUp_HYPRESStruct(Mat mat)
       {0,  1,  0 },
       {0,  0,  1 }
     };
-    PetscInt j, cnt;
+    PetscInt cnt;
 
     ssize = 7 * (ex->nvars);
     PetscCallHYPRE(HYPRE_SStructStencilCreate((HYPRE_Int)dim, (HYPRE_Int)ssize, &ex->ss_stencil));
     cnt = 0;
     for (i = 0; i < (ex->nvars); i++) {
-      for (j = 0; j < 7; j++) {
+      for (PetscInt j = 0; j < 7; j++) {
         PetscCallHYPRE(HYPRE_SStructStencilSetEntry(ex->ss_stencil, (HYPRE_Int)cnt, offsets[j], (HYPRE_Int)i));
         cnt++;
       }
@@ -706,7 +706,6 @@ static PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
   PetscInt           nvars    = mx->nvars;
   HYPRE_Int          part     = 0;
   PetscInt           size;
-  PetscInt           i;
 
   PetscFunctionBegin;
   PetscCall(DMDAGetCorners(mx->da, &ilower[0], &ilower[1], &ilower[2], &iupper[0], &iupper[1], &iupper[2]));
@@ -723,46 +722,46 @@ static PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
   hupper[2] = (HYPRE_Int)iupper[2];
 
   size = 1;
-  for (i = 0; i < 3; i++) size *= (iupper[i] - ilower[i] + 1);
+  for (PetscInt i = 0; i < 3; i++) size *= (iupper[i] - ilower[i] + 1);
 
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscCallHYPRE(HYPRE_SStructVectorSetConstantValues(mx->ss_b, 0.0));
     PetscCall(VecGetArrayRead(x, &xx));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(xx + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(xx + (size * i))));
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCallHYPRE(HYPRE_SStructVectorAssemble(mx->ss_b));
     PetscCallHYPRE(HYPRE_SStructMatrixMatvec(1.0, mx->ss_mat, mx->ss_b, 0.0, mx->ss_x));
 
     /* copy solution values back to PETSc */
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(yy + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(yy + (size * i))));
     PetscCall(VecRestoreArray(y, &yy));
   } else { /* nodal ordering must be mapped to variable ordering for sys_pfmg */
     PetscScalar *z;
-    PetscInt     j, k;
+    PetscInt     k;
 
     PetscCall(PetscMalloc1(nvars * size, &z));
     PetscCallHYPRE(HYPRE_SStructVectorSetConstantValues(mx->ss_b, 0.0));
     PetscCall(VecGetArrayRead(x, &xx));
 
     /* transform nodal to hypre's variable ordering for sys_pfmg */
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < size; i++) {
       k = i * nvars;
-      for (j = 0; j < nvars; j++) z[j * size + i] = xx[k + j];
+      for (PetscInt j = 0; j < nvars; j++) z[j * size + i] = xx[k + j];
     }
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCallHYPRE(HYPRE_SStructVectorAssemble(mx->ss_b));
     PetscCallHYPRE(HYPRE_SStructMatrixMatvec(1.0, mx->ss_mat, mx->ss_b, 0.0, mx->ss_x));
 
     /* copy solution values back to PETSc */
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < size; i++) {
       k = i * nvars;
-      for (j = 0; j < nvars; j++) yy[k + j] = z[j * size + i];
+      for (PetscInt j = 0; j < nvars; j++) yy[k + j] = z[j * size + i];
     }
     PetscCall(VecRestoreArray(y, &yy));
     PetscCall(PetscFree(z));

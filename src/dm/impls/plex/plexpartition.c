@@ -181,11 +181,11 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
       }
       /* Handle non-conforming meshes */
       if (supportSize > 2) {
-        PetscInt        numChildren, i;
+        PetscInt        numChildren;
         const PetscInt *children;
 
         PetscCall(DMPlexGetTreeChildren(dm, f, &numChildren, &children));
-        for (i = 0; i < numChildren; ++i) {
+        for (PetscInt i = 0; i < numChildren; ++i) {
           const PetscInt child = children[i];
           if (fStart <= child && child < fEnd) {
             PetscCall(DMPlexGetSupport(dm, child, &support));
@@ -410,14 +410,14 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
     for (f = 0; f < coneSize; f++) {
       const PetscScalar v = 1.0;
       const PetscInt   *children;
-      PetscInt          numChildren, ch;
+      PetscInt          numChildren;
 
       row = rows[cone[f] - fStart];
       PetscCall(MatSetValues(conn, 1, &row, 1, &col, &v, INSERT_VALUES));
 
       /* non-conforming meshes */
       PetscCall(DMPlexGetTreeChildren(dm, cone[f], &numChildren, &children));
-      for (ch = 0; ch < numChildren; ch++) {
+      for (PetscInt ch = 0; ch < numChildren; ch++) {
         const PetscInt child = children[ch];
 
         if (child < fStart || child >= fEnd) continue;
@@ -656,9 +656,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       if (!found) {
         PetscCall(DMPlexGetMeet(dm, 2, cellPair, &meetSize, &meet));
         if (meetSize) {
-          PetscInt f;
-
-          for (f = 0; f < numFaceCases; ++f) {
+          for (PetscInt f = 0; f < numFaceCases; ++f) {
             if (numFaceVertices[f] == meetSize) {
               found = PETSC_TRUE;
               break;
@@ -694,9 +692,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         if (!found) {
           PetscCall(DMPlexGetMeet(dm, 2, cellPair, &meetSize, &meet));
           if (meetSize) {
-            PetscInt f;
-
-            for (f = 0; f < numFaceCases; ++f) {
+            for (PetscInt f = 0; f < numFaceCases; ++f) {
               if (numFaceVertices[f] == meetSize) {
                 found = PETSC_TRUE;
                 break;
@@ -986,9 +982,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, P
 
     PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, &children));
     if (numChildren) {
-      PetscInt i;
-
-      for (i = 0; i < numChildren; i++) {
+      for (PetscInt i = 0; i < numChildren; i++) {
         PetscInt cpoint = children[i];
 
         PetscCall(PetscHSetIAdd(ht, cpoint));
@@ -1024,12 +1018,12 @@ static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, Pets
 
 static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, PetscInt point)
 {
-  PetscInt        i, numChildren;
+  PetscInt        numChildren;
   const PetscInt *children;
 
   PetscFunctionBeginHot;
   PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, &children));
-  for (i = 0; i < numChildren; i++) PetscCall(PetscHSetIAdd(ht, children[i]));
+  for (PetscInt i = 0; i < numChildren; i++) PetscCall(PetscHSetIAdd(ht, children[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

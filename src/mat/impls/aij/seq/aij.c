@@ -5119,7 +5119,6 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
 {
   PetscInt    ii;
   Mat_SeqAIJ *aij;
-  PetscInt    jj;
 
   PetscFunctionBegin;
   PetscCheck(m <= 0 || i[0] == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "i (row indices) must start with 0");
@@ -5143,7 +5142,7 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
     aij->ilen[ii] = aij->imax[ii] = i[ii + 1] - i[ii];
     if (PetscDefined(USE_DEBUG)) {
       PetscCheck(i[ii + 1] - i[ii] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT, ii, i[ii + 1] - i[ii]);
-      for (jj = i[ii] + 1; jj < i[ii + 1]; jj++) {
+      for (PetscInt jj = i[ii] + 1; jj < i[ii + 1]; jj++) {
         PetscCheck(j[jj] >= j[jj - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is not sorted", jj - i[ii], j[jj], ii);
         PetscCheck(j[jj] != j[jj - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is identical to previous entry", jj - i[ii], j[jj], ii);
       }

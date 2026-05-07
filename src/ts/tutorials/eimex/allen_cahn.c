@@ -129,7 +129,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   AppCtx            *user = (AppCtx *)ptr;
   PetscScalar       *f;
   const PetscScalar *x, *xdot;
-  PetscInt           i, mx;
+  PetscInt           mx;
 
   PetscFunctionBegin;
   mx = user->mx;
@@ -137,7 +137,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecGetArrayRead(Xdot, &xdot));
   PetscCall(VecGetArray(F, &f));
 
-  for (i = 0; i < mx; i++) f[i] = xdot[i] - x[i] * (1. - x[i] * x[i]);
+  for (PetscInt i = 0; i < mx; i++) f[i] = xdot[i] - x[i] * (1. - x[i] * x[i]);
 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
@@ -150,11 +150,11 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscRe
   AppCtx            *user = (AppCtx *)ctx;
   PetscScalar        v;
   const PetscScalar *x;
-  PetscInt           i, col;
+  PetscInt           col;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(U, &x));
-  for (i = 0; i < user->mx; i++) {
+  for (PetscInt i = 0; i < user->mx; i++) {
     v   = a - 1. + 3. * x[i] * x[i];
     col = i;
     PetscCall(MatSetValues(J, 1, &i, 1, &col, &v, INSERT_VALUES));
@@ -174,14 +174,13 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscRe
 static PetscErrorCode FormInitialSolution(TS ts, Vec U, PetscCtx ctx)
 {
   AppCtx      *user = (AppCtx *)ctx;
-  PetscInt     i;
   PetscScalar *x;
   PetscReal    hx, x_map;
 
   PetscFunctionBegin;
   hx = (user->xright - user->xleft) / (PetscReal)(user->mx - 1);
   PetscCall(VecGetArray(U, &x));
-  for (i = 0; i < user->mx; i++) {
+  for (PetscInt i = 0; i < user->mx; i++) {
     x_map = user->xleft + i * hx;
     if (x_map >= 0.7065) {
       x[i] = PetscTanhReal((x_map - 0.8) / (2. * PetscSqrtReal(user->param)));

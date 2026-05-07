@@ -31,14 +31,12 @@ static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
@@ -49,8 +47,7 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
 
 static void f0_strong_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f0[0] -= u_x[dim + d * dim + d];
+  for (PetscInt d = 0; d < dim; ++d) f0[0] -= u_x[dim + d * dim + d];
   f0[0] += 4.0;
 }
 
@@ -77,7 +74,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   { // perturb to get general coordinates
     Vec          coordinates;
     PetscScalar *coords;
-    PetscInt     nloc, v;
+    PetscInt     nloc;
     PetscRandom  rnd;
     PetscReal    del;
     PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rnd));
@@ -86,7 +83,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMGetCoordinatesLocal(*dm, &coordinates));
     PetscCall(VecGetArray(coordinates, &coords));
     PetscCall(VecGetLocalSize(coordinates, &nloc));
-    for (v = 0; v < nloc; ++v) {
+    for (PetscInt v = 0; v < nloc; ++v) {
       PetscCall(PetscRandomGetValueReal(rnd, &del));
       coords[v] += del * coords[v];
     }
@@ -199,13 +196,12 @@ int main(int argc, char **argv)
   /* Benchmark system */
   if (user.nit) {
     Vec           b;
-    PetscInt      i;
     PetscLogStage kspstage;
     PetscCall(PetscLogStageRegister("Solve only", &kspstage));
     PetscCall(PetscLogStagePush(kspstage));
     PetscCall(SNESGetSolution(snes, &u));
     PetscCall(SNESGetFunction(snes, &b, NULL, NULL));
-    for (i = 0; i < user.nit; i++) {
+    for (PetscInt i = 0; i < user.nit; i++) {
       PetscCall(VecZeroEntries(u));
       PetscCall(SNESSolve(snes, NULL, u));
     }

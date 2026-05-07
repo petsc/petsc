@@ -410,14 +410,13 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
     /* Out-of-place copy of arr */
     PetscCall(PetscArraycpy(arr, stash->array + perm[0] * bs, bs));
     for (i = 1, j = 0; i < stash->n; i++) {
-      PetscInt k;
       if (stash->idx[i] == stash->idx[j]) {
         switch (stash->insertmode) {
         case ADD_VALUES:
-          for (k = 0; k < bs; k++) arr[j * bs + k] += stash->array[perm[i] * bs + k];
+          for (PetscInt k = 0; k < bs; k++) arr[j * bs + k] += stash->array[perm[i] * bs + k];
           break;
         case INSERT_VALUES:
-          for (k = 0; k < bs; k++) arr[j * bs + k] = stash->array[perm[i] * bs + k];
+          for (PetscInt k = 0; k < bs; k++) arr[j * bs + k] = stash->array[perm[i] * bs + k];
           break;
         default:
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", stash->insertmode);
@@ -425,7 +424,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
       } else {
         j++;
         stash->idx[j] = stash->idx[i];
-        for (k = 0; k < bs; k++) arr[j * bs + k] = stash->array[perm[i] * bs + k];
+        for (PetscInt k = 0; k < bs; k++) arr[j * bs + k] = stash->array[perm[i] * bs + k];
       }
     }
     stash->n = j + 1;

@@ -334,8 +334,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
 {
   KSP_AGMRES    *agmres = (KSP_AGMRES *)ksp->data;
   const PetscInt max_k  = agmres->max_k; /* Size of the non-augmented Krylov basis */
-  PetscInt       i, j;
-  PetscInt       r = agmres->r; /* current number of augmented eigenvectors */
+  PetscInt       r      = agmres->r;     /* current number of augmented eigenvectors */
   PetscBLASInt   KspSize;
   PetscBLASInt   lC;
   PetscBLASInt   N;
@@ -351,8 +350,8 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscCall(PetscBLASIntCast(MAXKSPSIZE + 1, &N));
   PetscCall(PetscBLASIntCast(N + 1, &ldH));
   /* Save a copy of the Hessenberg matrix */
-  for (j = 0; j < N - 1; j++) {
-    for (i = 0; i < N; i++) *HS(i, j) = *H(i, j);
+  for (PetscInt j = 0; j < N - 1; j++) {
+    for (PetscInt i = 0; i < N; i++) *HS(i, j) = *H(i, j);
   }
   /* QR factorize the Hessenberg matrix */
   PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));

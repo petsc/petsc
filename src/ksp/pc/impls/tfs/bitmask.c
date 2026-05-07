@@ -105,7 +105,7 @@ PetscInt PCTFS_len_bit_mask(PetscInt num_items)
 /*********************************bit_mask.c***********************************/
 PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val)
 {
-  PetscInt i, offset;
+  PetscInt offset;
   char     mask = 1;
   char    *cptr;
 
@@ -115,13 +115,13 @@ PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val)
   cptr = (char *)bm;
 
   offset = len / sizeof(PetscInt);
-  for (i = 0; i < offset; i++) {
+  for (PetscInt i = 0; i < offset; i++) {
     *bm = 0;
     bm++;
   }
 
   offset = val % BYTE;
-  for (i = 0; i < offset; i++) mask <<= 1;
+  for (PetscInt i = 0; i < offset; i++) mask <<= 1;
 
   offset       = len - val / BYTE - 1;
   cptr[offset] = mask;

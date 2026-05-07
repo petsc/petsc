@@ -61,9 +61,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
   for (i = 0, total = 0; i < nsubs; i++) {
     PetscCall(VecTaggerComputeBoxes(subs[i], vec, &numSubBoxes[i], &subBoxes[i], &boxlisted));
     if (!boxlisted) { /* no support, clean up and exit */
-      PetscInt j;
-
-      for (j = 0; j < i; j++) PetscCall(PetscFree(subBoxes[j]));
+      for (PetscInt j = 0; j < i; j++) PetscCall(PetscFree(subBoxes[j]));
       PetscCall(PetscFree2(numSubBoxes, subBoxes));
       if (listed) *listed = PETSC_FALSE;
     }
@@ -71,9 +69,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
   }
   PetscCall(PetscMalloc1(bs * total, &bxs));
   for (i = 0, nboxes = 0; i < nsubs; i++) { /* stupid O(N^2) check to remove subboxes */
-    PetscInt j;
-
-    for (j = 0; j < numSubBoxes[i]; j++) {
+    for (PetscInt j = 0; j < numSubBoxes[i]; j++) {
       PetscInt      k;
       VecTaggerBox *subBox = &subBoxes[i][j * bs];
 
@@ -85,9 +81,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
         if (isSub) break;
         PetscCall(VecTaggerAndOrIsSubBox_Private(bs, subBox, prevBox, &isSub));
         if (isSub) {
-          PetscInt l;
-
-          for (l = 0; l < bs; l++) prevBox[l] = subBox[l];
+          for (PetscInt l = 0; l < bs; l++) prevBox[l] = subBox[l];
           break;
         }
       }
@@ -106,7 +100,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
 
 static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, PetscBool *listed)
 {
-  PetscInt   nsubs, i;
+  PetscInt   nsubs;
   VecTagger *subs;
   IS         unionIS;
   PetscBool  boxlisted;
@@ -119,7 +113,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, P
   }
   PetscCall(VecTaggerOrGetSubs(tagger, &nsubs, &subs));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)vec), 0, NULL, PETSC_OWN_POINTER, &unionIS));
-  for (i = 0; i < nsubs; i++) {
+  for (PetscInt i = 0; i < nsubs; i++) {
     IS subIS, newUnionIS;
 
     PetscCall(VecTaggerComputeIS(subs[i], vec, &subIS, &boxlisted));

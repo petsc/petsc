@@ -155,7 +155,6 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
   Mat               Z_local, S_local, T_sqrt_local, G_local;
   Vec               y_local, y_mean_local, delta_scaled_local, r_inv_sqrt_local;
   Vec               w_local, s_transpose_delta;
-  PetscInt          i_grid_point;
   PetscInt          ndof;
   PetscReal         sqrt_m_minus_1, scale;
   PetscInt          rstart;
@@ -196,7 +195,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
   /* LETKF: Loop over all grid points and perform local analysis */
   PetscCall(MatGetOwnershipRange(impl->Q, &rstart, NULL));
 
-  for (i_grid_point = 0; i_grid_point < n_vertices; i_grid_point++) {
+  for (PetscInt i_grid_point = 0; i_grid_point < n_vertices; i_grid_point++) {
     /* Extract local observations for this grid point using Q[i_grid_point,:] */
     /* Note: i_grid_point is local index, but MatGetRow needs global index */
     PetscCall(ExtractLocalObservations(impl->Q, rstart + i_grid_point, Z_global, observation, y_mean_global, r_inv_sqrt_global, impl->obs_g2l, m, Z_local, y_local, y_mean_local, r_inv_sqrt_local));
@@ -388,14 +387,13 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
      with non-Kokkos dense matrices. Use column-by-column multiplication with
      temporary vectors that are compatible with H's type. */
   {
-    Vec      col_in, col_out, temp_in, temp_out;
-    PetscInt j;
+    Vec col_in, col_out, temp_in, temp_out;
 
     /* Create temporary vectors compatible with H's type */
     PetscCall(MatCreateVecs(H, &temp_in, &temp_out));
 
     /* Compute Z = H * E column by column to avoid Kokkos vector type issues */
-    for (j = 0; j < m; j++) {
+    for (PetscInt j = 0; j < m; j++) {
       PetscCall(MatDenseGetColumnVecRead(impl->en.ensemble, j, &col_in));
       PetscCall(MatDenseGetColumnVecWrite(impl->Z, j, &col_out));
 

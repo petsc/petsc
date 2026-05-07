@@ -62,7 +62,6 @@ int main(int argc, char **argv)
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **t, PetscScalar **f, void *ptr)
 {
-  PetscInt    i, j;
   PetscScalar hx, hy;
   PetscScalar gradup, graddown, gradleft, gradright, gradx, grady;
   PetscScalar coeffup, coeffdown, coeffleft, coeffright;
@@ -72,8 +71,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **t, PetscScal
   hy = 1.0 / (PetscReal)(info->my - 1);
 
   /* Evaluate function */
-  for (j = info->ys; j < info->ys + info->ym; j++) {
-    for (i = info->xs; i < info->xs + info->xm; i++) {
+  for (PetscInt j = info->ys; j < info->ys + info->ym; j++) {
+    for (PetscInt i = info->xs; i < info->xs + info->xm; i++) {
       if (i == 0 || i == info->mx - 1 || j == 0 || j == info->my - 1) {
         f[j][i] = t[j][i] - (1.0 - (2.0 * hx * (PetscReal)i - 1.0) * (2.0 * hx * (PetscReal)i - 1.0));
       } else {

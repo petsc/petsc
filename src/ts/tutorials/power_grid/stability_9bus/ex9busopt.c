@@ -326,14 +326,14 @@ PetscErrorCode DICDPFiniteDifference(Vec X, Vec *DICDP, Userctx *user)
 {
   Vec         Y;
   PetscScalar PGv[3], eps;
-  PetscInt    i, j;
+  PetscInt    i;
 
   PetscFunctionBegin;
   eps = 1.e-7;
   PetscCall(VecDuplicate(X, &Y));
 
   for (i = 0; i < ngen; i++) {
-    for (j = 0; j < 3; j++) PGv[j] = PG[j];
+    for (PetscInt j = 0; j < 3; j++) PGv[j] = PG[j];
     PGv[i] = PG[i] + eps;
     PetscCall(InitialGuess(Y, user, PGv));
     PetscCall(InitialGuess(X, user, PG));
@@ -360,7 +360,6 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
   PetscScalar  IGr, IGi, IDr, IDi;
   PetscScalar  Zdq_inv[4], det;
   PetscScalar  PD, QD, Vm0, *v0;
-  PetscInt     k;
 
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(F));
@@ -443,8 +442,8 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
     Vm2 = Vm * Vm;
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
-    for (k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
 
     /* Load currents */
     IDr = (PD * Vr + QD * Vi) / Vm2;
@@ -586,7 +585,6 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
   PetscInt           ncols;
   const PetscInt    *cols;
   const PetscScalar *yvals;
-  PetscInt           k;
   PetscScalar        Zdq_inv[4], det;
   PetscScalar        dVd_dVr, dVd_dVi, dVq_dVr, dVq_dVi, dVd_ddelta, dVq_ddelta;
   PetscScalar        dIGr_ddelta, dIGi_ddelta, dIGr_dId, dIGr_dIq, dIGi_dId, dIGi_dIq;
@@ -778,7 +776,7 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
   for (i = 0; i < nbus; i++) {
     PetscCall(MatGetRow(user->Ybus, 2 * i, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -787,7 +785,7 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
 
     PetscCall(MatGetRow(user->Ybus, 2 * i + 1, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i + 1;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -808,12 +806,12 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) {
       PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
       dPD_dVr += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vr * PetscPowScalar(Vm, ld_betap[k] - 2);
       dPD_dVi += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vi * PetscPowScalar(Vm, ld_betap[k] - 2);
     }
-    for (k = 0; k < ld_nsegsq[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) {
       QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
       dQD_dVr += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vr * PetscPowScalar(Vm, ld_betaq[k] - 2);
       dQD_dVi += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vi * PetscPowScalar(Vm, ld_betaq[k] - 2);
@@ -911,14 +909,14 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A
 static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, PetscCtx ctx0)
 {
   PetscScalar a;
-  PetscInt    row, col;
+  PetscInt    row;
   Userctx    *ctx = (Userctx *)ctx0;
 
   PetscFunctionBeginUser;
   if (ctx->jacp_flg) {
     PetscCall(MatZeroEntries(A));
 
-    for (col = 0; col < 3; col++) {
+    for (PetscInt col = 0; col < 3; col++) {
       a   = 1.0 / M[col];
       row = 9 * col + 3;
       PetscCall(MatSetValues(A, 1, &row, 1, &col, &a, INSERT_VALUES));
@@ -964,7 +962,6 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU,
 {
   Vec          Xgen, Xnet, Dgen, Dnet;
   PetscScalar *xgen, *dgen;
-  PetscInt     i;
   PetscInt     idx;
   Vec          drdu_col;
   PetscScalar *xarr;
@@ -982,7 +979,7 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU,
   PetscCall(VecGetArray(Dgen, &dgen));
 
   idx = 0;
-  for (i = 0; i < ngen; i++) {
+  for (PetscInt i = 0; i < ngen; i++) {
     dgen[idx + 3] = 0.;
     if (xgen[idx + 3] / (2. * PETSC_PI) > user->freq_u) dgen[idx + 3] = user->pow * PetscPowScalarInt(xgen[idx + 3] / (2. * PETSC_PI) - user->freq_u, user->pow - 1) / (2. * PETSC_PI);
     if (xgen[idx + 3] / (2. * PETSC_PI) < user->freq_l) dgen[idx + 3] = user->pow * PetscPowScalarInt(user->freq_l - xgen[idx + 3] / (2. * PETSC_PI), user->pow - 1) / (-2. * PETSC_PI);
@@ -1009,13 +1006,12 @@ static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat drdp,
 PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, Vec *DICDP, Userctx *user)
 {
   PetscScalar *x, *y, sensip;
-  PetscInt     i;
 
   PetscFunctionBegin;
   PetscCall(VecGetArray(lambda, &x));
   PetscCall(VecGetArray(mu, &y));
 
-  for (i = 0; i < 3; i++) {
+  for (PetscInt i = 0; i < 3; i++) {
     PetscCall(VecDot(lambda, DICDP[i], &sensip));
     sensip = sensip + y[i];
     /* PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %" PetscInt_FMT " th parameter: %g \n",i,(double)sensip)); */
@@ -1031,7 +1027,6 @@ int main(int argc, char **argv)
   Vec          p;
   PetscScalar *x_ptr;
   PetscMPIInt  size;
-  PetscInt     i;
   PetscViewer  Xview, Ybusview;
   PetscInt    *idx2;
   Tao          tao;
@@ -1051,7 +1046,7 @@ int main(int argc, char **argv)
 
   /* Create indices for differential and algebraic equations */
   PetscCall(PetscMalloc1(7 * ngen, &idx2));
-  for (i = 0; i < ngen; i++) {
+  for (PetscInt i = 0; i < ngen; i++) {
     idx2[7 * i]     = 9 * i;
     idx2[7 * i + 1] = 9 * i + 1;
     idx2[7 * i + 2] = 9 * i + 2;
@@ -1223,7 +1218,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCt
   SNES     snes_alg;
   Userctx *ctx = (Userctx *)ctx0;
   Vec      X;
-  PetscInt i;
   /* sensitivity context */
   PetscScalar *x_ptr;
   Vec          lambda[1], q;
@@ -1271,7 +1265,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCt
   PetscCall(SetInitialGuess(X, ctx));
 
   /* Approximate DICDP with finite difference, we want to zero out network variables */
-  for (i = 0; i < 3; i++) PetscCall(VecDuplicate(X, &DICDP[i]));
+  for (PetscInt i = 0; i < 3; i++) PetscCall(VecDuplicate(X, &DICDP[i]));
   PetscCall(DICDPFiniteDifference(X, DICDP, ctx));
 
   PetscCall(VecDuplicate(X, &F_alg));
@@ -1445,7 +1439,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, PetscCt
   PetscCall(VecDestroy(&F_alg));
   PetscCall(VecDestroy(&X));
   PetscCall(TSDestroy(&ts));
-  for (i = 0; i < 3; i++) PetscCall(VecDestroy(&DICDP[i]));
+  for (PetscInt i = 0; i < 3; i++) PetscCall(VecDestroy(&DICDP[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

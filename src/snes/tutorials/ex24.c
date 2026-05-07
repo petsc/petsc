@@ -152,9 +152,8 @@ static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[
 
 static void f0_quartic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
   f0[0] = 0.0;
-  for (d = 0; d < dim; ++d) f0[0] += 2.0 * x[d] * (1.0 - x[d]);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += 2.0 * x[d] * (1.0 - x[d]);
   f0_u(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, t, x, numConstants, constants, f0);
 }
 
@@ -176,29 +175,25 @@ static void f0_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 /* <\nabla\cdot w, u> = <\nabla w, Iu> */
 static void f1_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt c;
-  for (c = 0; c < dim; ++c) f1[c * dim + c] = u[uOff[1]];
+  for (PetscInt c = 0; c < dim; ++c) f1[c * dim + c] = u[uOff[1]];
 }
 
 /* <t, q> */
 static void g0_qq(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt c;
-  for (c = 0; c < dim; ++c) g0[c * dim + c] = 1.0;
+  for (PetscInt c = 0; c < dim; ++c) g0[c * dim + c] = 1.0;
 }
 
 /* <\nabla\cdot t, u> = <\nabla t, Iu> */
 static void g2_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g2[d * dim + d] = 1.0;
 }
 
 /* <v, \nabla\cdot q> */
 static void g1_uq(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g1[d * dim + d] = 1.0;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)

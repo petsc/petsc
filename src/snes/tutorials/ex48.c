@@ -291,8 +291,7 @@ static void PrmHexGetZ(const PrmNode pn[], PetscInt k, PetscInt zm, PetscReal zn
 {
   const PetscScalar zm1 = zm - 1, znl[8] = {pn[0].b + pn[0].h * (PetscScalar)k / zm1,       pn[1].b + pn[1].h * (PetscScalar)k / zm1,       pn[2].b + pn[2].h * (PetscScalar)k / zm1,       pn[3].b + pn[3].h * (PetscScalar)k / zm1,
                                             pn[0].b + pn[0].h * (PetscScalar)(k + 1) / zm1, pn[1].b + pn[1].h * (PetscScalar)(k + 1) / zm1, pn[2].b + pn[2].h * (PetscScalar)(k + 1) / zm1, pn[3].b + pn[3].h * (PetscScalar)(k + 1) / zm1};
-  PetscInt          i;
-  for (i = 0; i < 8; i++) zn[i] = PetscRealPart(znl[i]);
+  for (PetscInt i = 0; i < 8; i++) zn[i] = PetscRealPart(znl[i]);
 }
 
 /* Tests A and C are from the ISMIP-HOM paper (Pattyn et al. 2008) */

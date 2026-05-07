@@ -29,20 +29,17 @@ static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], 
 
 static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f0[0] += -4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += -4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]);
 }
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
@@ -174,7 +171,7 @@ static PetscErrorCode TestEvaluation(DM dm)
   PetscSpace sp;
   PetscReal *points;
   PetscReal *B, *D, *H;
-  PetscInt   dim, Nb, b, Nc, c, Np, p;
+  PetscInt   dim, Nb, Nc, Np;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -208,16 +205,16 @@ static PetscErrorCode TestEvaluation(DM dm)
   PetscCall(DMGetWorkArray(dm, Np * Nb * Nc * dim, MPIU_REAL, &D));
   PetscCall(DMGetWorkArray(dm, Np * Nb * Nc * dim * dim, MPIU_REAL, &H));
   PetscCall(PetscSpaceEvaluate(sp, Np, points, B, NULL, NULL /*D, H*/));
-  for (p = 0; p < Np; ++p) {
+  for (PetscInt p = 0; p < Np; ++p) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Point %" PetscInt_FMT "\n", p));
-    for (b = 0; b < Nb; ++b) {
+    for (PetscInt b = 0; b < Nb; ++b) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "B[%" PetscInt_FMT "]:", b));
-      for (c = 0; c < Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)B[(p * Nb + b) * Nc + c]));
+      for (PetscInt c = 0; c < Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)B[(p * Nb + b) * Nc + c]));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
 #if 0
-      for (c = 0; c < Nc; ++c) {
+      for (PetscInt c = 0; c < Nc; ++c) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, " D[%" PetscInt_FMT ",%" PetscInt_FMT "]:", b, c));
-        for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double) B[((p*Nb+b)*Nc+c)*dim+d)]));
+        for (PetscInt d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double) B[((p*Nb+b)*Nc+c)*dim+d)]));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
       }
 #endif
@@ -238,7 +235,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
   PetscFEGeom    *affineGeom, **geoms = NULL;
   PetscScalar    *u, *elemVec;
   IS              cellIS;
-  PetscInt        depth, cStart, cEnd, cell, chunkSize = cbs, Nf, f, totDim, i, k;
+  PetscInt        depth, cStart, cEnd, cell, chunkSize = cbs, Nf, f, totDim, k;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -255,7 +252,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     - No auxiliary data
     - No time-dependence
   */
-  for (i = 0; i < its; ++i) {
+  for (PetscInt i = 0; i < its; ++i) {
     for (cell = cStart; cell < cEnd; cell += chunkSize) {
       const PetscInt cS = cell, cE = PetscMin(cS + chunkSize, cEnd), Ne = cE - cS;
 

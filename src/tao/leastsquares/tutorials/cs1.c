@@ -128,7 +128,6 @@ int main(int argc, char **argv)
   Vec       x, f; /* solution, function f(x) = A*x-b */
   Mat       J, D; /* Jacobian matrix, Transform matrix */
   Tao       tao;  /* Tao solver context */
-  PetscInt  i;    /* iteration information */
   PetscReal hist[100], resid[100];
   PetscInt  lits[100];
   AppCtx    user; /* user-defined work context */
@@ -144,9 +143,9 @@ int main(int argc, char **argv)
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, M, N, NULL, &J));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, K, N, NULL, &D)); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
 
-  for (i = 0; i < M; i++) user.idm[i] = i;
-  for (i = 0; i < N; i++) user.idn[i] = i;
-  for (i = 0; i < K; i++) user.idk[i] = i;
+  for (PetscInt i = 0; i < M; i++) user.idm[i] = i;
+  for (PetscInt i = 0; i < N; i++) user.idn[i] = i;
+  for (PetscInt i = 0; i < K; i++) user.idk[i] = i;
 
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_SELF, &tao));
@@ -207,7 +206,7 @@ int main(int argc, char **argv)
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx          *user = (AppCtx *)ptr;
-  PetscInt         m, n;
+  PetscInt         n;
   const PetscReal *x;
   PetscReal       *b = user->b, *f;
 
@@ -216,7 +215,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscCall(VecGetArray(F, &f));
 
   /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatibility for nonlinear least square */
-  for (m = 0; m < M; m++) {
+  for (PetscInt m = 0; m < M; m++) {
     f[m] = -b[m];
     for (n = 0; n < N; n++) f[m] += user->A[m][n] * x[n];
   }
@@ -231,14 +230,14 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx          *user = (AppCtx *)ptr;
-  PetscInt         m, n;
+  PetscInt         n;
   const PetscReal *x;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(X, &x)); /* not used for linear least square, but keep for future nonlinear least square) */
   /* XH: TODO:  For linear least square, we can just set J=A fixed once, instead of keep update it! Maybe just create a function getFixedJacobian?
     For nonlinear least square, we require x to compute J, keep codes here for future nonlinear least square*/
-  for (m = 0; m < M; ++m) {
+  for (PetscInt m = 0; m < M; ++m) {
     for (n = 0; n < N; ++n) user->J[m][n] = user->A[m][n];
   }
 

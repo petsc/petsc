@@ -26,9 +26,8 @@ typedef struct {
 
 static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[])
 {
-  PetscInt i, j;
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
+  for (PetscInt i = 0; i < n; i++) {
+    for (PetscInt j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
   }
 }
 

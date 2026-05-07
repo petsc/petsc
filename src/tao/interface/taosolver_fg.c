@@ -338,8 +338,6 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
 @*/
 PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (sigma_v) PetscValidHeaderSpecific(sigma_v, VEC_CLASSID, 2);
@@ -354,7 +352,7 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
     PetscCall(PetscMalloc1(n, &tao->res_weights_cols));
     PetscCall(PetscMalloc1(n, &tao->res_weights_w));
     tao->res_weights_n = n;
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       tao->res_weights_rows[i] = rows[i];
       tao->res_weights_cols[i] = cols[i];
       tao->res_weights_w[i]    = vals[i];

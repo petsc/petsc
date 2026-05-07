@@ -91,7 +91,6 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
 {
   const PetscInt groupA[10] = {15, 3, 13, 12, 2, 10, 7, 6, 0, 4};
   const PetscInt groupB[6]  = {14, 11, 9, 1, 8, 5};
-  PetscInt       c;
 
   PetscFunctionBegin;
   if (numGroups < 2) {
@@ -100,8 +99,8 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   }
   PetscCheck(numGroups == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %" PetscInt_FMT, numGroups);
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "groups", label));
-  for (c = 0; c < 10; ++c) PetscCall(DMLabelSetValue(*label, groupA[c], 101));
-  for (c = 0; c < 6; ++c) PetscCall(DMLabelSetValue(*label, groupB[c], 1001));
+  for (PetscInt c = 0; c < 10; ++c) PetscCall(DMLabelSetValue(*label, groupA[c], 101));
+  for (PetscInt c = 0; c < 6; ++c) PetscCall(DMLabelSetValue(*label, groupB[c], 1001));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

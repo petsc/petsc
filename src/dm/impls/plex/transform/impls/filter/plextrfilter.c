@@ -31,20 +31,19 @@ static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr)
   if (active) {
     IS              filterIS;
     const PetscInt *filterCells;
-    PetscInt        c;
 
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Filter Type", &tr->trType));
     PetscCall(DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &filterIS));
     PetscCall(DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc));
     if (filterIS) PetscCall(ISGetIndices(filterIS, &filterCells));
-    for (c = 0; c < Nc; ++c) {
+    for (PetscInt c = 0; c < Nc; ++c) {
       const PetscInt cell    = filterCells[c];
       PetscInt      *closure = NULL;
       DMPolytopeType ct;
-      PetscInt       Ncl, cl;
+      PetscInt       Ncl;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-      for (cl = 0; cl < Ncl * 2; cl += 2) {
+      for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
         PetscCall(DMPlexGetCellType(dm, closure[cl], &ct));
         PetscCall(DMLabelSetValue(tr->trType, closure[cl], ct));
       }

@@ -154,7 +154,7 @@ static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc, PetscInt *nlevels, M
 {
   PC_HYPRE            *jac = (PC_HYPRE *)pc->data;
   PetscBool            same;
-  PetscInt             num_levels, l;
+  PetscInt             num_levels;
   Mat                 *mattmp;
   hypre_ParCSRMatrix **A_array;
 
@@ -164,7 +164,7 @@ static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc, PetscInt *nlevels, M
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData *)jac->hsolver);
   PetscCall(PetscMalloc1(num_levels, &mattmp));
   A_array = hypre_ParAMGDataAArray((hypre_ParAMGData *)jac->hsolver);
-  for (l = 1; l < num_levels; l++) {
+  for (PetscInt l = 1; l < num_levels; l++) {
     PetscCall(MatCreateFromParCSR(A_array[l], MATAIJ, PETSC_OWN_POINTER, &mattmp[num_levels - 1 - l]));
     /* We want to own the data, and HYPRE can not touch this matrix any more */
     A_array[l] = NULL;
@@ -183,7 +183,7 @@ static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc, PetscInt *nlevels, Ma
 {
   PC_HYPRE            *jac = (PC_HYPRE *)pc->data;
   PetscBool            same;
-  PetscInt             num_levels, l;
+  PetscInt             num_levels;
   Mat                 *mattmp;
   hypre_ParCSRMatrix **P_array;
 
@@ -193,7 +193,7 @@ static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc, PetscInt *nlevels, Ma
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData *)jac->hsolver);
   PetscCall(PetscMalloc1(num_levels, &mattmp));
   P_array = hypre_ParAMGDataPArray((hypre_ParAMGData *)jac->hsolver);
-  for (l = 1; l < num_levels; l++) {
+  for (PetscInt l = 1; l < num_levels; l++) {
     PetscCall(MatCreateFromParCSR(P_array[num_levels - 1 - l], MATAIJ, PETSC_OWN_POINTER, &mattmp[l - 1]));
     /* We want to own the data, and HYPRE can not touch this matrix any more */
     P_array[num_levels - 1 - l] = NULL;
@@ -471,7 +471,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       }
     }
     if (jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1])) {
-      PetscInt           i;
       HYPRE_ParCSRMatrix nd_parcsrfull, nd_parcsr[3];
       if (jac->ND_PiFull) {
         hm = (Mat_HYPRE *)jac->ND_PiFull->data;
@@ -479,7 +478,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       } else {
         nd_parcsrfull = NULL;
       }
-      for (i = 0; i < 3; ++i) {
+      for (PetscInt i = 0; i < 3; ++i) {
         if (jac->ND_Pi[i]) {
           hm = (Mat_HYPRE *)jac->ND_Pi[i]->data;
           PetscCallHYPRE(HYPRE_IJMatrixGetObject(hm->ij, (void **)(&nd_parcsr[i])));
@@ -516,7 +515,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     PetscCallHYPRE(HYPRE_IJMatrixGetObject(hm->ij, (void **)(&parcsr)));
     PetscCallHYPRE(HYPRE_ADSSetDiscreteCurl(jac->hsolver, parcsr));
     if ((jac->RT_PiFull || (jac->RT_Pi[0] && jac->RT_Pi[1])) && (jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1]))) {
-      PetscInt           i;
       HYPRE_ParCSRMatrix rt_parcsrfull, rt_parcsr[3];
       HYPRE_ParCSRMatrix nd_parcsrfull, nd_parcsr[3];
       if (jac->RT_PiFull) {
@@ -525,7 +523,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       } else {
         rt_parcsrfull = NULL;
       }
-      for (i = 0; i < 3; ++i) {
+      for (PetscInt i = 0; i < 3; ++i) {
         if (jac->RT_Pi[i]) {
           hm = (Mat_HYPRE *)jac->RT_Pi[i]->data;
           PetscCallHYPRE(HYPRE_IJMatrixGetObject(hm->ij, (void **)(&rt_parcsr[i])));
@@ -539,7 +537,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       } else {
         nd_parcsrfull = NULL;
       }
-      for (i = 0; i < 3; ++i) {
+      for (PetscInt i = 0; i < 3; ++i) {
         if (jac->ND_Pi[i]) {
           hm = (Mat_HYPRE *)jac->ND_Pi[i]->data;
           PetscCallHYPRE(HYPRE_IJMatrixGetObject(hm->ij, (void **)(&nd_parcsr[i])));
@@ -1771,12 +1769,11 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscBool ishypre;
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&jac->RT_PiFull));
   PetscCall(MatDestroy(&jac->ND_PiFull));
-  for (i = 0; i < 3; ++i) {
+  for (PetscInt i = 0; i < 3; ++i) {
     PetscCall(MatDestroy(&jac->RT_Pi[i]));
     PetscCall(MatDestroy(&jac->ND_Pi[i]));
   }
@@ -1792,7 +1789,7 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
     }
   }
   if (RT_Pi) {
-    for (i = 0; i < dim; ++i) {
+    for (PetscInt i = 0; i < dim; ++i) {
       if (RT_Pi[i]) {
         PetscCall(PetscObjectTypeCompare((PetscObject)RT_Pi[i], MATHYPRE, &ishypre));
         if (ishypre) {
@@ -1814,7 +1811,7 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
     }
   }
   if (ND_Pi) {
-    for (i = 0; i < dim; ++i) {
+    for (PetscInt i = 0; i < dim; ++i) {
       if (ND_Pi[i]) {
         PetscCall(PetscObjectTypeCompare((PetscObject)ND_Pi[i], MATHYPRE, &ishypre));
         if (ishypre) {
@@ -1905,7 +1902,6 @@ static PetscErrorCode PCSetCoordinates_HYPRE(PC pc, PetscInt dim, PetscInt nloc,
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   Vec       tv;
-  PetscInt  i;
 
   PetscFunctionBegin;
   /* throw away any coordinate vector if already set */
@@ -1918,13 +1914,12 @@ static PetscErrorCode PCSetCoordinates_HYPRE(PC pc, PetscInt dim, PetscInt nloc,
   PetscCall(VecCreate(PetscObjectComm((PetscObject)pc), &tv));
   PetscCall(VecSetType(tv, VECSTANDARD));
   PetscCall(VecSetSizes(tv, nloc, PETSC_DECIDE));
-  for (i = 0; i < dim; i++) {
+  for (PetscInt i = 0; i < dim; i++) {
     PetscScalar *array;
-    PetscInt     j;
 
     PetscCall(VecHYPRE_IJVectorCreate(tv->map, &jac->coords[i]));
     PetscCall(VecGetArrayWrite(tv, &array));
-    for (j = 0; j < nloc; j++) array[j] = coords[j * dim + i];
+    for (PetscInt j = 0; j < nloc; j++) array[j] = coords[j * dim + i];
     PetscCall(VecRestoreArrayWrite(tv, &array));
     PetscCall(VecHYPRE_IJVectorCopy(tv, jac->coords[i]));
   }
@@ -2649,7 +2644,6 @@ static PetscErrorCode PCApply_SysPFMG(PC pc, Vec x, Vec y)
   PetscInt           nvars    = mx->nvars;
   HYPRE_Int          part     = 0;
   PetscInt           size;
-  PetscInt           i;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(hypreCitation, &cite));
@@ -2666,13 +2660,13 @@ static PetscErrorCode PCApply_SysPFMG(PC pc, Vec x, Vec y)
   hupper[2] = (HYPRE_Int)iupper[2];
 
   size = 1;
-  for (i = 0; i < 3; i++) size *= (iupper[i] - ilower[i] + 1);
+  for (PetscInt i = 0; i < 3; i++) size *= (iupper[i] - ilower[i] + 1);
 
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscCallHYPRE(HYPRE_SStructVectorSetConstantValues(mx->ss_b, 0.0));
     PetscCall(VecGetArrayRead(x, &xx));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(xx + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(xx + (size * i))));
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCallHYPRE(HYPRE_SStructVectorAssemble(mx->ss_b));
     PetscCallHYPRE(HYPRE_SStructMatrixMatvec(1.0, mx->ss_mat, mx->ss_b, 0.0, mx->ss_x));
@@ -2680,33 +2674,33 @@ static PetscErrorCode PCApply_SysPFMG(PC pc, Vec x, Vec y)
 
     /* copy solution values back to PETSc */
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(yy + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(yy + (size * i))));
     PetscCall(VecRestoreArray(y, &yy));
   } else { /* nodal ordering must be mapped to variable ordering for sys_pfmg */
     PetscScalar *z;
-    PetscInt     j, k;
+    PetscInt     k;
 
     PetscCall(PetscMalloc1(nvars * size, &z));
     PetscCallHYPRE(HYPRE_SStructVectorSetConstantValues(mx->ss_b, 0.0));
     PetscCall(VecGetArrayRead(x, &xx));
 
     /* transform nodal to hypre's variable ordering for sys_pfmg */
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < size; i++) {
       k = i * nvars;
-      for (j = 0; j < nvars; j++) z[j * size + i] = xx[k + j];
+      for (PetscInt j = 0; j < nvars; j++) z[j * size + i] = xx[k + j];
     }
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorSetBoxValues(mx->ss_b, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCallHYPRE(HYPRE_SStructVectorAssemble(mx->ss_b));
     PetscCallHYPRE(HYPRE_SStructSysPFMGSolve(ex->ss_solver, mx->ss_mat, mx->ss_b, mx->ss_x));
 
     /* copy solution values back to PETSc */
     PetscCall(VecGetArray(y, &yy));
-    for (i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
+    for (PetscInt i = 0; i < nvars; i++) PetscCallHYPRE(HYPRE_SStructVectorGetBoxValues(mx->ss_x, part, hlower, hupper, (HYPRE_Int)i, (HYPRE_Complex *)(z + (size * i))));
     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < size; i++) {
       k = i * nvars;
-      for (j = 0; j < nvars; j++) yy[k + j] = z[j * size + i];
+      for (PetscInt j = 0; j < nvars; j++) yy[k + j] = z[j * size + i];
     }
     PetscCall(VecRestoreArray(y, &yy));
     PetscCall(PetscFree(z));
@@ -2917,7 +2911,7 @@ static PetscErrorCode PCApplyRichardson_SMG(PC pc, Vec b, Vec y, Vec w, PetscRea
 
 static PetscErrorCode PCSetUp_SMG(PC pc)
 {
-  PetscInt         i, dim;
+  PetscInt         dim;
   PC_SMG          *ex = (PC_SMG *)pc->data;
   Mat_HYPREStruct *mx = (Mat_HYPREStruct *)pc->pmat->data;
   PetscBool        flg;
@@ -2930,7 +2924,7 @@ static PetscErrorCode PCSetUp_SMG(PC pc)
 
   PetscCall(DMDAGetInfo(mx->da, &dim, &M[0], &M[1], &M[2], 0, 0, 0, 0, 0, &p[0], &p[1], &p[2], 0));
   // Check if power of 2 in periodic directions
-  for (i = 0; i < dim; i++) {
+  for (PetscInt i = 0; i < dim; i++) {
     PetscCheck((M[i] & (M[i] - 1)) == 0 || p[i] != DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "With SMG, the number of points in a periodic direction must be a power of 2, but is here %" PetscInt_FMT ".", M[i]);
   }
 

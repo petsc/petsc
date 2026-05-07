@@ -5,7 +5,7 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 int main(int argc, char **argv)
 {
   PetscMPIInt size, rank;
-  PetscInt    i, N;
+  PetscInt    N;
   PetscScalar value;
   Vec         x, y;
   IS          is1, is2;
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   PetscCall(ISCreateStride(PETSC_COMM_SELF, N - rank, 0, 1, &is2));
 
   /* fill parallel vector: note this is not efficient way*/
-  for (i = 0; i < N; i++) {
+  for (PetscInt i = 0; i < N; i++) {
     value = (PetscScalar)i;
     PetscCall(VecSetValues(x, 1, &i, &value, INSERT_VALUES));
   }

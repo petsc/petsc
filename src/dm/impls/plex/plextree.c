@@ -935,12 +935,12 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   }
   PetscCall(DMPlexTreeSymmetrize(dm));
   if (computeCanonical) {
-    PetscInt d, dim;
+    PetscInt dim;
 
     /* add the canonical label */
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMCreateLabel(dm, "canonical"));
-    for (d = 0; d <= dim; d++) {
+    for (PetscInt d = 0; d <= dim; d++) {
       PetscInt        p, dStart, dEnd, canon = -1, cNumChildren;
       const PetscInt *cChildren;
 
@@ -954,14 +954,14 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
       }
       if (canon == -1) continue;
       for (p = dStart; p < dEnd; p++) {
-        PetscInt        numChildren, i;
+        PetscInt        numChildren;
         const PetscInt *children;
 
         PetscCall(DMPlexGetTreeChildren(dm, p, &numChildren, &children));
         if (numChildren) {
           PetscCheck(numChildren == cNumChildren, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "All parent points in a stratum should have the same number of children: %" PetscInt_FMT " != %" PetscInt_FMT, numChildren, cNumChildren);
           PetscCall(DMSetLabelValue(dm, "canonical", p, canon));
-          for (i = 0; i < numChildren; i++) PetscCall(DMSetLabelValue(dm, "canonical", children[i], cChildren[i]));
+          for (PetscInt i = 0; i < numChildren; i++) PetscCall(DMSetLabelValue(dm, "canonical", children[i], cChildren[i]));
         }
       }
     }
@@ -1461,8 +1461,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscSc
             PetscCall(PetscSectionGetOffset(refSection, q, &aOff));
           }
           if (flip) {
-            PetscInt k;
-            for (k = 0; k < cDof; k++) {
+            for (PetscInt k = 0; k < cDof; k++) {
               for (j = 0; j < aDof; j++) refPointFieldMats[p - pRefStart][f][k * numCols + colOff + j] *= flip[j];
             }
           }
@@ -1833,11 +1832,11 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
         parentOrientA = DMPolytopeConvertNewOrientation_Internal(pct, parentOrientA);
         parentOrientB = DMPolytopeConvertNewOrientation_Internal(qct, parentOrientB);
         if (parentOrientA != parentOrientB) {
-          PetscInt        numChildren, i;
+          PetscInt        numChildren;
           const PetscInt *children;
 
           PetscCall(DMPlexGetTreeChildren(K, p, &numChildren, &children));
-          for (i = 0; i < numChildren; i++) {
+          for (PetscInt i = 0; i < numChildren; i++) {
             PetscInt kPerm, oPerm;
 
             k = children[i];
@@ -1953,16 +1952,14 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
     {
       PetscInt     kStart, kEnd, l;
       PetscSection vSection;
-      PetscInt     v;
       Vec          coords;
       PetscScalar *coordvals;
       PetscInt     dof, off;
       PetscReal    v0[3], J[9], detJ;
 
       if (PetscDefined(USE_DEBUG)) {
-        PetscInt k;
         PetscCall(DMPlexGetHeightStratum(K, 0, &kStart, &kEnd));
-        for (k = kStart; k < kEnd; k++) {
+        for (PetscInt k = kStart; k < kEnd; k++) {
           PetscCall(DMPlexComputeCellGeometryFEM(K, k, NULL, v0, J, NULL, &detJ));
           PetscCheck(detJ > 0., PETSC_COMM_SELF, PETSC_ERR_PLIB, "reference tree cell %" PetscInt_FMT " has bad determinant", k);
         }
@@ -1971,7 +1968,7 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
       PetscCall(DMGetCoordinateSection(dm, &vSection));
       PetscCall(DMGetCoordinatesLocal(dm, &coords));
       PetscCall(VecGetArray(coords, &coordvals));
-      for (v = pOldStart[dim]; v < pOldEnd[dim]; v++) {
+      for (PetscInt v = pOldStart[dim]; v < pOldEnd[dim]; v++) {
         PetscCall(PetscSectionGetDof(vSection, v, &dof));
         PetscCall(PetscSectionGetOffset(vSection, v, &off));
         for (l = 0; l < dof; l++) newVertexCoords[offset++] = coordvals[off + l];
@@ -1982,7 +1979,7 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
       PetscCall(DMGetCoordinatesLocal(K, &coords));
       PetscCall(VecGetArray(coords, &coordvals));
       PetscCall(DMPlexGetDepthStratum(K, 0, &kStart, &kEnd));
-      for (v = kStart; v < kEnd; v++) {
+      for (PetscInt v = kStart; v < kEnd; v++) {
         PetscReal       coord[3], newCoord[3];
         PetscInt        vPerm = perm[v];
         PetscInt        kParent;
@@ -2179,7 +2176,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
     } else if (maxChildId == -1) {
       if (cDof > 0) { /* this point's dofs are interpolated via cMat: get the submatrix of cMat */
-        PetscInt aOff, a;
+        PetscInt aOff;
 
         PetscCall(PetscSectionGetOffset(aSec, p, &aOff));
         for (f = 0; f < numFields; f++) {
@@ -2188,7 +2185,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           PetscCall(PetscSectionGetFieldDof(localCoarse, p, f, &fDof));
           offsets[f + 1] = fDof;
         }
-        for (a = 0; a < aDof; a++) {
+        for (PetscInt a = 0; a < aDof; a++) {
           PetscInt anchor = anchors[a + aOff], aLocalDof;
 
           PetscCall(PetscSectionGetDof(localCoarse, anchor, &aLocalDof));
@@ -2249,14 +2246,14 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       PetscCall(PetscSectionGetDof(globalCoarse, p, &dof));
       if (dof < 0) dof = -(dof + 1);
       if (maxChildId >= 0) { /* build an identity matrix, apply matrix constraints on the right */
-        PetscInt i, j;
+        PetscInt j;
 
         if (matSize == 0) { /* don't need to calculate the mat, just the indices */
           PetscInt numIndices, *indices;
           PetscCall(DMPlexGetClosureIndices(coarse, localCoarse, globalCoarse, p, PETSC_TRUE, &numIndices, &indices, offsets, NULL));
           PetscCheck(numIndices == numColIndices, PETSC_COMM_SELF, PETSC_ERR_PLIB, "mismatching constraint indices calculations");
-          for (i = 0; i < numColIndices; i++) pInd[i] = indices[i];
-          for (i = 0; i < numFields; i++) {
+          for (PetscInt i = 0; i < numColIndices; i++) pInd[i] = indices[i];
+          for (PetscInt i = 0; i < numFields; i++) {
             pInd[numColIndices + i]             = offsets[i + 1];
             pInd[numColIndices + numFields + i] = offsets[i + 1];
           }
@@ -2280,7 +2277,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
 
           PetscCall(DMGetWorkArray(coarse, numRowIndices * numRowIndices, MPIU_SCALAR, &pMatIn));
-          for (i = 0; i < numRowIndices; i++) { /* initialize to the identity */
+          for (PetscInt i = 0; i < numRowIndices; i++) { /* initialize to the identity */
             for (j = 0; j < numRowIndices; j++) pMatIn[i * numRowIndices + j] = (i == j) ? 1. : 0.;
           }
           PetscCall(DMPlexGetTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure));
@@ -2316,12 +2313,12 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             else PetscCall(PetscSectionGetPointSyms(localCoarse, numPoints, points, &perms[f], &flips[f]));
           }
           if (!numFields) {
-            for (i = 0; i < numRowIndices * numColIndices; i++) pMat[i] = pMatModified[i];
+            for (PetscInt i = 0; i < numRowIndices * numColIndices; i++) pMat[i] = pMatModified[i];
           } else {
-            PetscInt i, j, count;
+            PetscInt count;
             for (f = 0, count = 0; f < numFields; f++) {
-              for (i = offsets[f]; i < offsets[f + 1]; i++) {
-                for (j = newOffsets[f]; j < newOffsets[f + 1]; j++, count++) pMat[count] = pMatModified[i * numColIndices + j];
+              for (PetscInt i = offsets[f]; i < offsets[f + 1]; i++) {
+                for (PetscInt j = newOffsets[f]; j < newOffsets[f + 1]; j++, count++) pMat[count] = pMatModified[i * numColIndices + j];
               }
             }
           }
@@ -2413,9 +2410,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             PetscCall(DMPlexGetIndicesPointFields_Internal(localCoarse, PETSC_FALSE, anchor, gOff < 0 ? -(gOff + 1) : gOff, newOffsets, PETSC_FALSE, NULL, -1, NULL, pInd));
           }
         } else {
-          PetscInt a;
           PetscCall(MatGetValues(cMat, numRowIndices, rowIndices, numColIndices, colIndices, pMat));
-          for (a = 0; a < aDof; a++) {
+          for (PetscInt a = 0; a < aDof; a++) {
             PetscInt anchor = anchors[a + aOff];
             PetscInt gOff;
             PetscCall(PetscSectionGetOffset(globalCoarse, anchor, &gOff));
@@ -2602,8 +2598,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
         } else { /* interpolate from all */
           if (numFields) {
-            PetscInt f;
-            for (f = 0; f < numFields; f++) {
+            for (PetscInt f = 0; f < numFields; f++) {
               PetscInt numRows = offsets[f + 1] - offsets[f], row;
               for (row = 0; row < numRows; row++) {
                 PetscInt gIndFine = rowIndices[offsets[f] + row];
@@ -2615,8 +2610,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               }
             }
           } else {
-            PetscInt i;
-            for (i = 0; i < gDof; i++) {
+            for (PetscInt i = 0; i < gDof; i++) {
               PetscInt gIndFine = rowIndices[i];
               if (gIndFine >= 0) {
                 PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched number of constrained dofs");
@@ -2628,8 +2622,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         }
       } else { /* interpolate from all */
         if (numFields) {
-          PetscInt f;
-          for (f = 0; f < numFields; f++) {
+          for (PetscInt f = 0; f < numFields; f++) {
             PetscInt numRows = offsets[f + 1] - offsets[f], row;
             for (row = 0; row < numRows; row++) {
               PetscInt gIndFine = rowIndices[offsets[f] + row];
@@ -2641,8 +2634,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             }
           }
         } else { /* every dof get a full row */
-          PetscInt i;
-          for (i = 0; i < gDof; i++) {
+          for (PetscInt i = 0; i < gDof; i++) {
             PetscInt gIndFine = rowIndices[i];
             if (gIndFine >= 0) {
               PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched number of constrained dofs");
@@ -2717,8 +2709,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
         } else { /* interpolate from all */
           if (numFields) {
-            PetscInt f;
-            for (f = 0; f < numFields; f++) {
+            for (PetscInt f = 0; f < numFields; f++) {
               PetscInt numRows = offsets[f + 1] - offsets[f];
               PetscInt numCols = newOffsets[f + 1] - newOffsets[f];
               PetscCall(MatSetValues(mat, numRows, &rowIndices[offsets[f]], numCols, &pInd[newOffsets[f]], refPointFieldMats[childId - pRefStart][f], INSERT_VALUES));
@@ -3038,9 +3029,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             PetscTabulation    Tchild;
             PetscInt           childCellShapeOff, pointMatOff;
 #if defined(PETSC_USE_COMPLEX)
-            PetscInt d;
-
-            for (d = 0; d < dim; d++) pointScalar[d] = points[dim * j + d];
+            for (PetscInt d = 0; d < dim; d++) pointScalar[d] = points[dim * j + d];
             point = pointScalar;
 #else
             point = pointReal;
@@ -3051,10 +3040,10 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             for (k = 0; k < numChildren; k++) { /* locate the point in a child's star cell*/
               PetscInt  child = children[k];
               PetscInt *star  = NULL;
-              PetscInt  numStar, s;
+              PetscInt  numStar;
 
               PetscCall(DMPlexGetTransitiveClosure(refTree, child, PETSC_FALSE, &numStar, &star));
-              for (s = numStar - 1; s >= 0; s--) {
+              for (PetscInt s = numStar - 1; s >= 0; s--) {
                 PetscInt c = star[2 * s];
 
                 if (c < cStart || c >= cEnd) continue;
@@ -3319,18 +3308,14 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
 
         pInd = gatheredIndices ? (&leafInds[off + 1]) : leafInds;
         if (gatheredValues) {
-          PetscInt i;
-
           pVal = &leafVals[off + 1];
-          for (i = 0; i < dof; i++) pVal[i] = 0.;
+          for (PetscInt i = 0; i < dof; i++) pVal[i] = 0.;
         }
         PetscCall(PetscSectionGetOffset(globalFine, p, &gOff));
 
         offsets[0] = 0;
         if (numFields) {
-          PetscInt f;
-
-          for (f = 0; f < numFields; f++) {
+          for (PetscInt f = 0; f < numFields; f++) {
             PetscInt fDof;
             PetscCall(PetscSectionGetFieldDof(localFine, p, f, &fDof));
             offsets[f + 1] = fDof + offsets[f];
@@ -3598,16 +3583,14 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
           }
         }
       } else {
-        PetscInt parentId, f, lim;
+        PetscInt parentId, lim;
 
         PetscCall(DMPlexGetTreeParent(refTree, childId, &parentId, NULL));
 
         lim        = PetscMax(1, numFields);
         offsets[0] = 0;
         if (numFields) {
-          PetscInt f;
-
-          for (f = 0; f < numFields; f++) {
+          for (PetscInt f = 0; f < numFields; f++) {
             PetscInt fDof;
             PetscCall(PetscSectionGetFieldDof(cSecRef, childId, f, &fDof));
 
@@ -3619,7 +3602,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
           PetscCall(PetscSectionGetDof(cSecRef, childId, &cDof));
           offsets[1] = cDof;
         }
-        for (f = 0; f < lim; f++) {
+        for (PetscInt f = 0; f < lim; f++) {
           PetscInt parentStart = rowOffsets[f], parentEnd = rowOffsets[f + 1];
           PetscInt childStart = offsets[f], childEnd = offsets[f + 1];
           PetscInt i, numD = 0, numO = 0;
@@ -3688,20 +3671,16 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
       numIndices--;
 
       if (childId == -1) { /* equivalent points: scatter */
-        PetscInt i;
-
-        for (i = 0; i < numIndices; i++) PetscCall(MatSetValue(mat, parentIndices[i], childIndices[i], 1., INSERT_VALUES));
+        for (PetscInt i = 0; i < numIndices; i++) PetscCall(MatSetValue(mat, parentIndices[i], childIndices[i], 1., INSERT_VALUES));
       } else {
-        PetscInt parentId, f, lim;
+        PetscInt parentId, lim;
 
         PetscCall(DMPlexGetTreeParent(refTree, childId, &parentId, NULL));
 
         lim        = PetscMax(1, numFields);
         offsets[0] = 0;
         if (numFields) {
-          PetscInt f;
-
-          for (f = 0; f < numFields; f++) {
+          for (PetscInt f = 0; f < numFields; f++) {
             PetscInt fDof;
             PetscCall(PetscSectionGetFieldDof(cSecRef, childId, f, &fDof));
 
@@ -3713,7 +3692,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
           PetscCall(PetscSectionGetDof(cSecRef, childId, &cDof));
           offsets[1] = cDof;
         }
-        for (f = 0; f < lim; f++) {
+        for (PetscInt f = 0; f < lim; f++) {
           PetscScalar    *childMat   = &childrenMats[childId - pRefStart][f][0];
           PetscInt       *rowIndices = &parentIndices[rowOffsets[f]];
           const PetscInt *colIndices = &childIndices[offsets[f]];
@@ -3993,26 +3972,23 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       if (childId == -1) { /* no child interpolation: one nnz per */
         PetscCall(VecSetValues(vecFine, numValues, rowIndices, pVal, INSERT_VALUES));
       } else {
-        PetscInt f;
-
         if (grad && p >= cellStart && p < cellEnd) {
           numValues -= (dim * (1 + numFVcomps));
           fvGradData = &pVal[numValues];
         }
-        for (f = 0; f < PetscMax(1, numFields); f++) {
+        for (PetscInt f = 0; f < PetscMax(1, numFields); f++) {
           const PetscScalar *childMat = refPointFieldMats[childId - pRefStart][f];
           PetscInt           numRows  = offsets[f + 1] - offsets[f];
           PetscInt           numCols  = newOffsets[f + 1] - newOffsets[f];
           const PetscScalar *cVal     = &pVal[newOffsets[f]];
           PetscScalar       *rVal     = &pointWork[offsets[f]];
-          PetscInt           i, j;
 
 #if 0
           PetscCall(PetscInfo(coarse,"childId %" PetscInt_FMT ", numRows %" PetscInt_FMT ", numCols %" PetscInt_FMT ", refPointFieldN %" PetscInt_FMT " maxDof %" PetscInt_FMT "\n",childId,numRows,numCols,refPointFieldN[childId - pRefStart][f], maxDof));
 #endif
-          for (i = 0; i < numRows; i++) {
+          for (PetscInt i = 0; i < numRows; i++) {
             PetscScalar val = 0.;
-            for (j = 0; j < numCols; j++) val += childMat[i * numCols + j] * cVal[j];
+            for (PetscInt j = 0; j < numCols; j++) val += childMat[i * numCols + j] * cVal[j];
             rVal[i] = val;
           }
           if (f == fvField && p >= cellStart && p < cellEnd) {
@@ -4022,11 +3998,11 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
             const PetscScalar *gradient       = &fvGradData[dim];
 
             PetscCall(DMPlexComputeCellGeometryFVM(fine, p, NULL, centroid, NULL));
-            for (i = 0; i < dim; i++) diff[i] = centroid[i] - parentCentroid[i];
-            for (i = 0; i < numFVcomps; i++) {
+            for (PetscInt i = 0; i < dim; i++) diff[i] = centroid[i] - parentCentroid[i];
+            for (PetscInt i = 0; i < numFVcomps; i++) {
               PetscScalar val = 0.;
 
-              for (j = 0; j < dim; j++) val += gradient[dim * i + j] * diff[j];
+              for (PetscInt j = 0; j < dim; j++) val += gradient[dim * i + j] * diff[j];
               rVal[i] += val;
             }
           }
@@ -4111,9 +4087,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
     rowOffsets[0]  = 0;
     offsetsCopy[0] = 0;
     if (numFields) {
-      PetscInt f;
-
-      for (f = 0; f < numFields; f++) {
+      for (PetscInt f = 0; f < numFields; f++) {
         PetscInt fDof;
         PetscCall(PetscSectionGetFieldDof(localCoarse, p, f, &fDof));
         rowOffsets[f + 1] = offsetsCopy[f + 1] = fDof + rowOffsets[f];
@@ -4141,12 +4115,10 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
       if (childId == -2) { /* skip */
         continue;
       } else if (childId == -1) { /* equivalent points: scatter */
-        PetscInt m;
-
         contribute = PETSC_TRUE;
-        for (m = 0; m < numIndices; m++) parentValues[m] = childValues[m];
+        for (PetscInt m = 0; m < numIndices; m++) parentValues[m] = childValues[m];
       } else { /* contributions from children: sum with injectors from reference tree */
-        PetscInt parentId, f, lim;
+        PetscInt parentId, lim;
 
         contribute = PETSC_TRUE;
         PetscCall(DMPlexGetTreeParent(refTree, childId, &parentId, NULL));
@@ -4154,9 +4126,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         lim        = PetscMax(1, numFields);
         offsets[0] = 0;
         if (numFields) {
-          PetscInt f;
-
-          for (f = 0; f < numFields; f++) {
+          for (PetscInt f = 0; f < numFields; f++) {
             PetscInt fDof;
             PetscCall(PetscSectionGetFieldDof(cSecRef, childId, f, &fDof));
 
@@ -4168,16 +4138,15 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
           PetscCall(PetscSectionGetDof(cSecRef, childId, &cDof));
           offsets[1] = cDof;
         }
-        for (f = 0; f < lim; f++) {
-          PetscScalar       *childMat = &childrenMats[childId - pRefStart][f][0];
-          PetscInt           n        = offsets[f + 1] - offsets[f];
-          PetscInt           m        = rowOffsets[f + 1] - rowOffsets[f];
-          PetscInt           i, j;
+        for (PetscInt f = 0; f < lim; f++) {
+          PetscScalar       *childMat  = &childrenMats[childId - pRefStart][f][0];
+          PetscInt           n         = offsets[f + 1] - offsets[f];
+          PetscInt           m         = rowOffsets[f + 1] - rowOffsets[f];
           const PetscScalar *colValues = &childValues[offsets[f]];
 
-          for (i = 0; i < m; i++) {
+          for (PetscInt i = 0; i < m; i++) {
             PetscScalar val = 0.;
-            for (j = 0; j < n; j++) val += childMat[n * i + j] * colValues[j];
+            for (PetscInt j = 0; j < n; j++) val += childMat[n * i + j] * colValues[j];
             parentValues[rowOffsets[f] + i] += val;
           }
         }
@@ -4242,10 +4211,10 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
     PetscCall(DMGetLocalVector(dmIn, &vecInLocal));
     PetscCall(VecSet(vecInLocal, 0.0));
     {
-      PetscInt numFields, i;
+      PetscInt numFields;
 
       PetscCall(DMGetNumFields(dmIn, &numFields));
-      for (i = 0; i < numFields; i++) {
+      for (PetscInt i = 0; i < numFields; i++) {
         PetscObject  obj;
         PetscClassId classid;
 

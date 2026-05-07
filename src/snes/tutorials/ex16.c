@@ -324,11 +324,10 @@ void DeformationGradient(Field *ex, PetscInt qi, PetscInt qj, PetscInt qk, Petsc
 
 void DeformationGradientJacobian(PetscInt qi, PetscInt qj, PetscInt qk, PetscInt ii, PetscInt jj, PetscInt kk, PetscInt fld, PetscScalar *invJ, PetscScalar *dF)
 {
-  PetscInt    l;
   PetscScalar lgrad[3];
   PetscInt    idx  = ii + jj * NB + kk * NB * NB;
   PetscInt    bidx = NEB * idx + qi + NQ * qj + NQ * NQ * qk;
-  for (l = 0; l < 9; l++) dF[l] = 0.;
+  for (PetscInt l = 0; l < 9; l++) dF[l] = 0.;
   /* form the deformation gradient at this basis function -- loop over element unknowns */
   TensorVector(invJ, &grad[3 * bidx], lgrad);
   dF[3 * fld]     = lgrad[0];

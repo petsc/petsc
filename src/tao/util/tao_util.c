@@ -246,7 +246,7 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 @*/
 PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
-  PetscInt           i, nn;
+  PetscInt           nn;
   const PetscScalar *x, *f, *l, *u, *t2;
   PetscScalar       *da, *db, *t1;
   PetscReal          ai, bi, ci, di, ei;
@@ -262,7 +262,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   PetscCall(VecGetArray(T1, &t1));
   PetscCall(VecGetArrayRead(T2, &t2));
 
-  for (i = 0; i < nn; i++) {
+  for (PetscInt i = 0; i < nn; i++) {
     da[i] = 0.0;
     db[i] = 0.0;
     t1[i] = 0.0;
@@ -285,7 +285,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   PetscCall(MatMult(jac, T1, T2));
   PetscCall(VecGetArrayRead(T2, &t2));
 
-  for (i = 0; i < nn; i++) {
+  for (PetscInt i = 0; i < nn; i++) {
     if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) {
       da[i] = 0.0;
       db[i] = -1.0;
@@ -392,7 +392,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 @*/
 PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal mu, Vec T1, Vec T2, Vec Da, Vec Db, Vec Dm)
 {
-  PetscInt           i, nn;
+  PetscInt           nn;
   const PetscScalar *x, *f, *l, *u;
   PetscScalar       *da, *db, *dm;
   PetscReal          ai, bi, ci, di, ei, fi;
@@ -411,7 +411,7 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal m
     PetscCall(VecGetArray(Db, &db));
     PetscCall(VecGetArray(Dm, &dm));
 
-    for (i = 0; i < nn; ++i) {
+    for (PetscInt i = 0; i < nn; ++i) {
       if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) {
         da[i] = -mu;
         db[i] = -1.0;

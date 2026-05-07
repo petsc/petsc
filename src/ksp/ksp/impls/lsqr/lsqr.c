@@ -29,12 +29,12 @@ typedef struct {
 static PetscErrorCode VecSquare(Vec v)
 {
   PetscScalar *x;
-  PetscInt     i, n;
+  PetscInt     n;
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
+  for (PetscInt i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
   PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

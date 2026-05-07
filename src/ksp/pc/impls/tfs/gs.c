@@ -910,8 +910,6 @@ static PetscErrorCode PCTFS_gs_gop_local_in_plus(PCTFS_gs_id *gs, PetscScalar *v
 /******************************************************************************/
 PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&gs->PCTFS_gs_comm));
   if (gs->nghs) free((void *)gs->nghs);
@@ -943,7 +941,7 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
     if (gs->pw_vals) free((void *)gs->pw_vals);
     if (gs->pw_elm_list) free((void *)gs->pw_elm_list);
     if (gs->node_list) {
-      for (i = 0; i < gs->num_pairs; i++) {
+      for (PetscInt i = 0; i < gs->num_pairs; i++) {
         if (gs->node_list[i]) free((void *)gs->node_list[i]);
       }
       free((void *)gs->node_list);
@@ -954,7 +952,7 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
 
   /* local info */
   if (gs->num_local_total >= 0) {
-    for (i = 0; i < gs->num_local_total + 1; i++) {
+    for (PetscInt i = 0; i < gs->num_local_total + 1; i++) {
       if (gs->num_gop_local_reduce[i]) free((void *)gs->gop_local_reduce[i]);
     }
   }

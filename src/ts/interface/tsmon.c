@@ -166,11 +166,9 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt ste
 @*/
 PetscErrorCode TSMonitorCancel(TS ts)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  for (i = 0; i < ts->numbermonitors; i++) {
+  for (PetscInt i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitordestroy[i]) PetscCall((*ts->monitordestroy[i])(&ts->monitorcontext[i]));
   }
   ts->numbermonitors = 0;
@@ -555,10 +553,8 @@ PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char
 /* Destroys a TSMonitorHGCtx that was created with TSMonitorHGCtxCreate */
 PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 {
-  PetscInt s;
-
   PetscFunctionBegin;
-  for (s = 0; s < (*ctx)->Ns; ++s) PetscCall(PetscDrawHGDestroy(&(*ctx)->hg[s]));
+  for (PetscInt s = 0; s < (*ctx)->Ns; ++s) PetscCall(PetscDrawHGDestroy(&(*ctx)->hg[s]));
   PetscCall(PetscFree((*ctx)->hg));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1095,11 +1091,11 @@ PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u,
     PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, ctx->displayvalues));
   } else {
 #if defined(PETSC_USE_COMPLEX)
-    PetscInt   i, n;
+    PetscInt   n;
     PetscReal *yreal;
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(PetscMalloc1(n, &yreal));
-    for (i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
+    for (PetscInt i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
     PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yreal));
     PetscCall(PetscFree(yreal));
 #else
@@ -1298,10 +1294,8 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
 @*/
 PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(PetscCtx tctx, Vec u, Vec *w), PetscCtxDestroyFn *destroy, PetscCtx tctx)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  for (i = 0; i < ts->numbermonitors; i++) {
+  for (PetscInt i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) PetscCall(TSMonitorLGCtxSetTransform((TSMonitorLGCtx)ts->monitorcontext[i], transform, destroy, tctx));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1387,10 +1381,10 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscReal *yreal;
-    PetscInt   i, n;
+    PetscInt   n;
     PetscCall(VecGetLocalSize(y, &n));
     PetscCall(PetscMalloc1(n, &yreal));
-    for (i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
+    for (PetscInt i = 0; i < n; i++) yreal[i] = PetscRealPart(yy[i]);
     PetscCall(PetscDrawLGAddCommonPoint(ctx->lg, ptime, yreal));
     PetscCall(PetscFree(yreal));
   }
@@ -1797,12 +1791,10 @@ PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, P
 @*/
 PetscErrorCode TSMonitorEnvelopeGetBounds(TS ts, Vec *max, Vec *min)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   if (max) *max = NULL;
   if (min) *min = NULL;
-  for (i = 0; i < ts->numbermonitors; i++) {
+  for (PetscInt i = 0; i < ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorEnvelope) {
       TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)ts->monitorcontext[i];
       if (max) *max = ctx->max;

@@ -103,7 +103,6 @@ int main(int argc, char **argv)
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx          *user = (AppCtx *)ptr;
-  PetscInt         i;
   const PetscReal *x;
   PetscReal       *y = user->y, *f, *t = user->t;
 
@@ -111,7 +110,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArray(F, &f));
 
-  for (i = 0; i < NOBSERVATIONS; i++) f[i] = y[i] - PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]);
+  for (PetscInt i = 0; i < NOBSERVATIONS; i++) f[i] = y[i] - PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]);
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(PetscLogFlops(6 * NOBSERVATIONS));
@@ -123,14 +122,13 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx          *user = (AppCtx *)ptr;
-  PetscInt         i;
   const PetscReal *x;
   PetscReal       *t = user->t;
   PetscReal        base;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(X, &x));
-  for (i = 0; i < NOBSERVATIONS; i++) {
+  for (PetscInt i = 0; i < NOBSERVATIONS; i++) {
     base = PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]);
 
     user->j[i][0] = t[i] * base;

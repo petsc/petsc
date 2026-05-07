@@ -123,11 +123,11 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
   for (ke = kst, ii = 0; ke < kst + ken; ke++) {
     for (je = jst; je < jst + jen; je++) {
       for (ie = ist; ie < ist + ien; ie++) {
-        PetscInt cf, b;
+        PetscInt cf;
         i = ke * gm * gn + je * gm + ie;
         for (f = 0, cf = 0; f < nf; f++) {
           if (!nfs[f]) continue;
-          for (b = 0; b < bss[f]; b++) arrayf[f][bss[f] * ii + b] = array[i * bs + cf++];
+          for (PetscInt b = 0; b < bss[f]; b++) arrayf[f][bss[f] * ii + b] = array[i * bs + cf++];
         }
         ii++;
       }
@@ -489,12 +489,9 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     for (ke = kst; ke < kst + ken; ke++) {
       for (je = jst; je < jst + jen; je++) {
         for (ie = ist; ie < ist + ien; ie++) {
-          PetscInt c;
-
           i = ke * gm * gn + je * gm + ie;
-          for (c = 0; c < cdof / sdim; c++) {
-            PetscInt d;
-            for (d = 0; d < sdim; d++) PetscCall(PetscViewerASCIIPrintf(viewer, fmt, PetscRealPart(array[cdof * i + c * sdim + d])));
+          for (PetscInt c = 0; c < cdof / sdim; c++) {
+            for (PetscInt d = 0; d < sdim; d++) PetscCall(PetscViewerASCIIPrintf(viewer, fmt, PetscRealPart(array[cdof * i + c * sdim + d])));
             PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
           }
         }

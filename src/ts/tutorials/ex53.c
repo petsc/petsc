@@ -70,8 +70,7 @@ typedef struct {
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt c;
-  for (c = 0; c < Nc; ++c) u[c] = 0.0;
+  for (PetscInt c = 0; c < Nc; ++c) u[c] = 0.0;
   return PETSC_SUCCESS;
 }
 
@@ -303,18 +302,15 @@ div \sigma = \partial_i \lambda \delta_{ij} \varepsilon_{kk} + \partial_i 2\mu\v
 */
 static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
-  PetscInt d;
-
-  for (d = 0; d < dim; ++d) u[d] = PetscSinReal(2. * PETSC_PI * x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0);
+  for (PetscInt d = 0; d < dim; ++d) u[d] = PetscSinReal(2. * PETSC_PI * x[d]) - (d > 0 ? 2.0 * x[d - 1] * x[d] : 0.0);
   return PETSC_SUCCESS;
 }
 
 static PetscErrorCode trig_eps(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal sum = 0.0;
-  PetscInt  d;
 
-  for (d = 0; d < dim; ++d) sum += 2. * PETSC_PI * PetscCosReal(2. * PETSC_PI * x[d]) - (d < dim - 1 ? 2. * x[d] : 0.0);
+  for (PetscInt d = 0; d < dim; ++d) sum += 2. * PETSC_PI * PetscCosReal(2. * PETSC_PI * x[d]) - (d < dim - 1 ? 2. * x[d] : 0.0);
   u[0] = sum;
   return PETSC_SUCCESS;
 }
@@ -322,9 +318,8 @@ static PetscErrorCode trig_eps(PetscInt dim, PetscReal time, const PetscReal x[]
 static PetscErrorCode trig_linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal sum = 0.0;
-  PetscInt  d;
 
-  for (d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
   u[0] = sum * time;
   return PETSC_SUCCESS;
 }
@@ -332,9 +327,8 @@ static PetscErrorCode trig_linear_p(PetscInt dim, PetscReal time, const PetscRea
 static PetscErrorCode trig_linear_p_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, PetscCtx ctx)
 {
   PetscReal sum = 0.0;
-  PetscInt  d;
 
-  for (d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
   u[0] = sum;
   return PETSC_SUCCESS;
 }
@@ -347,9 +341,8 @@ static void f0_trig_linear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
   const PetscReal M      = PetscRealPart(constants[3]);
   const PetscReal K_d    = K_u - alpha * alpha * M;
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
-  PetscInt        d;
 
-  for (d = 0; d < dim - 1; ++d) f0[d] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[d]) * (2. * G + lambda) + 2.0 * (G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[d]) * t;
+  for (PetscInt d = 0; d < dim - 1; ++d) f0[d] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[d]) * (2. * G + lambda) + 2.0 * (G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[d]) * t;
   f0[dim - 1] += PetscSqr(2. * PETSC_PI) * PetscSinReal(2. * PETSC_PI * x[dim - 1]) * (2. * G + lambda) - 2. * PETSC_PI * alpha * PetscSinReal(2. * PETSC_PI * x[dim - 1]) * t;
 }
 
@@ -359,9 +352,8 @@ static void f0_trig_linear_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
   const PetscReal M     = PetscRealPart(constants[3]);
   const PetscReal kappa = PetscRealPart(constants[4]);
   PetscReal       sum   = 0.0;
-  PetscInt        d;
 
-  for (d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
+  for (PetscInt d = 0; d < dim; ++d) sum += PetscCosReal(2. * PETSC_PI * x[d]);
   f0[0] += u_t ? alpha * u_t[uOff[1]] : 0.0;
   f0[0] += u_t ? u_t[uOff[2]] / M : 0.0;
   f0[0] -= sum / M - 4 * PetscSqr(PETSC_PI) * kappa * sum * t;
@@ -1386,9 +1378,9 @@ static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   const PetscReal M      = PetscRealPart(constants[3]);
   const PetscReal K_d    = K_u - alpha * alpha * M;
   const PetscReal lambda = K_d - (2.0 * G) / 3.0;
-  PetscInt        c, d;
+  PetscInt        d;
 
-  for (c = 0; c < Nc; ++c) {
+  for (PetscInt c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) f1[c * dim + d] -= G * (u_x[c * dim + d] + u_x[d * dim + c]);
     f1[c * dim + c] -= lambda * u[uOff[1]];
     f1[c * dim + c] += alpha * u[uOff[2]];
@@ -1468,10 +1460,9 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 {
   const PetscInt  Nc = dim;
   const PetscReal G  = PetscRealPart(constants[0]);
-  PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) {
       g3[((c * Nc + c) * dim + d) * dim + d] -= G;
       g3[((c * Nc + d) * dim + d) * dim + c] -= G;
     }
@@ -1482,9 +1473,7 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 static void g3_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscReal kappa = PetscRealPart(constants[4]);
-  PetscInt        d;
-
-  for (d = 0; d < dim; ++d) g3[d * dim + d] += kappa;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] += kappa;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -1919,14 +1908,14 @@ static PetscErrorCode SetupFE(DM dm, PetscInt Nf, PetscInt Nc[], const char *nam
   PetscFE         fe;
   PetscQuadrature q = NULL, fq = NULL;
   char            prefix[PETSC_MAX_PATH_LEN];
-  PetscInt        dim, f;
+  PetscInt        dim;
   PetscBool       simplex;
 
   PetscFunctionBeginUser;
   /* Create finite element */
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
-  for (f = 0; f < Nf; ++f) {
+  for (PetscInt f = 0; f < Nf; ++f) {
     PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name[f]));
     PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc[f], simplex, name[f] ? prefix : NULL, -1, &fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, name[f]));
@@ -2025,25 +2014,25 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
     PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, PetscCtx ctx);
     void     **ectxs;
     PetscReal *err;
-    PetscInt   Nf, f;
+    PetscInt   Nf;
 
     PetscCall(DMGetNumFields(dm, &Nf));
     PetscCall(PetscCalloc3(Nf, &exacts, Nf, &ectxs, PetscMax(1, Nf), &err));
     {
-      PetscInt Nds, s;
+      PetscInt Nds;
 
       PetscCall(DMGetNumDS(dm, &Nds));
-      for (s = 0; s < Nds; ++s) {
+      for (PetscInt s = 0; s < Nds; ++s) {
         PetscDS         ds;
         DMLabel         label;
         IS              fieldIS;
         const PetscInt *fields;
-        PetscInt        dsNf, f;
+        PetscInt        dsNf;
 
         PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds, NULL));
         PetscCall(PetscDSGetNumFields(ds, &dsNf));
         PetscCall(ISGetIndices(fieldIS, &fields));
-        for (f = 0; f < dsNf; ++f) {
+        for (PetscInt f = 0; f < dsNf; ++f) {
           const PetscInt field = fields[f];
           PetscCall(PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]));
         }
@@ -2052,7 +2041,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
     }
     PetscCall(DMComputeL2FieldDiff(dm, time, exacts, ectxs, u, err));
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "Time: %g L_2 Error: [", (double)time));
-    for (f = 0; f < Nf; ++f) {
+    for (PetscInt f = 0; f < Nf; ++f) {
       if (f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), ", "));
       PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%g", (double)err[f]));
     }

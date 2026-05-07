@@ -400,7 +400,7 @@ routine returns arrays x[0..n-1] and w[0..n-1] of length n, containing the absci
 and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
 *******************************************************************************/
 {
-  PetscInt  j, m;
+  PetscInt  m;
   PetscReal z1, z, xm, xl, q, qp, Ln, scale;
   if (n == 1) {
     x[0] = x1; /* Scale the root to the desired interval, */
@@ -415,7 +415,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
     m    = (n + 1) / 2;        /* The roots are symmetric, so we only find half of them. */
     xm   = 0.5 * (x2 + x1);
     xl   = 0.5 * (x2 - x1);
-    for (j = 1; j <= (m - 1); j++) { /* Loop over the desired roots. */
+    for (PetscInt j = 1; j <= (m - 1); j++) { /* Loop over the desired roots. */
       z = -1.0 * PetscCosReal((PETSC_PI * (j + 0.25) / (n)) - (3.0 / (8.0 * n * PETSC_PI)) * (1.0 / (j + 0.25)));
       /* Starting with the above approximation to the ith root, we enter */
       /* the main loop of refinement by Newton's method.                 */
@@ -438,7 +438,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
   }
   /* scale the weights according to mapping from [-1,1] to [0,1] */
   scale = (x2 - x1) / 2.0;
-  for (j = 0; j <= n; ++j) w[j] = w[j] * scale;
+  for (PetscInt j = 0; j <= n; ++j) w[j] = w[j] * scale;
 }
 
 /******************************************************************************/

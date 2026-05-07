@@ -107,10 +107,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscCall(ISGetIndices(bdIS, &bdFacesFull));
   for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+    PetscInt  closureSize;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize * 2; cl += 2) {
+    for (PetscInt cl = 0; cl < closureSize * 2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
@@ -118,10 +118,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscCall(PetscMalloc2(bdSize, &bdFaces, numBdFaces, &bdFaceIds));
   for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+    PetscInt  closureSize;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize * 2; cl += 2) {
+    for (PetscInt cl = 0; cl < closureSize * 2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));

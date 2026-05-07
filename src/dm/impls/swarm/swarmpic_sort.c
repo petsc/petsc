@@ -46,7 +46,7 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
 {
   DMSwarmCellDM celldm;
   PetscInt     *swarm_cellid;
-  PetscInt      p, npoints;
+  PetscInt      npoints;
   PetscInt      tmp, c, count;
   const char   *cellid;
 
@@ -73,7 +73,7 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
   PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
   PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
-  for (p = 0; p < ctx->npoints; p++) {
+  for (PetscInt p = 0; p < ctx->npoints; p++) {
     ctx->list[p].point_index = p;
     ctx->list[p].cell_index  = swarm_cellid[p];
     PetscCheck(ctx->list[p].cell_index >= 0 && ctx->list[p].cell_index < ctx->ncells, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell index %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", swarm_cellid[p], ctx->ncells);
@@ -82,7 +82,7 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   PetscCall(DMSwarmSortApplyCellIndexSort(ctx));
 
   /* sum points per cell */
-  for (p = 0; p < ctx->npoints; p++) ctx->pcell_offsets[ctx->list[p].cell_index]++;
+  for (PetscInt p = 0; p < ctx->npoints; p++) ctx->pcell_offsets[ctx->list[p].cell_index]++;
 
   /* create offset list */
   count = 0;

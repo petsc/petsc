@@ -822,7 +822,6 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   PetscSFDataLink link, next;
   PetscSFWinLink  wlink, wnext;
-  PetscInt        i;
   MPI_Comm        wcomm;
   PetscBool       is_empty;
 
@@ -830,7 +829,7 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   for (link = w->link; link; link = next) {
     next = link->next;
     PetscCallMPI(MPI_Type_free(&link->unit));
-    for (i = 0; i < sf->nranks; i++) {
+    for (PetscInt i = 0; i < sf->nranks; i++) {
       PetscCallMPI(MPI_Type_free(&link->mine[i]));
       PetscCallMPI(MPI_Type_free(&link->remote[i]));
     }
@@ -890,10 +889,8 @@ static PetscErrorCode PetscSFRegisterPersistent_Window(PetscSF sf, MPI_Datatype 
   link->persistent = PETSC_TRUE;
   w->wins          = link;
   if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
-    PetscInt i;
-
     PetscCall(PetscMalloc1(sf->nranks, &link->reqs));
-    for (i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
+    for (PetscInt i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

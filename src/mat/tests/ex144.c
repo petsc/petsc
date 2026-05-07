@@ -13,7 +13,7 @@ int main(int argc, char **args)
   double         *in1, *in2;
   ptrdiff_t       alloc_local, local_n0, local_0_start;
   ptrdiff_t       local_n1, local_1_start;
-  PetscInt        i, j;
+  PetscInt        i;
   PetscMPIInt     size, rank;
   int             n, N, N_factor, NM;
   PetscScalar     one = 2.0, zero = 0.5;
@@ -115,7 +115,7 @@ int main(int argc, char **args)
   PetscCall(PetscMalloc1(local_n0 * N1, &indx3));
   PetscCall(PetscMalloc1(local_n0 * N1, &indx4));
   for (i = 0; i < local_n0; i++) {
-    for (j = 0; j < N1; j++) {
+    for (PetscInt j = 0; j < N1; j++) {
       tempindx  = i * N1 + j;
       tempindx1 = i * NM + j;
 

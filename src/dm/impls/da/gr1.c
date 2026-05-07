@@ -158,7 +158,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v)
   const char         *tlabel = NULL, *xlabel = NULL;
   const PetscReal    *bounds;
   PetscInt           *displayfields;
-  PetscInt            k, ndisplayfields;
+  PetscInt            ndisplayfields;
   PetscBool           hold;
   PetscDrawViewPorts *ports = NULL;
   PetscViewerFormat   format;
@@ -211,7 +211,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v)
   }
 
   /* Loop over each field; drawing each in a different window */
-  for (k = 0; k < ndisplayfields; k++) {
+  for (PetscInt k = 0; k < ndisplayfields; k++) {
     j = displayfields[k];
 
     /* determine the min and max value in plot */

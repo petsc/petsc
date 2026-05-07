@@ -6,9 +6,7 @@ static char help[] = "VecView() with a DMDA1d vector and draw viewer.\n\n";
 
 PetscErrorCode apply(PetscCtx ctx, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
-  PetscInt i;
-
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     y[3 * i]     = x[i];
     y[3 * i + 1] = x[i] * x[i];
     y[3 * i + 2] = x[i] * x[i] * x[i];

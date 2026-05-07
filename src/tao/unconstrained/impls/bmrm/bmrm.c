@@ -298,7 +298,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   PetscReal   lambda;
   PetscReal   bt;
   Vec_Chain   grad_list, *tail_glist, *pgrad;
-  PetscInt    i;
   PetscMPIInt rank;
 
   /* Used in converged criteria check */
@@ -366,7 +365,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
       /* set up the Q */
       pgrad = grad_list.next;
-      for (i = 0; i <= tao->niter; i++) {
+      for (PetscInt i = 0; i <= tao->niter; i++) {
         PetscCheck(pgrad, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Assert that there are at least tao->niter+1 pgrad available");
         PetscCall(VecDot(pgrad->V, bmrm->local_w, &reg));
         df.Q[i][tao->niter] = df.Q[tao->niter][i] = reg / lambda;
@@ -382,7 +381,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       jtwt = 0.0;
       PetscCall(VecSet(bmrm->local_w, 0.0));
       pgrad = grad_list.next;
-      for (i = 0; i <= tao->niter; i++) {
+      for (PetscInt i = 0; i <= tao->niter; i++) {
         jtwt -= df.x[i] * df.f[i];
         PetscCall(VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V));
         pgrad = pgrad->next;
@@ -643,8 +642,6 @@ static PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 
 static PetscErrorCode destroy_df_solver(TAO_DF *df)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCall(PetscFree(df->f));
   PetscCall(PetscFree(df->a));
@@ -652,7 +649,7 @@ static PetscErrorCode destroy_df_solver(TAO_DF *df)
   PetscCall(PetscFree(df->u));
   PetscCall(PetscFree(df->x));
 
-  for (i = 0; i < df->cur_num_cp; i++) PetscCall(PetscFree(df->Q[i]));
+  for (PetscInt i = 0; i < df->cur_num_cp; i++) PetscCall(PetscFree(df->Q[i]));
   PetscCall(PetscFree(df->Q));
   PetscCall(PetscFree(df->ipt));
   PetscCall(PetscFree(df->ipt2));
@@ -674,9 +671,8 @@ static PetscErrorCode destroy_df_solver(TAO_DF *df)
 static PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u)
 {
   PetscReal r = 0.0;
-  PetscInt  i;
 
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     x[i] = -c[i] + lambda * a[i];
     if (x[i] > u[i]) x[i] = u[i];
     else if (x[i] < l[i]) x[i] = l[i];

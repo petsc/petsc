@@ -398,12 +398,11 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 */
 PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  PetscInt i;
-  PC_IS   *pcis = (PC_IS *)pc->data;
+  PC_IS *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(array_N, pcis->n));
-  for (i = 0; i < n; i++) array_N[idx[i]] = chunk[i];
+  for (PetscInt i = 0; i < n; i++) array_N[idx[i]] = chunk[i];
   PetscCall(PCISScatterArrayNToVecB(pc, array_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(PCISApplySchur(pc, vec2_B, vec1_B, (Vec)0, vec1_D, vec2_D));
   PetscCall(PCISScatterArrayNToVecB(pc, array_N, vec1_B, INSERT_VALUES, SCATTER_REVERSE));

@@ -191,14 +191,13 @@ int main(int argc, char **argv)
 
   /* {
     Vec                max;
-    PetscInt           i;
     const PetscReal    *bmax;
 
     PetscCall(TSMonitorEnvelopeGetBounds(ts,&max,NULL));
     if (max) {
       PetscCall(VecGetArrayRead(max,&bmax));
       PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n"));
-      for (i=1; i<user.Nspec; i++) {
+      for (PetscInt i=1; i<user.Nspec; i++) {
         if (bmax[i] > .01) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]));
       }
       PetscCall(VecRestoreArrayRead(max,&bmax));

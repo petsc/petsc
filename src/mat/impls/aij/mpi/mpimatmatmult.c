@@ -398,13 +398,12 @@ typedef struct {
 static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
 {
   MPIAIJ_MPIDense *contents = *(MPIAIJ_MPIDense **)ctx;
-  PetscInt         i;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&contents->workB));
   PetscCall(MatDestroy(&contents->workB1));
-  for (i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
-  for (i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
+  for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
+  for (PetscInt i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
   PetscCall(PetscFree4(contents->stype, contents->rtype, contents->rwaits, contents->swaits));
   PetscCall(PetscFree(contents));
   PetscFunctionReturn(PETSC_SUCCESS);

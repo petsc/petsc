@@ -237,7 +237,6 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
 {
   DM          idm, hdm = NULL;
   DMLabel     faultLabel, hybridLabel;
-  PetscInt    p;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -253,7 +252,7 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
     PetscInt    faultPoints[2]      = {3, 4};
 
     PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-    for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+    for (PetscInt p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     PetscCall(DMPlexInterpolate(*dm, &idm));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)idm, "in_"));
     PetscCall(DMPlexDistributeSetDefault(idm, PETSC_FALSE));
@@ -374,7 +373,6 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM          idm, hdm = NULL;
   DMLabel     faultLabel, hybridLabel;
-  PetscInt    p;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -390,7 +388,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[3]      = {3, 4, 5};
 
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      for (PetscInt p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     } break;
     case 1: {
       /* Tets 0,3,5 and 1,2,4 */
@@ -402,7 +400,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[3]       = {9, 10, 11};
 
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      for (PetscInt p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     } break;
     default:
       SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
@@ -481,7 +479,6 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
 {
   DM          idm, hdm = NULL;
   DMLabel     faultLabel;
-  PetscInt    p;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -497,7 +494,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
       PetscInt    faultPoints[4]       = {2, 3, 5, 6};
 
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      for (PetscInt p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     } break;
     case 1: {
       PetscInt numPoints[2] = {30, 7};
@@ -510,7 +507,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
       PetscInt    faultPoints[6]    = {20, 21, 22, 23, 24, 25};
 
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      for (PetscInt p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     } break;
     default:
       SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);

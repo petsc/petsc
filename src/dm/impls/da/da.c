@@ -1417,7 +1417,6 @@ PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *compatible, Pets
   DM        da2;
   DMType    dmtype2;
   PetscBool isda, compatibleLocal;
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscCheck(da1->setupcalled, PetscObjectComm((PetscObject)da1), PETSC_ERR_ARG_WRONGSTATE, "DMSetUp() must be called on first DM before DMGetCompatibility()");
@@ -1434,13 +1433,13 @@ PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *compatible, Pets
     if (compatibleLocal && da1->dim > 1) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->N == dd2->N) && (dd1->n == dd2->n) && (dd1->by == dd2->by));
     if (compatibleLocal && da1->dim > 2) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->P == dd2->P) && (dd1->p == dd2->p) && (dd1->bz == dd2->bz));
     if (compatibleLocal) {
-      for (i = 0; i < dd1->m; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lx[i] == dd2->lx[i])); /* Local size     */
+      for (PetscInt i = 0; i < dd1->m; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lx[i] == dd2->lx[i])); /* Local size     */
     }
     if (compatibleLocal && da1->dim > 1) {
-      for (i = 0; i < dd1->n; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->ly[i] == dd2->ly[i]));
+      for (PetscInt i = 0; i < dd1->n; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->ly[i] == dd2->ly[i]));
     }
     if (compatibleLocal && da1->dim > 2) {
-      for (i = 0; i < dd1->p; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lz[i] == dd2->lz[i]));
+      for (PetscInt i = 0; i < dd1->p; ++i) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->lz[i] == dd2->lz[i]));
     }
     *compatible = compatibleLocal;
     *set        = PETSC_TRUE;

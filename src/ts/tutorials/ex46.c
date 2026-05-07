@@ -74,9 +74,9 @@ static void f0_mms1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 {
   const PetscReal Re    = REYN;
   const PetscInt  Ncomp = dim;
-  PetscInt        c, d;
+  PetscInt        d;
 
-  for (c = 0; c < Ncomp; ++c) {
+  for (PetscInt c = 0; c < Ncomp; ++c) {
     for (d = 0; d < dim; ++d) f0[c] += u[d] * u_x[c * dim + d];
   }
   f0[0] += u_t[0];
@@ -90,9 +90,9 @@ static void f0_mms2_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 {
   const PetscReal Re    = REYN;
   const PetscInt  Ncomp = dim;
-  PetscInt        c, d;
+  PetscInt        d;
 
-  for (c = 0; c < Ncomp; ++c) {
+  for (PetscInt c = 0; c < Ncomp; ++c) {
     for (d = 0; d < dim; ++d) f0[c] += u[d] * u_x[c * dim + d];
   }
   f0[0] += u_t[0];
@@ -106,9 +106,9 @@ static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 {
   const PetscReal Re    = REYN;
   const PetscInt  Ncomp = dim;
-  PetscInt        comp, d;
+  PetscInt        d;
 
-  for (comp = 0; comp < Ncomp; ++comp) {
+  for (PetscInt comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) f1[comp * dim + d] = 1.0 / Re * u_x[comp * dim + d];
     f1[comp * dim + comp] -= u[Ncomp];
   }
@@ -132,13 +132,11 @@ static void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 static void g0_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   PetscInt NcI = dim, NcJ = dim;
-  PetscInt fc, gc;
-  PetscInt d;
 
-  for (d = 0; d < dim; ++d) g0[d * dim + d] = u_tShift;
+  for (PetscInt d = 0; d < dim; ++d) g0[d * dim + d] = u_tShift;
 
-  for (fc = 0; fc < NcI; ++fc) {
-    for (gc = 0; gc < NcJ; ++gc) g0[fc * NcJ + gc] += u_x[fc * NcJ + gc];
+  for (PetscInt fc = 0; fc < NcI; ++fc) {
+    for (PetscInt gc = 0; gc < NcJ; ++gc) g0[fc * NcJ + gc] += u_x[fc * NcJ + gc];
   }
 }
 
@@ -149,10 +147,9 @@ static void g1_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 {
   PetscInt NcI = dim;
   PetscInt NcJ = dim;
-  PetscInt fc, gc, dg;
-  for (fc = 0; fc < NcI; ++fc) {
-    for (gc = 0; gc < NcJ; ++gc) {
-      for (dg = 0; dg < dim; ++dg) {
+  for (PetscInt fc = 0; fc < NcI; ++fc) {
+    for (PetscInt gc = 0; gc < NcJ; ++gc) {
+      for (PetscInt dg = 0; dg < dim; ++dg) {
         /* kronecker delta */
         if (fc == gc) g1[(fc * NcJ + gc) * dim + dg] += u[dg];
       }
@@ -164,16 +161,14 @@ static void g1_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
    NcompI = 1, NcompJ = dim */
 static void g1_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d * dim + d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
+  for (PetscInt d = 0; d < dim; ++d) g1[d * dim + d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
 }
 
 /* -< \nabla\cdot v, p >
     NcompI = dim, NcompJ = 1 */
 static void g2_up(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d * dim + d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
+  for (PetscInt d = 0; d < dim; ++d) g2[d * dim + d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
 }
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
@@ -182,11 +177,9 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 {
   const PetscReal Re    = REYN;
   const PetscInt  Ncomp = dim;
-  PetscInt        compI, d;
 
-  for (compI = 0; compI < Ncomp; ++compI) {
-    for (d = 0; d < dim; ++d) g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0 / Re;
-  }
+  for (PetscInt compI = 0; compI < Ncomp; ++compI)
+    for (PetscInt d = 0; d < dim; ++d) g3[((compI * Ncomp + compI) * dim + d) * dim + d] = 1.0 / Re;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)

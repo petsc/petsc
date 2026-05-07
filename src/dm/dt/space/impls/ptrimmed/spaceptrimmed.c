@@ -43,9 +43,7 @@ static PetscErrorCode PetscSpaceDestroy_Ptrimmed(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePTrimmedGetFormDegree_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePTrimmedSetFormDegree_C", NULL));
   if (pt->subspaces) {
-    PetscInt d;
-
-    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&pt->subspaces[d]));
+    for (PetscInt d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&pt->subspaces[d]));
   }
   PetscCall(PetscFree(pt->subspaces));
   PetscCall(PetscFree(pt));

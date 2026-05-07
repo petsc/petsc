@@ -36,10 +36,10 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr)
     for (c = 0; c < Nc; ++c) {
       const PetscInt cell    = refineCells[c];
       PetscInt      *closure = NULL;
-      PetscInt       Ncl, cl;
+      PetscInt       Ncl;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-      for (cl = 0; cl < Ncl * 2; cl += 2) {
+      for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
         const PetscInt point = closure[cl];
         PetscInt       val;
 
@@ -489,7 +489,6 @@ static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPoly
 static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
-  PetscInt         d;
 
   PetscFunctionBeginHot;
   switch (pct) {
@@ -497,7 +496,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
     PetscCheck(ct == DM_POLYTOPE_POINT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for target point type %s", DMPolytopeTypes[ct]);
     PetscCheck(Nv == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of parent vertices %" PetscInt_FMT " != 2", Nv);
     PetscCheck(r < bl->n && r >= 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %" PetscInt_FMT ", must be in [0, %" PetscInt_FMT ")", r, bl->n);
-    for (d = 0; d < dE; ++d) out[d] = in[d] + bl->h[r] * (in[d + dE] - in[d]);
+    for (PetscInt d = 0; d < dE; ++d) out[d] = in[d] + bl->h[r] * (in[d + dE] - in[d]);
     break;
   default:
     PetscCall(DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, p, r, Nv, dE, in, out));
@@ -553,10 +552,9 @@ static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer vie
 static PetscErrorCode DMPlexTransformDestroy_BL(DMPlexTransform tr)
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
-  PetscInt         ict;
 
   PetscFunctionBegin;
-  for (ict = 0; ict < DM_NUM_POLYTOPES; ++ict) PetscCall(PetscFree4(bl->target[ict], bl->size[ict], bl->cone[ict], bl->ornt[ict]));
+  for (PetscInt ict = 0; ict < DM_NUM_POLYTOPES; ++ict) PetscCall(PetscFree4(bl->target[ict], bl->size[ict], bl->cone[ict], bl->ornt[ict]));
   PetscCall(PetscFree5(bl->Nt, bl->target, bl->size, bl->cone, bl->ornt));
   PetscCall(PetscFree(bl->h));
   PetscCall(PetscFree(tr->data));

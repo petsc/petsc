@@ -125,7 +125,7 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscInt    i, nsubs;
+    PetscInt    nsubs;
     VecTagger  *subs;
     const char *name;
 
@@ -133,7 +133,7 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
     PetscCall(PetscObjectGetType((PetscObject)tagger, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s of %" PetscInt_FMT " subtags:\n", name, nsubs));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    for (i = 0; i < nsubs; i++) PetscCall(VecTaggerView(subs[i], viewer));
+    for (PetscInt i = 0; i < nsubs; i++) PetscCall(VecTaggerView(subs[i], viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -156,11 +156,9 @@ PetscErrorCode VecTaggerCreate_AndOr(VecTagger tagger)
 
 PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt bs, const VecTaggerBox *superBox, const VecTaggerBox *subBox, PetscBool *isSub)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   *isSub = PETSC_TRUE;
-  for (i = 0; i < bs; i++) {
+  for (PetscInt i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
     if (superBox[i].min > subBox[i].min || superBox[i].max < subBox[i].max) {
       *isSub = PETSC_FALSE;
@@ -179,11 +177,9 @@ PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt bs, const VecTaggerBox *s
 
 PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, const VecTaggerBox *a, const VecTaggerBox *b, VecTaggerBox *c, PetscBool *empty)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   *empty = PETSC_FALSE;
-  for (i = 0; i < bs; i++) {
+  for (PetscInt i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
     c[i].min = PetscMax(a[i].min, b[i].min);
     c[i].max = PetscMin(a[i].max, b[i].max);

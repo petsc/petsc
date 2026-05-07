@@ -1088,7 +1088,6 @@ static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
     TSMPRKType  mprktype;
     char        fbuf[512];
     char        sbuf[512];
-    PetscInt    i;
     PetscCall(TSMPRKGetType(ts, &mprktype));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  MPRK type %s\n", mprktype));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Order: %" PetscInt_FMT "\n", tab->order));
@@ -1096,7 +1095,7 @@ static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
     PetscCall(PetscFormatRealArray(fbuf, sizeof(fbuf), "% 8.6f", tab->s, tab->cf));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa cf = %s\n", fbuf));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Af = \n"));
-    for (i = 0; i < tab->s; i++) {
+    for (PetscInt i = 0; i < tab->s; i++) {
       PetscCall(PetscFormatRealArray(fbuf, sizeof(fbuf), "% 8.6f", tab->s, &tab->Af[i * tab->s]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    %s\n", fbuf));
     }
@@ -1106,7 +1105,7 @@ static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
     PetscCall(PetscFormatRealArray(sbuf, sizeof(sbuf), "% 8.6f", tab->s, tab->csb));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa csb = %s\n", sbuf));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Asb = \n"));
-    for (i = 0; i < tab->s; i++) {
+    for (PetscInt i = 0; i < tab->s; i++) {
       PetscCall(PetscFormatRealArray(sbuf, sizeof(sbuf), "% 8.6f", tab->s, &tab->Asb[i * tab->s]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    %s\n", sbuf));
     }
@@ -1118,7 +1117,7 @@ static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
       PetscCall(PetscFormatRealArray(mbuf, sizeof(mbuf), "% 8.6f", tab->s, tab->cmb));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa cmb = %s\n", mbuf));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Amb = \n"));
-      for (i = 0; i < tab->s; i++) {
+      for (PetscInt i = 0; i < tab->s; i++) {
         PetscCall(PetscFormatRealArray(mbuf, sizeof(mbuf), "% 8.6f", tab->s, &tab->Amb[i * tab->s]));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    %s\n", mbuf));
       }

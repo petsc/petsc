@@ -64,20 +64,19 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
       PetscCall(ISRestoreIndices(ctx->benign_zerodiag_subs[n], &cols));
     }
   } else {
-    PetscInt n;
-    for (n = 0; n < ctx->benign_n; n++) {
+    for (PetscInt n = 0; n < ctx->benign_n; n++) {
       PetscScalar     sum = 0.;
       const PetscInt *cols;
-      PetscInt        nz, i;
+      PetscInt        nz;
       PetscCall(ISGetLocalSize(ctx->benign_zerodiag_subs[n], &nz));
       PetscCall(ISGetIndices(ctx->benign_zerodiag_subs[n], &cols));
-      for (i = 0; i < nz - 1; i++) sum += array[cols[i]];
+      for (PetscInt i = 0; i < nz - 1; i++) sum += array[cols[i]];
 #if defined(PETSC_USE_COMPLEX)
       sum = -(PetscRealPart(sum) / nz + PETSC_i * (PetscImaginaryPart(sum) / nz));
 #else
       sum = -sum / nz;
 #endif
-      for (i = 0; i < nz - 1; i++) array2[cols[i]] += sum;
+      for (PetscInt i = 0; i < nz - 1; i++) array2[cols[i]] += sum;
       array2[cols[nz - 1]] = ctx->benign_save_vals[n];
       PetscCall(ISRestoreIndices(ctx->benign_zerodiag_subs[n], &cols));
     }
@@ -863,13 +862,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       const PetscScalar *array;
       PetscScalar       *array2;
       const PetscInt    *idxs;
-      PetscInt           i;
 
       PetscCall(ISGetIndices(sub_schurs->is_Ej_all, &idxs));
       PetscCall(VecCreateSeq(PETSC_COMM_SELF, size_active_schur, &Dall));
       PetscCall(VecGetArrayRead(scaling, &array));
       PetscCall(VecGetArray(Dall, &array2));
-      for (i = 0; i < size_active_schur; i++) array2[i] = array[idxs[i]];
+      for (PetscInt i = 0; i < size_active_schur; i++) array2[i] = array[idxs[i]];
       PetscCall(VecRestoreArray(Dall, &array2));
       PetscCall(VecRestoreArrayRead(scaling, &array));
       PetscCall(ISRestoreIndices(sub_schurs->is_Ej_all, &idxs));
@@ -976,21 +974,21 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       PetscCall(MatDenseGetArray(benign_AIIm1_ones_mat, &AIIm1_data));
       PetscCall(PetscMalloc1(benign_n, &is_p_r));
       /* compute colsum of A_IB restricted to pressures */
-      for (i = 0; i < benign_n; i++) {
+      for (PetscInt i = 0; i < benign_n; i++) {
         const PetscScalar *array;
         const PetscInt    *idxs;
-        PetscInt           j, nz;
+        PetscInt           nz;
 
         PetscCall(ISGlobalToLocalMappingApplyIS(N_to_reor, IS_GTOLM_DROP, benign_zerodiag_subs[i], &is_p_r[i]));
         PetscCall(ISGetLocalSize(is_p_r[i], &nz));
         PetscCall(ISGetIndices(is_p_r[i], &idxs));
-        for (j = 0; j < nz; j++) AIIm1_data[idxs[j] + sizeA * i] = 1.;
+        for (PetscInt j = 0; j < nz; j++) AIIm1_data[idxs[j] + sizeA * i] = 1.;
         PetscCall(ISRestoreIndices(is_p_r[i], &idxs));
         PetscCall(VecPlaceArray(benign_AIIm1_ones, AIIm1_data + sizeA * i));
         PetscCall(MatMult(A, benign_AIIm1_ones, v));
         PetscCall(VecResetArray(benign_AIIm1_ones));
         PetscCall(VecGetArrayRead(v, &array));
-        for (j = 0; j < size_schur; j++) {
+        for (PetscInt j = 0; j < size_schur; j++) {
 #if defined(PETSC_USE_COMPLEX)
           cs_AIB[i * size_schur + j] = (PetscRealPart(array[j + n_I]) / nz + PETSC_i * (PetscImaginaryPart(array[j + n_I]) / nz));
 #else
@@ -1213,9 +1211,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           PetscCall(MatDenseRestoreArray(S3, &S3_data));
         }
         if (!S_lower_triangular) { /* I need to expand the upper triangular data (column-oriented) */
-          PetscInt k, j;
-          for (k = 0; k < size_schur; k++) {
-            for (j = k; j < size_schur; j++) S_data[j * size_schur + k] = PetscConj(S_data[k * size_schur + j]);
+          for (PetscInt k = 0; k < size_schur; k++) {
+            for (PetscInt j = k; j < size_schur; j++) S_data[j * size_schur + k] = PetscConj(S_data[k * size_schur + j]);
           }
         }
 
@@ -1811,22 +1808,20 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             }
           } else if (rS_data) {
             if (S_lower_triangular) {
-              PetscInt k;
               if (sub_schurs->change) {
-                for (k = 0; k < subset_size; k++) {
+                for (PetscInt k = 0; k < subset_size; k++) {
                   for (j = k; j < subset_size; j++) {
                     work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
                     work[j * subset_size + k] = work[k * subset_size + j];
                   }
                 }
               } else {
-                for (k = 0; k < subset_size; k++) {
+                for (PetscInt k = 0; k < subset_size; k++) {
                   for (j = k; j < subset_size; j++) work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
                 }
               }
             } else {
-              PetscInt k;
-              for (k = 0; k < subset_size; k++) {
+              for (PetscInt k = 0; k < subset_size; k++) {
                 for (j = 0; j < subset_size; j++) work[k * subset_size + j] = rS_data[cum2 + k * size_schur + j];
               }
             }

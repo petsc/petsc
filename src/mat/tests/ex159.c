@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
   Mat         A, Aexplicit;
   PetscBool   usenest, test_mat_is;
   PetscMPIInt rank, size;
-  PetscInt    i, j;
+  PetscInt    i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     ISLocalToGlobalMapping l2g;
     PetscInt               l2gind[9];
     for (i = 0; i < 3; i++)
-      for (j = 0; j < 3; j++) l2gind[3 * i + j] = ((rank - 1 + j + size) % size) * 3 + i;
+      for (PetscInt j = 0; j < 3; j++) l2gind[3 * i + j] = ((rank - 1 + j + size) % size) * 3 + i;
     PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, 9, l2gind, PETSC_COPY_VALUES, &l2g));
     if (test_mat_is) {
       PetscCall(MatCreateIS(PETSC_COMM_WORLD, 1, 3, 3, PETSC_DECIDE, PETSC_DECIDE, l2g, l2g, &A));

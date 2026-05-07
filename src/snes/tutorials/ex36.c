@@ -64,8 +64,7 @@ static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscRea
 
 static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     PetscScalar v = 1.;
     for (PetscInt e = 0; e < dim; e++) {
       if (e == d) {
@@ -80,14 +79,12 @@ static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, con
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 static void f0_oscillatory_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -226,7 +223,6 @@ static PetscErrorCode CompareView(Vec u)
   PetscViewer       viewer;
   PetscViewerFormat format;
   PetscBool         flg;
-  PetscInt          i;
   const char       *name, *prefix;
 
   PetscFunctionBeginUser;
@@ -239,7 +235,7 @@ static PetscErrorCode CompareView(Vec u)
     PetscCall(DMComputeExactSolution(dm, 0.0, exact, NULL));
     v[0] = u;
     v[1] = exact;
-    for (i = 0; i < 2; ++i) {
+    for (PetscInt i = 0; i < 2; ++i) {
       PetscCall(DMGetLocalVector(dm, &lv[i]));
       PetscCall(PetscObjectGetName((PetscObject)v[i], &name));
       PetscCall(PetscObjectSetName((PetscObject)lv[i], name));
@@ -248,7 +244,7 @@ static PetscErrorCode CompareView(Vec u)
       PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, lv[i], 0., NULL, NULL, NULL));
     }
     PetscCall(DMPlexVecView1D(dm, 2, lv, viewer));
-    for (i = 0; i < 2; ++i) PetscCall(DMRestoreLocalVector(dm, &lv[i]));
+    for (PetscInt i = 0; i < 2; ++i) PetscCall(DMRestoreLocalVector(dm, &lv[i]));
     PetscCall(DMRestoreGlobalVector(dm, &exact));
     PetscCall(PetscViewerDestroy(&viewer));
   }

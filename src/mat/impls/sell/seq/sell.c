@@ -217,8 +217,7 @@ static PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, Petsc
     *idx = a->getrowcols;
   }
   if (v) {
-    PetscInt j;
-    for (j = 0; j < a->rlen[row]; j++) a->getrowvals[j] = a->val[shift + a->sliceheight * j];
+    for (PetscInt j = 0; j < a->rlen[row]; j++) a->getrowvals[j] = a->val[shift + a->sliceheight * j];
     *v = a->getrowvals;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

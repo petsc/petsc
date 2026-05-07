@@ -245,10 +245,9 @@ int main(int argc, char **argv)
   PetscCall(VecGetLocalSize(U, &lsize));
   PetscInt  *direction;
   PetscBool *terminate;
-  PetscInt   i;
   PetscCall(PetscMalloc1(lsize, &direction));
   PetscCall(PetscMalloc1(lsize, &terminate));
-  for (i = 0; i < lsize; i++) {
+  for (PetscInt i = 0; i < lsize; i++) {
     direction[i] = -1;
     terminate[i] = PETSC_FALSE;
   }

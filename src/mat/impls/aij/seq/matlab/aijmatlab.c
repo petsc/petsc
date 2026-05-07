@@ -11,16 +11,14 @@ static mxArray *MatSeqAIJToMatlab(Mat B)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)B->data;
   mwIndex    *ii, *jj;
-  mxArray    *mat;
-  PetscInt    i;
+  mxArray    *mat = mxCreateSparse(B->cmap->n, B->rmap->n, aij->nz, mxREAL);
 
-  mat = mxCreateSparse(B->cmap->n, B->rmap->n, aij->nz, mxREAL);
   if (PetscArraycpy(mxGetPr(mat), aij->a, aij->nz)) return NULL;
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
-  for (i = 0; i < aij->nz; i++) jj[i] = aij->j[i];
+  for (PetscInt i = 0; i < aij->nz; i++) jj[i] = aij->j[i];
   ii = mxGetJc(mat);
-  for (i = 0; i < B->rmap->n + 1; i++) ii[i] = aij->i[i];
+  for (PetscInt i = 0; i < B->rmap->n + 1; i++) ii[i] = aij->i[i];
   return mat;
 }
 

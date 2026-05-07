@@ -560,9 +560,8 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gup) {
-    PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionUP(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
+    for (PetscInt nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -601,9 +600,8 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpu) {
-    PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionPU(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
+    for (PetscInt nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -642,9 +640,8 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpp) {
-    PetscInt nadj;
     PetscCall(TSComputeRHSHessianProductFunctionPP(ts, t, U, Vl, Vr, VHV));
-    for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
+    for (PetscInt nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1371,11 +1368,9 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS ts
 @*/
 PetscErrorCode TSAdjointMonitorCancel(TS ts)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  for (i = 0; i < ts->numberadjointmonitors; i++) {
+  for (PetscInt i = 0; i < ts->numberadjointmonitors; i++) {
     if (ts->adjointmonitordestroy[i]) PetscCall((*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i]));
   }
   ts->numberadjointmonitors = 0;

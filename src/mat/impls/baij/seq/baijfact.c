@@ -421,8 +421,7 @@ PetscErrorCode MatILUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C, Mat 
       pv[3] = x[3];
       /*
       printf(" col %d:",pj[j]);
-      PetscInt j1;
-      for (j1=0; j1<4; j1++) printf(" %g,",*(pv+j1));
+      for (PetscInt j1=0; j1<4; j1++) printf(" %g,",*(pv+j1));
       printf("\n");
       */
       pv += 4;

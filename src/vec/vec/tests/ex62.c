@@ -8,7 +8,6 @@ int main(int argc, char **argv)
 {
   PetscMPIInt size;
   PetscInt    n = LEN;
-  PetscInt    i;
   PetscScalar array[LEN];
   Vec         x, y, z;
   PetscReal   nrm, ans;
@@ -18,7 +17,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* create x with an existing array */
-  for (i = 0; i < n; i++) array[i] = 1.0;
+  for (PetscInt i = 0; i < n; i++) array[i] = 1.0;
 
   if (size == 1) PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, n, array, &x));
   else PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, array, &x));

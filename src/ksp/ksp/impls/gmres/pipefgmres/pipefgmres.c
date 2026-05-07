@@ -342,7 +342,6 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
 {
   PetscScalar     tt;
-  PetscInt        k, j;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -357,9 +356,9 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
   if (*HH(it, it) != 0.0) nrs[it] = *RS(it) / *HH(it, it);
   else nrs[it] = 0.0;
 
-  for (k = it - 1; k >= 0; k--) {
+  for (PetscInt k = it - 1; k >= 0; k--) {
     tt = *RS(k);
-    for (j = k + 1; j <= it; j++) tt -= *HH(k, j) * nrs[j];
+    for (PetscInt j = k + 1; j <= it; j++) tt -= *HH(k, j) * nrs[j];
     nrs[k] = tt / *HH(k, k);
   }
 
@@ -375,7 +374,6 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
 static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
 {
   PetscScalar    *hh, *cc, *ss, *rs;
-  PetscInt        j;
   PetscReal       hapbnd;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
@@ -386,7 +384,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
   rs = RS(0);     /* right-hand side of least squares system */
 
   /* The Hessenberg matrix is now correct through column it, save that form for possible spectral analysis */
-  for (j = 0; j <= it + 1; j++) *HES(j, it) = hh[j];
+  for (PetscInt j = 0; j <= it + 1; j++) *HES(j, it) = hh[j];
 
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it + 1] / rs[it]), pipefgmres->haptol);
@@ -399,7 +397,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
   /* Note: this uses the rotation [conj(c)  s ; -s   c], c= cos(theta), s= sin(theta),
      and some refs have [c   s ; -conj(s)  c] (don't be confused!) */
 
-  for (j = 0; j < it; j++) {
+  for (PetscInt j = 0; j < it; j++) {
     PetscScalar hhj = hh[j];
     hh[j]           = PetscConj(cc[j]) * hhj + ss[j] * hh[j + 1];
     hh[j + 1]       = -ss[j] * hhj + cc[j] * hh[j + 1];
@@ -507,12 +505,11 @@ static PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
 PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
-  PetscInt        i;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(pipefgmres->prevecs));
   PetscCall(PetscFree(pipefgmres->zvecs));
-  for (i = 0; i < pipefgmres->nwork_alloc; i++) {
+  for (PetscInt i = 0; i < pipefgmres->nwork_alloc; i++) {
     PetscCall(VecDestroyVecs(pipefgmres->mwork_alloc[i], &pipefgmres->prevecs_user_work[i]));
     PetscCall(VecDestroyVecs(pipefgmres->mwork_alloc[i], &pipefgmres->zvecs_user_work[i]));
   }
@@ -603,7 +600,6 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscInt        nwork      = pipefgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt        nalloc;                               /* number to allocate */
-  PetscInt        k;
 
   PetscFunctionBegin;
   nalloc = pipefgmres->delta_allocate; /* number of vectors to allocate
@@ -618,16 +614,16 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
 
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->user_work[nwork], 0, NULL));
-  for (k = 0; k < nalloc; k++) pipefgmres->vecs[it + VEC_OFFSET + k] = pipefgmres->user_work[nwork][k];
+  for (PetscInt k = 0; k < nalloc; k++) pipefgmres->vecs[it + VEC_OFFSET + k] = pipefgmres->user_work[nwork][k];
   /* specify size of chunk allocated */
   pipefgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors (note we don't use VEC_OFFSET) */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->prevecs_user_work[nwork], 0, NULL));
-  for (k = 0; k < nalloc; k++) pipefgmres->prevecs[it + k] = pipefgmres->prevecs_user_work[nwork][k];
+  for (PetscInt k = 0; k < nalloc; k++) pipefgmres->prevecs[it + k] = pipefgmres->prevecs_user_work[nwork][k];
 
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->zvecs_user_work[nwork], 0, NULL));
-  for (k = 0; k < nalloc; k++) pipefgmres->zvecs[it + k] = pipefgmres->zvecs_user_work[nwork][k];
+  for (PetscInt k = 0; k < nalloc; k++) pipefgmres->zvecs[it + k] = pipefgmres->zvecs_user_work[nwork][k];
 
   /* increment the number of work vector chunks */
   pipefgmres->nwork_alloc++;

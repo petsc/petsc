@@ -113,11 +113,11 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
     break;
 
   case DMSWARMPIC_LAYOUT_SUBDIVISION: {
-    PetscInt s, nsub;
+    PetscInt nsub;
     PetscInt np_dir[3];
     nsub      = npoints;
     np_dir[0] = 1;
-    for (s = 0; s < nsub; s++) np_dir[0] *= 2;
+    for (PetscInt s = 0; s < nsub; s++) np_dir[0] *= 2;
     np_dir[1] = np_dir[0];
     np_dir[2] = np_dir[0];
     PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim, np_dir, &npoints_q, &xi));

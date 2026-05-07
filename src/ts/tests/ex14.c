@@ -4,7 +4,7 @@ static char help[] = "Tests all TSRK types \n\n";
 
 static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx)
 {
-  PetscInt           i, n;
+  PetscInt           n;
   const PetscScalar *xx;
   /* */ PetscScalar *ff;
 
@@ -14,7 +14,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, PetscCtx ctx
   PetscCall(VecGetArray(F, &ff));
 
   if (n >= 1) ff[0] = 1;
-  for (i = 1; i < n; i++) ff[i] = (i + 1) * (xx[i - 1] + PetscPowReal(t, i)) / 2;
+  for (PetscInt i = 1; i < n; i++) ff[i] = (i + 1) * (xx[i - 1] + PetscPowReal(t, i)) / 2;
 
   PetscCall(VecRestoreArrayRead(X, &xx));
   PetscCall(VecRestoreArray(F, &ff));
@@ -33,7 +33,6 @@ PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBoo
 
 static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[])
 {
-  PetscInt           i;
   PetscReal          t;
   Vec                U, X, Y;
   TSType             type;
@@ -65,7 +64,7 @@ static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[]
   PetscCall(VecDuplicate(U, &X));
   PetscCall(TSEvaluateStep(ts, order, X, NULL));
   PetscCall(VecGetArrayRead(X, &xx));
-  for (i = 0; i < order; i++) {
+  for (PetscInt i = 0; i < order; i++) {
     PetscReal error = PetscAbsReal(PetscRealPart(xx[i]) - PetscPowReal(t, i + 1));
     PetscCheck(error <= eps, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad solution, error %g, %s '%s'", (double)error, type, subtype);
   }
@@ -76,7 +75,7 @@ static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[]
   PetscCall(VecDuplicate(U, &Y));
   PetscCall(TSEvaluateStep(ts, order - 1, Y, &done));
   PetscCall(VecGetArrayRead(Y, &yy));
-  for (i = 0; done && i < order - 1; i++) {
+  for (PetscInt i = 0; done && i < order - 1; i++) {
     PetscReal error = PetscAbsReal(PetscRealPart(yy[i]) - PetscPowReal(t, i + 1));
     PetscCheck(error <= eps, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad estimator, error %g, %s '%s'", (double)error, type, subtype);
   }

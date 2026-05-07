@@ -143,11 +143,11 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             PetscCall(PetscStrallocpy(fec, &fec_type[ctx->nf]));
             PetscCall(VecCreateSeq(PETSC_COMM_SELF, Nv * Nc, &xfield));
             for (i = 0, cum = 0; i < vEnd - vStart; i++) {
-              PetscInt j, off;
+              PetscInt off;
 
               if (PetscUnlikely(!PetscBTLookup(vown, i))) continue;
               PetscCall(PetscSectionGetFieldOffset(s, i + vStart, f, &off));
-              for (j = 0; j < Nc; j++) idxs[cum++] = off + j;
+              for (PetscInt j = 0; j < Nc; j++) idxs[cum++] = off + j;
             }
             PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)xlocal), Nv * Nc, idxs, PETSC_USE_POINTER, &isfield));
           } else {
@@ -155,11 +155,11 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             PetscCall(PetscStrallocpy(fec, &fec_type[ctx->nf]));
             PetscCall(VecCreateSeq(PETSC_COMM_SELF, Nc * totc, &xfield));
             for (i = 0, cum = 0; i < cEnd - cStart; i++) {
-              PetscInt j, off;
+              PetscInt off;
 
               if (PetscUnlikely(gNum[i] < 0)) continue;
               PetscCall(PetscSectionGetFieldOffset(s, i + cStart, f, &off));
-              for (j = 0; j < Nc; j++) idxs[cum++] = off + j;
+              for (PetscInt j = 0; j < Nc; j++) idxs[cum++] = off + j;
             }
             PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)xlocal), totc * Nc, idxs, PETSC_USE_POINTER, &isfield));
           }
@@ -168,11 +168,9 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           PetscCall(ISDestroy(&isfield));
           ctx->nf++;
         } else if (id == PETSCFV_CLASSID) {
-          PetscInt c;
-
           PetscCall(PetscFVGetNumComponents((PetscFV)disc, &Nc));
           PetscCall(PetscSNPrintf(fec, 64, "FiniteElementCollection: L2_%" PetscInt_FMT "D_P0", dim));
-          for (c = 0; c < Nc; c++) {
+          for (PetscInt c = 0; c < Nc; c++) {
             char comp[256];
             PetscCall(PetscSNPrintf(comp, 256, "%s-Comp%" PetscInt_FMT, name, c));
             PetscCall(PetscStrallocpy(comp, &fieldname[ctx->nf]));
@@ -797,9 +795,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             }
           PetscCheck(vidxs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing vertices");
           for (v = 0; v < uvpc; v++) {
-            PetscInt s;
-
-            for (s = 0; s < sdim; s++) {
+            for (PetscInt s = 0; s < sdim; s++) {
               if (PetscAbsScalar(vals[v * sdim + s] - valsCell[v * sdim + s]) > PETSC_MACHINE_EPSILON) PetscCall(DMLabelSetValue(perLabel, vidxs[2 * v], 2));
             }
           }
@@ -826,35 +822,35 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             ispe = (PetscBool)(ispe && (v == 2));
           }
           if (ispe && coneSize) {
-            PetscInt        ch, numChildren;
+            PetscInt        numChildren;
             const PetscInt *children;
 
             PetscCall(DMLabelSetValue(perLabel, p, 2));
             PetscCall(DMPlexGetTreeChildren(dm, p, &numChildren, &children));
-            for (ch = 0; ch < numChildren; ch++) PetscCall(DMLabelSetValue(perLabel, children[ch], 2));
+            for (PetscInt ch = 0; ch < numChildren; ch++) PetscCall(DMLabelSetValue(perLabel, children[ch], 2));
           }
         }
         if (dim > 2) {
           for (p = fStart; p < fEnd; p++) {
             const PetscInt *cone;
-            PetscInt        coneSize, i;
+            PetscInt        coneSize;
             PetscBool       ispe = PETSC_TRUE;
 
             PetscCall(DMPlexGetCone(dm, p, &cone));
             PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
-            for (i = 0; i < coneSize; i++) {
+            for (PetscInt i = 0; i < coneSize; i++) {
               PetscInt v;
 
               PetscCall(DMLabelGetValue(perLabel, cone[i], &v));
               ispe = (PetscBool)(ispe && (v == 2));
             }
             if (ispe && coneSize) {
-              PetscInt        ch, numChildren;
+              PetscInt        numChildren;
               const PetscInt *children;
 
               PetscCall(DMLabelSetValue(perLabel, p, 2));
               PetscCall(DMPlexGetTreeChildren(dm, p, &numChildren, &children));
-              for (ch = 0; ch < numChildren; ch++) PetscCall(DMLabelSetValue(perLabel, children[ch], 2));
+              for (PetscInt ch = 0; ch < numChildren; ch++) PetscCall(DMLabelSetValue(perLabel, children[ch], 2));
             }
           }
         }
@@ -881,12 +877,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       }
       if (!isbf && perLabel) {
         const PetscInt *cone;
-        PetscInt        coneSize, i;
+        PetscInt        coneSize;
 
         PetscCall(DMPlexGetCone(dm, p, &cone));
         PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
         isbf = PETSC_TRUE;
-        for (i = 0; i < coneSize; i++) {
+        for (PetscInt i = 0; i < coneSize; i++) {
           PetscInt v, d;
 
           PetscCall(DMLabelGetValue(perLabel, cone[i], &v));
@@ -900,11 +896,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     for (p = fStart, bf = 0; p < fEnd; p++) {
       if (PetscUnlikely(PetscBTLookup(bfaces, p - fStart))) {
         const PetscInt *support;
-        PetscInt        supportSize, c;
+        PetscInt        supportSize;
 
         PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
         PetscCall(DMPlexGetSupport(dm, p, &support));
-        for (c = 0; c < supportSize; c++) {
+        for (PetscInt c = 0; c < supportSize; c++) {
           const PetscInt *cone;
           PetscInt        cell, cl, coneSize;
 
@@ -1078,13 +1074,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 PetscCall(DMPlexGetSupportSize(dm, he, &hesuppSize));
                 PetscCall(DMPlexGetSupport(dm, he, &hesupp));
                 for (f = 0; f < hesuppSize; f++) {
-                  PetscInt j;
-
                   PetscCall(DMPlexGetCone(dm, hesupp[f], &cone));
                   PetscCall(DMPlexGetConeSize(dm, hesupp[f], &coneSize));
-                  for (j = 0; j < coneSize; j++) {
-                    PetscInt k;
-                    for (k = 0; k < hvsuppSize; k++) {
+                  for (PetscInt j = 0; j < coneSize; j++) {
+                    for (PetscInt k = 0; k < hvsuppSize; k++) {
                       if (hvsupp[k] == cone[j]) {
                         skip[k] = PETSC_TRUE;
                         break;
@@ -1162,8 +1155,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", sdim));
     PetscCall(VecGetArrayRead(coordinates, &array));
     for (p = 0; p < nvert / sdim; p++) {
-      PetscInt s;
-      for (s = 0; s < sdim; s++) {
+      for (PetscInt s = 0; s < sdim; s++) {
         PetscReal v = PetscRealPart(array[p * sdim + s]);
 
         PetscCall(PetscViewerASCIIPrintf(viewer, fmt, PetscIsInfOrNanReal(v) ? 0.0 : (double)v));

@@ -124,10 +124,8 @@ int main(int argc, char **argv)
     nleavesalloc = nleaves * stride;
     mine         = NULL;
     if (stride > 1) {
-      PetscInt i;
-
       PetscCall(PetscMalloc1(nleaves, &mine));
-      for (i = 0; i < nleaves; i++) mine[i] = stride * i;
+      for (PetscInt i = 0; i < nleaves; i++) mine[i] = stride * i;
     }
     PetscCall(PetscMalloc1(nleaves, &remote));
     /* Left periodic neighbor */

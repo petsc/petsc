@@ -811,13 +811,12 @@ int main(int argc, char **argv)
 
     if (output_enabled && fp) {
       const PetscScalar *truth_array, *mean_array;
-      PetscInt           i;
       PetscCall(VecGetArrayRead(truth_state, &truth_array));
       PetscCall(VecGetArrayRead(x_mean, &mean_array));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "0 0.000000"));
-      for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
-      for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
-      for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+      for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
+      for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
+      for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e %.8e\n", (double)rmse_initial, (double)rmse_initial));
       PetscCall(VecRestoreArrayRead(truth_state, &truth_array));
       PetscCall(VecRestoreArrayRead(x_mean, &mean_array));
@@ -834,12 +833,11 @@ int main(int argc, char **argv)
     /* Write initial condition to file */
     if (output_enabled && fp) {
       const PetscScalar *num_array;
-      PetscInt           i;
       PetscCall(VecGetArrayRead(x_numerical, &num_array));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "0 0.000000"));
-      for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
-      for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
-      for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+      for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
+      for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
+      for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " 0.0 0.0\n"));
       PetscCall(VecRestoreArrayRead(x_numerical, &num_array));
     }
@@ -860,13 +858,12 @@ int main(int argc, char **argv)
       /* Write data to output file */
       if (output_enabled && fp) {
         const PetscScalar *num_array;
-        PetscInt           i;
         PetscCall(VecGetArrayRead(x_numerical, &num_array));
         PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%d %.6f", (int)step, (double)time));
         /* Write numerical solution as both truth and mean */
-        for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
-        for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
-        for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+        for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
+        for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(num_array[i])));
+        for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
         PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " 0.0 0.0\n"));
         PetscCall(VecRestoreArrayRead(x_numerical, &num_array));
       }
@@ -929,18 +926,17 @@ int main(int argc, char **argv)
       /* Write data to output file */
       if (output_enabled && fp) {
         const PetscScalar *truth_array, *mean_array, *obs_array;
-        PetscInt           i;
         PetscCall(VecGetArrayRead(truth_state, &truth_array));
         PetscCall(VecGetArrayRead(x_mean, &mean_array));
         PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%d %.6f", (int)step, (double)time));
-        for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
-        for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
+        for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
+        for (PetscInt i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
         if (step % obs_freq == 0 && step > 0) {
           PetscCall(VecGetArrayRead(observation, &obs_array));
-          for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(obs_array[i])));
+          for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(obs_array[i])));
           PetscCall(VecRestoreArrayRead(observation, &obs_array));
         } else {
-          for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+          for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
         }
         PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e %.8e\n", (double)rmse_forecast, (double)rmse_analysis));
         PetscCall(VecRestoreArrayRead(truth_state, &truth_array));

@@ -4,7 +4,6 @@ static char help[] = "Test MatDuplicate() with new nonzeros on the duplicate\n\n
 int main(int argc, char **args)
 {
   Mat            A, B, C;
-  PetscInt       k;
   const PetscInt M = 18, N = 18;
   PetscBool      equal;
   PetscScalar   *vals;
@@ -46,7 +45,7 @@ int main(int argc, char **args)
 
   // Assemble matrix A with the full arrays
   PetscCall(PetscMalloc1(mycoo.n, &vals));
-  for (k = 0; k < mycoo.n; k++) {
+  for (PetscInt k = 0; k < mycoo.n; k++) {
     vals[k] = mycoo.j[k];
     PetscCall(MatSetValue(A, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
   }
@@ -57,13 +56,13 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetFromOptions(B));
-  for (k = 0; k < mycoo.n / 2; k++) PetscCall(MatSetValue(B, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
+  for (PetscInt k = 0; k < mycoo.n / 2; k++) PetscCall(MatSetValue(B, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
   // Duplicate B to C and continue adding nozeros to C with the 2nd half
   PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &C));
-  for (k = mycoo.n / 2; k < mycoo.n; k++) PetscCall(MatSetValue(C, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
+  for (PetscInt k = mycoo.n / 2; k < mycoo.n; k++) PetscCall(MatSetValue(C, mycoo.i[k], mycoo.j[k], vals[k], ADD_VALUES));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 

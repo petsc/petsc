@@ -269,7 +269,6 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 {
   SNES_FAS *fas = (SNES_FAS *)snes->data;
   PetscBool isFine, isascii, isdraw;
-  PetscInt  i;
   SNES      smoothu, smoothd, levelsnes;
 
   PetscFunctionBegin;
@@ -284,7 +283,7 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Not using Galerkin computed coarse grid function evaluation\n"));
       }
-      for (i = 0; i < fas->levels; i++) {
+      for (PetscInt i = 0; i < fas->levels; i++) {
         PetscCall(SNESFASGetCycleSNES(snes, i, &levelsnes));
         PetscCall(SNESFASCycleGetSmootherUp(levelsnes, &smoothu));
         PetscCall(SNESFASCycleGetSmootherDown(levelsnes, &smoothd));
@@ -845,7 +844,6 @@ const char SNESCitation[] = "@Article{bruneknepleysmithtu15,"
 
 static PetscErrorCode SNESSolve_FAS(SNES snes)
 {
-  PetscInt  i;
   Vec       X, F;
   PetscReal fnorm;
   SNES_FAS *fas = (SNES_FAS *)snes->data, *ffas;
@@ -895,7 +893,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     }
   }
 
-  for (i = 0; i < snes->max_its; i++) {
+  for (PetscInt i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
 

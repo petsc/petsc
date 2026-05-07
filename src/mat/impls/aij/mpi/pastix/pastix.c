@@ -55,7 +55,7 @@ static PetscErrorCode MatConvertToSPM(Mat A, MatReuse reuse, Mat_Pastix *pastix)
 {
   Mat                A_loc, A_aij;
   const PetscInt    *row, *col;
-  PetscInt           n, i;
+  PetscInt           n;
   const PetscScalar *val;
   PetscBool          ismpiaij, isseqaij, ismpisbaij, isseqsbaij;
   PetscBool          flag;
@@ -96,7 +96,7 @@ static PetscErrorCode MatConvertToSPM(Mat A, MatReuse reuse, Mat_Pastix *pastix)
 
   /* Get data distribution */
   if (!spm->replicated) {
-    for (i = A->rmap->rstart; i < A->rmap->rend; i++) spm->loc2glob[i - A->rmap->rstart] = i;
+    for (PetscInt i = A->rmap->rstart; i < A->rmap->rend; i++) spm->loc2glob[i - A->rmap->rstart] = i;
   }
 
   /* Copy  arrays */

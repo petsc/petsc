@@ -150,12 +150,10 @@ int main(int argc, char **argv)
         PetscCall(PetscDTPermIndex(N, subset, &kCheck, &isOddCheck));
         PetscCheck(isOddCheck == isOdd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
         if (verbose) {
-          PetscInt l;
-
           PetscCall(PetscViewerASCIIPrintf(viewer, "subset %" PetscInt_FMT ":", j));
-          for (l = 0; l < k; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
+          for (PetscInt l = 0; l < k; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, " |"));
-          for (l = k; l < N; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
+          for (PetscInt l = k; l < N; l++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         }
         PetscCall(PetscDTSubsetIndex(N, k, subset, &jCheck));
@@ -310,11 +308,11 @@ int main(int argc, char **argv)
         for (l = 0; l < JKj; l++) {
           PetscBool isOdd;
           PetscReal ux, wx;
-          PetscInt  m, p;
+          PetscInt  m;
 
           PetscCall(PetscDTEnumSplit(j + k, j, l, split, &isOdd));
           for (m = 0; m < j + k; m++) {
-            for (p = 0; p < N; p++) xsplit[m * N + p] = x[split[m] * N + p];
+            for (PetscInt p = 0; p < N; p++) xsplit[m * N + p] = x[split[m] * N + p];
           }
           PetscCall(PetscDTAltVApply(N, j, u, xsplit, &ux));
           PetscCall(PetscDTAltVApply(N, k, w, PetscSafePointerPlusOffset(xsplit, j * N), &wx));
@@ -334,10 +332,9 @@ int main(int argc, char **argv)
         diff = 0.;
         norm = 0.;
         for (l = 0; l < Njk; l++) {
-          PetscInt  m;
           PetscReal sum = 0.;
 
-          for (m = 0; m < Nk; m++) sum += uWwmat[l * Nk + m] * w[m];
+          for (PetscInt m = 0; m < Nk; m++) sum += uWwmat[l * Nk + m] * w[m];
           uWwcheck[l] = sum;
           diff += PetscSqr(uWwcheck[l] - uWw[l]);
           norm += PetscSqr(uWwcheck[l]) + PetscSqr(uWw[l]);
@@ -450,7 +447,6 @@ int main(int argc, char **argv)
         PetscReal *u, *starw, *starstarw, wu, starwdotu;
         PetscReal  diff, norm;
         PetscBool  isOdd;
-        PetscInt   l;
 
         isOdd = (PetscBool)((k * (N - k)) & 1);
         PetscCall(PetscMalloc3(Nk, &u, Nk, &starw, Nk, &starstarw));
@@ -467,16 +463,16 @@ int main(int argc, char **argv)
           if (Nk) PetscCall(PetscRealView(Nk, starstarw, viewer));
           PetscCall(PetscViewerASCIIPopTab(viewer));
         }
-        for (l = 0; l < Nk; l++) PetscCall(PetscRandomGetValueReal(rand, &u[l]));
+        for (PetscInt l = 0; l < Nk; l++) PetscCall(PetscRandomGetValueReal(rand, &u[l]));
         PetscCall(PetscDTAltVWedge(N, k, N - k, w, u, &wu));
         starwdotu = 0.;
-        for (l = 0; l < Nk; l++) starwdotu += starw[l] * u[l];
+        for (PetscInt l = 0; l < Nk; l++) starwdotu += starw[l] * u[l];
         diff = PetscAbsReal(wu - starwdotu);
         PetscCheck(diff <= PETSC_SMALL * (PetscAbsReal(wu) + PetscAbsReal(starwdotu)), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: (star w, u) (%g) != (w wedge u) (%g)", (double)starwdotu, (double)wu);
 
         diff = 0.;
         norm = 0.;
-        for (l = 0; l < Nk; l++) {
+        for (PetscInt l = 0; l < Nk; l++) {
           diff += PetscSqr(w[l] - (isOdd ? -starstarw[l] : starstarw[l]));
           norm += PetscSqr(w[l]) + PetscSqr(starstarw[l]);
         }

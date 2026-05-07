@@ -1567,14 +1567,14 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
   PetscCall(MatSeqAIJGetArray(aB, &ba));
   for (i = 0; i < m; i++) {
     PetscInt *acols = dnnz, *bcols = onnz; /* Repurpose now-unneeded arrays */
-    PetscInt  j0, rowlen;
+    PetscInt  rowlen;
     rowlen = ai[i + 1] - ai[i];
-    for (j0 = j = 0; j < rowlen; j0 = j) { /* rowlen could be larger than number of rows m, so sum in batches */
+    for (PetscInt j0 = j = 0; j < rowlen; j0 = j) { /* rowlen could be larger than number of rows m, so sum in batches */
       for (; j < PetscMin(rowlen, j0 + m); j++) acols[j - j0] = cdest[aj[ai[i] + j]];
       PetscCall(MatSetValues(Aperm, 1, &rdest[i], j - j0, acols, aa + ai[i] + j0, INSERT_VALUES));
     }
     rowlen = bi[i + 1] - bi[i];
-    for (j0 = j = 0; j < rowlen; j0 = j) {
+    for (PetscInt j0 = j = 0; j < rowlen; j0 = j) {
       for (; j < PetscMin(rowlen, j0 + m); j++) bcols[j - j0] = gcdest[bj[bi[i] + j]];
       PetscCall(MatSetValues(Aperm, 1, &rdest[i], j - j0, bcols, ba + bi[i] + j0, INSERT_VALUES));
     }
@@ -7000,9 +7000,8 @@ static PetscErrorCode MatSeqAIJCopySubArray(Mat A, PetscInt n, const PetscInt id
     if (n && idx) {
       PetscScalar    *w  = v;
       const PetscInt *oi = idx;
-      PetscInt        j;
 
-      for (j = 0; j < n; j++) *w++ = vv[*oi++];
+      for (PetscInt j = 0; j < n; j++) *w++ = vv[*oi++];
     } else {
       PetscCall(PetscArraycpy(v, vv, n));
     }

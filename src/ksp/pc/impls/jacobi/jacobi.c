@@ -173,7 +173,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
   Vec        diag, diagsqrt;
-  PetscInt   n, i;
+  PetscInt   n;
   PetscBool  zeroflag = PETSC_FALSE, negflag = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -224,7 +224,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
         PetscCall(VecGetLocalSize(diag, &n));
         PetscCall(VecGetArrayWrite(diag, &x2));
         PetscCall(VecGetArrayRead(true_diag, &x)); // to make more general -todo
-        for (i = 0; i < n; i++) {
+        for (PetscInt i = 0; i < n; i++) {
           if (PetscRealPart(x[i]) < 0.0) {
             x2[i]   = -x2[i]; // flip sign to keep DA > 0
             negflag = PETSC_TRUE;
@@ -256,7 +256,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
       PetscScalar *x;
       PetscCall(VecGetLocalSize(diag, &n));
       PetscCall(VecGetArray(diag, &x));
-      for (i = 0; i < n; i++) {
+      for (PetscInt i = 0; i < n; i++) {
         if (x[i] == 0.0) {
           x[i]     = 1.0;
           zeroflag = PETSC_TRUE;
@@ -286,7 +286,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     }
     PetscCall(VecGetLocalSize(diagsqrt, &n));
     PetscCall(VecGetArray(diagsqrt, &x));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       if (PetscRealPart(x[i]) < 0.0) x[i] = 1.0 / PetscSqrtReal(PetscAbsScalar(-x[i]));
       else if (PetscRealPart(x[i]) > 0.0) x[i] = 1.0 / PetscSqrtReal(PetscAbsScalar(x[i]));
       else {

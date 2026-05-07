@@ -460,7 +460,6 @@ static PetscErrorCode MatCopy_LMVMDQN(Mat B, Mat M, MatStructure str)
   Mat_DQN  *blqn  = (Mat_DQN *)bdata->ctx;
   Mat_LMVM *mdata = (Mat_LMVM *)M->data;
   Mat_DQN  *mlqn  = (Mat_DQN *)mdata->ctx;
-  PetscInt  i;
   PetscBool is_dbfgs, is_ddfp, is_dqn;
 
   PetscFunctionBegin;
@@ -495,7 +494,7 @@ static PetscErrorCode MatCopy_LMVMDQN(Mat B, Mat M, MatStructure str)
     PetscCall(VecDestroyThenCopy(blqn->diag_vec_recycle_order, &mlqn->diag_vec_recycle_order));
     PetscCall(VecDestroyThenCopy(blqn->inv_diag_vec, &mlqn->inv_diag_vec));
     if (blqn->use_recursive && (is_dbfgs || is_ddfp)) {
-      for (i = 0; i < bdata->m; i++) {
+      for (PetscInt i = 0; i < bdata->m; i++) {
         PetscCall(VecDestroyThenCopy(blqn->PQ[i], &mlqn->PQ[i]));
         mlqn->yts[i] = blqn->yts[i];
         if (is_dbfgs) {

@@ -320,8 +320,7 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
 
 static PetscErrorCode SNESSolve_MS(SNES snes)
 {
-  Vec      X = snes->vec_sol, F = snes->vec_func;
-  PetscInt i;
+  Vec X = snes->vec_sol, F = snes->vec_func;
 
   PetscFunctionBegin;
   PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
@@ -339,7 +338,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   PetscCall(SNESMSStep_Norms(snes, 0, F));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
-  for (i = 0; i < snes->max_its; i++) {
+  for (PetscInt i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
 

@@ -192,10 +192,9 @@ int main(int argc, char **args)
   const PetscScalar xvals[] = {11, 13}, yvals[] = {17, 19}, zvals[] = {23, 29};
   PetscScalar       avals[] = {2, 3, 5, 7};
 #endif
-  Mat      A, S, D[4], N;
-  Vec      X, Y, Z;
-  User     user;
-  PetscInt i;
+  Mat  A, S, D[4], N;
+  Vec  X, Y, Z;
+  User user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -227,7 +226,7 @@ int main(int argc, char **args)
   PetscCall(MatShellSetOperation(S, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_User));
   PetscCall(MatShellSetOperation(S, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_User));
 
-  for (i = 0; i < 4; i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, 1, 1, &avals[i], &D[i]));
+  for (PetscInt i = 0; i < 4; i++) PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, 1, 1, &avals[i], &D[i]));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, D, &N));
   PetscCall(MatSetUp(N));
 
@@ -235,7 +234,7 @@ int main(int argc, char **args)
   PetscCall(TestMatrix(A, X, Y, Z));
   PetscCall(TestMatrix(N, X, Y, Z));
 
-  for (i = 0; i < 4; i++) PetscCall(MatDestroy(&D[i]));
+  for (PetscInt i = 0; i < 4; i++) PetscCall(MatDestroy(&D[i]));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&N));

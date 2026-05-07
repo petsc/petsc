@@ -251,10 +251,9 @@ static void g3_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 {
   const PetscReal nu = PetscRealPart(constants[0]);
   const PetscInt  Nc = dim;
-  PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) {
       g3[((c * Nc + c) * dim + d) * dim + d] += nu; // gradU
       g3[((c * Nc + d) * dim + d) * dim + c] += nu; // gradU transpose
     }
@@ -263,28 +262,24 @@ static void g3_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 
 static void g0_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g0[d] = u_tShift;
+  for (PetscInt d = 0; d < dim; ++d) g0[d] = u_tShift;
 }
 
 static void g0_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g0[d] = u_x[uOff_x[2] + d];
+  for (PetscInt d = 0; d < dim; ++d) g0[d] = u_x[uOff_x[2] + d];
 }
 
 static void g1_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d] = u[uOff[0] + d];
+  for (PetscInt d = 0; d < dim; ++d) g1[d] = u[uOff[0] + d];
 }
 
 static void g3_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscReal alpha = PetscRealPart(constants[1]);
-  PetscInt        d;
 
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = alpha;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = alpha;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -782,11 +777,10 @@ static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
   for (p = 0; p < Np; ++p) {
     PetscScalar x[3];
     PetscReal   x0[3];
-    PetscInt    d;
 
-    for (d = 0; d < dim; ++d) x0[d] = PetscRealPart(xp0[p * dim + d]);
+    for (PetscInt d = 0; d < dim; ++d) x0[d] = PetscRealPart(xp0[p * dim + d]);
     PetscCall(adv->exact(dim, time, x0, 1, x, param));
-    for (d = 0; d < dim; ++d) ep[p * dim + d] += x[d] - xp[p * dim + d];
+    for (PetscInt d = 0; d < dim; ++d) ep[p * dim + d] += x[d] - xp[p * dim + d];
   }
   PetscCall(VecRestoreArrayRead(adv->x0, &xp0));
   PetscCall(VecRestoreArrayRead(u, &xp));
@@ -816,11 +810,10 @@ static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time,
     PetscScalar x[3];
     PetscReal   x0[3];
     PetscReal   perror = 0.0;
-    PetscInt    d;
 
-    for (d = 0; d < dim; ++d) x0[d] = PetscRealPart(xp0[p * dim + d]);
+    for (PetscInt d = 0; d < dim; ++d) x0[d] = PetscRealPart(xp0[p * dim + d]);
     PetscCall(adv->exact(dim, time, x0, 1, x, param));
-    for (d = 0; d < dim; ++d) perror += PetscSqr(PetscRealPart(x[d] - xp[p * dim + d]));
+    for (PetscInt d = 0; d < dim; ++d) perror += PetscSqr(PetscRealPart(x[d] - xp[p * dim + d]));
     error += perror;
   }
   PetscCall(VecRestoreArrayRead(adv->x0, &xp0));

@@ -71,7 +71,6 @@ static PetscErrorCode TestPrefixRegressor(PetscRegressor regressor, AppCtx ctx)
 static PetscErrorCode CreateData(AppCtx ctx)
 {
   PetscMPIInt rank;
-  PetscInt    i;
   PetscScalar mean;
 
   PetscFunctionBegin;
@@ -86,7 +85,7 @@ static PetscErrorCode CreateData(AppCtx ctx)
   PetscCall(MatSetUp(ctx->X));
 
   if (!rank) {
-    for (i = 0; i < ctx->N; i++) {
+    for (PetscInt i = 0; i < ctx->N; i++) {
       PetscCall(VecSetValue(ctx->y, i, (PetscScalar)i, INSERT_VALUES));
       PetscCall(MatSetValue(ctx->X, i, i, 1.0, INSERT_VALUES));
     }

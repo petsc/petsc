@@ -153,9 +153,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
   for (i = keys_per[rank]; i < max_keys_per; i++) pivots[i] = PETSC_INT_MAX;
   PetscCallMPI(MPI_Allgather(pivots, max_keys_per, MPIU_INT, finalpivots, max_keys_per, MPIU_INT, mapin->comm));
   for (i = 0, count = 0; i < size; i++) {
-    PetscInt j;
-
-    for (j = 0; j < max_keys_per; j++) {
+    for (PetscInt j = 0; j < max_keys_per; j++) {
       if (j < keys_per[i]) finalpivots[count++] = finalpivots[i * max_keys_per + j];
     }
   }

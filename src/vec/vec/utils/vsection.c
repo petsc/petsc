@@ -21,7 +21,6 @@
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
   PetscBool    isascii;
-  PetscInt     f;
   PetscScalar *array;
 
   PetscFunctionBegin;
@@ -36,7 +35,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
     PetscCall(PetscObjectGetName((PetscObject)v, &name));
     if (s->numFields) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "%s with %" PetscInt_FMT " fields\n", name, s->numFields));
-      for (f = 0; f < s->numFields; ++f) {
+      for (PetscInt f = 0; f < s->numFields; ++f) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " with %" PetscInt_FMT " components\n", f, s->numFieldComponents[f]));
         PetscCall(VecGetArray(v, &array));
         PetscCall(PetscSectionArrayView_ASCII_Internal(s->field[f], array, PETSC_SCALAR, viewer));
@@ -195,11 +194,11 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const 
 PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
 {
   PetscInt *subIndices;
-  PetscInt  Nc, subSize = 0, subOff = 0, p;
+  PetscInt  Nc, subSize = 0, subOff = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetFieldComponents(section, field, &Nc));
-  for (p = pStart; p < pEnd; ++p) {
+  for (PetscInt p = pStart; p < pEnd; ++p) {
     PetscInt gdof, fdof = 0;
 
     PetscCall(PetscSectionGetDof(sectionGlobal, p, &gdof));
@@ -207,7 +206,7 @@ PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection 
     subSize += fdof;
   }
   PetscCall(PetscMalloc1(subSize, &subIndices));
-  for (p = pStart; p < pEnd; ++p) {
+  for (PetscInt p = pStart; p < pEnd; ++p) {
     PetscInt gdof, goff;
 
     PetscCall(PetscSectionGetDof(sectionGlobal, p, &gdof));

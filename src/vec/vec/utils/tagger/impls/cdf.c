@@ -313,11 +313,10 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec 
     PetscCall(VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger, statType, statReduce, cArray, m, &smpl->box[i], &boxes[i]));
 #else
     {
-      PetscInt         j;
       VecTaggerBoxReal realBxs, imagBxs;
       VecTaggerBoxReal realBoxes, imagBoxes;
 
-      for (j = 0; j < m; j++) {
+      for (PetscInt j = 0; j < m; j++) {
         cReal[j] = PetscRealPart(cArray[j]);
         cImag[j] = PetscImaginaryPart(cArray[j]);
       }

@@ -482,8 +482,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
     PetscCall(PetscSFGatherBegin(sfAdj, MPIU_INT, adj, remoteadj));
     PetscCall(PetscSFGatherEnd(sfAdj, MPIU_INT, adj, remoteadj));
     for (p = 0, l = 0, r = 0; p < adjSize; ++p, l = PetscMax(p, l + indegree[p - 1])) {
-      PetscInt s;
-      for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l + s] = remoteadj[r];
+      for (PetscInt s = 0; s < indegree[p]; ++s, ++r) rootAdj[l + s] = remoteadj[r];
     }
     PetscCheck(r == radjsize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %" PetscInt_FMT " != %" PetscInt_FMT, r, radjsize);
     PetscCheck(l == adjSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %" PetscInt_FMT " != %" PetscInt_FMT, l, adjSize);

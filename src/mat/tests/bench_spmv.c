@@ -126,7 +126,6 @@ int UpdateJSON(const char *const inputjsonfile, PetscReal *spmv_times, PetscReal
 PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatformat, PetscBool use_gpu, PetscInt repetitions)
 {
   Mat            A2 = NULL;
-  PetscInt       i;
   Vec            u;
   PetscLogDouble vstart = 0, vend = 0;
   PetscBool      isaijcusparse, isaijhipsparse, isaijkokkos, issellcuda, issellhip;
@@ -142,7 +141,7 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
   if (isaijhipsparse || issellhip) PetscCall(VecSetType(b, VECHIP));
   PetscCall(VecDuplicate(b, &u));
   if (time) *time = 0.0;
-  for (i = 0; i < repetitions; i++) {
+  for (PetscInt i = 0; i < repetitions; i++) {
     if (use_gpu) {
       PetscCall(MatDestroy(&A2));
       PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));

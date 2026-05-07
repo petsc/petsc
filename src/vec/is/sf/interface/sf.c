@@ -248,7 +248,7 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
 
 static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
 {
-  PetscInt           i, nleaves;
+  PetscInt           nleaves;
   PetscMPIInt        size;
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
@@ -257,7 +257,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
   if (!sf->graphset || !PetscDefined(USE_DEBUG)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSFGetGraph(sf, NULL, &nleaves, &ilocal, &iremote));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
-  for (i = 0; i < nleaves; i++) {
+  for (PetscInt i = 0; i < nleaves; i++) {
     const PetscInt rank   = iremote[i].rank;
     const PetscInt remote = iremote[i].index;
     const PetscInt leaf   = ilocal ? ilocal[i] : i;
@@ -892,7 +892,6 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {
     PetscMPIInt rank;
-    PetscInt    j;
 
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sf, viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -920,7 +919,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
           PetscMPIInt i = perm[ii];
 
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %d: %" PetscInt_FMT " edges\n", rank, sf->ranks[i], sf->roffset[i + 1] - sf->roffset[i]));
-          for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j]));
+          for (PetscInt j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j]));
         }
         PetscCall(PetscFree2(tmpranks, perm));
       }
@@ -1292,10 +1291,9 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
       PetscCall(PetscSFReduceEnd(sf->multi, MPIU_INT, outranks, inranks, MPI_REPLACE));
       /* Sort the incoming ranks at each vertex, build the inverse map */
       for (i = 0; i < sf->nroots; i++) {
-        PetscInt j;
-        for (j = 0; j < indegree[i]; j++) tmpoffset[j] = j;
+        for (PetscInt j = 0; j < indegree[i]; j++) tmpoffset[j] = j;
         PetscCall(PetscSortIntWithArray(indegree[i], PetscSafePointerPlusOffset(inranks, inoffset[i]), tmpoffset));
-        for (j = 0; j < indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
+        for (PetscInt j = 0; j < indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
       PetscCall(PetscSFBcastBegin(sf->multi, MPIU_INT, newoffset, newoutoffset, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sf->multi, MPIU_INT, newoffset, newoutoffset, MPI_REPLACE));
@@ -2563,10 +2561,10 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
     for (s = 0; s < nsfs; s++) {
       const PetscInt *ilocal;
       PetscInt       *ilocal_l = PetscSafePointerPlusOffset(ilocal_new, leafArrayOffsets[s]);
-      PetscInt        i, nleaves_l;
+      PetscInt        nleaves_l;
 
       PetscCall(PetscSFGetGraph(sfs[s], NULL, &nleaves_l, &ilocal, NULL));
-      for (i = 0; i < nleaves_l; i++) ilocal_l[i] = (ilocal ? ilocal[i] : i) + leafOffsets[s];
+      for (PetscInt i = 0; i < nleaves_l; i++) ilocal_l[i] = (ilocal ? ilocal[i] : i) + leafOffsets[s];
     }
   }
 

@@ -127,7 +127,6 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     PetscReal         *coordinates_arr_real;
     const PetscInt    *cells_arr;
     PetscSF            sfVert = NULL;
-    PetscInt           i;
 
     PetscCall(VecGetArrayRead(coordinates, &coordinates_arr));
     PetscCall(ISGetIndices(cells, &cells_arr));
@@ -136,7 +135,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
       /* convert to real numbers if PetscScalar is complex */
       /*TODO More systematic would be to change all the function arguments to PetscScalar */
       PetscCall(PetscMalloc1(numVertices * spatialDim, &coordinates_arr_real));
-      for (i = 0; i < numVertices * spatialDim; ++i) {
+      for (PetscInt i = 0; i < numVertices * spatialDim; ++i) {
         coordinates_arr_real[i] = PetscRealPart(coordinates_arr[i]);
         PetscAssert(PetscImaginaryPart(coordinates_arr[i]) == 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported.");
       }

@@ -46,7 +46,6 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscInt  n, N, nDiff;
   PetscInt  i_max = 5;
   PetscInt  j_max = 1;
-  PetscInt  i, j;
   PetscBool kspTR;
 
   PetscFunctionBegin;
@@ -130,7 +129,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
       /* Use interpolation based on the initial Hessian */
       max_radius = 0.0;
       tao->trust = tao->trust0;
-      for (j = 0; j < j_max; ++j) {
+      for (PetscInt j = 0; j < j_max; ++j) {
         f_min = bnk->f;
         sigma = 0.0;
 
@@ -142,7 +141,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           *needH = PETSC_FALSE;
         }
 
-        for (i = 0; i < i_max; ++i) {
+        for (PetscInt i = 0; i < i_max; ++i) {
           /* Take a steepest descent step and snap it to bounds */
           PetscCall(VecCopy(tao->solution, bnk->Xold));
           PetscCall(VecAXPY(tao->solution, -tao->trust / bnk->gnorm, tao->gradient));

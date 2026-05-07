@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   PetscBool  flg;  /* A return variable when checking for user options */
   Tao        tao;  /* Tao solver context */
   AppCtx     user; /* user-defined work context */
-  PetscInt   i, j;
+  PetscInt   i;
   PetscInt   xs, xm, gxs, gxm;
   PetscReal  sval = 0;
   PetscReal *x_array;
@@ -232,7 +232,7 @@ int main(int argc, char **argv)
     PetscCall(DMGlobalToLocalBegin(user.dm, x, INSERT_VALUES, localX));
     PetscCall(DMGlobalToLocalEnd(user.dm, x, INSERT_VALUES, localX));
     PetscCall(VecGetArray(localX, &x_array));
-    for (j = 0; j < gxm; j++) user.Vt1[j] = x_array[j];
+    for (PetscInt j = 0; j < gxm; j++) user.Vt1[j] = x_array[j];
     PetscCall(VecRestoreArray(x, &x_array));
     PetscCall(DMRestoreLocalVector(user.dm, &localX));
   }

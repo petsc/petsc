@@ -336,7 +336,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 {
   SNES_FAS *fas;
   PetscBool isFine;
-  PetscInt  i, levels;
+  PetscInt  levels;
   SNES      levelsnes;
 
   PetscFunctionBegin;
@@ -345,7 +345,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
   fas    = (SNES_FAS *)snes->data;
   levels = fas->levels;
   if (isFine) {
-    for (i = 0; i < levels; i++) {
+    for (PetscInt i = 0; i < levels; i++) {
       PetscCall(SNESFASGetCycleSNES(snes, i, &levelsnes));
       fas = (SNES_FAS *)levelsnes->data;
       if (flg) {
@@ -379,7 +379,7 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
 {
   SNES_FAS *fas;
   PetscBool isFine;
-  PetscInt  i, levels;
+  PetscInt  levels;
   SNES      levelsnes;
   char      eventname[128];
 
@@ -389,7 +389,7 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
   fas    = (SNES_FAS *)snes->data;
   levels = fas->levels;
   if (isFine) {
-    for (i = 0; i < levels; i++) {
+    for (PetscInt i = 0; i < levels; i++) {
       PetscCall(SNESFASGetCycleSNES(snes, i, &levelsnes));
       fas = (SNES_FAS *)levelsnes->data;
       if (flg) {

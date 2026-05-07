@@ -855,7 +855,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
-  PetscInt       i, n;
+  PetscInt       n;
   PC             cpc;
   PetscBool      dump = PETSC_FALSE, opsset, use_amat, missinginterpolate = PETSC_FALSE;
   Mat            dA, dB;
@@ -903,7 +903,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     const char *prefix;
 
     PetscCall(PCGetOptionsPrefix(pc, &prefix));
-    for (i = 1; i < n; ++i) {
+    for (PetscInt i = 1; i < n; ++i) {
       PC   ipc, cr;
       char crprefix[128];
 
@@ -943,7 +943,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  for (i = n - 1; i > 0; i--) {
+  for (PetscInt i = n - 1; i > 0; i--) {
     if (!(mglevels[i]->interpolate || mglevels[i]->restrct)) {
       missinginterpolate = PETSC_TRUE;
       break;
@@ -975,7 +975,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (missinginterpolate && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
     /* first see if we can compute a coarse space */
     if (mg->coarseSpaceType == PCMG_ADAPT_GDSW) {
-      for (i = n - 2; i > -1; i--) {
+      for (PetscInt i = n - 2; i > -1; i--) {
         if (!mglevels[i + 1]->restrct && !mglevels[i + 1]->interpolate) {
           PetscCall(PCMGComputeCoarseSpace_Internal(pc, i + 1, mg->coarseSpaceType, mg->Nc, NULL, &mglevels[i + 1]->coarseSpace));
           PetscCall(PCMGSetInterpolation(pc, i + 1, mglevels[i + 1]->coarseSpace));
@@ -989,8 +989,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscCall(PetscMalloc1(n, &dms));
       dms[n - 1] = pc->dm;
       /* Separately create them so we do not get DMKSP interference between levels */
-      for (i = n - 2; i > -1; i--) PetscCall(DMCoarsen(dms[i + 1], MPI_COMM_NULL, &dms[i]));
-      for (i = n - 2; i > -1; i--) {
+      for (PetscInt i = n - 2; i > -1; i--) PetscCall(DMCoarsen(dms[i + 1], MPI_COMM_NULL, &dms[i]));
+      for (PetscInt i = n - 2; i > -1; i--) {
         PetscBool dmhasrestrict, dmhasinject;
 
         PetscCall(KSPSetDM(mglevels[i]->smoothd, dms[i]));
@@ -1027,7 +1027,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
         }
       }
 
-      for (i = n - 2; i > -1; i--) PetscCall(DMDestroy(&dms[i]));
+      for (PetscInt i = n - 2; i > -1; i--) PetscCall(DMDestroy(&dms[i]));
       PetscCall(PetscFree(dms));
     }
   }
@@ -1040,7 +1040,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_BOTH) doB = PETSC_TRUE;
     if (mg->galerkin == PC_MG_GALERKIN_MAT || (mg->galerkin == PC_MG_GALERKIN_BOTH && dA != dB)) doA = PETSC_TRUE;
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
-    for (i = n - 2; i > -1; i--) {
+    for (PetscInt i = n - 2; i > -1; i--) {
       PetscCheck(mglevels[i + 1]->restrct || mglevels[i + 1]->interpolate, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must provide interpolation or restriction for each MG level except level 0");
       if (!mglevels[i + 1]->interpolate) PetscCall(PCMGSetInterpolation(pc, i + 1, mglevels[i + 1]->restrct));
       if (!mglevels[i + 1]->restrct) PetscCall(PCMGSetRestriction(pc, i + 1, mglevels[i + 1]->interpolate));
@@ -1074,15 +1074,15 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   /* Adapt interpolation matrices */
   if (adaptInterpolation) {
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       if (!mglevels[i]->coarseSpace) PetscCall(PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i - 1]->coarseSpace, &mglevels[i]->coarseSpace));
       if (i) PetscCall(PCMGAdaptInterpolator_Internal(pc, i, mglevels[i - 1]->smoothu, mglevels[i]->smoothu, mglevels[i - 1]->coarseSpace, mglevels[i]->coarseSpace));
     }
-    for (i = n - 2; i > -1; --i) PetscCall(PCMGRecomputeLevelOperators_Internal(pc, i));
+    for (PetscInt i = n - 2; i > -1; --i) PetscCall(PCMGRecomputeLevelOperators_Internal(pc, i));
   }
 
   if (needRestricts && pc->dm) {
-    for (i = n - 2; i >= 0; i--) {
+    for (PetscInt i = n - 2; i >= 0; i--) {
       DM  dmfine, dmcoarse;
       Mat Restrict, Inject;
       Vec rscale;
@@ -1097,17 +1097,17 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   if (!pc->setupcalled) {
-    for (i = 0; i < n; i++) PetscCall(KSPSetFromOptions(mglevels[i]->smoothd));
-    for (i = 1; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) PetscCall(KSPSetFromOptions(mglevels[i]->smoothd));
+    for (PetscInt i = 1; i < n; i++) {
       if (mglevels[i]->smoothu && (mglevels[i]->smoothu != mglevels[i]->smoothd)) PetscCall(KSPSetFromOptions(mglevels[i]->smoothu));
       if (mglevels[i]->cr) PetscCall(KSPSetFromOptions(mglevels[i]->cr));
     }
     /* insure that if either interpolation or restriction is set the other one is set */
-    for (i = 1; i < n; i++) {
+    for (PetscInt i = 1; i < n; i++) {
       PetscCall(PCMGGetInterpolation(pc, i, NULL));
       PetscCall(PCMGGetRestriction(pc, i, NULL));
     }
-    for (i = 0; i < n - 1; i++) {
+    for (PetscInt i = 0; i < n - 1; i++) {
       if (!mglevels[i]->b) {
         Vec *vec;
         PetscCall(KSPCreateVecs(mglevels[i]->smoothd, 1, &vec, 0, NULL));
@@ -1147,7 +1147,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (pc->dm) {
     /* need to tell all the coarser levels to rebuild the matrix using the DM for that level */
-    for (i = 0; i < n - 1; i++) {
+    for (PetscInt i = 0; i < n - 1; i++) {
       if (mglevels[i]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[i]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
     }
   }
@@ -1155,7 +1155,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   // new diagonal for Jacobi). Setting it here allows it to be logged under PCSetUp rather than deep inside a PCApply.
   if (mglevels[n - 1]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[n - 1]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
 
-  for (i = 1; i < n; i++) {
+  for (PetscInt i = 1; i < n; i++) {
     if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1) {
       /* if doing only down then initial guess is zero */
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->smoothd, PETSC_TRUE));
@@ -1178,7 +1178,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscCall(PCMGSetResidualTranspose(pc, i, PCMGResidualTransposeDefault, mat));
     }
   }
-  for (i = 1; i < n; i++) {
+  for (PetscInt i = 1; i < n; i++) {
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {
       Mat downmat, downpmat;
 
@@ -1234,8 +1234,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (dump) viewer = PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)pc));
 
   if (viewer) {
-    for (i = 1; i < n; i++) PetscCall(MatView(mglevels[i]->restrct, viewer));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 1; i < n; i++) PetscCall(MatView(mglevels[i]->restrct, viewer));
+    for (PetscInt i = 0; i < n; i++) {
       PetscCall(KSPGetPC(mglevels[i]->smoothd, &pc));
       PetscCall(MatView(pc->mat, viewer));
     }
@@ -1298,7 +1298,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
-  PetscInt       lev, N;
+  PetscInt       N;
   PetscLogDouble nnz0 = 0, sgc = 0, soc = 0, n0 = 0;
   MatInfo        info;
 
@@ -1312,7 +1312,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(mg->nlevels > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MG has no levels");
-  for (lev = 0; lev < mg->nlevels; lev++) {
+  for (PetscInt lev = 0; lev < mg->nlevels; lev++) {
     Mat dB;
     PetscCall(KSPGetOperators(mglevels[lev]->smoothd, NULL, &dB));
     PetscCall(MatGetInfo(dB, MAT_GLOBAL_SUM, &info)); /* global reduction */
@@ -1771,7 +1771,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
-  PetscInt       i, levels;
+  PetscInt       levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1779,7 +1779,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
-  for (i = 1; i < levels; i++) {
+  for (PetscInt i = 1; i < levels; i++) {
     PetscCall(KSPSetTolerances(mglevels[i]->smoothu, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, n));
     PetscCall(KSPSetTolerances(mglevels[i]->smoothd, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, n));
     mg->default_smoothu = n;
@@ -1811,7 +1811,7 @@ PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
-  PetscInt       i, levels;
+  PetscInt       levels;
   KSP            subksp;
 
   PetscFunctionBegin;
@@ -1819,7 +1819,7 @@ PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
-  for (i = 1; i < levels; i++) {
+  for (PetscInt i = 1; i < levels; i++) {
     const char *prefix = NULL;
     /* make sure smoother up and down are different */
     PetscCall(PCMGGetSmootherUp(pc, i, &subksp));
@@ -1836,12 +1836,11 @@ static PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *i
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   Mat           *mat;
-  PetscInt       l;
 
   PetscFunctionBegin;
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set MG levels before calling");
   PetscCall(PetscMalloc1(mg->nlevels, &mat));
-  for (l = 1; l < mg->nlevels; l++) {
+  for (PetscInt l = 1; l < mg->nlevels; l++) {
     mat[l - 1] = mglevels[l]->interpolate;
     PetscCall(PetscObjectReference((PetscObject)mat[l - 1]));
   }
@@ -1855,13 +1854,12 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
 {
   PC_MG         *mg       = (PC_MG *)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
-  PetscInt       l;
   Mat           *mat;
 
   PetscFunctionBegin;
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set MG levels before calling");
   PetscCall(PetscMalloc1(mg->nlevels, &mat));
-  for (l = 0; l < mg->nlevels - 1; l++) {
+  for (PetscInt l = 0; l < mg->nlevels - 1; l++) {
     PetscCall(KSPGetOperators(mglevels[l]->smoothd, NULL, &mat[l]));
     PetscCall(PetscObjectReference((PetscObject)mat[l]));
   }

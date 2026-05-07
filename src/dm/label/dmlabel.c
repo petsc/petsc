@@ -162,7 +162,6 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 */
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
-  PetscInt        p;
   const PetscInt *points;
 
   PetscFunctionBegin;
@@ -170,7 +169,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
   PetscCheck(v >= 0 && v < label->numStrata, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to access invalid stratum %" PetscInt_FMT " in DMLabelMakeInvalid_Private", v);
   if (label->points[v]) {
     PetscCall(ISGetIndices(label->points[v], &points));
-    for (p = 0; p < label->stratumSizes[v]; ++p) PetscCall(PetscHSetIAdd(label->ht[v], points[p]));
+    for (PetscInt p = 0; p < label->stratumSizes[v]; ++p) PetscCall(PetscHSetIAdd(label->ht[v], points[p]));
     PetscCall(ISRestoreIndices(label->points[v], &points));
     PetscCall(ISDestroy(&label->points[v]));
   }
@@ -432,10 +431,9 @@ static PetscErrorCode DMLabelView_Concrete_Ascii(DMLabel label, PetscViewer view
     for (v = 0; v < label->numStrata; ++v) {
       const PetscInt  value = label->stratumValues[v];
       const PetscInt *points;
-      PetscInt        p;
 
       PetscCall(ISGetIndices(label->points[v], &points));
-      for (p = 0; p < label->stratumSizes[v]; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, points[p], value));
+      for (PetscInt p = 0; p < label->stratumSizes[v]; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, points[p], value));
       PetscCall(ISRestoreIndices(label->points[v], &points));
     }
   }
@@ -517,11 +515,9 @@ PetscErrorCode DMLabelViewFromOptions(DMLabel label, PeOp PetscObject obj, const
 @*/
 PetscErrorCode DMLabelReset(DMLabel label)
 {
-  PetscInt v;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  for (v = 0; v < label->numStrata; ++v) {
+  for (PetscInt v = 0; v < label->numStrata; ++v) {
     PetscCall(PetscHSetIDestroy(&label->ht[v]));
     PetscCall(ISDestroy(&label->points[v]));
   }
@@ -696,10 +692,10 @@ PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *
     if (!eq) goto finish;
   }
   {
-    PetscInt i, nValues;
+    PetscInt nValues;
 
     PetscCall(DMLabelGetNumValues(l0, &nValues));
-    for (i = 0; i < nValues; i++) {
+    for (PetscInt i = 0; i < nValues; i++) {
       const PetscInt v = l0->stratumValues[i];
       PetscInt       n;
       IS             is0, is1;
@@ -754,10 +750,9 @@ PetscErrorCode DMLabelComputeIndex(DMLabel label)
   PetscCall(DMLabelMakeAllValid_Private(label));
   for (v = 0; v < label->numStrata; ++v) {
     const PetscInt *points;
-    PetscInt        i;
 
     PetscCall(ISGetIndices(label->points[v], &points));
-    for (i = 0; i < label->stratumSizes[v]; ++i) {
+    for (PetscInt i = 0; i < label->stratumSizes[v]; ++i) {
       const PetscInt point = points[i];
 
       pStart = PetscMin(point, pStart);
@@ -787,8 +782,6 @@ PetscErrorCode DMLabelComputeIndex(DMLabel label)
 @*/
 PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 {
-  PetscInt v;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscCall(DMLabelDestroyIndex(label));
@@ -797,14 +790,13 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
   label->pEnd   = pEnd;
   /* This can be hooked into SetValue(),  ClearValue(), etc. for updating */
   PetscCall(PetscBTCreate(pEnd - pStart, &label->bt));
-  for (v = 0; v < label->numStrata; ++v) {
+  for (PetscInt v = 0; v < label->numStrata; ++v) {
     IS              pointIS;
     const PetscInt *points;
-    PetscInt        i;
 
     PetscUseTypeMethod(label, getstratumis, v, &pointIS);
     PetscCall(ISGetIndices(pointIS, &points));
-    for (i = 0; i < label->stratumSizes[v]; ++i) {
+    for (PetscInt i = 0; i < label->stratumSizes[v]; ++i) {
       const PetscInt point = points[i];
 
       PetscCheck(!(point < pStart) && !(point >= pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %" PetscInt_FMT " in stratum %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, label->stratumValues[v], pStart, pEnd);
@@ -1613,10 +1605,9 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
   PetscCall(PetscObjectStateIncrease((PetscObject)label));
   if (label->bt) {
     const PetscInt *points;
-    PetscInt        p;
 
     PetscCall(ISGetIndices(is, &points));
-    for (p = 0; p < label->stratumSizes[v]; ++p) {
+    for (PetscInt p = 0; p < label->stratumSizes[v]; ++p) {
       const PetscInt point = points[p];
 
       PetscCheck(!(point < label->pStart) && !(point >= label->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, label->pStart, label->pEnd);
@@ -1650,11 +1641,10 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   if (v < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (label->validIS[v]) {
     if (label->bt) {
-      PetscInt        i;
       const PetscInt *points;
 
       PetscCall(ISGetIndices(label->points[v], &points));
-      for (i = 0; i < label->stratumSizes[v]; ++i) {
+      for (PetscInt i = 0; i < label->stratumSizes[v]; ++i) {
         const PetscInt point = points[i];
 
         if (point >= label->pStart && point < label->pEnd) PetscCall(PetscBTClear(label->bt, point - label->pStart));
@@ -2994,13 +2984,13 @@ static PetscErrorCode PetscSectionSymCopy_Label(PetscSectionSym sym, PetscSectio
   PetscSectionSym_Label *sl = (PetscSectionSym_Label *)nsym->data;
   IS                     valIS;
   const PetscInt        *values;
-  PetscInt               Nv, v;
+  PetscInt               Nv;
 
   PetscFunctionBegin;
   PetscCall(DMLabelGetNumValues(sl->label, &Nv));
   PetscCall(DMLabelGetValueIS(sl->label, &valIS));
   PetscCall(ISGetIndices(valIS, &values));
-  for (v = 0; v < Nv; ++v) {
+  for (PetscInt v = 0; v < Nv; ++v) {
     const PetscInt      val = values[v];
     PetscInt            size, minOrient, maxOrient;
     const PetscInt    **perms;

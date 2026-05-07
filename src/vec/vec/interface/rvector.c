@@ -2282,7 +2282,6 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 @*/
 PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 {
-  PetscInt      i;
   PetscScalar **q = *a;
 
   PetscFunctionBegin;
@@ -2290,7 +2289,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
   PetscValidHeaderSpecific(*x, VEC_CLASSID, 1);
   PetscAssertPointer(a, 3);
 
-  for (i = 0; i < n; ++i) PetscCall(VecRestoreArray(x[i], &q[i]));
+  for (PetscInt i = 0; i < n; ++i) PetscCall(VecRestoreArray(x[i], &q[i]));
   PetscCall(PetscFree(q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

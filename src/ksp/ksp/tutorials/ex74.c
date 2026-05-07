@@ -281,7 +281,7 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, Pe
 {
   PetscScalar *A, *G0, *G1;
   PetscReal   *b, *c;
-  PetscInt     i, j;
+  PetscInt     i;
   Mat          G0mat, G1mat, Amat;
 
   PetscFunctionBegin;
@@ -292,7 +292,7 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, Pe
 
   /* A^T = G0^{-1} G1 */
   for (i = 0; i < nstages; i++) {
-    for (j = 0; j < nstages; j++) {
+    for (PetscInt j = 0; j < nstages; j++) {
       G0[i * nstages + j] = PetscPowRealInt(c[i], j);
       G1[i * nstages + j] = PetscPowRealInt(c[i], j + 1) / (j + 1);
     }

@@ -1008,7 +1008,6 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   PetscCheck(randomize_fac <= 1.0, PETSC_COMM_WORLD, PETSC_ERR_USER, "The value of -randomize_fac should be <= 1.0");
   {
     PetscReal  *array_x, *array_e, *array_r;
-    PetscInt    p;
     PetscRandom r;
     PetscMPIInt rank;
 
@@ -1035,7 +1034,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
     PetscCall(DMSwarmGetField(dms_mpoint, "rho", NULL, NULL, (void **)&array_r));
 
     PetscCall(DMSwarmGetLocalSize(dms_mpoint, &npoints));
-    for (p = 0; p < npoints; p++) {
+    for (PetscInt p = 0; p < npoints; p++) {
       PetscReal x_p[2], rr[2];
 
       if (randomize_coords) {

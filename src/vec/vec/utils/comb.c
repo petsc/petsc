@@ -598,7 +598,6 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
 {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  PetscInt             i;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
@@ -609,7 +608,7 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
   }
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
-  for (i = 0; i < nv; i++) {
+  for (PetscInt i = 0; i < nv; i++) {
     if (sr->numopsbegin + i >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
     sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin + i]     = (void *)x;
@@ -644,7 +643,6 @@ PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[
 {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  PetscInt             i;
 
   PetscFunctionBegin;
   if (PetscDefined(HAVE_THREADSAFETY)) PetscFunctionReturn(PETSC_SUCCESS);
@@ -655,7 +653,7 @@ PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[
   PetscCheck(sr->numopsend < sr->numopsbegin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() more times then VecxxxBegin()");
   PetscCheck(!x || (void *)x == sr->invecs[sr->numopsend], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Called VecDotEnd() on a reduction started with VecNormBegin()");
-  for (i = 0; i < nv; i++) result[i] = sr->gvalues[sr->numopsend++];
+  for (PetscInt i = 0; i < nv; i++) result[i] = sr->gvalues[sr->numopsend++];
 
   /*
      We are finished getting all the results so reset to no outstanding requests
@@ -689,7 +687,6 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
 {
   PetscSplitReduction *sr;
   MPI_Comm             comm;
-  PetscInt             i;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)x, &comm));
@@ -700,7 +697,7 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
   }
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->state == STATE_BEGIN, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Called before all VecxxxEnd() called");
-  for (i = 0; i < nv; i++) {
+  for (PetscInt i = 0; i < nv; i++) {
     if (sr->numopsbegin + i >= sr->maxops) PetscCall(PetscSplitReductionExtend(sr));
     sr->reducetype[sr->numopsbegin + i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin + i]     = (void *)x;

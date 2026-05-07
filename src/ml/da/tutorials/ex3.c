@@ -399,7 +399,7 @@ static PetscErrorCode CreateObservationMatrix(PetscInt n_vert, PetscInt ndof, Pe
 */
 static PetscErrorCode CreateLocalizationMatrix(PetscInt num_vert, PetscInt obs_size, Mat *Q)
 {
-  PetscInt i, j;
+  PetscInt i;
 
   PetscFunctionBeginUser;
   /* Create Q matrix (num_vert x obs_size)
@@ -409,7 +409,7 @@ static PetscErrorCode CreateLocalizationMatrix(PetscInt num_vert, PetscInt obs_s
 
   /* Initialize with no localization (global): each state variable uses all observations */
   for (i = 0; i < num_vert; i++) {
-    for (j = 0; j < obs_size; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
+    for (PetscInt j = 0; j < obs_size; j++) PetscCall(MatSetValue(*Q, i, j, 1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
@@ -763,7 +763,6 @@ int main(int argc, char **argv)
 
     /* Write initial condition (step 0) */
     const PetscScalar *truth_array, *mean_array;
-    PetscInt           i;
 
     /* Compute initial ensemble mean */
     PetscCall(PetscDAEnsembleComputeMean(da, x_mean));
@@ -775,13 +774,13 @@ int main(int argc, char **argv)
     PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "0 0.000000"));
 
     /* Write truth state (h, hu for each grid point) */
-    for (i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
+    for (PetscInt i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
 
     /* Write ensemble mean (h, hu for each grid point) */
-    for (i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
+    for (PetscInt i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
 
     /* Write nan for observations (no observations at step 0) */
-    for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+    for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
 
     PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "\n"));
 
@@ -848,7 +847,6 @@ int main(int argc, char **argv)
     /* Write data to output file if enabled */
     if (output_enabled && fp) {
       const PetscScalar *truth_array, *mean_array, *obs_array;
-      PetscInt           i;
 
       PetscCall(DMDAVecGetArrayRead(da_state, truth_state, &truth_array));
       PetscCall(DMDAVecGetArrayRead(da_state, x_mean, &mean_array));
@@ -857,18 +855,18 @@ int main(int argc, char **argv)
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%d %.6f", (int)step, (double)time));
 
       /* Write truth state (h, hu for each grid point) */
-      for (i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
+      for (PetscInt i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
 
       /* Write ensemble mean (h, hu for each grid point) */
-      for (i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
+      for (PetscInt i = 0; i < n_vert * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
 
       /* Write observations (or nan if no observation at this step) */
       if (step % obs_freq == 0 && step > 0) {
         PetscCall(VecGetArrayRead(observation, &obs_array));
-        for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(obs_array[i])));
+        for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(obs_array[i])));
         PetscCall(VecRestoreArrayRead(observation, &obs_array));
       } else {
-        for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
+        for (PetscInt i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " nan"));
       }
 
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "\n"));

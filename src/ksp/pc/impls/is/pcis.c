@@ -545,7 +545,6 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
 @*/
 PetscErrorCode PCISScatterArrayNToVecB(PC pc, PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode)
 {
-  PetscInt        i;
   const PetscInt *idex;
   PetscScalar    *array_B;
   PC_IS          *pcis = (PC_IS *)pc->data;
@@ -556,15 +555,15 @@ PetscErrorCode PCISScatterArrayNToVecB(PC pc, PetscScalar *array_N, Vec v_B, Ins
 
   if (smode == SCATTER_FORWARD) {
     if (imode == INSERT_VALUES) {
-      for (i = 0; i < pcis->n_B; i++) array_B[i] = array_N[idex[i]];
+      for (PetscInt i = 0; i < pcis->n_B; i++) array_B[i] = array_N[idex[i]];
     } else { /* ADD_VALUES */
-      for (i = 0; i < pcis->n_B; i++) array_B[i] += array_N[idex[i]];
+      for (PetscInt i = 0; i < pcis->n_B; i++) array_B[i] += array_N[idex[i]];
     }
   } else { /* SCATTER_REVERSE */
     if (imode == INSERT_VALUES) {
-      for (i = 0; i < pcis->n_B; i++) array_N[idex[i]] = array_B[i];
+      for (PetscInt i = 0; i < pcis->n_B; i++) array_N[idex[i]] = array_B[i];
     } else { /* ADD_VALUES */
-      for (i = 0; i < pcis->n_B; i++) array_N[idex[i]] += array_B[i];
+      for (PetscInt i = 0; i < pcis->n_B; i++) array_N[idex[i]] += array_B[i];
     }
   }
   PetscCall(ISRestoreIndices(pcis->is_B_local, &idex));

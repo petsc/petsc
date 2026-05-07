@@ -159,19 +159,19 @@ static void g1_npsi_right(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 /* < Omega , . > */
 static void g1_omega_left(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt           i, j;
+  PetscInt           i;
   const PetscScalar *pOmegaDer = &u_x[uOff_x[OMEGA]];
   for (i = 0; i < dim; ++i)
-    for (j = 0; j < dim; ++j) g1[j] += pOmegaDer[i] * s_K[i][j];
+    for (PetscInt j = 0; j < dim; ++j) g1[j] += pOmegaDer[i] * s_K[i][j];
 }
 
 /* < psi , . > */
 static void g1_psi_left(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  PetscInt           i, j;
+  PetscInt           i;
   const PetscScalar *pPsiDer = &u_x[uOff_x[PSI]];
   for (i = 0; i < dim; ++i)
-    for (j = 0; j < dim; ++j) g1[j] += pPsiDer[i] * s_K[i][j];
+    for (PetscInt j = 0; j < dim; ++j) g1[j] += pPsiDer[i] * s_K[i][j];
 }
 
 // -Lapacians (resistivity), negative sign goes away from IBP
@@ -184,8 +184,7 @@ static void g3_nmu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOf
 // Auxiliary variable = -del^2 x, negative sign goes away from IBP
 static void g3_n1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = 1;
 }
 
 /* residual point methods */

@@ -18,18 +18,6 @@ int main(int argc, char **argv)
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSeqDenseSetPreallocation(A, NULL));
   PetscCall(MatSetRandom(A, NULL));
-#if 0
-  PetscInt       i,j;
-  PetscScalar    val;
-  for (i=0; i<m; i++) {
-    for (j=0; j<n; j++) {
-      val = (PetscScalar)(i+j);
-      PetscCall(MatSetValues(A,1,&i,1,&j,&val,INSERT_VALUES));
-    }
-  }
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-#endif
 
   /* Create a CUDA version of A */
 #if defined(PETSC_HAVE_CUDA)

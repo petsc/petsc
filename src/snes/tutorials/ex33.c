@@ -73,7 +73,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   PetscReal    kappaNoWet = user->kappaNoWet;
   Field       *uold;
   PetscScalar *Kappa;
-  PetscInt     i;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetGlobalVector(user->cda, &L));
@@ -81,7 +80,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   PetscCall(DMDAVecGetArray(info->da, user->uold, &uold));
   PetscCall(DMDAVecGetArray(user->cda, user->Kappa, &Kappa));
   /* Compute residual over the locally owned part of the grid */
-  for (i = info->xs; i < info->xs + info->xm; ++i) {
+  for (PetscInt i = info->xs; i < info->xs + info->xm; ++i) {
     if (i == 0) {
       f[i].s = u[i].s - user->sl;
       f[i].v = u[i].v - user->vl;
@@ -116,7 +115,6 @@ int main(int argc, char **argv)
   Vec       u;       /* solution vector */
   AppCtx    user;    /* user-defined work context */
   PetscReal t = 0.0; /* time */
-  PetscInt  n;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -150,7 +148,7 @@ int main(int argc, char **argv)
 
   /* Time Loop */
   user.dt = 0.1;
-  for (n = 0; n < 100; ++n, t += user.dt) {
+  for (PetscInt n = 0; n < 100; ++n, t += user.dt) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t));
     PetscCall(VecView(u, PETSC_VIEWER_DRAW_WORLD));
     /* Solve */

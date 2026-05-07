@@ -4,7 +4,7 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 int main(int argc, char **argv)
 {
-  PetscInt    n, i;
+  PetscInt    n;
   PetscScalar a, array[10];
   PetscReal   rarray[10];
 
@@ -18,14 +18,14 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL));
   if (n) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Real rarray of length %" PetscInt_FMT "\n", n));
-    for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,\n", (double)rarray[i]));
+    for (PetscInt i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g,\n", (double)rarray[i]));
   }
 
   n = 10; /* max num of input values */
   PetscCall(PetscOptionsScalarArray("-array", "Input a scalar array", "ex14.c", array, &n, NULL));
   if (n) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Scalar rarray of length %" PetscInt_FMT "\n", n));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       if (PetscImaginaryPart(array[i]) < 0.0) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g - %gi\n", (double)PetscRealPart(array[i]), (double)PetscAbsReal(PetscImaginaryPart(array[i]))));
       } else {

@@ -57,7 +57,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   PetscInt i_max = 5;
   PetscInt j_max = 1;
-  PetscInt i, j;
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) PetscCall(PetscInfo(tao, "WARNING: Variable bounds have been set but will be ignored by nls algorithm\n"));
@@ -130,7 +129,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       /* Use the initial radius specified */
       max_radius = 0.0;
 
-      for (j = 0; j < j_max; ++j) {
+      for (PetscInt j = 0; j < j_max; ++j) {
         fmin  = f;
         sigma = 0.0;
 
@@ -139,7 +138,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           needH = 0;
         }
 
-        for (i = 0; i < i_max; ++i) {
+        for (PetscInt i = 0; i < i_max; ++i) {
           PetscCall(VecCopy(tao->solution, nlsP->W));
           PetscCall(VecAXPY(nlsP->W, -tao->trust / gnorm, tao->gradient));
           PetscCall(TaoComputeObjective(tao, nlsP->W, &ftrial));

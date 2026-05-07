@@ -143,7 +143,7 @@ static PetscErrorCode testNone(TS ts, Vec X, PetscInt stepi, PetscReal time, Pet
 
 static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx)
 {
-  PetscInt          ii, nDMs;
+  PetscInt          nDMs;
   PetscDS           prob;
   static PetscReal  old_ratio = 1e10;
   TSConvergedReason reason;
@@ -163,7 +163,7 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
   PetscCall(TSGetTimeStep(ts, &dt));
   /* get current for each grid */
-  for (ii = 0; ii < ctx->num_species; ii++) q[ii] = ctx->charges[ii];
+  for (PetscInt ii = 0; ii < ctx->num_species; ii++) q[ii] = ctx->charges[ii];
   PetscCall(DMGetDS(plexe, &prob));
   PetscCall(PetscDSSetConstants(prob, 2, &q[0]));
   PetscCall(PetscDSSetObjective(prob, 0, &f0_jz_sum));
@@ -312,14 +312,13 @@ static PetscErrorCode testStable(TS ts, Vec X, PetscInt stepi, PetscReal time, P
 static PetscErrorCode EInduction(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E)
 {
   REctx      *rectx = (REctx *)ctx->data;
-  PetscInt    ii;
   DM          dm, plex;
   PetscScalar tt[LANDAU_MAX_SPECIES], qv0[LANDAU_MAX_SPECIES];
   PetscReal   dJ_dt;
   PetscDS     prob;
 
   PetscFunctionBeginUser;
-  for (ii = 0; ii < ctx->num_species; ii++) qv0[ii] = ctx->charges[ii] * ctx->v_0;
+  for (PetscInt ii = 0; ii < ctx->num_species; ii++) qv0[ii] = ctx->charges[ii] * ctx->v_0;
   PetscCall(VecGetDM(X, &dm));
   PetscCall(DMGetDS(dm, &prob));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
@@ -377,12 +376,11 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
   PetscCall(rectx->impuritySrcRate(ftime, &new_imp_rate, ctx));
   if (new_imp_rate != 0) {
     if (new_imp_rate != rectx->current_rate) {
-      PetscInt  ii;
       PetscReal dne_dt, dni_dt, tilda_ns[LANDAU_MAX_SPECIES], temps[LANDAU_MAX_SPECIES];
       Vec       globFarray[LANDAU_MAX_GRIDS * LANDAU_MAX_BATCH_SZ];
       rectx->current_rate = new_imp_rate;
-      for (ii = 1; ii < LANDAU_MAX_SPECIES; ii++) tilda_ns[ii] = 0;
-      for (ii = 1; ii < LANDAU_MAX_SPECIES; ii++) temps[ii] = 1;
+      for (PetscInt ii = 1; ii < LANDAU_MAX_SPECIES; ii++) tilda_ns[ii] = 0;
+      for (PetscInt ii = 1; ii < LANDAU_MAX_SPECIES; ii++) temps[ii] = 1;
       dni_dt                   = new_imp_rate /* *ctx->t_0 */; /* fully ionized immediately, no normalize, stay in non-dim */
       dne_dt                   = new_imp_rate * rectx->Ne_ion /* *ctx->t_0 */;
       tilda_ns[0]              = dne_dt;

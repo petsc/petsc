@@ -267,14 +267,13 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
       if (p >= aStart && p < aEnd) PetscCall(PetscSectionGetDof(aSec, p, &aDof));
       if (aDof) {
         PetscInt aOff;
-        PetscInt s, q;
 
         for (j = i + 1; j < numAdj; j++) orig[j - 1] = orig[j];
         origSize--;
         numAdj--;
         PetscCall(PetscSectionGetOffset(aSec, p, &aOff));
-        for (s = 0; s < aDof; ++s) {
-          for (q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff + s]), 0); ++q) {
+        for (PetscInt s = 0; s < aDof; ++s) {
+          for (PetscInt q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff + s]), 0); ++q) {
             if (anchors[aOff + s] == orig[q]) break;
           }
           PetscCheck(numAdj <= maxAdjSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%" PetscInt_FMT ")", maxAdjSize);
@@ -1136,9 +1135,8 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   PetscCall(PetscSectionGetStorageSize(newConeSection, &newConesSize));
   PetscCall(ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones));
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt  p;
     PetscBool valid = PETSC_TRUE;
-    for (p = 0; p < newConesSize; ++p) {
+    for (PetscInt p = 0; p < newConesSize; ++p) {
       if (newCones[p] < 0) {
         valid = PETSC_FALSE;
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Point %" PetscInt_FMT " not in overlap SF\n", PetscGlobalRank, p));

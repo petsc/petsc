@@ -182,7 +182,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[])
 {
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
-  PetscInt                proc, numPoints;
+  PetscInt                numPoints;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
@@ -193,7 +193,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)part), &p->section));
   PetscCall(PetscSectionSetChart(p->section, 0, size));
   if (sizes) {
-    for (proc = 0; proc < size; ++proc) PetscCall(PetscSectionSetDof(p->section, proc, sizes[proc]));
+    for (PetscInt proc = 0; proc < size; ++proc) PetscCall(PetscSectionSetDof(p->section, proc, sizes[proc]));
   }
   PetscCall(PetscSectionSetUp(p->section));
   PetscCall(PetscSectionGetStorageSize(p->section, &numPoints));

@@ -602,13 +602,13 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, Pet
   DM        plex;
   IS        allcellIS;
   PetscBool hasJac, hasPrec;
-  PetscInt  Nds, s;
+  PetscInt  Nds;
 
   PetscFunctionBegin;
   PetscCall(DMSNESConvertPlex(dm, &plex, PETSC_TRUE));
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
-  for (s = 0; s < Nds; ++s) {
+  for (PetscInt s = 0; s < Nds; ++s) {
     PetscDS      ds;
     IS           cellIS;
     PetscFormKey key;
@@ -823,7 +823,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   void     **ectxs;
   PetscReal *err;
   MPI_Comm   comm;
-  PetscInt   Nf, f;
+  PetscInt   Nf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -838,20 +838,20 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscCalloc3(Nf, &exacts, Nf, &ectxs, PetscMax(1, Nf), &err));
   {
-    PetscInt Nds, s;
+    PetscInt Nds;
 
     PetscCall(DMGetNumDS(dm, &Nds));
-    for (s = 0; s < Nds; ++s) {
+    for (PetscInt s = 0; s < Nds; ++s) {
       PetscDS         ds;
       DMLabel         label;
       IS              fieldIS;
       const PetscInt *fields;
-      PetscInt        dsNf, f;
+      PetscInt        dsNf;
 
       PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds, NULL));
       PetscCall(PetscDSGetNumFields(ds, &dsNf));
       PetscCall(ISGetIndices(fieldIS, &fields));
-      for (f = 0; f < dsNf; ++f) {
+      for (PetscInt f = 0; f < dsNf; ++f) {
         const PetscInt field = fields[f];
         PetscCall(PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]));
       }
@@ -861,12 +861,12 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   if (Nf > 1) {
     PetscCall(DMComputeL2FieldDiff(dm, t, exacts, ectxs, u, err));
     if (tol >= 0.0) {
-      for (f = 0; f < Nf; ++f) PetscCheck(err[f] <= tol, comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %" PetscInt_FMT " exceeds tolerance %g", (double)err[f], f, (double)tol);
+      for (PetscInt f = 0; f < Nf; ++f) PetscCheck(err[f] <= tol, comm, PETSC_ERR_ARG_WRONG, "L_2 Error %g for field %" PetscInt_FMT " exceeds tolerance %g", (double)err[f], f, (double)tol);
     } else if (error) {
-      for (f = 0; f < Nf; ++f) error[f] = err[f];
+      for (PetscInt f = 0; f < Nf; ++f) error[f] = err[f];
     } else {
       PetscCall(PetscPrintf(comm, "L_2 Error: ["));
-      for (f = 0; f < Nf; ++f) {
+      for (PetscInt f = 0; f < Nf; ++f) {
         if (f) PetscCall(PetscPrintf(comm, ", "));
         PetscCall(PetscPrintf(comm, "%g", (double)err[f]));
       }

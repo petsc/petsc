@@ -199,7 +199,6 @@ static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
 {
   PetscScalar tt;
-  PetscInt    k, j;
   KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -215,9 +214,9 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   if (*HH(it, it) != 0.0) nrs[it] = *RS(it) / *HH(it, it);
   else nrs[it] = 0.0;
 
-  for (k = it - 1; k >= 0; k--) {
+  for (PetscInt k = it - 1; k >= 0; k--) {
     tt = *RS(k);
-    for (j = k + 1; j <= it; j++) tt -= *HH(k, j) * nrs[j];
+    for (PetscInt j = k + 1; j <= it; j++) tt -= *HH(k, j) * nrs[j];
     nrs[k] = tt / *HH(k, k);
   }
 
@@ -233,7 +232,6 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
 {
   PetscScalar *hh, *cc, *ss, *rs;
-  PetscInt     j;
   PetscReal    hapbnd;
   KSP_PGMRES  *pgmres = (KSP_PGMRES *)ksp->data;
 
@@ -244,7 +242,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   rs = RS(0);     /* right-hand side of least squares system */
 
   /* The Hessenberg matrix is now correct through column it, save that form for possible spectral analysis */
-  for (j = 0; j <= it + 1; j++) *HES(j, it) = hh[j];
+  for (PetscInt j = 0; j <= it + 1; j++) *HES(j, it) = hh[j];
 
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it + 1] / rs[it]), pgmres->haptol);
@@ -257,7 +255,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   /* Note: this uses the rotation [conj(c)  s ; -s   c], c= cos(theta), s= sin(theta),
      and some refs have [c   s ; -conj(s)  c] (don't be confused!) */
 
-  for (j = 0; j < it; j++) {
+  for (PetscInt j = 0; j < it; j++) {
     PetscScalar hhj = hh[j];
     hh[j]           = PetscConj(cc[j]) * hhj + ss[j] * hh[j + 1];
     hh[j + 1]       = -ss[j] * hhj + cc[j] * hh[j + 1];

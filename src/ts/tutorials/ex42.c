@@ -142,13 +142,13 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   AppCtx            *user;
   PetscReal          dt;
   const PetscScalar *x;
-  PetscInt           nb_cells, i;
+  PetscInt           nb_cells;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetApplicationContext(ts, &user));
   nb_cells = user->nb_cells;
   PetscCall(VecGetArrayRead(Y, &x));
-  for (i = 0; i < 2 * nb_cells; ++i) {
+  for (PetscInt i = 0; i < 2 * nb_cells; ++i) {
     if (PetscRealPart(x[i]) < 0) {
       PetscCall(TSGetTimeStep(ts, &dt));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " ** Domain Error at time %g\n", (double)t));
@@ -180,13 +180,12 @@ PetscErrorCode FormInitialState(Vec X, AppCtx *user)
 PetscErrorCode PrintSolution(Vec X, AppCtx *user)
 {
   const PetscScalar *x;
-  PetscInt           i;
   PetscInt           nb_cells = user->nb_cells;
 
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
-  for (i = 0; i < nb_cells; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2 * i], (double)x[2 * i + 1]));
+  for (PetscInt i = 0; i < nb_cells; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2 * i], (double)x[2 * i + 1]));
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

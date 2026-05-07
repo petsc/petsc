@@ -19,19 +19,17 @@ CreateStarGraphEdgeList - Create a k-Star Graph Edgelist on current processor
 */
 PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   *ne = k;
   PetscCall(PetscCalloc1(2 * k, edgelist));
 
   if (directin) {
-    for (i = 0; i < k; i++) {
+    for (PetscInt i = 0; i < k; i++) {
       (*edgelist)[2 * i]     = i + 1;
       (*edgelist)[2 * i + 1] = 0;
     }
   } else {
-    for (i = 0; i < k; i++) {
+    for (PetscInt i = 0; i < k; i++) {
       (*edgelist)[2 * i]     = 0;
       (*edgelist)[2 * i + 1] = i + 1;
     }

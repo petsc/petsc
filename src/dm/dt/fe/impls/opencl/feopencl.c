@@ -641,12 +641,12 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
-    PetscInt c, d;
+    PetscInt c;
 
     PetscCall(PetscMalloc2(Ne * dim * dim, &r_invJ, Ne, &r_detJ));
     for (c = 0; c < Ne; ++c) {
       r_detJ[c] = cgeom->detJ[c];
-      for (d = 0; d < dim * dim; ++d) r_invJ[c * dim * dim + d] = cgeom->invJ[c * dim * dim + d];
+      for (PetscInt d = 0; d < dim * dim; ++d) r_invJ[c * dim * dim + d] = cgeom->invJ[c * dim * dim + d];
     }
     oclCoeff    = (void *)coefficients;
     oclCoeffAux = (void *)coefficientsAux;
@@ -675,25 +675,24 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     switch (ocl->realType) {
     case PETSC_FLOAT: {
       float   *elem;
-      PetscInt c, b;
+      PetscInt b;
 
       PetscCall(PetscFree4(f_coeff, f_coeffAux, f_invJ, f_detJ));
       PetscCall(PetscMalloc1(Ne * N_bt, &elem));
       PetscCall(clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne * N_bt * realSize, elem, 0, NULL, NULL));
-      for (c = 0; c < Ne; ++c) {
+      for (PetscInt c = 0; c < Ne; ++c) {
         for (b = 0; b < N_bt; ++b) elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b];
       }
       PetscCall(PetscFree(elem));
     } break;
     case PETSC_DOUBLE: {
-      double  *elem;
-      PetscInt c, b;
+      double *elem;
 
       PetscCall(PetscFree4(d_coeff, d_coeffAux, d_invJ, d_detJ));
       PetscCall(PetscMalloc1(Ne * N_bt, &elem));
       PetscCall(clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne * N_bt * realSize, elem, 0, NULL, NULL));
-      for (c = 0; c < Ne; ++c) {
-        for (b = 0; b < N_bt; ++b) elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b];
+      for (PetscInt c = 0; c < Ne; ++c) {
+        for (PetscInt b = 0; b < N_bt; ++b) elemVec[c * N_bt + b] = (PetscScalar)elem[c * N_bt + b];
       }
       PetscCall(PetscFree(elem));
     } break;

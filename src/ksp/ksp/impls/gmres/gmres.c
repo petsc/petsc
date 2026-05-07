@@ -240,7 +240,6 @@ static PetscErrorCode KSPSolve_GMRES(KSP ksp)
 PetscErrorCode KSPReset_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-  PetscInt   i;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
@@ -249,7 +248,7 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
 
   /* free work vectors */
   PetscCall(PetscFree(gmres->vecs));
-  for (i = 0; i < gmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i]));
+  for (PetscInt i = 0; i < gmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i]));
   gmres->nwork_alloc = 0;
   if (gmres->vecb) PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb));
 
@@ -347,7 +346,6 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
 static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res)
 {
   PetscScalar *hh, *cc, *ss, tt;
-  PetscInt     j;
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -357,7 +355,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool h
 
   /* Apply all the previously computed plane rotations to the new column
      of the Hessenberg matrix */
-  for (j = 1; j <= it; j++) {
+  for (PetscInt j = 1; j <= it; j++) {
     tt  = *hh;
     *hh = PetscConj(*cc) * tt + *ss * *(hh + 1);
     hh++;

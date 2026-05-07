@@ -177,7 +177,6 @@ static int spbas_row_order_icol(PetscInt i1, PetscInt i2, PetscInt *irow_in, Pet
 */
 static PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, PetscInt *icol_in, PetscInt col_idx_type, PetscInt *isort)
 {
-  PetscInt  istep;                /* Chunk-sizes of already sorted parts of arrays */
   PetscInt  i, i1, i2;            /* Loop counters for (partly) sorted arrays */
   PetscInt  istart, i1end, i2end; /* start of newly sorted array part, end of both  parts */
   PetscInt *ialloc;               /* Allocated arrays */
@@ -192,7 +191,7 @@ static PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, P
   ihlp2 = isort;
 
   /* Sorted array chunks are first 1 long, and increase until they are the complete array */
-  for (istep = 1; istep < nrows; istep *= 2) {
+  for (PetscInt istep = 1; istep < nrows; istep *= 2) {
     /*
       Combine sorted parts
           istart:istart+istep-1 and istart+istep-1:istart+2*istep-1
@@ -524,7 +523,6 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix *result)
 */
 static PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
 {
-  PetscInt     istep;                /* Chunk-sizes of already sorted parts of arrays */
   PetscInt     i, i1, i2;            /* Loop counters for (partly) sorted arrays */
   PetscInt     istart, i1end, i2end; /* start of newly sorted array part, end of both parts */
   PetscInt    *ialloc;               /* Allocated arrays */
@@ -548,7 +546,7 @@ static PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar 
   }
 
   /* Sorted array chunks are first 1 long, and increase until they are the complete array */
-  for (istep = 1; istep < nnz; istep *= 2) {
+  for (PetscInt istep = 1; istep < nnz; istep *= 2) {
     /*
       Combine sorted parts
           istart:istart+istep-1 and istart+istep-1:istart+2*istep-1
@@ -843,18 +841,17 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix 
 */
 PetscErrorCode spbas_keep_upper(spbas_matrix *inout_matrix)
 {
-  PetscInt i, j;
   PetscInt jstart;
 
   PetscFunctionBegin;
   PetscCheck(!inout_matrix->block_data, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Not yet for block data matrices");
-  for (i = 0; i < inout_matrix->nrows; i++) {
+  for (PetscInt i = 0; i < inout_matrix->nrows; i++) {
     for (jstart = 0; (jstart < inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart] < 0); jstart++) { }
     if (jstart > 0) {
-      for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->icols[i][j] = inout_matrix->icols[i][j + jstart];
+      for (PetscInt j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->icols[i][j] = inout_matrix->icols[i][j + jstart];
 
       if (inout_matrix->values) {
-        for (j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->values[i][j] = inout_matrix->values[i][j + jstart];
+        for (PetscInt j = 0; j < inout_matrix->row_nnz[i] - jstart; j++) inout_matrix->values[i][j] = inout_matrix->values[i][j + jstart];
       }
 
       inout_matrix->row_nnz[i] -= jstart;

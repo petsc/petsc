@@ -1617,10 +1617,8 @@ static PetscErrorCode CreateMat(DM dmSol, Mat *pA)
 /* A helper function to check values */
 static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt n, const PetscScalar *ref, const PetscScalar *computed)
 {
-  PetscInt i;
-
   PetscFunctionBeginUser;
-  for (i = 0; i < n; ++i) {
+  for (PetscInt i = 0; i < n; ++i) {
     PetscCheck(ref[i] == computed[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Assertion Failure. (ref[%" PetscInt_FMT "]) %g != %g (computed)[%" PetscInt_FMT "]", ex, ey, ez, i, (double)PetscRealPart(ref[i]), (double)PetscRealPart(computed[i]), i);
   }
   PetscFunctionReturn(PETSC_SUCCESS);

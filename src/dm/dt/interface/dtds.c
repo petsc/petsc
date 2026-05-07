@@ -158,8 +158,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopTab(viewer));
 
     for (b = ds->boundary; b; b = b->next) {
-      char    *name;
-      PetscInt c, i;
+      char *name;
 
       if (b->field != f) continue;
       PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -169,7 +168,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  components: "));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-        for (c = 0; c < b->Nc; ++c) {
+        for (PetscInt c = 0; c < b->Nc; ++c) {
           if (c > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
           PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT, b->comps[c]));
         }
@@ -178,7 +177,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "  values: "));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-      for (i = 0; i < b->Nv; ++i) {
+      for (PetscInt i = 0; i < b->Nv; ++i) {
         if (i > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT, b->values[i]));
       }
@@ -626,8 +625,6 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 @*/
 PetscErrorCode PetscDSDestroy(PetscDS *ds)
 {
-  PetscInt f;
-
   PetscFunctionBegin;
   if (!*ds) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*ds, PETSCDS_CLASSID, 1);
@@ -638,14 +635,14 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   }
   ((PetscObject)*ds)->refct = 0;
   if ((*ds)->subprobs) {
-    PetscInt dim, d;
+    PetscInt dim;
 
     PetscCall(PetscDSGetSpatialDimension(*ds, &dim));
-    for (d = 0; d < dim; ++d) PetscCall(PetscDSDestroy(&(*ds)->subprobs[d]));
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(PetscDSDestroy(&(*ds)->subprobs[d]));
   }
   PetscCall(PetscFree((*ds)->subprobs));
   PetscCall(PetscDSDestroyStructs_Static(*ds));
-  for (f = 0; f < (*ds)->Nf; ++f) PetscCall(PetscObjectDereference((*ds)->disc[f]));
+  for (PetscInt f = 0; f < (*ds)->Nf; ++f) PetscCall(PetscObjectDereference((*ds)->disc[f]));
   PetscCall(PetscFree4((*ds)->disc, (*ds)->implicit, (*ds)->cohesive, (*ds)->jetDegree));
   PetscCall(PetscWeakFormDestroy(&(*ds)->wf));
   PetscCall(PetscFree2((*ds)->update, (*ds)->ctx));
@@ -896,13 +893,11 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 @*/
 PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
 {
-  PetscInt f;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscAssertPointer(numCohesive, 2);
   *numCohesive = 0;
-  for (f = 0; f < ds->Nf; ++f) *numCohesive += ds->cohesive[f] ? 1 : 0;
+  for (PetscInt f = 0; f < ds->Nf; ++f) *numCohesive += ds->cohesive[f] ? 1 : 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -948,14 +943,12 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
 @*/
 PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   ds->cohesive[f] = isCohesive;
   ds->isCohesive  = PETSC_FALSE;
-  for (i = 0; i < ds->Nf; ++i) ds->isCohesive = ds->isCohesive || ds->cohesive[f] ? PETSC_TRUE : PETSC_FALSE;
+  for (PetscInt i = 0; i < ds->Nf; ++i) ds->isCohesive = ds->isCohesive || ds->cohesive[f] ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2716,14 +2709,14 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 @*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
-  PetscInt size, g;
+  PetscInt size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscAssertPointer(off, 3);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *off = 0;
-  for (g = 0; g < f; ++g) {
+  for (PetscInt g = 0; g < f; ++g) {
     PetscCall(PetscDSGetFieldSize(prob, g, &size));
     *off += size;
   }
@@ -2748,14 +2741,14 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 @*/
 PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *off)
 {
-  PetscInt size, g;
+  PetscInt size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscAssertPointer(off, 3);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *off = 0;
-  for (g = 0; g < f; ++g) {
+  for (PetscInt g = 0; g < f; ++g) {
     PetscBool cohesive;
 
     PetscCall(PetscDSGetCohesive(ds, g, &cohesive));
@@ -3185,11 +3178,10 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscCheck(field >= 0 && field < ds->Nf, PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", field, ds->Nf);
   if (Nc > 0) {
     PetscInt *fcomps;
-    PetscInt  c;
 
     PetscCall(PetscDSGetComponents(ds, &fcomps));
     PetscCheck(Nc <= fcomps[field], PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_OUTOFRANGE, "Number of constrained components %" PetscInt_FMT " > %" PetscInt_FMT " components for field %" PetscInt_FMT, Nc, fcomps[field], field);
-    for (c = 0; c < Nc; ++c) {
+    for (PetscInt c = 0; c < Nc; ++c) {
       PetscCheck(comps[c] >= 0 && comps[c] < fcomps[field], PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%" PetscInt_FMT "] %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") components for field %" PetscInt_FMT, c, comps[c], fcomps[field], field);
     }
   }

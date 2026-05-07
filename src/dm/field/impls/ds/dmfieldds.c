@@ -910,7 +910,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscInt (*co)[2][3];
     PetscInt        coneSize;
     PetscInt      **counts;
-    PetscInt        f, i, o, q, s;
+    PetscInt        f, i, o, s;
     PetscBool       found = PETSC_FALSE;
     const PetscInt *coneK;
     PetscInt        eStart, minOrient, maxOrient, numOrient;
@@ -996,7 +996,6 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     for (o = 0; o < numOrient; o++) {
       if (orients[o]) {
         PetscInt orient = o + minOrient;
-        PetscInt q;
 
         PetscCall(PetscMalloc1(Nq * dim, &orientPoints[o]));
         /* rotate the quadrature points appropriately */
@@ -1005,13 +1004,13 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
           break;
         case DM_POLYTOPE_SEGMENT:
           if (orient == -2 || orient == 1) {
-            for (q = 0; q < Nq; q++) orientPoints[o][q] = -geom->xi[q];
+            for (PetscInt q = 0; q < Nq; q++) orientPoints[o][q] = -geom->xi[q];
           } else {
-            for (q = 0; q < Nq; q++) orientPoints[o][q] = geom->xi[q];
+            for (PetscInt q = 0; q < Nq; q++) orientPoints[o][q] = geom->xi[q];
           }
           break;
         case DM_POLYTOPE_TRIANGLE:
-          for (q = 0; q < Nq; q++) {
+          for (PetscInt q = 0; q < Nq; q++) {
             PetscReal lambda[3];
             PetscReal lambdao[3];
 
@@ -1030,7 +1029,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
           }
           break;
         case DM_POLYTOPE_QUADRILATERAL:
-          for (q = 0; q < Nq; q++) {
+          for (PetscInt q = 0; q < Nq; q++) {
             PetscReal xi[2], xio[2];
             PetscInt  oabs = (orient >= 0) ? orient : -(orient + 1);
 
@@ -1080,7 +1079,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         if (!counts[f][o]) continue;
         /* If this (face,orientation) double appears,
          * convert the face quadrature points into volume quadrature points */
-        for (q = 0; q < Nq; q++) {
+        for (PetscInt q = 0; q < Nq; q++) {
           PetscReal xi0[3] = {-1., -1., -1.};
 
           CoordinatesRefToReal(dE, dim, xi0, v0, J, &orientPoints[o][dim * q + 0], &cellPoints[dE * q + 0]);
@@ -1101,11 +1100,11 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         for (p = 0, offset = 0; p < numFaces; p++) {
           for (s = 0; s < 2; s++) {
             if (co[p][s][0] == f && co[p][s][1] == o + minOrient) {
-              for (q = 0; q < Nq * dE * dE; q++) {
+              for (PetscInt q = 0; q < Nq * dE * dE; q++) {
                 geom->suppJ[s][p * Nq * dE * dE + q]    = cellGeom->J[offset * Nq * dE * dE + q];
                 geom->suppInvJ[s][p * Nq * dE * dE + q] = cellGeom->invJ[offset * Nq * dE * dE + q];
               }
-              for (q = 0; q < Nq; q++) geom->suppDetJ[s][p * Nq + q] = cellGeom->detJ[offset * Nq + q];
+              for (PetscInt q = 0; q < Nq; q++) geom->suppDetJ[s][p * Nq + q] = cellGeom->detJ[offset * Nq + q];
               offset++;
             }
           }

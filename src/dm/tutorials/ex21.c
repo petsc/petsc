@@ -110,13 +110,13 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
   /* Define initial conditions for th swarm fields "phi" and "region" */
   {
     PetscReal *s_coor, *s_phi, *s_region;
-    PetscInt   npoints, p;
+    PetscInt   npoints;
 
     PetscCall(DMSwarmGetLocalSize(swarm, &npoints));
     PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&s_coor));
     PetscCall(DMSwarmGetField(swarm, "phi", NULL, NULL, (void **)&s_phi));
     PetscCall(DMSwarmGetField(swarm, "region", NULL, NULL, (void **)&s_region));
-    for (p = 0; p < npoints; p++) {
+    for (PetscInt p = 0; p < npoints; p++) {
       PetscReal pos[2];
       pos[0] = s_coor[2 * p + 0];
       pos[1] = s_coor[2 * p + 1];
@@ -159,13 +159,13 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
   dt = 0.5 * minradius / PetscSqrtReal(vel[0] * vel[0] + vel[1] * vel[1]);
   for (tk = 1; tk <= nt; tk++) {
     PetscReal *s_coor;
-    PetscInt   npoints, p;
+    PetscInt   npoints;
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[step %" PetscInt_FMT "]\n", tk));
     /* advect with analytic prescribed (constant) velocity field */
     PetscCall(DMSwarmGetLocalSize(swarm, &npoints));
     PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_coor, NULL, NULL, (void **)&s_coor));
-    for (p = 0; p < npoints; p++) {
+    for (PetscInt p = 0; p < npoints; p++) {
       s_coor[2 * p + 0] += dt * vel[0];
       s_coor[2 * p + 1] += dt * vel[1];
     }

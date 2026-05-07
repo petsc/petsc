@@ -254,13 +254,13 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr)
 */
 PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
 {
-  PetscInt i, j;
+  PetscInt i;
   AppCtx  *user = (AppCtx *)ptr;
 
   PetscFunctionBegin;
   PetscCall(Scatter(X, user->y, user->state_scatter, user->u, user->design_scatter));
   PetscCall(Scatter_i(user->y, user->yi, user->yi_scatter, user->nt));
-  for (j = 0; j < user->ns; j++) {
+  for (PetscInt j = 0; j < user->ns; j++) {
     i = user->sample_times[j];
     PetscCall(MatMult(user->Qblock, user->yi[i], user->di[j]));
   }
@@ -269,7 +269,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
   PetscCall(Scatter_i(user->dwork, user->di, user->di_scatter, user->ns));
   PetscCall(VecSet(user->ywork, 0.0));
   PetscCall(Scatter_i(user->ywork, user->yiwork, user->yi_scatter, user->nt));
-  for (j = 0; j < user->ns; j++) {
+  for (PetscInt j = 0; j < user->ns; j++) {
     i = user->sample_times[j];
     PetscCall(MatMult(user->QblockT, user->di[j], user->yiwork[i]));
   }
@@ -286,13 +286,13 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscReal d1, d2;
-  PetscInt  i, j;
+  PetscInt  i;
   AppCtx   *user = (AppCtx *)ptr;
 
   PetscFunctionBegin;
   PetscCall(Scatter(X, user->y, user->state_scatter, user->u, user->design_scatter));
   PetscCall(Scatter_i(user->y, user->yi, user->yi_scatter, user->nt));
-  for (j = 0; j < user->ns; j++) {
+  for (PetscInt j = 0; j < user->ns; j++) {
     i = user->sample_times[j];
     PetscCall(MatMult(user->Qblock, user->yi[i], user->di[j]));
   }
@@ -302,7 +302,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   PetscCall(Scatter_i(user->dwork, user->di, user->di_scatter, user->ns));
   PetscCall(VecSet(user->ywork, 0.0));
   PetscCall(Scatter_i(user->ywork, user->yiwork, user->yi_scatter, user->nt));
-  for (j = 0; j < user->ns; j++) {
+  for (PetscInt j = 0; j < user->ns; j++) {
     i = user->sample_times[j];
     PetscCall(MatMult(user->QblockT, user->di[j], user->yiwork[i]));
   }
@@ -1184,8 +1184,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
 PetscErrorCode ParabolicDestroy(AppCtx *user)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscCall(MatDestroy(&user->Qblock));
   PetscCall(MatDestroy(&user->QblockT));
@@ -1233,8 +1231,8 @@ PetscErrorCode ParabolicDestroy(AppCtx *user)
   PetscCall(ISDestroy(&user->d_is));
   PetscCall(VecScatterDestroy(&user->state_scatter));
   PetscCall(VecScatterDestroy(&user->design_scatter));
-  for (i = 0; i < user->nt; i++) PetscCall(VecScatterDestroy(&user->yi_scatter[i]));
-  for (i = 0; i < user->ns; i++) PetscCall(VecScatterDestroy(&user->di_scatter[i]));
+  for (PetscInt i = 0; i < user->nt; i++) PetscCall(VecScatterDestroy(&user->yi_scatter[i]));
+  for (PetscInt i = 0; i < user->ns; i++) PetscCall(VecScatterDestroy(&user->di_scatter[i]));
   PetscCall(PetscFree(user->yi_scatter));
   PetscCall(PetscFree(user->di_scatter));
   PetscCall(PetscFree(user->sample_times));

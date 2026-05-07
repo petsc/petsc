@@ -113,13 +113,13 @@ static PetscErrorCode MatSetOption_ScaLAPACK(Mat A, MatOption op, PetscBool flg)
 static PetscErrorCode MatSetValues_ScaLAPACK(Mat A, PetscInt nr, const PetscInt *rows, PetscInt nc, const PetscInt *cols, const PetscScalar *vals, InsertMode imode)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
-  PetscInt       i, j;
+  PetscInt       j;
   PetscBLASInt   gridx, gcidx, lridx, lcidx, rsrc, csrc;
   PetscBool      roworiented = a->roworiented;
 
   PetscFunctionBegin;
   PetscCheck(imode == INSERT_VALUES || imode == ADD_VALUES, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for InsertMode %d", (int)imode);
-  for (i = 0; i < nr; i++) {
+  for (PetscInt i = 0; i < nr; i++) {
     if (rows[i] < 0) continue;
     PetscCall(PetscBLASIntCast(rows[i] + 1, &gridx));
     for (j = 0; j < nc; j++) {
@@ -658,7 +658,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
   PetscBLASInt   one  = 1;
   PetscScalar    sone = 1.0, zero = 0.0;
 #if defined(PETSC_USE_COMPLEX)
-  PetscInt i, j;
+  PetscInt i;
 #endif
 
   PetscFunctionBegin;
@@ -671,7 +671,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
 #if defined(PETSC_USE_COMPLEX)
   /* undo conjugation */
   for (i = 0; i < b->locr; i++)
-    for (j = 0; j < b->locc; j++) b->loc[i + j * b->lld] = PetscConj(b->loc[i + j * b->lld]);
+    for (PetscInt j = 0; j < b->locc; j++) b->loc[i + j * b->lld] = PetscConj(b->loc[i + j * b->lld]);
 #endif
   Bs->assembled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -680,11 +680,11 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
 static PetscErrorCode MatConjugate_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
-  PetscInt       i, j;
+  PetscInt       i;
 
   PetscFunctionBegin;
   for (i = 0; i < a->locr; i++)
-    for (j = 0; j < a->locc; j++) a->loc[i + j * a->lld] = PetscConj(a->loc[i + j * a->lld]);
+    for (PetscInt j = 0; j < a->locc; j++) a->loc[i + j * a->lld] = PetscConj(a->loc[i + j * a->lld]);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1613,11 +1613,10 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat, MatStash *stash, P
       if (bs2 == 1) {
         svalues[startv[j]] = sp_val[l];
       } else {
-        PetscInt     k;
         PetscScalar *buf1, *buf2;
         buf1 = svalues + bs2 * startv[j];
         buf2 = space->val + bs2 * l;
-        for (k = 0; k < bs2; k++) buf1[k] = buf2[k];
+        for (PetscInt k = 0; k < bs2; k++) buf1[k] = buf2[k];
       }
       sindices[starti[j]]               = sp_idx[l];
       sindices[starti[j] + nlengths[j]] = sp_idy[l];

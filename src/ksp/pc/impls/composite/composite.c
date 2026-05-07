@@ -239,7 +239,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 static PetscErrorCode PCSetFromOptions_Composite(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Composite    *jac = (PC_Composite *)pc->data;
-  PetscInt         nmax, i;
+  PetscInt         nmax;
   PC_CompositeLink next;
   char            *pcs[1024];
   PetscBool        flg;
@@ -251,7 +251,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc, PetscOptionItems PetscOp
   nmax = (PetscInt)PETSC_STATIC_ARRAY_LENGTH(pcs);
   PetscCall(PetscOptionsStringArray("-pc_composite_pcs", "List of composite solvers", "PCCompositeAddPCType", pcs, &nmax, &flg));
   if (flg) {
-    for (i = 0; i < nmax; i++) {
+    for (PetscInt i = 0; i < nmax; i++) {
       PetscCall(PCCompositeAddPCType(pc, pcs[i]));
       PetscCall(PetscFree(pcs[i])); /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
     }
@@ -411,12 +411,11 @@ static PetscErrorCode PCCompositeGetPC_Composite(PC pc, PetscInt n, PC *subpc)
 {
   PC_Composite    *jac;
   PC_CompositeLink next;
-  PetscInt         i;
 
   PetscFunctionBegin;
   jac  = (PC_Composite *)pc->data;
   next = jac->head;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     PetscCheck(next->next, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Not enough PCs in composite preconditioner");
     next = next->next;
   }

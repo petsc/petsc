@@ -522,12 +522,11 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   PetscScalar    vxMaple[41][41], vzMaple[41][41], pMaple[41][41], sxxMaple[41][41], sxzMaple[41][41], szzMaple[41][41];
   PetscReal      x[41], z[41];
   PetscReal      kn, km, B;
-  PetscInt       i, j;
 
   PetscFunctionBegin;
   PetscCall(SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple));
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (PetscInt i = 0; i < n; ++i) {
+    for (PetscInt j = 0; j < n; ++j) {
       PetscScalar vx, vz, p, sxx, sxz, szz;
       PetscReal   norm;
 

@@ -178,7 +178,6 @@ PetscErrorCode CreateReferenceSF_Regular(AppCtx *ctx, PetscSF *refSF)
 
 PetscErrorCode CreateSFs_Irregular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
 {
-  PetscInt  i;
   PetscInt *lOffsets = NULL;
   PetscSF  *sfs;
   PetscInt  nLeaves = ctx->n * ctx->size + (ctx->size - 1) * ctx->size / 2;
@@ -187,7 +186,7 @@ PetscErrorCode CreateSFs_Irregular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *lea
   PetscFunctionBegin;
   if (ctx->sparseLeaves) PetscCall(PetscCalloc1(ctx->nsfs + 1, &lOffsets));
   PetscCall(PetscMalloc1(ctx->nsfs, &sfs));
-  for (i = 0; i < ctx->nsfs; i++) {
+  for (PetscInt i = 0; i < ctx->nsfs; i++) {
     PetscSF      sf;
     PetscInt     j, k;
     PetscMPIInt  r;
@@ -220,7 +219,6 @@ PetscErrorCode CreateSFs_Irregular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *lea
 
 PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
 {
-  PetscInt                   i;
   PetscInt                  *lOffsets = NULL;
   PetscInt                   nLeaves  = ctx->n * ctx->size;
   PetscSF                   *sfs;
@@ -229,7 +227,7 @@ PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafO
   PetscFunctionBegin;
   if (ctx->sparseLeaves) PetscCall(PetscCalloc1(ctx->nsfs + 1, &lOffsets));
   PetscCall(PetscCalloc1(ctx->nsfs, &sfs));
-  for (i = 0; i < ctx->nsfs; i++) {
+  for (PetscInt i = 0; i < ctx->nsfs; i++) {
     PetscSF   sf;
     PetscInt  j;
     PetscInt *ilocal = NULL;
@@ -297,10 +295,8 @@ PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafO
 
 PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  for (i = 0; i < ctx->nsfs; i++) PetscCall(PetscSFDestroy(&(*sfs)[i]));
+  for (PetscInt i = 0; i < ctx->nsfs; i++) PetscCall(PetscSFDestroy(&(*sfs)[i]));
   PetscCall(PetscFree(*sfs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

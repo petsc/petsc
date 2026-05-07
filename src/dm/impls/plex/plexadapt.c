@@ -138,16 +138,16 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   }
   for (v = 0; v < Nv; ++v) {
     const PetscInt *support;
-    PetscInt        supportSize, s;
+    PetscInt        supportSize;
     PetscReal       vol, totVol = 0.0;
 
     PetscCall(DMPlexGetSupport(udm, v + vStart, &support));
     PetscCall(DMPlexGetSupportSize(udm, v + vStart, &supportSize));
-    for (s = 0; s < supportSize; ++s) {
+    for (PetscInt s = 0; s < supportSize; ++s) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, support[s], &vol, NULL, NULL));
       totVol += vol;
     }
-    for (s = 0; s < PetscSqr(dim); ++s) metric[v * PetscSqr(dim) + s] /= totVol;
+    for (PetscInt s = 0; s < PetscSqr(dim); ++s) metric[v * PetscSqr(dim) + s] /= totVol;
   }
   PetscCall(PetscFree(eqns));
   PetscCall(VecRestoreArray(*metricVec, &metric));

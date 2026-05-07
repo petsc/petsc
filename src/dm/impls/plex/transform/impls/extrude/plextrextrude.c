@@ -613,11 +613,10 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
 static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
-  PetscInt                 ct;
 
   PetscFunctionBegin;
   if (ex->target) {
-    for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
+    for (PetscInt ct = 0; ct < DM_NUM_POLYTOPES; ++ct) PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
   }
   PetscCall(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
   PetscCall(PetscFree(ex->layerPos));
@@ -1195,14 +1194,13 @@ PetscErrorCode DMPlexTransformExtrudeSetPeriodic(DMPlexTransform tr, PetscBool p
 PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
-  PetscInt                 d;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   if (ex->normalAlg == NORMAL_INPUT) {
-    for (d = 0; d < ex->cdimEx; ++d) normal[d] = ex->normal[d];
+    for (PetscInt d = 0; d < ex->cdimEx; ++d) normal[d] = ex->normal[d];
   } else {
-    for (d = 0; d < ex->cdimEx; ++d) normal[d] = 0.;
+    for (PetscInt d = 0; d < ex->cdimEx; ++d) normal[d] = 0.;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1223,13 +1221,12 @@ PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal nor
 PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
-  PetscInt                 d;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->normalAlg = NORMAL_INPUT;
   if (!ex->cdimEx) PetscCall(DMPlexTransformExtrudeComputeExtrusionDim(tr));
-  for (d = 0; d < ex->cdimEx; ++d) ex->normal[d] = normal[d];
+  for (PetscInt d = 0; d < ex->cdimEx; ++d) ex->normal[d] = normal[d];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1273,7 +1270,6 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
 PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
-  PetscInt                 t;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
@@ -1281,7 +1277,7 @@ PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt
   ex->Nth = PetscMin(Nth, ex->layers);
   PetscCall(PetscFree(ex->thicknesses));
   PetscCall(PetscMalloc1(ex->Nth, &ex->thicknesses));
-  for (t = 0; t < ex->Nth; ++t) {
+  for (PetscInt t = 0; t < ex->Nth; ++t) {
     PetscCheck(thicknesses[t] > 0., PetscObjectComm((PetscObject)tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %" PetscInt_FMT " must be positive", (double)thicknesses[t], t);
     ex->thicknesses[t] = thicknesses[t];
   }

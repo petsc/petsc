@@ -121,7 +121,7 @@ static PetscErrorCode DMLabelView_Ephemeral_Ascii(DMLabel label, PetscViewer vie
   if (olabel) {
     IS              valueIS;
     const PetscInt *values;
-    PetscInt        Nv, v;
+    PetscInt        Nv;
     const char     *name;
 
     PetscCall(PetscObjectGetName((PetscObject)label, &name));
@@ -129,16 +129,16 @@ static PetscErrorCode DMLabelView_Ephemeral_Ascii(DMLabel label, PetscViewer vie
     PetscCall(DMLabelGetNumValues(olabel, &Nv));
     PetscCall(DMLabelGetValueIS(olabel, &valueIS));
     PetscCall(ISGetIndices(valueIS, &values));
-    for (v = 0; v < Nv; ++v) {
+    for (PetscInt v = 0; v < Nv; ++v) {
       IS              pointIS;
       const PetscInt  value = values[v];
       const PetscInt *points;
-      PetscInt        n, p;
+      PetscInt        n;
 
       PetscCall(DMLabelGetStratumIS(olabel, value, &pointIS));
       PetscCall(ISGetIndices(pointIS, &points));
       PetscCall(ISGetLocalSize(pointIS, &n));
-      for (p = 0; p < n; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, points[p], value));
+      for (PetscInt p = 0; p < n; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, points[p], value));
       PetscCall(ISRestoreIndices(pointIS, &points));
       PetscCall(ISDestroy(&pointIS));
     }

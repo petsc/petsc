@@ -215,7 +215,6 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
   PetscScalar  IGr, IGi, IDr, IDi;
   PetscScalar  Zdq_inv[4], det;
   PetscScalar  PD, QD, Vm0, *v0;
-  PetscInt     k;
 
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(F));
@@ -298,8 +297,8 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
     Vm2 = Vm * Vm;
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
-    for (k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
 
     /* Load currents */
     IDr = (PD * Vr + QD * Vi) / Vm2;
@@ -448,7 +447,6 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
   PetscInt           ncols;
   const PetscInt    *cols;
   const PetscScalar *yvals;
-  PetscInt           k;
   PetscScalar        PD, QD, Vm0, *v0, Vm4;
   PetscScalar        dPD_dVr, dPD_dVi, dQD_dVr, dQD_dVi;
   PetscScalar        dIDr_dVr, dIDr_dVi, dIDi_dVr, dIDi_dVi;
@@ -636,7 +634,7 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
   for (i = 0; i < nbus; i++) {
     PetscCall(MatGetRow(user->Ybus, 2 * i, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -645,7 +643,7 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
 
     PetscCall(MatGetRow(user->Ybus, 2 * i + 1, &ncols, &cols, &yvals));
     row[0] = net_start + 2 * i + 1;
-    for (k = 0; k < ncols; k++) {
+    for (PetscInt k = 0; k < ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -666,12 +664,12 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, PetscCtx ctx)
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsp[i]; k++) {
       PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
       dPD_dVr += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vr * PetscPowScalar(Vm, ld_betap[k] - 2);
       dPD_dVi += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vi * PetscPowScalar(Vm, ld_betap[k] - 2);
     }
-    for (k = 0; k < ld_nsegsq[i]; k++) {
+    for (PetscInt k = 0; k < ld_nsegsq[i]; k++) {
       QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
       dQD_dVr += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vr * PetscPowScalar(Vm, ld_betaq[k] - 2);
       dQD_dVi += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vi * PetscPowScalar(Vm, ld_betaq[k] - 2);
@@ -737,14 +735,14 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A
 {
   SNES        snes;
   PetscScalar atmp = (PetscScalar)a;
-  PetscInt    i, row;
+  PetscInt    row;
 
   PetscFunctionBegin;
   user->t = t;
 
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(ResidualJacobian(snes, X, A, B, user));
-  for (i = 0; i < ngen; i++) {
+  for (PetscInt i = 0; i < ngen; i++) {
     row = 9 * i;
     PetscCall(MatSetValues(A, 1, &row, 1, &row, &atmp, ADD_VALUES));
     row = 9 * i + 1;
@@ -772,7 +770,6 @@ static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, Userctx *u
   PetscInt           idx;
   Vec                Xgen, Xnet;
   PetscScalar       *xgen;
-  PetscInt           i;
 
   PetscFunctionBegin;
   PetscCall(DMCompositeGetLocalVectors(user->dmpgrid, &Xgen, &Xnet));
@@ -785,7 +782,7 @@ static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, Userctx *u
   r[0] = 0.;
 
   idx = 0;
-  for (i = 0; i < ngen; i++) {
+  for (PetscInt i = 0; i < ngen; i++) {
     r[0] += PetscPowScalarInt(PetscMax(0., PetscMax(xgen[idx + 3] / (2. * PETSC_PI) - user->freq_u, user->freq_l - xgen[idx + 3] / (2. * PETSC_PI))), user->pow);
     idx += 9;
   }
@@ -824,7 +821,6 @@ int main(int argc, char **argv)
   Vec          p;
   PetscScalar *x_ptr;
   PetscMPIInt  size;
-  PetscInt     i;
   KSP          ksp;
   PC           pc;
   PetscInt    *idx2;
@@ -845,7 +841,7 @@ int main(int argc, char **argv)
 
   /* Create indices for differential and algebraic equations */
   PetscCall(PetscMalloc1(7 * ngen, &idx2));
-  for (i = 0; i < ngen; i++) {
+  for (PetscInt i = 0; i < ngen; i++) {
     idx2[7 * i]     = 9 * i;
     idx2[7 * i + 1] = 9 * i + 1;
     idx2[7 * i + 2] = 9 * i + 2;

@@ -14,7 +14,6 @@ int main(int argc, char **args)
   char            filein[PETSC_MAX_PATH_LEN];
   MPI_Comm        comm;
   PetscMPIInt     size;
-  PetscInt        p;
   PetscBool       flg;
 
   /*load matrix*/
@@ -38,7 +37,7 @@ int main(int argc, char **args)
   PetscCall(MatPartitioningApply(part, &partis));
   PetscCall(MatGetOwnershipRanges(A, &ranges));
   PetscCall(MatGetSize(A, &min, NULL));
-  for (p = 0; p < size; ++p) {
+  for (PetscInt p = 0; p < size; ++p) {
     const PetscInt partsize = ranges[p + 1] - ranges[p];
 
     max = PetscMax(max, partsize);
@@ -46,7 +45,7 @@ int main(int argc, char **args)
   }
   balance = ((PetscReal)max) / min;
   PetscCall(PetscPrintf(comm, "ranges: "));
-  for (p = 0; p <= size; ++p) {
+  for (PetscInt p = 0; p <= size; ++p) {
     if (p > 0) PetscCall(PetscPrintf(comm, ", "));
     PetscCall(PetscPrintf(comm, "%" PetscInt_FMT, ranges[p]));
   }

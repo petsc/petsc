@@ -173,7 +173,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       /* no subdomains given */
       /* try pc->dm first, if allowed */
       if (osm->dm_subdomains && pc->dm) {
-        PetscInt num_domains, d;
+        PetscInt num_domains;
         char   **domain_names;
         IS      *inner_domain_is, *outer_domain_is;
         PetscCall(DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm));
@@ -182,7 +182,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
                               DM-defined subdomains and also increase the overlap,
                               but that is not currently supported */
         if (num_domains) PetscCall(PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is));
-        for (d = 0; d < num_domains; ++d) {
+        for (PetscInt d = 0; d < num_domains; ++d) {
           if (domain_names) PetscCall(PetscFree(domain_names[d]));
           if (inner_domain_is) PetscCall(ISDestroy(&inner_domain_is[d]));
           if (outer_domain_is) PetscCall(ISDestroy(&outer_domain_is[d]));
@@ -385,11 +385,10 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   }
 
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-    IS      *cis;
-    PetscInt c;
+    IS *cis;
 
     PetscCall(PetscMalloc1(osm->n_local_true, &cis));
-    for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
+    for (PetscInt c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
     PetscCall(MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats));
     PetscCall(PetscFree(cis));
   }
@@ -647,19 +646,18 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
 
 static PetscErrorCode PCReset_ASM(PC pc)
 {
-  PC_ASM  *osm = (PC_ASM *)pc->data;
-  PetscInt i;
+  PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
   if (osm->ksp) {
-    for (i = 0; i < osm->n_local_true; i++) PetscCall(KSPReset(osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_local_true; i++) PetscCall(KSPReset(osm->ksp[i]));
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) PetscCall(MatDestroySubMatrices(osm->n_local_true, &osm->pmat));
   }
   if (osm->lrestriction) {
     PetscCall(VecScatterDestroy(&osm->restriction));
-    for (i = 0; i < osm->n_local_true; i++) {
+    for (PetscInt i = 0; i < osm->n_local_true; i++) {
       PetscCall(VecScatterDestroy(&osm->lrestriction[i]));
       if (osm->lprolongation) PetscCall(VecScatterDestroy(&osm->lprolongation[i]));
       PetscCall(VecDestroy(&osm->x[i]));
@@ -685,13 +683,12 @@ static PetscErrorCode PCReset_ASM(PC pc)
 
 static PetscErrorCode PCDestroy_ASM(PC pc)
 {
-  PC_ASM  *osm = (PC_ASM *)pc->data;
-  PetscInt i;
+  PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PCReset_ASM(pc));
   if (osm->ksp) {
-    for (i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
     PetscCall(PetscFree(osm->ksp));
   }
   PetscCall(PetscFree(pc->data));
@@ -751,8 +748,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems PetscOptionsO
 
 static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS is_local[])
 {
-  PC_ASM  *osm = (PC_ASM *)pc->data;
-  PetscInt i;
+  PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
   PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Each process must have 1 or more blocks, n = %" PetscInt_FMT, n);
@@ -760,15 +756,15 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
 
   if (!pc->setupcalled) {
     if (is) {
-      for (i = 0; i < n; i++) PetscCall(PetscObjectReference((PetscObject)is[i]));
+      for (PetscInt i = 0; i < n; i++) PetscCall(PetscObjectReference((PetscObject)is[i]));
     }
     if (is_local) {
-      for (i = 0; i < n; i++) PetscCall(PetscObjectReference((PetscObject)is_local[i]));
+      for (PetscInt i = 0; i < n; i++) PetscCall(PetscObjectReference((PetscObject)is_local[i]));
     }
     PetscCall(PCASMDestroySubdomains(osm->n_local_true, &osm->is, &osm->is_local));
 
     if (osm->ksp && osm->n_local_true != n) {
-      for (i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
+      for (PetscInt i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
       PetscCall(PetscFree(osm->ksp));
     }
 
@@ -777,16 +773,16 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
     osm->is_local     = NULL;
     if (is) {
       PetscCall(PetscMalloc1(n, &osm->is));
-      for (i = 0; i < n; i++) osm->is[i] = is[i];
+      for (PetscInt i = 0; i < n; i++) osm->is[i] = is[i];
       /* Flag indicating that the user has set overlapping subdomains so PCASM should not increase their size. */
       osm->overlap = -1;
     }
     if (is_local) {
       PetscCall(PetscMalloc1(n, &osm->is_local));
-      for (i = 0; i < n; i++) osm->is_local[i] = is_local[i];
+      for (PetscInt i = 0; i < n; i++) osm->is_local[i] = is_local[i];
       if (!is) {
         PetscCall(PetscMalloc1(osm->n_local_true, &osm->is));
-        for (i = 0; i < osm->n_local_true; i++) {
+        for (PetscInt i = 0; i < osm->n_local_true; i++) {
           if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
             PetscCall(ISDuplicate(osm->is_local[i], &osm->is[i]));
             PetscCall(ISCopy(osm->is_local[i], osm->is[i]));

@@ -12,12 +12,11 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[])
 {
   DM        rdm = dm;
-  PetscInt  c;
   PetscBool localized;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
-  for (c = nlevels - 1; c >= 0; --c) {
+  for (PetscInt c = nlevels - 1; c >= 0; --c) {
     PetscCall(DMCoarsen(rdm, PetscObjectComm((PetscObject)dm), &dmCoarsened[c]));
     PetscCall(DMCopyDisc(rdm, dmCoarsened[c]));
     if (localized) PetscCall(DMLocalizeCoordinates(dmCoarsened[c]));

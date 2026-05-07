@@ -37,8 +37,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscI
 
 PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, PetscInt l, Vec XM, Vec FM, PetscReal fMnorm, Vec X, Vec XA, Vec FA)
 {
-  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
-  PetscInt     i, j;
+  SNES_NGMRES *ngmres     = (SNES_NGMRES *)snes->data;
   Vec         *Fdot       = ngmres->Fdot;
   Vec         *Xdot       = ngmres->Xdot;
   PetscScalar *beta       = ngmres->beta;
@@ -57,7 +56,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     PetscCall(VecMDotBegin(Fdot[ivec], l, Fdot, beta));
     PetscCall(VecMDotEnd(FM, l, Fdot, xi));
     PetscCall(VecMDotEnd(Fdot[ivec], l, Fdot, beta));
-    for (i = 0; i < l; i++) {
+    for (PetscInt i = 0; i < l; i++) {
       Q(i, ivec) = beta[i];
       Q(ivec, i) = beta[i];
     }
@@ -65,11 +64,11 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     Q(0, 0) = ngmres->fnorms[ivec] * ngmres->fnorms[ivec];
   }
 
-  for (i = 0; i < l; i++) beta[i] = nu - xi[i];
+  for (PetscInt i = 0; i < l; i++) beta[i] = nu - xi[i];
 
   /* construct h */
-  for (j = 0; j < l; j++) {
-    for (i = 0; i < l; i++) H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
+  for (PetscInt j = 0; j < l; j++) {
+    for (PetscInt i = 0; i < l; i++) H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
   }
   if (l == 1) {
     /* simply set alpha[0] = beta[0] / H[0, 0] */
@@ -90,9 +89,9 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     PetscCheck(ngmres->info >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "Bad argument to GELSS");
     PetscCheck(ngmres->info <= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD failed to converge");
   }
-  for (i = 0; i < l; i++) PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output");
+  for (PetscInt i = 0; i < l; i++) PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output");
   alph_total = 0.;
-  for (i = 0; i < l; i++) alph_total += beta[i];
+  for (PetscInt i = 0; i < l; i++) alph_total += beta[i];
 
   PetscCall(VecAXPBY(XA, 1.0 - alph_total, 0.0, XM));
   PetscCall(VecMAXPY(XA, l, beta, Xdot));
@@ -114,7 +113,6 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscReal    dcurnorm, dmin = -1.0;
   Vec         *Xdot = ngmres->Xdot;
-  PetscInt     i;
 
   PetscFunctionBegin;
   if (xMnorm) PetscCall(VecNormBegin(XM, NORM_2, xMnorm));
@@ -134,7 +132,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
     PetscCall(VecNormBegin(D, NORM_2, dnorm));
   }
   if (dminnorm) {
-    for (i = 0; i < l; i++) {
+    for (PetscInt i = 0; i < l; i++) {
       PetscCall(VecWAXPY(D, -1.0, XA, Xdot[i]));
       PetscCall(VecNormBegin(D, NORM_2, &ngmres->xnorms[i]));
     }
@@ -147,7 +145,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   if (yAnorm) PetscCall(VecNormEnd(D, NORM_2, yAnorm));
   if (dnorm) PetscCall(VecNormEnd(D, NORM_2, dnorm));
   if (dminnorm) {
-    for (i = 0; i < l; i++) {
+    for (PetscInt i = 0; i < l; i++) {
       PetscCall(VecNormEnd(D, NORM_2, &ngmres->xnorms[i]));
       dcurnorm = ngmres->xnorms[i];
       if ((dcurnorm < dmin) || (dmin < 0.0)) dmin = dcurnorm;

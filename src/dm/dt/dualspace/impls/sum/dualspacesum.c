@@ -973,7 +973,7 @@ static PetscErrorCode PetscDualSpaceView_Sum(PetscDualSpace sp, PetscViewer view
 static PetscErrorCode PetscDualSpaceDestroy_Sum(PetscDualSpace sp)
 {
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
-  PetscInt            i, Ns = sum->numSumSpaces;
+  PetscInt            Ns  = sum->numSumSpaces;
 
   PetscFunctionBegin;
   if (sum->symperms) {
@@ -991,15 +991,14 @@ static PetscErrorCode PetscDualSpaceDestroy_Sum(PetscDualSpace sp)
     PetscScalar **selfSyms = sum->symflips[0];
 
     if (selfSyms) {
-      PetscInt      i;
       PetscScalar **allocated = &selfSyms[-sum->selfSymOff];
 
-      for (i = 0; i < sum->numSelfSym; i++) PetscCall(PetscFree(allocated[i]));
+      for (PetscInt i = 0; i < sum->numSelfSym; i++) PetscCall(PetscFree(allocated[i]));
       PetscCall(PetscFree(allocated));
     }
     PetscCall(PetscFree(sum->symflips));
   }
-  for (i = 0; i < Ns; ++i) {
+  for (PetscInt i = 0; i < Ns; ++i) {
     PetscCall(PetscDualSpaceDestroy(&sum->sumspaces[i]));
     if (sum->all_rows) PetscCall(ISLocalToGlobalMappingDestroy(&sum->all_rows[i]));
     if (sum->all_cols) PetscCall(ISLocalToGlobalMappingDestroy(&sum->all_cols[i]));

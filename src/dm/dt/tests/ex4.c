@@ -64,15 +64,14 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
       numFaces = DMPolytopeTypeGetNumArrangements(ct) / 2;
     }
     for (j = -numFaces; j < numFaces; j++) {
-      PetscInt           k, l;
       const PetscInt    *perm = pointPerms ? pointPerms[j] : NULL;
       const PetscScalar *flip = pointFlips ? pointFlips[j] : NULL;
 
-      for (k = 0; k < numDofs[depth]; k++) {
+      for (PetscInt k = 0; k < numDofs[depth]; k++) {
         PetscInt kLocal = perm ? perm[k] : k;
 
         idsCopy[kLocal] = ids[offset + k];
-        for (l = 0; l < dim; l++) valsCopy[kLocal * dim + l] = vals[(offset + k) * dim + l] * (flip ? flip[kLocal] : 1.);
+        for (PetscInt l = 0; l < dim; l++) valsCopy[kLocal * dim + l] = vals[(offset + k) * dim + l] * (flip ? flip[kLocal] : 1.);
       }
       if (!printed && numDofs[depth] > 1) {
         IS   is;
@@ -90,15 +89,15 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         PetscCall(VecView(vec, PETSC_VIEWER_STDOUT_SELF));
         PetscCall(VecDestroy(&vec));
       }
-      for (k = 0; k < numDofs[depth]; k++) {
+      for (PetscInt k = 0; k < numDofs[depth]; k++) {
         PetscInt kLocal = perm ? perm[k] : k;
 
         idsCopy2[offset + k] = idsCopy[kLocal];
-        for (l = 0; l < dim; l++) valsCopy2[(offset + k) * dim + l] = valsCopy[kLocal * dim + l] * (flip ? PetscConj(flip[kLocal]) : 1.);
+        for (PetscInt l = 0; l < dim; l++) valsCopy2[(offset + k) * dim + l] = valsCopy[kLocal * dim + l] * (flip ? PetscConj(flip[kLocal]) : 1.);
       }
-      for (k = 0; k < nFunc; k++) {
+      for (PetscInt k = 0; k < nFunc; k++) {
         PetscCheck(idsCopy2[k] == ids[k], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Symmetry failure: %" PetscInt_FMT "D, %s, point %" PetscInt_FMT ", symmetry %" PetscInt_FMT ", order %" PetscInt_FMT ", functional %" PetscInt_FMT ": (%" PetscInt_FMT " != %" PetscInt_FMT ")", dim, tensor ? "Tensor" : "Simplex", point, j, order, k, ids[k], k);
-        for (l = 0; l < dim; l++) {
+        for (PetscInt l = 0; l < dim; l++) {
           PetscCheck(valsCopy2[dim * k + l] == vals[dim * k + l], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Symmetry failure: %" PetscInt_FMT "D, %s, point %" PetscInt_FMT ", symmetry %" PetscInt_FMT ", order %" PetscInt_FMT ", functional %" PetscInt_FMT ", component %" PetscInt_FMT ": (%g != %g)", dim, tensor ? "Tensor" : "Simplex", point, j, order, k, l, (double)PetscAbsScalar(valsCopy2[dim * k + l]), (double)PetscAbsScalar(vals[dim * k + l]));
         }
       }

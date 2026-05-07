@@ -13,12 +13,10 @@ static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
 
 static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
-  PetscInt np;
-
   PetscFunctionBegin;
   PetscCall(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
   PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
-  for (np = 1; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, 0));
+  for (PetscInt np = 1; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

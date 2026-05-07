@@ -9,7 +9,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   PetscReal   xnorm, ynorm, gnorm, minlambda, maxlambda, rtol, atol, ltol;
   PetscReal   lambda, lambda_old, lambda_update, delLambda;
   PetscScalar fty, fty_init, fty_old, fty_mid1, fty_mid2, s;
-  PetscInt    i, max_it;
+  PetscInt    max_it;
   PetscViewer monitor;
 
   PetscFunctionBegin;
@@ -42,7 +42,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   }
   fty_init = fty_old;
 
-  for (i = 0; i < max_it; i++) {
+  for (PetscInt i = 0; i < max_it; i++) {
     /* compute the norm at lambda */
     PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));

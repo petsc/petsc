@@ -283,7 +283,6 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg    = (KSPGuessFischer *)guess->data;
   PetscBool        rotate = itg->curl == itg->maxl ? PETSC_TRUE : PETSC_FALSE;
-  PetscInt         i, j;
   PetscObjectState b_state;
   PetscScalar     *last_column;
   Vec              oldest;
@@ -292,17 +291,17 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
   if (rotate) {
     /* we have the maximum number of vectors so rotate: oldest vector is at index 0 */
     oldest = itg->xtilde[0];
-    for (i = 1; i < itg->curl; ++i) itg->xtilde[i - 1] = itg->xtilde[i];
+    for (PetscInt i = 1; i < itg->curl; ++i) itg->xtilde[i - 1] = itg->xtilde[i];
     itg->xtilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(x, itg->xtilde[itg->curl - 1]));
 
     oldest = itg->btilde[0];
-    for (i = 1; i < itg->curl; ++i) itg->btilde[i - 1] = itg->btilde[i];
+    for (PetscInt i = 1; i < itg->curl; ++i) itg->btilde[i - 1] = itg->btilde[i];
     itg->btilde[itg->curl - 1] = oldest;
     PetscCall(VecCopy(b, itg->btilde[itg->curl - 1]));
     /* shift correlation matrix up and left */
-    for (j = 1; j < itg->maxl; ++j) {
-      for (i = 1; i < itg->maxl; ++i) itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i];
+    for (PetscInt j = 1; j < itg->maxl; ++j) {
+      for (PetscInt i = 1; i < itg->maxl; ++i) itg->corr[(j - 1) * itg->maxl + i - 1] = itg->corr[j * itg->maxl + i];
     }
   } else {
     /* append new vectors */
@@ -321,14 +320,14 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
   PetscCall(PetscObjectStateGet((PetscObject)b, &b_state));
   if (b_state == itg->last_b_state && b == itg->last_b) {
     if (rotate) {
-      for (i = 1; i < itg->maxl; ++i) itg->last_b_coefs[i - 1] = itg->last_b_coefs[i];
+      for (PetscInt i = 1; i < itg->maxl; ++i) itg->last_b_coefs[i - 1] = itg->last_b_coefs[i];
     }
     PetscCall(VecDot(b, b, &itg->last_b_coefs[itg->curl - 1]));
     PetscCall(PetscArraycpy(last_column, itg->last_b_coefs, itg->curl));
   } else {
     PetscCall(VecMDot(b, itg->curl, itg->btilde, last_column));
   }
-  for (i = 0; i < itg->curl; ++i) itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i];
+  for (PetscInt i = 0; i < itg->curl; ++i) itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

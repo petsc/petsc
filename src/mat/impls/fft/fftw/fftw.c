@@ -41,7 +41,6 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   #else
   fftw_iodim *iodims;
   #endif
-  PetscInt i;
 #endif
   PetscInt ndim = fft->ndim, *dim = fft->dim;
 
@@ -84,7 +83,7 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
       if (ndim) {
         iodims[ndim - 1].n  = (ptrdiff_t)dim[ndim - 1];
         iodims[ndim - 1].is = iodims[ndim - 1].os = 1;
-        for (i = ndim - 2; i >= 0; --i) {
+        for (PetscInt i = ndim - 2; i >= 0; --i) {
           iodims[i].n  = (ptrdiff_t)dim[i];
           iodims[i].is = iodims[i].os = iodims[i + 1].is * iodims[i + 1].n;
         }
@@ -94,7 +93,7 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
       if (ndim) {
         iodims[ndim - 1].n  = (int)dim[ndim - 1];
         iodims[ndim - 1].is = iodims[ndim - 1].os = 1;
-        for (i = ndim - 2; i >= 0; --i) {
+        for (PetscInt i = ndim - 2; i >= 0; --i) {
           iodims[i].n  = (int)dim[i];
           iodims[i].is = iodims[i].os = iodims[i + 1].is * iodims[i + 1].n;
         }

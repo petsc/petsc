@@ -168,7 +168,6 @@ PetscErrorCode VecInitializePackage(void)
 {
   char      logList[256];
   PetscBool opt, pkg;
-  PetscInt  i;
 
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
@@ -267,7 +266,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscCallMPI(MPI_Op_create(MPIU_MinIndex_Local, 1, &MPIU_MINLOC));
 
   /* Register the different norm types for cached norms */
-  for (i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataRegister(NormIds + i));
+  for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataRegister(NormIds + i));
 
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(VecFinalizePackage));

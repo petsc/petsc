@@ -40,9 +40,7 @@ static PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialGetTensor_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialSetTensor_C", NULL));
   if (poly->subspaces) {
-    PetscInt d;
-
-    for (d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&poly->subspaces[d]));
+    for (PetscInt d = 0; d < sp->Nv; ++d) PetscCall(PetscSpaceDestroy(&poly->subspaces[d]));
   }
   PetscCall(PetscFree(poly->subspaces));
   PetscCall(PetscFree(poly));

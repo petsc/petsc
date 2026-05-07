@@ -304,7 +304,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   const char  *field_name;
   PetscMPIInt  rank;
   PetscInt     si, sj, nx, ny, i, j;
-  PetscInt     n_dofs, d;
+  PetscInt     n_dofs;
   PetscScalar *_fields;
 
   PetscFunctionBeginUser;
@@ -316,7 +316,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### %s (processor %1.4d) ### \n", comment, rank));
   PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### x y "));
-  for (d = 0; d < n_dofs; d++) {
+  for (PetscInt d = 0; d < n_dofs; d++) {
     PetscCall(DMDAGetFieldName(da, d, &field_name));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "%s ", field_name));
   }
@@ -341,7 +341,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
       coord_y = _coords[j][i].y;
 
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "%1.6e %1.6e ", (double)PetscRealPart(coord_x), (double)PetscRealPart(coord_y)));
-      for (d = 0; d < n_dofs; d++) {
+      for (PetscInt d = 0; d < n_dofs; d++) {
         field_d = _fields[n_dofs * ((i - si) + (j - sj) * (nx)) + d];
         PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "%1.6e ", (double)PetscRealPart(field_d)));
       }
@@ -366,7 +366,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const cha
   const char              *field_name;
   PetscMPIInt              rank;
   PetscInt                 si, sj, nx, ny, i, j, p;
-  PetscInt                 n_dofs, d;
+  PetscInt                 n_dofs;
   GaussPointCoefficients **_coefficients;
 
   PetscFunctionBeginUser;
@@ -378,7 +378,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const cha
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### %s (processor %1.4d) ### \n", comment, rank));
   PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### x y "));
-  for (d = 0; d < n_dofs; d++) {
+  for (PetscInt d = 0; d < n_dofs; d++) {
     PetscCall(DMDAGetFieldName(da, d, &field_name));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "%s ", field_name));
   }
@@ -570,7 +570,7 @@ static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, 
   DMDACoor2d             **_coords;
   MatStencil               u_eqn[NODES_PER_EL * U_DOFS]; /* 2 degrees of freedom */
   PetscInt                 sex, sey, mx, my;
-  PetscInt                 ei, ej;
+  PetscInt                 ej;
   PetscScalar              Ae[NODES_PER_EL * U_DOFS * NODES_PER_EL * U_DOFS];
   PetscScalar              el_coords[NODES_PER_EL * NSD];
   Vec                      local_properties;
@@ -592,7 +592,7 @@ static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, 
   PetscCall(DMDAGetElementsCorners(elas_da, &sex, &sey, 0));
   PetscCall(DMDAGetElementsSizes(elas_da, &mx, &my, 0));
   for (ej = sey; ej < sey + my; ej++) {
-    for (ei = sex; ei < sex + mx; ei++) {
+    for (PetscInt ei = sex; ei < sex + mx; ei++) {
       /* get coords for the element */
       PetscCall(GetElementCoords(_coords, ei, ej, el_coords));
 
@@ -623,10 +623,8 @@ static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, 
 
 static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **fields_F, MatStencil u_eqn[], PetscScalar Fe_u[])
 {
-  PetscInt n;
-
   PetscFunctionBeginUser;
-  for (n = 0; n < 4; n++) {
+  for (PetscInt n = 0; n < 4; n++) {
     fields_F[u_eqn[2 * n].j][u_eqn[2 * n].i].ux_dof         = fields_F[u_eqn[2 * n].j][u_eqn[2 * n].i].ux_dof + Fe_u[2 * n];
     fields_F[u_eqn[2 * n + 1].j][u_eqn[2 * n + 1].i].uy_dof = fields_F[u_eqn[2 * n + 1].j][u_eqn[2 * n + 1].i].uy_dof + Fe_u[2 * n + 1];
   }
@@ -640,7 +638,6 @@ static PetscErrorCode AssembleF_Elasticity(Vec F, DM elas_da, DM properties_da, 
   DMDACoor2d             **_coords;
   MatStencil               u_eqn[NODES_PER_EL * U_DOFS]; /* 2 degrees of freedom */
   PetscInt                 sex, sey, mx, my;
-  PetscInt                 ei, ej;
   PetscScalar              Fe[NODES_PER_EL * U_DOFS];
   PetscScalar              el_coords[NODES_PER_EL * NSD];
   Vec                      local_properties;
@@ -668,8 +665,8 @@ static PetscErrorCode AssembleF_Elasticity(Vec F, DM elas_da, DM properties_da, 
 
   PetscCall(DMDAGetElementsCorners(elas_da, &sex, &sey, 0));
   PetscCall(DMDAGetElementsSizes(elas_da, &mx, &my, 0));
-  for (ej = sey; ej < sey + my; ej++) {
-    for (ei = sex; ei < sex + mx; ei++) {
+  for (PetscInt ej = sey; ej < sey + my; ej++) {
+    for (PetscInt ei = sex; ei < sex + mx; ei++) {
       /* get coords for the element */
       PetscCall(GetElementCoords(_coords, ei, ej, el_coords));
 
@@ -802,7 +799,6 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
 
       for (p = 0; p < GAUSS_POINTS; p++) {
         PetscScalar gp_x, gp_y;
-        PetscInt    n;
         PetscScalar xi_p[2], Ni_p[4];
 
         xi_p[0] = gp_xi[p][0];
@@ -811,7 +807,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
 
         gp_x = 0.0;
         gp_y = 0.0;
-        for (n = 0; n < NODES_PER_EL; n++) {
+        for (PetscInt n = 0; n < NODES_PER_EL; n++) {
           gp_x = gp_x + Ni_p[n] * el_coords[2 * n];
           gp_y = gp_y + Ni_p[n] * el_coords[2 * n + 1];
         }
@@ -1187,13 +1183,12 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da, Mat A, Vec f)
 
 static PetscErrorCode Orthogonalize(PetscInt n, Vec *vecs)
 {
-  PetscInt    i, j;
   PetscScalar dot;
 
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     PetscCall(VecNormalize(vecs[i], NULL));
-    for (j = i + 1; j < n; j++) {
+    for (PetscInt j = i + 1; j < n; j++) {
       PetscCall(VecDot(vecs[i], vecs[j], &dot));
       PetscCall(VecAXPY(vecs[j], -dot, vecs[i]));
     }
@@ -1205,7 +1200,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, 
 {
   PetscInt     start, end, m;
   PetscInt    *unconstrained;
-  PetscInt     cnt, i;
+  PetscInt     cnt;
   Vec          x;
   PetscScalar *_x;
   IS           is;
@@ -1225,7 +1220,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, 
   PetscCall(VecGetOwnershipRange(x, &start, &end));
   PetscCall(VecGetArray(x, &_x));
   cnt = 0;
-  for (i = 0; i < m; i += 2) {
+  for (PetscInt i = 0; i < m; i += 2) {
     PetscReal val1, val2;
 
     val1 = PetscRealPart(_x[i]);
@@ -1266,7 +1261,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, 
     PetscCall(MatGetNearNullSpace(A, &mnull));
     PetscCall(MatNullSpaceGetVecs(mnull, &has_const, &nvecs, &vecs));
     PetscCall(VecDuplicateVecs(*ff, nvecs, &uvecs));
-    for (i = 0; i < nvecs; i++) {
+    for (PetscInt i = 0; i < nvecs; i++) {
       PetscCall(VecScatterBegin(scat, vecs[i], uvecs[i], INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(scat, vecs[i], uvecs[i], INSERT_VALUES, SCATTER_FORWARD));
     }
