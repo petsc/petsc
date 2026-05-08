@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions        = ['mkl_sparse_optimize','mkl_sparse_s_create_bsr']
     self.liblist          = [[]] # use MKL detected by BlasLapack.py
     self.precisions       = ['single','double']
-    self.lookforbydefault = 1
+    self.lookforbydefault = 0
     self.requires32bitintblas   = 0
     return
 
