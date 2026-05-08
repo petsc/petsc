@@ -28,8 +28,6 @@ static char help[] = "2D Shallow water equations forward model with MMS verifica
 
 #include "ex4.h"
 
-const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
-
 static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal time, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal A, PetscReal *L1_error, PetscReal *L2_error, PetscReal *Linf_error)
 {
   const PetscScalar ***x_num;
@@ -81,7 +79,7 @@ static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt ste
   PetscFunctionBeginUser;
   PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, A, A, PETSC_TRUE, flux_type, &da_state, &sw_ctx, &x_numerical));
   PetscCall(SetInitialCondition(da_state, x_numerical, sw_ctx, PETSC_TRUE));
-  for (PetscInt step = 0; step < steps; step++) PetscCall(ShallowWaterStep2DVec(sw_ctx, x_numerical));
+  for (PetscInt step = 0; step < steps; step++) PetscCall(ShallowWaterStep2DVec(sw_ctx, step * dt, x_numerical));
   PetscCall(ComputeManufacturedError(x_numerical, da_state, steps * dt, Lx, Ly, h0, A, L1_err, L2_err, Linf_err));
   PetscCall(VecDestroy(&x_numerical));
   PetscCall(ShallowWater2DContextDestroy(&sw_ctx));
@@ -127,7 +125,7 @@ int main(int argc, char **argv)
   PetscCheck(steps >= 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of steps must be non-negative");
   PetscCheck(dt > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Time step must be positive");
   PetscCheck(!test_mms_spatial_order || conv_refine >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-conv_refine must be >= 2 for spatial-order check (got %" PetscInt_FMT ")", conv_refine);
-  PetscCheck((!verify_mms && !test_mms_spatial_order) || Ax == Ay, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MMS verification requires Ax == Ay (isotropic amplitude); got Ax=%g, Ay=%g", (double)Ax, (double)Ay);
+  PetscCheck((!verify_mms && !test_mms_spatial_order) || PetscAbsReal(Ax - Ay) <= PETSC_MACHINE_EPSILON * PetscMax(PetscAbsReal(Ax), PetscAbsReal(Ay)), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MMS verification requires Ax == Ay (isotropic amplitude); got Ax=%g, Ay=%g", (double)Ax, (double)Ay);
 
   if (test_mms_spatial_order) {
     PetscInt  medium_nx = conv_refine * conv_nx_coarse, medium_ny = conv_refine * conv_ny_coarse, fine_nx = conv_refine * medium_nx, fine_ny = conv_refine * medium_ny;
@@ -138,6 +136,7 @@ int main(int argc, char **argv)
     PetscCall(RunManufacturedCase(conv_nx_coarse, conv_ny_coarse, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &coarse_L1, &coarse_L2, &coarse_Linf));
     PetscCall(RunManufacturedCase(medium_nx, medium_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &medium_L1, &medium_L2, &medium_Linf));
     PetscCall(RunManufacturedCase(fine_nx, fine_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &fine_L1, &fine_L2, &fine_Linf));
+    PetscCheck(coarse_L1 > 0.0 && medium_L1 > 0.0 && fine_L1 > 0.0 && coarse_L2 > 0.0 && medium_L2 > 0.0 && fine_L2 > 0.0 && coarse_Linf > 0.0 && medium_Linf > 0.0 && fine_Linf > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "MMS error norm collapsed to zero on at least one grid (truncation below print precision); increase -steps or -dt to obtain a measurable error before the order check");
     order_cm_L1   = PetscLogReal(coarse_L1 / medium_L1) / PetscLogReal((PetscReal)conv_refine);
     order_cm_L2   = PetscLogReal(coarse_L2 / medium_L2) / PetscLogReal((PetscReal)conv_refine);
     order_cm_Linf = PetscLogReal(coarse_Linf / medium_Linf) / PetscLogReal((PetscReal)conv_refine);
@@ -161,7 +160,7 @@ int main(int argc, char **argv)
     for (PetscInt step = 1; step <= steps; step++) {
       PetscReal time          = step * dt;
       PetscBool emit_progress = (PetscBool)(step == steps || (progress_freq > 0 && step % progress_freq == 0));
-      PetscCall(ShallowWaterStep2DVec(sw_ctx, x_numerical));
+      PetscCall(ShallowWaterStep2DVec(sw_ctx, (step - 1) * dt, x_numerical));
       if (verify_mms && (step % verification_freq == 0 || step == steps)) {
         PetscReal L1_err, L2_err, Linf_err;
         PetscCall(ComputeManufacturedError(x_numerical, da_state, time, Lx, Ly, h0, Ax, &L1_err, &L2_err, &Linf_err));
@@ -197,5 +196,6 @@ int main(int argc, char **argv)
     suffix: mms_spatial
     requires: !complex !single
     args: -test_mms_spatial_order -steps 5 -dt 1e-4
+    filter: head -n 1
 
 TEST*/

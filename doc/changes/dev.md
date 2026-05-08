@@ -99,7 +99,9 @@
 - Remove `PETSCDAETKF`; use `PETSCDALETKF` with `PetscDALETKFSetLocalizationType(da, PETSCDA_LETKF_LOC_NONE)` for identical behavior
 - Remove `PetscDAEnsembleSetSqrtType()`, `PetscDAEnsembleGetSqrtType()`, the `PetscDASqrtType` enum (`PETSCDA_SQRT_CHOLESKY`, `PETSCDA_SQRT_EIGEN`), and the `-petscda_ensemble_sqrt_type` option; the symmetric-eigendecomposition square root is now the only path
 - Remove `PetscDALETKFSetLocalization()`; use the distance-based API `PetscDALETKFSetLocalizationType()`, `PetscDALETKFSetLocalizationRadius()`, and `PetscDALETKFSetLocalizationCoordinates()` instead
-- Remove `PetscDALETKFGetLocalizationMatrix()`; the localization matrix is an internal cached object built lazily on the first analysis
+- Remove `PetscDALETKFSetObsPerVertex()` and `PetscDALETKFGetObsPerVertex()`; per-vertex observation counts are now derived from the distance-based localization kernel
+- Remove `PetscDALETKFGetLocalizationMatrix()`; the localization matrix is an internal cached object built lazily on the first analysis. Callers that previously supplied this matrix should switch to `PetscDALETKFSetLocalizationCoordinates()` and let the implementation build the matrix from the chosen kernel
+- Change the LETKF distance-based periodicity convention: per-axis periodicity is now activated by `bd[d] > 0.0` (the period), and negative `bd[d]` now raises `PETSC_ERR_ARG_OUTOFRANGE`; previously any non-zero `bd[d]` (including negative values) enabled periodicity
 - Add `PetscDAEnsembleForecastFn` typedef for the `PetscDAEnsembleForecast()` model callback
 - Change the `PetscDAEnsembleForecast()` model callback signature from `(Vec, Vec, PetscCtx)` to `(Mat, PetscCtx)`; the model now receives the entire ensemble matrix and advances all members in place. Existing per-member callbacks should iterate over the columns with `MatDenseGetColumnVec()`/`MatDenseRestoreColumnVec()` (see `ShallowWaterStep2D()` in `src/ml/da/tutorials/ex4.c`)
 

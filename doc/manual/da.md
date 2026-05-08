@@ -289,20 +289,20 @@ PetscDALETKFSetLocalizationCoordinates(PetscDA da, Vec xyz[], PetscReal bd[], Ma
 
 The built-in `-petscda_letkf_localization_type` values `gaspari_cohn`, `gaussian`, and `boxcar` are available in
 every PETSc build; the `none` type disables localization and is mathematically
-equivalent to global ETKF. The localization matrix Q is built on the device
+equivalent to global ETKF. The default kernel is `gaspari_cohn`. The localization matrix Q is built on the device
 matching the observation-error covariance matrix `R` (set via `PetscDASetObsErrorVariance()`):
 a Kokkos backend is used when `R` has type `MATAIJKOKKOS`, otherwise a CPU
 analysis path is used. Select the kernel at runtime with
 `-petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar)`.
 
-```{note}
-The CPU analysis path is currently single-rank only. The unlocalized fast path
-(`PETSCDA_LETKF_LOC_NONE`) factors the m × m T matrix with LAPACK on each
-rank's local slice, and the per-vertex CPU path lacks the cross-rank
-observation scatter (which is built only by the Kokkos backend). For
-multi-rank runs configure PETSc with `--download-kokkos-kernels` and use a
-localized kernel; otherwise restrict the run to a single MPI rank.
-```
+Both the CPU and Kokkos analysis paths run multi-rank. The unlocalized fast
+path (`PETSCDA_LETKF_LOC_NONE`) replicates the m × m T matrix on
+`PETSC_COMM_SELF` on every rank: each rank computes its slice of the gram
+$S^T S$ and the projection $S^T \delta$ with local BLAS, the contributions are
+combined with `MPIU_Allreduce()`, and the symmetric eigendecomposition runs
+identically on every rank. The localized per-vertex path uses a backend-agnostic
+observation scatter that gathers the unique observations referenced by each
+rank's rows of Q into a sequential work vector before the per-vertex updates.
 
 (sec_da_options)=
 

@@ -21,7 +21,7 @@ static char help[] = "Deterministic LETKF example for the Lorenz-96 model. See "
 #define DEFAULT_DT            0.05
 #define DEFAULT_OBS_ERROR_STD 1.0
 #define DEFAULT_ENSEMBLE_SIZE 30
-#define SPINUP_STEPS          1000 /* Spin up truth to Lorenz-96 attractor (~200 steps sufficient, 1000 for safety) */
+#define SPINUP_STEPS          300 /* Spin up truth to Lorenz-96 attractor (~200 steps sufficient, 300 for safety) */
 
 /* Minimum valid parameter values */
 #define MIN_N              1
@@ -210,25 +210,26 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
 
 int main(int argc, char **argv)
 {
-  Lorenz96Ctx *l95_ctx = NULL, *truth_ctx = NULL;
-  DM           da_state;
-  PetscDA      da;
-  Vec          x0, x_mean, x_forecast;
-  Vec          truth_state, rmse_work;
-  Vec          observation, obs_noise, obs_error_var;
-  Mat          H = NULL; /* Observation operator matrix */
-  PetscRandom  rng;
-  Vec          xyz[3] = {NULL, NULL, NULL};
-  Vec          coord;
-  PetscInt     n = DEFAULT_N, steps = DEFAULT_STEPS, burn = DEFAULT_BURN, obs_freq = DEFAULT_OBS_FREQ;
-  PetscInt     random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt     n_stat_steps = 0, n_obs_stat_steps = 0, obs_count = 0, step, progress_interval;
-  PetscReal    F = DEFAULT_F, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
-  PetscReal    ensemble_init_std   = -1;    /* Initial ensemble spread */
-  PetscReal    localization_radius = 100.0; /* Large value = effectively no localization for domain size 40 */
-  PetscReal    bd[3]               = {DEFAULT_N, 0, 0};
-  PetscReal    rmse_forecast = 0.0, rmse_analysis = 0.0, spread = 0.0;
-  PetscReal    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  Lorenz96Ctx                 *l95_ctx = NULL, *truth_ctx = NULL;
+  DM                           da_state;
+  PetscDA                      da;
+  Vec                          x0, x_mean, x_forecast;
+  Vec                          truth_state, rmse_work;
+  Vec                          observation, obs_noise, obs_error_var;
+  Mat                          H = NULL; /* Observation operator matrix */
+  PetscRandom                  rng;
+  Vec                          xyz[3] = {NULL, NULL, NULL};
+  Vec                          coord;
+  PetscDALETKFLocalizationType loc_type;
+  PetscInt                     n = DEFAULT_N, steps = DEFAULT_STEPS, burn = DEFAULT_BURN, obs_freq = DEFAULT_OBS_FREQ;
+  PetscInt                     random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt                     n_stat_steps = 0, n_obs_stat_steps = 0, obs_count = 0, step, progress_interval;
+  PetscReal                    F = DEFAULT_F, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal                    ensemble_init_std   = -1;    /* Initial ensemble spread */
+  PetscReal                    localization_radius = 100.0; /* Large value = effectively no localization for domain size 40 */
+  PetscReal                    bd[3]               = {DEFAULT_N, 0, 0};
+  PetscReal                    rmse_forecast = 0.0, rmse_analysis = 0.0, spread = 0.0;
+  PetscReal                    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -290,7 +291,7 @@ int main(int argc, char **argv)
 
   /* Spin up truth to get onto attractor */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth for %" PetscInt_FMT " steps...\n", (PetscInt)SPINUP_STEPS));
-  for (int k = 0; k < SPINUP_STEPS; k++) PetscCall(Lorenz96StepVec(truth_ctx, truth_state));
+  for (PetscInt k = 0; k < SPINUP_STEPS; k++) PetscCall(Lorenz96StepVec(truth_ctx, truth_state));
 
   /* Initialize observation vectors */
   PetscCall(VecDuplicate(x0, &observation));
@@ -325,7 +326,9 @@ int main(int argc, char **argv)
   PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
   PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H));
   PetscCall(VecDestroy(&xyz[0]));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization configured: %" PetscInt_FMT " vertices, radius=%g\n", n, (double)localization_radius));
+  PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
+  if (loc_type != PETSCDA_LETKF_LOC_NONE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization configured: %" PetscInt_FMT " vertices, radius=%g\n", n, (double)localization_radius));
+  else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
 
   /* Initialize ensemble members from spun-up truth state */
   PetscCall(PetscDAEnsembleInitialize(da, truth_state, ensemble_init_std, rng));
@@ -346,9 +349,10 @@ int main(int argc, char **argv)
                         "  Observation frequency  : %" PetscInt_FMT "\n"
                         "  Observation noise std  : %.3f\n"
                         "  Ensemble init std      : %.3f\n"
-                        "  Random seed            : %" PetscInt_FMT "\n"
-                        "  Localization radius    : %g\n\n",
-                        n, ensemble_size, (double)F, (double)dt, steps, burn, (PetscInt)SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed, (double)localization_radius));
+                        "  Random seed            : %" PetscInt_FMT "\n",
+                        n, ensemble_size, (double)F, (double)dt, steps, burn, (PetscInt)SPINUP_STEPS, obs_freq, (double)obs_error_std, (double)ensemble_init_std, random_seed));
+  if (loc_type != PETSCDA_LETKF_LOC_NONE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Localization radius    : %g\n", (double)localization_radius));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
 
   /* Main assimilation cycle: forecast and analysis steps */
   for (step = 0; step <= steps; step++) {
@@ -444,7 +448,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: kokkos_kernels !complex
-    args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5
+    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5
 
     test:
       suffix: letkf_serial
@@ -458,5 +462,28 @@ int main(int argc, char **argv)
     test:
       suffix: letkf_loc_none
       args: -petscda_type letkf -petscda_letkf_localization_type none
+
+    test:
+      suffix: letkf_loc_none_kokkos
+      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -petscda_letkf_localization_type none
+
+    test:
+      nsize: 3
+      suffix: letkf_loc_none_kokkos_3rank
+      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -petscda_letkf_localization_type none
+
+  testset:
+    requires: !complex
+    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5 -petscda_type letkf
+
+    test:
+      nsize: 2
+      suffix: letkf_cpu_2rank
+      args: -petscda_letkf_localization_radius 5.0
+
+    test:
+      nsize: 2
+      suffix: letkf_loc_none_2rank
+      args: -petscda_letkf_localization_type none
 
   TEST*/

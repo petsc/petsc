@@ -11,6 +11,13 @@
 
   Include `<Kokkos_Core.hpp>` (or any header that pulls it in) BEFORE this header to get the
   device-callable variants; otherwise the host-only fallbacks are silently selected.
+
+  Radius semantics differ by kernel; the user-supplied `radius` always controls the
+  effective support but the corresponding cutoff distance varies:
+    - Gaspari-Cohn: compactly supported with cutoff at distance = 2*radius
+    - Gaussian:     truncated at distance = 2*radius (value ~ exp(-2) ~ 0.135)
+    - Boxcar:       cutoff at distance = radius (1 inside, 0 outside)
+  Set `radius` per kernel rather than expecting identical falloff across choices.
 */
 
 #include <petsc.h>

@@ -16,7 +16,7 @@ typedef enum {
   EX4_FLUX_MC
 } Ex4FluxType;
 
-extern const char *const Ex4FluxTypes[];
+static const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
 
 typedef struct {
   DM          da;
@@ -25,6 +25,7 @@ typedef struct {
   PetscReal   dx, dy;
   PetscReal   g;
   PetscReal   dt;
+  PetscReal   t_current; /* cumulative physical time tracked by ShallowWaterStep2D() (matrix variant); the MMS source uses the per-call t_start argument of ShallowWaterStep2DVec() */
   TS          ts;
   PetscReal   h0;
   PetscReal   Ax, Ay; /* wave amplitudes in x and y */
@@ -220,6 +221,7 @@ static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, Pet
   sw->dx         = Lx / nx;
   sw->dy         = Ly / ny;
   sw->dt         = dt;
+  sw->t_current  = 0.0;
   sw->h0         = h0;
   sw->Ax         = Ax;
   sw->Ay         = Ay;
@@ -244,21 +246,28 @@ static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, Pet
 static inline PetscErrorCode ShallowWater2DContextDestroy(ShallowWater2DCtx **ctx)
 {
   PetscFunctionBeginUser;
-  if (!ctx || !*ctx) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*ctx) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(TSDestroy(&(*ctx)->ts));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of ShallowWaterStep2D(). */
-static inline PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, Vec x)
+/* Advance a single state vector one TS step starting from physical time t_start. The MMS source
+   (when verify_mms is enabled in the context) is evaluated against the TS time, so callers driving
+   multi-step verification runs must pass the cumulative start time of each step rather than 0. */
+static inline PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, PetscReal t_start, Vec x)
 {
   PetscFunctionBeginUser;
-  PetscCall(TSSetTime(sw->ts, 0.0));
+  /* The TSSetTimeStep and TSSetMaxSteps calls below look redundant with ShallowWater2DContextCreate()
+     but are load-bearing: TSSetMaxTime forces the last sub-step to shrink to land exactly on
+     t_start+dt (and TSAdapt may have shrunk dt during the step), so the trailing dt persists into the
+     next call unless reset; and -ts_max_steps from the command line overrides the create-time 1, so
+     re-asserting it per call enforces this wrapper's "exactly one step per call" contract. */
+  PetscCall(TSSetTime(sw->ts, t_start));
   PetscCall(TSSetStepNumber(sw->ts, 0));
   PetscCall(TSSetTimeStep(sw->ts, sw->dt));
   PetscCall(TSSetMaxSteps(sw->ts, 1));
-  PetscCall(TSSetMaxTime(sw->ts, sw->dt));
+  PetscCall(TSSetMaxTime(sw->ts, t_start + sw->dt));
   PetscCall(TSSolve(sw->ts, x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -277,9 +286,10 @@ static inline PetscErrorCode ShallowWaterStep2D(Mat ensemble, PetscCtx ctx)
     Vec col;
 
     PetscCall(MatDenseGetColumnVecWrite(ensemble, j, &col));
-    PetscCall(ShallowWaterStep2DVec(sw, col));
+    PetscCall(ShallowWaterStep2DVec(sw, sw->t_current, col));
     PetscCall(MatDenseRestoreColumnVecWrite(ensemble, j, &col));
   }
+  sw->t_current += sw->dt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -319,7 +329,8 @@ static inline PetscErrorCode SetInitialCondition(DM da_state, Vec x, ShallowWate
   PetscInt       xs, ys, xm, ym;
 
   PetscFunctionBeginUser;
-  PetscCheck(!use_mms || sw->Ax == sw->Ay, PetscObjectComm((PetscObject)da_state), PETSC_ERR_ARG_INCOMP, "MMS requires isotropic amplitude (Ax == Ay); got Ax=%g, Ay=%g", (double)sw->Ax, (double)sw->Ay);
+  PetscCheck(!use_mms || PetscAbsReal(sw->Ax - sw->Ay) <= 100 * PETSC_MACHINE_EPSILON * PetscMax(PetscAbsReal(sw->Ax), PetscAbsReal(sw->Ay)), PetscObjectComm((PetscObject)da_state), PETSC_ERR_ARG_INCOMP, "MMS requires isotropic amplitude (Ax == Ay); got Ax=%g, Ay=%g",
+             (double)sw->Ax, (double)sw->Ay);
   PetscCall(DMDAGetCorners(da_state, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArrayDOFWrite(da_state, x, &x_array));
   for (PetscInt j = ys; j < ys + ym; j++) {

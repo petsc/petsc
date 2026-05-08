@@ -17,16 +17,47 @@
 #define MATRIX_SQRT_TOLERANCE_FACTOR 1.0e-2
 
 /*
-  PetscDAEnsembleTFactor_Eigen - Computes Eigendecomposition of T
+  PetscDAEnsembleTFactorFromGram - Build (or refresh) en->I_StS from a host m x m gram buffer
+  (column-major), shift by 1/inflation, and run the eigendecomposition.
 
-  Input Parameters:
-+ da - the PetscDA context
-- S  - normalized innovation matrix (obs_size x m)
+  Contract: the caller supplies gram_host = S^T S, where S already contains the 1/sqrt(m-1)
+  normalization. This routine adds the (1/inflation) I shift and computes the eigendecomposition,
+  so en->I_StS = (1/inflation) I + S^T S on return.
 
-  Notes:
-  Computes eigenvectors V and eigenvalues D such that T = V * D * V^T.
+  The matrix lives on PETSC_COMM_SELF so the caller is responsible for any cross-rank reduction
+  on gram_host before calling.
 */
-static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
+PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactorFromGram(PetscDA da, PetscInt m, const PetscScalar *gram_host)
+{
+  PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
+  PetscScalar      *dst;
+
+  PetscFunctionBegin;
+  if (en->I_StS) {
+    PetscInt rows, cols;
+    PetscCall(MatGetSize(en->I_StS, &rows, &cols));
+    if (rows != m || cols != m) {
+      PetscCall(MatDestroy(&en->I_StS));
+      PetscCall(MatDestroy(&en->V));
+      PetscCall(VecDestroy(&en->sqrt_eigen_vals));
+    }
+  }
+  if (!en->I_StS) PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, m, NULL, &en->I_StS));
+  PetscCall(MatDenseGetArrayWrite(en->I_StS, &dst));
+  PetscCall(PetscArraycpy(dst, gram_host, (size_t)m * m));
+  PetscCall(MatDenseRestoreArrayWrite(en->I_StS, &dst));
+  PetscCall(MatShift(en->I_StS, 1.0 / en->inflation));
+  PetscCall(PetscDAEnsembleTFactor_Eigen(da));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  PetscDAEnsembleTFactor_Eigen - Compute the symmetric eigendecomposition of the m x m matrix
+  held in en->I_StS (the user pre-shifted it by 1/inflation). On return, en->V holds the
+  eigenvectors and en->sqrt_eigen_vals holds the eigenvalues (the elementwise sqrt is taken
+  later by PetscDAEnsembleApplySqrtTInverse_Eigen()).
+*/
+PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
   PetscBLASInt      n, lda, lwork, info;
@@ -134,6 +165,8 @@ static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 + da - the `PetscDA` context
 - S  - normalized innovation matrix (obs_size x m)
 
+  Level: advanced
+
   Notes:
   This function computes $T = (1/\rho) I + S^T * S$ (where $\rho$ is the inflation factor set via
   `PetscDAEnsembleSetInflation()`) and stores its symmetric eigendecomposition, i.e. eigenvectors
@@ -141,8 +174,6 @@ static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 
   The implementation uses matrix reuse (`MAT_REUSE_MATRIX`) to minimize memory allocation
   overhead when the ensemble size remains constant across analysis cycles.
-
-  Level: advanced
 
 .seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleApplyTInverse()`, `PetscDAEnsembleApplySqrtTInverse()`
 @*/
@@ -355,30 +386,44 @@ PetscErrorCode PetscDAEnsembleApplySqrtTInverse(PetscDA da, Mat U, Mat Y)
 
   /* Debugging verification: Check that metric is preserved
      Verify that Y^T * T * Y = U^T * U (or Y^T * T * Y = I if U is NULL) */
-  if (PetscDefined(USE_DEBUG) && U) {
-    Mat       YtTY, UtU, T_Y;
-    PetscReal norm_ref, norm_diff;
+  if (PetscDefined(USE_DEBUG)) {
+    Mat       YtTY, T_Y;
+    PetscReal norm_T, norm_diff;
 
     /* Compute LHS: Y^T * T * Y */
     PetscCall(MatMatMult(en->I_StS, Y, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T_Y));     /* T * Y */
     PetscCall(MatTransposeMatMult(Y, T_Y, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &YtTY)); /* Y^T * (T * Y) */
 
-    /* Compute RHS: U^T * U */
-    PetscCall(MatTransposeMatMult(U, U, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &UtU));
+    if (U) {
+      Mat       UtU;
+      PetscReal norm_ref;
 
-    /* Compute difference: Diff = LHS - RHS */
-    PetscCall(MatAXPY(YtTY, -1.0, UtU, SAME_NONZERO_PATTERN));
+      /* Compute RHS: U^T * U and difference YtTY <- YtTY - U^T*U */
+      PetscCall(MatTransposeMatMult(U, U, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &UtU));
+      PetscCall(MatAXPY(YtTY, -1.0, UtU, SAME_NONZERO_PATTERN));
 
-    /* Check norms */
-    PetscCall(MatNorm(UtU, NORM_FROBENIUS, &norm_ref));
-    PetscCall(MatNorm(YtTY, NORM_FROBENIUS, &norm_diff));
-
-    if (norm_ref > 0.0) PetscCheck(norm_diff / norm_ref < MATRIX_SQRT_TOLERANCE_FACTOR, PETSC_COMM_SELF, PETSC_ERR_PLIB, "T^{-1/2} verification failed. ||Y^T*T*Y - U^T*U||/||U^T*U|| = %g", (double)(norm_diff / norm_ref));
+      /* Check norms. When ||U^T*U|| == 0 the relative form is undefined, so fall back to an
+         absolute tolerance scaled by ||T|| (the only nonzero scale we have on hand) instead of
+         silently passing on any norm_diff. */
+      PetscCall(MatNorm(UtU, NORM_FROBENIUS, &norm_ref));
+      PetscCall(MatNorm(YtTY, NORM_FROBENIUS, &norm_diff));
+      if (norm_ref > 0.0) PetscCheck(norm_diff / norm_ref < MATRIX_SQRT_TOLERANCE_FACTOR, PetscObjectComm((PetscObject)da), PETSC_ERR_PLIB, "T^{-1/2} verification failed. ||Y^T*T*Y - U^T*U||/||U^T*U|| = %g", (double)(norm_diff / norm_ref));
+      else {
+        PetscCall(MatNorm(en->I_StS, NORM_FROBENIUS, &norm_T));
+        PetscCheck(norm_diff <= MATRIX_SQRT_TOLERANCE_FACTOR * norm_T, PetscObjectComm((PetscObject)da), PETSC_ERR_PLIB, "T^{-1/2} verification failed (U^T*U is zero). ||Y^T*T*Y|| = %g, ||T|| = %g", (double)norm_diff, (double)norm_T);
+      }
+      PetscCall(MatDestroy(&UtU));
+    } else {
+      /* RHS is the identity: form YtTY - I via MatShift, then compare against ||T|| */
+      PetscCall(MatShift(YtTY, -1.0));
+      PetscCall(MatNorm(YtTY, NORM_FROBENIUS, &norm_diff));
+      PetscCall(MatNorm(en->I_StS, NORM_FROBENIUS, &norm_T));
+      PetscCheck(norm_diff <= MATRIX_SQRT_TOLERANCE_FACTOR * norm_T, PetscObjectComm((PetscObject)da), PETSC_ERR_PLIB, "T^{-1/2} verification failed (U is NULL). ||Y^T*T*Y - I|| = %g, ||T|| = %g", (double)norm_diff, (double)norm_T);
+    }
 
     /* Cleanup debug matrices */
     PetscCall(MatDestroy(&T_Y));
     PetscCall(MatDestroy(&YtTY));
-    PetscCall(MatDestroy(&UtU));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -559,25 +604,29 @@ PetscErrorCode PetscDAEnsembleComputeMean(PetscDA da, Vec mean)
 /*@
   PetscDAEnsembleInitialize - Initialize ensemble members with Gaussian perturbations
 
+  Collective
+
   Input Parameters:
 + da            - PetscDA context
 . x0            - Background state
-. obs_error_std - Standard deviation for perturbations
+. obs_error_std - Target ensemble spread (standard deviation) after sample-mean removal
 - rng           - Random number generator
 
   Level: beginner
 
   Notes:
-  Each ensemble member is initialized as x0 + Gaussian(0, obs_error_std)
+  Each member is drawn as `Gaussian(0, obs_error_std * sqrt(m / (m - 1)))` (with `m` the ensemble size),
+  the sample mean across the ensemble is subtracted, and `x0` is added. The pre-mean-removal scale
+  by `sqrt(m / (m - 1))` compensates for the variance reduction from centering, so the per-member
+  spread after the subtraction is approximately `obs_error_std` regardless of `m`.
 
 .seealso: [](ch_da), `PETSCDALETKF`, `PetscDA`
 @*/
 PetscErrorCode PetscDAEnsembleInitialize(PetscDA da, Vec x0, PetscReal obs_error_std, PetscRandom rng)
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-
-  Vec       member, col, x_mean;
-  PetscReal scale;
+  Vec               member, col, x_mean;
+  PetscReal         scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, PETSCDA_CLASSID, 1);
@@ -719,6 +768,8 @@ PetscErrorCode PetscDAEnsembleComputeAnomalies(PetscDA da, Vec mean_in, Mat *ano
 . observation - observation vector y in R^P
 - H           - observation operator matrix (P x N), sparse AIJ format
 
+  Level: intermediate
+
   Notes:
   The observation matrix H maps from state space (N dimensions) to observation
   space (P dimensions): y = H*x + noise
@@ -727,11 +778,12 @@ PetscErrorCode PetscDAEnsembleComputeAnomalies(PetscDA da, Vec mean_in, Mat *ano
 
   For identity observations (observe entire state), use an identity matrix for H.
   For partial observations, set appropriate rows and columns to observe
-  specific state components.
+  specific state components. On return, the ensemble matrix held by `da` has
+  been updated in place: every member has been replaced by its analysis update.
+  Read the analysis state with `PetscDAEnsembleGetMember()` or `PetscDAEnsembleComputeMean()`.
 
-  Level: intermediate
-
-.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleForecast()`, `PetscDASetObsErrorVariance()`
+.seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleForecast()`, `PetscDASetObsErrorVariance()`,
+          `PetscDAEnsembleGetMember()`, `PetscDAEnsembleComputeMean()`
 @*/
 PetscErrorCode PetscDAEnsembleAnalysis(PetscDA da, Vec observation, Mat H)
 {
@@ -773,7 +825,7 @@ PetscErrorCode PetscDAEnsembleAnalysis(PetscDA da, Vec observation, Mat H)
 
 .seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleAnalysis()`
 @*/
-PetscErrorCode PetscDAEnsembleForecast(PetscDA da, PetscErrorCode (*model)(Mat, PetscCtx), PetscCtx ctx)
+PetscErrorCode PetscDAEnsembleForecast(PetscDA da, PetscDAEnsembleForecastFn *model, PetscCtx ctx)
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
 
@@ -1004,7 +1056,7 @@ PetscErrorCode PetscDAEnsembleComputeNormalizedInnovationMatrix(Mat Z, Vec y_mea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscErrorCode (*model)(Mat, PetscCtx), PetscCtx ctx)
+PETSC_INTERN PetscErrorCode PetscDAEnsembleForecast_Ensemble(PetscDA da, PetscDAEnsembleForecastFn *model, PetscCtx ctx)
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
 

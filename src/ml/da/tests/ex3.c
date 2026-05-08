@@ -21,7 +21,7 @@ int main(int argc, char **argv)
      the setter stores the value verbatim and the getter returns it with no arithmetic. */
   PetscCall(PetscDALETKFSetLocalizationRadius(da, radius));
   PetscCall(PetscDALETKFGetLocalizationRadius(da, &radius_check));
-  PetscCheck(PetscAbsReal(radius_check - radius) <= PETSC_SMALL * (1.0 + PetscAbsReal(radius)), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "SetLocalizationRadius/GetLocalizationRadius round-trip failed: set %g, got %g", (double)radius, (double)radius_check);
+  PetscCheck(radius_check == radius, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "SetLocalizationRadius/GetLocalizationRadius round-trip failed: set %g, got %g", (double)radius, (double)radius_check);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization radius set/get: %g\n", (double)radius_check));
 
   PetscCall(PetscDADestroy(&da));

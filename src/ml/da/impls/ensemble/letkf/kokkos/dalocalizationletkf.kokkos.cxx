@@ -17,15 +17,29 @@
 */
 PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
 {
-  PetscInt                           dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
-  PetscInt                           rstart, cstart, cend;
-  PetscInt                           total_nnz = 0, local_min, local_max;
-  PetscInt                          *d_nnz, *o_nnz;
-  Vec                               *obs_vecs;
-  MPI_Comm                           comm;
-  const PetscReal                    cutoff2   = LETKFCutoffSquared(type, radius);
-  const PetscDALETKFLocalizationType kern_type = type;
-  const PetscReal                    kern_r    = radius;
+  using ExecSpace = Kokkos::DefaultExecutionSpace;
+  using MemSpace  = ExecSpace::memory_space;
+
+  PetscInt                                                           dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
+  PetscInt                                                           rstart, cstart, cend;
+  PetscInt                                                           total_nnz = 0, local_min, local_max;
+  PetscInt                                                          *d_nnz, *o_nnz;
+  PetscInt                                                          *obs_global_idx_host;
+  PetscReal                                                         *obs_coords_host_buf;
+  Vec                                                               *obs_vecs;
+  MPI_Comm                                                           comm;
+  Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, MemSpace>         vertex_coords_dev;
+  Kokkos::View<PetscReal **, Kokkos::LayoutRight, MemSpace>          obs_coords_dev;
+  Kokkos::View<PetscInt *, MemSpace>                                 obs_global_idx_dev;
+  Kokkos::View<PetscReal *, MemSpace>                                bd_dev;
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>             row_counts_dev, row_offsets_dev, col_indices_dev;
+  Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>          values_dev;
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>    row_counts_host, row_offsets_host, col_indices_host;
+  Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace> values_host;
+  const PetscReal                                                    cutoff2   = LETKFCutoffSquared(type, radius);
+  const PetscReal                                                    cutoff    = PetscSqrtReal(cutoff2);
+  const PetscDALETKFLocalizationType                                 kern_type = type;
+  const PetscReal                                                    kern_r    = radius;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck());
@@ -45,11 +59,8 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
     PetscCall(MatMult(H, xyz[d], obs_vecs[d]));
   }
 
-  using ExecSpace = Kokkos::DefaultExecutionSpace;
-  using MemSpace  = ExecSpace::memory_space;
-
   /* Copy vertex coordinates to device */
-  Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, MemSpace> vertex_coords_dev("vertex_coords", n_vert_local, dim);
+  vertex_coords_dev = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, MemSpace>("vertex_coords", n_vert_local, dim);
   {
     Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace> vertex_coords_host("vertex_coords_host", n_vert_local, dim);
     for (d = 0; d < dim; ++d) {
@@ -61,30 +72,23 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
     Kokkos::deep_copy(vertex_coords_dev, vertex_coords_host);
   }
 
-  /* Copy observation coordinates to device (gather to all ranks) */
-  Kokkos::View<PetscReal **, Kokkos::LayoutRight, MemSpace> obs_coords_dev("obs_coords", n_obs_global, dim);
+  /* Bbox-pruned obs gather: each rank receives only obs whose location can fall within the kernel
+     cutoff of any vertex it owns. Keeps obs_coords device memory bounded by the local working set
+     instead of the global obs count. Output buffers are PetscMalloc1'd; we wrap them in Kokkos
+     unmanaged host views and deep_copy onto the device. */
+  PetscCall(PetscDALETKFGatherObsBbox(dim, xyz, bd, cutoff, H, obs_vecs, &n_obs_cand, &obs_global_idx_host, &obs_coords_host_buf));
+
+  obs_coords_dev     = Kokkos::View<PetscReal **, Kokkos::LayoutRight, MemSpace>("obs_coords", n_obs_cand, dim);
+  obs_global_idx_dev = Kokkos::View<PetscInt *, MemSpace>("obs_global_idx", n_obs_cand);
   {
-    Kokkos::View<PetscReal **, Kokkos::LayoutRight, Kokkos::HostSpace> obs_coords_host("obs_coords_host", n_obs_global, dim);
-    for (d = 0; d < dim; ++d) {
-      VecScatter         ctx;
-      Vec                seq_vec;
-      const PetscScalar *array;
-
-      PetscCall(VecScatterCreateToAll(obs_vecs[d], &ctx, &seq_vec));
-      PetscCall(VecScatterBegin(ctx, obs_vecs[d], seq_vec, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(VecScatterEnd(ctx, obs_vecs[d], seq_vec, INSERT_VALUES, SCATTER_FORWARD));
-
-      PetscCall(VecGetArrayRead(seq_vec, &array));
-      for (PetscInt j = 0; j < n_obs_global; ++j) obs_coords_host(j, d) = PetscRealPart(array[j]);
-      PetscCall(VecRestoreArrayRead(seq_vec, &array));
-      PetscCall(VecScatterDestroy(&ctx));
-      PetscCall(VecDestroy(&seq_vec));
-    }
-    Kokkos::deep_copy(obs_coords_dev, obs_coords_host);
+    Kokkos::View<const PetscReal **, Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> obs_coords_host_view(obs_coords_host_buf, n_obs_cand, dim);
+    Kokkos::View<const PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>                        obs_idx_host_view(obs_global_idx_host, n_obs_cand);
+    Kokkos::deep_copy(obs_coords_dev, obs_coords_host_view);
+    Kokkos::deep_copy(obs_global_idx_dev, obs_idx_host_view);
   }
 
   /* Copy boundary data to device */
-  Kokkos::View<PetscReal *, MemSpace> bd_dev("bd_dev", dim);
+  bd_dev = Kokkos::View<PetscReal *, MemSpace>("bd_dev", dim);
   {
     Kokkos::View<PetscReal *, Kokkos::HostSpace> bd_host("bd_host", dim);
     for (d = 0; d < dim; ++d) bd_host(d) = bd[d];
@@ -95,7 +99,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
      Same trade-off as the host backend: re-evaluate the kernel in Pass 2 rather than
      allocate and compact at the cutoff-bbox upper bound. The arithmetic is cheap on the
      device; the global memory writes saved by exact sizing dominate. */
-  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace> row_counts_dev("row_counts", n_vert_local);
+  row_counts_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("row_counts", n_vert_local);
 
   Kokkos::parallel_for(
     "CountNnzPerRow", Kokkos::RangePolicy<ExecSpace>(0, n_vert_local), KOKKOS_LAMBDA(const PetscInt i) {
@@ -103,7 +107,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
       for (PetscInt dd = 0; dd < dim; ++dd) v_coords[dd] = PetscRealPart(vertex_coords_dev(i, dd));
 
       PetscInt count = 0;
-      for (PetscInt j = 0; j < n_obs_global; ++j) {
+      for (PetscInt j = 0; j < n_obs_cand; ++j) {
         PetscReal dist2 = 0.0;
         for (PetscInt dd = 0; dd < dim; ++dd) {
           PetscReal diff = v_coords[dd] - obs_coords_dev(j, dd);
@@ -121,12 +125,12 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::fence();
 
   /* Copy row counts to host for preallocation */
-  auto row_counts_host = Kokkos::create_mirror_view(row_counts_dev);
+  row_counts_host = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("row_counts_host", n_vert_local);
   Kokkos::deep_copy(row_counts_host, row_counts_dev);
 
   /* Compute prefix sum on host for CSR row offsets */
-  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>          row_offsets_dev("row_offsets", n_vert_local + 1);
-  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace> row_offsets_host("row_offsets_host", n_vert_local + 1);
+  row_offsets_dev     = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("row_offsets", n_vert_local + 1);
+  row_offsets_host    = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("row_offsets_host", n_vert_local + 1);
   row_offsets_host(0) = 0;
   for (PetscInt i = 0; i < n_vert_local; ++i) row_offsets_host(i + 1) = row_offsets_host(i) + row_counts_host(i);
   Kokkos::deep_copy(row_offsets_dev, row_offsets_host);
@@ -135,8 +139,8 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz += row_counts_host(i);
 
   /* Pass 2: Fill column indices and weights */
-  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>    col_indices_dev("col_indices", total_nnz);
-  Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace> values_dev("values", total_nnz);
+  col_indices_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("col_indices", total_nnz);
+  values_dev      = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>("values", total_nnz);
 
   Kokkos::parallel_for(
     "FillLocalizationMatrix", Kokkos::RangePolicy<ExecSpace>(0, n_vert_local), KOKKOS_LAMBDA(const PetscInt i) {
@@ -146,7 +150,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
       for (PetscInt dd = 0; dd < dim; ++dd) v_coords[dd] = PetscRealPart(vertex_coords_dev(i, dd));
 
       PetscInt pos = 0;
-      for (PetscInt j = 0; j < n_obs_global; ++j) {
+      for (PetscInt j = 0; j < n_obs_cand; ++j) {
         PetscReal dist2 = 0.0;
         for (PetscInt dd = 0; dd < dim; ++dd) {
           PetscReal diff = v_coords[dd] - obs_coords_dev(j, dd);
@@ -160,7 +164,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
         if (dist2 < cutoff2) {
           PetscReal w = LETKFKernelEval(kern_type, Kokkos::sqrt(dist2), kern_r);
           if (w > 0.0) {
-            col_indices_dev(offset + pos) = j;
+            col_indices_dev(offset + pos) = obs_global_idx_dev(j);
             values_dev(offset + pos)      = w;
             pos++;
           }
@@ -170,8 +174,8 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::fence();
 
   /* Copy results to host */
-  auto col_indices_host = Kokkos::create_mirror_view(col_indices_dev);
-  auto values_host      = Kokkos::create_mirror_view(values_dev);
+  col_indices_host = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("col_indices_host", total_nnz);
+  values_host      = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace>("values_host", total_nnz);
   Kokkos::deep_copy(col_indices_host, col_indices_dev);
   Kokkos::deep_copy(values_host, values_dev);
 
@@ -230,6 +234,8 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   /* Cleanup */
   for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
   PetscCall(PetscFree(obs_vecs));
+  PetscCall(PetscFree(obs_global_idx_host));
+  PetscCall(PetscFree(obs_coords_host_buf));
 
   PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));

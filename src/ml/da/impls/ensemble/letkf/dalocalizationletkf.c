@@ -4,6 +4,212 @@
 #include <../src/ml/da/impls/ensemble/letkf/letkf_kernels.h>
 
 /*
+  PetscDALETKFGatherObsBbox - Bounding-box-pruned redistribution of observation coordinates.
+
+  Each rank obtains the global indices and coordinates of just those observations whose location can
+  fall within `cutoff` of any vertex it owns. Replaces an earlier all-gather-to-all of the full obs
+  coordinate set, which scaled as O(n_obs_global) per rank in both memory and bandwidth.
+
+  For each non-periodic dimension d, the local-vertex bbox is `[vmin_d - cutoff, vmax_d + cutoff]`.
+  Bboxes are exchanged with `MPI_Allgather`; each rank then scans its locally-owned obs (in `H`'s row
+  distribution) and forwards every obs into each rank whose padded bbox contains it. Periodic
+  dimensions (`bd[d] > 0`) are passed unfiltered because wrap-around defeats a scalar bbox test;
+  the exact distance gate inside the Q-construction kernels handles those dims.
+
+  Output buffers `*obs_idx_out` (global obs indices, length `*n_obs_filt`) and `*obs_coords_out`
+  (flattened `[*n_obs_filt][dim]` row-major) are allocated with `PetscMalloc1()` and must be freed
+  by the caller. The order of records is whatever Alltoallv produces - column ordering inside Q is
+  re-sorted by `MatSetValues()`, so callers may use it directly.
+
+  The per-row distance check inside the AIJ and Kokkos Q-construction kernels still gates on weight
+  > 0, so the resulting Q is identical to the all-gather variant - this routine only trims the
+  candidate set passed in.
+*/
+PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], PetscReal bd[], PetscReal cutoff, Mat H, Vec obs_vecs[], PetscInt *n_obs_filt, PetscInt **obs_idx_out, PetscReal **obs_coords_out)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        size, rank, two_dim_mpi;
+  PetscInt           n_vert_local, obs_rstart, obs_rend, n_obs_local;
+  PetscInt           total_send = 0, total_recv = 0;
+  PetscReal          local_bbox[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; /* layout: [vmin_0..vmin_{d-1}, vmax_0..vmax_{d-1}] */
+  PetscReal         *all_bboxes    = NULL;
+  PetscInt          *send_counts = NULL, *send_displs = NULL, *recv_counts = NULL, *recv_displs = NULL;
+  PetscInt          *send_idx = NULL, *recv_idx = NULL, *pos = NULL;
+  PetscReal         *send_crd = NULL, *recv_crd = NULL;
+  PetscMPIInt       *send_counts_mpi = NULL, *send_displs_mpi = NULL, *recv_counts_mpi = NULL, *recv_displs_mpi = NULL;
+  PetscMPIInt       *send_counts_crd = NULL, *send_displs_crd = NULL, *recv_counts_crd = NULL, *recv_displs_crd = NULL;
+  const PetscScalar *obs_arr[3] = {NULL, NULL, NULL};
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
+  PetscCheck(dim >= 1 && dim <= 3, comm, PETSC_ERR_ARG_OUTOFRANGE, "Spatial dimension must be in [1, 3]; got %" PetscInt_FMT " (local_bbox is sized for at most 3 dims)", dim);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscMPIIntCast(2 * dim, &two_dim_mpi));
+  PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
+  PetscCall(MatGetOwnershipRange(H, &obs_rstart, &obs_rend));
+  n_obs_local = obs_rend - obs_rstart;
+
+  /* Single-rank fast path: no exchange needed, and MPI-uni does not implement Alltoallv. */
+  if (size == 1) {
+    PetscInt  *idx_out;
+    PetscReal *crd_out;
+
+    PetscCall(PetscMalloc1(n_obs_local, &idx_out));
+    PetscCall(PetscMalloc1((size_t)n_obs_local * dim, &crd_out));
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
+    for (PetscInt k = 0; k < n_obs_local; ++k) {
+      idx_out[k] = obs_rstart + k;
+      for (PetscInt d = 0; d < dim; ++d) crd_out[(size_t)k * dim + d] = PetscRealPart(obs_arr[d][k]);
+    }
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
+    *n_obs_filt     = n_obs_local;
+    *obs_idx_out    = idx_out;
+    *obs_coords_out = crd_out;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  /* Step 1: per-dim local-vertex bbox padded by cutoff. Periodic dims pass through (-/+ MAX_REAL).
+     A rank with no vertices uses (+MAX, -MAX) so its bbox excludes every obs. */
+  for (PetscInt d = 0; d < dim; ++d) {
+    if (bd[d] > 0.0) {
+      local_bbox[d]       = -PETSC_MAX_REAL;
+      local_bbox[dim + d] = PETSC_MAX_REAL;
+    } else if (n_vert_local == 0) {
+      local_bbox[d]       = PETSC_MAX_REAL;
+      local_bbox[dim + d] = -PETSC_MAX_REAL;
+    } else {
+      const PetscScalar *arr;
+      PetscReal          vmin = PETSC_MAX_REAL, vmax = -PETSC_MAX_REAL;
+
+      PetscCall(VecGetArrayRead(xyz[d], &arr));
+      for (PetscInt i = 0; i < n_vert_local; ++i) {
+        PetscReal x = PetscRealPart(arr[i]);
+        if (x < vmin) vmin = x;
+        if (x > vmax) vmax = x;
+      }
+      PetscCall(VecRestoreArrayRead(xyz[d], &arr));
+      local_bbox[d]       = vmin - cutoff;
+      local_bbox[dim + d] = vmax + cutoff;
+    }
+  }
+
+  /* Step 2: Allgather bboxes. Layout per rank: [vmin_0..vmin_{d-1}, vmax_0..vmax_{d-1}]. */
+  PetscCall(PetscMalloc1((size_t)size * 2 * dim, &all_bboxes));
+  PetscCallMPI(MPI_Allgather(local_bbox, two_dim_mpi, MPIU_REAL, all_bboxes, two_dim_mpi, MPIU_REAL, comm));
+
+  /* Step 3: Count records per dest rank. The Get/Restore pair is opened only over the count loop so
+     a malloc failure later cannot leave obs_vecs locked. */
+  PetscCall(PetscMalloc2(size, &send_counts, size + 1, &send_displs));
+  PetscCall(PetscArrayzero(send_counts, size));
+  {
+    const PetscScalar *obs_arr[3] = {NULL, NULL, NULL};
+
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
+    for (PetscInt k = 0; k < n_obs_local; ++k) {
+      PetscReal coord_k[3] = {0.0, 0.0, 0.0};
+
+      for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
+      for (PetscMPIInt r = 0; r < size; ++r) {
+        const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
+        PetscBool        in   = PETSC_TRUE;
+
+        for (PetscInt d = 0; d < dim; ++d) {
+          if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
+            in = PETSC_FALSE;
+            break;
+          }
+        }
+        if (in) send_counts[r]++;
+      }
+    }
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
+  }
+
+  send_displs[0] = 0;
+  for (PetscMPIInt r = 0; r < size; ++r) send_displs[r + 1] = send_displs[r] + send_counts[r];
+  total_send = send_displs[size];
+
+  /* Step 4: Pack send buffers (re-acquire obs_vecs only for the duration of the pack). */
+  PetscCall(PetscMalloc1(total_send, &send_idx));
+  PetscCall(PetscMalloc1((size_t)total_send * dim, &send_crd));
+  PetscCall(PetscMalloc1(size, &pos));
+  for (PetscMPIInt r = 0; r < size; ++r) pos[r] = send_displs[r];
+  {
+    const PetscScalar *obs_arr[3] = {NULL, NULL, NULL};
+
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
+    for (PetscInt k = 0; k < n_obs_local; ++k) {
+      PetscReal coord_k[3] = {0.0, 0.0, 0.0};
+
+      for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
+      for (PetscMPIInt r = 0; r < size; ++r) {
+        const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
+        PetscBool        in   = PETSC_TRUE;
+
+        for (PetscInt d = 0; d < dim; ++d) {
+          if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
+            in = PETSC_FALSE;
+            break;
+          }
+        }
+        if (in) {
+          PetscInt p  = pos[r]++;
+          send_idx[p] = obs_rstart + k;
+          for (PetscInt d = 0; d < dim; ++d) send_crd[(size_t)p * dim + d] = coord_k[d];
+        }
+      }
+    }
+    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
+  }
+  PetscCall(PetscFree(pos));
+
+  /* Step 5: Exchange counts, then index and coord payloads. */
+  PetscCall(PetscMalloc2(size, &recv_counts, size + 1, &recv_displs));
+  PetscCall(PetscMalloc4(size, &send_counts_mpi, size, &send_displs_mpi, size, &recv_counts_mpi, size, &recv_displs_mpi));
+  for (PetscMPIInt r = 0; r < size; ++r) {
+    PetscCall(PetscMPIIntCast(send_counts[r], &send_counts_mpi[r]));
+    PetscCall(PetscMPIIntCast(send_displs[r], &send_displs_mpi[r]));
+  }
+  PetscCallMPI(MPI_Alltoall(send_counts_mpi, 1, MPI_INT, recv_counts_mpi, 1, MPI_INT, comm));
+  recv_displs_mpi[0] = 0;
+  for (PetscMPIInt r = 1; r < size; ++r) recv_displs_mpi[r] = recv_displs_mpi[r - 1] + recv_counts_mpi[r - 1];
+  recv_displs[0] = 0;
+  for (PetscMPIInt r = 0; r < size; ++r) {
+    recv_counts[r]     = recv_counts_mpi[r];
+    recv_displs[r + 1] = recv_displs[r] + recv_counts[r];
+  }
+  total_recv = recv_displs[size];
+
+  PetscCall(PetscMalloc1(total_recv, &recv_idx));
+  PetscCall(PetscMalloc1((size_t)total_recv * dim, &recv_crd));
+
+  PetscCallMPI(MPI_Alltoallv(send_idx, send_counts_mpi, send_displs_mpi, MPIU_INT, recv_idx, recv_counts_mpi, recv_displs_mpi, MPIU_INT, comm));
+
+  PetscCall(PetscMalloc4(size, &send_counts_crd, size, &send_displs_crd, size, &recv_counts_crd, size, &recv_displs_crd));
+  for (PetscMPIInt r = 0; r < size; ++r) {
+    PetscCall(PetscMPIIntCast((PetscInt)send_counts_mpi[r] * dim, &send_counts_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt)send_displs_mpi[r] * dim, &send_displs_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt)recv_counts_mpi[r] * dim, &recv_counts_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt)recv_displs_mpi[r] * dim, &recv_displs_crd[r]));
+  }
+  PetscCallMPI(MPI_Alltoallv(send_crd, send_counts_crd, send_displs_crd, MPIU_REAL, recv_crd, recv_counts_crd, recv_displs_crd, MPIU_REAL, comm));
+
+  PetscCall(PetscFree4(send_counts_mpi, send_displs_mpi, recv_counts_mpi, recv_displs_mpi));
+  PetscCall(PetscFree4(send_counts_crd, send_displs_crd, recv_counts_crd, recv_displs_crd));
+  PetscCall(PetscFree2(send_counts, send_displs));
+  PetscCall(PetscFree2(recv_counts, recv_displs));
+  PetscCall(PetscFree(send_idx));
+  PetscCall(PetscFree(send_crd));
+  PetscCall(PetscFree(all_bboxes));
+
+  *n_obs_filt     = total_recv;
+  *obs_idx_out    = recv_idx;
+  *obs_coords_out = recv_crd;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
   PetscDALETKFCreateLocalizationMat_AIJ - host (`MATAIJ`) implementation of the localization-weight Mat `Q`.
 
   Counterpart to `PetscDALETKFCreateLocalizationMat_Kokkos()`; same two-pass count/fill structure but plain C
@@ -12,26 +218,20 @@
 */
 static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
 {
-  PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local;
+  PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
   PetscInt     rstart, cstart, cend;
   PetscInt    *d_nnz, *o_nnz;
   PetscInt    *row_counts, *row_offsets, *col_indices, total_nnz = 0;
+  PetscInt    *obs_global_idx;
   PetscInt     local_min, local_max;
   PetscScalar *values;
   PetscReal   *vertex_coords, *obs_coords;
   Vec         *obs_vecs;
   MPI_Comm     comm;
-  PetscMPIInt  size;
-  PetscReal    cutoff2;
+  PetscReal    cutoff2, cutoff;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
-  /* Defense-in-depth: PetscDAEnsembleAnalysis_LETKF() already gates the host path to size == 1, but
-     this routine uses VecScatterCreateToAll, which would balloon to n_obs_global * dim per rank at
-     scale. Re-check here so the assumption stays load-bearing if the caller-side gate is ever
-     relaxed without porting to a neighbor-only obs exchange. */
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size == 1, comm, PETSC_ERR_SUP, "Host (MATAIJ) localization Mat build is single-rank only; multi-rank requires the Kokkos backend.");
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
   for (d = 0; d < 3; ++d) {
@@ -56,25 +256,11 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
     PetscCall(VecRestoreArrayRead(xyz[d], &local_coords_array));
   }
 
-  /* Observation coordinates gathered to all ranks, flattened as [obs][dim]. */
-  PetscCall(PetscMalloc1((size_t)n_obs_global * dim, &obs_coords));
-  for (d = 0; d < dim; ++d) {
-    VecScatter         ctx;
-    Vec                seq_vec;
-    const PetscScalar *array;
-
-    PetscCall(VecScatterCreateToAll(obs_vecs[d], &ctx, &seq_vec));
-    PetscCall(VecScatterBegin(ctx, obs_vecs[d], seq_vec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(ctx, obs_vecs[d], seq_vec, INSERT_VALUES, SCATTER_FORWARD));
-
-    PetscCall(VecGetArrayRead(seq_vec, &array));
-    for (PetscInt j = 0; j < n_obs_global; ++j) obs_coords[j * dim + d] = PetscRealPart(array[j]);
-    PetscCall(VecRestoreArrayRead(seq_vec, &array));
-    PetscCall(VecScatterDestroy(&ctx));
-    PetscCall(VecDestroy(&seq_vec));
-  }
-
   cutoff2 = LETKFCutoffSquared(type, radius);
+  cutoff  = PetscSqrtReal(cutoff2);
+
+  /* Bbox-pruned obs gather: replaces the all-to-all materialization of the global obs coord set. */
+  PetscCall(PetscDALETKFGatherObsBbox(dim, xyz, bd, cutoff, H, obs_vecs, &n_obs_cand, &obs_global_idx, &obs_coords));
 
   /* Pass 1: Count nnz per row (only entries with positive kernel weight).
      We pay the kernel evaluation twice (here and in Pass 2) to keep CSR allocations
@@ -85,7 +271,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   PetscCall(PetscMalloc1(n_vert_local, &row_counts));
   for (PetscInt i = 0; i < n_vert_local; ++i) {
     PetscInt count = 0;
-    for (PetscInt j = 0; j < n_obs_global; ++j) {
+    for (PetscInt j = 0; j < n_obs_cand; ++j) {
       PetscReal dist2 = 0.0;
       for (PetscInt dd = 0; dd < dim; ++dd) {
         PetscReal diff = vertex_coords[i * dim + dd] - obs_coords[j * dim + dd];
@@ -108,13 +294,14 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   for (PetscInt i = 0; i < n_vert_local; ++i) row_offsets[i + 1] = row_offsets[i] + row_counts[i];
   total_nnz = row_offsets[n_vert_local];
 
-  /* Pass 2: Fill column indices and weights. */
+  /* Pass 2: Fill column indices and weights. The (dist2 < cutoff2) && (w > 0.0) gate must
+     match Pass 1 exactly so each row writes precisely row_counts[i] entries. */
   PetscCall(PetscMalloc1(total_nnz, &col_indices));
   PetscCall(PetscMalloc1(total_nnz, &values));
   for (PetscInt i = 0; i < n_vert_local; ++i) {
     PetscInt offset = row_offsets[i];
     PetscInt pos    = 0;
-    for (PetscInt j = 0; j < n_obs_global; ++j) {
+    for (PetscInt j = 0; j < n_obs_cand; ++j) {
       PetscReal dist2 = 0.0;
       for (PetscInt dd = 0; dd < dim; ++dd) {
         PetscReal diff = vertex_coords[i * dim + dd] - obs_coords[j * dim + dd];
@@ -128,12 +315,13 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
       if (dist2 < cutoff2) {
         PetscReal w = (type == PETSCDA_LETKF_LOC_BOXCAR) ? 1.0 : LETKFKernelEval(type, PetscSqrtReal(dist2), radius);
         if (w > 0.0) {
-          col_indices[offset + pos] = j;
+          col_indices[offset + pos] = obs_global_idx[j];
           values[offset + pos]      = w;
           pos++;
         }
       }
     }
+    PetscAssert(pos == row_counts[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "LETKF localization Pass 1/2 mismatch on row %" PetscInt_FMT ": pass1=%" PetscInt_FMT " pass2=%" PetscInt_FMT, i, row_counts[i], pos);
   }
 
   /* Determine column ownership range for diagonal/off-diagonal preallocation split.
@@ -184,15 +372,15 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
     if (row_counts[i] < local_min) local_min = row_counts[i];
     if (row_counts[i] > local_max) local_max = row_counts[i];
   }
-  /* min/max are rank-local; the upstream PetscCheck() above gates this routine to a single rank,
-     so they are also the global values today. If the gate is ever relaxed, reduce these via
-     MPIU_Allreduce(MIN/MAX) before the PetscInfo. */
-  PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%d, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", (int)type, (double)radius, n_vert_local, n_obs_global, local_min, local_max));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_min, 1, MPIU_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_max, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
 
   for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
   PetscCall(PetscFree(obs_vecs));
   PetscCall(PetscFree(vertex_coords));
   PetscCall(PetscFree(obs_coords));
+  PetscCall(PetscFree(obs_global_idx));
   PetscCall(PetscFree(row_counts));
   PetscCall(PetscFree(row_offsets));
   PetscCall(PetscFree(col_indices));

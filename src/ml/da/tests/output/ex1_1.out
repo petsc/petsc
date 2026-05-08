@@ -8,4 +8,4 @@ PetscDA Object: 1 MPI process
   Assembled: true
   Inflation: 1.
   Local analysis: CPU
-  Localization type: none (global ETKF)
+  Localization type: none

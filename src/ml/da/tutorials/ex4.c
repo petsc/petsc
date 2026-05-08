@@ -1,15 +1,13 @@
 static char help[] = "2D shallow water LETKF data assimilation example.\n"
                      "Implements 2D shallow water equations with 3 DOF per grid point (h, hu, hv).\n\n"
                      "Usage:\n"
-                     "  ./ex4 -steps 100 -nx 41 -ny 41 -petscda_type letkf -ensemble_size 30\n\n";
+                     "  ./ex4 -steps 100 -nx 41 -ny 41 -petscda_type letkf -petscda_ensemble_size 30\n\n";
 
 #include <petscda.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
 #include "ex4.h"
-
-const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
 
 /* Default parameter values */
 #define DEFAULT_NX                     40
@@ -255,14 +253,14 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-h0", "Mean water height", "", h0, &h0, NULL));
   PetscCall(PetscOptionsReal("-Ax", "Wave amplitude in x", "", Ax, &Ax, NULL));
   PetscCall(PetscOptionsReal("-Ay", "Wave amplitude in y", "", Ay, &Ay, NULL));
-  PetscCall(PetscOptionsReal("-init_perturb_amplitude", "Initial ensemble perturbation amplitude (uniform on [-amplitude/2, amplitude/2) after centering)", "", init_perturb_amplitude, &init_perturb_amplitude, NULL));
+  PetscCall(PetscOptionsReal("-init_perturb_amplitude", "Initial ensemble perturbation amplitude (uniform on [0, amplitude), then mean-centered)", "", init_perturb_amplitude, &init_perturb_amplitude, NULL));
   PetscCall(PetscOptionsReal("-init_h_bias", "Initial ensemble-mean bias applied to height", "", init_h_bias, &init_h_bias, NULL));
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
+  PetscCall(PetscOptionsInt("-n_spin", "Number of spinup steps for the truth trajectory before assimilation starts", "", n_spin, &n_spin, NULL));
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
   PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov/mc)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
 
   PetscCall(ValidateParameters(&nx, &ny, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
@@ -293,7 +291,7 @@ int main(int argc, char **argv)
     PetscInt spinup_progress_interval = (n_spin >= 10) ? (n_spin / 10) : 1;
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth trajectory for %" PetscInt_FMT " steps...\n", n_spin));
     for (PetscInt k = 0; k < n_spin; k++) {
-      PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_state));
+      PetscCall(ShallowWaterStep2DVec(sw_ctx, k * dt, truth_state));
       if ((k + 1) % spinup_progress_interval == 0 || (k + 1) == n_spin) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Spinup progress: %" PetscInt_FMT "/%" PetscInt_FMT "\n", k + 1, n_spin));
     }
     PetscCall(VecCopy(truth_state, x0));
@@ -359,7 +357,12 @@ int main(int argc, char **argv)
         PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
       }
 
-      PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+      {
+        PetscReal r;
+        PetscCall(PetscDALETKFGetLocalizationRadius(da, &r));
+        if (r <= 0.0) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+        PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
+      }
       PetscCall(PetscDALETKFSetLocalizationCoordinates(da, Vecxyz, bd, H1));
       PetscCall(VecDestroy(&Vecxyz[0]));
       PetscCall(VecDestroy(&Vecxyz[1]));
@@ -401,7 +404,7 @@ int main(int argc, char **argv)
                           "  Mode                  : Data Assimilation\n"
                           "  Flux scheme           : %s\n"
                           "  Grid dimensions       : %" PetscInt_FMT " x %" PetscInt_FMT "\n"
-                          "  State dimension       : %" PetscInt_FMT " (%" PetscInt_FMT " grid points x %d DOF)\n"
+                          "  State dimension       : %" PetscInt_FMT " (%" PetscInt_FMT " grid points x %" PetscInt_FMT " DOF)\n"
                           "  Observation dimension : %" PetscInt_FMT "\n"
                           "  Observation stride    : %" PetscInt_FMT "\n"
                           "  Ensemble size         : %" PetscInt_FMT "\n"
@@ -419,7 +422,7 @@ int main(int argc, char **argv)
                           "  Init height bias      : %.3f\n"
                           "  Observation noise std : %.3f\n"
                           "  Random seed           : %" PetscInt_FMT "\n",
-                          flux_name, nx, ny, nx * ny * ndof, nx * ny, (int)ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_amplitude, (double)init_h_bias, (double)obs_error_std, random_seed));
+                          flux_name, nx, ny, nx * ny * ndof, nx * ny, ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_amplitude, (double)init_h_bias, (double)obs_error_std, random_seed));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   }
 
@@ -435,7 +438,7 @@ int main(int argc, char **argv)
     } else {
       PetscCall(PetscFOpen(PETSC_COMM_WORLD, output_file, "w", &fp));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "# 2D Shallow Water LETKF Output\n"));
-      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "# nx=%d, ny=%d, ndof=%d, nobs=%d, ensemble_size=%d\n", (int)nx, (int)ny, (int)ndof, (int)nobs, (int)ensemble_size));
+      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "# nx=%" PetscInt_FMT ", ny=%" PetscInt_FMT ", ndof=%" PetscInt_FMT ", nobs=%" PetscInt_FMT ", ensemble_size=%" PetscInt_FMT "\n", nx, ny, ndof, nobs, ensemble_size));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "# dt=%.6f, g=%.6f, obs_error_std=%.6f\n", (double)dt, (double)g, (double)obs_error_std));
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "# Format: step time [truth]x(nx*ny*ndof) [mean]x(nx*ny*ndof) [obs]x(nobs) rmse_forecast rmse_analysis\n"));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Writing output to: %s\n\n", output_file));
@@ -467,7 +470,7 @@ int main(int argc, char **argv)
 
     /* Propagate ensemble and truth trajectory */
     PetscCall(PetscDAEnsembleForecast(da, ShallowWaterStep2D, sw_ctx));
-    PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_state));
+    PetscCall(ShallowWaterStep2DVec(sw_ctx, (step - 1) * dt, truth_state));
 
     /* Forecast step: compute ensemble mean and forecast RMSE */
     PetscCall(PetscDAEnsembleComputeMean(da, x_mean));
@@ -513,7 +516,7 @@ int main(int argc, char **argv)
       PetscInt           i;
       PetscCall(VecGetArrayRead(truth_state, &truth_array));
       PetscCall(VecGetArrayRead(x_mean, &mean_array));
-      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%d %.6f", (int)step, (double)time));
+      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%" PetscInt_FMT " %.6f", step, (double)time));
       for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
       for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
       if (step % obs_freq == 0 && step > 0) {
@@ -583,11 +586,14 @@ int main(int argc, char **argv)
       args: -petscda_ensemble_size 7
 
     test:
+      nsize: 3
+      suffix: letkf_wave2d_mpi
+      args: -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
+
+    test:
       suffix: kokkos_wave2d_serial
       requires: kokkos_kernels
       args: -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 7
-      output_file: output/ex4_letkf_wave2d.out
-      filter: sed -e "s/Local analysis: Kokkos/Local analysis: CPU/" -e "/GPU batch size:/d"
 
     test:
       nsize: 3
@@ -606,4 +612,13 @@ int main(int argc, char **argv)
     test:
       suffix: letkf_boxcar
       args: -petscda_ensemble_size 3 -petscda_letkf_localization_type boxcar -petscda_letkf_localization_radius 15.0
+
+  # Exercises truth-trajectory spinup (-n_spin) and the visualization-data
+  # writer (-output_file). Serial-only: the writer guards itself off under MPI.
+  test:
+    suffix: letkf_wave2d_spinup_io
+    requires: !complex
+    nsize: 1
+    args: -petscda_type letkf -steps 3 -n_spin 2 -nx 11 -ny 11 -obs_freq 2 -obs_error 0.1 -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0 -output_file ex4_spinup_io.dat
+    temporaries: ex4_spinup_io.dat
 TEST*/

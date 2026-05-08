@@ -188,6 +188,8 @@ static PetscErrorCode Lorenz96Step(Mat ensemble, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(MatGetSize(ensemble, NULL, &n));
+  /* Collective: dense ensemble Mat is row-distributed, so every rank visits every global column j and
+     MatDenseGetColumnVec returns the parallel column-Vec that all ranks step together. */
   for (PetscInt j = 0; j < n; j++) {
     Vec col;
 
