@@ -28,7 +28,7 @@
 PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], PetscReal bd[], PetscReal cutoff, Mat H, Vec obs_vecs[], PetscInt *n_obs_filt, PetscInt **obs_idx_out, PetscReal **obs_coords_out)
 {
   MPI_Comm           comm;
-  PetscMPIInt        size, rank, two_dim_mpi;
+  PetscMPIInt        size, two_dim_mpi;
   PetscInt           n_vert_local, obs_rstart, obs_rend, n_obs_local;
   PetscInt           total_send = 0, total_recv = 0;
   PetscReal          local_bbox[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; /* layout: [vmin_0..vmin_{d-1}, vmax_0..vmax_{d-1}] */
@@ -44,7 +44,6 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCheck(dim >= 1 && dim <= 3, comm, PETSC_ERR_ARG_OUTOFRANGE, "Spatial dimension must be in [1, 3]; got %" PetscInt_FMT " (local_bbox is sized for at most 3 dims)", dim);
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscMPIIntCast(2 * dim, &two_dim_mpi));
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
   PetscCall(MatGetOwnershipRange(H, &obs_rstart, &obs_rend));
@@ -173,7 +172,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
   }
   PetscCallMPI(MPI_Alltoall(send_counts_mpi, 1, MPI_INT, recv_counts_mpi, 1, MPI_INT, comm));
   recv_displs_mpi[0] = 0;
-  for (PetscMPIInt r = 1; r < size; ++r) recv_displs_mpi[r] = recv_displs_mpi[r - 1] + recv_counts_mpi[r - 1];
+  for (PetscMPIInt r = 1; r < size; ++r) PetscCall(PetscMPIIntCast((PetscInt64)recv_displs_mpi[r - 1] + (PetscInt64)recv_counts_mpi[r - 1], &recv_displs_mpi[r]));
   recv_displs[0] = 0;
   for (PetscMPIInt r = 0; r < size; ++r) {
     recv_counts[r]     = recv_counts_mpi[r];
@@ -188,10 +187,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
 
   PetscCall(PetscMalloc4(size, &send_counts_crd, size, &send_displs_crd, size, &recv_counts_crd, size, &recv_displs_crd));
   for (PetscMPIInt r = 0; r < size; ++r) {
-    PetscCall(PetscMPIIntCast((PetscInt)send_counts_mpi[r] * dim, &send_counts_crd[r]));
-    PetscCall(PetscMPIIntCast((PetscInt)send_displs_mpi[r] * dim, &send_displs_crd[r]));
-    PetscCall(PetscMPIIntCast((PetscInt)recv_counts_mpi[r] * dim, &recv_counts_crd[r]));
-    PetscCall(PetscMPIIntCast((PetscInt)recv_displs_mpi[r] * dim, &recv_displs_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt64)send_counts_mpi[r] * dim, &send_counts_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt64)send_displs_mpi[r] * dim, &send_displs_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt64)recv_counts_mpi[r] * dim, &recv_counts_crd[r]));
+    PetscCall(PetscMPIIntCast((PetscInt64)recv_displs_mpi[r] * dim, &recv_displs_crd[r]));
   }
   PetscCallMPI(MPI_Alltoallv(send_crd, send_counts_crd, send_displs_crd, MPIU_REAL, recv_crd, recv_counts_crd, recv_displs_crd, MPIU_REAL, comm));
 
@@ -221,7 +220,8 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
   PetscInt     rstart, cstart, cend;
   PetscInt    *d_nnz, *o_nnz;
-  PetscInt    *row_counts, *row_offsets, *col_indices, total_nnz = 0;
+  PetscInt    *row_counts, *row_offsets, *col_indices;
+  PetscInt     total_nnz = 0;
   PetscInt    *obs_global_idx;
   PetscInt     local_min, local_max;
   PetscScalar *values;

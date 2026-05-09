@@ -238,7 +238,6 @@ int main(int argc, char **argv)
   /* Parse command-line options */
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Lorenz-96 Example", NULL);
   PetscCall(PetscOptionsInt("-n", "State dimension", "", n, &n, NULL));
-  bd[0] = (PetscReal)n;
   PetscCall(PetscOptionsInt("-steps", "Number of time steps", "", steps, &steps, NULL));
   PetscCall(PetscOptionsInt("-burn", "Burn-in steps excluded from statistics", "", burn, &burn, NULL));
   PetscCall(PetscOptionsInt("-obs_freq", "Observation frequency", "", obs_freq, &obs_freq, NULL));
@@ -247,8 +246,8 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
   PetscCall(PetscOptionsReal("-ensemble_init_std", "Initial ensemble spread standard deviation", "", ensemble_init_std, &ensemble_init_std, NULL));
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   PetscOptionsEnd();
+  bd[0] = (PetscReal)n;
 
   if (ensemble_init_std < 0) ensemble_init_std = obs_error_std;
 
@@ -323,7 +322,12 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(da_state, &xyz[0]));
   PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
   PetscCall(VecStrideGather(coord, 0, xyz[0], INSERT_VALUES));
-  PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+  {
+    PetscReal r;
+    PetscCall(PetscDALETKFGetLocalizationRadius(da, &r));
+    if (r <= 0.0) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+    PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
+  }
   PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H));
   PetscCall(VecDestroy(&xyz[0]));
   PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
@@ -447,34 +451,15 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    requires: kokkos_kernels !complex
-    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5
+    requires: !complex
+    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5 -petscda_type letkf
 
     test:
       suffix: letkf_serial
-      args: -petscda_type letkf
-
-    test:
-      nsize: 3
-      suffix: letkf
-      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -info :vec -petscda_letkf_localization_radius 5.0
 
     test:
       suffix: letkf_loc_none
-      args: -petscda_type letkf -petscda_letkf_localization_type none
-
-    test:
-      suffix: letkf_loc_none_kokkos
-      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -petscda_letkf_localization_type none
-
-    test:
-      nsize: 3
-      suffix: letkf_loc_none_kokkos_3rank
-      args: -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos -petscda_letkf_localization_type none
-
-  testset:
-    requires: !complex
-    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5 -petscda_type letkf
+      args: -petscda_letkf_localization_type none
 
     test:
       nsize: 2
@@ -484,6 +469,24 @@ int main(int argc, char **argv)
     test:
       nsize: 2
       suffix: letkf_loc_none_2rank
+      args: -petscda_letkf_localization_type none
+
+  testset:
+    requires: kokkos_kernels !complex
+    args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 5 -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos
+
+    test:
+      nsize: 3
+      suffix: letkf
+      args: -info :vec -petscda_letkf_localization_radius 5.0
+
+    test:
+      suffix: letkf_loc_none_kokkos
+      args: -petscda_letkf_localization_type none
+
+    test:
+      nsize: 3
+      suffix: letkf_loc_none_kokkos_3rank
       args: -petscda_letkf_localization_type none
 
   TEST*/

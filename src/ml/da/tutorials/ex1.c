@@ -161,6 +161,16 @@ static PetscErrorCode Lorenz96ContextDestroy(Lorenz96Ctx **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of Lorenz96Step(). */
+static PetscErrorCode Lorenz96StepVec(Lorenz96Ctx *l95, Vec x)
+{
+  PetscFunctionBeginUser;
+  PetscCall(TSSetStepNumber(l95->ts, 0));
+  PetscCall(TSSetTime(l95->ts, 0.0));
+  PetscCall(TSSolve(l95->ts, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Lorenz96Step - Advance every column of the ensemble matrix one time step using Lorenz-96 dynamics.
 
@@ -172,15 +182,6 @@ static PetscErrorCode Lorenz96ContextDestroy(Lorenz96Ctx **ctx)
   TS only advances one state at a time, so loop over the columns here. Uses a single explicit RK4 step
   with the pre-configured TS object for efficiency.
 */
-/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of Lorenz96Step(). */
-static PetscErrorCode Lorenz96StepVec(Lorenz96Ctx *l95, Vec x)
-{
-  PetscFunctionBeginUser;
-  PetscCall(TSSetTime(l95->ts, 0.0));
-  PetscCall(TSSolve(l95->ts, x));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode Lorenz96Step(Mat ensemble, PetscCtx ctx)
 {
   Lorenz96Ctx *l95 = (Lorenz96Ctx *)ctx;

@@ -500,11 +500,13 @@ int main(int argc, char **argv)
   PetscInt         random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
   PetscInt         n_spin = SPINUP_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ;
   PetscInt         n_stat_steps = 0, obs_count = 0, step;
-  PetscReal        g = DEFAULT_G, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
-  PetscReal        localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
-  PetscReal        L                   = (PetscReal)DEFAULT_N; /* Domain length */
-  PetscReal        rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal        sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  /* LETKF constraint: nobs = n_vert/obs_stride, observe every obs_stride-th point */
+  PetscInt  obs_stride = 2, nobs;
+  PetscReal g = DEFAULT_G, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
+  PetscReal L                   = (PetscReal)DEFAULT_N; /* Domain length */
+  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -525,7 +527,6 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-random_seed", "Random seed for ensemble perturbations", "", random_seed, &random_seed, NULL));
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
-  PetscCall(PetscOptionsReal("-petscda_letkf_localization_radius", "localization cutoff radius for the built-in kernels (must be positive)", "", localization_radius, &localization_radius, NULL));
   /* Parse test type option */
   {
     char        testTypeName[256];
@@ -544,12 +545,9 @@ int main(int argc, char **argv)
 
   /* Parse flux type option */
   PetscCall(PetscOptionsEnum("-ex3_flux", "Flux scheme (rusanov/mc)", "", Ex3FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
-  n_spin = 0; /* No spinup needed for either test - dam evolves naturally, wave is already smooth */
   PetscOptionsEnd();
-
-  /* LETKF constraint: nobs = n_vert/obs_stride, observe every obs_stride-th point */
-  PetscInt obs_stride = 2;
-  PetscInt nobs       = n_vert / obs_stride;
+  n_spin = 0; /* No spinup needed for either test - dam evolves naturally, wave is already smooth */
+  nobs   = n_vert / obs_stride;
 
   /* Validate and constrain parameters */
   PetscCall(ValidateParameters(&n_vert, &nobs, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
@@ -676,7 +674,12 @@ int main(int argc, char **argv)
       PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
       PetscCall(VecCopy(coord, xyz[0]));
 
-      PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+      {
+        PetscReal r;
+        PetscCall(PetscDALETKFGetLocalizationRadius(da, &r));
+        if (r <= 0.0) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+        PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
+      }
       PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H1));
       PetscCall(VecDestroy(&xyz[0]));
     }

@@ -329,7 +329,7 @@ so standard `-log_view` outputs will include assimilation breakdown.
 
 ## Further reading
 
-- {any}`ch_ts` discusses PETSc time integrators that can supply the forecast operator passed to `PetscDAForecast()`.
+- {any}`ch_ts` discusses PETSc time integrators that can supply the forecast operator passed to `PetscDAEnsembleForecast()`.
 - {any}`ch_vectors` documents vector assembly and parallel data management for the state and observation spaces.
 - {any}`ch_snes` outlines nonlinear solvers that often participate in observation or model operators.
 - {any}`ch_dmbase` provides background on distributed mesh infrastructure that can coexist with PetscDA-managed ensembles.

@@ -378,8 +378,7 @@ int main(int argc, char **argv)
         kname = "boxcar";
         break;
       default:
-        kname = "built-in";
-        break;
+        SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unhandled localization type %d", (int)loc_type);
       }
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)localization_radius));
     }
@@ -479,7 +478,7 @@ int main(int argc, char **argv)
     rmse_analysis = rmse_forecast;
 
     /* Analysis step: assimilate observations when available */
-    if (step % obs_freq == 0 && step > 0) {
+    if (step % obs_freq == 0) {
       Vec truth_obs, temp_truth;
       PetscCall(MatCreateVecs(H, NULL, &truth_obs));
       PetscCall(MatCreateVecs(H, &temp_truth, NULL));
@@ -519,7 +518,7 @@ int main(int argc, char **argv)
       PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%" PetscInt_FMT " %.6f", step, (double)time));
       for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(truth_array[i])));
       for (i = 0; i < nx * ny * ndof; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(mean_array[i])));
-      if (step % obs_freq == 0 && step > 0) {
+      if (step % obs_freq == 0) {
         PetscCall(VecGetArrayRead(observation, &obs_array));
         for (i = 0; i < nobs; i++) PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, " %.8e", (double)PetscRealPart(obs_array[i])));
         PetscCall(VecRestoreArrayRead(observation, &obs_array));
@@ -531,11 +530,8 @@ int main(int argc, char **argv)
     }
 
     /* Progress reporting */
-    if (progress_freq == 0) {
-      if (step == steps) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  RMSE_forecast %.5f  RMSE_analysis %.5f\n", step, (double)time, (double)rmse_forecast, (double)rmse_analysis));
-    } else {
-      if ((step % progress_freq == 0) || (step == steps)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  RMSE_forecast %.5f  RMSE_analysis %.5f\n", step, (double)time, (double)rmse_forecast, (double)rmse_analysis));
-    }
+    if (step == steps || (progress_freq > 0 && step % progress_freq == 0))
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step %4" PetscInt_FMT ", time %6.3f  RMSE_forecast %.5f  RMSE_analysis %.5f\n", step, (double)time, (double)rmse_forecast, (double)rmse_analysis));
   }
 
   /* Report final statistics */

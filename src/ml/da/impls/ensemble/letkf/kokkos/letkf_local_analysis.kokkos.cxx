@@ -1,4 +1,4 @@
-#include "../src/ml/da/impls/ensemble/letkf/letkf.h"
+#include <../src/ml/da/impls/ensemble/letkf/letkf.h>
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>
 
@@ -170,11 +170,8 @@ static PetscErrorCode BatchedEigenSolve_Host(Kokkos::View<PetscScalar ***, Kokko
       LAPACKsyev_("V", "U", &n, v_ptr, &lda, lambda_ptr, work_ptr, &lw, &info);
   #endif
 
-      if (info != 0) {
-        /* We cannot return error code from lambda, so we just abort or ignore.
-           In production code, we should use a reduction to report errors. */
-        Kokkos::abort("LAPACK eigendecomposition failed in parallel region");
-      }
+      /* PetscCheck/SETERRQ are not device-callable; abort the parallel region instead. */
+      if (info != 0) Kokkos::abort("LAPACK eigendecomposition failed in parallel region");
 
       /* Copy results back to host views */
       for (PetscInt j = 0; j < n_size; j++) {
@@ -246,9 +243,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallCUDA(cudaMemcpy(h_info, d_info, sizeof(int) * n_batch, cudaMemcpyDeviceToHost));
-  for (PetscInt i = 0; i < n_batch; i++) {
-    if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cuSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
-  }
+  for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cuSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   PetscCall(PetscFree(h_info));
 
   /* Copy results back from contiguous layout to V_batch */
@@ -306,9 +301,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallHIP(hipMemcpy(h_info, d_info, sizeof(int) * n_batch, hipMemcpyDeviceToHost));
-  for (PetscInt i = 0; i < n_batch; i++) {
-    if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
-  }
+  for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   PetscCall(PetscFree(h_info));
 
   /* Copy results back from contiguous layout to V_batch */
@@ -366,9 +359,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   q->memcpy(h_info, d_info, sizeof(int) * n_batch).wait();
-  for (PetscInt i = 0; i < n_batch; i++) {
-    if (h_info[i] != 0) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "oneMKL eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
-  }
+  for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "oneMKL eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
   PetscCall(PetscFree(h_info));
 
   /* Copy results back from contiguous layout to V_batch */
@@ -620,7 +611,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
   PetscDA_Ensemble                                            *en = &impl->en;
   EigenWorkspace                                              *eigen_work;
   PetscInt                                                     ndof;
-  PetscInt                                                     lda_z_global, lda_x, lda_e;
+  PetscInt                                                     lda_z_global, lda_x, lda_e, n_obs_local;
   PetscInt                                                     max_nnz_per_row, max_nnz_copy, chunk_size;
   PetscInt64                                                   mem_per_point;
   PetscReal                                                    sqrt_m_minus_1, scale, inflation_inv;
@@ -704,8 +695,10 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
   PetscCall(VecGetArrayReadAndMemType(y_mean_global, &y_mean_global_array, &y_mean_mem_type));
   PetscCall(VecGetArrayReadAndMemType(r_inv_sqrt_global, &r_inv_sqrt_global_array, &r_inv_sqrt_mem_type));
   PetscCall(MatDenseGetLDA(Z_global, &lda_z_global));
+  PetscCall(VecGetLocalSize(observation, &n_obs_local));
 
-  /* Handle memory mirroring for observation data */
+  /* Handle memory mirroring for observation data. The 1-D obs vectors are sized n_obs_local;
+     only the 2-D Z view is shaped by lda_z_global. */
   z_ptr          = z_global_array;
   y_ptr          = y_global_array;
   y_mean_ptr     = y_mean_global_array;
@@ -718,29 +711,33 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
     z_ptr = z_managed.data();
   }
   if (y_mem_type == PETSC_MEMTYPE_HOST) {
-    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_global_array, lda_z_global);
-    y_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("y_managed", lda_z_global);
+    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_global_array, n_obs_local);
+    y_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("y_managed", n_obs_local);
     Kokkos::deep_copy(y_managed, src);
     y_ptr = y_managed.data();
   }
   if (y_mean_mem_type == PETSC_MEMTYPE_HOST) {
-    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_mean_global_array, lda_z_global);
-    y_mean_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("y_mean_managed", lda_z_global);
+    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_mean_global_array, n_obs_local);
+    y_mean_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("y_mean_managed", n_obs_local);
     Kokkos::deep_copy(y_mean_managed, src);
     y_mean_ptr = y_mean_managed.data();
   }
   if (r_inv_sqrt_mem_type == PETSC_MEMTYPE_HOST) {
-    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(r_inv_sqrt_global_array, lda_z_global);
-    r_inv_sqrt_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("r_inv_sqrt_managed", lda_z_global);
+    Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(r_inv_sqrt_global_array, n_obs_local);
+    r_inv_sqrt_managed = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, exec_space>("r_inv_sqrt_managed", n_obs_local);
     Kokkos::deep_copy(r_inv_sqrt_managed, src);
     r_inv_sqrt_ptr = r_inv_sqrt_managed.data();
   }
 
-  /* Create unmanaged Kokkos views for global observation data */
+  /* Create unmanaged Kokkos views for global observation data. NOTE: Z_global_view's leading
+     extent is lda_z_global (the MatDense column stride) while the 1-D obs views use n_obs_local
+     (the unpadded local-row count). Always index Z_global_view as Z_global_view(obs_idx, j) with
+     obs_idx < n_obs_local taken from Q's per-row column list; never iterate [0, extent(0)) on Z
+     because that walks into LDA padding. */
   Z_global_view          = view_2d_unmanaged(z_ptr, lda_z_global, m);
-  y_global_view          = view_1d_unmanaged(y_ptr, lda_z_global);
-  y_mean_global_view     = view_1d_unmanaged(y_mean_ptr, lda_z_global);
-  r_inv_sqrt_global_view = view_1d_unmanaged(r_inv_sqrt_ptr, lda_z_global);
+  y_global_view          = view_1d_unmanaged(y_ptr, n_obs_local);
+  y_mean_global_view     = view_1d_unmanaged(y_mean_ptr, n_obs_local);
+  r_inv_sqrt_global_view = view_1d_unmanaged(r_inv_sqrt_ptr, n_obs_local);
 
   /* Get access to global X matrix and mean vector */
   PetscCall(MatDenseGetArrayReadAndMemType(X, &x_array, &x_mem_type));
@@ -748,6 +745,10 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
   PetscCall(MatDenseGetArrayWriteAndMemType(en->ensemble, &e_array, &e_mem_type));
   PetscCall(MatDenseGetLDA(X, &lda_x));
   PetscCall(MatDenseGetLDA(en->ensemble, &lda_e));
+  /* Per-vertex subviews into X/E span [i_global*ndof, (i_global+1)*ndof); the maximum global
+     index is n_vertices-1, so the leading dimension must cover all local vertices. */
+  PetscCheck(lda_x >= n_vertices * ndof, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_INCOMP, "X leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_x, n_vertices * ndof);
+  PetscCheck(lda_e >= n_vertices * ndof, PetscObjectComm((PetscObject)en->ensemble), PETSC_ERR_ARG_INCOMP, "Ensemble leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_e, n_vertices * ndof);
 
   /* Handle memory mirroring for state data */
   x_ptr    = x_array;
@@ -1082,22 +1083,20 @@ PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA_LETKF *impl,
       "ComputeAllTMatrices", Kokkos::RangePolicy<exec_space>(0, n_batch_current), KOKKOS_LAMBDA(const int i) {
         PetscInt i_global = chunk_start + i;
         PetscInt ncols    = Q_i_view(i_global + 1) - Q_i_view(i_global);
-        auto     S_i      = Kokkos::subview(S_batch, i, Kokkos::ALL(), Kokkos::ALL());
-        auto     T_i      = Kokkos::subview(T_batch, i, Kokkos::ALL(), Kokkos::ALL());
 
         /* Compute upper triangle of T_i = (1/rho)I + S_i^T * S_i */
         /* T_i(j,k) = (1/rho)*delta_jk + sum_p S_i(p,j) * S_i(p,k) for j <= k */
         for (int j = 0; j < m; j++) {
           for (int k = j; k < m; k++) {
             PetscScalar sum = (j == k) ? inflation_inv : 0.0;
-            for (PetscInt p = 0; p < ncols; p++) sum += S_i(p, j) * S_i(p, k);
-            T_i(j, k) = sum;
+            for (PetscInt p = 0; p < ncols; p++) sum += S_batch(i, p, j) * S_batch(i, p, k);
+            T_batch(i, j, k) = sum;
           }
         }
 
         /* Copy upper triangle to lower triangle (T is symmetric) */
         for (int j = 0; j < m; j++) {
-          for (int k = 0; k < j; k++) T_i(j, k) = T_i(k, j);
+          for (int k = 0; k < j; k++) T_batch(i, j, k) = T_batch(i, k, j);
         }
       });
     Kokkos::fence();

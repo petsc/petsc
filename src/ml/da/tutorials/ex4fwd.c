@@ -196,6 +196,6 @@ int main(int argc, char **argv)
     suffix: mms_spatial
     requires: !complex !single
     args: -test_mms_spatial_order -steps 5 -dt 1e-4
-    filter: head -n 1
+    filter: grep -E "MMS spatial-order check|observed p" | sed -E "s/=([0-9]+)\.([0-9])[0-9]/=\\1.\\2/g"
 
 TEST*/

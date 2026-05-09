@@ -45,6 +45,10 @@ static inline void ManufacturedSolution2D(PetscReal Lx, PetscReal Ly, PetscReal 
   *hv = A * PetscSinReal(t) * sx * cy;
 }
 
+/* MMS uses a single scalar amplitude A: callers pass sw->Ax with the invariant Ax == Ay enforced
+   by SetInitialCondition() before the integration begins. ShallowWater2DContextCreate()
+   collectively enforces h0 - A > EX4_DRY_TOL when verify_mms is enabled (h = h0 + A*sin(t)*sx*sy
+   ranges in [h0-A, h0+A] and the source divides by h*h), so this hot path skips the per-cell guard. */
 static inline void ManufacturedSource2D(PetscReal Lx, PetscReal Ly, PetscReal x, PetscReal y, PetscReal t, PetscReal g, PetscReal h0, PetscReal A, PetscReal *S_h, PetscReal *S_hu, PetscReal *S_hv)
 {
   PetscReal h, hu, hv;
@@ -210,6 +214,10 @@ static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, Pet
 
   PetscFunctionBeginUser;
   PetscCheck(flux_type != EX4_FLUX_MC, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "MC flux limiter not yet implemented for 2D; use -ex4_flux rusanov");
+  /* ManufacturedSource2D divides by h*h, where h = h0 + A*sin(t)*sx*sy ranges in [h0-A, h0+A].
+     Enforce h0 - Ax > EX4_DRY_TOL once on the DA's comm so misuse fails collectively at setup
+     instead of deadlocking on a per-cell SETERRQ from one rank during the RHS evaluation. */
+  if (verify_mms) PetscCheck(h0 - Ax > EX4_DRY_TOL, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "MMS amplitude Ax (%g) must leave h0 (%g) > EX4_DRY_TOL (%g)", (double)Ax, (double)h0, (double)EX4_DRY_TOL);
   PetscCall(PetscNew(&sw));
   /* Borrowed reference; caller owns the DM and ShallowWater2DContextDestroy() does not free it. */
   sw->da         = da;

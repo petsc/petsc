@@ -23,7 +23,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   PetscInt                                                           dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
   PetscInt                                                           rstart, cstart, cend;
   PetscInt                                                           total_nnz = 0, local_min, local_max;
-  PetscInt                                                          *d_nnz, *o_nnz;
+  PetscInt                                                          *d_nnz, *o_nnz, *seq_nnz = NULL;
   PetscInt                                                          *obs_global_idx_host;
   PetscReal                                                         *obs_coords_host_buf;
   Vec                                                               *obs_vecs;
@@ -135,8 +135,13 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   for (PetscInt i = 0; i < n_vert_local; ++i) row_offsets_host(i + 1) = row_offsets_host(i) + row_counts_host(i);
   Kokkos::deep_copy(row_offsets_dev, row_offsets_host);
 
-  /* Total nnz for output arrays */
-  for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz += row_counts_host(i);
+  /* Total nnz for output arrays. Accumulate in 64-bit and cast so we trip a clear error
+     instead of silently wrapping when localization radius * obs density overflows PetscInt. */
+  {
+    PetscInt64 total_nnz64 = 0;
+    for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz64 += (PetscInt64)row_counts_host(i);
+    PetscCall(PetscIntCast(total_nnz64, &total_nnz));
+  }
 
   /* Pass 2: Fill column indices and weights */
   col_indices_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("col_indices", total_nnz);
@@ -202,7 +207,6 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
      splits diagonal vs off-diagonal blocks. Compute the seq totals into a temporary so the MPI side
      keeps its split intact. */
   {
-    PetscInt *seq_nnz;
     PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
     for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
     PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));

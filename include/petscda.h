@@ -12,10 +12,8 @@
 
    Notes:
    This is new code, please independently verify all results you obtain using it.
-
-   Some planned work for `PetscDA` is available as GitLab Issue #1882
-
-   Currently we supply one ensemble-based assimilator: `PETSCDALETKF`
+   Planned work for `PetscDA` is tracked on GitLab as Issue #1882.
+   The only ensemble-based assimilator currently supplied is `PETSCDALETKF`.
 
 .seealso: [](ch_da), `PetscDAType`, `PETSCDALETKF`, `PetscDACreate()`, `PetscDASetType()`,
           `PetscDASetSizes()`, `PetscDAEnsembleSetSize()`, `PetscDAEnsembleAnalysis()`, `PetscDAEnsembleForecast()`,
