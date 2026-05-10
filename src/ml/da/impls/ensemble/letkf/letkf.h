@@ -9,13 +9,15 @@ typedef struct {
   Vec              y_mean;
   Vec              delta_scaled;
   Vec              w;
+  Vec              s_transpose_delta; /* PETSC_COMM_SELF Vec of length m, scratch for the per-analysis S^T * delta projection. */
   Vec              r_inv_sqrt;
   Mat              Z;
   Mat              S;
   Mat              T_sqrt;
   Mat              w_ones;
-  /* Localization matrix (n_grid x n_observations_total), variable nnz per row;
-     built lazily on first analysis and refreshed when Q_dirty is set. */
+  /* Localization matrix (n_grid x n_observations_total), variable nnz per row; built lazily on
+     first analysis. Setters that mutate Q-determining inputs (type, radius, coordinates) destroy
+     Q via PetscDALETKFResetLocalization() so the next analysis rebuilds. */
   Mat                          Q;
   PetscDALETKFLocalizationType type;                /* Localization kernel type */
   PetscReal                    localization_radius; /* Cutoff half-width for built-in kernels */
@@ -24,7 +26,6 @@ typedef struct {
   Vec       coord_xyz[3]; /* Coordinate vectors for grid points (per dimension) */
   PetscReal coord_bd[3];  /* Periodic-domain extents (0 = non-periodic) */
   Mat       coord_H;      /* Observation operator used to map coordinates to observation locations */
-  PetscBool Q_dirty;      /* Q must be (re)built before next analysis */
 
   PetscInt max_nnz_per_row; /* Cached max nnz across all rows of Q (global) */
   PetscInt min_nnz_per_row; /* Cached min nnz across all rows of Q (global) */
@@ -63,16 +64,18 @@ typedef struct {
 
 PETSC_INTERN const char *const PetscDALETKFLocalizationTypes[];
 
-PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType, PetscReal, Vec[], PetscReal[], Mat, Mat *);
+PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType, PetscReal, Vec[], PetscReal[], Mat, PetscBool, Mat *);
 PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt, Vec[], PetscReal[], PetscReal, Mat, Vec[], PetscInt *, PetscInt **, PetscReal **);
 PETSC_INTERN PetscErrorCode PetscDALETKFSetupObsScatter(PetscDA_LETKF *, Mat);
 PETSC_INTERN PetscErrorCode PetscDALETKFDestroyObsScatter(PetscDA_LETKF *);
-PETSC_INTERN PetscErrorCode PetscDALETKFBroadcastWeightVector(Vec, PetscInt, Mat);
+PETSC_INTERN PetscErrorCode PetscDALETKFReplicateWeightVector(Vec, PetscInt, Mat);
+PETSC_INTERN PetscErrorCode PetscDALETKFEnsureGlobalScratch(PetscDA_LETKF *, PetscInt);
 PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA, PetscDA_LETKF *, PetscInt, PetscInt, Mat, Vec, Mat, Vec, Vec);
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETKFLocalizationType, PetscReal, Vec[], PetscReal[], Mat, Mat *);
 PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA, PetscDA_LETKF *, PetscInt, PetscInt, Mat, Vec, Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode PetscDALETKFGlobalAnalysis_Kokkos(PetscDA, PetscDA_LETKF *, PetscInt, Mat, Vec);
 PETSC_INTERN PetscErrorCode PetscDALETKFSetupLocalization_Kokkos(PetscDA_LETKF *);
+PETSC_INTERN PetscErrorCode PetscDALETKFDestroyQDeviceMirrors_Kokkos(PetscDA_LETKF *);
 PETSC_INTERN PetscErrorCode PetscDALETKFDestroyLocalization_Kokkos(PetscDA_LETKF *);
 #endif

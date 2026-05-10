@@ -660,6 +660,7 @@ int main(int argc, char **argv)
       PetscScalar *x_coord;
       PetscInt     xs, xm, i;
       PetscReal    bd[3] = {L, 0, 0};
+      PetscBool    radius_set;
 
       PetscCall(DMDASetUniformCoordinates(da_state, 0.0, L, 0.0, 0.0, 0.0, 0.0));
       PetscCall(DMGetCoordinateDM(da_state, &cda));
@@ -674,12 +675,9 @@ int main(int argc, char **argv)
       PetscCall(PetscObjectSetName((PetscObject)xyz[0], "x_coordinate"));
       PetscCall(VecCopy(coord, xyz[0]));
 
-      {
-        PetscReal r;
-        PetscCall(PetscDALETKFGetLocalizationRadius(da, &r));
-        if (r <= 0.0) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-        PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
-      }
+      PetscCall(PetscOptionsHasName(NULL, ((PetscObject)da)->prefix, "-petscda_letkf_localization_radius", &radius_set));
+      if (!radius_set) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+      PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
       PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H1));
       PetscCall(VecDestroy(&xyz[0]));
     }

@@ -1,4 +1,5 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
+#requiresscalar    real
 -include ../../../../../../petscdir.mk
 
 MANSEC    = ML

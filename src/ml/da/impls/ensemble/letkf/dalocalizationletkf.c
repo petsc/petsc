@@ -30,9 +30,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
   MPI_Comm           comm;
   PetscMPIInt        size, two_dim_mpi;
   PetscInt           n_vert_local, obs_rstart, obs_rend, n_obs_local;
+  PetscInt           n_periodic = 0;
   PetscInt           total_send = 0, total_recv = 0;
-  PetscReal          local_bbox[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; /* layout: [vmin_0..vmin_{d-1}, vmax_0..vmax_{d-1}] */
-  PetscReal         *all_bboxes    = NULL;
+  PetscReal          local_bbox[2 * 3] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; /* layout: [vmin_0..vmin_{d-1}, vmax_0..vmax_{d-1}] */
+  PetscReal         *all_bboxes        = NULL;
   PetscInt          *send_counts = NULL, *send_displs = NULL, *recv_counts = NULL, *recv_displs = NULL;
   PetscInt          *send_idx = NULL, *recv_idx = NULL, *pos = NULL;
   PetscReal         *send_crd = NULL, *recv_crd = NULL;
@@ -69,7 +70,14 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
   }
 
   /* Step 1: per-dim local-vertex bbox padded by cutoff. Periodic dims pass through (-/+ MAX_REAL).
-     A rank with no vertices uses (+MAX, -MAX) so its bbox excludes every obs. */
+     A rank with no vertices uses (+MAX, -MAX) so its bbox excludes every obs. When every dim is
+     periodic the prune is a no-op and the gather degenerates to all-to-all; emit a PetscInfo
+     under `-info` so this is visible without surprising serial users. Fires on every Q rebuild
+     (Q is built lazily and re-built when the setters invalidate it). */
+  for (PetscInt d = 0; d < dim; ++d)
+    if (bd[d] > 0.0) n_periodic++;
+  /* size == 1 already returned above, so the prune-is-a-no-op notice always applies to a real multi-rank gather. */
+  if (n_periodic == dim) PetscCall(PetscInfo((PetscObject)H, "All %" PetscInt_FMT " dim(s) periodic; bbox prune passes through, obs gather degenerates to all-to-all\n", dim));
   for (PetscInt d = 0; d < dim; ++d) {
     if (bd[d] > 0.0) {
       local_bbox[d]       = -PETSC_MAX_REAL;
@@ -101,29 +109,25 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
      a malloc failure later cannot leave obs_vecs locked. */
   PetscCall(PetscMalloc2(size, &send_counts, size + 1, &send_displs));
   PetscCall(PetscArrayzero(send_counts, size));
-  {
-    const PetscScalar *obs_arr[3] = {NULL, NULL, NULL};
+  for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
+  for (PetscInt k = 0; k < n_obs_local; ++k) {
+    PetscReal coord_k[3] = {0.0, 0.0, 0.0};
 
-    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
-    for (PetscInt k = 0; k < n_obs_local; ++k) {
-      PetscReal coord_k[3] = {0.0, 0.0, 0.0};
+    for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
+    for (PetscMPIInt r = 0; r < size; ++r) {
+      const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
+      PetscBool        in   = PETSC_TRUE;
 
-      for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
-      for (PetscMPIInt r = 0; r < size; ++r) {
-        const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
-        PetscBool        in   = PETSC_TRUE;
-
-        for (PetscInt d = 0; d < dim; ++d) {
-          if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
-            in = PETSC_FALSE;
-            break;
-          }
+      for (PetscInt d = 0; d < dim; ++d) {
+        if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
+          in = PETSC_FALSE;
+          break;
         }
-        if (in) send_counts[r]++;
       }
+      if (in) send_counts[r]++;
     }
-    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
   }
+  for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
 
   send_displs[0] = 0;
   for (PetscMPIInt r = 0; r < size; ++r) send_displs[r + 1] = send_displs[r] + send_counts[r];
@@ -134,33 +138,29 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt dim, Vec xyz[], P
   PetscCall(PetscMalloc1((size_t)total_send * dim, &send_crd));
   PetscCall(PetscMalloc1(size, &pos));
   for (PetscMPIInt r = 0; r < size; ++r) pos[r] = send_displs[r];
-  {
-    const PetscScalar *obs_arr[3] = {NULL, NULL, NULL};
+  for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
+  for (PetscInt k = 0; k < n_obs_local; ++k) {
+    PetscReal coord_k[3] = {0.0, 0.0, 0.0};
 
-    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecGetArrayRead(obs_vecs[d], &obs_arr[d]));
-    for (PetscInt k = 0; k < n_obs_local; ++k) {
-      PetscReal coord_k[3] = {0.0, 0.0, 0.0};
+    for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
+    for (PetscMPIInt r = 0; r < size; ++r) {
+      const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
+      PetscBool        in   = PETSC_TRUE;
 
-      for (PetscInt d = 0; d < dim; ++d) coord_k[d] = PetscRealPart(obs_arr[d][k]);
-      for (PetscMPIInt r = 0; r < size; ++r) {
-        const PetscReal *bbox = &all_bboxes[(size_t)r * 2 * dim];
-        PetscBool        in   = PETSC_TRUE;
-
-        for (PetscInt d = 0; d < dim; ++d) {
-          if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
-            in = PETSC_FALSE;
-            break;
-          }
-        }
-        if (in) {
-          PetscInt p  = pos[r]++;
-          send_idx[p] = obs_rstart + k;
-          for (PetscInt d = 0; d < dim; ++d) send_crd[(size_t)p * dim + d] = coord_k[d];
+      for (PetscInt d = 0; d < dim; ++d) {
+        if (coord_k[d] < bbox[d] || coord_k[d] > bbox[dim + d]) {
+          in = PETSC_FALSE;
+          break;
         }
       }
+      if (in) {
+        PetscInt p  = pos[r]++;
+        send_idx[p] = obs_rstart + k;
+        for (PetscInt d = 0; d < dim; ++d) send_crd[(size_t)p * dim + d] = coord_k[d];
+      }
     }
-    for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
   }
+  for (PetscInt d = 0; d < dim; ++d) PetscCall(VecRestoreArrayRead(obs_vecs[d], &obs_arr[d]));
   PetscCall(PetscFree(pos));
 
   /* Step 5: Exchange counts, then index and coord payloads. */
@@ -219,24 +219,26 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
 {
   PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
   PetscInt     rstart, cstart, cend;
-  PetscInt    *d_nnz, *o_nnz;
-  PetscInt    *row_counts, *row_offsets, *col_indices;
   PetscInt     total_nnz = 0;
-  PetscInt    *obs_global_idx;
   PetscInt     local_min, local_max;
+  PetscInt    *d_nnz, *o_nnz, *seq_nnz;
+  PetscInt    *row_counts, *row_offsets, *col_indices;
+  PetscInt    *obs_global_idx;
   PetscScalar *values;
+  PetscReal    cutoff2, cutoff;
   PetscReal   *vertex_coords, *obs_coords;
   Vec         *obs_vecs;
   MPI_Comm     comm;
-  PetscReal    cutoff2, cutoff;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
   for (d = 0; d < 3; ++d) {
-    if (xyz[d]) dim++;
-    else break;
+    if (xyz[d]) {
+      PetscCheck(d == dim, comm, PETSC_ERR_ARG_WRONG, "Coordinate slots must be contiguous from xyz[0]; got NULL before xyz[%" PetscInt_FMT "]", d);
+      dim++;
+    }
   }
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
 
@@ -256,8 +258,11 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
     PetscCall(VecRestoreArrayRead(xyz[d], &local_coords_array));
   }
 
-  cutoff2 = LETKFCutoffSquared(type, radius);
-  cutoff  = PetscSqrtReal(cutoff2);
+  /* Compute cutoff and cutoff^2 directly per type to avoid sqrt(r*r) round-trip FP error in the
+     bbox prune; the BOXCAR kernel uses a strict (distance < radius) test, so a 1-ulp shrink of
+     cutoff could otherwise drop a boundary observation in the GatherObsBbox stage. */
+  cutoff  = (type == PETSCDA_LETKF_LOC_BOXCAR) ? radius : 2.0 * radius;
+  cutoff2 = cutoff * cutoff;
 
   /* Bbox-pruned obs gather: replaces the all-to-all materialization of the global obs coord set. */
   PetscCall(PetscDALETKFGatherObsBbox(dim, xyz, bd, cutoff, H, obs_vecs, &n_obs_cand, &obs_global_idx, &obs_coords));
@@ -266,8 +271,8 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
      We pay the kernel evaluation twice (here and in Pass 2) to keep CSR allocations
      sized exactly. The alternative -- allocate at the cutoff-bbox upper bound, fill,
      then compact -- would peak at ~2x the memory and still touch every candidate.
-     Boxcar fast-path: dist2 < cutoff2 is the kernel-positive test exactly, so skip
-     LETKFKernelEval() in the inner loop. */
+     Always dispatch through LETKFKernelEval() so the CPU and Kokkos kernels stay in
+     lockstep; a future kernel change cannot silently diverge for boxcar. */
   PetscCall(PetscMalloc1(n_vert_local, &row_counts));
   for (PetscInt i = 0; i < n_vert_local; ++i) {
     PetscInt count = 0;
@@ -283,7 +288,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
         dist2 += diff * diff;
       }
       if (dist2 >= cutoff2) continue;
-      if (type == PETSCDA_LETKF_LOC_BOXCAR || LETKFKernelEval(type, PetscSqrtReal(dist2), radius) > 0.0) count++;
+      if (LETKFKernelEval(type, PetscSqrtReal(dist2), radius) > 0.0) count++;
     }
     row_counts[i] = count;
   }
@@ -313,7 +318,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
         dist2 += diff * diff;
       }
       if (dist2 < cutoff2) {
-        PetscReal w = (type == PETSCDA_LETKF_LOC_BOXCAR) ? 1.0 : LETKFKernelEval(type, PetscSqrtReal(dist2), radius);
+        PetscReal w = LETKFKernelEval(type, PetscSqrtReal(dist2), radius);
         if (w > 0.0) {
           col_indices[offset + pos] = obs_global_idx[j];
           values[offset + pos]      = w;
@@ -347,13 +352,10 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   /* Seq variant takes total per-row nnz (all entries are "diagonal" in the serial layout); MPI variant
      splits diagonal vs off-diagonal blocks. Compute the seq totals into a temporary so the MPI side
      keeps its split intact. */
-  {
-    PetscInt *seq_nnz;
-    PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
-    for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
-    PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));
-    PetscCall(PetscFree(seq_nnz));
-  }
+  PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
+  for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
+  PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));
+  PetscCall(PetscFree(seq_nnz));
   PetscCall(MatMPIAIJSetPreallocation(*Q, 0, d_nnz, 0, o_nnz));
   PetscCall(PetscFree(d_nnz));
   PetscCall(PetscFree(o_nnz));
@@ -366,7 +368,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
     PetscCall(MatSetValues(*Q, 1, &globalRow, nnz, &col_indices[off], &values[off], INSERT_VALUES));
   }
 
-  local_min = n_obs_global;
+  local_min = PETSC_INT_MAX;
   local_max = 0;
   for (PetscInt i = 0; i < n_vert_local; ++i) {
     if (row_counts[i] < local_min) local_min = row_counts[i];
@@ -374,6 +376,9 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   }
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_min, 1, MPIU_INT, MPI_MIN, comm));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_max, 1, MPIU_INT, MPI_MAX, comm));
+  /* When every rank owns zero rows the MIN reduction returns the sentinel; clamp to 0 so the
+     PetscInfo printout below reports a meaningful value. */
+  if (local_min == PETSC_INT_MAX) local_min = 0;
   PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
 
   for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
@@ -393,38 +398,31 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
 
 /*
   PetscDALETKFCreateLocalizationMat - construct the LETKF localization-weight Mat `Q` for a built-in
-  distance kernel. Validates the common arguments and dispatches to a backend matching the type of the
-  observation operator `H` (`MATAIJKOKKOS` -> Kokkos backend, otherwise the host `MATAIJ` backend).
+  distance kernel. Validates the common arguments and dispatches to either the Kokkos backend or the
+  host `MATAIJ` backend based on `use_kokkos`. The caller chooses the backend so this matches the
+  analysis-time backend selection (which keys off the obs-error covariance Mat `da->R`); using `H`'s
+  type here would dispatch inconsistently when the user has a Kokkos `H` but a CPU `R` (or vice versa).
 
   Output `Q` has rows indexed by local grid vertices and columns indexed by global observations; the
   caller owns the returned Mat.
 */
-PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
+PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, PetscBool use_kokkos, Mat *Q)
 {
   MPI_Comm comm;
-  PetscInt dim = 0, d;
 
   PetscFunctionBegin;
   PetscAssertPointer(xyz, 3);
   PetscAssertPointer(bd, 4);
   PetscValidHeaderSpecific(H, MAT_CLASSID, 5);
-  PetscAssertPointer(Q, 6);
+  PetscAssertPointer(Q, 7);
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCheck(type == PETSCDA_LETKF_LOC_GASPARI_COHN || type == PETSCDA_LETKF_LOC_GAUSSIAN || type == PETSCDA_LETKF_LOC_BOXCAR, comm, PETSC_ERR_ARG_WRONG, "Built-in kernel required, got localization type %d", (int)type);
   PetscCheck(radius > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
-  for (d = 0; d < 3; ++d) {
-    if (xyz[d]) dim++;
-    else break;
-  }
-  PetscCheck(dim > 0, comm, PETSC_ERR_ARG_WRONG, "At least one coordinate vector (xyz[0]) must be non-NULL; got dim=%" PetscInt_FMT, dim);
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  {
-    PetscBool is_kokkos = PETSC_FALSE;
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)H, &is_kokkos, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
-    if (is_kokkos) {
-      PetscCall(PetscDALETKFCreateLocalizationMat_Kokkos(type, radius, xyz, bd, H, Q));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
+  /* xyz[] contiguity and dim>=1 are enforced by PetscDALETKFComputeObsCoords() inside the backends. */
+#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+  if (use_kokkos) {
+    PetscCall(PetscDALETKFCreateLocalizationMat_Kokkos(type, radius, xyz, bd, H, Q));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   PetscCall(PetscDALETKFCreateLocalizationMat_AIJ(type, radius, xyz, bd, H, Q));

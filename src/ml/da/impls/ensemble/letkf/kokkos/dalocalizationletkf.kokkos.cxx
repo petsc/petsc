@@ -36,10 +36,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>          values_dev;
   Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>    row_counts_host, row_offsets_host, col_indices_host;
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace> values_host;
-  const PetscReal                                                    cutoff2   = LETKFCutoffSquared(type, radius);
-  const PetscReal                                                    cutoff    = PetscSqrtReal(cutoff2);
-  const PetscDALETKFLocalizationType                                 kern_type = type;
-  const PetscReal                                                    kern_r    = radius;
+  /* Compute cutoff and cutoff^2 directly per type to avoid sqrt(r*r) round-trip FP error in the
+     bbox prune (see CPU dalocalizationletkf.c for the full rationale). */
+  const PetscReal cutoff  = (type == PETSCDA_LETKF_LOC_BOXCAR) ? radius : 2.0 * radius;
+  const PetscReal cutoff2 = cutoff * cutoff;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck());
@@ -47,8 +47,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
   for (d = 0; d < 3; ++d) {
-    if (xyz[d]) dim++;
-    else break;
+    if (xyz[d]) {
+      PetscCheck(d == dim, comm, PETSC_ERR_ARG_WRONG, "Coordinate slots must be contiguous from xyz[0]; got NULL before xyz[%" PetscInt_FMT "]", d);
+      dim++;
+    }
   }
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
 
@@ -80,12 +82,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
 
   obs_coords_dev     = Kokkos::View<PetscReal **, Kokkos::LayoutRight, MemSpace>("obs_coords", n_obs_cand, dim);
   obs_global_idx_dev = Kokkos::View<PetscInt *, MemSpace>("obs_global_idx", n_obs_cand);
-  {
-    Kokkos::View<const PetscReal **, Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> obs_coords_host_view(obs_coords_host_buf, n_obs_cand, dim);
-    Kokkos::View<const PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>                        obs_idx_host_view(obs_global_idx_host, n_obs_cand);
-    Kokkos::deep_copy(obs_coords_dev, obs_coords_host_view);
-    Kokkos::deep_copy(obs_global_idx_dev, obs_idx_host_view);
-  }
+  Kokkos::View<const PetscReal **, Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> obs_coords_host_view(obs_coords_host_buf, n_obs_cand, dim);
+  Kokkos::View<const PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>                        obs_idx_host_view(obs_global_idx_host, n_obs_cand);
+  Kokkos::deep_copy(obs_coords_dev, obs_coords_host_view);
+  Kokkos::deep_copy(obs_global_idx_dev, obs_idx_host_view);
 
   /* Copy boundary data to device */
   bd_dev = Kokkos::View<PetscReal *, MemSpace>("bd_dev", dim);
@@ -118,7 +118,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
           }
           dist2 += diff * diff;
         }
-        if (dist2 < cutoff2 && LETKFKernelEval(kern_type, Kokkos::sqrt(dist2), kern_r) > 0.0) count++;
+        if (dist2 < cutoff2 && LETKFKernelEval(type, Kokkos::sqrt(dist2), radius) > 0.0) count++;
       }
       row_counts_dev(i) = count;
     });
@@ -137,11 +137,9 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
 
   /* Total nnz for output arrays. Accumulate in 64-bit and cast so we trip a clear error
      instead of silently wrapping when localization radius * obs density overflows PetscInt. */
-  {
-    PetscInt64 total_nnz64 = 0;
-    for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz64 += (PetscInt64)row_counts_host(i);
-    PetscCall(PetscIntCast(total_nnz64, &total_nnz));
-  }
+  PetscInt64 total_nnz64 = 0;
+  for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz64 += (PetscInt64)row_counts_host(i);
+  PetscCall(PetscIntCast(total_nnz64, &total_nnz));
 
   /* Pass 2: Fill column indices and weights */
   col_indices_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("col_indices", total_nnz);
@@ -167,7 +165,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
           dist2 += diff * diff;
         }
         if (dist2 < cutoff2) {
-          PetscReal w = LETKFKernelEval(kern_type, Kokkos::sqrt(dist2), kern_r);
+          PetscReal w = LETKFKernelEval(type, Kokkos::sqrt(dist2), radius);
           if (w > 0.0) {
             col_indices_dev(offset + pos) = obs_global_idx_dev(j);
             values_dev(offset + pos)      = w;
@@ -206,12 +204,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   /* Seq variant takes total per-row nnz (all entries are "diagonal" in the serial layout); MPI variant
      splits diagonal vs off-diagonal blocks. Compute the seq totals into a temporary so the MPI side
      keeps its split intact. */
-  {
-    PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
-    for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
-    PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));
-    PetscCall(PetscFree(seq_nnz));
-  }
+  PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
+  for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
+  PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));
+  PetscCall(PetscFree(seq_nnz));
   PetscCall(MatMPIAIJSetPreallocation(*Q, 0, d_nnz, 0, o_nnz));
   PetscCall(PetscFree(d_nnz));
   PetscCall(PetscFree(o_nnz));
@@ -225,7 +221,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   }
 
   /* Log statistics */
-  local_min = n_obs_global;
+  local_min = PETSC_INT_MAX;
   local_max = 0;
   for (PetscInt i = 0; i < n_vert_local; ++i) {
     if (row_counts_host(i) < local_min) local_min = row_counts_host(i);
@@ -233,6 +229,9 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   }
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_min, 1, MPIU_INT, MPI_MIN, comm));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local_max, 1, MPIU_INT, MPI_MAX, comm));
+  /* When every rank owns zero rows the MIN reduction returns the sentinel; clamp to 0 so the
+     PetscInfo printout below reports a meaningful value. */
+  if (local_min == PETSC_INT_MAX) local_min = 0;
   PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
 
   /* Cleanup */

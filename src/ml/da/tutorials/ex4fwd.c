@@ -26,6 +26,12 @@ static char help[] = "2D Shallow water equations forward model with MMS verifica
 #define DEFAULT_CONV_NY_COARSE    12
 #define DEFAULT_CONV_REFINE       2
 
+/* Minimum acceptable observed convergence order for the MMS spatial-order check.
+   First-order Rusanov has asymptotic order 1; in the pre-asymptotic regime exercised by
+   the test grids the observed values are higher (~1.8). A floor well below 1 catches a
+   clear degradation without flagging routine variation. */
+#define MIN_OBSERVED_ORDER 0.8
+
 #include "ex4.h"
 
 static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal time, PetscReal Lx, PetscReal Ly, PetscReal h0, PetscReal A, PetscReal *L1_error, PetscReal *L2_error, PetscReal *Linf_error)
@@ -92,6 +98,7 @@ int main(int argc, char **argv)
   PetscInt           nx = DEFAULT_NX, ny = DEFAULT_NY, steps = DEFAULT_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ, verification_freq = DEFAULT_VERIFICATION_FREQ;
   PetscReal          g = DEFAULT_G, dt = DEFAULT_DT, Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0, Ax = DEFAULT_AX, Ay = DEFAULT_AY;
   PetscBool          verify_mms = PETSC_FALSE, test_mms_spatial_order = PETSC_FALSE;
+  PetscBool          need_mms;
   PetscInt           conv_nx_coarse = DEFAULT_CONV_NX_COARSE, conv_ny_coarse = DEFAULT_CONV_NY_COARSE, conv_refine = DEFAULT_CONV_REFINE;
   Ex4FluxType        flux_type = EX4_FLUX_RUSANOV;
   DM                 da_state;
@@ -118,14 +125,16 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-conv_nx_coarse", "Coarse-grid nx for manufactured-solution spatial-order check", "", conv_nx_coarse, &conv_nx_coarse, NULL));
   PetscCall(PetscOptionsInt("-conv_ny_coarse", "Coarse-grid ny for manufactured-solution spatial-order check", "", conv_ny_coarse, &conv_ny_coarse, NULL));
   PetscCall(PetscOptionsInt("-conv_refine", "Grid refinement factor for manufactured-solution spatial-order check", "", conv_refine, &conv_refine, NULL));
-  PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov/mc)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
+  PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
   PetscOptionsEnd();
 
   PetscCheck(nx > 0 && ny > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Grid dimensions must be positive");
   PetscCheck(steps >= 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of steps must be non-negative");
   PetscCheck(dt > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Time step must be positive");
   PetscCheck(!test_mms_spatial_order || conv_refine >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-conv_refine must be >= 2 for spatial-order check (got %" PetscInt_FMT ")", conv_refine);
-  PetscCheck((!verify_mms && !test_mms_spatial_order) || PetscAbsReal(Ax - Ay) <= PETSC_MACHINE_EPSILON * PetscMax(PetscAbsReal(Ax), PetscAbsReal(Ay)), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MMS verification requires Ax == Ay (isotropic amplitude); got Ax=%g, Ay=%g", (double)Ax, (double)Ay);
+  PetscCheck(verification_freq > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-verification_freq must be positive (got %" PetscInt_FMT ")", verification_freq);
+  need_mms = (PetscBool)(verify_mms || test_mms_spatial_order);
+  PetscCheck(!need_mms || PetscAbsReal(Ax - Ay) <= PETSC_MACHINE_EPSILON * PetscMax(PetscAbsReal(Ax), PetscAbsReal(Ay)), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MMS verification requires Ax == Ay (isotropic amplitude); got Ax=%g, Ay=%g", (double)Ax, (double)Ay);
 
   if (test_mms_spatial_order) {
     PetscInt  medium_nx = conv_refine * conv_nx_coarse, medium_ny = conv_refine * conv_ny_coarse, fine_nx = conv_refine * medium_nx, fine_ny = conv_refine * medium_ny;
@@ -151,6 +160,9 @@ int main(int argc, char **argv)
                           "  observed p (coarse->medium) : L1=%.2f, L2=%.2f, Linf=%.2f\n"
                           "  observed p (medium->fine)   : L1=%.2f, L2=%.2f, Linf=%.2f\n",
                           conv_nx_coarse, conv_ny_coarse, (double)dt, (double)coarse_L1, (double)coarse_L2, (double)coarse_Linf, medium_nx, medium_ny, (double)dt, (double)medium_L1, (double)medium_L2, (double)medium_Linf, fine_nx, fine_ny, (double)dt, (double)fine_L1, (double)fine_L2, (double)fine_Linf, (double)order_cm_L1, (double)order_cm_L2, (double)order_cm_Linf, (double)order_mf_L1, (double)order_mf_L2, (double)order_mf_Linf));
+    /* Guard against silent regression: the printed rates are rounded for portability and would
+       hide a degraded order. Assert each observed rate exceeds MIN_OBSERVED_ORDER explicitly. */
+    PetscCheck(order_cm_L1 >= MIN_OBSERVED_ORDER && order_cm_L2 >= MIN_OBSERVED_ORDER && order_cm_Linf >= MIN_OBSERVED_ORDER && order_mf_L1 >= MIN_OBSERVED_ORDER && order_mf_L2 >= MIN_OBSERVED_ORDER && order_mf_Linf >= MIN_OBSERVED_ORDER, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MMS spatial-order regression: observed orders fell below %g (coarse->medium L1=%g L2=%g Linf=%g; medium->fine L1=%g L2=%g Linf=%g)", (double)MIN_OBSERVED_ORDER, (double)order_cm_L1, (double)order_cm_L2, (double)order_cm_Linf, (double)order_mf_L1, (double)order_mf_L2, (double)order_mf_Linf);
   } else {
     PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, flux_type, &da_state, &sw_ctx, &x_numerical));
     PetscCall(SetInitialCondition(da_state, x_numerical, sw_ctx, verify_mms));

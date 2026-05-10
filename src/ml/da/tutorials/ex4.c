@@ -40,7 +40,7 @@ static char help[] = "2D shallow water LETKF data assimilation example.\n"
 
   Observes water height (h) at every obs_stride-th grid point in both x and y directions.
 */
-static PetscErrorCode CreateObservationMatrix2D(PetscInt nx, PetscInt ny, PetscInt ndof, PetscInt obs_stride, Mat *H, Mat *H1, PetscInt *nobs_out)
+static PetscErrorCode CreateObservationMatrix2D(PetscInt nx, PetscInt ny, PetscInt ndof, PetscInt obs_stride, PetscInt local_state_size, Mat *H, Mat *H1, PetscInt *nobs_out)
 {
   PetscInt i, j, obs_idx;
   PetscInt nobs_x, nobs_y, nobs;
@@ -52,12 +52,14 @@ static PetscErrorCode CreateObservationMatrix2D(PetscInt nx, PetscInt ny, PetscI
   nobs_y = (ny + obs_stride - 1) / obs_stride;
   nobs   = nobs_x * nobs_y;
 
-  /* Create observation matrix H (nobs x nx*ny*ndof) */
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, nobs, nx * ny * ndof, 1, NULL, 1, NULL, H));
+  /* Create observation matrix H (nobs x nx*ny*ndof). The column local size must match
+     the DMDA-partitioned state vector so that MatMult(H, state, obs) is well-defined. */
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, local_state_size, nobs, nx * ny * ndof, 1, NULL, 1, NULL, H));
   PetscCall(MatSetFromOptions(*H));
 
-  /* Create H1 for scalar field (nobs x nx*ny) */
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, nobs, nx * ny, 1, NULL, 1, NULL, H1));
+  /* Create H1 for scalar field (nobs x nx*ny); the column local size must match the
+     per-grid-point coordinate vectors used for localization. */
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, local_state_size / ndof, nobs, nx * ny, 1, NULL, 1, NULL, H1));
   PetscCall(MatSetFromOptions(*H1));
 
   /* Get row ownership range for local process */
@@ -211,30 +213,37 @@ static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *s
 
 int main(int argc, char **argv)
 {
-  ShallowWater2DCtx *sw_ctx = NULL;
-  DM                 da_state;
-  PetscDA            da;
-  Vec                x0, x_mean, x_forecast;
-  Vec                truth_state, rmse_work;
-  Vec                observation, obs_noise, obs_error_var;
-  Mat                H = NULL, H1 = NULL;
-  PetscRandom        rng;
-  Ex4FluxType        flux_type      = EX4_FLUX_RUSANOV;
-  PetscBool          output_enabled = PETSC_FALSE;
-  FILE              *fp             = NULL;
-  char               output_file[PETSC_MAX_PATH_LEN];
-  const PetscInt     ndof = 3; /* h, hu, hv */
-  PetscInt           nx = DEFAULT_NX, ny = DEFAULT_NY, steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ;
-  PetscInt           random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
-  PetscInt           n_spin = SPINUP_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ, obs_stride = DEFAULT_OBS_STRIDE;
-  PetscInt           nobs = 0, n_stat_steps = 0, obs_count = 0, step;
-  PetscReal          g = DEFAULT_G, dt = DEFAULT_DT;
-  PetscReal          Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0;
-  PetscReal          Ax = DEFAULT_AX, Ay = DEFAULT_AY;
-  PetscReal          init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
-  PetscReal          obs_error_std = DEFAULT_OBS_ERROR_STD, localization_radius = DEFAULT_LOCALIZATION_RADIUS;
-  PetscReal          rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal          sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  ShallowWater2DCtx           *sw_ctx;
+  DM                           da_state;
+  PetscDA                      da;
+  Vec                          x0, x_mean, x_forecast;
+  Vec                          truth_state, rmse_work;
+  Vec                          observation, obs_noise, obs_error_var;
+  Mat                          H, H1;
+  PetscRandom                  rng;
+  Ex4FluxType                  flux_type      = EX4_FLUX_RUSANOV;
+  PetscBool                    output_enabled = PETSC_FALSE;
+  PetscBool                    radius_set;
+  FILE                        *fp = NULL;
+  char                         output_file[PETSC_MAX_PATH_LEN];
+  const PetscInt               ndof = 3; /* h, hu, hv */
+  PetscInt                     nx = DEFAULT_NX, ny = DEFAULT_NY;
+  PetscInt                     steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ, obs_stride = DEFAULT_OBS_STRIDE;
+  PetscInt                     ensemble_size = DEFAULT_ENSEMBLE_SIZE, n_spin = SPINUP_STEPS, random_seed = DEFAULT_RANDOM_SEED;
+  PetscInt                     progress_freq = DEFAULT_PROGRESS_FREQ;
+  PetscInt                     nobs = 0, n_stat_steps = 0, obs_count = 0, step;
+  PetscInt                     local_state_size, local_obs_size;
+  PetscReal                    g = DEFAULT_G, dt = DEFAULT_DT;
+  PetscReal                    Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0;
+  PetscReal                    Ax = DEFAULT_AX, Ay = DEFAULT_AY;
+  PetscReal                    init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
+  PetscReal                    obs_error_std       = DEFAULT_OBS_ERROR_STD;
+  PetscReal                    localization_radius = DEFAULT_LOCALIZATION_RADIUS;
+  PetscReal                    rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal                    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  PetscReal                    dx, dy, c, cfl;
+  PetscMPIInt                  rank;
+  PetscDALETKFLocalizationType loc_type;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -260,7 +269,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-n_spin", "Number of spinup steps for the truth trajectory before assimilation starts", "", n_spin, &n_spin, NULL));
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
-  PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov/mc)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
+  PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
   PetscOptionsEnd();
 
   PetscCall(ValidateParameters(&nx, &ny, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
@@ -269,12 +278,9 @@ int main(int argc, char **argv)
   PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &da_state, &sw_ctx, &x0));
 
   /* Initialize random number generator */
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rng));
-  {
-    PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    PetscCall(PetscRandomSetSeed(rng, (unsigned long)(random_seed + rank)));
-  }
+  PetscCall(PetscRandomSetSeed(rng, (unsigned long)(random_seed + rank)));
   PetscCall(PetscRandomSetFromOptions(rng));
   PetscCall(PetscRandomSeed(rng));
 
@@ -298,8 +304,11 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinup complete.\n\n"));
   }
 
-  /* Create observation matrix H */
-  PetscCall(CreateObservationMatrix2D(nx, ny, ndof, obs_stride, &H, &H1, &nobs));
+  /* Create observation matrix H. Pass the DMDA-partitioned state local size so that
+     H's column layout matches the state vector. */
+  PetscCall(VecGetLocalSize(x0, &local_state_size));
+  PetscCheck(local_state_size % ndof == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "local_state_size (%" PetscInt_FMT ") not a multiple of ndof (%" PetscInt_FMT ")", local_state_size, ndof);
+  PetscCall(CreateObservationMatrix2D(nx, ny, ndof, obs_stride, local_state_size, &H, &H1, &nobs));
 
   /* Initialize observation vectors */
   PetscCall(MatCreateVecs(H, NULL, &observation));
@@ -311,12 +320,8 @@ int main(int argc, char **argv)
   PetscCall(PetscDACreate(PETSC_COMM_WORLD, &da));
   PetscCall(PetscDASetSizes(da, nx * ny * ndof, nobs));
   PetscCall(PetscDAEnsembleSetSize(da, ensemble_size));
-  {
-    PetscInt local_state_size, local_obs_size;
-    PetscCall(VecGetLocalSize(x0, &local_state_size));
-    PetscCall(VecGetLocalSize(observation, &local_obs_size));
-    PetscCall(PetscDASetLocalSizes(da, local_state_size, local_obs_size));
-  }
+  PetscCall(VecGetLocalSize(observation, &local_obs_size));
+  PetscCall(PetscDASetLocalSizes(da, local_state_size, local_obs_size));
   PetscCall(PetscDASetNDOF(da, ndof));
   PetscCall(PetscDASetFromOptions(da));
   PetscCall(PetscDAEnsembleGetSize(da, &ensemble_size));
@@ -332,56 +337,50 @@ int main(int argc, char **argv)
   /* Configure localization for LETKF. Built-in distance-based kernels (Gaspari-Cohn,
      Gaussian, boxcar) are wired through SetLocalizationCoordinates and the matrix Q
      is built lazily on the first analysis; the NONE kernel needs no setup. */
-  {
-    PetscDALETKFLocalizationType loc_type;
+  PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
+  if (loc_type == PETSCDA_LETKF_LOC_NONE) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
+  } else {
+    Vec         Vecxyz[3] = {NULL, NULL, NULL};
+    Vec         coord;
+    DM          cda;
+    PetscReal   bd[3] = {Lx, Ly, 0};
+    const char *kname = NULL;
 
-    PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
-    if (loc_type == PETSCDA_LETKF_LOC_NONE) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
-    } else {
-      Vec         Vecxyz[3] = {NULL, NULL, NULL};
-      Vec         coord;
-      DM          cda;
-      PetscReal   bd[3] = {Lx, Ly, 0};
-      const char *kname;
+    PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
+    PetscCall(DMGetCoordinateDM(da_state, &cda));
+    PetscCall(DMGetCoordinates(da_state, &coord));
 
-      PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
-      PetscCall(DMGetCoordinateDM(da_state, &cda));
-      PetscCall(DMGetCoordinates(da_state, &coord));
-
-      for (PetscInt d = 0; d < 2; d++) {
-        PetscCall(VecCreate(PETSC_COMM_WORLD, &Vecxyz[d]));
-        PetscCall(VecSetSizes(Vecxyz[d], PETSC_DECIDE, nx * ny));
-        PetscCall(VecSetFromOptions(Vecxyz[d]));
-        PetscCall(PetscObjectSetName((PetscObject)Vecxyz[d], d == 0 ? "x_coordinate" : "y_coordinate"));
-        PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
-      }
-
-      {
-        PetscReal r;
-        PetscCall(PetscDALETKFGetLocalizationRadius(da, &r));
-        if (r <= 0.0) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-        PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
-      }
-      PetscCall(PetscDALETKFSetLocalizationCoordinates(da, Vecxyz, bd, H1));
-      PetscCall(VecDestroy(&Vecxyz[0]));
-      PetscCall(VecDestroy(&Vecxyz[1]));
-
-      switch (loc_type) {
-      case PETSCDA_LETKF_LOC_GASPARI_COHN:
-        kname = "Gaspari-Cohn";
-        break;
-      case PETSCDA_LETKF_LOC_GAUSSIAN:
-        kname = "Gaussian";
-        break;
-      case PETSCDA_LETKF_LOC_BOXCAR:
-        kname = "boxcar";
-        break;
-      default:
-        SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unhandled localization type %d", (int)loc_type);
-      }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)localization_radius));
+    /* Vecxyz must share the DMDA per-grid-point partition so that VecStrideGather from
+       the (block-2) coordinate vector lands in matching local rows. */
+    for (PetscInt d = 0; d < 2; d++) {
+      PetscCall(VecCreate(PETSC_COMM_WORLD, &Vecxyz[d]));
+      PetscCall(VecSetSizes(Vecxyz[d], local_state_size / ndof, nx * ny));
+      PetscCall(VecSetFromOptions(Vecxyz[d]));
+      PetscCall(PetscObjectSetName((PetscObject)Vecxyz[d], d == 0 ? "x_coordinate" : "y_coordinate"));
+      PetscCall(VecStrideGather(coord, d, Vecxyz[d], INSERT_VALUES));
     }
+
+    PetscCall(PetscOptionsHasName(NULL, ((PetscObject)da)->prefix, "-petscda_letkf_localization_radius", &radius_set));
+    if (!radius_set) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
+    PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
+    PetscCall(PetscDALETKFSetLocalizationCoordinates(da, Vecxyz, bd, H1));
+    for (PetscInt d = 0; d < 3; d++) PetscCall(VecDestroy(&Vecxyz[d]));
+
+    switch (loc_type) {
+    case PETSCDA_LETKF_LOC_GASPARI_COHN:
+      kname = "Gaspari-Cohn";
+      break;
+    case PETSCDA_LETKF_LOC_GAUSSIAN:
+      kname = "Gaussian";
+      break;
+    case PETSCDA_LETKF_LOC_BOXCAR:
+      kname = "boxcar";
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unexpected loc_type %d (NONE handled by outer guard; NUM_TYPES is a sentinel)", (int)loc_type);
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)localization_radius));
   }
 
   /* Initialize ensemble members with perturbations */
@@ -389,45 +388,41 @@ int main(int argc, char **argv)
   PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
 
   /* Print configuration summary */
-  {
-    const char *flux_name = (flux_type == EX4_FLUX_RUSANOV) ? "Rusanov (1st order)" : "MC (2nd order)";
-    const char *mode_name = "LETKF";
-    PetscReal   dx        = Lx / nx;
-    PetscReal   dy        = Ly / ny;
-    PetscReal   c         = PetscSqrtReal(g * h0);
-    PetscReal   cfl       = dt * c * (1.0 / dx + 1.0 / dy);
-
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "2D Shallow Water %s Example\n", mode_name));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==============================\n"));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                          "  Mode                  : Data Assimilation\n"
-                          "  Flux scheme           : %s\n"
-                          "  Grid dimensions       : %" PetscInt_FMT " x %" PetscInt_FMT "\n"
-                          "  State dimension       : %" PetscInt_FMT " (%" PetscInt_FMT " grid points x %" PetscInt_FMT " DOF)\n"
-                          "  Observation dimension : %" PetscInt_FMT "\n"
-                          "  Observation stride    : %" PetscInt_FMT "\n"
-                          "  Ensemble size         : %" PetscInt_FMT "\n"
-                          "  Domain size           : %.2f x %.2f\n"
-                          "  Grid spacing          : dx=%.4f, dy=%.4f\n"
-                          "  Mean height (h0)      : %.4f\n"
-                          "  Wave amplitudes       : Ax=%.4f, Ay=%.4f\n"
-                          "  Gravitational const   : %.4f\n"
-                          "  Wave speed (c)        : %.4f\n"
-                          "  Time step (dt)        : %.4f\n"
-                          "  CFL number            : %.4f\n"
-                          "  Total steps           : %" PetscInt_FMT "\n"
-                          "  Observation frequency : %" PetscInt_FMT "\n"
-                          "  Init perturb amp      : %.3f\n"
-                          "  Init height bias      : %.3f\n"
-                          "  Observation noise std : %.3f\n"
-                          "  Random seed           : %" PetscInt_FMT "\n",
-                          flux_name, nx, ny, nx * ny * ndof, nx * ny, ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_amplitude, (double)init_h_bias, (double)obs_error_std, random_seed));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
-  }
+  dx  = Lx / nx;
+  dy  = Ly / ny;
+  c   = PetscSqrtReal(g * h0);
+  cfl = dt * c * (1.0 / dx + 1.0 / dy);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "2D Shallow Water LETKF Example\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==============================\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+                        "  Mode                  : Data Assimilation\n"
+                        "  Flux scheme           : Rusanov (1st order)\n"
+                        "  Grid dimensions       : %" PetscInt_FMT " x %" PetscInt_FMT "\n"
+                        "  State dimension       : %" PetscInt_FMT " (%" PetscInt_FMT " grid points x %" PetscInt_FMT " DOF)\n"
+                        "  Observation dimension : %" PetscInt_FMT "\n"
+                        "  Observation stride    : %" PetscInt_FMT "\n"
+                        "  Ensemble size         : %" PetscInt_FMT "\n"
+                        "  Domain size           : %.2f x %.2f\n"
+                        "  Grid spacing          : dx=%.4f, dy=%.4f\n"
+                        "  Mean height (h0)      : %.4f\n"
+                        "  Wave amplitudes       : Ax=%.4f, Ay=%.4f\n"
+                        "  Gravitational const   : %.4f\n"
+                        "  Wave speed (c)        : %.4f\n"
+                        "  Time step (dt)        : %.4f\n"
+                        "  CFL number            : %.4f\n"
+                        "  Total steps           : %" PetscInt_FMT "\n"
+                        "  Observation frequency : %" PetscInt_FMT "\n"
+                        "  Init perturb amp      : %.3f\n"
+                        "  Init height bias      : %.3f\n"
+                        "  Observation noise std : %.3f\n"
+                        "  Random seed           : %" PetscInt_FMT "\n",
+                        nx, ny, nx * ny * ndof, nx * ny, ndof, nobs, obs_stride, ensemble_size, (double)Lx, (double)Ly, (double)dx, (double)dy, (double)h0, (double)Ax, (double)Ay, (double)g, (double)c, (double)dt, (double)cfl, steps, obs_freq, (double)init_perturb_amplitude, (double)init_h_bias, (double)obs_error_std, random_seed));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
 
   /* Open output file if requested - only in serial mode */
   if (output_enabled) {
     PetscMPIInt size;
+
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
     if (size > 1) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Output file generation is only supported in serial mode (currently running with %d processes)\n", (int)size));
@@ -618,9 +613,9 @@ int main(int argc, char **argv)
     args: -petscda_type letkf -steps 3 -n_spin 2 -nx 11 -ny 11 -obs_freq 2 -obs_error 0.1 -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0 -output_file ex4_spinup_io.dat
     temporaries: ex4_spinup_io.dat
 
-  # Sparse + noisy observation regime (16x sparser, 10x noisier than the dense testset).
-  # In this regime localization gives a clear RMSE advantage over the unlocalized filter
-  # (verified by sweep over ensemble_size / inflation / radius).
+  # Sparse + noisy observation regime (16x sparser, 10x noisier than the dense testset)
+  # exercises the localized analysis path on a configuration where it is expected to
+  # behave qualitatively differently from the unlocalized fast path.
   test:
     suffix: letkf_wave2d_sparse
     requires: !complex

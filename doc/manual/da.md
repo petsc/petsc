@@ -284,14 +284,14 @@ LETKF-specific configuration:
    The localization matrix Q is built lazily on the first analysis. */
 PetscDALETKFSetLocalizationType(PetscDA da, PetscDALETKFLocalizationType type);
 PetscDALETKFSetLocalizationRadius(PetscDA da, PetscReal radius);
-PetscDALETKFSetLocalizationCoordinates(PetscDA da, Vec xyz[], PetscReal bd[], Mat H);
+PetscDALETKFSetLocalizationCoordinates(PetscDA da, const Vec xyz[3], const PetscReal bd[3], Mat H);
 ```
 
 The built-in `-petscda_letkf_localization_type` values `gaspari_cohn`, `gaussian`, and `boxcar` are available in
 every PETSc build; the `none` type disables localization and is mathematically
-equivalent to global ETKF. The default kernel is `gaspari_cohn`. The localization matrix Q is built on the device
-matching the observation-error covariance matrix `R` (set via `PetscDASetObsErrorVariance()`):
-a Kokkos backend is used when `R` has type `MATAIJKOKKOS`, otherwise a CPU
+equivalent to global ETKF. The default kernel is `gaspari_cohn`. The localization matrix Q is built with the same
+matrix type as the internal observation-error covariance matrix `R` (assembled from the variance vector passed to
+`PetscDASetObsErrorVariance()`): a Kokkos backend is used when `R` has type `MATAIJKOKKOS`, otherwise a CPU
 analysis path is used. Select the kernel at runtime with
 `-petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar)`.
 

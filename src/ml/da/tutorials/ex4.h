@@ -12,11 +12,10 @@
 #define EX4_DRY_TOL 1e-10
 
 typedef enum {
-  EX4_FLUX_RUSANOV,
-  EX4_FLUX_MC
+  EX4_FLUX_RUSANOV
 } Ex4FluxType;
 
-static const char *const Ex4FluxTypes[] = {"rusanov", "mc", "Ex4FluxType", "EX4_FLUX_", NULL};
+static const char *const Ex4FluxTypes[] = {"rusanov", "Ex4FluxType", "EX4_FLUX_", NULL};
 
 typedef struct {
   DM          da;
@@ -130,7 +129,7 @@ static inline PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_
   PetscCall(DMDAVecGetArrayDOFRead(sw->da, X_local, (void *)&x));
   PetscCall(DMDAVecGetArrayDOFWrite(sw->da, F_vec, &f));
 
-  /* sw->flux_type is guaranteed RUSANOV by the PetscCheck() in ShallowWater2DContextCreate(). */
+  /* Only the Rusanov flux is implemented. */
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) {
       PetscReal h      = PetscRealPart(x[j][i][0]);
@@ -213,7 +212,6 @@ static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, Pet
   ShallowWater2DCtx *sw;
 
   PetscFunctionBeginUser;
-  PetscCheck(flux_type != EX4_FLUX_MC, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "MC flux limiter not yet implemented for 2D; use -ex4_flux rusanov");
   /* ManufacturedSource2D divides by h*h, where h = h0 + A*sin(t)*sx*sy ranges in [h0-A, h0+A].
      Enforce h0 - Ax > EX4_DRY_TOL once on the DA's comm so misuse fails collectively at setup
      instead of deadlocking on a per-cell SETERRQ from one rank during the RHS evaluation. */
@@ -287,6 +285,7 @@ static inline PetscErrorCode ShallowWaterStep2D(Mat ensemble, PetscCtx ctx)
   PetscBool          isdense;
 
   PetscFunctionBeginUser;
+  PetscCheck(!sw->verify_mms, PetscObjectComm((PetscObject)ensemble), PETSC_ERR_SUP, "MMS verification is not supported for the ensemble Mat path; the per-step time tracked here can drift from external Vec callers");
   PetscCall(PetscObjectTypeCompareAny((PetscObject)ensemble, &isdense, MATSEQDENSE, MATMPIDENSE, MATDENSE, ""));
   PetscCheck(isdense, PetscObjectComm((PetscObject)ensemble), PETSC_ERR_SUP, "ShallowWaterStep2D requires a dense ensemble Mat (got non-dense type)");
   PetscCall(MatGetSize(ensemble, NULL, &n));
@@ -320,7 +319,7 @@ static inline void ShallowWaterSolution_Wave2D(PetscReal Lx, PetscReal Ly, Petsc
 static inline PetscErrorCode SetupForwardProblem(PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, Ex4FluxType flux_type, DM *da_state, ShallowWater2DCtx **sw_ctx, Vec *x)
 {
   PetscFunctionBeginUser;
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, 3, 2, NULL, NULL, da_state));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, da_state));
   PetscCall(DMSetFromOptions(*da_state));
   PetscCall(DMSetUp(*da_state));
   PetscCall(ShallowWater2DContextCreate(*da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, flux_type, sw_ctx));

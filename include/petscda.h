@@ -131,3 +131,4 @@ PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationRadius(PetscDA, PetscReal
 PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationType(PetscDA, PetscDALETKFLocalizationType);
 PETSC_EXTERN PetscErrorCode PetscDALETKFGetLocalizationType(PetscDA, PetscDALETKFLocalizationType *);
 PETSC_EXTERN PetscErrorCode PetscDALETKFSetLocalizationCoordinates(PetscDA, const Vec[3], const PetscReal[3], Mat);
+PETSC_EXTERN PetscErrorCode PetscDALETKFResetLocalization(PetscDA);
