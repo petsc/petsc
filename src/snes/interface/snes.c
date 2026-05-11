@@ -5018,7 +5018,10 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNESSetType()`, `SNESType`, `SNESSetFromOptions()`, `SNES`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `SNESType` of `snes` is changed.
+
+.seealso: [](ch_snes), `SNESSetType()`, `SNESType`, `SNESSetFromOptions()`, `SNES`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode SNESGetType(SNES snes, SNESType *type)
 {

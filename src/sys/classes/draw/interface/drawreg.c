@@ -195,14 +195,14 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 - type - for example, `PETSC_DRAW_X`
 
   Options Database Key:
-. -draw_type type - Sets the type; see `PetscDrawType`
+. -draw_type (x|null|win32|tikz|image) - Sets the type; see `PetscDrawType`
 
   Level: intermediate
 
-  Note:
+  Notes:
   See `PetscDrawSetFromOptions()` for additional options database keys
 
-  See "petsc/include/petscdraw.h" for available methods (for instance,
+  See `PetscDrawType` for available methods (for instance,
   `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
 
 .seealso: `PetscDraw`, `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ`, `PETSC_DRAW_IMAGE`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
@@ -275,7 +275,10 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
 
   Level: advanced
 
-.seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `PetscDrawType` of `draw` is changed.
+
+.seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
 {

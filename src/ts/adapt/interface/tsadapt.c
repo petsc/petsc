@@ -718,16 +718,16 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
 - PetscOptionsObject - object created by `PetscOptionsBegin()`
 
   Options Database Keys:
-+ -ts_adapt_type type                      - algorithm to use for adaptivity
-. -ts_adapt_always_accept (true|false)     - always accept steps regardless of error/stability goals
-. -ts_adapt_safety safety                  - safety factor relative to target error/stability goal
-. -ts_adapt_reject_safety safety           - extra safety factor to apply if the last step was rejected
-. -ts_adapt_clip low,high                  - admissible time step decrease and increase factors
-. -ts_adapt_dt_min min                     - minimum timestep to use
-. -ts_adapt_dt_max max                     - maximum timestep to use
-. -ts_adapt_scale_solve_failed scale       - scale timestep by this factor if a solve fails
-. -ts_adapt_wnormtype (2|infinity)         - type of norm for computing error estimates
-- -ts_adapt_time_step_increase_delay steps - number of timesteps to delay increasing the time step after it has been decreased due to failed solver
++ -ts_adapt_type (basic|dsp|none|cfl|glee|history) - algorithm to use for adaptivity
+. -ts_adapt_always_accept (true|false)             - always accept steps regardless of error/stability goals
+. -ts_adapt_safety safety                          - safety factor relative to target error/stability goal
+. -ts_adapt_reject_safety safety                   - extra safety factor to apply if the last step was rejected
+. -ts_adapt_clip low,high                          - admissible time step decrease and increase factors
+. -ts_adapt_dt_min min                             - minimum timestep to use
+. -ts_adapt_dt_max max                             - maximum timestep to use
+. -ts_adapt_scale_solve_failed scale               - scale timestep by this factor if a solve fails
+. -ts_adapt_wnormtype (2|infinity)                 - type of norm for computing error estimates
+- -ts_adapt_time_step_increase_delay steps         - number of timesteps to delay increasing the time step after it has been decreased due to failed solver
 
   Level: advanced
 

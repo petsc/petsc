@@ -13,7 +13,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 - type - A known method
 
   Options Database Key:
-. -ts_type type - Sets the method; use -help for a list of available methods (for instance, euler)
+. -ts_type type - Sets the method; see `TSType`
 
   Level: intermediate
 
@@ -75,7 +75,10 @@ PetscErrorCode TSSetType(TS ts, TSType type)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSType`, `TSSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `TSType` of `ts` is changed.
+
+.seealso: [](ch_ts), `TS`, `TSType`, `TSSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode TSGetType(TS ts, TSType *type)
 {

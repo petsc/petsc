@@ -625,14 +625,14 @@ PetscErrorCode TSDiscGradGetType(TS ts, TSDGType *dgtype)
 - dgtype - Discrete gradient type <none, gonzalez, average>
 
   Options Database Key:
-. -ts_discgrad_type type - flag to choose discrete gradient type
+. -ts_discgrad_type (gonzalez|average|none) - flag to choose discrete gradient type
 
   Level: intermediate
 
   Notes:
   Without `dgtype` or with type `none`, the discrete gradients timestepper is just implicit midpoint.
 
-.seealso: [](ch_ts), `TSDISCGRAD`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDGType`
 @*/
 PetscErrorCode TSDiscGradSetType(TS ts, TSDGType dgtype)
 {

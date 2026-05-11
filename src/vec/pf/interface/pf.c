@@ -323,7 +323,10 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, Pet
 
   Level: intermediate
 
-.seealso: `PF`, `PFSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `PFType` of `pf` is changed.
+
+.seealso: `PF`, `PFSetType()`, `PFType`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode PFGetType(PF pf, PFType *type)
 {
@@ -341,18 +344,15 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
 
   Input Parameters:
 + pf   - the function context.
-. type - a known method
+. type - a known type, see `PFType` for available methods (for instance, `PFCONSTANT`)
 - ctx  - optional type dependent context
 
   Options Database Key:
-. -pf_type type - Sets PF type
+. -pf_type (constant|mat|string|quick|identity|matlab) - Set the `PFType`
 
   Level: intermediate
 
-  Note:
-  See "petsc/include/petscpf.h" for available methods (for instance, `PFCONSTANT`)
-
-.seealso: `PF`, `PFSet()`, `PFRegister()`, `PFCreate()`, `DMDACreatePF()`
+.seealso: `PF`, `PFSet()`, `PFRegister()`, `PFCreate()`, `DMDACreatePF()`, `PFType`, `PFGetType()`
 @*/
 PetscErrorCode PFSetType(PF pf, PFType type, PetscCtx ctx)
 {
