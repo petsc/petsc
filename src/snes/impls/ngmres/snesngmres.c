@@ -325,7 +325,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 - flg  - boolean value deciding whether to use the option or not, default is `PETSC_FALSE`
 
   Options Database Key:
-. -snes_ngmres_restart_fm_rise - Increase the restart count if the step x_M increases the residual F_M
+. -snes_ngmres_restart_fm_rise (true|false) - Increase the restart count if the step x_M increases the residual F_M
 
   Level: advanced
 
@@ -412,7 +412,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 - stype - selection type, see `SNESNGMRESSelectType`
 
   Options Database Key:
-. -snes_ngmres_select_typedifference,none,linesearch - select type
+. -snes_ngmres_select_type (difference|none|linesearch) - select type
 
   Level: intermediate
 
@@ -467,7 +467,7 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 .  -snes_ngmres_restart_fm_rise (true|false)             - Restart on residual rise from $x_M$ step
 .  -snes_ngmres_monitor                                  - Prints relevant information about the nonlinear GNMRES iterations
 .  -snes_linesearch_type (basic|l2|cp)                   - Line search type used for the default smoother
--  -snes_ngmres_additive_snes_linesearch_type type       - line search type used to select between the candidate and combined solution with additive select type
+-  -snes_ngmres_additive_snes_linesearch_type type       - line search type used to select between the candidate and combined solution with additive select type, see `SNESLineSearchType`
 
    Notes:
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized

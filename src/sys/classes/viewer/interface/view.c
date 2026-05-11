@@ -178,9 +178,9 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
   Level: intermediate
 
   Note:
-  `PetscViewerType` is actually a string
+  `type` should not be retained for later use as it will be an invalid pointer if the `PetscViewerType` of `viewer` is changed.
 
-.seealso: [](sec_viewers), `PetscViewerType`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`
+.seealso: [](sec_viewers), `PetscViewerType`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type)
 {

@@ -611,26 +611,15 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 
   Input Parameters:
 + ts   - the `TS` context
-- type - a method
+- type - a method, currently only `TSGLLE_IRKS` is available
 
   Options Database Key:
-. -ts_gl_type type - sets the method, use -help for a list of available method (e.g. irks)
+. -ts_gl_type (irks) - sets the method
 
   Level: intermediate
 
-  Notes:
-  See "petsc/include/petscts.h" for available methods (for instance)
-.    TSGLLE_IRKS - Diagonally implicit methods with inherent Runge-Kutta stability (for stiff problems)
-
-  Normally, it is best to use the `TSSetFromOptions()` command and then set the `TSGLLE` type
-  from the options database rather than by using this routine.  Using the options database
-  provides the user with maximum flexibility in evaluating the many different solvers.  The
-  `TSGLLESetType()` routine is provided for those situations where it is necessary to set the
-  timestepping solver independently of the command line or options database.  This might be the
-  case, for example, when the choice of solver changes during the execution of the program, and
-  the user's application is taking responsibility for choosing the appropriate method.
-
-.seealso: [](ch_ts), `TS`, `TSGLLEType`, `TSGLLE`
+.seealso: [](ch_ts), `TS`, `TSGLLEType`, `TSGLLE`, `TSGLLERegister()`, `TSGLLE_IRKS`, `TSGLLEGetAcceptType()`,
+          `TSGLLESetAcceptType()`, `TSGLLEAcceptType()`
 @*/
 PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 {
@@ -651,7 +640,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 - type - the type
 
   Options Database Key:
-. -ts_gl_accept_type type - sets the method used to determine whether to accept or reject a step
+. -ts_gl_accept_type (always) - sets the method used to determine whether to accept or reject a step
 
   Level: intermediate
 
@@ -1215,7 +1204,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
   -ts_gl_type my_scheme
 .ve
 
-.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLESetType()`
 @*/
 PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS))
 {
@@ -1319,14 +1308,14 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   TSGLLE - DAE solver using implicit General Linear methods {cite}`butcher_2007` {cite}`butcher2016numerical`
 
   Options Database Keys:
-+  -ts_gl_type type       - the class of general linear method (irks)
-.  -ts_gl_rtol tol        - relative error
-.  -ts_gl_atol tol        - absolute error
-.  -ts_gl_min_order p     - minimum order method to consider (default=1)
-.  -ts_gl_max_order p     - maximum order method to consider (default=3)
-.  -ts_gl_start_order p   - order of starting method (default=1)
-.  -ts_gl_complete method - method to use for completing the step (rescale-and-modify or rescale)
--  -ts_adapt_type type    - adaptive controller to use (none step both)
++  -ts_gl_type (irks)                               - the class of general linear method
+.  -ts_gl_rtol tol                                  - relative error
+.  -ts_gl_atol tol                                  - absolute error
+.  -ts_gl_min_order p                               - minimum order method to consider (default=1)
+.  -ts_gl_max_order p                               - maximum order method to consider (default=3)
+.  -ts_gl_start_order p                             - order of starting method (default=1)
+.  -ts_gl_complete (rescale|rescale-and-modify)     - method to use for completing the step (rescale-and-modify or rescale)
+-  -ts_adapt_type (basic|dsp|none|cfl|glee|history) - adaptive controller to use (none step both)
 
   Level: beginner
 
@@ -1406,7 +1395,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
 
   Uses the generalized "rescale and modify" scheme, see equation (4.5) of {cite}`butcher_2007`.
 
-.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`, `TSGLLEType`, `TSGLLESetType()`, `TSGLLESetAcceptType()`, `TSGLLEGetAdapt()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)
 {

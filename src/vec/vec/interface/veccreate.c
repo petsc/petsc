@@ -36,6 +36,9 @@ static PetscErrorCode VecCreate_Common_Private(Vec v)
   If you never  call `VecSetType()` or `VecSetFromOptions()` it will generate an
   error when you try to use the vector.
 
+  PETSc `Vec` always have all zero entries until routines such as `VecSet()` or `VecSetValues()` are used to change the values.
+  There is no reason to call `VecZeroEntries()` after creation.
+
 .seealso: [](ch_vectors), `Vec`, `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
           `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/

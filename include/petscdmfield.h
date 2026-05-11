@@ -12,9 +12,14 @@ PETSC_EXTERN PetscErrorCode DMFieldFinalizePackage(void);
 PETSC_EXTERN PetscClassId DMFIELD_CLASSID;
 
 /*J
-    DMFieldType - String with the name of a `DMField` implementation
+  DMFieldType - String with the name of a `DMField` implementation
 
-    Level: intermediate
+  Values:
++ `DMFIELDDA`    - a field defined only by its values at the corners of a `DMDA`
+. `DMFIELDDS`    - a field defined by a discretization over a mesh set with `DMSetField()`
+- `DMFIELDSHELL` - a field defined by arbitrary callbacks
+
+  Level: intermediate
 
 .seealso: [](ch_dmbase), `DMField`, `DMFieldSetType()`, `DMFieldGetType()`, `DMFieldRegister()`
 J*/

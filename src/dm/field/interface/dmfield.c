@@ -93,15 +93,9 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
 
   Input Parameters:
 + field - the `DMField` context
-- type  - a known method
+- type  - a known method, see `DMFieldType`
 
   Level: advanced
-
-  Notes:
-  See "include/petscvec.h" for available methods (for instance)
-+    `DMFIELDDA`    - a field defined only by its values at the corners of a `DMDA`
-.    `DMFIELDDS`    - a field defined by a discretization over a mesh set with `DMSetField()`
--    `DMFIELDSHELL` - a field defined by arbitrary callbacks
 
 .seealso: `DMField`, `DMFieldGetType()`, `DMFieldType`
 @*/
@@ -142,7 +136,10 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
 
   Level: advanced
 
-.seealso: `DMField`, `DMFieldSetType()`, `DMFieldType`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `DMFieldType` of `field` is changed.
+
+.seealso: `DMField`, `DMFieldSetType()`, `DMFieldType`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type)
 {

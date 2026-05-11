@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions        = ['mkl_dcsrmv']
     self.liblist          = [[]] # use MKL detected by BlasLapack.py
     self.precisions       = ['single','double']
-    self.lookforbydefault = 1
+    self.lookforbydefault = 0
     self.requires32bitintblas   = 0
     return
 

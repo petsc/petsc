@@ -613,6 +613,9 @@ PetscErrorCode VecPointwiseMult(Vec w, Vec x, Vec y)
   `VecDuplicate()` DOES NOT COPY the vector entries, but rather allocates storage
   for the new vector.  Use `VecCopy()` to copy a vector.
 
+  PETSc `Vec` always have all zero entries when created with `VecDuplicate()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
+
   Use `VecDestroy()` to free the space. Use `VecDuplicateVecs()` to get several
   vectors.
 
@@ -685,6 +688,9 @@ PetscErrorCode VecDestroy(Vec *v)
   Notes:
   Use `VecDestroyVecs()` to free the space. Use `VecDuplicate()` to form a single
   vector.
+
+  PETSc `Vec` always have all zero entries when created with `VecDuplicateVecs()` until routines such as `VecSet()` or `VecSetValues()`
+  are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
 
   Some implementations ensure that the arrays accessed by each vector are contiguous in memory. Certain `VecMDot()` and `VecMAXPY()`
   implementations utilize this property to use BLAS 2 operations for higher efficiency. This is especially useful in `KSPGMRES`, see

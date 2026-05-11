@@ -72,12 +72,12 @@ PetscErrorCode AOInitializePackage(void)
 - method - The name of the AO type
 
   Options Database Key:
-. -ao_type type - Sets the `AO` type; see `AOType`
+. -ao_type (basic|advanced|mapping|memoryscalable) - Sets the `AO` type; see `AOType`
 
   Level: intermediate
 
   Notes:
-  See "petsc/include/petscao.h" for available AO types (for instance, `AOBASIC` and `AOMEMORYSCALABLE`).
+  See `AOType` for available AO types (for instance, `AOBASIC` and `AOMEMORYSCALABLE`).
 
   `AO` are usually created via the convenience routines such as `AOCreateBasic()` or `AOCreateMemoryScalable()`
 
@@ -104,7 +104,7 @@ PetscErrorCode AOSetType(AO ao, AOType method)
 }
 
 /*@
-  AOGetType - Gets the `AO` type name (as a string) from the AO.
+  AOGetType - Gets the `AO` type name (as a string) from the `AO`.
 
   Not Collective
 
@@ -116,7 +116,10 @@ PetscErrorCode AOSetType(AO ao, AOType method)
 
   Level: intermediate
 
-.seealso: `AO`, `AOType`, `AOSetType()`, `AOCreate()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `AOType` of `ao` is changed.
+
+.seealso: `AO`, `AOType`, `AOSetType()`, `AOCreate()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode AOGetType(AO ao, AOType *type)
 {

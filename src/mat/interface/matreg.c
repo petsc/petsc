@@ -194,7 +194,10 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `MatType` of `mat` is changed.
+
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode MatGetType(Mat mat, MatType *type)
 {

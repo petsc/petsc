@@ -486,8 +486,8 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
 . ao - the new application ordering
 
   Options Database Key:
-+ -ao_type aotype - create `AO` with particular format
-- -ao_view        - call `AOView()` at the conclusion of `AOCreate()`
++ -ao_type (basic|advanced|mapping|memoryscalable) - Sets the `AO` type; see `AOType`
+- -ao_view                                         - call `AOView()` at the conclusion of `AOCreate()`
 
   Level: beginner
 

@@ -477,8 +477,8 @@ PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
 . ts - the `TS` context obtained from `TSCreate()`
 
   Options Database Keys:
-+ -ts_save_trajectory      - saves the trajectory to a file
-- -ts_trajectory_type type - set trajectory type
++ -ts_save_trajectory                                         - saves the trajectory to a file
+- -ts_trajectory_type (basic|singlefile|memory|visualization) - set trajectory type
 
   Level: intermediate
 
@@ -488,7 +488,7 @@ PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
   The `TSTRAJECTORYVISUALIZATION` files can be loaded into Python with $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py and
   MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
-.seealso: [](ch_ts), `TS`, `TSTrajectory`, `TSGetTrajectory()`, `TSAdjointSolve()`
+.seealso: [](ch_ts), `TS`, `TSTrajectoryType`, `TSTrajectory`, `TSGetTrajectory()`, `TSAdjointSolve()`
 @*/
 PetscErrorCode TSSetSaveTrajectory(TS ts)
 {
@@ -2732,7 +2732,7 @@ PetscErrorCode TSDestroy(TS *ts)
   TSGetSNES - Returns the `SNES` (nonlinear solver) associated with
   a `TS` (timestepper) context. Valid only for nonlinear problems.
 
-  Not Collective, but snes is parallel if ts is parallel
+  Not Collective, but `snes` is parallel if `ts` is parallel
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
@@ -4079,12 +4079,12 @@ PetscErrorCode TSResize(TS ts)
 
   Input Parameters:
 + ts - the `TS` context obtained from `TSCreate()`
-- u  - the solution vector  (can be null if `TSSetSolution()` was used and `TSSetExactFinalTime`(ts,`TS_EXACTFINALTIME_MATCHSTEP`) was not used,
+- u  - the solution vector  (can be `NULL` if `TSSetSolution()` was used and `TSSetExactFinalTime`(ts,`TS_EXACTFINALTIME_MATCHSTEP`) was not used,
        otherwise it must contain the initial conditions and will contain the solution at the final requested time
 
   Level: beginner
 
-  Notes:
+  Note:
   The final time returned by this function may be different from the time of the internally
   held state accessible by `TSGetSolution()` and `TSGetTime()` because the method may have
   stepped over the final time.

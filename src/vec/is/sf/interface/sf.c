@@ -156,7 +156,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 .ve
 
   Options Database Key:
-. -sf_type type - Sets the method; see `PetscSFType`
+. -sf_type (basic|window|neighbor) - Sets the method; see `PetscSFType`
 
   Level: intermediate
 
@@ -323,17 +323,15 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 . sf - star forest
 
   Options Database Keys:
-+ -sf_type type                 - implementation type, see `PetscSFSetType()`
-. -sf_rank_order (true|false)   - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
-. -sf_use_default_stream        - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
-                                  use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
-                                  If true, this option only works with `-use_gpu_aware_mpi 1`.
-. -sf_use_stream_aware_mpi      - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
-                                  If true, this option only works with `-use_gpu_aware_mpi 1`.
-
-- -sf_backend (cuda|hip|kokkos) - Select the device backend`PetscSF` uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
-                                  On CUDA (HIP) devices, one can choose cuda (hip) or kokkos with the default being kokkos. On other devices,
-                                  the only available is kokkos.
++ -sf_type (basic|window|neighbor) - implementation type, see `PetscSFSetType()`
+. -sf_rank_order (true|false)      - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
+. -sf_use_default_stream           - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
+                                     use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
+                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
+. -sf_use_stream_aware_mpi         - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
+                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
+- -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `kokkos`.
+                                     On other devices, the only available is `kokkos`.
 
   Level: intermediate
 
