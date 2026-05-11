@@ -1786,11 +1786,12 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options, const char pre[], const
   Level: advanced
 
   Notes:
-  The array and each entry in the array should be freed with `PetscFree()`
+  The string should be freed with `PetscFree()`
 
   Each process may have different values depending on how the options were inserted into the database
 
-.seealso: `PetscOptionsAllUsed()`, `PetscOptionsView()`, `PetscOptionsPush()`, `PetscOptionsPop()`
+.seealso: `PetscOptionsAllUsed()`, `PetscOptionsView()`, `PetscOptionsPush()`, `PetscOptionsPop()`,
+          `PetscOptionsLeftGet()`
 @*/
 PetscErrorCode PetscOptionsGetAll(PetscOptions options, char *copts[]) PeNS
 {
