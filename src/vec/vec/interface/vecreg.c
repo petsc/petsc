@@ -178,7 +178,10 @@ newvec:
 
   Level: intermediate
 
-.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `VecType` of `vec` is changed.
+
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {

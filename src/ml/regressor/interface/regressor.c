@@ -168,7 +168,7 @@ PetscErrorCode PetscRegressorViewFromOptions(PetscRegressor A, PetscObject obj, 
 . regressor - the `PetscRegressor` context
 
   Options Database Keys:
-. -regressor_type type - the particular type of regressor to be used; see `PetscRegressorType` for complete list
+. -regressor_type (linear) - the particular type of regressor to be used
 
   Level: beginner
 

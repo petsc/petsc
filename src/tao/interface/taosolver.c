@@ -2615,7 +2615,10 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
 
   Level: intermediate
 
-.seealso: [](ch_tao), `Tao`, `TaoType`, `TaoSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `TaoType` of `tao` is changed.
+
+.seealso: [](ch_tao), `Tao`, `TaoType`, `TaoSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 {

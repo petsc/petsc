@@ -731,17 +731,17 @@ static PetscErrorCode TaoBRGNSetRegularizerHessianRoutine_BRGN(Tao tao, Mat Hreg
   TAOBRGN - Bounded Regularized Gauss-Newton method for solving nonlinear least-squares
             problems with bound constraints. This algorithm is a thin wrapper around `TAOBNTL`
             that constructs the Gauss-Newton problem with the user-provided least-squares
-            residual and Jacobian. The algorithm offers an L2-norm ("l2pure"), L2-norm proximal point ("l2prox")
-            regularizer, and L1-norm dictionary regularizer ("l1dict"), where we approximate the
-            L1-norm ||x||_1 by sum_i(sqrt(x_i^2+epsilon^2)-epsilon) with a small positive number epsilon.
-            Also offered is the "lm" regularizer which uses a scaled diagonal of J^T J.
-            With the "lm" regularizer, `TAOBRGN` is a Levenberg-Marquardt optimizer.
-            The user can also provide own regularization function.
+            residual and Jacobian. The algorithm offers an L2-norm (`l2pure`), L2-norm proximal point (`l2prox`)
+            regularizer, and L1-norm dictionary regularizer (`l1dict`), where we approximate the
+            L1-norm $\|x\|_1$ by $\sum_i{\sqrt{x_i^2+\epsilon^2}-\epsilon}$ with a small positive number $\epsilon$.
+            Also offered is the `lm` regularizer which uses a scaled diagonal of $J^T J$.
+            With the `lm` regularizer, `TAOBRGN` is a Levenberg-Marquardt optimizer.
+            The user can also provide their own regularization function.
 
   Options Database Keys:
-+ -tao_brgn_regularization_type - regularization type ("user", "l2prox", "l2pure", "l1dict", "lm") (default "l2prox")
-. -tao_brgn_regularizer_weight  - regularizer weight (default 1e-4)
-- -tao_brgn_l1_smooth_epsilon   - L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)
++ -tao_brgn_regularization_type (user|l2prox|l2pure|l1dict|lm) - regularization type, default `l2prox`
+. -tao_brgn_regularizer_weight                                 - regularizer weight (default 1e-4)
+- -tao_brgn_l1_smooth_epsilon                                  - L1-norm smooth approximation parameter: $\|x\|_1 = \sum_i{\sqrt{x_i^2+\epsilon^2}-\epsilon}$ (default 1e-6)
 
   Level: beginner
 

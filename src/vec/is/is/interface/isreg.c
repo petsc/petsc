@@ -93,7 +93,10 @@ PetscErrorCode ISSetType(IS is, ISType method)
 
   Level: intermediate
 
-.seealso: [](sec_scatter), `IS`, `ISType`, `ISSetType()`, `ISCreate()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `ISType` of `is` is changed.
+
+.seealso: [](sec_scatter), `IS`, `ISType`, `ISSetType()`, `ISCreate()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode ISGetType(IS is, ISType *type)
 {

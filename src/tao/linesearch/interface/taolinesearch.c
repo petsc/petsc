@@ -108,7 +108,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 . newls - the new `TaoLineSearch` context
 
   Options Database Key:
-. -tao_ls_type - select which method `Tao` should use
+. -tao_ls_type (unit|more-thuente|gpcg|armijo|owarmijo|ipm) - select which line search `Tao` should use
 
   Level: developer
 
@@ -366,7 +366,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 - type - the `TaoLineSearchType` selection
 
   Options Database Key:
-. -tao_ls_type type - select which linesearch method Tao should use at runtime, see `TaoLineSearchType`
+. -tao_ls_type (unit|more-thuente|gpcg|armijo|owarmijo|ipm) - select which line search `Tao` should use
 
   Level: beginner
 
@@ -461,19 +461,19 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
 . ls - the `TaoLineSearch` context
 
   Options Database Keys:
-+ -tao_ls_type type     - The algorithm that `TaoLineSearch` uses (more-thuente, gpcg, unit)
-. -tao_ls_ftol tol      - tolerance for sufficient decrease
-. -tao_ls_gtol tol      - tolerance for curvature condition
-. -tao_ls_rtol tol      - relative tolerance for acceptable step
-. -tao_ls_stepinit step - initial steplength allowed
-. -tao_ls_stepmin step  - minimum steplength allowed
-. -tao_ls_stepmax step  - maximum steplength allowed
-. -tao_ls_max_funcs n   - maximum number of function evaluations allowed
-- -tao_ls_view          - display line-search results to standard output
++ -tao_ls_type (unit|more-thuente|gpcg|armijo|owarmijo|ipm) - select which line search `Tao` should use
+. -tao_ls_ftol tol                                          - tolerance for sufficient decrease
+. -tao_ls_gtol tol                                          - tolerance for curvature condition
+. -tao_ls_rtol tol                                          - relative tolerance for acceptable step
+. -tao_ls_stepinit step                                     - initial steplength allowed
+. -tao_ls_stepmin step                                      - minimum steplength allowed
+. -tao_ls_stepmax step                                      - maximum steplength allowed
+. -tao_ls_max_funcs n                                       - maximum number of function evaluations allowed
+- -tao_ls_view                                              - display line-search results
 
   Level: beginner
 
-.seealso: `TaoLineSearch`
+.seealso: `Tao`, `TaoLineSearch`, `TaoGetLineSearch()`
 @*/
 PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 {
@@ -525,7 +525,10 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 
   Level: developer
 
-.seealso: `TaoLineSearch`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `TaoLineSearchType` of `ls` is changed.
+
+.seealso: `TaoLineSearch`, `TaoLineSearchSetType()`, `TaoLineSearchType`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, TaoLineSearchType *type)
 {

@@ -88,7 +88,10 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PC`, `PCType`, `PCSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `PCType` of `pc` is changed.
+
+.seealso: [](ch_ksp), `PC`, `PCType`, `PCSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode PCGetType(PC pc, PCType *type)
 {

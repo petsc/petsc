@@ -4091,7 +4091,10 @@ PetscErrorCode DMSetType(DM dm, DMType method)
 
   Level: intermediate
 
-.seealso: [](ch_dmbase), `DM`, `DMType`, `DMDA`, `DMPLEX`, `DMSetType()`, `DMCreate()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `DMType` of `dm` is changed.
+
+.seealso: [](ch_dmbase), `DM`, `DMType`, `DMDA`, `DMPLEX`, `DMSetType()`, `DMCreate()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode DMGetType(DM dm, DMType *type)
 {

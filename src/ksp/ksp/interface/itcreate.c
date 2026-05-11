@@ -874,7 +874,10 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPType`, `KSP`, `KSPSetType()`
+  Note:
+  `type` should not be retained for later use as it will be an invalid pointer if the `KSPType` of `ksp` is changed.
+
+.seealso: [](ch_ksp), `KSPType`, `KSP`, `KSPSetType()`, `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`
 @*/
 PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 {
