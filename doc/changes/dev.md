@@ -16,6 +16,7 @@
 
 ## Sys
 
+- Add `PetscGetConfiguration()`
 
 ## Event Logging
 
