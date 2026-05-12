@@ -130,7 +130,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
        VEC_VV(1+loc_it)*/
     PetscCall((*fgmres->orthog)(ksp, loc_it));
 
-    /* new entry in hessenburg is the 2-norm of our new direction */
+    /* new entry in Hessenberg is the 2-norm of our new direction */
     PetscCall(VecNorm(VEC_VV(loc_it + 1), NORM_2, &tt));
     KSPCheckNorm(ksp, tt);
 
