@@ -185,7 +185,7 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     /* update Hessenberg matrix and do Gram-Schmidt - new direction is in VEC_VV(1+loc_it)*/
     PetscCall((*lgmres->orthog)(ksp, loc_it));
 
-    /* new entry in hessenburg is the 2-norm of our new direction */
+    /* new entry in Hessenberg is the 2-norm of our new direction */
     PetscCall(VecNorm(VEC_VV(loc_it + 1), NORM_2, &tt));
 
     *HH(loc_it + 1, loc_it)  = tt;
