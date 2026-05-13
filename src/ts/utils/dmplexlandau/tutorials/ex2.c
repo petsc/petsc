@@ -743,6 +743,20 @@ int main(int argc, char **argv)
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi
 
+  testset:
+    requires: p4est !complex double defined(PETSC_USE_DMLANDAU_2D)
+    output_file: output/ex2_deg4.out
+    args: -dm_landau_num_species_grid 1,1 -dm_landau_Ez 0 -petscspace_degree 4 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2 \
+    -dm_landau_ion_charges 1 -dm_landau_thermal_temps 5,5 -dm_landau_n 2,2 -dm_landau_n_0 5e19 -ts_monitor -snes_rtol 1.e-9 -snes_stol 1.e-14 -snes_monitor \
+    -snes_converged_reason -snes_max_it 10 -ts_type arkimex -ts_arkimex_type 1bee -ts_max_snes_failures unlimited -ts_rtol 1e-3 -ts_time_step 1.e-2 -ts_max_time 1 -ts_adapt_clip .5,1.25 -ts_max_steps 2 -ts_adapt_scale_solve_failed 0.75 -ts_adapt_time_step_increase_delay 5 -dm_landau_amr_levels_max 1,2 -dm_landau_amr_re_levels 2 -dm_landau_re_radius 0 -ex2_impurity_source_type pulse -ex2_pulse_start_time 1e-1 -ex2_pulse_width_time 10 -ex2_pulse_rate 1e-2 -ex2_t_cold .05 -ex2_plot_dt 1e-1 -dm_refine 0 -dm_landau_gpu_assembly true -dm_landau_batch_size 2 -dm_landau_verbose 2 -dm_landau_domain_radius 5.,5.
+    test:
+      suffix: cpu_deg4
+      args: -dm_landau_device_type cpu -ksp_type bicg -pc_type jacobi
+    test:
+      suffix: kokkos_deg4
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type bicg -pc_type jacobi
+
   test:
     requires: !complex double defined(PETSC_USE_DMLANDAU_2D) !cuda
     suffix: single
