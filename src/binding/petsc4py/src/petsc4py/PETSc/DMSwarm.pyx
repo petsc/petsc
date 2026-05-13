@@ -379,6 +379,7 @@ cdef class DMSwarm(DM):
         if ctype == PETSC_REAL:    typenum = NPY_PETSC_REAL
         if ctype == PETSC_SCALAR:  typenum = NPY_PETSC_SCALAR
         if ctype == PETSC_COMPLEX: typenum = NPY_PETSC_COMPLEX
+        if ctype == PETSC_DOUBLE:  typenum = NPY_DOUBLE
         assert typenum != -1
         cdef npy_intp s[2]
         s[0] = <npy_intp> nlocal
