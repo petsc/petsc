@@ -10,25 +10,25 @@
   PetscDALETKFCreateLocalizationMat_Kokkos - Kokkos (`MATAIJKOKKOS`) implementation of the localization
   weight Mat `Q`.
 
-  Selected by the `PetscDALETKFCreateLocalizationMat()` dispatcher when `H` is a Kokkos matrix type. The
-  host counterpart `PetscDALETKFCreateLocalizationMat_AIJ()` produces a numerically identical Q for the
-  polynomial kernels (`PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_BOXCAR`) and a bit-comparable
-  Q for `PETSCDA_LETKF_LOC_GAUSSIAN` modulo `exp()` rounding.
+  Selected by the `PetscDALETKFCreateLocalizationMat()` dispatcher when the caller requests the Kokkos
+  backend (i.e. when `da->R` has a Kokkos matrix type). The host counterpart
+  `PetscDALETKFCreateLocalizationMat_AIJ()` produces a numerically identical Q for the polynomial kernels
+  (`PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_BOXCAR`) and a bit-comparable Q for
+  `PETSCDA_LETKF_LOC_GAUSSIAN` modulo `exp()` rounding.
 */
-PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
+PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q, PetscInt *max_nnz_local, PetscInt *n_nnz_local)
 {
   using ExecSpace = Kokkos::DefaultExecutionSpace;
   using MemSpace  = ExecSpace::memory_space;
 
-  PetscInt                                                            dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
-  PetscInt                                                            rstart, cstart, cend;
-  PetscInt                                                            total_nnz   = 0, local_min, local_max, mm[2];
+  PetscInt                                                            dim, n_vert_local, n_obs_global, n_obs_local, n_obs_cand;
+  PetscInt                                                            total_nnz   = 0;
   PetscInt64                                                          total_nnz64 = 0;
-  PetscInt                                                           *d_nnz, *o_nnz, *seq_nnz = NULL;
+  PetscInt                                                            row_max     = 0;
   PetscInt                                                           *obs_global_idx_host;
+  PetscReal                                                           cutoff, cutoff2;
   PetscReal                                                          *obs_coords_host_buf;
   Vec                                                                *obs_vecs;
-  MPI_Comm                                                            comm;
   Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, MemSpace>          vertex_coords_dev;
   Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace> vertex_coords_host;
   Kokkos::View<PetscReal **, Kokkos::LayoutRight, MemSpace>           obs_coords_dev;
@@ -39,7 +39,6 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>           values_dev;
   Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>     row_counts_host, row_offsets_host, col_indices_host;
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace>  values_host;
-  PetscReal                                                           cutoff, cutoff2;
 
   PetscFunctionBegin;
   /* Single source of truth for the cutoff policy lives in letkf_kernels.h; see CPU
@@ -47,28 +46,15 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   cutoff  = LETKFCutoff(type, radius);
   cutoff2 = cutoff * cutoff;
   PetscCall(PetscKokkosInitializeCheck());
-  PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
-  for (d = 0; d < 3; ++d) {
-    if (xyz[d]) {
-      PetscCheck(d == dim, comm, PETSC_ERR_ARG_WRONG, "Coordinate slots must be contiguous from xyz[0]; got NULL before xyz[%" PetscInt_FMT "]", d);
-      dim++;
-    }
-  }
+  PetscCall(PetscDALETKFComputeObsCoords(H, xyz, &dim, &obs_vecs));
   PetscCall(VecGetLocalSize(xyz[0], &n_vert_local));
-
-  /* Compute observation coordinates: obs_locs[d] = H * xyz[d] */
-  PetscCall(PetscMalloc1(dim, &obs_vecs));
-  for (d = 0; d < dim; ++d) {
-    PetscCall(MatCreateVecs(H, NULL, &obs_vecs[d]));
-    PetscCall(MatMult(H, xyz[d], obs_vecs[d]));
-  }
 
   /* Copy vertex coordinates to device */
   vertex_coords_dev  = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, MemSpace>("vertex_coords", n_vert_local, dim);
   vertex_coords_host = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace>("vertex_coords_host", n_vert_local, dim);
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     const PetscScalar *local_coords_array;
     PetscCall(VecGetArrayRead(xyz[d], &local_coords_array));
     for (PetscInt i = 0; i < n_vert_local; ++i) vertex_coords_host(i, d) = local_coords_array[i];
@@ -92,7 +78,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   /* Copy boundary data to device */
   bd_dev  = Kokkos::View<PetscReal *, MemSpace>("bd_dev", dim);
   bd_host = Kokkos::View<PetscReal *, Kokkos::HostSpace>("bd_host", dim);
-  for (d = 0; d < dim; ++d) bd_host(d) = bd[d];
+  for (PetscInt d = 0; d < dim; ++d) bd_host(d) = bd[d];
   Kokkos::deep_copy(bd_dev, bd_host);
 
   /* Pass 1: Count nnz per row (only entries with positive kernel weight).
@@ -108,17 +94,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
 
       PetscInt count = 0;
       for (PetscInt j = 0; j < n_obs_cand; ++j) {
-        PetscReal dist2 = 0.0;
-        for (PetscInt dd = 0; dd < dim; ++dd) {
-          PetscReal diff = v_coords[dd] - obs_coords_dev(j, dd);
-          if (bd_dev(dd) > 0.0) {
-            PetscReal domain_size = bd_dev(dd);
-            if (diff > 0.5 * domain_size) diff -= domain_size;
-            else if (diff < -0.5 * domain_size) diff += domain_size;
-          }
-          dist2 += diff * diff;
-        }
-        if (dist2 < cutoff2 && LETKFKernelEval(type, Kokkos::sqrt(dist2), radius) > 0.0) count++;
+        if (LETKFRowWeight(type, radius, cutoff2, dim, v_coords, &obs_coords_dev(j, 0), bd_dev.data()) > 0.0) count++;
       }
       row_counts_dev(i) = count;
     });
@@ -135,9 +111,14 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   for (PetscInt i = 0; i < n_vert_local; ++i) row_offsets_host(i + 1) = row_offsets_host(i) + row_counts_host(i);
   Kokkos::deep_copy(row_offsets_dev, row_offsets_host);
 
-  /* Total nnz for output arrays. Accumulate in 64-bit and cast so we trip a clear error
-     instead of silently wrapping when localization radius * obs density overflows PetscInt. */
-  for (PetscInt i = 0; i < n_vert_local; ++i) total_nnz64 += (PetscInt64)row_counts_host(i);
+  /* Total nnz for output arrays and per-rank max nnz for downstream sizing. Accumulate in
+     64-bit and cast so we trip a clear error instead of silently wrapping when localization
+     radius * obs density overflows PetscInt. The per-rank max feeds PetscDALETKFInstallQ()
+     without a downstream MatGetRow walk. */
+  for (PetscInt i = 0; i < n_vert_local; ++i) {
+    total_nnz64 += (PetscInt64)row_counts_host(i);
+    if (row_counts_host(i) > row_max) row_max = row_counts_host(i);
+  }
   PetscCall(PetscIntCast(total_nnz64, &total_nnz));
 
   /* Pass 2: Fill column indices and weights */
@@ -153,23 +134,11 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
 
       PetscInt pos = 0;
       for (PetscInt j = 0; j < n_obs_cand; ++j) {
-        PetscReal dist2 = 0.0;
-        for (PetscInt dd = 0; dd < dim; ++dd) {
-          PetscReal diff = v_coords[dd] - obs_coords_dev(j, dd);
-          if (bd_dev(dd) > 0.0) {
-            PetscReal domain_size = bd_dev(dd);
-            if (diff > 0.5 * domain_size) diff -= domain_size;
-            else if (diff < -0.5 * domain_size) diff += domain_size;
-          }
-          dist2 += diff * diff;
-        }
-        if (dist2 < cutoff2) {
-          PetscReal w = LETKFKernelEval(type, Kokkos::sqrt(dist2), radius);
-          if (w > 0.0) {
-            col_indices_dev(offset + pos) = obs_global_idx_dev(j);
-            values_dev(offset + pos)      = w;
-            pos++;
-          }
+        PetscReal w = LETKFRowWeight(type, radius, cutoff2, dim, v_coords, &obs_coords_dev(j, 0), bd_dev.data());
+        if (w > 0.0) {
+          col_indices_dev(offset + pos) = obs_global_idx_dev(j);
+          values_dev(offset + pos)      = w;
+          pos++;
         }
       }
     });
@@ -181,70 +150,13 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::deep_copy(col_indices_host, col_indices_dev);
   Kokkos::deep_copy(values_host, values_dev);
 
-  /* Create Q matrix with variable nnz preallocation. Q's row layout matches xyz[0] (one row
-     per local vertex); columns index global observations matching H's row layout. */
-  PetscCall(MatGetOwnershipRange(H, &cstart, &cend));
+  PetscCall(PetscDALETKFAssembleQFromCSR(H, n_vert_local, n_obs_local, n_obs_global, MATAIJKOKKOS, row_counts_host.data(), row_offsets_host.data(), col_indices_host.data(), values_host.data(), Q));
+  PetscCall(PetscDALETKFLogQStats(*Q, type, radius, n_vert_local, n_obs_global, row_counts_host.data()));
 
-  PetscCall(MatCreate(comm, Q));
-  PetscCall(MatSetSizes(*Q, n_vert_local, n_obs_local, PETSC_DETERMINE, n_obs_global));
-  PetscCall(MatSetType(*Q, MATAIJKOKKOS));
-  PetscCall(MatGetOwnershipRange(*Q, &rstart, NULL));
-  PetscCall(PetscCalloc1(n_vert_local, &d_nnz));
-  PetscCall(PetscCalloc1(n_vert_local, &o_nnz));
-  for (PetscInt i = 0; i < n_vert_local; ++i) {
-    PetscInt nnz = row_counts_host(i);
-    PetscInt off = row_offsets_host(i);
-    for (PetscInt k = 0; k < nnz; ++k) {
-      PetscInt col = col_indices_host(off + k);
-      if (col >= cstart && col < cend) d_nnz[i]++;
-      else o_nnz[i]++;
-    }
-  }
-  /* Seq variant takes total per-row nnz (all entries are "diagonal" in the serial layout); MPI variant
-     splits diagonal vs off-diagonal blocks. Compute the seq totals into a temporary so the MPI side
-     keeps its split intact. */
-  PetscCall(PetscMalloc1(n_vert_local, &seq_nnz));
-  for (PetscInt i = 0; i < n_vert_local; ++i) seq_nnz[i] = d_nnz[i] + o_nnz[i];
-  PetscCall(MatSeqAIJSetPreallocation(*Q, 0, seq_nnz));
-  PetscCall(PetscFree(seq_nnz));
-  PetscCall(MatMPIAIJSetPreallocation(*Q, 0, d_nnz, 0, o_nnz));
-  PetscCall(PetscFree(d_nnz));
-  PetscCall(PetscFree(o_nnz));
-
-  /* Fill matrix row by row */
-  for (PetscInt i = 0; i < n_vert_local; ++i) {
-    PetscInt globalRow = rstart + i;
-    PetscInt nnz       = row_counts_host(i);
-    PetscInt off       = row_offsets_host(i);
-    PetscCall(MatSetValues(*Q, 1, &globalRow, nnz, &col_indices_host(off), &values_host(off), INSERT_VALUES));
-  }
-
-  /* Log statistics */
-  local_min = PETSC_INT_MAX;
-  local_max = 0;
-  for (PetscInt i = 0; i < n_vert_local; ++i) {
-    if (row_counts_host(i) < local_min) local_min = row_counts_host(i);
-    if (row_counts_host(i) > local_max) local_max = row_counts_host(i);
-  }
-  /* Coalesce max and min into a single MAX reduction by negating min; cuts the allreduce
-     latency in half. The sentinel PETSC_INT_MAX round-trips correctly through negation. */
-  mm[0] = local_max;
-  mm[1] = -local_min;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, mm, 2, MPIU_INT, MPI_MAX, comm));
-  local_max = mm[0];
-  local_min = -mm[1];
-  /* When every rank owned zero rows the MIN reduction returns the sentinel; clamp to 0 so the
-     PetscInfo printout below reports a meaningful value. */
-  if (local_min == PETSC_INT_MAX) local_min = 0;
-  PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
-
-  /* Cleanup */
-  for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
-  PetscCall(PetscFree(obs_vecs));
+  *max_nnz_local = row_max;
+  *n_nnz_local   = total_nnz;
+  PetscCall(PetscDALETKFDestroyObsCoords(dim, &obs_vecs));
   PetscCall(PetscFree(obs_global_idx_host));
   PetscCall(PetscFree(obs_coords_host_buf));
-
-  PetscCall(MatAssemblyBegin(*Q, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*Q, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

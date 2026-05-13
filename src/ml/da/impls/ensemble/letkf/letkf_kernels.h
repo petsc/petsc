@@ -24,13 +24,15 @@
 #include <petscda.h>
 
 #if defined(KOKKOS_INLINE_FUNCTION)
-  #define LETKF_KERNEL_FN          KOKKOS_INLINE_FUNCTION
-  #define LETKF_KERNEL_UNREACHABLE Kokkos::abort
-  #define LETKF_KERNEL_EXP(x)      Kokkos::exp(x) /* device-callable; PetscExpReal would resolve to host libm */
+  #define LETKF_KERNEL_FN               KOKKOS_INLINE_FUNCTION
+  #define LETKF_KERNEL_UNREACHABLE(...) Kokkos::abort(__VA_ARGS__)
+  #define LETKF_KERNEL_EXP(x)           Kokkos::exp(x)  /* device-callable; PetscExpReal would resolve to host libm */
+  #define LETKF_KERNEL_SQRT(x)          Kokkos::sqrt(x) /* device-callable; PetscSqrtReal would resolve to host libm */
 #else
   #define LETKF_KERNEL_FN               static inline
-  #define LETKF_KERNEL_UNREACHABLE(msg) SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_PLIB, msg)
+  #define LETKF_KERNEL_UNREACHABLE(...) SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_PLIB, __VA_ARGS__)
   #define LETKF_KERNEL_EXP(x)           PetscExpReal(x)
+  #define LETKF_KERNEL_SQRT(x)          PetscSqrtReal(x)
 #endif
 
 /* Gaspari-Cohn 5th-order piecewise polynomial. */
@@ -107,4 +109,32 @@ LETKF_KERNEL_FN PetscReal LETKFKernelEval(PetscDALETKFLocalizationType type, Pet
   /* Unreachable: see LETKFCutoff(). */
   LETKF_KERNEL_UNREACHABLE("LETKFKernelEval: invalid localization type");
   return 0.0;
+}
+
+/* Squared distance between two coordinate tuples with per-dimension minimum-image periodicity.
+   For each d with bd[d] > 0 the difference is folded into [-bd[d]/2, bd[d]/2]; non-periodic dims
+   pass through. The shape is identical across both passes of both backends, so factor it out. */
+LETKF_KERNEL_FN PetscReal LETKFPeriodicDist2(PetscInt dim, const PetscReal *v, const PetscReal *o, const PetscReal *bd)
+{
+  PetscReal dist2 = 0.0;
+  for (PetscInt d = 0; d < dim; ++d) {
+    PetscReal diff = v[d] - o[d];
+    if (bd[d] > 0.0) {
+      PetscReal L = bd[d];
+      if (diff > 0.5 * L) diff -= L;
+      else if (diff < -0.5 * L) diff += L;
+    }
+    dist2 += diff * diff;
+  }
+  return dist2;
+}
+
+/* Localization weight for a single (vertex, observation) pair: zero outside the cutoff or when the
+   kernel itself returns zero, else the kernel value. Encapsulates the dist2 + cutoff2 + KernelEval
+   triple shared by both passes of the AIJ and Kokkos Q-construction loops. */
+LETKF_KERNEL_FN PetscReal LETKFRowWeight(PetscDALETKFLocalizationType type, PetscReal radius, PetscReal cutoff2, PetscInt dim, const PetscReal *v, const PetscReal *o, const PetscReal *bd)
+{
+  PetscReal dist2 = LETKFPeriodicDist2(dim, v, o, bd);
+  if (dist2 >= cutoff2) return 0.0;
+  return LETKFKernelEval(type, LETKF_KERNEL_SQRT(dist2), radius);
 }

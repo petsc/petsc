@@ -4,7 +4,7 @@
 #include <petscblaslapack.h>
 #include <../src/ml/da/impls/ensemble/letkf/letkf.h>
 
-static PetscErrorCode PetscDALETKFInstallQ(PetscDA, Mat);
+static PetscErrorCode PetscDALETKFInstallQ(PetscDA, Mat, PetscInt, PetscInt, Mat);
 static PetscErrorCode PetscDALETKFResetLocalization_LETKF(PetscDA);
 
 /* Names must match the PetscDALETKFLocalizationType enum order in include/petscda.h. */
@@ -282,13 +282,12 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
   Mat                X_rows, E_analysis_rows;
   Vec                y_local, y_mean_local, delta_scaled_local, r_inv_sqrt_local;
   Vec                w_local, s_transpose_delta_local;
-  const PetscScalar *w_array, *x_array, *g_array, *mean_array, *x_rows_array_ro, *ea_rows_array_ro;
+  const PetscScalar *w_array, *x_array, *g_array, *mean_array;
   PetscScalar       *g_array_w, *e_array, *x_rows_array, *ea_rows_array;
   PetscScalar        one = 1.0, zero = 0.0;
   PetscBLASInt       ndof_b, m_b, lda_xrows_b, lda_g_b, lda_ea_b;
-  PetscInt           i_grid_point, j, k;
   PetscInt           ndof, max_nnz, rstart;
-  PetscInt           lda_x_outer, lda_e_outer, lda_x, lda_e, lda_xrows, lda_g, lda_ea;
+  PetscInt           lda_x, lda_e, lda_xrows, lda_g, lda_ea;
   PetscReal          sqrt_m_minus_1, scale;
 
   PetscFunctionBegin;
@@ -299,10 +298,10 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
 
   /* X and ensemble are accessed at row offsets up to (n_vertices-1)*ndof + (ndof-1).
      Mirror the precondition the Kokkos path enforces so a bad LDA fails fast on either backend. */
-  PetscCall(MatDenseGetLDA(X, &lda_x_outer));
-  PetscCall(MatDenseGetLDA(en->ensemble, &lda_e_outer));
-  PetscCheck(lda_x_outer >= n_vertices * ndof, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_INCOMP, "X leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_x_outer, n_vertices * ndof);
-  PetscCheck(lda_e_outer >= n_vertices * ndof, PetscObjectComm((PetscObject)en->ensemble), PETSC_ERR_ARG_INCOMP, "Ensemble leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_e_outer, n_vertices * ndof);
+  PetscCall(MatDenseGetLDA(X, &lda_x));
+  PetscCall(MatDenseGetLDA(en->ensemble, &lda_e));
+  PetscCheck(lda_x >= n_vertices * ndof, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_INCOMP, "X leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_x, n_vertices * ndof);
+  PetscCheck(lda_e >= n_vertices * ndof, PetscObjectComm((PetscObject)en->ensemble), PETSC_ERR_ARG_INCOMP, "Ensemble leading dimension %" PetscInt_FMT " < n_vertices*ndof %" PetscInt_FMT, lda_e, n_vertices * ndof);
 
   /* Create local analysis workspace (max_nnz x m matrices and vectors) */
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, max_nnz, m, NULL, &Z_local));
@@ -332,10 +331,32 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, ndof, m, NULL, &X_rows));
   PetscCall(MatDuplicate(X_rows, MAT_DO_NOT_COPY_VALUES, &E_analysis_rows));
 
+  /* X_rows, G_local, E_analysis_rows are loop-invariant; their LDAs and the BLAS-int
+     casts of the gemm shape never change inside the n_vertices loop. Hoist to spare
+     the dispatch overhead at every vertex. */
+  PetscCall(MatDenseGetLDA(G_local, &lda_g));
+  PetscCall(MatDenseGetLDA(X_rows, &lda_xrows));
+  PetscCall(MatDenseGetLDA(E_analysis_rows, &lda_ea));
+  PetscCall(PetscBLASIntCast(ndof, &ndof_b));
+  PetscCall(PetscBLASIntCast(m, &m_b));
+  PetscCall(PetscBLASIntCast(lda_xrows, &lda_xrows_b));
+  PetscCall(PetscBLASIntCast(lda_g, &lda_g_b));
+  PetscCall(PetscBLASIntCast(lda_ea, &lda_ea_b));
+
   /* LETKF: Loop over all grid points and perform local analysis */
   PetscCall(MatGetOwnershipRange(impl->Q, &rstart, NULL));
 
-  for (i_grid_point = 0; i_grid_point < n_vertices; i_grid_point++) {
+  /* X, impl->mean, and en->ensemble are loop-invariant; their array views are read or
+     written at offsets that change per iteration but the underlying storage does not.
+     Hoisting the Get/Restore pairs out of the n_vertices loop avoids repeated lock and
+     validation overhead inside the hot path. Safe to hold across the loop because the
+     inner MatDenseGetArray{,Read,Write} calls on X_rows, E_analysis_rows, and G_local
+     operate on disjoint SELF matrices and never alias X/mean/en->ensemble. */
+  PetscCall(MatDenseGetArrayRead(X, &x_array));
+  PetscCall(VecGetArrayRead(impl->mean, &mean_array));
+  PetscCall(MatDenseGetArrayWrite(en->ensemble, &e_array));
+
+  for (PetscInt i_grid_point = 0; i_grid_point < n_vertices; i_grid_point++) {
     /* Extract local observations for this grid point using Q[i_grid_point,:].
        ExtractLocalObservations() zeros the unwritten [ncols, max_nnz) tail of each
        workspace, so we do not need to MatZeroEntries/VecZeroEntries every iteration. */
@@ -365,9 +386,8 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
     PetscCall(MatScale(G_local, sqrt_m_minus_1));
     PetscCall(VecGetArrayRead(w_local, &w_array));
     PetscCall(MatDenseGetArray(G_local, &g_array_w));
-    PetscCall(MatDenseGetLDA(G_local, &lda_g));
-    for (j = 0; j < m; j++)
-      for (k = 0; k < m; k++) g_array_w[k + j * lda_g] += w_array[k];
+    for (PetscInt j = 0; j < m; j++)
+      for (PetscInt k = 0; k < m; k++) g_array_w[k + j * lda_g] += w_array[k];
     PetscCall(MatDenseRestoreArray(G_local, &g_array_w));
     PetscCall(VecRestoreArrayRead(w_local, &w_array));
 
@@ -379,54 +399,34 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
        - X_f[i,:] is the forecast anomaly rows at grid point i_grid_point (ndof rows from global anomaly matrix X)
        - G_local = w_local * 1' + sqrt(m-1) * T_local^{1/2} * U (computed above in G_local)
      */
-    /* Extract ndof rows starting at (i_grid_point * ndof) from X: X_f[i_grid_point*ndof:(i_grid_point+1)*ndof, :] */
-    PetscCall(MatDenseGetArrayRead(X, &x_array));
-    PetscCall(MatDenseGetArrayWrite(X_rows, &x_rows_array));
-    PetscCall(MatDenseGetLDA(X, &lda_x));
-    PetscCall(MatDenseGetLDA(X_rows, &lda_xrows));
-    for (j = 0; j < m; j++) {
-      for (k = 0; k < ndof; k++) x_rows_array[k + j * lda_xrows] = x_array[(i_grid_point * ndof + k) + j * lda_x];
-    }
-    PetscCall(MatDenseRestoreArrayWrite(X_rows, &x_rows_array));
-    PetscCall(MatDenseRestoreArrayRead(X, &x_array));
+    /* Extract ndof rows starting at (i_grid_point * ndof) from X: X_f[i_grid_point*ndof:(i_grid_point+1)*ndof, :]
+       Hold X_rows / E_analysis_rows with a single read/write GetArray each so the fill, gemm,
+       mean-add, and copy-out share one Get/Restore pair per vertex. */
+    PetscCall(MatDenseGetArray(X_rows, &x_rows_array));
+    for (PetscInt j = 0; j < m; j++)
+      for (PetscInt k = 0; k < ndof; k++) x_rows_array[k + j * lda_xrows] = x_array[(i_grid_point * ndof + k) + j * lda_x];
 
     /* Apply local transform via direct BLASgemm: E_analysis_rows = X_rows * G_local.
        Replaces a per-vertex MatMatMult; ndof and m are typically small (1-100), so the
        MatProduct dispatch overhead dominated. */
-    PetscCall(MatDenseGetArrayRead(X_rows, &x_rows_array_ro));
     PetscCall(MatDenseGetArrayRead(G_local, &g_array));
-    PetscCall(MatDenseGetArrayWrite(E_analysis_rows, &ea_rows_array));
-    PetscCall(MatDenseGetLDA(G_local, &lda_g));
-    PetscCall(MatDenseGetLDA(E_analysis_rows, &lda_ea));
-    PetscCall(PetscBLASIntCast(ndof, &ndof_b));
-    PetscCall(PetscBLASIntCast(m, &m_b));
-    PetscCall(PetscBLASIntCast(lda_xrows, &lda_xrows_b));
-    PetscCall(PetscBLASIntCast(lda_g, &lda_g_b));
-    PetscCall(PetscBLASIntCast(lda_ea, &lda_ea_b));
-    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &ndof_b, &m_b, &m_b, &one, x_rows_array_ro, &lda_xrows_b, g_array, &lda_g_b, &zero, ea_rows_array, &lda_ea_b));
-    PetscCall(MatDenseRestoreArrayRead(X_rows, &x_rows_array_ro));
-    PetscCall(MatDenseRestoreArrayRead(G_local, &g_array));
-    PetscCall(MatDenseRestoreArrayWrite(E_analysis_rows, &ea_rows_array));
-
-    /* Add local mean: E_a[i_grid_point*ndof:(i_grid_point+1)*ndof, :] = x_bar_f[i_grid_point*ndof:(i_grid_point+1)*ndof] + X_f[...] * G_local */
-    PetscCall(VecGetArrayRead(impl->mean, &mean_array));
     PetscCall(MatDenseGetArray(E_analysis_rows, &ea_rows_array));
-    for (j = 0; j < m; j++) {
-      for (k = 0; k < ndof; k++) ea_rows_array[k + j * lda_ea] += mean_array[i_grid_point * ndof + k];
+    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &ndof_b, &m_b, &m_b, &one, x_rows_array, &lda_xrows_b, g_array, &lda_g_b, &zero, ea_rows_array, &lda_ea_b));
+    PetscCall(MatDenseRestoreArrayRead(G_local, &g_array));
+    PetscCall(MatDenseRestoreArray(X_rows, &x_rows_array));
+
+    /* Add local mean and store result back in ensemble at row offset i_grid_point*ndof. */
+    for (PetscInt j = 0; j < m; j++) {
+      for (PetscInt k = 0; k < ndof; k++) {
+        ea_rows_array[k + j * lda_ea] += mean_array[i_grid_point * ndof + k];
+        e_array[(i_grid_point * ndof + k) + j * lda_e] = ea_rows_array[k + j * lda_ea];
+      }
     }
     PetscCall(MatDenseRestoreArray(E_analysis_rows, &ea_rows_array));
-    PetscCall(VecRestoreArrayRead(impl->mean, &mean_array));
-
-    /* Store result back in ensemble[i_grid_point*ndof:(i_grid_point+1)*ndof, :] */
-    PetscCall(MatDenseGetArrayWrite(en->ensemble, &e_array));
-    PetscCall(MatDenseGetLDA(en->ensemble, &lda_e));
-    PetscCall(MatDenseGetArrayRead(E_analysis_rows, &ea_rows_array_ro));
-    for (j = 0; j < m; j++) {
-      for (k = 0; k < ndof; k++) e_array[(i_grid_point * ndof + k) + j * lda_e] = ea_rows_array_ro[k + j * lda_ea];
-    }
-    PetscCall(MatDenseRestoreArrayRead(E_analysis_rows, &ea_rows_array_ro));
-    PetscCall(MatDenseRestoreArrayWrite(en->ensemble, &e_array));
   }
+  PetscCall(MatDenseRestoreArrayWrite(en->ensemble, &e_array));
+  PetscCall(VecRestoreArrayRead(impl->mean, &mean_array));
+  PetscCall(MatDenseRestoreArrayRead(X, &x_array));
   PetscCall(MatDestroy(&E_analysis_rows));
   PetscCall(MatDestroy(&X_rows));
   PetscCall(VecDestroy(&s_transpose_delta_local));
@@ -448,7 +448,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscI
   every rank does the identical eigendecomp; only the gram S^T*S and the projection S^T*delta
   need an MPI reduction. Dispatches to the Kokkos backend when R is a Kokkos matrix.
 */
-static PetscErrorCode PetscDALETKFGlobalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscInt m, PetscReal scale, PetscReal sqrt_m_minus_1, Mat X, Vec observation)
+static PetscErrorCode PetscDALETKFGlobalAnalysis(PetscDA da, PetscDA_LETKF *impl, PetscInt m, Mat X, Vec observation)
 {
   const PetscScalar *s_array, *d_array;
   PetscScalar       *gram, *buf;
@@ -456,9 +456,12 @@ static PetscErrorCode PetscDALETKFGlobalAnalysis(PetscDA da, PetscDA_LETKF *impl
   PetscBLASInt       m_b, n_obs_local_b, s_lda_b, ione = 1;
   PetscMPIInt        m_squared_mpi, m_mpi;
   PetscInt           n_obs_local, s_lda;
+  PetscReal          sqrt_m_minus_1, scale;
   PetscBool          use_kokkos;
 
   PetscFunctionBegin;
+  sqrt_m_minus_1 = PetscSqrtReal((PetscReal)(m - 1));
+  scale          = 1.0 / sqrt_m_minus_1;
   PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
   if (use_kokkos) {
@@ -494,11 +497,12 @@ static PetscErrorCode PetscDALETKFGlobalAnalysis(PetscDA da, PetscDA_LETKF *impl
   /* w = T^{-1} * (S^T * delta_scaled), with the projection reduced across ranks. Hold the
      buffer with VecGetArray across both the local gemv and the in-place allreduce so the
      reduction sees this rank's contribution (VecGetArrayWrite would make the post-gemv data
-     undefined after restore). */
+     undefined after restore). Ranks with no local obs zero the buffer directly because gemv
+     (which would overwrite via beta = 0) is skipped on n_obs_local == 0. */
   PetscCall(VecGetArrayRead(impl->delta_scaled, &d_array));
   PetscCall(VecGetArray(impl->s_transpose_delta, &buf));
-  PetscCall(PetscArrayzero(buf, m));
   if (n_obs_local > 0) PetscCallBLAS("BLASgemv", BLASgemv_("T", &n_obs_local_b, &m_b, &one, s_array, &s_lda_b, d_array, &ione, &zero, buf, &ione));
+  else PetscCall(PetscArrayzero(buf, m));
   PetscCall(PetscMPIIntCast(m, &m_mpi));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, buf, m_mpi, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   PetscCall(VecRestoreArray(impl->s_transpose_delta, &buf));
@@ -652,6 +656,7 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
      backend changed since the last analysis. */
   if (impl->type != PETSCDA_LETKF_LOC_NONE && !impl->Q) {
     Mat       Q_new = NULL;
+    PetscInt  max_nnz_local, n_nnz_local;
     PetscBool use_kokkos;
 
     PetscCheck(impl->coord_H, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Coordinates not set; call PetscDALETKFSetLocalizationCoordinates() before analysis");
@@ -659,8 +664,14 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
     /* Q's backend must match the analysis-time backend, which keys off da->R; otherwise a CPU
        analysis would walk a Kokkos Q (or vice versa) and pay backend-mismatch transfer overhead. */
     PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
-    PetscCall(PetscDALETKFCreateLocalizationMat(impl->type, impl->localization_radius, impl->coord_xyz, impl->coord_bd, impl->coord_H, use_kokkos, &Q_new));
-    PetscCall(PetscDALETKFInstallQ(da, Q_new));
+    /* Backends compute the per-rank max-nnz/row and total local nnz from row_counts[] in hand;
+       passing them through avoids both a MatGetRow walk and a MatGetInfo call in
+       PetscDALETKFInstallQ() (both of which force a device->host sync on AIJKOKKOS Q).
+       The analysis-time `H` is threaded into InstallQ as the obs-scatter source template so the
+       scatter rows match the vectors actually being scattered, even if `H`'s row partition or
+       vec type differs from the `coord_H` cached at SetLocalizationCoordinates time. */
+    PetscCall(PetscDALETKFCreateLocalizationMat(impl->type, impl->localization_radius, impl->coord_xyz, impl->coord_bd, impl->coord_H, use_kokkos, &Q_new, &max_nnz_local, &n_nnz_local));
+    PetscCall(PetscDALETKFInstallQ(da, Q_new, max_nnz_local, n_nnz_local, H));
     PetscCall(MatDestroy(&Q_new));
   }
 
@@ -686,22 +697,17 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
   PetscCall(VecSqrtAbs(impl->r_inv_sqrt));
   PetscCall(VecReciprocal(impl->r_inv_sqrt));
 
-  if (impl->type == PETSCDA_LETKF_LOC_NONE) {
-    PetscReal sqrt_m_minus_1 = PetscSqrtReal((PetscReal)(m - 1));
-    PetscReal scale          = 1.0 / sqrt_m_minus_1;
-
-    PetscCall(PetscDALETKFGlobalAnalysis(da, impl, m, scale, sqrt_m_minus_1, X, observation));
-  } else {
+  if (impl->type == PETSCDA_LETKF_LOC_NONE) PetscCall(PetscDALETKFGlobalAnalysis(da, impl, m, X, observation));
+  else {
     PetscInt  n_local, n_obs_local, rows_old, cols_old;
     PetscBool use_kokkos;
 
     PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
 
-    /* Per-vertex local analysis path.
-       PetscDALETKFInstallQ() builds the obs-scatter from impl->coord_H, but we tear it down
-       above whenever H's layout or vec type drifts. Lazily rebuild from the analysis-time H so
-       the scatter source layout matches the vectors we're about to scatter. */
-    if (!impl->obs_scat) PetscCall(PetscDALETKFSetupObsScatter(impl, H));
+    /* Per-vertex local analysis path. PetscDALETKFInstallQ() above already templated the
+       obs-scatter on the live `H`, and PetscDALETKFRebuildHTemps() invalidates Q (and therefore
+       triggers a re-InstallQ here) whenever H's row layout or vec type drifts, so impl->obs_scat
+       is guaranteed non-NULL and compatible with the live observation vectors. */
     PetscCall(VecScatterBegin(impl->obs_scat, observation, impl->obs_work, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(impl->obs_scat, observation, impl->obs_work, INSERT_VALUES, SCATTER_FORWARD));
 
@@ -732,7 +738,6 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
     if (use_kokkos) PetscCall(PetscDALETKFLocalAnalysis_Kokkos(da, impl, m, n_local, X, impl->obs_work, impl->Z_work, impl->y_mean_work, impl->r_inv_sqrt_work));
     else PetscCall(PetscDALETKFLocalAnalysis(da, impl, m, n_local, X, impl->obs_work, impl->Z_work, impl->y_mean_work, impl->r_inv_sqrt_work));
 #else
-    (void)use_kokkos;
     PetscCall(PetscDALETKFLocalAnalysis(da, impl, m, n_local, X, impl->obs_work, impl->Z_work, impl->y_mean_work, impl->r_inv_sqrt_work));
 #endif
   }
@@ -769,6 +774,7 @@ static PetscErrorCode PetscDALETKFResetLocalization_LETKF(PetscDA da)
   PetscCall(MatDestroy(&impl->Q));
   impl->max_nnz_per_row = 0;
   impl->view_emitted    = PETSC_FALSE;
+  impl->n_nnz_local     = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -888,21 +894,33 @@ static PetscErrorCode PetscDALETKFGetLocalizationRadius_LETKF(PetscDA da, PetscR
   device buffers when applicable). Only called from the lazy-build path. The Kokkos device-side
   setup runs only when PETSc was built with Kokkos kernels; the bare CPU analysis path (used by
   serial non-Kokkos builds) needs only the size validation and nnz bookkeeping below.
+
+  scatter_H templates the obs-scatter source layout. The caller passes the analysis-time `H` so
+  that the scatter source matches the vectors the per-vertex path is about to scatter, even when
+  the user's analysis-time `H` has a different row partition or vec type than the `coord_H` that
+  was cached at SetLocalizationCoordinates time. Q's column footprint (the unique global obs
+  indices each rank touches) is independent of scatter_H's row layout, so this is well-defined as
+  long as scatter_H and Q agree on the global obs-space size - `PetscDALETKFSetupObsScatter()`
+  PetscCheck's that.
 */
-static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q)
+static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, PetscInt max_nnz_local, PetscInt n_nnz_local, Mat scatter_H)
 {
   PetscDA_LETKF *impl = (PetscDA_LETKF *)da->data;
-  PetscInt       nrows, ncols, rstart, rend, nnz;
+  PetscInt       nrows, ncols;
+  PetscBool      use_kokkos;
 
   PetscFunctionBegin;
   PetscCheck(da->ndof > 0 && da->state_size % da->ndof == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "state_size (%" PetscInt_FMT ") must be a positive multiple of ndof (%" PetscInt_FMT ")", da->state_size, da->ndof);
   PetscCall(MatGetSize(Q, &nrows, &ncols));
   PetscCheck(nrows == da->state_size / da->ndof, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Localization matrix rows (%" PetscInt_FMT ") must equal vertex count state_size/ndof (%" PetscInt_FMT ")", nrows, da->state_size / da->ndof);
   PetscCheck(ncols == da->obs_size, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Localization matrix columns (%" PetscInt_FMT ") must match observation size (%" PetscInt_FMT ")", ncols, da->obs_size);
+  PetscCheck(max_nnz_local >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "max_nnz_local must be >= 0, got %" PetscInt_FMT, max_nnz_local);
+  PetscCheck(n_nnz_local >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "n_nnz_local must be >= 0, got %" PetscInt_FMT, n_nnz_local);
   /* The obs-scatter is needed by both the CPU and Kokkos per-vertex paths whenever Q exists.
      Validate before tearing down the previous Q/obs-scatter so a missing prerequisite leaves
      the impl in its prior usable state instead of a half-installed one. */
-  PetscCheck(impl->coord_H, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "PetscDALETKFSetLocalizationCoordinates() must be called before the first analysis so the obs-scatter has H available");
+  PetscValidHeaderSpecific(scatter_H, MAT_CLASSID, 5);
+  PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
   /* Drop only the Q device mirrors; the eigensolver workspace and solver handle persist. */
@@ -915,18 +933,21 @@ static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q)
   PetscCall(MatDestroy(&impl->Q));
   impl->Q = Q;
 
-  impl->max_nnz_per_row = 0;
-  PetscCall(MatGetOwnershipRange(Q, &rstart, &rend));
-  for (PetscInt i = rstart; i < rend; i++) {
-    PetscCall(MatGetRow(Q, i, &nnz, NULL, NULL));
-    if (nnz > impl->max_nnz_per_row) impl->max_nnz_per_row = nnz;
-    PetscCall(MatRestoreRow(Q, i, &nnz, NULL, NULL));
-  }
+  /* The CSR backends already walked row_counts[] to size their allocations; reuse the per-rank
+     max (and total local nnz) computed there instead of MatGetRow/MatGetInfo walks, which would
+     force a device->host sync on AIJKOKKOS Q. Allreduce the max so impl->max_nnz_per_row holds
+     the global max all ranks need for sizing; n_nnz_local stays per-rank. */
+  impl->max_nnz_per_row = max_nnz_local;
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &impl->max_nnz_per_row, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da)));
+  impl->n_nnz_local = n_nnz_local;
 
-  PetscCall(PetscDALETKFSetupObsScatter(impl, impl->coord_H));
+  PetscCall(PetscDALETKFSetupObsScatter(impl, scatter_H));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
-  PetscCall(PetscDALETKFSetupLocalization_Kokkos(impl));
+  /* Gate the device-mirror setup on the analysis-time backend: a Kokkos-capable build with a
+     non-Kokkos da->R runs the CPU per-vertex path, which never reads Q_device_*. Skipping the
+     setup avoids a redundant MatGetRow walk over every local row of Q and the three device-resident
+     Kokkos Views it would allocate. */
+  if (use_kokkos) PetscCall(PetscDALETKFSetupLocalization_Kokkos(impl));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

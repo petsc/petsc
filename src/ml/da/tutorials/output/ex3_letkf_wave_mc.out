@@ -1,12 +1,3 @@
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 160
-  Observation size: 40
-  Ensemble size: 10
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: none
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Traveling wave
@@ -24,6 +15,15 @@ Shallow Water [L]ETKF Example
   Localization radius   : 100.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 10
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: none
 Step   10, time  0.200  RMSE_forecast 0.01059  RMSE_analysis 0.01199
 
 Statistics (10 steps):

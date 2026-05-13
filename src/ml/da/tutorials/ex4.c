@@ -36,6 +36,33 @@ static char help[] = "2D shallow water LETKF data assimilation example.\n"
 #define MIN_OBS_FREQ      1
 
 /*
+  ShallowWaterStep2D - PetscDAEnsembleForecast callback that advances every column of a dense ensemble Mat by one TS step.
+*/
+static PetscErrorCode ShallowWaterStep2D(Mat ensemble, PetscCtx ctx)
+{
+  ShallowWater2DCtx *sw = (ShallowWater2DCtx *)ctx;
+  PetscInt           n;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetSize(ensemble, NULL, &n));
+  /* Collective: dense ensemble Mat is row-distributed, so every rank visits every global column j and
+     MatDenseGetColumnVec returns the parallel column-Vec that all ranks step together. Use the
+     read-write variant because TSSolve reads the column as the initial condition and writes the
+     stepped solution back; the write-only variant would skip the device->host sync on device-backed
+     dense (MATSEQDENSECUDA/HIP, MATMPIDENSECUDA/HIP) and feed TSSolve stale host data.
+     MMS forcing is not exercised here: main() leaves cfg.verify_mms = PETSC_FALSE, so t_start = 0.0
+     is correct for this autonomous RHS. */
+  for (PetscInt j = 0; j < n; j++) {
+    Vec col;
+
+    PetscCall(MatDenseGetColumnVec(ensemble, j, &col));
+    PetscCall(ShallowWaterStep2DVec(sw, 0.0, col));
+    PetscCall(MatDenseRestoreColumnVec(ensemble, j, &col));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
   CreateObservationMatrix2D - Create observation matrix H for 2D shallow water
 
   Observes water height (h) at every obs_stride-th grid point in both x and y directions.
@@ -223,7 +250,6 @@ int main(int argc, char **argv)
   Vec                          observation, obs_noise, obs_error_var;
   Mat                          H, H1;
   PetscRandom                  rng;
-  Ex4FluxType                  flux_type      = EX4_FLUX_RUSANOV;
   PetscBool                    output_enabled = PETSC_FALSE;
   PetscBool                    radius_set;
   FILE                        *fp = NULL;
@@ -272,13 +298,12 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-n_spin", "Number of spinup steps for the truth trajectory before assimilation starts", "", n_spin, &n_spin, NULL));
   PetscCall(PetscOptionsInt("-progress_freq", "Print progress every N steps (0 = only first/last)", "", progress_freq, &progress_freq, NULL));
   PetscCall(PetscOptionsString("-output_file", "Output file for visualization data", "", "", output_file, sizeof(output_file), &output_enabled));
-  PetscCall(PetscOptionsEnum("-ex4_flux", "Flux scheme (rusanov)", "", Ex4FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
   PetscOptionsEnd();
 
   PetscCall(ValidateParameters(&nx, &ny, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
   PetscCheck(init_perturb_amplitude > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation amplitude must be positive");
 
-  PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, flux_type, &da_state, &sw_ctx, &x0));
+  PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, &da_state, &sw_ctx, &x0));
 
   /* Initialize random number generator */
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -346,7 +371,7 @@ int main(int argc, char **argv)
     Vec         xyz[3] = {NULL, NULL, NULL};
     Vec         coord;
     DM          cda;
-    PetscReal   bd[3] = {Lx, Ly, 0};
+    PetscReal   bd[3] = {Lx, Ly, 0.0};
     const char *kname = NULL;
 
     PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));

@@ -11,25 +11,17 @@
 /* Wet/dry threshold: cells with h below this fall back to zero flux to avoid division by ~0. */
 #define EX4_DRY_TOL 1e-10
 
-typedef enum {
-  EX4_FLUX_RUSANOV
-} Ex4FluxType;
-
-static const char *const Ex4FluxTypes[] = {"rusanov", "Ex4FluxType", "EX4_FLUX_", NULL};
-
 typedef struct {
-  DM          da;
-  PetscInt    nx, ny;
-  PetscReal   Lx, Ly;
-  PetscReal   dx, dy;
-  PetscReal   g;
-  PetscReal   dt;
-  PetscReal   t_current; /* cumulative physical time tracked by ShallowWaterStep2D() (matrix variant); the MMS source uses the per-call t_start argument of ShallowWaterStep2DVec() */
-  TS          ts;
-  PetscReal   h0;
-  PetscReal   Ax, Ay; /* wave amplitudes in x and y */
-  PetscBool   verify_mms;
-  Ex4FluxType flux_type;
+  DM        da;
+  PetscInt  nx, ny;
+  PetscReal Lx, Ly;
+  PetscReal dx, dy;
+  PetscReal g;
+  PetscReal dt;
+  TS        ts;
+  PetscReal h0;
+  PetscReal Ax, Ay; /* wave amplitudes in x and y */
+  PetscBool verify_mms;
 } ShallowWater2DCtx;
 
 static inline void ManufacturedSolution2D(PetscReal Lx, PetscReal Ly, PetscReal x, PetscReal y, PetscReal t, PetscReal h0, PetscReal A, PetscReal *h, PetscReal *hu, PetscReal *hv)
@@ -113,13 +105,13 @@ static inline void ComputeFluxY(PetscReal g, PetscReal h, PetscReal hu, PetscRea
   }
 }
 
-static inline PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_vec, PetscCtx ctx)
+static PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_vec, PetscCtx ctx)
 {
   ShallowWater2DCtx   *sw = (ShallowWater2DCtx *)ctx;
   Vec                  X_local;
   const PetscScalar ***x;
   PetscScalar       ***f;
-  PetscInt             xs, ys, xm, ym, i, j;
+  PetscInt             xs, ys, xm, ym;
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetCorners(sw->da, &xs, &ys, NULL, &xm, &ym, NULL));
@@ -130,8 +122,8 @@ static inline PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_
   PetscCall(DMDAVecGetArrayDOFWrite(sw->da, F_vec, &f));
 
   /* Only the Rusanov flux is implemented. */
-  for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) {
+  for (PetscInt j = ys; j < ys + ym; j++) {
+    for (PetscInt i = xs; i < xs + xm; i++) {
       PetscReal h      = PetscRealPart(x[j][i][0]);
       PetscReal hu     = PetscRealPart(x[j][i][1]);
       PetscReal hv     = PetscRealPart(x[j][i][2]);
@@ -207,7 +199,7 @@ static inline PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, Ex4FluxType flux_type, ShallowWater2DCtx **ctx)
+static PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, ShallowWater2DCtx **ctx)
 {
   ShallowWater2DCtx *sw;
 
@@ -227,12 +219,10 @@ static inline PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, Pet
   sw->dx         = Lx / nx;
   sw->dy         = Ly / ny;
   sw->dt         = dt;
-  sw->t_current  = 0.0;
   sw->h0         = h0;
   sw->Ax         = Ax;
   sw->Ay         = Ay;
   sw->verify_mms = verify_mms;
-  sw->flux_type  = flux_type;
 
   PetscCall(TSCreate(PetscObjectComm((PetscObject)da), &sw->ts));
   PetscCall(TSSetProblemType(sw->ts, TS_NONLINEAR));
@@ -261,7 +251,7 @@ static inline PetscErrorCode ShallowWater2DContextDestroy(ShallowWater2DCtx **ct
 /* Advance a single state vector one TS step starting from physical time t_start. The MMS source
    (when verify_mms is enabled in the context) is evaluated against the TS time, so callers driving
    multi-step verification runs must pass the cumulative start time of each step rather than 0. */
-static inline PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, PetscReal t_start, Vec x)
+static PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, PetscReal t_start, Vec x)
 {
   PetscFunctionBeginUser;
   /* The TSSetTimeStep and TSSetMaxSteps calls below look redundant with ShallowWater2DContextCreate()
@@ -275,28 +265,6 @@ static inline PetscErrorCode ShallowWaterStep2DVec(ShallowWater2DCtx *sw, PetscR
   PetscCall(TSSetMaxSteps(sw->ts, 1));
   PetscCall(TSSetMaxTime(sw->ts, t_start + sw->dt));
   PetscCall(TSSolve(sw->ts, x));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static inline PetscErrorCode ShallowWaterStep2D(Mat ensemble, PetscCtx ctx)
-{
-  ShallowWater2DCtx *sw = (ShallowWater2DCtx *)ctx;
-  PetscInt           n, j;
-  PetscBool          isdense;
-
-  PetscFunctionBeginUser;
-  PetscCheck(!sw->verify_mms, PetscObjectComm((PetscObject)ensemble), PETSC_ERR_SUP, "MMS verification is not supported for the ensemble Mat path; the per-step time tracked here can drift from external Vec callers");
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)ensemble, &isdense, MATSEQDENSE, MATMPIDENSE, MATDENSE, ""));
-  PetscCheck(isdense, PetscObjectComm((PetscObject)ensemble), PETSC_ERR_SUP, "ShallowWaterStep2D requires a dense ensemble Mat (got non-dense type)");
-  PetscCall(MatGetSize(ensemble, NULL, &n));
-  for (j = 0; j < n; j++) {
-    Vec col;
-
-    PetscCall(MatDenseGetColumnVecWrite(ensemble, j, &col));
-    PetscCall(ShallowWaterStep2DVec(sw, sw->t_current, col));
-    PetscCall(MatDenseRestoreColumnVecWrite(ensemble, j, &col));
-  }
-  sw->t_current += sw->dt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -316,13 +284,13 @@ static inline void ShallowWaterSolution_Wave2D(PetscReal Lx, PetscReal Ly, Petsc
 /*
   SetupForwardProblem - Create DM, shallow water context, and solution vector
 */
-static inline PetscErrorCode SetupForwardProblem(PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, Ex4FluxType flux_type, DM *da_state, ShallowWater2DCtx **sw_ctx, Vec *x)
+static PetscErrorCode SetupForwardProblem(PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, DM *da_state, ShallowWater2DCtx **sw_ctx, Vec *x)
 {
   PetscFunctionBeginUser;
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, da_state));
   PetscCall(DMSetFromOptions(*da_state));
   PetscCall(DMSetUp(*da_state));
-  PetscCall(ShallowWater2DContextCreate(*da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, flux_type, sw_ctx));
+  PetscCall(ShallowWater2DContextCreate(*da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, sw_ctx));
   PetscCall(DMCreateGlobalVector(*da_state, x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -330,7 +298,7 @@ static inline PetscErrorCode SetupForwardProblem(PetscInt nx, PetscInt ny, Petsc
 /*
   SetInitialCondition - Set initial condition on solution vector from analytic solution
 */
-static inline PetscErrorCode SetInitialCondition(DM da_state, Vec x, ShallowWater2DCtx *sw, PetscBool use_mms)
+static PetscErrorCode SetInitialCondition(DM da_state, Vec x, ShallowWater2DCtx *sw, PetscBool use_mms)
 {
   PetscScalar ***x_array;
   PetscInt       xs, ys, xm, ym;

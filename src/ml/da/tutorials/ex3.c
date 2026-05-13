@@ -369,16 +369,16 @@ static PetscErrorCode ShallowWaterSolution(Ex3TestType test_type, PetscReal L, P
 /*
   CreateObservationMatrix - Create observation matrix H for shallow water, and H1 as scalar version
 
-  Observes water height (h) at every other grid point.
+  Observes water height (h) at every obs_stride-th grid point.
   This creates a sparse matrix mapping from full state (n_vert*ndof) to observations.
-  For n_vert=80 grid points, we observe at points 0, 2, 4, ..., 78
+  For n_vert=80 and obs_stride=2, we observe at points 0, 2, 4, ..., 78.
 */
-static PetscErrorCode CreateObservationMatrix(PetscInt n_vert, PetscInt ndof, PetscInt nobs, Vec state, Mat *H, Mat *H1)
+static PetscErrorCode CreateObservationMatrix(PetscInt n_vert, PetscInt ndof, PetscInt nobs, PetscInt obs_stride, Vec state, Mat *H, Mat *H1)
 {
   PetscInt i, local_state_size;
 
   PetscFunctionBeginUser;
-  PetscCheck(n_vert == 2 * nobs, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Number of grid points (%" PetscInt_FMT ") must equal 2*nobs (%" PetscInt_FMT ")", n_vert, 2 * nobs);
+  PetscCheck(n_vert == obs_stride * nobs, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Number of grid points (%" PetscInt_FMT ") must equal obs_stride*nobs (%" PetscInt_FMT "*%" PetscInt_FMT ")", n_vert, obs_stride, nobs);
 
   PetscCall(VecGetLocalSize(state, &local_state_size));
 
@@ -389,9 +389,9 @@ static PetscErrorCode CreateObservationMatrix(PetscInt n_vert, PetscInt ndof, Pe
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, local_state_size / ndof, nobs, n_vert, 1, NULL, 0, NULL, H1));
   PetscCall(MatSetFromOptions(*H1));
 
-  /* Observe water height (h) at every other grid point */
+  /* Observe water height (h) at every obs_stride-th grid point */
   for (i = 0; i < nobs; i++) {
-    PetscInt grid_point = 2 * i; /* Observe at points 0, 2, 4, ... */
+    PetscInt grid_point = obs_stride * i;
     PetscCall(MatSetValue(*H1, i, grid_point, 1.0, INSERT_VALUES));
     /* pick out the h component (first DOF) at that grid point */
     PetscCall(MatSetValue(*H, i, grid_point * ndof, 1.0, INSERT_VALUES));
@@ -500,13 +500,12 @@ int main(int argc, char **argv)
   PetscInt         random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
   PetscInt         n_spin = SPINUP_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ;
   PetscInt         n_stat_steps = 0, obs_count = 0, step;
-  /* LETKF constraint: nobs = n_vert/obs_stride, observe every obs_stride-th point */
-  PetscInt  obs_stride = 2, nobs;
-  PetscReal g = DEFAULT_G, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
-  PetscReal localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
-  PetscReal L                   = (PetscReal)DEFAULT_N; /* Domain length */
-  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  PetscInt         obs_stride = 2, nobs; /* LETKF samples nobs = n_vert/obs_stride observations, one every obs_stride-th grid point */
+  PetscReal        g = DEFAULT_G, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal        localization_radius = 100.0;                /* Large value = effectively no localization for domain size 80 */
+  PetscReal        L                   = (PetscReal)DEFAULT_N; /* Domain length */
+  PetscReal        rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal        sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -520,6 +519,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-n", "Number of grid points", "", n_vert, &n_vert, NULL));
   PetscCall(PetscOptionsInt("-steps", "Number of time steps", "", steps, &steps, NULL));
   PetscCall(PetscOptionsInt("-obs_freq", "Observation frequency", "", obs_freq, &obs_freq, NULL));
+  PetscCall(PetscOptionsInt("-obs_stride", "Observation stride (sample 1 of every N grid points)", "", obs_stride, &obs_stride, NULL));
   PetscCall(PetscOptionsReal("-g", "Gravitational constant", "", g, &g, NULL));
   PetscCall(PetscOptionsReal("-dt", "Time step size", "", dt, &dt, NULL));
   PetscCall(PetscOptionsReal("-obs_error", "Observation error standard deviation", "", obs_error_std, &obs_error_std, NULL));
@@ -547,7 +547,8 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsEnum("-ex3_flux", "Flux scheme (rusanov/mc)", "", Ex3FluxTypes, (PetscEnum)flux_type, (PetscEnum *)&flux_type, NULL));
   PetscOptionsEnd();
   n_spin = 0; /* No spinup needed for either test - dam evolves naturally, wave is already smooth */
-  nobs   = n_vert / obs_stride;
+  PetscCheck(obs_stride > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "obs_stride must be positive (got %" PetscInt_FMT ")", obs_stride);
+  nobs = n_vert / obs_stride;
 
   /* Validate and constrain parameters */
   PetscCall(ValidateParameters(&n_vert, &nobs, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
@@ -617,8 +618,8 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinup complete. Ensemble will be initialized from spun-up state.\n\n"));
   }
 
-  /* Create observation matrix H, observing h at every other grid point) */
-  PetscCall(CreateObservationMatrix(n_vert, ndof, nobs, x0, &H, &H1));
+  /* Create observation matrix H, observing h at every obs_stride-th grid point */
+  PetscCall(CreateObservationMatrix(n_vert, ndof, nobs, obs_stride, x0, &H, &H1));
 
   /* Initialize observation vectors using MatCreateVecs from H (same as H1) */
   PetscCall(MatCreateVecs(H, NULL, &observation));

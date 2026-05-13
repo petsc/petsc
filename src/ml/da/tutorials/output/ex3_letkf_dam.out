@@ -1,14 +1,3 @@
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 160
-  Observation size: 40
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: gaspari_cohn
-  Localization radius: 100.
-  Localization matrix: not set
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Dam-break
@@ -27,6 +16,16 @@ Shallow Water [L]ETKF Example
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00003  RMSE_analysis 0.00003
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 100.
 Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.00888
 Step    3, time  0.060  RMSE_forecast 0.00865  RMSE_analysis 0.00865
 Step    4, time  0.080  RMSE_forecast 0.00858  RMSE_analysis 0.00511
