@@ -2999,9 +2999,18 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (snes->npc && snes->npcside == PC_LEFT) {
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    PetscFunctionReturn(PETSC_SUCCESS);
+    /* SNESASPIN uses SNESNASM as the nonlinear preconditioner. When SNESNASM
+       is done solving the sub-systems it calls the user-provided Jacobian function
+       (corresponding to the unpreconditioned residual) retrieved through the DM.
+       Consequently it would be redundant to call the Jacobian function here. In
+       the future we may move the outer Jacobian function call out of SNESNASM
+       in which case no special casing will be required here. */
+    PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESASPIN, &flag));
+    if (flag) {
+      PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
   }
 
   PetscCall(PetscLogEventBegin(SNES_JacobianEval, snes, X, A, B));

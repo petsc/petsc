@@ -71,6 +71,7 @@
 ## SNES
 
 - Change `SNESSetUp()` to not overwrite the NPC application context if one has previously been set on the NPC
+- Change `SNESComputeJacobian()` to call the user-provided Jacobian function when a left NPC is active and the solver is not `SNESASPIN`
 
 ## SNESLineSearch
 
