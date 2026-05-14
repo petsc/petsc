@@ -65,6 +65,7 @@
 
 ## SNES
 
+- Change `SNESSetUp()` to not overwrite the NPC application context if one has previously been set on the NPC
 
 ## SNESLineSearch
 

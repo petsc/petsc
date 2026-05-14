@@ -3398,8 +3398,11 @@ PetscErrorCode SNESSetUp(SNES snes)
     PetscCall(SNESSetFunction(snes->npc, fpc, func, funcctx));
     PetscCall(SNESGetJacobian(snes, &j, &jpre, &jac, &jacctx));
     PetscCall(SNESSetJacobian(snes->npc, j, jpre, jac, jacctx));
-    PetscCall(SNESGetApplicationContext(snes, &appctx));
-    PetscCall(SNESSetApplicationContext(snes->npc, appctx));
+    PetscCall(SNESGetApplicationContext(snes->npc, &appctx));
+    if (!appctx) {
+      PetscCall(SNESGetApplicationContext(snes, &appctx));
+      PetscCall(SNESSetApplicationContext(snes->npc, appctx));
+    }
     PetscCall(SNESSetUseMatrixFree(snes->npc, mf_operator, mf));
     PetscCall(VecDestroy(&fpc));
 
