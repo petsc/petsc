@@ -234,7 +234,11 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
     filename = 'z' + fun.file
   if not os.path.isdir(dir): os.makedirs(dir)
 
-  with open(os.path.join(dir,filename.replace('.cu','.c').replace('.c','f.c')),'a') as fd:
+  if filename.endswith('.kokkos.cxx'): stubfile = os.path.join(dir,filename.replace('.kokkos.cxx','f.kokkos.cxx'))
+  elif filename.endswith('.hip.cxx'): stubfile = os.path.join(dir,filename.replace('.hip.cxx','f.hip.cxx'))
+  elif filename.endswith('.sycl.cxx'): stubfile = os.path.join(dir,filename.replace('.sycl.cxx','f.sycl.cxx'))
+  else: stubfile = os.path.join(dir,filename.replace('.cu','.c').replace('.c','f.c'))
+  with open(stubfile,'a') as fd:
     fd.write('#include "petscsys.h"\n')
     fd.write('#include "petscfix.h"\n')
     fd.write('#include "petsc/private/ftnimpl.h"\n')
@@ -435,11 +439,12 @@ def generateCStub(pkgname,petscarch,manualstubsfound,senums,classes,structs,funn
         with open(os.path.join(dir,'makefile'),'w') as fout:
           fout.write(fin.read().replace('petscdir.mk','../petscdir.mk'))
         output = check_output('git add ' + os.path.join(dir,'makefile'), shell=True).decode('utf-8')
-      print('Fix the manual stub for ' + fun.name + ' in ' + os.path.join(dir,filename.replace('.c','f.c')))
-      output = check_output('git add ' + os.path.join(dir,filename.replace('.c','f.c')), shell=True).decode('utf-8')
+      print('Fix the manual stub for ' + fun.name + ' in ' + stubfile)
+      output = check_output('git add ' + stubfile, shell=True).decode('utf-8')
 
 def generateFortranStub(senums, funname, fun, fd, opts):
   '''For functions with optional arguments generate the Fortran stub that calls the C stub'''
+  '''Currently not used'''
   for k in fun.arguments:
     # no C stub if function returns an array, except if it is a string
     # TODO: generate fillible stub for functions that return arrays
