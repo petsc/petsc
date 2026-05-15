@@ -4,7 +4,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion        = '7.5'
+    self.minversion        = '11.4'
     self.versionname       = 'CUDA_VERSION'
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1

@@ -10,6 +10,7 @@
 
 ## General
 
+- Increase the minimum required CUDA Toolkit version to 11.4
 
 ## Configure/Build
 
