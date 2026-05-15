@@ -12,7 +12,7 @@ Shallow Water [L]ETKF Example
   Observation frequency : 2
   Observation noise std : 0.030
   Random seed           : 12345
-  Localization radius   : 100.
+  Localization radius   : 160.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00003  RMSE_analysis 0.00003
@@ -25,20 +25,20 @@ PetscDA Object: 1 MPI process
   Inflation: 1.
   Local analysis: CPU
   Localization type: gaspari_cohn
-  Localization radius: 100.
-Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.00888
-Step    3, time  0.060  RMSE_forecast 0.00865  RMSE_analysis 0.00865
-Step    4, time  0.080  RMSE_forecast 0.00858  RMSE_analysis 0.00511
-Step    5, time  0.100  RMSE_forecast 0.00507  RMSE_analysis 0.00507
-Step    6, time  0.120  RMSE_forecast 0.00507  RMSE_analysis 0.00415
-Step    7, time  0.140  RMSE_forecast 0.00418  RMSE_analysis 0.00418
-Step    8, time  0.160  RMSE_forecast 0.00422  RMSE_analysis 0.00271
-Step    9, time  0.180  RMSE_forecast 0.00275  RMSE_analysis 0.00275
-Step   10, time  0.200  RMSE_forecast 0.00279  RMSE_analysis 0.00322
+  Localization radius: 160.
+Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.00896
+Step    3, time  0.060  RMSE_forecast 0.00874  RMSE_analysis 0.00874
+Step    4, time  0.080  RMSE_forecast 0.00867  RMSE_analysis 0.00505
+Step    5, time  0.100  RMSE_forecast 0.00501  RMSE_analysis 0.00501
+Step    6, time  0.120  RMSE_forecast 0.00501  RMSE_analysis 0.00404
+Step    7, time  0.140  RMSE_forecast 0.00408  RMSE_analysis 0.00408
+Step    8, time  0.160  RMSE_forecast 0.00411  RMSE_analysis 0.00255
+Step    9, time  0.180  RMSE_forecast 0.00259  RMSE_analysis 0.00259
+Step   10, time  0.200  RMSE_forecast 0.00263  RMSE_analysis 0.00301
 
 Statistics (10 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00414
-  Mean RMSE (analysis) : 0.00448
+  Mean RMSE (forecast) : 0.00409
+  Mean RMSE (analysis) : 0.00441
   Observations used    : 5
 

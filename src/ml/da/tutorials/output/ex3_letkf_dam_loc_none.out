@@ -12,7 +12,7 @@ Shallow Water [L]ETKF Example
   Observation frequency : 2
   Observation noise std : 0.030
   Random seed           : 12345
-  Localization radius   : 100.
+  Localization radius   : 160.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00002  RMSE_analysis 0.00002

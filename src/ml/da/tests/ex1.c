@@ -16,7 +16,6 @@ int main(int argc, char **argv)
 
   /* Create the DA object */
   PetscCall(PetscDACreate(PETSC_COMM_WORLD, &da));
-  PetscCall(PetscDASetType(da, PETSCDALETKF));
   PetscCall(PetscDALETKFSetLocalizationType(da, PETSCDA_LETKF_LOC_NONE));
   PetscCall(PetscDASetSizes(da, state_size, obs_size));
   PetscCall(PetscDAEnsembleSetSize(da, ensemble_size));
