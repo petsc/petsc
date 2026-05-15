@@ -262,7 +262,7 @@ PETSC_EXTERN PetscErrorCode TaoTermShellSetIsComputeHessianFDPossible(TaoTerm, P
 PETSC_EXTERN PetscErrorCode TaoTermSumSetNumberTerms(TaoTerm, PetscInt);
 PETSC_EXTERN PetscErrorCode TaoTermSumGetNumberTerms(TaoTerm, PetscInt *);
 PETSC_EXTERN PetscErrorCode TaoTermSumSetTerm(TaoTerm, PetscInt, const char[], PetscReal, TaoTerm, Mat);
-PETSC_EXTERN PetscErrorCode TaoTermSumGetTerm(TaoTerm, PetscInt, const char **, PetscReal *, TaoTerm *, Mat *);
+PETSC_EXTERN PetscErrorCode TaoTermSumGetTerm(TaoTerm, PetscInt, const char *[], PetscReal *, TaoTerm *, Mat *);
 PETSC_EXTERN PetscErrorCode TaoTermSumAddTerm(TaoTerm, const char[], PetscReal, TaoTerm, Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode TaoTermSumParametersPack(TaoTerm, Vec[], Vec *);
 PETSC_EXTERN PetscErrorCode TaoTermSumParametersUnpack(TaoTerm, Vec *, Vec[]);

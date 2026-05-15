@@ -583,7 +583,7 @@ static PetscErrorCode TaoTermSumGetNumberTerms_Sum(TaoTerm term, PetscInt *n_ter
           `TaoTermSumSetTerm()`,
           `TaoTermSumAddTerm()`
 @*/
-PetscErrorCode TaoTermSumGetTerm(TaoTerm sumterm, PetscInt index, const char **prefix, PetscReal *scale, TaoTerm *term, Mat *map)
+PetscErrorCode TaoTermSumGetTerm(TaoTerm sumterm, PetscInt index, const char *prefix[], PetscReal *scale, TaoTerm *term, Mat *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sumterm, TAOTERM_CLASSID, 1);

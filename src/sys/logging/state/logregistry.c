@@ -352,7 +352,7 @@ PETSC_INTERN PetscErrorCode PetscLogGlobalNamesDestroy(PetscLogGlobalNames *glob
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetName(PetscLogGlobalNames global_names, PetscInt idx, const char **name)
+PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetName(PetscLogGlobalNames global_names, PetscInt idx, const char *name[])
 {
   PetscFunctionBegin;
   PetscCheck(idx >= 0 && idx < global_names->count_global, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %" PetscInt_FMT " not in range [0,%" PetscInt_FMT ")", idx, global_names->count_global);

@@ -311,7 +311,7 @@ PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscViewerFileSetMode()", ) static inline 
 
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetName(PetscViewer, const char **);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetName(PetscViewer, const char *[]);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
