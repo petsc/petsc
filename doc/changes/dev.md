@@ -18,6 +18,7 @@
 ## Sys
 
 - Add `PetscGetConfiguration()`
+- Add `PetscObjectViewSynchronizedFromOptions()`
 
 ## Event Logging
 

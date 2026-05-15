@@ -124,7 +124,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
 
   This function is usually not called directly but is called by, for example, `MatViewFromOptions()`.
 
-.seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsCreateViewer()`
+.seealso: `PetscObject`, `PetscObjectViewSynchronizedFromOptions()`, `PetscObjectView()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, const char name[])
 {
@@ -144,6 +144,87 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscObjectView(obj, viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscObjectViewSynchronizedFromOptions - Processes command line options to determine if/how a serial `PetscObject` is to be collectively viewed.
+
+  Collective
+
+  Input Parameters:
++ obj  - the serial object
+. sobj - synchronization object that provides the synchronizing communicator
+- name - option string that is used to activate viewing. It typically ends with _view.
+
+  Options Database Key:
+. -name [viewertype][:...] - option name and values. In actual usage the key might be something like `-vec_view`
+
+  Level: developer
+
+  Notes:
+  The objects will be viewed in sequence, following the MPI rank order.
+
+  For a `viewertype` that represents files, including `ascii`, `binary`, `matlab`, `vu`, `vtk`, `glvis`, `cgns`, and `hdf5`, the argument has the following form
+.vb
+    viewertype[:filename[:format[:filemode]]]
+.ve
+  where all parts are optional, but you need to include the colon to access the next part.
+  `filename` is the name of the file where the object data will be stored. `format` is the string name
+  of a `PetscViewerFormat`, for example, `default` or `ascii_info`. `filemode` can be `append` to indicate the file named `filename` should be appended
+  to and not replaced, while `read` indicates the file is for reading.
+
+  For example, to read from an HDF5 file, use
+.vb
+    hdf5:sol.h5::read
+.ve
+
+  For a `viewertype` of `draw` the argument is of the form
+.vb
+  draw[:drawtype[:filename]]
+.ve
+  where `drawtype` is, for example, `tikz` or `x` and `filename` indicates where the data is to be saved if it is not directly displayed.
+
+  Other formats, such as
+.vb
+  socket[:port]
+  saws[:communicatorname]
+.ve
+  that send the data to a Unix socket or publish the object to the Scientific Application Webserver (SAWs) exist.
+
+  If no value is provided `ascii:stdout` is used
+
+  This function is usually not called directly but is called by, for example, `MatViewFromOptions()`.
+
+.seealso: `PetscObject`, `PetscObjectViewFromOptions()`, `PetscObjectView()`, `PetscOptionsCreateViewer()`
+@*/
+PetscErrorCode PetscObjectViewSynchronizedFromOptions(PetscObject obj, PetscObject sobj, const char name[])
+{
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  PetscValidHeader(sobj, 2);
+  if (incall) PetscFunctionReturn(PETSC_SUCCESS);
+  incall = PETSC_TRUE;
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(sobj), obj->options, obj->prefix, name, &viewer, &format, &flg));
+  if (flg) {
+    PetscViewer selfviewer;
+
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
+    PetscCall(PetscObjectView(obj, selfviewer));
+    PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
