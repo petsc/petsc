@@ -2468,11 +2468,13 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
     Bmat = Bcusp->mat;
     break;
   case MATPRODUCT_AtB:
+    PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(A));
     Amat = Acusp->matTranspose;
     Bmat = Bcusp->mat;
     break;
   case MATPRODUCT_ABt:
     Amat = Acusp->mat;
+    PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(B));
     Bmat = Bcusp->matTranspose;
     break;
   default:

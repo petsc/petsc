@@ -1,4 +1,4 @@
-static const char help[] = "Test MatPtAP with MATDIAGONAL\n";
+static const char help[] = "Test MatPtAP with MATDIAGONAL and MATCONSTANTDIAGONAL\n";
 
 #include <petscmat.h>
 
@@ -165,6 +165,94 @@ int main(int argc, char **argv)
     nsize: {{1 2}}
     requires: hip
     args: -a_mat_type {{aijhipsparse densehip}} -p_mat_type diagonal -p_mat_vec_type hip -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: a_cdiag_p_dense_cpu
+    nsize: {{1 2}}
+    args: -a_mat_type constantdiagonal -p_mat_type {{aij dense}}
+    output_file: output/empty.out
+
+  test:
+    suffix: a_cdiag_p_diag_cpu
+    nsize: {{1 2}}
+    args: -a_mat_type constantdiagonal -p_mat_type diagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: p_cdiag_cpu
+    nsize: {{1 2}}
+    args: -a_mat_type {{constantdiagonal diagonal aij dense}} -p_mat_type constantdiagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: cdiag_diag_cuda
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type constantdiagonal -p_mat_type diagonal -p_mat_vec_type cuda -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: diag_cuda_cdiag
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type diagonal -a_mat_vec_type cuda -p_mat_type constantdiagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: cdiag_cuda_mat
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type constantdiagonal -p_mat_type {{aijcusparse densecuda}}
+    output_file: output/empty.out
+
+  test:
+    suffix: cuda_mat_cdiag
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type {{aijcusparse densecuda}} -p_mat_type constantdiagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: cdiag_diag_kokkos
+    nsize: {{1 2}}
+    requires: kokkos_kernels
+    args: -a_mat_type constantdiagonal -p_mat_type diagonal -p_mat_vec_type kokkos -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: diag_kokkos_cdiag
+    nsize: {{1 2}}
+    requires: kokkos_kernels
+    args: -a_mat_type diagonal -a_mat_vec_type kokkos -p_mat_type constantdiagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: cdiag_diag_hip
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type constantdiagonal -p_mat_type diagonal -p_mat_vec_type hip -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: diag_hip_cdiag
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type diagonal -a_mat_vec_type hip -p_mat_type constantdiagonal -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: cdiag_hip_mat
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type constantdiagonal -p_mat_type {{aijhipsparse densehip}}
+    output_file: output/empty.out
+
+  test:
+    suffix: hip_mat_cdiag
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type {{aijhipsparse densehip}} -p_mat_type constantdiagonal -n 10 -m 10
     output_file: output/empty.out
 
 TEST*/
