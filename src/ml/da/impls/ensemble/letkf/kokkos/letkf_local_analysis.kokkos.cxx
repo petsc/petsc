@@ -37,7 +37,6 @@ struct EigenWorkspace {
   using view_3d    = Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, exec_space>;
   using view_2d    = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, exec_space>;
 
-  view_3d Z_batch;
   view_3d S_batch;
   view_3d T_batch;
   view_3d V_batch;
@@ -213,16 +212,15 @@ static PetscErrorCode BatchedEigenSolve_Host(Kokkos::View<PetscScalar ***, Kokko
 static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> T_batch, Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> Lambda_batch, Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> V_batch, PetscInt n_batch, PetscInt n_size, cusolverDnHandle_t cusolverH, EigenWorkspace *work)
 {
   cusolverStatus_t cusolver_status;
+  syevjInfo_t      syevj_params = work->syevj_params;
+  PetscScalar     *d_work       = work->d_work;
+  int             *d_info       = work->d_info;
+  PetscScalar     *d_A_contig   = work->d_A_contig;
+  PetscScalar     *d_W_contig   = work->d_W_contig;
+  int              lwork        = work->lwork_device;
+  int             *h_info       = nullptr;
 
   PetscFunctionBegin;
-  /* Use pre-allocated workspace */
-  syevjInfo_t  syevj_params = work->syevj_params;
-  PetscScalar *d_work       = work->d_work;
-  int         *d_info       = work->d_info;
-  PetscScalar *d_A_contig   = work->d_A_contig;
-  PetscScalar *d_W_contig   = work->d_W_contig;
-  int          lwork        = work->lwork_device;
-
   /* Copy T_batch to contiguous layout for cuSOLVER */
   Kokkos::parallel_for(
     "ReorganizeForCuSOLVER", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
@@ -241,7 +239,6 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   PetscCheck(cusolver_status == CUSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "cusolverDn*syevjBatched failed");
 
   /* Check info */
-  int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallCUDA(cudaMemcpy(h_info, d_info, sizeof(int) * n_batch, cudaMemcpyDeviceToHost));
   for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cuSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
@@ -262,13 +259,13 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   #elif defined(KOKKOS_ENABLE_HIP)
 static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> T_batch, Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> Lambda_batch, Kokkos::View<PetscScalar ***, Kokkos::LayoutLeft, Kokkos::DefaultExecutionSpace> V_batch, PetscInt n_batch, PetscInt n_size, rocblas_handle rocblasH, EigenWorkspace *work)
 {
-  PetscFunctionBegin;
-  /* Use pre-allocated workspace */
   PetscScalar *d_work     = work->d_work;
   int         *d_info     = work->d_info;
   PetscScalar *d_A_contig = work->d_A_contig;
   PetscScalar *d_W_contig = work->d_W_contig;
+  int         *h_info     = nullptr;
 
+  PetscFunctionBegin;
   /* Copy T_batch to contiguous layout for rocSOLVER */
   Kokkos::parallel_for(
     "ReorganizeForRocSOLVER", Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, n_batch), KOKKOS_LAMBDA(const int i) {
@@ -299,7 +296,6 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
     #endif
 
   /* Check info */
-  int *h_info;
   PetscCall(PetscMalloc1(n_batch, &h_info));
   PetscCallHIP(hipMemcpy(h_info, d_info, sizeof(int) * n_batch, hipMemcpyDeviceToHost));
   for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocSOLVER eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
@@ -636,7 +632,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
   view_2d_unmanaged                                            Z_global_view, X_view;
   view_1d_unmanaged                                            y_global_view, y_mean_global_view, r_inv_sqrt_global_view, mean_view;
   view_2d_unmanaged_write                                      E_view;
-  view_3d                                                      Z_batch, S_batch, T_batch, V_batch, T_sqrt_batch;
+  view_3d                                                      S_batch, T_batch, V_batch, T_sqrt_batch;
   view_2d                                                      Lambda_batch, w_batch, delta_batch, y_batch, y_mean_batch, r_inv_sqrt_batch, temp1_batch, temp2_batch, inv_sqrt_lambda_batch;
 #if defined(KOKKOS_ENABLE_CUDA)
   cusolverDnHandle_t device_handle = nullptr;
@@ -874,8 +870,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
     eigen_work->max_nnz        = max_nnz_copy;
 
     /* Allocate Kokkos Views */
-    eigen_work->Z_batch               = view_3d("Z_batch", chunk_size, max_nnz_copy, m);
-    eigen_work->S_batch               = eigen_work->Z_batch;
+    eigen_work->S_batch               = view_3d("S_batch", chunk_size, max_nnz_copy, m);
     eigen_work->T_batch               = view_3d("T_batch", chunk_size, m, m);
     eigen_work->V_batch               = eigen_work->T_batch;
     eigen_work->Lambda_batch          = view_2d("Lambda_batch", chunk_size, m);
@@ -989,7 +984,6 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
   }
 
   /* Local aliases so KOKKOS_LAMBDAs capture views by value, not via eigen_work-> */
-  Z_batch               = eigen_work->Z_batch;
   S_batch               = eigen_work->S_batch;
   T_batch               = eigen_work->T_batch;
   V_batch               = eigen_work->V_batch;
@@ -1048,11 +1042,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
 
           /* Compute S row: S = R^{-1/2}(Z - y_mean * 1')/sqrt(m-1) */
           PetscScalar scale_factor = scale * r_inv_sqrt;
-          for (int j = 0; j < m; j++) {
-            PetscScalar z_val      = Z_global_view(obs_idx, j);
-            Z_batch(i_local, k, j) = z_val; /* Store Z for potential later use */
-            S_batch(i_local, k, j) = (z_val - y_mean_val) * scale_factor;
-          }
+          for (int j = 0; j < m; j++) S_batch(i_local, k, j) = (Z_global_view(obs_idx, j) - y_mean_val) * scale_factor;
         }
       });
     Kokkos::fence();

@@ -28,7 +28,6 @@ typedef struct {
   Mat       coord_H;      /* Observation operator used to map coordinates to observation locations */
 
   PetscInt max_nnz_per_row; /* Cached max nnz across all rows of Q (global) */
-  PetscInt min_nnz_per_row; /* Cached min nnz across all rows of Q (global) */
   PetscInt n_grid;          /* Number of grid points (n_grid = state_size / da->ndof) */
   PetscInt batch_size;      /* Batch size for GPU processing */
 
@@ -66,6 +65,7 @@ PETSC_INTERN const char *const PetscDALETKFLocalizationTypes[];
 
 PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocalizationType, PetscReal, Vec[], PetscReal[], Mat, PetscBool, Mat *);
 PETSC_INTERN PetscErrorCode PetscDALETKFGatherObsBbox(PetscInt, Vec[], PetscReal[], PetscReal, Mat, Vec[], PetscInt *, PetscInt **, PetscReal **);
+PETSC_INTERN PetscErrorCode PetscDALETKFCoalesceNnzMinMax(MPI_Comm, PetscInt *, PetscInt *);
 PETSC_INTERN PetscErrorCode PetscDALETKFSetupObsScatter(PetscDA_LETKF *, Mat);
 PETSC_INTERN PetscErrorCode PetscDALETKFDestroyObsScatter(PetscDA_LETKF *);
 PETSC_INTERN PetscErrorCode PetscDALETKFReplicateWeightVector(Vec, PetscInt, Mat);
