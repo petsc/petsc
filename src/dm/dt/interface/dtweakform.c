@@ -945,7 +945,7 @@ PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
 
 static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer viewer, PetscBool splitField, const char tableName[], PetscHMapForm map)
 {
-  PetscInt Nf = wf->Nf, Nk, k;
+  PetscInt Nf = wf->Nf, Nk;
 
   PetscFunctionBegin;
   PetscCall(PetscHMapFormGetSize(map, &Nk));
@@ -953,39 +953,46 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
     PetscFormKey *keys;
     PetscVoidFn **funcs = NULL;
     const char  **names;
-    PetscInt     *values, *idx1, *idx2, *idx;
+    PetscInt     *fields, *values, *idx1, *idx2, *idx3, *idx;
     PetscBool     showPart = PETSC_FALSE, showPointer = PETSC_FALSE;
     PetscInt      off = 0;
 
-    PetscCall(PetscMalloc6(Nk, &keys, Nk, &names, Nk, &values, Nk, &idx1, Nk, &idx2, Nk, &idx));
+    PetscCall(PetscMalloc4(Nk, &keys, Nk, &fields, Nk, &names, Nk, &values));
+    PetscCall(PetscMalloc4(Nk, &idx1, Nk, &idx2, Nk, &idx3, Nk, &idx));
     PetscCall(PetscHMapFormGetKeys(map, &off, keys));
-    /* Sort keys by label name and value */
+    // Sort keys by field, and label name and value
     {
       /* First sort values */
-      for (k = 0; k < Nk; ++k) {
+      for (PetscInt k = 0; k < Nk; ++k) {
         values[k] = keys[k].value;
         idx1[k]   = k;
       }
       PetscCall(PetscSortIntWithPermutation(Nk, values, idx1));
-      /* If the string sort is stable, it will be sorted correctly overall */
-      for (k = 0; k < Nk; ++k) {
+      // If the string sort is stable, it will be sorted correctly overall
+      for (PetscInt k = 0; k < Nk; ++k) {
         if (keys[idx1[k]].label) PetscCall(PetscObjectGetName((PetscObject)keys[idx1[k]].label, &names[k]));
         else names[k] = "";
         idx2[k] = k;
       }
       PetscCall(PetscSortStrWithPermutation(Nk, names, idx2));
-      for (k = 0; k < Nk; ++k) {
+      // If the field sort is stable, it will be sorted correctly overall
+      for (PetscInt k = 0; k < Nk; ++k) {
+        fields[k] = keys[idx1[idx2[k]]].field;
+        idx3[k]   = k;
+      }
+      PetscCall(PetscSortIntWithPermutation(Nk, fields, idx3));
+      for (PetscInt k = 0; k < Nk; ++k) {
         if (keys[k].label) PetscCall(PetscObjectGetName((PetscObject)keys[k].label, &names[k]));
         else names[k] = "";
-        idx[k] = idx1[idx2[k]];
+        idx[k] = idx1[idx2[idx3[k]]];
       }
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", tableName));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    for (k = 0; k < Nk; ++k) {
+    for (PetscInt k = 0; k < Nk; ++k) {
       if (keys[k].part != 0) showPart = PETSC_TRUE;
     }
-    for (k = 0; k < Nk; ++k) {
+    for (PetscInt k = 0; k < Nk; ++k) {
       const PetscInt i = idx[k];
       PetscInt       n;
 
@@ -1000,14 +1007,14 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       PetscCall(PetscWeakFormGetFunction_Private(wf, map, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &n, &funcs));
       for (PetscInt f = 0; f < n; ++f) {
         char  *fname;
-        size_t len, l;
+        size_t len;
 
         if (f > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
         PetscCall(PetscDLAddr(funcs[f], &fname));
         if (fname) {
           /* Eliminate argument types */
           PetscCall(PetscStrlen(fname, &len));
-          for (l = 0; l < len; ++l)
+          for (PetscInt l = 0; l < (PetscInt)len; ++l)
             if (fname[l] == '(') {
               fname[l] = '\0';
               break;
@@ -1028,7 +1035,8 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
-    PetscCall(PetscFree6(keys, names, values, idx1, idx2, idx));
+    PetscCall(PetscFree4(keys, fields, names, values));
+    PetscCall(PetscFree4(idx1, idx2, idx3, idx));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
