@@ -144,11 +144,10 @@ struct EigenWorkspace {
 static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D Lambda_batch, LETKFView3D V_batch, PetscInt n_batch, PetscInt n_size, EigenWorkspace *work)
 {
   PetscFunctionBegin;
-  /* Create host mirrors and copy data in one operation */
-  /* This is required for HIP+complex where create_mirror_view + deep_copy fails */
-  auto T_host      = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), T_batch);
-  auto Lambda_host = Kokkos::create_mirror_view(Kokkos::HostSpace(), Lambda_batch);
-  auto V_host      = Kokkos::create_mirror_view(Kokkos::HostSpace(), V_batch);
+  /* In the host-only build path the batch views already live in HostSpace, so LAPACK can
+     read T_batch and write Lambda_batch/V_batch directly. The mirror+deep_copy round-trip
+     used in the device path would be a no-op here, and some Kokkos+Serial configurations do
+     not expose ::HostMirror on a View parameterized with an exec-space tag. */
 
   /* Use pre-allocated workspace */
   PetscScalar *all_v      = work->all_v;
@@ -176,9 +175,9 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
       PetscReal *rwork_ptr = all_rwork + i * (3 * n_size - 2);
   #endif
 
-      /* Copy T_host(i, :, :) to v_ptr (column-major) */
+      /* Copy T_batch(i, :, :) to v_ptr (column-major) */
       for (PetscInt j = 0; j < n_size; j++) {
-        for (PetscInt k = 0; k < n_size; k++) v_ptr[k + j * n_size] = T_host(i, k, j);
+        for (PetscInt k = 0; k < n_size; k++) v_ptr[k + j * n_size] = T_batch(i, k, j);
       }
 
     /* Compute eigendecomposition: T = V * Lambda * V^T */
@@ -191,16 +190,12 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
       /* PetscCheck/SETERRQ are not device-callable; abort the parallel region instead. */
       if (info != 0) Kokkos::abort("LAPACK eigendecomposition failed in parallel region");
 
-      /* Copy results back to host views */
+      /* Write results directly back to the batch views (already in HostSpace) */
       for (PetscInt j = 0; j < n_size; j++) {
-        Lambda_host(i, j) = (PetscScalar)lambda_ptr[j];
-        for (PetscInt k = 0; k < n_size; k++) V_host(i, k, j) = v_ptr[k + j * n_size];
+        Lambda_batch(i, j) = (PetscScalar)lambda_ptr[j];
+        for (PetscInt k = 0; k < n_size; k++) V_batch(i, k, j) = v_ptr[k + j * n_size];
       }
     });
-
-  /* Copy results back to device */
-  Kokkos::deep_copy(Lambda_batch, Lambda_host);
-  Kokkos::deep_copy(V_batch, V_host);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -471,9 +466,12 @@ PETSC_INTERN PetscErrorCode PetscDALETKFSetupLocalization_Kokkos(PetscDA_LETKF *
   PetscCallCXX(d_Q_a = new view_1d_scalar("Q_a", total_nnz));
 
   /* Create host mirrors */
-  auto h_Q_i = Kokkos::create_mirror_view(*d_Q_i);
-  auto h_Q_j = Kokkos::create_mirror_view(*d_Q_j);
-  auto h_Q_a = Kokkos::create_mirror_view(*d_Q_a);
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>    h_Q_i;
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>    h_Q_j;
+  Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace> h_Q_a;
+  PetscCallCXX(h_Q_i = Kokkos::create_mirror_view(Kokkos::HostSpace(), *d_Q_i));
+  PetscCallCXX(h_Q_j = Kokkos::create_mirror_view(Kokkos::HostSpace(), *d_Q_j));
+  PetscCallCXX(h_Q_a = Kokkos::create_mirror_view(Kokkos::HostSpace(), *d_Q_a));
 
   /* Fill host mirrors with LOCAL indices into obs_work */
   h_Q_i(0) = 0;
@@ -493,9 +491,9 @@ PETSC_INTERN PetscErrorCode PetscDALETKFSetupLocalization_Kokkos(PetscDA_LETKF *
   }
 
   /* Copy to device */
-  Kokkos::deep_copy(*d_Q_i, h_Q_i);
-  Kokkos::deep_copy(*d_Q_j, h_Q_j);
-  Kokkos::deep_copy(*d_Q_a, h_Q_a);
+  PetscCallCXX(Kokkos::deep_copy(*d_Q_i, h_Q_i));
+  PetscCallCXX(Kokkos::deep_copy(*d_Q_j, h_Q_j));
+  PetscCallCXX(Kokkos::deep_copy(*d_Q_a, h_Q_a));
 
   /* Store in impl */
   PetscCheck(!impl->Q_device_i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Q_device_i already allocated; PetscDALETKFDestroyLocalization_Kokkos must run before re-setup");
@@ -731,26 +729,26 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
 
   if (z_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(z_global_array, lda_z_global, m);
-    z_managed = LETKFView2D("z_managed", lda_z_global, m);
-    Kokkos::deep_copy(z_managed, src);
+    PetscCallCXX(z_managed = LETKFView2D("z_managed", lda_z_global, m));
+    PetscCallCXX(Kokkos::deep_copy(z_managed, src));
     z_ptr = z_managed.data();
   }
   if (y_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_global_array, n_obs_local);
-    y_managed = LETKFView1D("y_managed", n_obs_local);
-    Kokkos::deep_copy(y_managed, src);
+    PetscCallCXX(y_managed = LETKFView1D("y_managed", n_obs_local));
+    PetscCallCXX(Kokkos::deep_copy(y_managed, src));
     y_ptr = y_managed.data();
   }
   if (y_mean_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(y_mean_global_array, n_obs_local);
-    y_mean_managed = LETKFView1D("y_mean_managed", n_obs_local);
-    Kokkos::deep_copy(y_mean_managed, src);
+    PetscCallCXX(y_mean_managed = LETKFView1D("y_mean_managed", n_obs_local));
+    PetscCallCXX(Kokkos::deep_copy(y_mean_managed, src));
     y_mean_ptr = y_mean_managed.data();
   }
   if (r_inv_sqrt_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(r_inv_sqrt_global_array, n_obs_local);
-    r_inv_sqrt_managed = LETKFView1D("r_inv_sqrt_managed", n_obs_local);
-    Kokkos::deep_copy(r_inv_sqrt_managed, src);
+    PetscCallCXX(r_inv_sqrt_managed = LETKFView1D("r_inv_sqrt_managed", n_obs_local));
+    PetscCallCXX(Kokkos::deep_copy(r_inv_sqrt_managed, src));
     r_inv_sqrt_ptr = r_inv_sqrt_managed.data();
   }
 
@@ -782,22 +780,22 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
 
   if (x_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(x_array, lda_x, m);
-    x_managed = LETKFView2D("x_managed", lda_x, m);
-    Kokkos::deep_copy(x_managed, src);
+    PetscCallCXX(x_managed = LETKFView2D("x_managed", lda_x, m));
+    PetscCallCXX(Kokkos::deep_copy(x_managed, src));
     x_ptr = x_managed.data();
   }
   if (mean_mem_type == PETSC_MEMTYPE_HOST) {
     /* impl->mean is a Vec with local size n_vertices*ndof (no MatDense LDA padding), so size the
        mirror to the exact buffer extent; reading lda_x would over-read when MatDense pads X's LDA. */
     Kokkos::View<const PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(mean_array, n_vertices * ndof);
-    mean_managed = LETKFView1D("mean_managed", n_vertices * ndof);
-    Kokkos::deep_copy(mean_managed, src);
+    PetscCallCXX(mean_managed = LETKFView1D("mean_managed", n_vertices * ndof));
+    PetscCallCXX(Kokkos::deep_copy(mean_managed, src));
     mean_ptr = mean_managed.data();
   }
   if (e_mem_type == PETSC_MEMTYPE_HOST) {
     Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> src(e_array, lda_e, m);
-    e_managed = LETKFView2D("e_managed", lda_e, m);
-    Kokkos::deep_copy(e_managed, src);
+    PetscCallCXX(e_managed = LETKFView2D("e_managed", lda_e, m));
+    PetscCallCXX(Kokkos::deep_copy(e_managed, src));
     e_ptr     = e_managed.data();
     e_is_copy = PETSC_TRUE;
   }
@@ -894,22 +892,22 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
     eigen_work->max_nnz        = max_nnz_copy;
 
     /* Allocate Kokkos Views */
-    eigen_work->S_batch = view_3d("S_batch", chunk_size, max_nnz_copy, m);
-    eigen_work->T_batch = view_3d("T_batch", chunk_size, m, m);
+    PetscCallCXX(eigen_work->S_batch = view_3d("S_batch", chunk_size, max_nnz_copy, m));
+    PetscCallCXX(eigen_work->T_batch = view_3d("T_batch", chunk_size, m, m));
     /* Alias: the eigensolve overwrites T in place, so V and T share storage. Any future
        kernel that needs the original symmetric T after the eigensolve must allocate V
        separately (view_3d("V_batch", chunk_size, m, m)) instead of aliasing. */
-    eigen_work->V_batch               = eigen_work->T_batch;
-    eigen_work->Lambda_batch          = view_2d("Lambda_batch", chunk_size, m);
-    eigen_work->T_sqrt_batch          = view_3d("T_sqrt_batch", chunk_size, m, m);
-    eigen_work->w_batch               = view_2d("w_batch", chunk_size, m);
-    eigen_work->delta_batch           = view_2d("delta_batch", chunk_size, max_nnz_copy);
-    eigen_work->y_batch               = view_2d("y_batch", chunk_size, max_nnz_copy);
-    eigen_work->y_mean_batch          = view_2d("y_mean_batch", chunk_size, max_nnz_copy);
-    eigen_work->r_inv_sqrt_batch      = view_2d("r_inv_sqrt_batch", chunk_size, max_nnz_copy);
-    eigen_work->temp1_batch           = view_2d("temp1_batch", chunk_size, m);
-    eigen_work->temp2_batch           = view_2d("temp2_batch", chunk_size, m);
-    eigen_work->inv_sqrt_lambda_batch = view_2d("inv_sqrt_lambda_batch", chunk_size, m);
+    eigen_work->V_batch = eigen_work->T_batch;
+    PetscCallCXX(eigen_work->Lambda_batch = view_2d("Lambda_batch", chunk_size, m));
+    PetscCallCXX(eigen_work->T_sqrt_batch = view_3d("T_sqrt_batch", chunk_size, m, m));
+    PetscCallCXX(eigen_work->w_batch = view_2d("w_batch", chunk_size, m));
+    PetscCallCXX(eigen_work->delta_batch = view_2d("delta_batch", chunk_size, max_nnz_copy));
+    PetscCallCXX(eigen_work->y_batch = view_2d("y_batch", chunk_size, max_nnz_copy));
+    PetscCallCXX(eigen_work->y_mean_batch = view_2d("y_mean_batch", chunk_size, max_nnz_copy));
+    PetscCallCXX(eigen_work->r_inv_sqrt_batch = view_2d("r_inv_sqrt_batch", chunk_size, max_nnz_copy));
+    PetscCallCXX(eigen_work->temp1_batch = view_2d("temp1_batch", chunk_size, m));
+    PetscCallCXX(eigen_work->temp2_batch = view_2d("temp2_batch", chunk_size, m));
+    PetscCallCXX(eigen_work->inv_sqrt_lambda_batch = view_2d("inv_sqrt_lambda_batch", chunk_size, m));
 
     /* Allocate solver workspace */
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || defined(KOKKOS_ENABLE_SYCL)
@@ -1264,7 +1262,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
   /* Copy back updated ensemble if needed */
   if (e_is_copy) {
     Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> dst(e_array, lda_e, m);
-    Kokkos::deep_copy(dst, e_managed);
+    PetscCallCXX(Kokkos::deep_copy(dst, e_managed));
   }
 
   /* Restore arrays */
@@ -1374,69 +1372,68 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGlobalAnalysis_Kokkos(PetscDA da, PetscD
   e_dev    = e_arr;
 
   if (s_mt == PETSC_MEMTYPE_HOST && n_obs_local > 0) {
-    S_managed = view_2d("S_managed", s_lda, m);
-    Kokkos::deep_copy(S_managed, h_2d_const_um(s_arr, s_lda, m));
+    PetscCallCXX(S_managed = view_2d("S_managed", s_lda, m));
+    PetscCallCXX(Kokkos::deep_copy(S_managed, h_2d_const_um(s_arr, s_lda, m)));
     s_dev = S_managed.data();
   }
   if (d_mt == PETSC_MEMTYPE_HOST && n_obs_local > 0) {
-    d_managed = view_1d("d_managed", n_obs_local);
-    Kokkos::deep_copy(d_managed, h_1d_const_um(d_arr, n_obs_local));
+    PetscCallCXX(d_managed = view_1d("d_managed", n_obs_local));
+    PetscCallCXX(Kokkos::deep_copy(d_managed, h_1d_const_um(d_arr, n_obs_local)));
     d_dev = d_managed.data();
   }
   if (mean_mt == PETSC_MEMTYPE_HOST && n_local_ens > 0) {
-    mean_managed = view_1d("mean_managed", n_local_ens);
-    Kokkos::deep_copy(mean_managed, h_1d_const_um(mean_arr, n_local_ens));
+    PetscCallCXX(mean_managed = view_1d("mean_managed", n_local_ens));
+    PetscCallCXX(Kokkos::deep_copy(mean_managed, h_1d_const_um(mean_arr, n_local_ens)));
     mean_dev = mean_managed.data();
   }
   /* X_managed / E_managed are only consumed inside the n_local_ens > 0 block below; allocating
      the mirrors on a rank with no ensemble rows would size to a non-positive (x_lda, e_lda) and
      waste a Kokkos View on data we never read or write. */
   if (x_mt == PETSC_MEMTYPE_HOST && n_local_ens > 0) {
-    X_managed = view_2d("X_managed", x_lda, m);
-    Kokkos::deep_copy(X_managed, h_2d_const_um(x_arr, x_lda, m));
+    PetscCallCXX(X_managed = view_2d("X_managed", x_lda, m));
+    PetscCallCXX(Kokkos::deep_copy(X_managed, h_2d_const_um(x_arr, x_lda, m)));
     x_dev = X_managed.data();
   }
   if (e_mt == PETSC_MEMTYPE_HOST && n_local_ens > 0) {
-    E_managed = view_2d("E_managed", e_lda, m);
+    PetscCallCXX(E_managed = view_2d("E_managed", e_lda, m));
     e_dev     = E_managed.data();
     e_is_copy = PETSC_TRUE;
   }
 
   /* Device gemm: gram = S^T * S over the active local rows [0, n_obs_local). */
-  gram_dev = view_2d("gram_dev", m, m);
+  PetscCallCXX(gram_dev = view_2d("gram_dev", m, m));
   if (n_obs_local > 0) {
     view_2d_const_um S_full(s_dev, s_lda, m);
     auto             S_active = Kokkos::subview(S_full, Kokkos::make_pair((PetscInt)0, n_obs_local), Kokkos::ALL());
     KokkosBlas::gemm("T", "N", (PetscScalar)1.0, S_active, S_active, (PetscScalar)0.0, gram_dev);
-  } else {
-    Kokkos::deep_copy(gram_dev, (PetscScalar)0.0);
   }
   Kokkos::fence();
 
-  /* Mirror gram to host, allreduce, and feed the shared SELF-gram factorizer. */
-  PetscCall(PetscMalloc1((size_t)m * m, &gram_host));
-  Kokkos::deep_copy(h_2d_um(gram_host, m, m), gram_dev);
+  /* Mirror gram to host, allreduce, and feed the shared SELF-gram factorizer. PetscCalloc1
+     so an n_obs_local == 0 rank (where the device gemm above is skipped, leaving gram_dev
+     at Kokkos's default-zero state but a future refactor might also skip the deep_copy)
+     contributes zeros to the allreduce instead of uninitialized bytes. */
+  PetscCall(PetscCalloc1((size_t)m * m, &gram_host));
+  PetscCallCXX(Kokkos::deep_copy(h_2d_um(gram_host, m, m), gram_dev));
   PetscCall(PetscMPIIntCast((PetscInt64)m * m, &mmMPI));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gram_host, mmMPI, MPIU_SCALAR, MPIU_SUM, comm));
   PetscCall(PetscDAEnsembleTFactorFromGram(da, m, gram_host));
   PetscCall(PetscFree(gram_host));
 
   /* Device gemv: Sd = S^T * delta_scaled, then mirror + Allreduce. */
-  Sd_dev = view_1d("Sd_dev", m);
+  PetscCallCXX(Sd_dev = view_1d("Sd_dev", m));
   if (n_obs_local > 0) {
     view_2d_const_um S_full(s_dev, s_lda, m);
     view_1d_const_um d_full(d_dev, n_obs_local);
     auto             S_active = Kokkos::subview(S_full, Kokkos::make_pair((PetscInt)0, n_obs_local), Kokkos::ALL());
     KokkosBlas::gemv("T", (PetscScalar)1.0, S_active, d_full, (PetscScalar)0.0, Sd_dev);
-  } else {
-    Kokkos::deep_copy(Sd_dev, (PetscScalar)0.0);
   }
   Kokkos::fence();
 
   /* Stage the device-side Sd into the persistent impl->s_transpose_delta scratch (matches the
      CPU path) and allreduce in place. */
   PetscCall(VecGetArray(impl->s_transpose_delta, &sd_buf));
-  Kokkos::deep_copy(h_1d_um(sd_buf, m), Sd_dev);
+  PetscCallCXX(Kokkos::deep_copy(h_1d_um(sd_buf, m), Sd_dev));
   PetscCall(PetscMPIIntCast(m, &mMPI));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sd_buf, mMPI, MPIU_SCALAR, MPIU_SUM, comm));
   PetscCall(VecRestoreArray(impl->s_transpose_delta, &sd_buf));
@@ -1456,11 +1453,11 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGlobalAnalysis_Kokkos(PetscDA da, PetscD
   PetscCall(MatAXPY(impl->w_ones, sqrt_m_minus_1, impl->T_sqrt, SAME_NONZERO_PATTERN));
 
   /* Push G to device for the X*G gemm. impl->w_ones is a SELF SeqDense; LDA == m. */
-  G_dev = view_2d("G_dev", m, m);
+  PetscCallCXX(G_dev = view_2d("G_dev", m, m));
   PetscCall(MatDenseGetArrayRead(impl->w_ones, &g_host));
   PetscCall(MatDenseGetLDA(impl->w_ones, &g_lda));
   PetscCheck(g_lda == m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected LDA %" PetscInt_FMT " for SELF SeqDense w_ones (m=%" PetscInt_FMT ")", g_lda, m);
-  Kokkos::deep_copy(G_dev, h_2d_const_um(g_host, m, m));
+  PetscCallCXX(Kokkos::deep_copy(G_dev, h_2d_const_um(g_host, m, m)));
   PetscCall(MatDenseRestoreArrayRead(impl->w_ones, &g_host));
 
   /* Device gemm: XG = X_local * G, then E = mean*1' + XG. Allocate XG_dev only when
@@ -1472,7 +1469,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGlobalAnalysis_Kokkos(PetscDA da, PetscD
     view_1d_const_um mean_full(mean_dev, n_local_ens);
     PetscInt         m_local = m;
 
-    XG_dev = view_2d("XG_dev", n_local_ens, m);
+    PetscCallCXX(XG_dev = view_2d("XG_dev", n_local_ens, m));
     KokkosBlas::gemm("N", "N", (PetscScalar)1.0, X_active, G_dev, (PetscScalar)0.0, XG_dev);
     Kokkos::parallel_for(
       "EnsembleUpdate_LOC_NONE", Kokkos::RangePolicy<exec_space>(0, n_local_ens), KOKKOS_LAMBDA(const int i) {
@@ -1491,7 +1488,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFGlobalAnalysis_Kokkos(PetscDA da, PetscD
        [n_local_ens, e_lda) are not touched by the analysis and must not be written back into
        the host buffer's opaque padding bytes. */
     Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> dst(e_arr, e_lda, m);
-    Kokkos::deep_copy(Kokkos::subview(dst, Kokkos::make_pair((PetscInt)0, n_local_ens), Kokkos::ALL()), Kokkos::subview(E_managed, Kokkos::make_pair((PetscInt)0, n_local_ens), Kokkos::ALL()));
+    PetscCallCXX(Kokkos::deep_copy(Kokkos::subview(dst, Kokkos::make_pair((PetscInt)0, n_local_ens), Kokkos::ALL()), Kokkos::subview(E_managed, Kokkos::make_pair((PetscInt)0, n_local_ens), Kokkos::ALL())));
   }
   PetscCall(MatDenseRestoreArrayWriteAndMemType(impl->en.ensemble, &e_arr));
   PetscFunctionReturn(PETSC_SUCCESS);
