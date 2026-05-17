@@ -11,6 +11,18 @@
 /* Wet/dry threshold: cells with h below this fall back to zero flux to avoid division by ~0. */
 #define EX4_DRY_TOL 1e-10
 
+/* User-supplied problem parameters; passed by const-pointer to the setup helpers below to keep
+   call sites readable. Internal/derived state (DM, TS handle, dx, dy) lives in ShallowWater2DCtx. */
+typedef struct {
+  PetscInt  nx, ny;
+  PetscReal Lx, Ly;
+  PetscReal g;
+  PetscReal dt;
+  PetscReal h0;
+  PetscReal Ax, Ay; /* wave amplitudes in x and y */
+  PetscBool verify_mms;
+} ShallowWater2DConfig;
+
 typedef struct {
   DM        da;
   PetscInt  nx, ny;
@@ -199,7 +211,7 @@ static PetscErrorCode ShallowWaterRHS2D(TS ts, PetscReal t, Vec X, Vec F_vec, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, ShallowWater2DCtx **ctx)
+static PetscErrorCode ShallowWater2DContextCreate(DM da, const ShallowWater2DConfig *cfg, ShallowWater2DCtx **ctx)
 {
   ShallowWater2DCtx *sw;
 
@@ -207,31 +219,31 @@ static PetscErrorCode ShallowWater2DContextCreate(DM da, PetscInt nx, PetscInt n
   /* ManufacturedSource2D divides by h*h, where h = h0 + A*sin(t)*sx*sy ranges in [h0-A, h0+A].
      Enforce h0 - Ax > EX4_DRY_TOL once on the DA's comm so misuse fails collectively at setup
      instead of deadlocking on a per-cell SETERRQ from one rank during the RHS evaluation. */
-  if (verify_mms) PetscCheck(h0 - Ax > EX4_DRY_TOL, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "MMS amplitude Ax (%g) must leave h0 (%g) > EX4_DRY_TOL (%g)", (double)Ax, (double)h0, (double)EX4_DRY_TOL);
+  PetscCheck(!cfg->verify_mms || cfg->h0 - cfg->Ax > EX4_DRY_TOL, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "MMS amplitude Ax (%g) must leave h0 (%g) > EX4_DRY_TOL (%g)", (double)cfg->Ax, (double)cfg->h0, (double)EX4_DRY_TOL);
   PetscCall(PetscNew(&sw));
   /* Borrowed reference; caller owns the DM and ShallowWater2DContextDestroy() does not free it. */
   sw->da         = da;
-  sw->nx         = nx;
-  sw->ny         = ny;
-  sw->Lx         = Lx;
-  sw->Ly         = Ly;
-  sw->g          = g;
-  sw->dx         = Lx / nx;
-  sw->dy         = Ly / ny;
-  sw->dt         = dt;
-  sw->h0         = h0;
-  sw->Ax         = Ax;
-  sw->Ay         = Ay;
-  sw->verify_mms = verify_mms;
+  sw->nx         = cfg->nx;
+  sw->ny         = cfg->ny;
+  sw->Lx         = cfg->Lx;
+  sw->Ly         = cfg->Ly;
+  sw->g          = cfg->g;
+  sw->dx         = cfg->Lx / cfg->nx;
+  sw->dy         = cfg->Ly / cfg->ny;
+  sw->dt         = cfg->dt;
+  sw->h0         = cfg->h0;
+  sw->Ax         = cfg->Ax;
+  sw->Ay         = cfg->Ay;
+  sw->verify_mms = cfg->verify_mms;
 
   PetscCall(TSCreate(PetscObjectComm((PetscObject)da), &sw->ts));
   PetscCall(TSSetProblemType(sw->ts, TS_NONLINEAR));
   PetscCall(TSSetRHSFunction(sw->ts, NULL, ShallowWaterRHS2D, sw));
   PetscCall(TSSetType(sw->ts, TSRK));
   PetscCall(TSRKSetType(sw->ts, TSRK4));
-  PetscCall(TSSetTimeStep(sw->ts, dt));
+  PetscCall(TSSetTimeStep(sw->ts, cfg->dt));
   PetscCall(TSSetMaxSteps(sw->ts, 1));
-  PetscCall(TSSetMaxTime(sw->ts, dt));
+  PetscCall(TSSetMaxTime(sw->ts, cfg->dt));
   PetscCall(TSSetExactFinalTime(sw->ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(sw->ts));
 
@@ -284,13 +296,13 @@ static inline void ShallowWaterSolution_Wave2D(PetscReal Lx, PetscReal Ly, Petsc
 /*
   SetupForwardProblem - Create DM, shallow water context, and solution vector
 */
-static PetscErrorCode SetupForwardProblem(PetscInt nx, PetscInt ny, PetscReal Lx, PetscReal Ly, PetscReal g, PetscReal dt, PetscReal h0, PetscReal Ax, PetscReal Ay, PetscBool verify_mms, DM *da_state, ShallowWater2DCtx **sw_ctx, Vec *x)
+static PetscErrorCode SetupForwardProblem(const ShallowWater2DConfig *cfg, DM *da_state, ShallowWater2DCtx **sw_ctx, Vec *x)
 {
   PetscFunctionBeginUser;
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, nx, ny, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, da_state));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, cfg->nx, cfg->ny, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, da_state));
   PetscCall(DMSetFromOptions(*da_state));
   PetscCall(DMSetUp(*da_state));
-  PetscCall(ShallowWater2DContextCreate(*da_state, nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, verify_mms, sw_ctx));
+  PetscCall(ShallowWater2DContextCreate(*da_state, cfg, sw_ctx));
   PetscCall(DMCreateGlobalVector(*da_state, x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

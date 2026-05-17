@@ -240,39 +240,97 @@ static PetscErrorCode ValidateParameters(PetscInt *nx, PetscInt *ny, PetscInt *s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Wire LETKF localization (kernel type already chosen by SetFromOptions): build per-grid-point
+   coordinate vectors, register them, honor a user-supplied radius via the options database, and
+   print a summary. The NONE kernel needs no setup and is handled by the outer guard. */
+static PetscErrorCode ConfigureLETKFLocalization(PetscDA da, DM da_state, PetscInt nx, PetscInt ny, PetscInt ndof, PetscInt local_state_size, PetscReal Lx, PetscReal Ly, Mat H1, PetscReal *localization_radius)
+{
+  PetscDALETKFLocalizationType loc_type;
+  Vec                          xyz[3] = {NULL, NULL, NULL};
+  Vec                          coord;
+  DM                           cda;
+  PetscReal                    bd[3] = {Lx, Ly, 0.0};
+  PetscBool                    radius_set;
+  const char                  *da_prefix, *kname = NULL;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
+  if (loc_type == PETSCDA_LETKF_LOC_NONE) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
+  PetscCall(DMGetCoordinateDM(da_state, &cda));
+  PetscCall(DMGetCoordinates(da_state, &coord));
+
+  /* xyz must share the DMDA per-grid-point partition so that VecStrideGather from
+     the (block-2) coordinate vector lands in matching local rows. */
+  for (PetscInt d = 0; d < 2; d++) {
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &xyz[d]));
+    PetscCall(VecSetSizes(xyz[d], local_state_size / ndof, nx * ny));
+    PetscCall(VecSetFromOptions(xyz[d]));
+    PetscCall(PetscObjectSetName((PetscObject)xyz[d], d == 0 ? "x_coordinate" : "y_coordinate"));
+    PetscCall(VecStrideGather(coord, d, xyz[d], INSERT_VALUES));
+  }
+
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)da, &da_prefix));
+  PetscCall(PetscOptionsHasName(NULL, da_prefix, "-petscda_letkf_localization_radius", &radius_set));
+  if (!radius_set) PetscCall(PetscDALETKFSetLocalizationRadius(da, *localization_radius));
+  PetscCall(PetscDALETKFGetLocalizationRadius(da, localization_radius));
+  PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H1));
+  for (PetscInt d = 0; d < 2; d++) PetscCall(VecDestroy(&xyz[d]));
+
+  switch (loc_type) {
+  case PETSCDA_LETKF_LOC_GASPARI_COHN:
+    kname = "Gaspari-Cohn";
+    break;
+  case PETSCDA_LETKF_LOC_GAUSSIAN:
+    kname = "Gaussian";
+    break;
+  case PETSCDA_LETKF_LOC_BOXCAR:
+    kname = "boxcar";
+    break;
+  case PETSCDA_LETKF_LOC_NONE:
+  case PETSCDA_LETKF_LOC_NUM_TYPES:
+    break;
+  }
+  PetscCheck(kname, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unexpected localization type %d", (int)loc_type);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)*localization_radius));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  ShallowWater2DCtx           *sw_ctx;
-  DM                           da_state;
-  PetscDA                      da;
-  Vec                          x0, x_mean, x_forecast;
-  Vec                          truth_state, rmse_work;
-  Vec                          observation, obs_noise, obs_error_var;
-  Mat                          H, H1;
-  PetscRandom                  rng;
-  PetscBool                    output_enabled = PETSC_FALSE;
-  PetscBool                    radius_set;
-  FILE                        *fp = NULL;
-  const char                  *da_prefix;
-  char                         output_file[PETSC_MAX_PATH_LEN];
-  const PetscInt               ndof = 3; /* h, hu, hv */
-  PetscInt                     nx = DEFAULT_NX, ny = DEFAULT_NY;
-  PetscInt                     steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ, obs_stride = DEFAULT_OBS_STRIDE;
-  PetscInt                     ensemble_size = DEFAULT_ENSEMBLE_SIZE, n_spin = SPINUP_STEPS, random_seed = DEFAULT_RANDOM_SEED;
-  PetscInt                     progress_freq = DEFAULT_PROGRESS_FREQ;
-  PetscInt                     nobs = 0, n_stat_steps = 0, obs_count = 0, step;
-  PetscInt                     local_state_size, local_obs_size;
-  PetscReal                    g = DEFAULT_G, dt = DEFAULT_DT;
-  PetscReal                    Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0;
-  PetscReal                    Ax = DEFAULT_AX, Ay = DEFAULT_AY;
-  PetscReal                    init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
-  PetscReal                    obs_error_std       = DEFAULT_OBS_ERROR_STD;
-  PetscReal                    localization_radius = DEFAULT_LOCALIZATION_RADIUS;
-  PetscReal                    rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal                    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
-  PetscReal                    dx, dy, c, cfl;
-  PetscMPIInt                  rank;
-  PetscDALETKFLocalizationType loc_type;
+  ShallowWater2DCtx   *sw_ctx = NULL;
+  ShallowWater2DConfig cfg;
+  DM                   da_state;
+  PetscDA              da;
+  Vec                  x0, x_mean, x_forecast;
+  Vec                  truth_state, rmse_work;
+  Vec                  observation, obs_noise, obs_error_var;
+  Mat                  H, H1;
+  PetscRandom          rng;
+  FILE                *fp = NULL;
+  char                 output_file[PETSC_MAX_PATH_LEN];
+  const PetscInt       ndof = 3; /* h, hu, hv */
+  PetscInt             nx = DEFAULT_NX, ny = DEFAULT_NY;
+  PetscInt             steps = DEFAULT_STEPS, obs_freq = DEFAULT_OBS_FREQ, obs_stride = DEFAULT_OBS_STRIDE;
+  PetscInt             ensemble_size = DEFAULT_ENSEMBLE_SIZE, n_spin = SPINUP_STEPS, random_seed = DEFAULT_RANDOM_SEED;
+  PetscInt             progress_freq = DEFAULT_PROGRESS_FREQ;
+  PetscInt             nobs = 0, n_stat_steps = 0, obs_count = 0, step;
+  PetscInt             local_state_size, local_obs_size;
+  PetscReal            g = DEFAULT_G, dt = DEFAULT_DT;
+  PetscReal            Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0;
+  PetscReal            Ax = DEFAULT_AX, Ay = DEFAULT_AY;
+  PetscReal            init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
+  PetscReal            obs_error_std       = DEFAULT_OBS_ERROR_STD;
+  PetscReal            localization_radius = DEFAULT_LOCALIZATION_RADIUS;
+  PetscReal            rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal            sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
+  PetscReal            dx, dy, c, cfl;
+  PetscBool            output_enabled = PETSC_FALSE;
+  PetscMPIInt          rank;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -303,7 +361,17 @@ int main(int argc, char **argv)
   PetscCall(ValidateParameters(&nx, &ny, &steps, &obs_freq, &ensemble_size, &dt, &g, &obs_error_std));
   PetscCheck(init_perturb_amplitude > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Initial perturbation amplitude must be positive");
 
-  PetscCall(SetupForwardProblem(nx, ny, Lx, Ly, g, dt, h0, Ax, Ay, PETSC_FALSE, &da_state, &sw_ctx, &x0));
+  cfg.nx         = nx;
+  cfg.ny         = ny;
+  cfg.Lx         = Lx;
+  cfg.Ly         = Ly;
+  cfg.g          = g;
+  cfg.dt         = dt;
+  cfg.h0         = h0;
+  cfg.Ax         = Ax;
+  cfg.Ay         = Ay;
+  cfg.verify_mms = PETSC_FALSE;
+  PetscCall(SetupForwardProblem(&cfg, &da_state, &sw_ctx, &x0));
 
   /* Initialize random number generator */
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -365,51 +433,7 @@ int main(int argc, char **argv)
   /* Configure localization for LETKF. Built-in distance-based kernels (Gaspari-Cohn,
      Gaussian, boxcar) are wired through SetLocalizationCoordinates and the matrix Q
      is built lazily on the first analysis; the NONE kernel needs no setup. */
-  PetscCall(PetscDALETKFGetLocalizationType(da, &loc_type));
-  if (loc_type == PETSCDA_LETKF_LOC_NONE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Localization disabled (LETKF NONE; equivalent to global ETKF)\n"));
-  else {
-    Vec         xyz[3] = {NULL, NULL, NULL};
-    Vec         coord;
-    DM          cda;
-    PetscReal   bd[3] = {Lx, Ly, 0.0};
-    const char *kname = NULL;
-
-    PetscCall(DMDASetUniformCoordinates(da_state, 0.0, Lx, 0.0, Ly, 0.0, 0.0));
-    PetscCall(DMGetCoordinateDM(da_state, &cda));
-    PetscCall(DMGetCoordinates(da_state, &coord));
-
-    /* xyz must share the DMDA per-grid-point partition so that VecStrideGather from
-       the (block-2) coordinate vector lands in matching local rows. */
-    for (PetscInt d = 0; d < 2; d++) {
-      PetscCall(VecCreate(PETSC_COMM_WORLD, &xyz[d]));
-      PetscCall(VecSetSizes(xyz[d], local_state_size / ndof, nx * ny));
-      PetscCall(VecSetFromOptions(xyz[d]));
-      PetscCall(PetscObjectSetName((PetscObject)xyz[d], d == 0 ? "x_coordinate" : "y_coordinate"));
-      PetscCall(VecStrideGather(coord, d, xyz[d], INSERT_VALUES));
-    }
-
-    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)da, &da_prefix));
-    PetscCall(PetscOptionsHasName(NULL, da_prefix, "-petscda_letkf_localization_radius", &radius_set));
-    if (!radius_set) PetscCall(PetscDALETKFSetLocalizationRadius(da, localization_radius));
-    PetscCall(PetscDALETKFGetLocalizationRadius(da, &localization_radius));
-    PetscCall(PetscDALETKFSetLocalizationCoordinates(da, xyz, bd, H1));
-    for (PetscInt d = 0; d < 2; d++) PetscCall(VecDestroy(&xyz[d]));
-
-    switch (loc_type) {
-    case PETSCDA_LETKF_LOC_GASPARI_COHN:
-      kname = "Gaspari-Cohn";
-      break;
-    case PETSCDA_LETKF_LOC_GAUSSIAN:
-      kname = "Gaussian";
-      break;
-    case PETSCDA_LETKF_LOC_BOXCAR:
-      kname = "boxcar";
-      break;
-    default:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unexpected loc_type %d (NONE handled by outer guard; NUM_TYPES is a sentinel)", (int)loc_type);
-    }
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Using %s localization with radius %g\n", kname, (double)localization_radius));
-  }
+  PetscCall(ConfigureLETKFLocalization(da, da_state, nx, ny, ndof, local_state_size, Lx, Ly, H1, &localization_radius));
 
   /* Initialize ensemble members with perturbations */
   PetscCall(InitializeBalancedEnsemble(da, da_state, sw_ctx, random_seed, ensemble_size, init_perturb_amplitude, init_h_bias));
