@@ -2069,7 +2069,9 @@ class CMakePackage(Package):
           else:
             with self.Language('C++'):
               args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.getCompiler()))
-        break
+      elif package.found and package.name == 'HIP':
+        if hasattr(package, 'hipDir') and os.path.exists(package.hipDir):
+          args.append('-DHIP_ROOT_DIR:STRING="{}"'.format(package.hipDir))
     if self.need35policy:
       args.append('-DCMAKE_POLICY_VERSION_MINIMUM=3.5')
     return args

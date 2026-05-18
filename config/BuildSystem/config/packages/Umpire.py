@@ -57,9 +57,6 @@ class Configure(config.package.CMakePackage):
 
     # HIP specifics
     if self.hip.found:
-      # Umpire relies on HIP toolchain; set HIP_ROOT_DIR if available
-      if hasattr(self.hip,'hipDir'):
-        args.append('-DHIP_ROOT_DIR='+self.hip.hipDir)
       # Set offload arch if available
       if hasattr(self.hip,'hipArch'):
         args.append('-DCMAKE_HIP_ARCHITECTURES='+self.hip.hipArch)
