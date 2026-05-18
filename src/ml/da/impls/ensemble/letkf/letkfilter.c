@@ -743,14 +743,10 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
   }
 
   PetscCall(MatDestroy(&X));
-  /* Emit -petscda_view once per localization configuration, after the first analysis has built Q
-     so the viewer can report the localization-matrix state. The flag is cleared whenever
-     PetscDALETKFResetLocalization_LETKF() drops Q (radius/type/coords change), so reconfiguring
-     fires a fresh view. Matches KSPSolve()/SNESSolve() which self-call ViewFromOptions at the tail. */
-  if (!impl->view_emitted) {
-    PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
-    impl->view_emitted = PETSC_TRUE;
-  }
+  /* Self-call ViewFromOptions at the tail, mirroring KSPSolve()/SNESSolve(). Fires every cycle
+     when the user passes -petscda_view; tutorials that want a single end-of-run snapshot call
+     PetscDAView() explicitly after the DA loop. */
+  PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -773,7 +769,6 @@ static PetscErrorCode PetscDALETKFResetLocalization_LETKF(PetscDA da)
   PetscCall(PetscDALETKFDestroyObsScatter(impl));
   PetscCall(MatDestroy(&impl->Q));
   impl->max_nnz_per_row = 0;
-  impl->view_emitted    = PETSC_FALSE;
   impl->n_nnz_local     = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -785,6 +780,7 @@ static PetscErrorCode PetscDALETKFSetLocalizationRadius_LETKF(PetscDA da, PetscR
   PetscFunctionBegin;
   PetscCheck(impl, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "PetscDA not properly initialized for LETKF");
   PetscCheck(radius > 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
+  /* Exact equality: a tolerance would silently keep a stale Q after a small intentional bump. */
   if (impl->localization_radius != radius) {
     impl->localization_radius = radius;
     PetscCall(PetscDALETKFResetLocalization_LETKF(da));
@@ -1011,7 +1007,8 @@ static PetscErrorCode PetscDASetFromOptions_LETKF(PetscDA da, PetscOptionItems *
 . -petscda_ensemble_inflation factor                                   - multiplicative inflation factor applied to anomalies
 . -petscda_letkf_batch_size batch_size                                 - set the batch size for GPU processing
 . -petscda_letkf_localization_radius radius                            - localization cutoff radius for the built-in kernels (must be positive)
-- -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel
+. -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel
+- -petscda_view                                                        - view the `PetscDA` at the end of every `PetscDAEnsembleAnalysis()` call
 
    Level: beginner
 
@@ -1023,6 +1020,9 @@ static PetscErrorCode PetscDASetFromOptions_LETKF(PetscDA da, PetscOptionItems *
    Both the CPU and Kokkos analysis paths support multi-rank runs; the Kokkos backend is selected
    when the covariance matrix `da->R` is a Kokkos AIJ type, otherwise the CPU per-vertex (or LOC_NONE
    replicated) path is used.
+   `-petscda_view` fires at the tail of every `PetscDAEnsembleAnalysis()` call (mirroring `KSPSolve()`/`SNESSolve()`),
+   so over a multi-cycle assimilation run the view is emitted once per analysis. Code that wants a single
+   end-of-run snapshot should call `PetscDAView()` explicitly after the assimilation loop instead.
 
 .seealso: [](ch_da), `PetscDA`, `PetscDACreate()`, `PetscDALETKFSetLocalizationRadius()`, `PetscDALETKFGetLocalizationRadius()`,
           `PetscDALETKFSetLocalizationType()`, `PetscDALETKFGetLocalizationType()`, `PetscDALETKFSetLocalizationCoordinates()`,
@@ -1045,16 +1045,7 @@ PETSC_INTERN PetscErrorCode PetscDACreate_LETKF(PetscDA da)
   impl->en.analysis       = PetscDAEnsembleAnalysis_LETKF;
   impl->en.forecast       = PetscDAEnsembleForecast_Ensemble;
 
-  impl->localization_radius = 0.0;
-  impl->Q                   = NULL;
-  impl->batch_size          = 0;
-  impl->type                = PETSCDA_LETKF_LOC_GASPARI_COHN;
-  impl->view_emitted        = PETSC_FALSE;
-  for (PetscInt d = 0; d < 3; d++) {
-    impl->coord_xyz[d] = NULL;
-    impl->coord_bd[d]  = 0.0;
-  }
-  impl->coord_H = NULL;
+  impl->type = PETSCDA_LETKF_LOC_GASPARI_COHN;
 
   /* Register the method for setting localization */
   PetscCall(PetscObjectComposeFunction((PetscObject)da, "PetscDALETKFSetLocalizationRadius_C", PetscDALETKFSetLocalizationRadius_LETKF));

@@ -1,7 +1,7 @@
 static char help[] = "Shallow water test cases with data assimilation.\n"
                      "Implements 1D shallow water equations with 2 DOF per grid point (h, hu).\n\n"
                      "Example usage:\n"
-                     "  ./ex3 -steps 100 -obs_freq 5 -obs_error 0.1 -petscda_view -petscda_ensemble_size 30\n"
+                     "  ./ex3 -steps 100 -obs_freq 5 -obs_error 0.1 -petscda_ensemble_size 30\n"
                      "  ./ex3 -ex3_test wave -steps 500\n\n";
 
 /* Data assimilation framework header (provides PetscDA) */
@@ -860,6 +860,8 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output written to: %s\n", output_file));
   }
 
+  PetscCall(PetscDAView(da, PETSC_VIEWER_STDOUT_WORLD));
+
   /* Cleanup */
   PetscCall(MatDestroy(&H));
   PetscCall(MatDestroy(&H1));
@@ -885,7 +887,7 @@ int main(int argc, char **argv)
   testset:
     requires: kokkos_kernels !complex
     diff_args: -j
-    args: -ex3_test dam -steps 10 -progress_freq 1 -petscda_view -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03
+    args: -ex3_test dam -steps 10 -progress_freq 1 -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03
 
     test:
       suffix: letkf_dam
@@ -903,7 +905,7 @@ int main(int argc, char **argv)
   testset:
     requires: kokkos_kernels !complex
     diff_args: -j
-    args: -ex3_test wave -steps 10 -petscda_view -petscda_ensemble_size 10 -petscda_type letkf -obs_freq 2 -obs_error 0.03
+    args: -ex3_test wave -steps 10 -petscda_ensemble_size 10 -petscda_type letkf -obs_freq 2 -obs_error 0.03
 
     test:
       suffix: letkf_wave

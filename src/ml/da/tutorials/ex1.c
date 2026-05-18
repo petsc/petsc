@@ -544,6 +544,8 @@ int main(int argc, char **argv)
     }
   }
 
+  PetscCall(PetscDAView(da, PETSC_VIEWER_STDOUT_WORLD));
+
   /* Cleanup */
   PetscCall(MatDestroy(&H));
   PetscCall(VecDestroy(&x_forecast));
@@ -568,7 +570,7 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 1
-    args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 30
+    args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_ensemble_size 30
 
     test:
       requires: !complex

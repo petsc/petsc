@@ -16,17 +16,6 @@ Shallow Water [L]ETKF Example
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00003  RMSE_analysis 0.00003
-PetscDA Object: 3 MPI processes
-  type: letkf
-  State size: 160
-  Observation size: 40
-  Ensemble size: 5
-  Assembled: true
-  Inflation: 1.
-  Local analysis: Kokkos
-  Localization type: gaspari_cohn
-  Localization radius: 10.
-  GPU batch size: 13
 Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.01596
 Step    3, time  0.060  RMSE_forecast 0.01540  RMSE_analysis 0.01540
 Step    4, time  0.080  RMSE_forecast 0.01530  RMSE_analysis 0.01083
@@ -43,3 +32,14 @@ Statistics (10 steps):
   Mean RMSE (analysis) : 0.01130
   Observations used    : 5
 
+PetscDA Object: 3 MPI processes
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Local analysis: Kokkos
+  Localization type: gaspari_cohn
+  Localization radius: 10.
+  GPU batch size: 13

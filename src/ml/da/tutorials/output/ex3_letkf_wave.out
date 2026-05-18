@@ -15,6 +15,14 @@ Shallow Water [L]ETKF Example
   Localization radius   : 160.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step   10, time  0.200  RMSE_forecast 0.00484  RMSE_analysis 0.00540
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00697
+  Mean RMSE (analysis) : 0.00751
+  Observations used    : 5
+
 PetscDA Object: 1 MPI process
   type: letkf
   State size: 160
@@ -25,11 +33,3 @@ PetscDA Object: 1 MPI process
   Local analysis: CPU
   Localization type: gaspari_cohn
   Localization radius: 160.
-Step   10, time  0.200  RMSE_forecast 0.00484  RMSE_analysis 0.00540
-
-Statistics (10 steps):
-==================================================
-  Mean RMSE (forecast) : 0.00697
-  Mean RMSE (analysis) : 0.00751
-  Observations used    : 5
-

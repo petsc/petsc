@@ -31,11 +31,6 @@ typedef struct {
   PetscInt n_nnz_local;     /* Cached total local nnz of Q (sum over local rows); set by InstallQ */
   PetscInt batch_size;      /* Batch size for GPU processing */
 
-  /* True after the first analysis call has emitted -petscda_view, so subsequent analyses do not
-     re-print the (unchanging) data structure. Reset by PetscDALETKFResetLocalization(), which is
-     the funnel for every setter that can change what would be displayed. */
-  PetscBool view_emitted;
-
   /* Localization support for MPI */
   IS         obs_is_local;    /* Indices of observations needed by this process */
   VecScatter obs_scat;        /* Scatter context for observations */

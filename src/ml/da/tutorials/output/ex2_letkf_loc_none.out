@@ -15,15 +15,6 @@ Lorenz-96 LETKF Example
   Random seed            : 12345
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000  Spread 1.21961 [burn-in]
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 40
-  Observation size: 40
-  Ensemble size: 5
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: none
 Step    2, time  0.100  RMSE_forecast 0.39936  RMSE_analysis 0.25740  Spread 0.22787 [burn-in]
 Step    4, time  0.200  RMSE_forecast 0.28924  RMSE_analysis 0.18689  Spread 0.18446 [burn-in]
 Step    6, time  0.300  RMSE_forecast 0.23357  RMSE_analysis 0.14451  Spread 0.16651
@@ -41,3 +32,12 @@ Statistics (16 forecast steps, 16 analysis steps post-burn-in):
   Mean RMSE (analysis) : 0.18606
   Observations used    : 20
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 40
+  Observation size: 40
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: none

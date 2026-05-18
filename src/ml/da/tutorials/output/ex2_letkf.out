@@ -16,17 +16,6 @@ Lorenz-96 LETKF Example
   Localization radius    : 5.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000  Spread 1.07881 [burn-in]
-PetscDA Object: 3 MPI processes
-  type: letkf
-  State size: 40
-  Observation size: 40
-  Ensemble size: 5
-  Assembled: true
-  Inflation: 1.
-  Local analysis: Kokkos
-  Localization type: gaspari_cohn
-  Localization radius: 5.
-  GPU batch size: auto
 Step    2, time  0.100  RMSE_forecast 0.52693  RMSE_analysis 0.33765  Spread 0.43199 [burn-in]
 Step    4, time  0.200  RMSE_forecast 0.32663  RMSE_analysis 0.20516  Spread 0.34348 [burn-in]
 Step    6, time  0.300  RMSE_forecast 0.24880  RMSE_analysis 0.23078  Spread 0.30153
@@ -44,3 +33,14 @@ Statistics (16 forecast steps, 16 analysis steps post-burn-in):
   Mean RMSE (analysis) : 0.20858
   Observations used    : 20
 
+PetscDA Object: 3 MPI processes
+  type: letkf
+  State size: 40
+  Observation size: 40
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Local analysis: Kokkos
+  Localization type: gaspari_cohn
+  Localization radius: 5.
+  GPU batch size: auto

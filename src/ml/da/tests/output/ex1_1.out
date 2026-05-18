@@ -1,4 +1,5 @@
 Forecast error norm: 1.59405
+Analysis error norm: 1.05873
 PetscDA Object: 1 MPI process
   type: letkf
   State size: 10
@@ -8,4 +9,3 @@ PetscDA Object: 1 MPI process
   Inflation: 1.
   Local analysis: CPU
   Localization type: none
-Analysis error norm: 1.05873

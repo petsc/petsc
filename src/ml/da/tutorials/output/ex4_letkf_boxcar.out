@@ -25,16 +25,6 @@ Using boxcar localization with radius 15.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 3
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: boxcar
-  Localization radius: 15.
 Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01942
 Step    3, time  0.060  RMSE_forecast 0.01911  RMSE_analysis 0.01911
 Step    4, time  0.080  RMSE_forecast 0.01881  RMSE_analysis 0.01672
@@ -46,3 +36,13 @@ Statistics (5 steps):
   Mean RMSE (analysis) : 0.01433
   Observations used    : 2
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 3
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: boxcar
+  Localization radius: 15.

@@ -25,16 +25,6 @@ Using Gaussian localization with radius 10.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: gaussian
-  Localization radius: 10.
 Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01488
 Step    3, time  0.060  RMSE_forecast 0.01470  RMSE_analysis 0.01470
 Step    4, time  0.080  RMSE_forecast 0.01452  RMSE_analysis 0.01238
@@ -46,3 +36,13 @@ Statistics (5 steps):
   Mean RMSE (analysis) : 0.01084
   Observations used    : 2
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaussian
+  Localization radius: 10.

@@ -597,6 +597,8 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output written to: %s\n", output_file));
   }
 
+  PetscCall(PetscDAView(da, PETSC_VIEWER_STDOUT_WORLD));
+
   /* Cleanup */
   PetscCall(MatDestroy(&H));
   PetscCall(MatDestroy(&H1));
@@ -621,7 +623,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: !complex
-    args: -petscda_type letkf -steps 5 -progress_freq 1 -petscda_view -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03 -nx 21 -ny 21
+    args: -petscda_type letkf -steps 5 -progress_freq 1 -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03 -nx 21 -ny 21
 
     test:
       suffix: letkf_wave2d
@@ -670,5 +672,5 @@ int main(int argc, char **argv)
   test:
     suffix: letkf_wave2d_sparse
     requires: !complex
-    args: -steps 5 -progress_freq 1 -petscda_view -nx 21 -ny 21 -obs_freq 2 -obs_stride 8 -obs_error 0.3 -petscda_type letkf -petscda_ensemble_size 7 -petscda_letkf_localization_type gaspari_cohn -petscda_letkf_localization_radius 30.0
+    args: -steps 5 -progress_freq 1 -nx 21 -ny 21 -obs_freq 2 -obs_stride 8 -obs_error 0.3 -petscda_type letkf -petscda_ensemble_size 7 -petscda_letkf_localization_type gaspari_cohn -petscda_letkf_localization_radius 30.0
 TEST*/

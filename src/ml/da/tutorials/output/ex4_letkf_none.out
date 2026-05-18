@@ -25,15 +25,6 @@ Localization disabled (LETKF NONE; equivalent to global ETKF)
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: none
 Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00432
 Step    3, time  0.060  RMSE_forecast 0.00429  RMSE_analysis 0.00429
 Step    4, time  0.080  RMSE_forecast 0.00426  RMSE_analysis 0.00843
@@ -45,3 +36,12 @@ Statistics (5 steps):
   Mean RMSE (analysis) : 0.00508
   Observations used    : 2
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: none

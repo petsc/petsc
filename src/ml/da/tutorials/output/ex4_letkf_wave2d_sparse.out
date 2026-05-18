@@ -25,16 +25,6 @@ Using Gaspari-Cohn localization with radius 30.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 9
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: gaspari_cohn
-  Localization radius: 30.
 Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00273
 Step    3, time  0.060  RMSE_forecast 0.00271  RMSE_analysis 0.00271
 Step    4, time  0.080  RMSE_forecast 0.00268  RMSE_analysis 0.00290
@@ -46,3 +36,13 @@ Statistics (5 steps):
   Mean RMSE (analysis) : 0.00224
   Observations used    : 2
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 9
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 30.
