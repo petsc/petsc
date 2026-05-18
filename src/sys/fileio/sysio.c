@@ -224,6 +224,23 @@ static PetscErrorCode PetscByteSwapFloat(float *buff, PetscCount n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscByteSwap - Reverse the byte order of an array of values of a given `PetscDataType`, in place
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ data   - the array of values to byte-swap in place
+. pdtype - the `PetscDataType` of the values (e.g. `PETSC_INT`, `PETSC_REAL`, `PETSC_SCALAR`)
+- count  - number of values in `data`
+
+  Level: developer
+
+  Note:
+  Used by binary I/O routines to convert between little-endian and big-endian representations.
+
+.seealso: `PetscDataType`, `PetscViewerBinaryRead()`, `PetscViewerBinaryWrite()`
+@*/
 PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscCount count)
 {
   PetscFunctionBegin;

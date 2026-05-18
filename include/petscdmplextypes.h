@@ -83,6 +83,13 @@ typedef enum {
 } DMPlexCSRAlgorithm;
 PETSC_EXTERN const char *const DMPlexCSRAlgorithms[];
 
+/*S
+  DMPlexPointQueue - Simple FIFO queue of `DMPLEX` mesh-point indices used by traversal helpers such as label propagation
+
+  Level: developer
+
+.seealso: `DMPLEX`, `DMPlexPointQueueCreate()`, `DMPlexPointQueueDestroy()`, `DMPlexPointQueueEnqueue()`, `DMPlexPointQueueDequeue()`, `DMPlexPointQueueEmpty()`
+S*/
 typedef struct _n_DMPlexPointQueue *DMPlexPointQueue;
 struct _n_DMPlexPointQueue {
   PetscInt  size;   /* Size of the storage array */

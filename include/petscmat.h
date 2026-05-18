@@ -215,9 +215,25 @@ PETSC_DEPRECATED_FUNCTION(3, 15, 0, "MatFactorGetCanUseOrdering()", ) static inl
 {
   return MatFactorGetCanUseOrdering(A, b);
 }
-PETSC_EXTERN PetscErrorCode                 MatFactorGetSolverType(Mat, MatSolverType *);
-PETSC_EXTERN PetscErrorCode                 MatGetFactorType(Mat, MatFactorType *);
-PETSC_EXTERN PetscErrorCode                 MatSetFactorType(Mat, MatFactorType);
+PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat, MatSolverType *);
+PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat, MatFactorType *);
+PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat, MatFactorType);
+/*S
+  MatSolverFn - Function type for the factor-creation callback registered with `MatSolverTypeRegister()`, used by `MatGetFactor()` to allocate a factored matrix of a particular `MatSolverType` and `MatFactorType`
+
+  Synopsis:
+  #include <petscmat.h>
+  PetscErrorCode MatSolverFn(Mat A, MatFactorType ftype, Mat *F)
+
+  Calling Sequence:
++ A     - the matrix to be factored
+. ftype - the kind of factorization requested (e.g. `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`)
+- F     - on output, the newly created factor `Mat` of the appropriate `MatType` for the solver
+
+  Level: developer
+
+.seealso: `Mat`, `MatGetFactor()`, `MatSolverType`, `MatFactorType`, `MatSolverTypeRegister()`, `MatSolverTypeGet()`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatSolverFn(Mat, MatFactorType, Mat *);
 PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction;
 
@@ -2308,6 +2324,26 @@ PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL
+/*S
+  MatHtoolKernelFn - Function type for the user-supplied kernel callback used by `MATHTOOL` (`MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`) to evaluate the dense matrix entries on demand
+
+  Synopsis:
+  #include <petscmat.h>
+  PetscErrorCode MatHtoolKernelFn(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, void *ctx)
+
+  Calling Sequence:
++ sdim - the spatial dimension of the source/target geometries
+. M    - the number of target points
+. N    - the number of source points
+. J    - array of `M` target point indices into the user's target coordinate array
+. K    - array of `N` source point indices into the user's source coordinate array
+. ptr  - column-major output buffer of length `M*N` to fill with kernel values
+- ctx  - the optional user context passed at registration
+
+  Level: intermediate
+
+.seealso: `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
 PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
 

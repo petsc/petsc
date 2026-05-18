@@ -2403,7 +2403,33 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
+/*@C
+  PetscDTTanhSinhIntegrate - Approximate $\int_a^b f(x)\,dx$ to a requested precision using adaptive tanh-sinh (double-exponential) quadrature
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ func   - the integrand callback (`func(x, ctx, &value)` evaluates the integrand at point `x`)
+. a      - lower limit of integration
+. b      - upper limit of integration
+. digits - target number of correct decimal digits
+- ctx    - optional user context passed to `func`
+
+  Output Parameter:
+. sol - the approximate value of the integral
+
+  Level: developer
+
+  Notes:
+  Doubles the number of quadrature points at each refinement level until the change in the
+  integral falls below the requested tolerance. Suitable for smooth integrands and integrands
+  with endpoint singularities.
+
+  For arbitrary-precision arithmetic via MPFR, see `PetscDTTanhSinhIntegrateMPFR()`.
+
+.seealso: `PetscDTTanhSinhIntegrateMPFR()`, `PetscDTGaussQuadrature()`
+@*/
+PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], PetscCtx, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   const PetscInt  p     = 16;           /* Digits of precision in the evaluation */
   const PetscReal alpha = (b - a) / 2.; /* Half-width of the integration interval */
@@ -2467,8 +2493,30 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDTTanhSinhIntegrateMPFR - High-precision version of `PetscDTTanhSinhIntegrate()` that uses the MPFR arbitrary-precision library to evaluate the quadrature
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ func   - the integrand callback (`func(x, ctx, &value)` evaluates the integrand at point `x`)
+. a      - lower limit of integration
+. b      - upper limit of integration
+. digits - target number of correct decimal digits (also drives the working MPFR precision)
+- ctx    - optional user context passed to `func`
+
+  Output Parameter:
+. sol - the approximate value of the integral
+
+  Level: developer
+
+  Note:
+  Requires PETSc to be configured with `--with-mpfr`; otherwise an error is raised.
+
+.seealso: `PetscDTTanhSinhIntegrate()`, `PetscDTGaussQuadrature()`
+@*/
 #if defined(PETSC_HAVE_MPFR)
-PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], PetscCtx, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   const PetscInt safetyFactor = 2; /* Calculate abscissa until 2*p digits */
   PetscInt       l            = 0; /* Level of refinement, h = 2^{-l} */
@@ -3221,6 +3269,26 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscGaussLobattoLegendreElementMassCreate - Build the elemental mass matrix for a single 1D Gauss-Lobatto-Legendre (GLL) spectral element
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ n       - number of GLL nodes
+. nodes   - the GLL quadrature nodes
+- weights - the GLL quadrature weights
+
+  Output Parameter:
+. AA - newly allocated `n` x `n` mass matrix as `PetscReal **`
+
+  Level: beginner
+
+  Note:
+  Free with `PetscGaussLobattoLegendreElementMassDestroy()`.
+
+.seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementMassDestroy()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionCreate()`
+@*/
 PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
   PetscReal      **A;
@@ -3243,6 +3311,21 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt n, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscGaussLobattoLegendreElementMassDestroy - Free a 1D GLL elemental mass matrix created with `PetscGaussLobattoLegendreElementMassCreate()`
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ n       - number of GLL nodes (ignored)
+. nodes   - the GLL quadrature nodes (ignored)
+. weights - the GLL quadrature weights (ignored)
+- AA      - the mass matrix to free; `*AA` is set to `NULL` on return
+
+  Level: beginner
+
+.seealso: `PetscGaussLobattoLegendreElementMassCreate()`, `PetscDTGaussLobattoLegendreQuadrature()`
+@*/
 PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
   PetscFunctionBegin;

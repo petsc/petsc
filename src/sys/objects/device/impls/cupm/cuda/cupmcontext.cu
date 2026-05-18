@@ -14,6 +14,22 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
 }
 
 /* Management of CUBLAS and CUSOLVER handles */
+/*@C
+  PetscCUBLASGetHandle - Get the cuBLAS handle associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. handle - the `cublasHandle_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_CUDA`. The returned handle is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscDeviceContextSetUp()`, `PetscCUSOLVERDnGetHandle()`, `PetscGetCurrentCUDAStream()`
+@*/
 PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
 {
   PetscDeviceContext dctx;
@@ -25,6 +41,22 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscCUSOLVERDnGetHandle - Get the cuSolverDn handle associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. handle - the `cusolverDnHandle_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_CUDA`. The returned handle is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscCUBLASGetHandle()`, `PetscGetCurrentCUDAStream()`
+@*/
 PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
 {
   PetscDeviceContext dctx;
@@ -36,6 +68,22 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscGetCurrentCUDAStream - Get the CUDA stream associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. stream - the `cudaStream_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_CUDA`. The returned stream is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscCUBLASGetHandle()`, `PetscCUSOLVERDnGetHandle()`
+@*/
 PetscErrorCode PetscGetCurrentCUDAStream(cudaStream_t *stream)
 {
   PetscDeviceContext dctx;

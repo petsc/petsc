@@ -95,6 +95,21 @@ PetscErrorCode PetscMkdtemp(char dir[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscRMTree - Recursively delete a directory tree on the current MPI process
+
+  Not Collective
+
+  Input Parameter:
+. dir - path of the directory to delete
+
+  Level: developer
+
+  Note:
+  All files and subdirectories rooted at `dir`, along with `dir` itself, are removed. Returns successfully if `dir` does not exist or is empty.
+
+.seealso: `PetscMkdir()`, `PetscTestDirectory()`
+@*/
 #if defined(PETSC_HAVE_DIRECT_H)
 PetscErrorCode PetscRMTree(const char dir[])
 {
@@ -138,16 +153,6 @@ PetscErrorCode PetscRMTree(const char dir[])
   #include <unistd.h>
   #include <errno.h>
 
-/*@
-  PetscRMTree - delete a directory and all of its children
-
-  Input Parameter:
-. dir - the name of the directory
-
-  Level: advanced
-
-.seealso: `PetscMkdtemp()`, `PetscMkdir()`
-@*/
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct dirent *data;

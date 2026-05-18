@@ -352,9 +352,22 @@ PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 #if PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H)
   #include <setjmp.h>
 
-PETSC_EXTERN jmp_buf                                 PetscXIOErrorHandlerJumpBuf;
-PETSC_EXTERN void                                    PetscXIOErrorHandlerJump(void *);
-PETSC_EXTERN_TYPEDEF typedef void                    PetscXIOErrorHandlerFn(void *);
+PETSC_EXTERN jmp_buf PetscXIOErrorHandlerJumpBuf;
+PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
+/*S
+  PetscXIOErrorHandlerFn - Function type for the X11 I/O error handler installed by `PetscSetXIOErrorHandler()`, called when the X server connection is lost
+
+  Calling Sequence:
+. display - the X `Display *` whose connection has failed (passed as `void *` to avoid pulling in X headers)
+
+  Level: developer
+
+  Note:
+  By default PETSc installs a handler that gracefully aborts the program rather than letting Xlib call `exit()`.
+
+.seealso: `PetscDraw`, `PetscSetXIOErrorHandler()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef void                    PetscXIOErrorHandlerFn(void *display);
 PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandlerFn *PetscXIOErrorHandler;
 PETSC_EXTERN PetscXIOErrorHandlerFn                 *PetscSetXIOErrorHandler(PetscXIOErrorHandlerFn *);
 

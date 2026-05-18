@@ -1146,7 +1146,22 @@ PETSC_EXTERN const char *const PetscSubcommTypes[];
 S*/
 typedef struct _n_PetscHeap *PetscHeap;
 
+/*S
+  PetscShmComm - Opaque handle to a partition of an `MPI_Comm` into shared-memory subcommunicators, used by PETSc to share memory between ranks that live on the same compute node
+
+  Level: developer
+
+.seealso: `PetscShmCommGet()`, `PetscShmCommGlobalToLocal()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
+S*/
 typedef struct _n_PetscShmComm *PetscShmComm;
+
+/*S
+  PetscOmpCtrl - Opaque control object that PETSc uses to coordinate work between the MPI ranks of a node and OpenMP worker threads when running in the "OpenMP-on-the-rank-subset" mode
+
+  Level: developer
+
+.seealso: `PetscOmpCtrlCreate()`, `PetscOmpCtrlDestroy()`, `PetscOmpCtrlGetOmpComms()`, `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`, `PetscOmpCtrlBarrier()`
+S*/
 typedef struct _n_PetscOmpCtrl *PetscOmpCtrl;
 
 /*S
@@ -1158,6 +1173,13 @@ typedef struct _n_PetscOmpCtrl *PetscOmpCtrl;
 S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 
+/*S
+  PetscOptionsHelpPrinted - Opaque registry that tracks which options-database help strings have already been printed during one run, so that `-help` does not emit the same help text multiple times
+
+  Level: developer
+
+.seealso: `PetscOptions`, `PetscOptionsHelpPrintedCreate()`, `PetscOptionsHelpPrintedDestroy()`, `PetscOptionsHelpPrintedCheck()`
+S*/
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
 
 /*S
@@ -1174,25 +1196,8 @@ typedef unsigned char PetscByte;
 
      Level: advanced
 
-     Notes:
-     The following routines do not have their own manual pages
-
-.vb
-     PetscBTCreate(m,&bt)         - creates a bit array with enough room to hold m values
-     PetscBTDestroy(&bt)          - destroys the bit array
-     PetscBTMemzero(m,bt)         - zeros the entire bit array (sets all values to false)
-     PetscBTSet(bt,index)         - sets a particular entry as true
-     PetscBTClear(bt,index)       - sets a particular entry as false
-     PetscBTLookup(bt,index)      - returns the value
-     PetscBTLookupSet(bt,index)   - returns the value and then sets it true
-     PetscBTLookupClear(bt,index) - returns the value and then sets it false
-     PetscBTLength(m)             - returns number of bytes in array with m bits
-     PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
-.ve
-
-    PETSc does not check error flags on `PetscBTLookup()`, `PetscBTLookupSet()`, `PetscBTLength()` because error checking
-    would cost hundreds more cycles then the operation.
-
+.seealso: `PetscByte`, `PetscBTCreate()`, `PetscBTDestroy()`, `PetscBTMemzero()`, `PetscBTSet()`, `PetscBTClear()`, `PetscBTLookup()`,
+          `PetscBTLookupSet()`, `PetscBTLookupClear()`, `PetscBTLength()`, `PetscBTView()`
 S*/
 typedef PetscByte *PetscBT;
 

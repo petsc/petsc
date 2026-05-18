@@ -247,6 +247,22 @@ PetscErrorCode PetscMallocClear(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscMemoryTrace - Print the current and high-water memory usage and the delta since the last call, tagged with a user-supplied label
+
+  Collective on `PETSC_COMM_WORLD`; No Fortran Support
+
+  Input Parameter:
+. label - short string used to tag the printed line so successive calls can be distinguished
+
+  Level: developer
+
+  Note:
+  Useful for tracking down memory growth between major phases of an application. Uses
+  `PetscMemoryGetCurrentUsage()` and `PetscMallocGetCurrentUsage()` internally.
+
+.seealso: `PetscMemoryGetCurrentUsage()`, `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`
+@*/
 PetscErrorCode PetscMemoryTrace(const char label[])
 {
   PetscLogDouble        mem, mal;
