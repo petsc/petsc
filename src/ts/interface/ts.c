@@ -2729,8 +2729,40 @@ PetscErrorCode TSDestroy(TS *ts)
 }
 
 /*@
+  TSSetSNES - Set the `SNES` (nonlinear solver) to be used by the `TS` timestepping context
+
+  Collective
+
+  Input Parameters:
++ ts   - the `TS` context obtained from `TSCreate()`
+- snes - the nonlinear solver context
+
+  Level: developer
+
+  Note:
+  Most users should obtain the `SNES` by calling `TSGetSNES()` rather than setting it with this function.
+
+.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetKSP()`, `TSIsImplicit()`, `TSGetSNES()`
+ @*/
+PetscErrorCode TSSetSNES(TS ts, SNES snes)
+{
+  PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)snes));
+  PetscCall(SNESDestroy(&ts->snes));
+  ts->snes = snes;
+  PetscCall(SNESSetFunction(ts->snes, NULL, SNESTSFormFunction, ts));
+  PetscCall(SNESGetJacobian(ts->snes, NULL, NULL, &func, NULL));
+  if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(ts->snes, NULL, NULL, SNESTSFormJacobian, ts));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   TSGetSNES - Returns the `SNES` (nonlinear solver) associated with
-  a `TS` (timestepper) context. Valid only for nonlinear problems.
+  a `TS` (timestepper) context.
 
   Not Collective, but `snes` is parallel if `ts` is parallel
 
@@ -2747,10 +2779,17 @@ PetscErrorCode TSDestroy(TS *ts)
   options, etc.  Likewise, the user can then extract and manipulate the
   `KSP`, and `PC` contexts as well.
 
-  `TSGetSNES()` does not work for integrators that do not use `SNES`; in
-  this case `TSGetSNES()` returns `NULL` in `snes`.
+  For linear problems, use `TSGetKSP()`.
 
-.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`
+  For integrators that do not use `SNES` (that is, explicit methods),
+  the `snes` exists but is not used. Use `TSIsImplicit()` to determine if the
+  method is implicit and uses `snes`.
+
+  Developer Note:
+  `TS` manages the life-cycle of the `SNES` object for all `TSType` for the life-time of the `TS` object,
+  even explicit methods that do not use `SNES`. This is so that `SNES` options are retained between changes to the `TSType` with `TSSetType()`.
+
+.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetKSP()`, `TSIsImplicit()`
 @*/
 PetscErrorCode TSGetSNES(TS ts, SNES *snes)
 {
@@ -2770,36 +2809,29 @@ PetscErrorCode TSGetSNES(TS ts, SNES *snes)
 }
 
 /*@
-  TSSetSNES - Set the `SNES` (nonlinear solver) to be used by the `TS` timestepping context
+  TSIsImplicit - Indicates if a `TS` represents an implicit integrator that uses `SNES`
 
-  Collective
+  Not Collective
 
-  Input Parameters:
-+ ts   - the `TS` context obtained from `TSCreate()`
-- snes - the nonlinear solver context
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
 
-  Level: developer
+  Output Parameter:
+. isimplicit - if the integrator is implicit and uses either `SNES` or `KSP`
+
+  Level: beginner
 
   Note:
-  Most users should have the `TS` created by calling `TSGetSNES()`
+  For integrators that do not use `SNES` (that is, explicit methods), `snes` exists but is not used.
 
-.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetSNES()`
+.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetKSP()`, `TSGetSNES()`
 @*/
-PetscErrorCode TSSetSNES(TS ts, SNES snes)
+PetscErrorCode TSIsImplicit(TS ts, PetscBool *isimplicit)
 {
-  PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
-  PetscCall(PetscObjectReference((PetscObject)snes));
-  PetscCall(SNESDestroy(&ts->snes));
-
-  ts->snes = snes;
-
-  PetscCall(SNESSetFunction(ts->snes, NULL, SNESTSFormFunction, ts));
-  PetscCall(SNESGetJacobian(ts->snes, NULL, NULL, &func, NULL));
-  if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(ts->snes, NULL, NULL, SNESTSFormJacobian, ts));
+  PetscAssertPointer(isimplicit, 2);
+  *isimplicit = ts->usessnes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2822,10 +2854,13 @@ PetscErrorCode TSSetSNES(TS ts, SNES snes)
   options, etc.  Likewise, the user can then extract and manipulate the
   `PC` context as well.
 
-  `TSGetKSP()` does not work for integrators that do not use `KSP`;
-  in this case `TSGetKSP()` returns `NULL` in `ksp`.
+  For nonlinear problems (`TS_NONLINEAR`), use `TSGetSNES()` followed by `SNESGetKSP()`.
 
-.seealso: [](ch_ts), `TS`, `SNES`, `KSP`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetSNES()`
+  For integrators that do not use `KSP` (that is, explicit methods),
+  `TSGetKSP()` returns a `ksp` that is not used. Use `TSIsImplicit()` to determine if
+  the `ksp` is actually used.
+
+.seealso: [](ch_ts), `TS`, `SNES`, `KSP`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetSNES()`, `TSIsImplicit()`
 @*/
 PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
 {
@@ -2835,7 +2870,7 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscAssertPointer(ksp, 2);
   PetscCheck(((PetscObject)ts)->type_name, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "KSP is not created yet. Call TSSetType() first");
-  PetscCheck(ts->problem_type == TS_LINEAR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Linear only; use TSGetSNES()");
+  PetscCheck(ts->problem_type == TS_LINEAR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "For linear problems only; use TSGetSNES() then SNESGetKSP()");
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESGetKSP(snes, ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
