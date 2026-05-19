@@ -1129,7 +1129,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           self.found     = 1
           self.dlib      = self.lib+self.dlib
           dinc = []
-          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
+          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc and os.path.exists(inc)]
           self.dinclude = dinc
           self.checkMacros(timeout = 60.0)
           if not hasattr(self.framework, 'packages'):
