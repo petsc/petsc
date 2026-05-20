@@ -676,7 +676,7 @@ linux-kokkos-cuda:
     MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-11-27-cuda/modules/linux-ubuntu22.04-x86_64/Core
     LOAD_MODULES: cuda/12.8.0-rz6425d
 
-linux-cuda112-omp:
+linux-cuda-omp:
   extends:
     - .stage-3
     - .linux_test
@@ -684,9 +684,10 @@ linux-cuda112-omp:
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda112-omp
+    TEST_ARCH: arch-ci-linux-cuda-omp
     TEST_OPTS: -j4 query=requires queryval=kokkos_kernels
-    LOAD_MODULES: cuda/11.2.2 u-gcc-9/9.4.0
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-11-27-cuda/modules/linux-ubuntu22.04-x86_64/Core:/nfs/gce/projects/petsc/soft/u22.04/modulefiles
+    LOAD_MODULES: cuda/11.4.4 u-gcc-9/9.4.0
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 1
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
