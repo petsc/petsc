@@ -2594,8 +2594,8 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat, MatCUSPARSEFormatOperation, MatCUSPARSEStorageFormat);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetUseCPUSolve(Mat, PetscBool);
-PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat, PetscBool, const int **, const int **);
-PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat, PetscBool, const PetscInt *[], const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat, PetscBool, const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat, PetscScalar **);
@@ -2669,8 +2669,8 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqAIJHIPSPARSE(MPI_Comm, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatHIPSPARSESetFormat(Mat, MatHIPSPARSEFormatOperation, MatHIPSPARSEStorageFormat);
 PETSC_EXTERN PetscErrorCode MatHIPSPARSESetUseCPUSolve(Mat, PetscBool);
-PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat, PetscBool, const int **, const int **);
-PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat, PetscBool, const PetscInt *[], const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat, PetscBool, const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat, PetscScalar **);
