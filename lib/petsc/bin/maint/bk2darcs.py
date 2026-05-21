@@ -12,6 +12,7 @@
 
 import sys
 import os
+subprocess = __import__('subprocess')
 
 def main():
   createdarcsrepo=0
@@ -48,7 +49,7 @@ def main():
       print('Creating darcsrepo: ' + darcs_repo)
       os.mkdir(darcs_repo)
       os.chdir(darcs_repo)
-      os.system("darcs initialize")
+      subprocess.run(['darcs', 'initialize'], check=False)
     else:
       print('Error! specified path does not exist: ' + darcs_repo)
       print('If you need to create a new darcs-repo, use option: -i')
@@ -56,26 +57,22 @@ def main():
 
   # verify the specified dirs are valid repositories
   os.chdir(bk_repo)
-  if os.system("bk changes -r+ > /dev/null 2>&1"):
+  if subprocess.run(['bk', 'changes', '-r+'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
     print('Error! specified path is not a bk repository: ' + bk_repo)
     sys.exit()
 
   os.chdir(darcs_repo)
-  if os.system("darcs changes --last=1 > /dev/null 2>&1"):
+  if subprocess.run(['darcs', 'changes', '--last=1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
     print('Error! specified path is not a darcs repository: ' + darcs_repo)
     sys.exit()
 
   # now get the latest bk cset number
   os.chdir(bk_repo)
-  fd=os.popen('bk changes -k -r+')
-  bk_cset_max=fd.read().strip()
-  fd.close()
+  bk_cset_max=subprocess.run(['bk', 'changes', '-k', '-r+'], capture_output=True, text=True).stdout.strip()
 
   # similarly get the latest darcs cset number
   os.chdir(darcs_repo)
-  fd=os.popen('darcs changes --last=1')
-  buf=fd.read()
-  fd.close()
+  buf=subprocess.run(['darcs', 'changes', '--last=1'], capture_output=True, text=True).stdout
   if buf == '':
     bk_cset_min = '1.0'
   else:
@@ -92,9 +89,7 @@ def main():
   # find the bk-changesets that need to be exported to darcs
   # using -end:KEY avoids duplicate listing of TAGS [causes too much grief]
   os.chdir(bk_repo)
-  fd=os.popen('bk changes -end:KEY: -f -r'+'"'+bk_cset_min+'".."'+bk_cset_max+'"')
-  buf=fd.read()
-  fd.close()
+  buf=subprocess.run(['bk', 'changes', '-end:KEY:', '-f', '-r'+bk_cset_min+'..'+bk_cset_max], capture_output=True, text=True).stdout
   revs=buf.splitlines()
 
   if revs: lastrev = revs[-1]
@@ -105,11 +100,8 @@ def main():
     # revn - rev number [ 1.234.4 etc..]
     # revi - just the 2nd number in rev
     os.chdir(bk_repo)
-    revq='"'+rev+'"'
     # get the rev-number
-    fd=os.popen('bk changes -and:I: -r'+revq)
-    revn = fd.read().splitlines()[0]
-    fd.close()
+    revn = subprocess.run(['bk', 'changes', '-and:I:', '-r'+rev], capture_output=True, text=True).stdout.splitlines()[0]
     # Don't know how to handle branch changesets
     if len(revn.split('.')) > 2:
       print('Ignoring changeset  : '+revn)
@@ -119,15 +111,12 @@ def main():
     # get revi
     revi = int(revn.split('.')[1])
     # get username
-    fd=os.popen('bk changes -and:USER:@:HOST: -r'+revq)
-    auth_email=fd.read().splitlines()[0].strip()
-    fd.close()
+    auth_email=subprocess.run(['bk', 'changes', '-and:USER:@:HOST:', '-r'+rev], capture_output=True, text=True).stdout.splitlines()[0].strip()
     auth_email=auth_email.replace('.(none)','')
 
     #get comment string
-    fd=os.popen('bk changes -r'+revq+' | grep -v ^ChangeSet@')
-    buf=fd.read()
-    fd.close()
+    buf=subprocess.run(['bk', 'changes', '-r'+rev], capture_output=True, text=True).stdout
+    buf='\n'.join(line for line in buf.splitlines() if not line.startswith('ChangeSet@'))
     msg = 'bk-changeset-'+revn + '\n' + rev + '\n'+ buf.strip() + '\n'
     fd=open(log_file,'w')
     fd.write(msg)
@@ -135,20 +124,20 @@ def main():
 
     os.chdir(darcs_repo)
     # verify darcs again
-    if os.system("darcs changes --last=1 > /dev/null 2>&1"):
+    if subprocess.run(['darcs', 'changes', '--last=1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
       print('Error! specified path is not a darcs repository: ' + darcs_repo)
       sys.exit()
 
     # Now remove the old files - and export the new modified files
-    os.system('ls -a | grep -v _darcs | xargs rm -rf >/dev/null 2>&1')
-    os.system('bk export -r'+revq+' ' + bk_repo + ' ' + darcs_repo)
-    os.system('darcs record --test -l -a -A ' + auth_email + ' --delete-logfile --logfile='+log_file + '> /dev/null 2>&1')
+    subprocess.run('ls -a | grep -v _darcs | xargs rm -rf >/dev/null 2>&1', shell=True)  # nosec B602
+    subprocess.run(['bk', 'export', '-r'+rev, bk_repo, darcs_repo], check=False)
+    subprocess.run(['darcs', 'record', '--test', '-l', '-a', '-A', auth_email, '--delete-logfile', '--logfile='+log_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # optimize/checkpoint every 250 patches
     if revi%250 == 0  and revi != 0 and rev != lastrev:
       print('checkpointing/optimizing changeset-'+ revn)
-      os.system('darcs tag -A snapshot@petsc snapshot-'+revn +'> /dev/null 2>&1')
-      os.system('darcs optimize --checkpoint -t snapshot-'+revn +'> /dev/null 2>&1')
+      subprocess.run(['darcs', 'tag', '-A', 'snapshot@petsc', 'snapshot-'+revn], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+      subprocess.run(['darcs', 'optimize', '--checkpoint', '-t', 'snapshot-'+revn], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
   return 0
 
 # The classes in this file can also
