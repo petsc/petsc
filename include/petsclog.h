@@ -786,13 +786,13 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 }
 #else
 
-  #define PetscLogCpuToGpu(a)       PETSC_SUCCESS
-  #define PetscLogGpuToCpu(a)       PETSC_SUCCESS
-  #define PetscLogCpuToGpuScalar(a) PETSC_SUCCESS
-  #define PetscLogGpuToCpuScalar(a) PETSC_SUCCESS
-  #define PetscLogGpuFlops(a)       PETSC_SUCCESS
+  #define PetscLogCpuToGpu(a)       ((void)(a), PETSC_SUCCESS)
+  #define PetscLogGpuToCpu(a)       ((void)(a), PETSC_SUCCESS)
+  #define PetscLogCpuToGpuScalar(a) ((void)(a), PETSC_SUCCESS)
+  #define PetscLogGpuToCpuScalar(a) ((void)(a), PETSC_SUCCESS)
+  #define PetscLogGpuFlops(a)       ((void)(a), PETSC_SUCCESS)
+  #define PetscLogGpuTimeAdd(a)     ((void)(a), PETSC_SUCCESS)
   #define PetscLogGpuTime()         PETSC_SUCCESS
-  #define PetscLogGpuTimeAdd(a)     PETSC_SUCCESS
   #define PetscLogGpuTimeBegin()    PETSC_SUCCESS
   #define PetscLogGpuTimeEnd()      PETSC_SUCCESS
 
