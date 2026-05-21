@@ -557,12 +557,21 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseDivide(Vec wout, Vec xin, Vec yin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+namespace detail
+{
+
+struct multiplies {
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return lhs * rhs; }
+};
+
+} // namespace detail
+
 // VecPointwiseMultAsync_Private
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::PointwiseMultAsync(Vec wout, Vec xin, Vec yin, PetscDeviceContext dctx) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMult_Seq, thrust::multiplies<PetscScalar>{}, wout, xin, yin, dctx));
+  PetscCall(PointwiseBinaryDispatch_(VecPointwiseMult_Seq, detail::multiplies{}, wout, xin, yin, dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

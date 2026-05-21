@@ -21,7 +21,7 @@
 #include <thrust/remove.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
-#if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0) && !PetscDefined(HAVE_THRUST)
+#if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0)
   #include <cuda/std/functional>
 #endif
 
@@ -456,13 +456,14 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_Cholesky(Mat A, Vec b, Vec x)
   PetscCallCUSPARSE(cusparseDnVecSetValues(fs->dnVecDescr_Y, fs->Y));
   PetscCallCUSPARSE(cusparseSpSV_solve(fs->handle, CUSPARSE_OPERATION_TRANSPOSE, &PETSC_CUSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, cusparse_scalartype, alg, fs->spsvDescr_Ut));
 
-// Solve diag(D) Z = Y. Actually just do Y = Y*D since D is already inverted in MatCholeskyFactorNumeric_SeqAIJ().
-// It is basically a vector element-wise multiplication, but cublas does not have it!
+  // Solve diag(D) Z = Y. Actually just do Y = Y*D since D is already inverted in MatCholeskyFactorNumeric_SeqAIJ().
+  // It is basically a vector element-wise multiplication, but cublas does not have it!
 #if CCCL_VERSION >= 3001000
-  PetscCallThrust(thrust::transform(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), cuda::std::multiplies<PetscScalar>()));
+  auto multiplies = cuda::std::multiplies<PetscScalar>();
 #else
-  PetscCallThrust(thrust::transform(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), thrust::multiplies<PetscScalar>()));
+  auto multiplies = thrust::multiplies<PetscScalar>();
 #endif
+  PetscCallThrust(thrust::transform(thrust::cuda::par.on(PetscDefaultCudaStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), multiplies));
 
   // Solve U X = Y
   if (fs->cpermIndices) { // if need to permute, we need to use the intermediate buffer X
