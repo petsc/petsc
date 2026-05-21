@@ -1495,7 +1495,7 @@ cdef class DMPlex(DM):
             CHKERR(DMPlexLabelCompleteStar(self.dm, label.dmlabel))
 
     def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, bdvalue: int,
-                              flip: bool, split: bool, DMPlex subdm) -> None:
+                              flip: bool, DMPlex subdm) -> None:
         """Add all other mesh pieces to complete the surface.
 
         Not collective.
@@ -1512,9 +1512,6 @@ cdef class DMPlex(DM):
         flip
             Flag to flip the submesh normal and replace points
             on the other side.
-        split
-            Flag to split faces incident on the surface boundary,
-            rather than clamping those faces to the boundary
         subdm
             The `DMPlex` associated with the label.
 
@@ -1524,10 +1521,9 @@ cdef class DMPlex(DM):
         petsc.DMPlexLabelCohesiveComplete
 
         """
-        cdef PetscBool flg  = flip
-        cdef PetscBool flg2 = split
-        cdef PetscInt  val  = asInt(bdvalue)
-        CHKERR(DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, val, flg, flg2, subdm.dm))
+        cdef PetscBool flg = flip
+        cdef PetscInt  val = asInt(bdvalue)
+        CHKERR(DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, val, flg, subdm.dm))
 
     def setAdjacencyUseAnchors(self, useAnchors: bool = True) -> None:
         """Define adjacency in the mesh using the point-to-point constraints.

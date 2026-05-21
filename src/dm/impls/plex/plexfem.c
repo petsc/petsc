@@ -3932,6 +3932,7 @@ static PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec 
     PetscCall(DMPlexVecRestoreClosure(plex, section, locX, cell, &Nxf, &xf));
     if (locX_t) PetscCall(DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &xf_t));
     // Loop over sides of surface
+    PetscCheck(ornt[0] == ornt[1], PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %" PetscInt_FMT " in hybrid cell %" PetscInt_FMT " has orientation %" PetscInt_FMT " != %" PetscInt_FMT " of face %" PetscInt_FMT, cone[0], cell, ornt[0], ornt[1], cone[1]);
     for (s = 0; s < 2; ++s) {
       const PetscInt *support;
       const PetscInt  face = cone[s];
@@ -5744,15 +5745,24 @@ PetscErrorCode DMPlexComputeResidualHybridByKey(DM dm, PetscFormKey key[], IS ce
   PetscCall(DMGetWorkArray(dm, cellChunkSize * totDim, MPIU_SCALAR, &elemVecPos));
   PetscCall(DMGetWorkArray(dm, cellChunkSize * totDim, MPIU_SCALAR, &elemVecCoh));
   for (chunk = 0; chunk < numChunks; ++chunk) {
-    PetscInt cS = cStart + chunk * cellChunkSize, cE = PetscMin(cS + cellChunkSize, cEnd), numCells = cE - cS, c;
+    PetscInt        cS = cStart + chunk * cellChunkSize, cE = PetscMin(cS + cellChunkSize, cEnd), numCells = cE - cS, c;
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt        Nl;
 
     PetscCall(PetscArrayzero(elemVecNeg, cellChunkSize * totDim));
     PetscCall(PetscArrayzero(elemVecPos, cellChunkSize * totDim));
     PetscCall(PetscArrayzero(elemVecCoh, cellChunkSize * totDim));
     /* Get faces and neighbors */
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
     for (c = cS; c < cE; ++c) {
       const PetscInt  cell = cells ? cells[c] : c;
       const PetscInt *cone, *support;
+      PetscInt        pos = -1;
+
+      if (leaves) PetscCall(PetscFindInt(cell, Nl, leaves, &pos));
+      PetscCheck(pos < 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hybrid Cell %" PetscInt_FMT " is a ghost cell, so it should not be assembled", cell);
       PetscCall(DMPlexGetCone(dm, cell, &cone));
       faces[(c - cS) * 2 + 0] = cone[0];
       faces[(c - cS) * 2 + 1] = cone[1];
