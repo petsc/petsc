@@ -93,7 +93,7 @@ __global__ static void MatAddCOOValues(const PetscScalar kv[], PetscCount nnz, c
 /* --------------------------------------------------------------------------
    Shared __global__ kernel: extract the CSR diagonal.
    -------------------------------------------------------------------------- */
-__global__ static void GetDiagonal_CSR(const int *row, const int *col, const PetscScalar *val, const PetscInt len, PetscScalar *diag)
+__global__ void GetDiagonal_CSR(const int *row, const int *col, const PetscScalar *val, const PetscInt len, PetscScalar *diag)
 {
   const size_t x = blockIdx.x * blockDim.x + threadIdx.x;
 
