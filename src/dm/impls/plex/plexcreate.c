@@ -5045,8 +5045,8 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
     PetscBool  noCreate = PETSC_FALSE;
     char       fulloption[PETSC_MAX_PATH_LEN];
     char       name[PETSC_MAX_PATH_LEN];
-    const char opt[] = "dm_plex_cohesive_label_";
-    char      *suffix;
+    const char opt[]  = "dm_plex_cohesive_label_";
+    char      *suffix = NULL;
     size_t     len;
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -5435,8 +5435,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     PetscInt   points[1024], n, Nl = 1;
     char       fulloption[PETSC_MAX_PATH_LEN];
     char       name[PETSC_MAX_PATH_LEN];
-    const char opt[] = "dm_plex_cohesive_label_";
-    char      *suffix;
+    const char opt[]  = "dm_plex_cohesive_label_";
+    char      *suffix = NULL;
     size_t     len;
 
     PetscCall(PetscStrstr(option, opt, &suffix));
