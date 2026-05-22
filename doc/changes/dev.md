@@ -61,6 +61,7 @@
 
 ## PC
 
+- Add `PCGAMGSetProlongatorFilter()` and `PCGAMGGetProlongatorFilter()` to set/get the threshold for filtering small entries from the prolongator in `PCGAMG`
 
 ## KSP
 
