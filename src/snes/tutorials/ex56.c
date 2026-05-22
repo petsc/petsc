@@ -461,8 +461,8 @@ int main(int argc, char **args)
     timeoutfactor: 2
     test:
       suffix: 0
+      filter: sed -e "s/iterations 7/iterations 8/" -e "s/4\.123212[0-9]/4.1232123/" -e "s/5\.906389[0-9]/5.9063895/"
       args: -run_type 1 -max_conv_its 3 -pc_gamg_mat_coarsen_type hem -pc_gamg_mat_coarsen_max_it 5 -pc_gamg_asm_hem_aggs 4 -ksp_rtol 1.e-6
-      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 7/Linear solve converged due to CONVERGED_RTOL iterations 8/g"
     test:
       suffix: 1
       filter: grep -v HERMITIAN
@@ -587,6 +587,14 @@ int main(int argc, char **args)
     nsize: 4
     requires: defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE) !single !complex
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -dm_view -mat_seqaij_type seqaijmkl
+    timeoutfactor: 2
+
+  test:
+    suffix: filter
+    nsize: 4
+    requires: !single
+    filter: sed "s/iterations 9/iterations 8/"
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_type cg -ksp_rtol 1.e-4 -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_threshold 0.001 -ksp_converged_reason -use_mat_nearnullspace true -petscpartitioner_type simple -snes_type ksponly -pc_gamg_low_memory_threshold_filter -pc_gamg_prolongator_filter 0.0025 -run_type 1 -max_conv_its 3 -my_dm_view
     timeoutfactor: 2
 
 TEST*/

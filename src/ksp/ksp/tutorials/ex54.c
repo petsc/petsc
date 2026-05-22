@@ -219,7 +219,7 @@ int main(int argc, char **args)
 
    test:
       nsize: 4
-      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -pc_gamg_aggressive_coarsening 0
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -pc_gamg_aggressive_coarsening 0 -pc_gamg_prolongator_filter 0.0025
 
    test:
       suffix: seqaijmkl

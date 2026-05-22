@@ -42,6 +42,7 @@ typedef struct gamg_TAG {
   PetscInt   orig_data_cell_cols;
   PetscReal *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscReal *orig_data; /* cache data */
+  PetscReal  prolongator_filter;
 
   struct _PCGAMGOps *ops;
   char              *gamg_type_name;
