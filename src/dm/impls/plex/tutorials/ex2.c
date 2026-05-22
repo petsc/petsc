@@ -193,4 +193,20 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type extrude -dm_plex_transform_extrude_layers 2 \
           -dm_view
 
+  # Construct and refine a torus
+  #   Can use a custom polodial slice
+  #   -dm_plex_filename /Users/knepley/PETSc4/petsc/petsc-dev/share/petsc/datafiles/meshes/square_quad.msh
+  test:
+    suffix: 21
+    args: -dm_plex_option_phases phase1_,phase2_,phase3_ \
+          -dm_plex_simplex 0 -dm_plex_box_faces 2,2 \
+            -dm_refine_pre 0 \
+          -phase1_dm_refine 0 \
+          -phase2_dm_plex_transform_type extrude -phase2_dm_extrude 16 \
+            -phase2_dm_plex_transform_extrude_thickness 1 \
+            -phase2_dm_plex_transform_extrude_use_tensor 0 \
+            -phase2_dm_plex_transform_extrude_periodic \
+          -phase3_dm_coord_remap -phase3_dm_coord_map torus \
+          -dm_view
+
 TEST*/
