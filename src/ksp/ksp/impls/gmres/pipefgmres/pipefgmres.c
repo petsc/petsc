@@ -197,7 +197,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
       tt = PetscSqrtReal(tt);
     }
 
-    /* new entry in hessenburg is the 2-norm of our new direction */
+    /* new entry in Hessenberg is the 2-norm of our new direction */
     hh[loc_it + 1]  = tt;
     hes[loc_it + 1] = tt;
 

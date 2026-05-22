@@ -26,13 +26,17 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const c
   char *eol = NULL;
 
   PetscFunctionBegin;
+  *found = PETSC_FALSE;
   /* call Python to find out the name of the Python dynamic library */
   PetscCall(PetscStrncpy(command, pythonexe, sizeof(command)));
   PetscCall(PetscStrlcat(command, " ", sizeof(command)));
   PetscCall(PetscStrlcat(command, attempt, sizeof(command)));
 #if defined(PETSC_HAVE_POPEN)
   PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, command, "r", &fp));
-  PetscCheck(fgets(pythonlib, (int)pl, fp), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Python: bad output from executable: %s, running: %s", pythonexe, command);
+  if (!fgets(pythonlib, (int)pl, fp)) {
+    PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Python: Aborted due to missing popen()");
@@ -69,6 +73,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
     PetscCall(PetscPythonFindLibraryName(pythonexe, cmdlines[i], pythonlib, pl, &found));
     if (found) break;
   }
+  PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find Python dynamic library");
   PetscCall(PetscInfo(NULL, "Python library %s found %d\n", pythonlib, found));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -9,7 +9,7 @@
 
 #define KSPGMRESHEADER \
   /* Hessenberg matrix and orthogonalization information. */ \
-  PetscScalar *hh_origin;  /* holds hessenburg matrix that has been multiplied by plane rotations (upper tri) */ \
+  PetscScalar *hh_origin;  /* holds Hessenberg matrix that has been multiplied by plane rotations (upper tri) */ \
   PetscScalar *hes_origin; /* holds the original (unmodified) Hessenberg matrix which may be used to estimate the Singular Values of the matrix */ \
   PetscScalar *hes_ritz;   /* holds the last full Hessenberg matrix to compute (harmonic) Ritz pairs */ \
   PetscScalar *cc_origin;  /* holds cosines for rotation matrices */ \

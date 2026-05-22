@@ -5,6 +5,7 @@ cdef extern from * nogil:
         PETSC_REAL
         PETSC_SCALAR
         PETSC_COMPLEX
+        PETSC_DOUBLE
         PETSC_DATATYPE_UNKNOWN
 
     const char PETSC_AUTHOR_INFO[]
