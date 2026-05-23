@@ -401,14 +401,14 @@ M*/
 /*MC
    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes MPI with `MPI_Init_thread()`.
 
-   No Fortran Support
+   Deprecated, use `PetscSetMPIThreadRequiredType()`
 
    Level: beginner
 
    Note:
    By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides `MPI_Init_thread()`, otherwise it equals `MPI_THREAD_SINGLE`
 
-.seealso: `PetscInitialize()`
+.seealso: `PetscInitialize()`, `PetscSetMPIThreadRequiredType()`
 M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
@@ -1366,6 +1366,7 @@ PETSC_EXTERN PetscErrorCode PetscInitializeFortran(void);
 PETSC_EXTERN PetscErrorCode PetscGetArgs(int *, char ***);
 PETSC_EXTERN PetscErrorCode PetscGetArguments(char ***);
 PETSC_EXTERN PetscErrorCode PetscFreeArguments(char **);
+PETSC_EXTERN PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt);
 
 PETSC_EXTERN PetscErrorCode PetscEnd(void);
 PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(void);
