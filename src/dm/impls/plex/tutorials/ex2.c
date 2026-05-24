@@ -2,6 +2,8 @@ static char help[] = "PETSc Annual Meeting 2025: Meshing Tutorial.\n\n\n";
 
 #include <petsc.h>
 
+/* Use FORCE=1 to run the PyVista tests */
+
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBeginUser;
@@ -68,11 +70,42 @@ int main(int argc, char **argv)
     args: -dm_view pyvista -dm_plex_shape sphere
     output_file: output/empty.out
 
+  # Draw the 2-sphere with PyVista with quadratic coordinates
+  test:
+    suffix: 5b
+    requires: pyvista
+    args: -dm_view pyvista -dm_plex_shape sphere \
+          -dm_coord_petscspace_degree 2
+    output_file: output/empty.out
+
+  # Draw the 2-sphere with PyVista using quads with quadratic coordinates
+  test:
+    suffix: 5c
+    requires: pyvista
+    args: -dm_view pyvista -dm_plex_shape sphere -dm_plex_simplex 0 \
+          -dm_coord_petscspace_degree 2
+    output_file: output/empty.out
+
   # Refine the sphere three times
   test:
     suffix: 6
     requires: pyvista
     args: -dm_view pyvista -dm_plex_shape sphere -dm_refine 3
+    output_file: output/empty.out
+
+  # Draw the 1-sphere with PyVista, which is a circle
+  test:
+    suffix: 7a
+    requires: pyvista
+    args: -dm_view pyvista -view_pyvista_line_width 5 -dm_plex_dim 1 -dm_plex_shape sphere
+    output_file: output/empty.out
+
+  # Draw the 1-sphere with PyVista with cubic coordinates
+  test:
+    suffix: 7b
+    requires: pyvista
+    args: -dm_view pyvista -view_pyvista_line_width 5 -dm_plex_dim 1 -dm_plex_shape sphere \
+          -dm_coord_petscspace_degree 3
     output_file: output/empty.out
 
   # Show the 3-sphere
