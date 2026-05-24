@@ -116,6 +116,7 @@ cdef extern from * nogil:
     PetscErrorCode DMGetCoordinates(PetscDM, PetscVec*)
     PetscErrorCode DMSetCoordinatesLocal(PetscDM, PetscVec)
     PetscErrorCode DMGetCoordinatesLocal(PetscDM, PetscVec*)
+    PetscErrorCode DMGetCoordinatesLocalSetUp(PetscDM)
     PetscErrorCode DMGetCoordinateDim(PetscDM, PetscInt*)
     PetscErrorCode DMSetCoordinateDim(PetscDM, PetscInt)
     PetscErrorCode DMLocalizeCoordinates(PetscDM)
