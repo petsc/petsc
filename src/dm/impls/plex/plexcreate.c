@@ -5400,7 +5400,16 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
-    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
+    if (coordSpace && deg <= 1) {
+      PetscPointFn *coordFunc;
+
+      PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
+      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
+      if (coordFunc) {
+        PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
+        PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
+      }
+    }
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (!coordSpace) {
       PetscDS      cds;
