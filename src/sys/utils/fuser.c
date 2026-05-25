@@ -6,6 +6,21 @@
   #include <windows.h>
 #endif
 
+/*@C
+  PetscGetUserName - Get the login name of the user running the program on the current MPI process
+
+  Not Collective
+
+  Input Parameter:
+. nlen - length of the `name` buffer
+
+  Output Parameter:
+. name - on output, holds the user name (null-terminated)
+
+  Level: developer
+
+.seealso: `PetscGetHostName()`, `PetscGetProgramName()`
+@*/
 #if defined(PETSC_HAVE_GET_USER_NAME)
 PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 {
@@ -15,27 +30,7 @@ PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 }
 
 #else
-/*@C
-  PetscGetUserName - Returns the name of the user.
 
-  Not Collective
-
-  Input Parameter:
-. nlen - length of name
-
-  Output Parameter:
-. name - contains user name. Must be long enough to hold the name
-
-  Level: developer
-
-  Fortran Note:
-.vb
-  character*(32) str
-  call PetscGetUserName(str,ierr)
-.ve
-
-.seealso: `PetscGetHostName()`
-@*/
 PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 {
   const char *user;

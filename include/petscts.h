@@ -488,6 +488,13 @@ PETSC_EXTERN PetscErrorCode TSMonitorWallClockTime(TS, PetscInt, PetscReal, Vec,
 PETSC_EXTERN PetscErrorCode TSMonitorWallClockTimeSetUp(TS, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSMonitorExtreme(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
 
+/*S
+  TSMonitorDrawCtx - Context object for the `TS` graphical monitor routines that draw the solution, phase plot or error using a `PetscDraw`
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorDrawCtxCreate()`, `TSMonitorDrawCtxDestroy()`, `TSMonitorDrawSolution()`, `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawError()`, `TSMonitorDrawSolutionFunction()`
+S*/
 typedef struct _n_TSMonitorDrawCtx *TSMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode         TSMonitorDrawCtxCreate(MPI_Comm, const char[], const char[], int, int, int, int, PetscInt, TSMonitorDrawCtx *);
 PETSC_EXTERN PetscErrorCode         TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *);
@@ -499,10 +506,24 @@ PETSC_EXTERN PetscErrorCode         TSMonitorDrawSolutionFunction(TS, PetscInt, 
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscInt, Vec[], Vec[], PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS, PetscInt, PetscReal, Vec, PetscInt, Vec[], Vec[], PetscCtx);
 
+/*S
+  TSMonitorSolutionCtx - Context object for the `TS` `TSMonitorSolution()` monitor that views the solution at each time step using a `PetscViewer`
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorSet()`, `TSMonitorSolution()`, `TSMonitorSolutionSetup()`
+S*/
 typedef struct _n_TSMonitorSolutionCtx *TSMonitorSolutionCtx;
 PETSC_EXTERN PetscErrorCode             TSMonitorSolution(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode             TSMonitorSolutionSetup(TS, PetscViewerAndFormat *);
 
+/*S
+  TSMonitorVTKCtx - Context object for the `TS` `TSMonitorSolutionVTK()` monitor that dumps the solution to VTK files at each time step
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorSet()`, `TSMonitorSolutionVTK()`, `TSMonitorSolutionVTKCtxCreate()`, `TSMonitorSolutionVTKDestroy()`
+S*/
 typedef struct _n_TSMonitorVTKCtx *TSMonitorVTKCtx;
 PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTK(TS, PetscInt, PetscReal, Vec, TSMonitorVTKCtx);
 PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *);
@@ -989,7 +1010,22 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM, DMDATSRHSJacobianLocal
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM, InsertMode, DMDATSIFunctionLocalFn *, void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM, DMDATSIJacobianLocalFn *, void *);
 
+/*S
+  TSMonitorLGCtx - Context object for `TS` line-graph monitor routines that plot residuals, iteration counts or solution components at each time step on a `PetscDrawLG`
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorLGCtxCreate()`, `TSMonitorLGCtxDestroy()`, `TSMonitorLGSolution()`, `TSMonitorLGTimeStep()`, `TSMonitorLGError()`
+S*/
 typedef struct _n_TSMonitorLGCtx *TSMonitorLGCtx;
+
+/*S
+  TSMonitorDMDARayCtx - Context object for `TSMonitorDMDARay()`
+
+  Level: developer
+
+.seealso: `TS`, `TSSetMonitor()`, `TSMonitorDMDARay()`, `TSMonitorDMDARayDestroy()`
+S*/
 typedef struct {
   Vec            ray;
   VecScatter     scatter;
@@ -1043,27 +1079,62 @@ struct _n_TSMonitorLGCtxNetwork {
   PetscBool    semilogy;
   PetscInt     howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
 };
+/*S
+  TSMonitorLGCtxNetwork - Context object for the `TSMonitorLGCtxNetworkSolution()` line-graph monitor that plots solution components on each subnetwork of a `DMNETWORK`
+
+  Level: developer
+
+.seealso: `TS`, `DMNETWORK`, `TSMonitorLGCtxNetworkCreate()`, `TSMonitorLGCtxNetworkDestroy()`, `TSMonitorLGCtxNetworkSolution()`
+S*/
 typedef struct _n_TSMonitorLGCtxNetwork *TSMonitorLGCtxNetwork;
 PETSC_EXTERN PetscErrorCode              TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *);
 PETSC_EXTERN PetscErrorCode              TSMonitorLGCtxNetworkCreate(TS, const char[], const char[], int, int, int, int, PetscInt, TSMonitorLGCtxNetwork *);
 PETSC_EXTERN PetscErrorCode              TSMonitorLGCtxNetworkSolution(TS, PetscInt, PetscReal, Vec, void *);
 
+/*S
+  TSMonitorEnvelopeCtx - Context object for the `TSMonitorEnvelope()` monitor that tracks the per-component min/max envelope of the solution over a time integration
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorEnvelopeCtxCreate()`, `TSMonitorEnvelopeCtxDestroy()`, `TSMonitorEnvelope()`, `TSMonitorEnvelopeGetBounds()`
+S*/
 typedef struct _n_TSMonitorEnvelopeCtx *TSMonitorEnvelopeCtx;
 PETSC_EXTERN PetscErrorCode             TSMonitorEnvelopeCtxCreate(TS, TSMonitorEnvelopeCtx *);
 PETSC_EXTERN PetscErrorCode             TSMonitorEnvelope(TS, PetscInt, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode             TSMonitorEnvelopeGetBounds(TS, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode             TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *);
 
+/*S
+  TSMonitorSPEigCtx - Context object for the `TSMonitorSPEig()` monitor that displays an estimate of the spectrum of the operator using a `PetscDrawSP` scatter plot
+
+  Level: developer
+
+.seealso: `TS`, `TSMonitorSPEigCtxCreate()`, `TSMonitorSPEigCtxDestroy()`, `TSMonitorSPEig()`
+S*/
 typedef struct _n_TSMonitorSPEigCtx *TSMonitorSPEigCtx;
 PETSC_EXTERN PetscErrorCode          TSMonitorSPEigCtxCreate(MPI_Comm, const char[], const char[], int, int, int, int, PetscInt, TSMonitorSPEigCtx *);
 PETSC_EXTERN PetscErrorCode          TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *);
 PETSC_EXTERN PetscErrorCode          TSMonitorSPEig(TS, PetscInt, PetscReal, Vec, void *);
 
+/*S
+  TSMonitorSPCtx - Context object for the `TSMonitorSPSwarmSolution()` scatter-plot monitor that draws the swarm particle positions at each time step on a `PetscDrawSP`
+
+  Level: developer
+
+.seealso: `TS`, `DMSWARM`, `TSMonitorSPCtxCreate()`, `TSMonitorSPCtxDestroy()`, `TSMonitorSPSwarmSolution()`
+S*/
 typedef struct _n_TSMonitorSPCtx *TSMonitorSPCtx;
 PETSC_EXTERN PetscErrorCode       TSMonitorSPCtxCreate(MPI_Comm, const char[], const char[], int, int, int, int, PetscInt, PetscInt, PetscBool, PetscBool, TSMonitorSPCtx *);
 PETSC_EXTERN PetscErrorCode       TSMonitorSPCtxDestroy(TSMonitorSPCtx *);
 PETSC_EXTERN PetscErrorCode       TSMonitorSPSwarmSolution(TS, PetscInt, PetscReal, Vec, void *);
 
+/*S
+  TSMonitorHGCtx - Context object for the `TSMonitorHGSwarmSolution()` histogram monitor that displays a histogram of `DMSWARM` particle quantities at each time step
+
+  Level: developer
+
+.seealso: `TS`, `DMSWARM`, `TSMonitorHGCtxCreate()`, `TSMonitorHGCtxDestroy()`, `TSMonitorHGSwarmSolution()`
+S*/
 typedef struct _n_TSMonitorHGCtx *TSMonitorHGCtx;
 PETSC_EXTERN PetscErrorCode       TSMonitorHGCtxCreate(MPI_Comm, const char[], const char[], int, int, int, int, PetscInt, PetscInt, PetscInt, PetscBool, TSMonitorHGCtx *);
 PETSC_EXTERN PetscErrorCode       TSMonitorHGSwarmSolution(TS, PetscInt, PetscReal, Vec, void *);

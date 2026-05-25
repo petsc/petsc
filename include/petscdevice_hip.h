@@ -50,6 +50,23 @@
   #endif                       // __HIP_PLATFORM_NVCC__
   #include <hip/hip_complex.h> // for hipComplex, hipDoubleComplex
 
+  /*MC
+    WaitForHIP - Block the calling host thread until all previously queued work on the current HIP device has completed
+
+    Synopsis:
+    #include <petscdevice_hip.h>
+    hipError_t WaitForHIP(void)
+
+    Not Collective; No Fortran Support
+
+    Level: developer
+
+    Note:
+    Thin convenience wrapper around `hipDeviceSynchronize()`. Marked for removal in favour of
+    explicit `PetscDeviceContext` synchronization.
+
+.seealso: `PetscDeviceContext`, `PetscDeviceContextSynchronize()`, `WaitForCUDA()`
+M*/
   // REMOVE ME
   #define WaitForHIP() hipDeviceSynchronize()
 

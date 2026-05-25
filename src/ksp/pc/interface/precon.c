@@ -1520,14 +1520,14 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
 + pc     - the `PC` preconditioner context
 - prefix - the prefix string to prepend to all `PC` option requests
 
+  Level: advanced
+
   Note:
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the
   hyphen.
 
-  Level: advanced
-
-.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCAppendOptionsPrefix()`, `PCGetOptionsPrefix()`
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions()`, `PCAppendOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
 PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
 {
@@ -1547,14 +1547,14 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
 + pc     - the `PC` preconditioner context
 - prefix - the prefix string to prepend to all `PC` option requests
 
+  Level: advanced
+
   Note:
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the
   hyphen.
 
-  Level: advanced
-
-.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCGetOptionsPrefix()`
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions()`, `PCSetOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
 PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
 {
@@ -1566,7 +1566,7 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
 
 /*@
   PCGetOptionsPrefix - Gets the prefix used for searching for all
-  PC options in the database.
+  `PC` options in the database.
 
   Not Collective
 
@@ -1578,7 +1578,7 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
 
   Level: advanced
 
-.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions()`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
 @*/
 PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
 {

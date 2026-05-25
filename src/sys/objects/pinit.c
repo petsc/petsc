@@ -104,7 +104,7 @@ extern PetscInt PetscNumBLASThreads;
   Turns off PETSc signal handling to allow Julia to manage signals
 
 .seealso: `PetscInitialize()`, `PetscInitializeFortran()`, `PetscInitializeNoArguments()`
-*/
+@*/
 PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *filename, const char *help)
 {
   int    myargc = argc;
@@ -490,6 +490,22 @@ PetscErrorCode PetscCitationsInitialize(void)
 
 static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
 
+/*@C
+  PetscSetProgramName - Set the program name reported by `PetscGetProgramName()`
+
+  Not Collective
+
+  Input Parameter:
+. name - the program name to record
+
+  Level: developer
+
+  Note:
+  The program name is normally set automatically by `PetscInitialize()` from `argv[0]`; only call this directly when the
+  detected name is incorrect (for example when PETSc is embedded in a host application).
+
+.seealso: `PetscGetProgramName()`, `PetscInitialize()`
+@*/
 PetscErrorCode PetscSetProgramName(const char name[])
 {
   PetscFunctionBegin;

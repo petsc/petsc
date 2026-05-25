@@ -34,7 +34,14 @@
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`,
           `PetscBagSetFromOptions()`, `PetscBagRegisterVec()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 S*/
-typedef struct _n_PetscBag     *PetscBag;
+typedef struct _n_PetscBag *PetscBag;
+/*S
+  PetscBagItem - Opaque linked-list node used internally by `PetscBag` to record the metadata (name, help string, type, offset, default value) of a single registered field
+
+  Level: developer
+
+.seealso: `PetscBag`, `PetscBagCreate()`, `PetscBagRegisterInt()`, `PetscBagRegisterReal()`, `PetscBagRegisterScalar()`, `PetscBagRegisterBool()`, `PetscBagRegisterString()`, `PetscBagRegisterEnum()`
+S*/
 typedef struct _n_PetscBagItem *PetscBagItem;
 
 PETSC_EXTERN PetscErrorCode PetscBagCreate(MPI_Comm, size_t, PetscBag *);

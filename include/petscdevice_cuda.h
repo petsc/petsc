@@ -26,6 +26,23 @@ PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t); /* PETSC_EXTER
 PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t);
 PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult);
 
+  /*MC
+    WaitForCUDA - Block the calling host thread until all previously queued work on the current CUDA device has completed
+
+    Synopsis:
+    #include <petscdevice_cuda.h>
+    cudaError_t WaitForCUDA(void)
+
+    Not Collective; No Fortran Support
+
+    Level: developer
+
+    Note:
+    Thin convenience wrapper around `cudaDeviceSynchronize()`. Marked for removal in favour of
+    explicit `PetscDeviceContext` synchronization.
+
+.seealso: `PetscDeviceContext`, `PetscDeviceContextSynchronize()`, `WaitForHIP()`
+M*/
   /* REMOVE ME */
   #define WaitForCUDA() cudaDeviceSynchronize()
 

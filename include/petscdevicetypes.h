@@ -60,12 +60,113 @@ typedef enum {
   #define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HOST
 #endif
 
-#define PetscMemTypeHost(m)    (((m) & 0x1) == PETSC_MEMTYPE_HOST)
-#define PetscMemTypeDevice(m)  (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
-#define PetscMemTypeCUDA(m)    (((m) & 0xF) == PETSC_MEMTYPE_CUDA)
-#define PetscMemTypeHIP(m)     (((m) & 0xF) == PETSC_MEMTYPE_HIP)
-#define PetscMemTypeSYCL(m)    (((m) & 0xF) == PETSC_MEMTYPE_SYCL)
-#define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
+/*MC
+  PetscMemTypeHost - Returns `PETSC_TRUE` if a given `PetscMemType` refers to host (CPU) memory
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeHost(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
+M*/
+#define PetscMemTypeHost(m) ((((m) & 0x1) == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+  PetscMemTypeDevice - Returns `PETSC_TRUE` if a given `PetscMemType` refers to any kind of device (GPU) memory
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeDevice(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeHost()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
+M*/
+#define PetscMemTypeDevice(m) ((((m) & 0x1) == PETSC_MEMTYPE_DEVICE) ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+  PetscMemTypeCUDA - Returns `PETSC_TRUE` if a given `PetscMemType` refers to CUDA device memory (including CUDA NVSHMEM memory)
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeCUDA(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
+M*/
+#define PetscMemTypeCUDA(m) ((((m) & 0xF) == PETSC_MEMTYPE_CUDA) ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+  PetscMemTypeHIP - Returns `PETSC_TRUE` if a given `PetscMemType` refers to HIP device memory
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeHIP(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
+M*/
+#define PetscMemTypeHIP(m) ((((m) & 0xF) == PETSC_MEMTYPE_HIP) ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+  PetscMemTypeSYCL - Returns `PETSC_TRUE` if a given `PetscMemType` refers to SYCL device memory
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeSYCL(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeNVSHMEM()`
+M*/
+#define PetscMemTypeSYCL(m) ((((m) & 0xF) == PETSC_MEMTYPE_SYCL) ? PETSC_TRUE : PETSC_FALSE)
+
+/*MC
+  PetscMemTypeNVSHMEM - Returns `PETSC_TRUE` if a given `PetscMemType` refers to NVSHMEM memory
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemTypeNVSHMEM(PetscMemType m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemType` value
+
+  Level: intermediate
+
+.seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`
+M*/
+#define PetscMemTypeNVSHMEM(m) (((m) == PETSC_MEMTYPE_NVSHMEM) ? PETSC_TRUE : PETSC_FALSE)
 
 #if defined(__cplusplus)
   #if PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING
@@ -144,10 +245,77 @@ typedef enum {
   PETSC_OFFLOAD_KOKKOS               = 256  /* 0x100 */
 } PetscOffloadMask;
 
+/*MC
+  PetscOffloadUnallocated - Returns `PETSC_TRUE` if a given `PetscOffloadMask` indicates that no memory has been allocated yet
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscOffloadUnallocated(PetscOffloadMask m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscOffloadMask` value
+
+  Level: developer
+
+.seealso: `PetscOffloadMask`, `PetscOffloadHost()`, `PetscOffloadDevice()`, `PetscOffloadBoth()`
+M*/
 #define PetscOffloadUnallocated(m) ((m) == PETSC_OFFLOAD_UNALLOCATED)
-#define PetscOffloadHost(m)        (((m) & PETSC_OFFLOAD_CPU) == PETSC_OFFLOAD_CPU)
-#define PetscOffloadDevice(m)      (((m) & PETSC_OFFLOAD_GPU) == PETSC_OFFLOAD_GPU)
-#define PetscOffloadBoth(m)        ((m) == PETSC_OFFLOAD_BOTH)
+
+/*MC
+  PetscOffloadHost - Returns `PETSC_TRUE` if a given `PetscOffloadMask` indicates that the host (CPU) memory holds valid data
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscOffloadHost(PetscOffloadMask m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscOffloadMask` value
+
+  Level: developer
+
+.seealso: `PetscOffloadMask`, `PetscOffloadUnallocated()`, `PetscOffloadDevice()`, `PetscOffloadBoth()`
+M*/
+#define PetscOffloadHost(m) (((m) & PETSC_OFFLOAD_CPU) == PETSC_OFFLOAD_CPU)
+
+/*MC
+  PetscOffloadDevice - Returns `PETSC_TRUE` if a given `PetscOffloadMask` indicates that device (GPU) memory holds valid data
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscOffloadDevice(PetscOffloadMask m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscOffloadMask` value
+
+  Level: developer
+
+.seealso: `PetscOffloadMask`, `PetscOffloadUnallocated()`, `PetscOffloadHost()`, `PetscOffloadBoth()`
+M*/
+#define PetscOffloadDevice(m) (((m) & PETSC_OFFLOAD_GPU) == PETSC_OFFLOAD_GPU)
+
+/*MC
+  PetscOffloadBoth - Returns `PETSC_TRUE` if a given `PetscOffloadMask` indicates that both host and device memory hold matching valid data
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscOffloadBoth(PetscOffloadMask m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscOffloadMask` value
+
+  Level: developer
+
+.seealso: `PetscOffloadMask`, `PetscOffloadUnallocated()`, `PetscOffloadHost()`, `PetscOffloadDevice()`
+M*/
+#define PetscOffloadBoth(m) ((m) == PETSC_OFFLOAD_BOTH)
 
 #if defined(__cplusplus)
   #if PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING
@@ -443,7 +611,40 @@ typedef enum {
   PETSC_MEMORY_ACCESS_READ_WRITE = 3  /* 11 */
 } PetscMemoryAccessMode;
 
-#define PetscMemoryAccessRead(m)  (((m) & PETSC_MEMORY_ACCESS_READ) == PETSC_MEMORY_ACCESS_READ)
+/*MC
+  PetscMemoryAccessRead - Returns `PETSC_TRUE` if a given `PetscMemoryAccessMode` includes read access
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemoryAccessRead(PetscMemoryAccessMode m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemoryAccessMode` value
+
+  Level: developer
+
+.seealso: `PetscMemoryAccessMode`, `PetscMemoryAccessWrite()`
+M*/
+#define PetscMemoryAccessRead(m) (((m) & PETSC_MEMORY_ACCESS_READ) == PETSC_MEMORY_ACCESS_READ)
+
+/*MC
+  PetscMemoryAccessWrite - Returns `PETSC_TRUE` if a given `PetscMemoryAccessMode` includes write access
+
+  Synopsis:
+  #include <petscdevicetypes.h>
+  PetscBool PetscMemoryAccessWrite(PetscMemoryAccessMode m)
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. m - the `PetscMemoryAccessMode` value
+
+  Level: developer
+
+.seealso: `PetscMemoryAccessMode`, `PetscMemoryAccessRead()`
+M*/
 #define PetscMemoryAccessWrite(m) (((m) & PETSC_MEMORY_ACCESS_WRITE) == PETSC_MEMORY_ACCESS_WRITE)
 
 #if defined(__cplusplus)

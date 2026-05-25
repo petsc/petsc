@@ -59,5 +59,6 @@ PETSC_EXTERN PetscErrorCode PFGetType(PF, PFType *);
 
 PETSC_EXTERN PetscErrorCode PFView(PF, PetscViewer);
 PETSC_EXTERN PetscErrorCode PFViewFromOptions(PF, PetscObject, const char[]);
-
-#define PFSetOptionsPrefix(a, s) PetscObjectSetOptionsPrefix((PetscObject)(a), s)
+PETSC_EXTERN PetscErrorCode PFSetOptionsPrefix(PF, const char[]);
+PETSC_EXTERN PetscErrorCode PFAppendOptionsPrefix(PF, const char[]);
+PETSC_EXTERN PetscErrorCode PFGetOptionsPrefix(PF, const char *[]);

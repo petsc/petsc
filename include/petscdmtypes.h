@@ -321,4 +321,11 @@ typedef struct _p_UniversalLabel *DMUniversalLabel;
 
 typedef struct _PETSc_DMCEED *DMCeed;
 
+/*S
+  DMGeneratorFunctionList - Opaque linked-list node used internally to register and dispatch mesh-generator backends (Triangle, Tetgen, p4est, etc.) for `DMPlexGenerate()`
+
+  Level: developer
+
+.seealso: `DM`, `DMPlexGenerate()`, `DMGenerateRegister()`, `DMGenerateRegisterAll()`
+S*/
 typedef struct _n_DMGeneratorFunctionList *DMGeneratorFunctionList;

@@ -5,22 +5,77 @@
 #if defined(PETSC_HAVE_CUDA_CLANG)
   #include <petsclandau.h>
   #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
+/*@C
+  LandauKokkosJacobian - Kokkos backend for assembling the Landau collision-operator Jacobian for the `DMPlex` Landau time integrator
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+  Note:
+  Called internally by the Landau operator setup; users go through `DMPlexLandauIJacobian()`.
+
+.seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIJacobian()`, `LandauKokkosStaticDataSet()`
+@*/
 PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[], const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
+
+/*@C
+  LandauKokkosCreateMatMaps - Build the per-grid Kokkos-backed vertex maps used by the Landau collision operator
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+  Note:
+  Called internally during Landau setup when the device backend is Kokkos.
+
+.seealso: `LandauKokkosDestroyMatMaps()`, `DMPlexLandauCreateVelocitySpace()`
+@*/
 PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
+
+/*@C
+  LandauKokkosDestroyMatMaps - Free the Kokkos-backed vertex maps created with `LandauKokkosCreateMatMaps()`
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+.seealso: `LandauKokkosCreateMatMaps()`
+@*/
 PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscInt)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
+
+/*@C
+  LandauKokkosStaticDataSet - Copy precomputed Landau quadrature and species data to device-resident Kokkos views for use by `LandauKokkosJacobian()`
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+.seealso: `LandauKokkosStaticDataClear()`, `LandauKokkosJacobian()`
+@*/
 PetscErrorCode LandauKokkosStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
+
+/*@C
+  LandauKokkosStaticDataClear - Free the device-resident Kokkos data structures created with `LandauKokkosStaticDataSet()`
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+.seealso: `LandauKokkosStaticDataSet()`
+@*/
 PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *)
 {
   LANDAU_NOT_IMPLEMENTED;

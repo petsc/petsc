@@ -143,9 +143,48 @@ PETSC_EXTERN PetscErrorCode PetscLogHandlerStageGetVisible(PetscLogHandler, Pets
 PETSC_EXTERN PetscErrorCode PetscLogHandlerCreateTrace(MPI_Comm, FILE *, PetscLogHandler *);
 PETSC_EXTERN PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm, PetscErrorCode (*)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*)(PetscObject), PetscErrorCode (*)(PetscObject), PetscLogHandler *);
 
+/*MC
+  PetscLogStateStageEventIsActive - Returns whether a specific `PetscLogEvent` is active in a specific stage of a `PetscLogState`
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscBool PetscLogStateStageEventIsActive(PetscLogState state, PetscLogStage stage, PetscLogEvent event)
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ state - the `PetscLogState`
+. stage - the stage index
+- event - the event index
+
+  Level: developer
+
+  Note:
+  Returns `PETSC_FALSE` when `stage` is negative, which indicates that there have been more stage pops than pushes.
+
+.seealso: `PetscLogState`, `PetscLogStage`, `PetscLogEvent`, `PetscLogStateEventCurrentlyActive()`, `PetscLogStateStageGetActive()`
+M*/
 /* All events are inactive if an invalid stage is set, like if there have been more stage pops than stage pushes */
 #define PetscLogStateStageEventIsActive(state, stage, event) ((stage >= 0) && PetscBTLookup((state)->active, (stage)) && PetscBTLookup((state)->active, (stage) + (event + 1) * (state)->bt_num_stages))
-#define PetscLogStateEventCurrentlyActive(state, event)      ((state) && PetscLogStateStageEventIsActive(state, (state)->current_stage, event))
+
+/*MC
+  PetscLogStateEventCurrentlyActive - Returns whether a specific `PetscLogEvent` is active in the currently active stage of a `PetscLogState`
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscBool PetscLogStateEventCurrentlyActive(PetscLogState state, PetscLogEvent event)
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ state - the `PetscLogState` (may be `NULL`, in which case `PETSC_FALSE` is returned)
+- event - the event index
+
+  Level: developer
+
+.seealso: `PetscLogState`, `PetscLogEvent`, `PetscLogStateStageEventIsActive()`
+M*/
+#define PetscLogStateEventCurrentlyActive(state, event) ((state) && PetscLogStateStageEventIsActive(state, (state)->current_stage, event))
 
 /* PetscLogHandler with critical methods exposed for speed */
 typedef struct _n_PetscLogHandlerHot {
@@ -183,6 +222,27 @@ PETSC_DEPRECATED_FUNCTION(3, 18, 0, "PetscLogObjectParent()", ) static inline Pe
   (void)p;
   return PETSC_SUCCESS;
 }
+/*MC
+  PetscLogObjectParents - Record a parent/child relationship between a `PetscObject` and an array of `PetscObject`s for performance logging
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscErrorCode PetscLogObjectParents(PetscObject p, int n, PetscObject d[])
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ p - the parent `PetscObject`
+. n - the number of child objects
+- d - array of child `PetscObject`s
+
+  Level: developer
+
+  Note:
+  This routine is a no-op unless PETSc is configured with logging enabled.
+
+.seealso: `PetscLogObjectParent()`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`
+M*/
 #define PetscLogObjectParents(p, n, d) PetscMacroReturnStandard(for (int _i = 0; _i < (n); ++_i) PetscCall(PetscLogObjectParent((PetscObject)(p), (PetscObject)(d)[_i]));)
 
 PETSC_DEPRECATED_FUNCTION(3, 18, 0, "PetscLogObjectMemory()", ) static inline PetscErrorCode PetscLogObjectMemory(PetscObject o, PetscLogDouble m)
@@ -328,6 +388,24 @@ PETSC_EXTERN PetscErrorCode PetscLogEventsResume(void);
 PETSC_EXTERN PetscErrorCode PetscLogClassGetClassId(const char[], PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscLogClassIdGetName(PetscClassId, const char **);
 
+/*@C
+  PetscLogEventSync - Synchronize an `MPI_Comm` so that the wall-clock time spent waiting at the implicit barrier is not attributed to a subsequent event
+
+  Logically Collective on `comm`; No Fortran Support
+
+  Input Parameters:
++ e    - the `PetscLogEvent` to associate with the synchronization
+- comm - the `MPI_Comm` whose ranks are synchronized
+
+  Level: developer
+
+  Notes:
+  Forwards the call to every active `PetscLogHandler` that implements an `eventSync` method.
+
+  Has no effect when logging is not active or when the event is not active in the current stage.
+
+.seealso: `PetscLogEvent`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogHandler`
+@*/
 static inline PetscErrorCode PetscLogEventSync(PetscLogEvent e, MPI_Comm comm)
 {
   if (PetscLogStateEventCurrentlyActive(petsc_log_state, e)) {
@@ -355,6 +433,30 @@ static inline PetscErrorCode PetscLogEventBegin_Internal(PetscLogEvent e, PetscO
   }
   return PETSC_SUCCESS;
 }
+  /*MC
+    PetscLogEventBegin - Log the start of an instance of a `PetscLogEvent`
+
+    Synopsis:
+    #include <petsclog.h>
+    PetscErrorCode PetscLogEventBegin(PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + e  - the `PetscLogEvent`
+  . o1 - first object involved in the event (may be `NULL`)
+  . o2 - second object involved in the event (may be `NULL`)
+  . o3 - third object involved in the event (may be `NULL`)
+  - o4 - fourth object involved in the event (may be `NULL`)
+
+    Level: intermediate
+
+    Note:
+    Forwards the call to every active `PetscLogHandler` that implements an `eventBegin` method. Use
+    `PetscLogEventEnd()` to log the end of the same event.
+
+.seealso: `PetscLogEvent`, `PetscLogEventRegister()`, `PetscLogEventEnd()`, `PetscLogEventSync()`
+M*/
   #define PetscLogEventBegin(e, o1, o2, o3, o4) PetscLogEventBegin_Internal(e, (PetscObject)(o1), (PetscObject)(o2), (PetscObject)(o3), (PetscObject)(o4))
 
 static inline PetscErrorCode PetscLogEventEnd_Internal(PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
@@ -370,9 +472,47 @@ static inline PetscErrorCode PetscLogEventEnd_Internal(PetscLogEvent e, PetscObj
   }
   return PETSC_SUCCESS;
 }
+  /*MC
+    PetscLogEventEnd - Log the end of an instance of a `PetscLogEvent`
+
+    Synopsis:
+    #include <petsclog.h>
+    PetscErrorCode PetscLogEventEnd(PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + e  - the `PetscLogEvent`
+  . o1 - first object involved in the event (may be `NULL`)
+  . o2 - second object involved in the event (may be `NULL`)
+  . o3 - third object involved in the event (may be `NULL`)
+  - o4 - fourth object involved in the event (may be `NULL`)
+
+    Level: intermediate
+
+    Note:
+    Must be paired with a prior `PetscLogEventBegin()` for the same event.
+
+.seealso: `PetscLogEvent`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventSync()`
+M*/
   #define PetscLogEventEnd(e, o1, o2, o3, o4) PetscLogEventEnd_Internal(e, (PetscObject)(o1), (PetscObject)(o2), (PetscObject)(o3), (PetscObject)(o4))
 
 /* Object functions */
+/*@C
+  PetscLogObjectCreate - Notify the active `PetscLogHandler`s that a new `PetscObject` has been created
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. o - the newly created `PetscObject`
+
+  Level: developer
+
+  Note:
+  Called internally by PETSc object constructors; users normally do not need to call this directly.
+
+.seealso: `PetscLogObjectDestroy()`, `PetscLogHandler`, `PetscObject`
+@*/
 static inline PetscErrorCode PetscLogObjectCreate(PetscObject o)
 {
   if (petsc_log_state) {
@@ -387,6 +527,21 @@ static inline PetscErrorCode PetscLogObjectCreate(PetscObject o)
   return PETSC_SUCCESS;
 }
 
+/*@C
+  PetscLogObjectDestroy - Notify the active `PetscLogHandler`s that a `PetscObject` is being destroyed
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. o - the `PetscObject` that is being destroyed
+
+  Level: developer
+
+  Note:
+  Called internally by PETSc object destructors; users normally do not need to call this directly.
+
+.seealso: `PetscLogObjectCreate()`, `PetscLogHandler`, `PetscObject`
+@*/
 static inline PetscErrorCode PetscLogObjectDestroy(PetscObject o)
 {
   if (petsc_log_state) {
@@ -687,6 +842,33 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
 
 #endif /* PETSC_USE_LOG */
 
+/*MC
+  PetscPreLoadBegin - Begin a block of code that is timed twice so that startup costs (such as JIT or first-touch allocation) are not attributed to the measured run
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscPreLoadBegin(PetscBool flag, const char name[])
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ flag - whether preloading is desired (may be overridden by the command-line option `-preload`)
+- name - name to use for the `PetscLogStage` created for the measured run
+
+  Level: intermediate
+
+  Note:
+  Use this macro in the form
+.vb
+    PetscPreLoadBegin(PETSC_TRUE, "Compute");
+    // ... code to be timed
+    PetscPreLoadEnd();
+.ve
+  It expands to a loop that runs the enclosed code twice when preloading is enabled and once otherwise.
+  Pair with `PetscPreLoadEnd()`. Use `PetscPreLoadStage()` to advance to a new named stage between phases.
+
+.seealso: `PetscPreLoadEnd`, `PetscPreLoadStage`, `PetscLogStageRegister()`, `PetscLogStagePush()`
+M*/
 #define PetscPreLoadBegin(flag, name) \
   do { \
     PetscBool     PetscPreLoading = flag; \
@@ -703,12 +885,45 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
       PetscCall(PetscLogStageSetActive(_stageNum, (PetscBool)(PetscPreLoadIt == PetscPreLoadMax))); \
       PetscCall(PetscLogStagePush(_stageNum))
 
+/*MC
+  PetscPreLoadEnd - Close a preload block started with `PetscPreLoadBegin()`
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscPreLoadEnd()
+
+  Not Collective; No Fortran Support
+
+  Level: intermediate
+
+.seealso: `PetscPreLoadBegin`, `PetscPreLoadStage`
+M*/
 #define PetscPreLoadEnd() \
   PetscCall(PetscLogStagePop()); \
   } \
   } \
   while (0)
 
+/*MC
+  PetscPreLoadStage - Advance to a new named stage inside a `PetscPreLoadBegin()` / `PetscPreLoadEnd()` block
+
+  Synopsis:
+  #include <petsclog.h>
+  PetscPreLoadStage(const char name[])
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. name - name for the new `PetscLogStage`
+
+  Level: intermediate
+
+  Note:
+  Pops the previous stage, registers (or reuses) the new stage, and pushes it. Only valid between
+  `PetscPreLoadBegin()` and `PetscPreLoadEnd()`.
+
+.seealso: `PetscPreLoadBegin`, `PetscPreLoadEnd`, `PetscLogStagePush()`, `PetscLogStagePop()`
+M*/
 #define PetscPreLoadStage(name) \
   do { \
     PetscCall(PetscLogStagePop()); \
@@ -760,26 +975,95 @@ static inline PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
   return PETSC_SUCCESS;
 }
 
+/*@C
+  PetscLogGpuTimeAdd - Add elapsed GPU computation time to PETSc's GPU time counter
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. t - the elapsed time, in seconds, to add to the GPU time counter
+
+  Level: developer
+
+  Note:
+  Used internally by GPU backends to report the time spent in a kernel or library call.
+
+.seealso: `PetscLogGpuTime()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuFlops()`
+@*/
 static inline PetscErrorCode PetscLogGpuTimeAdd(PetscLogDouble t)
 {
   return PetscAddLogDouble(&petsc_gtime, &petsc_gtime_th, t);
 }
 
+/*@C
+  PetscLogCpuToGpu - Log a CPU-to-GPU memory transfer for performance reporting
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. size - number of bytes transferred from CPU to GPU
+
+  Level: developer
+
+  Note:
+  Updates both the transfer-count and transfer-size counters used by `PetscLogView()`.
+
+.seealso: `PetscLogGpuToCpu()`, `PetscLogCpuToGpuScalar()`, `PetscLogGpuFlops()`
+@*/
 static inline PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size)
 {
   return PetscAddLogDoubleCnt(&petsc_ctog_ct, &petsc_ctog_sz, &petsc_ctog_ct_th, &petsc_ctog_sz_th, size);
 }
 
+/*@C
+  PetscLogGpuToCpu - Log a GPU-to-CPU memory transfer for performance reporting
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. size - number of bytes transferred from GPU to CPU
+
+  Level: developer
+
+.seealso: `PetscLogCpuToGpu()`, `PetscLogGpuToCpuScalar()`, `PetscLogGpuFlops()`
+@*/
 static inline PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size)
 {
   return PetscAddLogDoubleCnt(&petsc_gtoc_ct, &petsc_gtoc_sz, &petsc_gtoc_ct_th, &petsc_gtoc_sz_th, size);
 }
 
+/*@C
+  PetscLogCpuToGpuScalar - Log a CPU-to-GPU memory transfer of `PetscScalar` data for performance reporting
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. size - number of bytes of scalar data transferred from CPU to GPU
+
+  Level: developer
+
+  Note:
+  Tracks scalar-only transfers separately from generic byte counters tracked by `PetscLogCpuToGpu()`.
+
+.seealso: `PetscLogCpuToGpu()`, `PetscLogGpuToCpuScalar()`
+@*/
 static inline PetscErrorCode PetscLogCpuToGpuScalar(PetscLogDouble size)
 {
   return PetscAddLogDoubleCnt(&petsc_ctog_ct_scalar, &petsc_ctog_sz_scalar, &petsc_ctog_ct_scalar_th, &petsc_ctog_sz_scalar_th, size);
 }
 
+/*@C
+  PetscLogGpuToCpuScalar - Log a GPU-to-CPU memory transfer of `PetscScalar` data for performance reporting
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. size - number of bytes of scalar data transferred from GPU to CPU
+
+  Level: developer
+
+.seealso: `PetscLogGpuToCpu()`, `PetscLogCpuToGpuScalar()`
+@*/
 static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 {
   return PetscAddLogDoubleCnt(&petsc_gtoc_ct_scalar, &petsc_gtoc_sz_scalar, &petsc_gtoc_ct_scalar_th, &petsc_gtoc_sz_scalar_th, size);

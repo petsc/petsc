@@ -136,8 +136,8 @@ PETSC_EXTERN PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType, Petsc
 PETSC_EXTERN PetscErrorCode PetscDTCreateQuadratureByCell(DMPolytopeType, PetscInt, PetscDTSimplexQuadratureType, PetscQuadrature *, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
-PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
-PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], PetscCtx, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*)(const PetscReal[], PetscCtx, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt, PetscReal *, PetscReal *, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);

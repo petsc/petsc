@@ -48,6 +48,13 @@ typedef struct {
 #endif
 } PetscEventPerfInfo;
 
+/*S
+  PetscIntStack - Opaque PETSc stack-of-`int` data structure used internally for performance logging (for example, to track nested log stage and event pushes)
+
+  Level: developer
+
+.seealso: `PetscIntStackCreate()`, `PetscIntStackDestroy()`, `PetscIntStackPush()`, `PetscIntStackPop()`, `PetscIntStackTop()`, `PetscIntStackEmpty()`
+S*/
 typedef struct _n_PetscIntStack *PetscIntStack;
 
 /*MC
@@ -154,6 +161,13 @@ typedef const char *PetscLogHandlerType;
 #define PETSCLOGHANDLERNVTX      "nvtx"
 #define PETSCLOGHANDLERROCTX     "roctx"
 
+/*S
+  PetscLogRegistry - Opaque PETSc registry of logging events, stages and classes that is shared by all `PetscLogHandler`s attached to a given `PetscLogState`
+
+  Level: developer
+
+.seealso: `PetscLogState`, `PetscLogStateGetRegistry()`, `PetscLogHandler`, `PetscLogEventRegister()`, `PetscLogStageRegister()`
+S*/
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 
 /*S

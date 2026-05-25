@@ -9,6 +9,24 @@
   #include <cxxabi.h>
 #endif
 
+/*@C
+  PetscDemangleSymbol - Convert a C++-mangled symbol name to its human-readable form using `abi::__cxa_demangle()` when available
+
+  Not Collective
+
+  Input Parameter:
+. mangledName - the mangled symbol name (typically obtained from `dladdr()`)
+
+  Output Parameter:
+. name - newly-allocated, null-terminated demangled name; caller must `PetscFree()` it
+
+  Level: developer
+
+  Note:
+  When no demangler is available (or when `mangledName` is `NULL`), `name` is set to `NULL`.
+
+.seealso: `PetscStackView()`, `PetscStackPrint()`
+@*/
 PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
 {
   char *(*cxa_demangle)(const char *, char *, size_t *, int *) = PETSC_NULLPTR;

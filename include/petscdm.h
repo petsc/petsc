@@ -351,6 +351,16 @@ PETSC_EXTERN PetscErrorCode DMGetAuxiliaryLabels(DM, DMLabel[], PetscInt[], Pets
 PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 PETSC_EXTERN PetscErrorCode DMClearAuxiliaryVec(DM);
 
+struct _n_DMInterpolationInfo {
+  MPI_Comm   comm;
+  PetscInt   dim;    /* The spatial dimension of points */
+  PetscInt   nInput; /* The number of input points */
+  PetscReal *points; /* The input point coordinates */
+  PetscInt  *cells;  /* The cell containing each point */
+  PetscInt   n;      /* The number of local points */
+  Vec        coords; /* The point coordinates */
+  PetscInt   dof;    /* The number of components to interpolate */
+};
 /*MC
   DMInterpolationInfo - Pointer to a structure for holding information about interpolation on a mesh
 
@@ -368,16 +378,6 @@ PETSC_EXTERN PetscErrorCode DMClearAuxiliaryVec(DM);
 
 .seealso: [](ch_dmbase), `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
-struct _n_DMInterpolationInfo {
-  MPI_Comm   comm;
-  PetscInt   dim;    /* The spatial dimension of points */
-  PetscInt   nInput; /* The number of input points */
-  PetscReal *points; /* The input point coordinates */
-  PetscInt  *cells;  /* The cell containing each point */
-  PetscInt   n;      /* The number of local points */
-  Vec        coords; /* The point coordinates */
-  PetscInt   dof;    /* The number of components to interpolate */
-};
 typedef struct _n_DMInterpolationInfo *DMInterpolationInfo;
 
 PETSC_EXTERN PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);

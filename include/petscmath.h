@@ -23,35 +23,504 @@
     Real number definitions
  */
 #if defined(PETSC_USE_REAL_SINGLE)
-  #define PetscSqrtReal(a)        sqrtf(a)
-  #define PetscCbrtReal(a)        cbrtf(a)
-  #define PetscHypotReal(a, b)    hypotf(a, b)
-  #define PetscAtan2Real(a, b)    atan2f(a, b)
-  #define PetscPowReal(a, b)      powf(a, b)
-  #define PetscExpReal(a)         expf(a)
-  #define PetscLogReal(a)         logf(a)
-  #define PetscLog10Real(a)       log10f(a)
-  #define PetscLog2Real(a)        log2f(a)
-  #define PetscSinReal(a)         sinf(a)
-  #define PetscCosReal(a)         cosf(a)
-  #define PetscTanReal(a)         tanf(a)
-  #define PetscAsinReal(a)        asinf(a)
-  #define PetscAcosReal(a)        acosf(a)
-  #define PetscAtanReal(a)        atanf(a)
-  #define PetscSinhReal(a)        sinhf(a)
-  #define PetscCoshReal(a)        coshf(a)
-  #define PetscTanhReal(a)        tanhf(a)
-  #define PetscAsinhReal(a)       asinhf(a)
-  #define PetscAcoshReal(a)       acoshf(a)
-  #define PetscAtanhReal(a)       atanhf(a)
-  #define PetscErfReal(a)         erff(a)
-  #define PetscCeilReal(a)        ceilf(a)
-  #define PetscFloorReal(a)       floorf(a)
-  #define PetscRintReal(a)        rintf(a)
-  #define PetscFmodReal(a, b)     fmodf(a, b)
+  /*MC
+    PetscSqrtReal - Returns the square root of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscSqrtReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSqrtComplex()`, `PetscSqrtScalar()`
+  M*/
+  #define PetscSqrtReal(a) sqrtf(a)
+  /*MC
+    PetscCbrtReal - Returns the cube root of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscCbrtReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscCbrtReal(a) cbrtf(a)
+  /*MC
+    PetscHypotReal - Returns the Euclidean distance `sqrt(a*a + b*b)` of two `PetscReal` values, without intermediate overflow
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscHypotReal(PetscReal a, PetscReal b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscHypotReal(a, b) hypotf(a, b)
+  /*MC
+    PetscAtan2Real - Returns the arc tangent of `a/b`, in the range $[-\pi, \pi]$, using the signs of `a` and `b` to select the quadrant
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAtan2Real(PetscReal a, PetscReal b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscAtan2Real(a, b) atan2f(a, b)
+  /*MC
+    PetscPowReal - Returns the value of `a` raised to the power `b`, both `PetscReal`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscPowReal(PetscReal a, PetscReal b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscPowComplex()`, `PetscPowScalar()`
+  M*/
+  #define PetscPowReal(a, b) powf(a, b)
+  /*MC
+    PetscExpReal - Returns the natural exponential $e^a$ of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscExpReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscExpComplex()`, `PetscExpScalar()`
+  M*/
+  #define PetscExpReal(a) expf(a)
+  /*MC
+    PetscLogReal - Returns the natural logarithm of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscLogReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscLogComplex()`, `PetscLogScalar()`
+  M*/
+  #define PetscLogReal(a) logf(a)
+  /*MC
+    PetscLog10Real - Returns the base-10 logarithm of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscLog10Real(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscLog10Real(a) log10f(a)
+  /*MC
+    PetscLog2Real - Returns the base-2 logarithm of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscLog2Real(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscLog2Real(a) log2f(a)
+  /*MC
+    PetscSinReal - Returns the sine of a `PetscReal` value, with argument in radians
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscSinReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinComplex()`, `PetscSinScalar()`
+  M*/
+  #define PetscSinReal(a) sinf(a)
+  /*MC
+    PetscCosReal - Returns the cosine of a `PetscReal` value, with argument in radians
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscCosReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCosComplex()`, `PetscCosScalar()`
+  M*/
+  #define PetscCosReal(a) cosf(a)
+  /*MC
+    PetscTanReal - Returns the tangent of a `PetscReal` value, with argument in radians
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscTanReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanComplex()`, `PetscTanScalar()`
+  M*/
+  #define PetscTanReal(a) tanf(a)
+  /*MC
+    PetscAsinReal - Returns the arc sine of a `PetscReal` value, returned in radians in the range $[-\pi/2, \pi/2]$
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAsinReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinComplex()`, `PetscAsinScalar()`
+  M*/
+  #define PetscAsinReal(a) asinf(a)
+  /*MC
+    PetscAcosReal - Returns the arc cosine of a `PetscReal` value, returned in radians in the range $[0, \pi]$
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAcosReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcosComplex()`, `PetscAcosScalar()`
+  M*/
+  #define PetscAcosReal(a) acosf(a)
+  /*MC
+    PetscAtanReal - Returns the arc tangent of a `PetscReal` value, returned in radians in the range $[-\pi/2, \pi/2]$
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAtanReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanComplex()`, `PetscAtanScalar()`
+  M*/
+  #define PetscAtanReal(a) atanf(a)
+  /*MC
+    PetscSinhReal - Returns the hyperbolic sine of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscSinhReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinhComplex()`, `PetscSinhScalar()`
+  M*/
+  #define PetscSinhReal(a) sinhf(a)
+  /*MC
+    PetscCoshReal - Returns the hyperbolic cosine of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscCoshReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCoshComplex()`, `PetscCoshScalar()`
+  M*/
+  #define PetscCoshReal(a) coshf(a)
+  /*MC
+    PetscTanhReal - Returns the hyperbolic tangent of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscTanhReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanhComplex()`, `PetscTanhScalar()`
+  M*/
+  #define PetscTanhReal(a) tanhf(a)
+  /*MC
+    PetscAsinhReal - Returns the inverse hyperbolic sine of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAsinhReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinhComplex()`, `PetscAsinhScalar()`
+  M*/
+  #define PetscAsinhReal(a) asinhf(a)
+  /*MC
+    PetscAcoshReal - Returns the inverse hyperbolic cosine of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAcoshReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcoshComplex()`, `PetscAcoshScalar()`
+  M*/
+  #define PetscAcoshReal(a) acoshf(a)
+  /*MC
+    PetscAtanhReal - Returns the inverse hyperbolic tangent of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAtanhReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanhComplex()`, `PetscAtanhScalar()`
+  M*/
+  #define PetscAtanhReal(a) atanhf(a)
+  /*MC
+    PetscErfReal - Returns the error function of a `PetscReal` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscErfReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscErfReal(a) erff(a)
+  /*MC
+    PetscCeilReal - Returns the smallest integer value, returned as a `PetscReal`, that is not less than `a`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscCeilReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscCeilReal(a) ceilf(a)
+  /*MC
+    PetscFloorReal - Returns the largest integer value, returned as a `PetscReal`, that is not greater than `a`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscFloorReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscFloorReal(a) floorf(a)
+  /*MC
+    PetscRintReal - Returns the value of `a` rounded to the nearest integer, returned as a `PetscReal` in the configured precision
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscRintReal(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscRintReal(a) rintf(a)
+  /*MC
+    PetscFmodReal - Returns the floating-point remainder of `a/b`, with the same sign as `a`, returned as a `PetscReal`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscFmodReal(PetscReal a, PetscReal b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscFmodReal(a, b) fmodf(a, b)
+  /*MC
+    PetscCopysignReal - Returns the value with the magnitude of `a` and the sign of `b`, as a `PetscReal`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscCopysignReal(PetscReal a, PetscReal b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
   #define PetscCopysignReal(a, b) copysignf(a, b)
-  #define PetscTGamma(a)          tgammaf(a)
+  /*MC
+    PetscTGamma - Returns the value of the gamma function $\Gamma(a)$ in the configured `PetscReal` precision
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscTGamma(PetscReal a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscTGamma(a) tgammaf(a)
   #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+    /*MC
+      PetscLGamma - Returns the natural logarithm of the absolute value of the gamma function in the configured `PetscReal` precision
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscReal PetscLGamma(PetscReal a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+    M*/
     #define PetscLGamma(a) gammaf(a)
   #else
     #define PetscLGamma(a) lgammaf(a)
@@ -211,27 +680,364 @@ M*/
   #if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
   /* C++ support of complex number */
 
-    #define PetscRealPartComplex(a)      (static_cast<PetscComplex>(a)).real()
+    /*MC
+      PetscRealPartComplex - Returns the real part of a `PetscComplex` value, as a `PetscReal`
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscReal PetscRealPartComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+    M*/
+    #define PetscRealPartComplex(a) (static_cast<PetscComplex>(a)).real()
+    /*MC
+      PetscImaginaryPartComplex - Returns the imaginary part of a `PetscComplex` value, as a `PetscReal`
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscReal PetscImaginaryPartComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+    M*/
     #define PetscImaginaryPartComplex(a) (static_cast<PetscComplex>(a)).imag()
-    #define PetscAbsComplex(a)           petsccomplexlib::abs(static_cast<PetscComplex>(a))
-    #define PetscArgComplex(a)           petsccomplexlib::arg(static_cast<PetscComplex>(a))
-    #define PetscConjComplex(a)          petsccomplexlib::conj(static_cast<PetscComplex>(a))
-    #define PetscSqrtComplex(a)          petsccomplexlib::sqrt(static_cast<PetscComplex>(a))
-    #define PetscPowComplex(a, b)        petsccomplexlib::pow(static_cast<PetscComplex>(a), static_cast<PetscComplex>(b))
-    #define PetscExpComplex(a)           petsccomplexlib::exp(static_cast<PetscComplex>(a))
-    #define PetscLogComplex(a)           petsccomplexlib::log(static_cast<PetscComplex>(a))
-    #define PetscSinComplex(a)           petsccomplexlib::sin(static_cast<PetscComplex>(a))
-    #define PetscCosComplex(a)           petsccomplexlib::cos(static_cast<PetscComplex>(a))
-    #define PetscTanComplex(a)           petsccomplexlib::tan(static_cast<PetscComplex>(a))
-    #define PetscAsinComplex(a)          petsccomplexlib::asin(static_cast<PetscComplex>(a))
-    #define PetscAcosComplex(a)          petsccomplexlib::acos(static_cast<PetscComplex>(a))
-    #define PetscAtanComplex(a)          petsccomplexlib::atan(static_cast<PetscComplex>(a))
-    #define PetscSinhComplex(a)          petsccomplexlib::sinh(static_cast<PetscComplex>(a))
-    #define PetscCoshComplex(a)          petsccomplexlib::cosh(static_cast<PetscComplex>(a))
-    #define PetscTanhComplex(a)          petsccomplexlib::tanh(static_cast<PetscComplex>(a))
-    #define PetscAsinhComplex(a)         petsccomplexlib::asinh(static_cast<PetscComplex>(a))
-    #define PetscAcoshComplex(a)         petsccomplexlib::acosh(static_cast<PetscComplex>(a))
-    #define PetscAtanhComplex(a)         petsccomplexlib::atanh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAbsComplex - Returns the absolute value (magnitude) of a `PetscComplex` value, as a `PetscReal`
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscReal PetscAbsComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+    M*/
+    #define PetscAbsComplex(a) petsccomplexlib::abs(static_cast<PetscComplex>(a))
+    /*MC
+      PetscArgComplex - Returns the argument (phase angle) of a `PetscComplex` value, as a `PetscReal`
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscReal PetscArgComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+    M*/
+    #define PetscArgComplex(a) petsccomplexlib::arg(static_cast<PetscComplex>(a))
+    /*MC
+      PetscConjComplex - Returns the complex conjugate of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscConjComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscConj()`
+    M*/
+    #define PetscConjComplex(a) petsccomplexlib::conj(static_cast<PetscComplex>(a))
+    /*MC
+      PetscSqrtComplex - Returns the principal value of the square root of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscSqrtComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSqrtReal()`, `PetscSqrtScalar()`
+    M*/
+    #define PetscSqrtComplex(a) petsccomplexlib::sqrt(static_cast<PetscComplex>(a))
+    /*MC
+      PetscPowComplex - Returns the complex value `a` raised to the complex power `b`
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscPowComplex(PetscComplex a, PetscComplex b)
+
+      Not Collective; No Fortran Support
+
+      Input Parameters:
+    + a - the value
+    - b - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscPowReal()`, `PetscPowScalar()`
+    M*/
+    #define PetscPowComplex(a, b) petsccomplexlib::pow(static_cast<PetscComplex>(a), static_cast<PetscComplex>(b))
+    /*MC
+      PetscExpComplex - Returns the complex exponential $e^a$ of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscExpComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscExpReal()`, `PetscExpScalar()`
+    M*/
+    #define PetscExpComplex(a) petsccomplexlib::exp(static_cast<PetscComplex>(a))
+    /*MC
+      PetscLogComplex - Returns the principal value of the complex natural logarithm of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscLogComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscLogReal()`, `PetscLogScalar()`
+    M*/
+    #define PetscLogComplex(a) petsccomplexlib::log(static_cast<PetscComplex>(a))
+    /*MC
+      PetscSinComplex - Returns the complex sine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscSinComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinReal()`, `PetscSinScalar()`
+    M*/
+    #define PetscSinComplex(a) petsccomplexlib::sin(static_cast<PetscComplex>(a))
+    /*MC
+      PetscCosComplex - Returns the complex cosine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscCosComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCosReal()`, `PetscCosScalar()`
+    M*/
+    #define PetscCosComplex(a) petsccomplexlib::cos(static_cast<PetscComplex>(a))
+    /*MC
+      PetscTanComplex - Returns the complex tangent of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscTanComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanReal()`, `PetscTanScalar()`
+    M*/
+    #define PetscTanComplex(a) petsccomplexlib::tan(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAsinComplex - Returns the complex arc sine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAsinComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinReal()`, `PetscAsinScalar()`
+    M*/
+    #define PetscAsinComplex(a) petsccomplexlib::asin(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAcosComplex - Returns the complex arc cosine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAcosComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcosReal()`, `PetscAcosScalar()`
+    M*/
+    #define PetscAcosComplex(a) petsccomplexlib::acos(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAtanComplex - Returns the complex arc tangent of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAtanComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanReal()`, `PetscAtanScalar()`
+    M*/
+    #define PetscAtanComplex(a) petsccomplexlib::atan(static_cast<PetscComplex>(a))
+    /*MC
+      PetscSinhComplex - Returns the complex hyperbolic sine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscSinhComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinhReal()`, `PetscSinhScalar()`
+    M*/
+    #define PetscSinhComplex(a) petsccomplexlib::sinh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscCoshComplex - Returns the complex hyperbolic cosine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscCoshComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCoshReal()`, `PetscCoshScalar()`
+    M*/
+    #define PetscCoshComplex(a) petsccomplexlib::cosh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscTanhComplex - Returns the complex hyperbolic tangent of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscTanhComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanhReal()`, `PetscTanhScalar()`
+    M*/
+    #define PetscTanhComplex(a) petsccomplexlib::tanh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAsinhComplex - Returns the complex inverse hyperbolic sine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAsinhComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinhReal()`, `PetscAsinhScalar()`
+    M*/
+    #define PetscAsinhComplex(a) petsccomplexlib::asinh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAcoshComplex - Returns the complex inverse hyperbolic cosine of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAcoshComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcoshReal()`, `PetscAcoshScalar()`
+    M*/
+    #define PetscAcoshComplex(a) petsccomplexlib::acosh(static_cast<PetscComplex>(a))
+    /*MC
+      PetscAtanhComplex - Returns the complex inverse hyperbolic tangent of a `PetscComplex` value
+
+      Synopsis:
+      #include <petscmath.h>
+      PetscComplex PetscAtanhComplex(PetscComplex a)
+
+      Not Collective; No Fortran Support
+
+      Input Parameter:
+    . a - the value
+
+      Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanhReal()`, `PetscAtanhScalar()`
+    M*/
+    #define PetscAtanhComplex(a) petsccomplexlib::atanh(static_cast<PetscComplex>(a))
 
   /* TODO: Add configure tests
 
@@ -512,25 +1318,330 @@ M*/
 M*/
   #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
 
-  #define PetscAbsScalar(a)    PetscAbsComplex(a)
-  #define PetscArgScalar(a)    PetscArgComplex(a)
-  #define PetscConj(a)         PetscConjComplex(a)
-  #define PetscSqrtScalar(a)   PetscSqrtComplex(a)
+  /*MC
+    PetscAbsScalar - Returns the absolute value (magnitude) of a `PetscScalar` value, as a `PetscReal`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscAbsScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscAbsScalar(a) PetscAbsComplex(a)
+  /*MC
+    PetscArgScalar - Returns the argument (phase angle) of a `PetscScalar` value, as a `PetscReal`; for real `PetscScalar` this is `0` for nonnegative values and `PETSC_PI` otherwise
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscReal PetscArgScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
+  M*/
+  #define PetscArgScalar(a) PetscArgComplex(a)
+  /*MC
+    PetscConj - Returns the complex conjugate of a `PetscScalar` value; the identity when `PetscScalar` is real
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscConj(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscConjComplex()`
+  M*/
+  #define PetscConj(a) PetscConjComplex(a)
+  /*MC
+    PetscSqrtScalar - Returns the square root of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscSqrtScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSqrtReal()`, `PetscSqrtComplex()`
+  M*/
+  #define PetscSqrtScalar(a) PetscSqrtComplex(a)
+  /*MC
+    PetscPowScalar - Returns the value of `a` raised to the power `b`, both `PetscScalar`
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscPowScalar(PetscScalar a, PetscScalar b)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + a - the value
+  - b - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscPowReal()`, `PetscPowComplex()`
+  M*/
   #define PetscPowScalar(a, b) PetscPowComplex(a, b)
-  #define PetscExpScalar(a)    PetscExpComplex(a)
-  #define PetscLogScalar(a)    PetscLogComplex(a)
-  #define PetscSinScalar(a)    PetscSinComplex(a)
-  #define PetscCosScalar(a)    PetscCosComplex(a)
-  #define PetscTanScalar(a)    PetscTanComplex(a)
-  #define PetscAsinScalar(a)   PetscAsinComplex(a)
-  #define PetscAcosScalar(a)   PetscAcosComplex(a)
-  #define PetscAtanScalar(a)   PetscAtanComplex(a)
-  #define PetscSinhScalar(a)   PetscSinhComplex(a)
-  #define PetscCoshScalar(a)   PetscCoshComplex(a)
-  #define PetscTanhScalar(a)   PetscTanhComplex(a)
-  #define PetscAsinhScalar(a)  PetscAsinhComplex(a)
-  #define PetscAcoshScalar(a)  PetscAcoshComplex(a)
-  #define PetscAtanhScalar(a)  PetscAtanhComplex(a)
+  /*MC
+    PetscExpScalar - Returns the exponential $e^a$ of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscExpScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscExpReal()`, `PetscExpComplex()`
+  M*/
+  #define PetscExpScalar(a) PetscExpComplex(a)
+  /*MC
+    PetscLogScalar - Returns the natural logarithm of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscLogScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscLogReal()`, `PetscLogComplex()`
+  M*/
+  #define PetscLogScalar(a) PetscLogComplex(a)
+  /*MC
+    PetscSinScalar - Returns the sine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscSinScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinReal()`, `PetscSinComplex()`
+  M*/
+  #define PetscSinScalar(a) PetscSinComplex(a)
+  /*MC
+    PetscCosScalar - Returns the cosine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscCosScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCosReal()`, `PetscCosComplex()`
+  M*/
+  #define PetscCosScalar(a) PetscCosComplex(a)
+  /*MC
+    PetscTanScalar - Returns the tangent of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscTanScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanReal()`, `PetscTanComplex()`
+  M*/
+  #define PetscTanScalar(a) PetscTanComplex(a)
+  /*MC
+    PetscAsinScalar - Returns the arc sine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAsinScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinReal()`, `PetscAsinComplex()`
+  M*/
+  #define PetscAsinScalar(a) PetscAsinComplex(a)
+  /*MC
+    PetscAcosScalar - Returns the arc cosine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAcosScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcosReal()`, `PetscAcosComplex()`
+  M*/
+  #define PetscAcosScalar(a) PetscAcosComplex(a)
+  /*MC
+    PetscAtanScalar - Returns the arc tangent of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAtanScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanReal()`, `PetscAtanComplex()`
+  M*/
+  #define PetscAtanScalar(a) PetscAtanComplex(a)
+  /*MC
+    PetscSinhScalar - Returns the hyperbolic sine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscSinhScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscSinhReal()`, `PetscSinhComplex()`
+  M*/
+  #define PetscSinhScalar(a) PetscSinhComplex(a)
+  /*MC
+    PetscCoshScalar - Returns the hyperbolic cosine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscCoshScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscCoshReal()`, `PetscCoshComplex()`
+  M*/
+  #define PetscCoshScalar(a) PetscCoshComplex(a)
+  /*MC
+    PetscTanhScalar - Returns the hyperbolic tangent of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscTanhScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscTanhReal()`, `PetscTanhComplex()`
+  M*/
+  #define PetscTanhScalar(a) PetscTanhComplex(a)
+  /*MC
+    PetscAsinhScalar - Returns the inverse hyperbolic sine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAsinhScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAsinhReal()`, `PetscAsinhComplex()`
+  M*/
+  #define PetscAsinhScalar(a) PetscAsinhComplex(a)
+  /*MC
+    PetscAcoshScalar - Returns the inverse hyperbolic cosine of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAcoshScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAcoshReal()`, `PetscAcoshComplex()`
+  M*/
+  #define PetscAcoshScalar(a) PetscAcoshComplex(a)
+  /*MC
+    PetscAtanhScalar - Returns the inverse hyperbolic tangent of a `PetscScalar` value
+
+    Synopsis:
+    #include <petscmath.h>
+    PetscScalar PetscAtanhScalar(PetscScalar a)
+
+    Not Collective; No Fortran Support
+
+    Input Parameter:
+  . a - the value
+
+    Level: beginner
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscAtanhReal()`, `PetscAtanhComplex()`
+  M*/
+  #define PetscAtanhScalar(a) PetscAtanhComplex(a)
 
 #else /* PETSC_USE_COMPLEX */
   #define MPIU_SCALAR           MPIU_REAL

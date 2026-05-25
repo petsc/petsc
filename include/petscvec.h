@@ -685,6 +685,26 @@ PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) static inline PetscErr
   return VecLockReadPop(v);
 }
 
+/*MC
+  VecLocked - Deprecated alias for `VecSetErrorIfLocked()`; raises an error if the `Vec` is currently locked for read
+
+  Synopsis:
+  #include <petscvec.h>
+  PetscErrorCode VecLocked(Vec x, int arg)
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ x   - the `Vec` to test
+- arg - the argument position of `x` in the caller (used in the error message)
+
+  Level: deprecated
+
+  Note:
+  Use `VecSetErrorIfLocked()` in new code; this macro is retained only for backwards compatibility.
+
+.seealso: `Vec`, `VecSetErrorIfLocked()`, `VecLockReadPush()`, `VecLockReadPop()`
+M*/
 #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
 
 /*E
@@ -765,23 +785,22 @@ PETSC_EXTERN PetscErrorCode VecStepMaxBounded(Vec, Vec, Vec, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
 
-/*S
-   Vecs - Collection of vectors where the data for the vectors is stored in
-          one contiguous memory
-
-   Level: advanced
-
-   Notes:
-   Temporary construct for handling multiply right-hand side solves
-
-   This is faked by storing a single vector that has enough array space for
-   n vectors
-
-S*/
 struct _n_Vecs {
   PetscInt n;
   Vec      v;
 };
+/*S
+  Vecs - Collection of `Vec`s where the storage for the vectors is held in a single contiguous block of memory
+
+  Level: advanced
+
+  Notes:
+  Temporary construct for handling multiple right-hand side solves.
+
+  This is faked by storing a single `Vec` whose array is sized to hold `n` vectors back to back.
+
+.seealso: `Vec`, `VecsCreateSeq()`, `VecsCreateSeqWithArray()`, `VecsDuplicate()`, `VecsDestroy()`
+S*/
 typedef struct _n_Vecs     *Vecs;
 PETSC_EXTERN PetscErrorCode VecsDestroy(Vecs);
 PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm, PetscInt, PetscInt, Vecs *);
@@ -789,6 +808,13 @@ PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt,
 PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs, Vecs *);
 
 #if PetscDefined(HAVE_VIENNACL)
+/*S
+  PetscViennaCLIndices - Opaque handle to an index buffer used by PETSc's ViennaCL `VECVIENNACL` vector backend to perform partial scatters between CPU and GPU memory
+
+  Level: developer
+
+.seealso: `Vec`, `VECVIENNACL`, `VecCreateSeqViennaCL()`, `VecCreateMPIViennaCL()`, `VecViennaCLCopyToGPUSome_Public()`, `VecViennaCLCopyFromGPUSome_Public()`
+S*/
 typedef struct _p_PetscViennaCLIndices *PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode             VecViennaCLCopyToGPUSome_Public(Vec, PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode             VecViennaCLCopyFromGPUSome_Public(Vec, PetscViennaCLIndices);

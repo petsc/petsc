@@ -17,6 +17,19 @@ typedef enum {
 } PetscOptionSource;
 
 #define PETSC_MAX_OPTION_NAME 512
+/*S
+  PetscOptions - PETSc's runtime options database object; the holder of all PETSc command-line and configuration options for a session, looked up via `PetscOptionsGet*()`
+
+  Level: beginner
+
+  Notes:
+  Most PETSc API calls accept `NULL` for `PetscOptions`, meaning "the default global options database". Use `PetscOptionsCreate()` / `PetscOptionsPush()` to manage non-default databases (e.g. when reading options from a file).
+
+  Each `PetscObject` may also carry its own non-default options through `PetscObjectSetOptions()`.
+
+.seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsGetBool()`,
+          `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsSetValue()`, `PetscOptionsView()`
+S*/
 typedef struct _n_PetscOptions *PetscOptions;
 PETSC_EXTERN PetscErrorCode     PetscOptionsCreate(PetscOptions *);
 PETSC_EXTERN PetscErrorCode     PetscOptionsPush(PetscOptions);
@@ -105,6 +118,13 @@ typedef enum {
   OPTION_STRING_ARRAY
 } PetscOptionType;
 
+/*S
+  PetscOptionItem - Internal record describing a single option (such as `-ksp_type`) inside a `PetscOptionsBegin()` / `PetscOptionsEnd()` block, holding its option name, help text, default value, and selected value
+
+  Level: developer
+
+.seealso: `PetscOptions`, `PetscOptionItems`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsInt()`, `PetscOptionsBool()`
+S*/
 typedef struct _n_PetscOptionItem *PetscOptionItem;
 struct _n_PetscOptionItem {
   char              *option;
@@ -122,6 +142,13 @@ struct _n_PetscOptionItem {
   void              *edata;
 };
 
+/*S
+  PetscOptionItems - Internal context object representing the set of options being processed inside a `PetscOptionsBegin()` / `PetscOptionsEnd()` block; holds a linked list of `PetscOptionItem`s, the option prefix and the owning `PetscObject`
+
+  Level: developer
+
+.seealso: `PetscOptions`, `PetscOptionItem`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscObjectOptionsBegin()`
+S*/
 typedef struct _n_PetscOptionItems *PetscOptionItems;
 struct _n_PetscOptionItems {
   PetscInt        count;

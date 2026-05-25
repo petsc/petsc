@@ -16,10 +16,18 @@ static char      arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_L
 static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];
 
-/*
-   Initializes arch, hostname, username, date so that system calls do NOT need
-   to be made during the error handler.
-*/
+/*@C
+  PetscErrorPrintfInitialize - Cache the architecture, host name, user name, program name and date so that PETSc's error-traceback printer does not need to make system calls from inside a signal handler
+
+  Collective
+
+  Level: developer
+
+  Note:
+  Called from `PetscInitialize()`; users normally do not need to call this directly.
+
+.seealso: `PetscErrorPrintf`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`
+@*/
 PetscErrorCode PetscErrorPrintfInitialize(void)
 {
   PetscBool use_stdout = PETSC_FALSE, use_none = PETSC_FALSE;

@@ -62,6 +62,13 @@ PETSC_EXTERN PetscErrorCode DMNetworkSharedVertexGetInfo(DM, PetscInt, PetscInt 
 PETSC_EXTERN PetscErrorCode DMNetworkCreateIS(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt *[], IS *);
 PETSC_EXTERN PetscErrorCode DMNetworkCreateLocalIS(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt *[], IS *);
 
+/*S
+  DMNetworkMonitorList - Linked-list node held by a `DMNetworkMonitor`; each node records a `PetscViewer` and the subset of a global `Vec` that should be plotted for one network element
+
+  Level: developer
+
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorAdd()`, `DMNetworkMonitorView()`
+S*/
 typedef struct _n_DMNetworkMonitorList *DMNetworkMonitorList;
 struct _n_DMNetworkMonitorList {
   PetscViewer          viewer;
@@ -73,6 +80,13 @@ struct _n_DMNetworkMonitorList {
   DMNetworkMonitorList next;
 };
 
+/*S
+  DMNetworkMonitor - Lightweight collection of `DMNetworkMonitorList` nodes used to drive per-element visualization of a `DMNETWORK` solution across time integration
+
+  Level: developer
+
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`, `DMNetworkMonitorView()`
+S*/
 typedef struct _n_DMNetworkMonitor *DMNetworkMonitor;
 struct _n_DMNetworkMonitor {
   MPI_Comm             comm;
