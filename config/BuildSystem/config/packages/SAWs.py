@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit   = '028a32f0118f227c9264bebdc282ab71f8eb88db' # May 3, 2026
-    self.download    = ['git://https://gitlab.com/petsc/saws.git','https://gitlab.com/petsc/saws/get/'+self.gitcommit+'.tar.gz']
+    self.download    = ['git://https://gitlab.com/petsc/saws.git','https://gitlab.com/petsc/saws/-/archive/'+self.gitcommit+'/saws-'+self.gitcommit+'.tar.gz']
     self.functions   = ['SAWs_Register']
     self.includes    = ['SAWs.h']
     self.liblist     = [['libSAWs.a']]
