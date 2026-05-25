@@ -96,6 +96,18 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscSetDisplay - Determine and set PETSc's X11 display string from the `-display` option, the `DISPLAY` environment variable, or the hostname of MPI rank 0 when running across multiple nodes
+
+  Collective; No Fortran Support
+
+  Level: developer
+
+  Note:
+  Called automatically by `PetscInitialize()` so that subsequent `PetscDraw` X11 windows have a usable display target.
+
+.seealso: `PetscGetDisplay()`, `PetscDraw`, `PETSC_DRAW_X`
+@*/
 PetscErrorCode PetscSetDisplay(void)
 {
   PetscMPIInt size, rank;

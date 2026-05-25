@@ -92,7 +92,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member tea
   int                Nblk = end - start, it, m, stride = stride_shared, idx = 0;
   PetscReal          dp, dpold, w, dpest, tau, psi, cm, r0;
   const PetscScalar *Diag = &glb_idiag[start];
-  PetscScalar       *ptr  = work_space_shared, rho, rhoold, a, s, b, eta, etaold, psiold, cf, dpi;
+  PetscScalar       *ptr = work_space_shared, rho = 0.0, rhoold = 0.0, a = 0.0, s = 0.0, b, eta, etaold, psiold, cf, dpi = 0.0;
 
   if (idx++ == nShareVec) {
     ptr    = work_space_global;
@@ -317,7 +317,7 @@ done:
   });
   metad->its = it;
   if (1) {
-    int nnz;
+    int nnz = 0;
     parallel_reduce(Kokkos::TeamVectorRange(team, start, end), [=](const int idx, int &lsum) { lsum += (glb_Aai[idx + 1] - glb_Aai[idx]); }, nnz);
     metad->flops = 2 * (metad->its * (10 * Nblk + 2 * nnz) + 5 * Nblk);
   } else {
@@ -334,7 +334,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team
   int                Nblk = end - start, it, stride = stride_shared, idx = 0; // start in shared mem
   PetscReal          dp, r0;
   const PetscScalar *Di  = &glb_idiag[start];
-  PetscScalar       *ptr = work_space_shared, dpi, a = 1.0, beta, betaold = 1.0, t1, t2;
+  PetscScalar       *ptr = work_space_shared, dpi = 0.0, a = 1.0, beta = 0.0, betaold = 1.0, t1, t2;
 
   if (idx++ == nShareVec) {
     ptr    = work_space_global;
@@ -513,7 +513,7 @@ done:
   });
   metad->its = it;
   if (1) {
-    int nnz;
+    int nnz = 0;
     parallel_reduce(Kokkos::TeamVectorRange(team, start, end), [=](const int idx, int &lsum) { lsum += (glb_Aai[idx + 1] - glb_Aai[idx]); }, nnz);
     metad->flops = 2 * (metad->its * (10 * Nblk + 2 * nnz) + 5 * Nblk);
   } else {

@@ -43,6 +43,19 @@ PetscErrorCode PetscNvshmemFree_Private(void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscNvshmemFinalize - Tear down NVSHMEM after PETSc is done using it
+
+  Collective
+
+  Level: developer
+
+  Note:
+  Called internally during `PetscFinalize()` if PETSc previously initialized NVSHMEM. Users normally
+  do not need to call this directly.
+
+.seealso: `PetscFinalize()`, `PetscSF`
+@*/
 PetscErrorCode PetscNvshmemFinalize(void)
 {
   PetscFunctionBegin;

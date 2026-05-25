@@ -323,6 +323,13 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar[], PetscRe
 PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt, PetscScalar[], PetscReal[]);
 
 /* Point Location */
+/*S
+  PetscGridHash - Opaque uniform-cell spatial hash used by `DMPLEX` to accelerate point location, by mapping query points to a bucket of candidate mesh cells
+
+  Level: developer
+
+.seealso: `DMPLEX`, `PetscGridHashCreate()`, `PetscGridHashDestroy()`, `PetscGridHashGetEnclosingBox()`, `PetscGridHashEnlarge()`
+S*/
 typedef struct _n_PetscGridHash *PetscGridHash;
 PETSC_EXTERN PetscErrorCode      PetscGridHashCreate(MPI_Comm, PetscInt, const PetscScalar[], PetscGridHash *);
 PETSC_EXTERN PetscErrorCode      PetscGridHashEnlarge(PetscGridHash, const PetscScalar[]);
@@ -589,6 +596,13 @@ PETSC_EXTERN PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject, DMPlexP
 struct _n_DMPlexStorageVersion {
   int major, minor, subminor;
 };
+/*S
+  DMPlexStorageVersion - Opaque handle wrapping the (major, minor, subminor) version of the on-disk HDF5 storage format used by `DMPLEX` for reading and writing meshes
+
+  Level: developer
+
+.seealso: `DMPLEX`, `PetscViewerHDF5GetDMPlexStorageVersionReading()`, `PetscViewerHDF5SetDMPlexStorageVersionReading()`, `PetscViewerHDF5GetDMPlexStorageVersionWriting()`, `PetscViewerHDF5SetDMPlexStorageVersionWriting()`
+S*/
 typedef struct _n_DMPlexStorageVersion *DMPlexStorageVersion;
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer, DMPlexStorageVersion *);

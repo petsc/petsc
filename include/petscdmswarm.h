@@ -6,15 +6,37 @@
 /* MANSEC = DM */
 /* SUBMANSEC = DMSwarm */
 
-typedef struct _p_DMSwarmDataField  *DMSwarmDataField;
+/*S
+  DMSwarmDataField - Opaque handle to a single named field of particle data stored inside a `DMSwarmDataBucket`
+
+  Level: developer
+
+  Note:
+  Each `DMSwarmDataField` records the field name, the per-particle data type and a contiguous storage block whose length matches the number of particles in the parent `DMSwarmDataBucket`.
+
+.seealso: `DMSWARM`, `DMSwarmDataBucket`, `DMSwarmDataBucketGetDMSwarmDataFieldByName()`, `DMSwarmDataFieldGetEntries()`
+S*/
+typedef struct _p_DMSwarmDataField *DMSwarmDataField;
+
+/*S
+  DMSwarmDataBucket - Opaque internal container that groups all of a `DMSWARM`'s per-particle fields (`DMSwarmDataField`) and the current particle count
+
+  Level: developer
+
+  Note:
+  Used internally by `DMSWARM` to store the particle state; user code normally interacts with the
+  `DMSWARM` API rather than this container directly.
+
+.seealso: `DMSWARM`, `DMSwarmDataField`, `DMSwarmRegisterPetscDatatypeField()`
+S*/
 typedef struct _p_DMSwarmDataBucket *DMSwarmDataBucket;
 
 /*S
-    DMSwarmSort - PETSc object for sorting `DMSWARM` particles into `DM` cells
+  DMSwarmSort - PETSc object for sorting `DMSWARM` particles into `DM` cells. Sort particles by their background cell index for fast cell-to-particle lookups.
 
-    Level: intermediate
+  Level: developer
 
-.seealso: [](ch_dmbase), `DM`, `DMSwarmSortGetAccess()`, `DMSwarmSortCreate()`, `DMSwarmSortDestroy()`
+.seealso: [](ch_dmbase), `DM`, `DMSWARM`, `DMSwarmSortGetAccess()`, `DMSwarmSortRestoreAccess()`, `DMSwarmSortGetIsValid()`, `DMSwarmSortCreate()`, `DMSwarmSortDestroy()`
 S*/
 typedef struct _p_DMSwarmSort *DMSwarmSort;
 PETSC_EXTERN PetscClassId      DMSWARMSORT_CLASSID;

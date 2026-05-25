@@ -286,10 +286,29 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  Allocate a buffer sufficient to hold messages of size specified in olengths.
-  And post Irecvs on these buffers using node info from onodes
- */
+/*@C
+  PetscPostIrecvInt - Allocate the receive buffers for an irregular all-to-all of `PetscInt` messages and post non-blocking `MPI_Irecv()`s on them
+
+  Collective; No Fortran Support
+
+  Input Parameters:
++ comm     - the `MPI_Comm` to communicate over
+. tag      - MPI tag for the irecvs
+. nrecvs   - number of receives to post
+. onodes   - array of length `nrecvs` of source ranks
+- olengths - array of length `nrecvs` of message lengths (in `PetscInt`s)
+
+  Output Parameters:
++ rbuf    - allocated array of length `nrecvs` of pointers to the receive buffers (in contiguous storage)
+- r_waits - allocated array of length `nrecvs` of `MPI_Request`s for the posted irecvs
+
+  Level: developer
+
+  Note:
+  The caller is responsible for freeing `rbuf[0]`, `rbuf`, and `r_waits` with `PetscFree()` once the irecvs have completed.
+
+.seealso: `PetscPostIrecvScalar()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
+@*/
 PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscInt ***rbuf, MPI_Request **r_waits)
 {
   PetscInt   **rbuf_t, i, len = 0;
@@ -313,6 +332,29 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscPostIrecvScalar - Allocate the receive buffers for an irregular all-to-all of `PetscScalar` messages and post non-blocking `MPI_Irecv()`s on them
+
+  Collective; No Fortran Support
+
+  Input Parameters:
++ comm     - the `MPI_Comm` to communicate over
+. tag      - MPI tag for the irecvs
+. nrecvs   - number of receives to post
+. onodes   - array of length `nrecvs` of source ranks
+- olengths - array of length `nrecvs` of message lengths (in `PetscScalar`s)
+
+  Output Parameters:
++ rbuf    - allocated array of length `nrecvs` of pointers to the receive buffers (in contiguous storage)
+- r_waits - allocated array of length `nrecvs` of `MPI_Request`s for the posted irecvs
+
+  Level: developer
+
+  Note:
+  The caller is responsible for freeing `rbuf[0]`, `rbuf`, and `r_waits` with `PetscFree()` once the irecvs have completed.
+
+.seealso: `PetscPostIrecvInt()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
+@*/
 PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscScalar ***rbuf, MPI_Request **r_waits)
 {
   PetscMPIInt   i;

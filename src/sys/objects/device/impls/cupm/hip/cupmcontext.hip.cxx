@@ -22,6 +22,22 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
  cuda manually.
  */
 
+/*@C
+  PetscHIPBLASGetHandle - Get the hipBLAS handle associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. handle - the `hipblasHandle_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_HIP`. The returned handle is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscHIPSOLVERGetHandle()`, `PetscGetCurrentHIPStream()`
+@*/
 PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
 {
   PetscDeviceContext dctx;
@@ -33,6 +49,22 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscHIPSOLVERGetHandle - Get the hipSOLVER handle associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. handle - the `hipsolverHandle_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_HIP`. The returned handle is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscHIPBLASGetHandle()`, `PetscGetCurrentHIPStream()`
+@*/
 PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
 {
   PetscDeviceContext dctx;
@@ -44,6 +76,22 @@ PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscGetCurrentHIPStream - Get the HIP stream associated with PETSc's current `PetscDeviceContext`
+
+  Not Collective; No Fortran Support
+
+  Output Parameter:
+. stream - the `hipStream_t` for the current context
+
+  Level: developer
+
+  Note:
+  The current device context must be of type `PETSC_DEVICE_HIP`. The returned stream is owned by
+  PETSc and must not be destroyed by the caller.
+
+.seealso: `PetscDeviceContext`, `PetscHIPBLASGetHandle()`, `PetscHIPSOLVERGetHandle()`
+@*/
 PetscErrorCode PetscGetCurrentHIPStream(hipStream_t *stream)
 {
   PetscDeviceContext dctx;

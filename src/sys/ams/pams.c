@@ -124,6 +124,23 @@ PetscErrorCode PetscObjectSAWsSetBlock(PetscObject obj, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscObjectSAWsViewOff - Remove a `PetscObject`'s SAWs (Scientific Application Web server) directory so the object is no longer published
+
+  Logically Collective
+
+  Input Parameter:
+. obj - the `PetscObject` whose SAWs publication should be torn down
+
+  Level: developer
+
+  Notes:
+  No-op for `PetscViewer` objects, and for any object that was never published via SAWs.
+
+  Called from `PetscObjectDestroy()`; users normally do not need to call this directly.
+
+.seealso: `PetscObject`, `PetscObjectSAWsBlock()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
+@*/
 PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 {
   char dir[PETSC_MAX_PATH_LEN];

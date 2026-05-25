@@ -102,6 +102,13 @@ typedef enum {
   PETSCSF_BACKEND_HIP     = 2,
   PETSCSF_BACKEND_KOKKOS  = 3
 } PetscSFBackend;
+/*S
+  PetscSFLink - Opaque internal scratch object used by `PetscSF` to pair a packed buffer with the appropriate pack/unpack and MPI operations for a given root-data layout and `PetscSFBackend`
+
+  Level: developer
+
+.seealso: `PetscSF`, `PetscSFBackend`, `PetscSFBcastBegin()`, `PetscSFReduceBegin()`
+S*/
 typedef struct _n_PetscSFLink *PetscSFLink;
 
 /*S

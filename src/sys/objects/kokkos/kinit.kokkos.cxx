@@ -31,7 +31,23 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Initialize Kokkos if not yet */
+/*@C
+  PetscKokkosInitializeCheck - Initialize Kokkos if it has not already been initialized
+
+  Not Collective
+
+  Level: developer
+
+  Notes:
+  Called internally before PETSc invokes any Kokkos-based functionality. The first call initializes
+  Kokkos using either the user's command-line options or defaults derived from PETSc's device
+  configuration; subsequent calls are no-ops.
+
+  PETSc will call `Kokkos::finalize()` itself during `PetscFinalize()` only if it was the one that
+  initialized Kokkos in this process.
+
+.seealso: `PetscInitialize()`, `PetscFinalize()`, `PetscDeviceContext`
+@*/
 PetscErrorCode PetscKokkosInitializeCheck(void)
 {
   PetscFunctionBegin;

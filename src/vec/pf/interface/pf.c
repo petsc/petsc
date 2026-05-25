@@ -476,3 +476,82 @@ PetscErrorCode PFInitializePackage(void)
   PetscCall(PetscRegisterFinalize(PFFinalizePackage));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  PFSetOptionsPrefix - Sets the prefix used for searching for all
+  `PF` options in the database.
+
+  Logically Collective
+
+  Input Parameters:
++ pf     - the `PF` context
+- prefix - the prefix string to prepend to all `PF` option requests
+
+  Level: advanced
+
+  Note:
+  A hyphen (-) must NOT be given at the beginning of the prefix name.
+  The first character of all runtime options is AUTOMATICALLY the
+  hyphen.
+
+.seealso: [](ch_ksp), `PF`, `PFSetFromOptions()`, `PFAppendOptionsPrefix()`, `PFGetOptionsPrefix()`
+@*/
+PetscErrorCode PFSetOptionsPrefix(PF pf, const char prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pf, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PFAppendOptionsPrefix - Appends to the prefix used for searching for all
+  `PF` options in the database.
+
+  Logically Collective
+
+  Input Parameters:
++ pf     - the `PF`
+- prefix - the prefix string to prepend to all `PF` option requests
+
+  Level: advanced
+
+  Note:
+  A hyphen (-) must NOT be given at the beginning of the prefix name.
+  The first character of all runtime options is AUTOMATICALLY the
+  hyphen.
+
+.seealso: [](ch_ksp), `PF`, `PFSetFromOptions()`, `PFSetOptionsPrefix()`, `PFGetOptionsPrefix()`
+@*/
+PetscErrorCode PFAppendOptionsPrefix(PF pf, const char prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)pf, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PFGetOptionsPrefix - Gets the prefix used for searching for all
+  `PF` options in the database.
+
+  Not Collective
+
+  Input Parameter:
+. pf - the `PF`
+
+  Output Parameter:
+. prefix - pointer to the prefix string used, is returned
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PF`, `PFSetFromOptions()`, `PFSetOptionsPrefix()`, `PFAppendOptionsPrefix()`
+@*/
+PetscErrorCode PFGetOptionsPrefix(PF pf, const char *prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
+  PetscAssertPointer(prefix, 2);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pf, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

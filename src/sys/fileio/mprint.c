@@ -745,6 +745,27 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscFormatRealArray - Format an array of `PetscReal` values as a comma-separated string using a `printf`-style format
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ len - the length of the output buffer in bytes
+. fmt - the `printf`-style format string applied to each element (e.g. `"%g"`)
+. n   - number of values in `x`
+- x   - array of `PetscReal` values to format
+
+  Output Parameter:
+. buf - the formatted, null-terminated string
+
+  Level: developer
+
+  Note:
+  Returns an error if the formatted output would not fit in `buf`.
+
+.seealso: `PetscSNPrintf()`, `PetscViewerASCIIPrintf()`
+@*/
 PetscErrorCode PetscFormatRealArray(char buf[], size_t len, const char *fmt, PetscInt n, const PetscReal x[])
 {
   PetscInt i;

@@ -51,6 +51,18 @@ void PetscStackSAWsTakeAccess(void)
   }
 }
 
+/*@C
+  PetscStackViewSAWs - Publish PETSc's current debug call stack through the SAWs (Scientific Application Web server) so it can be inspected from a remote browser
+
+  Logically Collective on `PETSC_COMM_WORLD`
+
+  Level: developer
+
+  Note:
+  Only MPI rank 0 publishes; other ranks immediately return success. In non-debug builds the stack contents are not published but the call still succeeds.
+
+.seealso: `PetscStackView()`, `PetscStackSAWsViewOff()`, `PetscObjectSAWsViewOff()`
+@*/
 PetscErrorCode PetscStackViewSAWs(void)
 {
   PetscMPIInt rank;
@@ -65,6 +77,18 @@ PetscErrorCode PetscStackViewSAWs(void)
   return PETSC_SUCCESS;
 }
 
+/*@C
+  PetscStackSAWsViewOff - Stop publishing the PETSc debug call stack through SAWs (Scientific Application Web server)
+
+  Logically Collective
+
+  Level: developer
+
+  Note:
+  No-op when `PetscStackViewSAWs()` was never called.
+
+.seealso: `PetscStackViewSAWs()`, `PetscStackView()`, `PetscObjectSAWsViewOff()`
+@*/
 PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;

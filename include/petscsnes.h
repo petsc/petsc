@@ -473,9 +473,9 @@ PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void S
   SNESInitialGuessFn - A prototype of a `SNES` compute initial guess function that would be passed to `SNESSetComputeInitialGuess()`
 
   Calling Sequence:
-+ snes  - `SNES` context
-. u   - output vector to contain initial guess
-- ctx - [optional] user-defined function context
++ snes - `SNES` context
+. u    - output vector to contain initial guess
+- ctx  - [optional] user-defined function context
 
   Level: beginner
 
@@ -487,10 +487,10 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESInitialGuessFn(SNES snes, Vec u,
   SNESFunctionFn - A prototype of a `SNES` evaluation function that would be passed to `SNESSetFunction()`
 
   Calling Sequence:
-+ snes  - `SNES` context
-. u   - input vector
-. F   - function vector
-- ctx - [optional] user-defined function context
++ snes - `SNES` context
+. u    - input vector
+. F    - function vector
+- ctx  - [optional] user-defined function context
 
   Level: beginner
 
@@ -502,10 +502,10 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESFunctionFn(SNES snes, Vec u, Vec
   SNESObjectiveFn - A prototype of a `SNES` objective evaluation function that would be passed to `SNESSetObjective()`
 
   Calling Sequence:
-+ snes  - `SNES` context
-. u   - input vector
-. o   - output value
-- ctx - [optional] user-defined function context
++ snes - `SNES` context
+. u    - input vector
+. o    - output value
+- ctx  - [optional] user-defined function context
 
   Level: beginner
 
@@ -517,7 +517,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESObjectiveFn(SNES snes, Vec u, Pe
   SNESJacobianFn - A prototype of a `SNES` Jacobian evaluation function that would be passed to `SNESSetJacobian()`
 
   Calling Sequence:
-+ snes   - the `SNES` context obtained from `SNESCreate()`
++ snes - the `SNES` context obtained from `SNESCreate()`
 . u    - input vector
 . Amat - (approximate) Jacobian matrix
 . Pmat - matrix used to construct the preconditioner, often the same as `Amat`
@@ -533,7 +533,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESJacobianFn(SNES snes, Vec u, Mat
   SNESNGSFn - A prototype of a `SNES` nonlinear Gauss-Seidel function that would be passed to `SNESSetNGS()`
 
   Calling Sequence:
-+ snes   - the `SNES` context obtained from `SNESCreate()`
++ snes - the `SNES` context obtained from `SNESCreate()`
 . u    - the current solution, updated in place
 . b    - the right-hand side vector (which may be `NULL`)
 - ctx  - [optional] user-defined context for matrix evaluation routine
@@ -832,8 +832,29 @@ PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVINormFn *SNESLineSearchVINormFunc PE
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode SNESLineSearchVIDirDerivFn(SNES snes, Vec f, Vec u, Vec y, PetscScalar *fty);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode              SNESLineSearchApplyFn(SNESLineSearch ls);
-PETSC_EXTERN_TYPEDEF typedef SNESLineSearchApplyFn      *SNESLineSearchApplyFunc PETSC_DEPRECATED_TYPEDEF(3, 21, 0, "SNESLineSearchApplyFn*", );
+/*S
+  SNESLineSearchApplyFn - Function type for a `SNESLineSearch` implementation's apply routine
+
+  Calling Sequence:
+. ls - the `SNESLineSearch` object whose internal state holds the current step, search direction and other data
+
+  Level: developer
+
+.seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchSetType()`, `SNESLineSearchShellApplyFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode         SNESLineSearchApplyFn(SNESLineSearch ls);
+PETSC_EXTERN_TYPEDEF typedef SNESLineSearchApplyFn *SNESLineSearchApplyFunc PETSC_DEPRECATED_TYPEDEF(3, 21, 0, "SNESLineSearchApplyFn*", );
+/*S
+  SNESLineSearchShellApplyFn - Function type for the user-supplied apply routine registered with the `SNESLINESEARCHSHELL` line-search
+
+  Calling Sequence:
++ ls  - the `SNESLineSearch` object
+- ctx - optional user-provided context set with `SNESLineSearchShellSetApply()`
+
+  Level: developer
+
+.seealso: `SNESLineSearch`, `SNESLINESEARCHSHELL`, `SNESLineSearchShellSetApply()`, `SNESLineSearchApplyFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode              SNESLineSearchShellApplyFn(SNESLineSearch ls, PetscCtx ctx);
 PETSC_EXTERN_TYPEDEF typedef SNESLineSearchShellApplyFn *SNESLineSearchUserFunc PETSC_DEPRECATED_TYPEDEF(3, 21, 0, "SNESLineSearchApplyFn*", );
 
@@ -1019,12 +1040,96 @@ PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM, SNESObjectiveFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMSNESGetObjective(DM, SNESObjectiveFn **, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM, DM);
 
+/*S
+  DMDASNESFunctionFn - Function type for the local residual callback set with `DMDASNESSetFunctionLocal()` on a `DMDA`-based `SNES`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - pointer to the local input solution array
+. f    - pointer to the local output residual array to be filled
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetFunctionLocal()`, `DMDASNESJacobianFn`, `DMDASNESObjectiveFn`, `DMDASNESFunctionVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESFunctionFn(DMDALocalInfo *info, void *u, void *f, PetscCtx ctx);
+
+/*S
+  DMDASNESJacobianFn - Function type for the local Jacobian callback set with `DMDASNESSetJacobianLocal()` on a `DMDA`-based `SNES`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - pointer to the local input solution array
+. J    - the Jacobian matrix to assemble
+. Jp   - the matrix from which the preconditioner for the Jacobian is to be constructed
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetJacobianLocal()`, `DMDASNESFunctionFn`, `DMDASNESObjectiveFn`, `DMDASNESJacobianVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESJacobianFn(DMDALocalInfo *info, void *u, Mat J, Mat Jp, PetscCtx ctx);
+
+/*S
+  DMDASNESObjectiveFn - Function type for the local objective callback set with `DMDASNESSetObjectiveLocal()` on a `DMDA`-based `SNES`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - pointer to the local input solution array
+. obj  - on output, the local contribution to the objective function value
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetObjectiveLocal()`, `DMDASNESFunctionFn`, `DMDASNESJacobianFn`, `DMDASNESObjectiveVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESObjectiveFn(DMDALocalInfo *info, void *u, PetscReal *obj, PetscCtx ctx);
 
+/*S
+  DMDASNESFunctionVecFn - `Vec`-based variant of `DMDASNESFunctionFn`, set with `DMDASNESSetFunctionLocalVec()`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - the local input solution `Vec`
+. f    - the local output residual `Vec`
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetFunctionLocalVec()`, `DMDASNESFunctionFn`, `DMDASNESJacobianVecFn`, `DMDASNESObjectiveVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESFunctionVecFn(DMDALocalInfo *info, Vec u, Vec f, PetscCtx ctx);
+
+/*S
+  DMDASNESJacobianVecFn - `Vec`-based variant of `DMDASNESJacobianFn`, set with `DMDASNESSetJacobianLocalVec()`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - the local input solution `Vec`
+. J    - the Jacobian matrix to assemble
+. Jp   - the preconditioner matrix to assemble
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetJacobianLocalVec()`, `DMDASNESJacobianFn`, `DMDASNESFunctionVecFn`, `DMDASNESObjectiveVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESJacobianVecFn(DMDALocalInfo *info, Vec u, Mat J, Mat Jp, PetscCtx ctx);
+
+/*S
+  DMDASNESObjectiveVecFn - `Vec`-based variant of `DMDASNESObjectiveFn`, set with `DMDASNESSetObjectiveLocalVec()`
+
+  Calling Sequence:
++ info - the local grid information from the `DMDA`
+. u    - the local input solution `Vec`
+. obj  - on output, the local contribution to the objective function value
+- ctx  - optional user-provided context
+
+  Level: intermediate
+
+.seealso: `DMDA`, `SNES`, `DMDASNESSetObjectiveLocalVec()`, `DMDASNESObjectiveFn`, `DMDASNESFunctionVecFn`, `DMDASNESJacobianVecFn`
+S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDASNESObjectiveVecFn(DMDALocalInfo *info, Vec u, PetscReal *obj, PetscCtx ctx);
 
 PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM, InsertMode, DMDASNESFunctionFn *, PetscCtx);

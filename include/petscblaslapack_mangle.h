@@ -107,10 +107,88 @@
 /* define macros PETSCBLAS to mangle BLAS/LAPACK subroutine names, and
    PETSCBLASR for functions returning real values */
 #if defined(PETSC_BLASLAPACK_CAPS)
-  #define PETSCBLAS(x, X)        PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
-  #define PETSCBLASREAL(x, X)    PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, X, PETSC_BLASLAPACK_SUFFIX_)
+  /*MC
+    PETSCBLAS - Mangle a BLAS or LAPACK subroutine name to its `PetscScalar`-precision flavour with the configured Fortran name-mangling suffix
+
+    Synopsis:
+    #include <petscblaslapack.h>
+    PETSCBLAS(x, X)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + x - the lowercase root of the BLAS/LAPACK routine name (e.g. `gemm`)
+  - X - the uppercase root of the BLAS/LAPACK routine name (e.g. `GEMM`)
+
+    Level: developer
+
+    Note:
+    Use this for BLAS/LAPACK subroutines that operate on `PetscScalar` arguments. For routines
+    that always take real arguments use `PETSCBLASREAL()`; for routines that return a real result
+    from complex inputs use `PETSCBLASR()`; for routines that always take complex arguments use
+    `PETSCBLASCOMPLEX()`.
+
+.seealso: `PETSCBLASREAL`, `PETSCBLASCOMPLEX`, `PETSCBLASR`
+M*/
+  #define PETSCBLAS(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
+  /*MC
+    PETSCBLASREAL - Mangle a BLAS or LAPACK subroutine name for the real-arithmetic flavour of the routine
+
+    Synopsis:
+    #include <petscblaslapack.h>
+    PETSCBLASREAL(x, X)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + x - the lowercase root of the BLAS/LAPACK routine name
+  - X - the uppercase root of the BLAS/LAPACK routine name
+
+    Level: developer
+
+.seealso: `PETSCBLAS`, `PETSCBLASCOMPLEX`, `PETSCBLASR`
+M*/
+  #define PETSCBLASREAL(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, X, PETSC_BLASLAPACK_SUFFIX_)
+  /*MC
+    PETSCBLASCOMPLEX - Mangle a BLAS or LAPACK subroutine name for the complex-arithmetic flavour of the routine
+
+    Synopsis:
+    #include <petscblaslapack.h>
+    PETSCBLASCOMPLEX(x, X)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + x - the lowercase root of the BLAS/LAPACK routine name
+  - X - the uppercase root of the BLAS/LAPACK routine name
+
+    Level: developer
+
+.seealso: `PETSCBLAS`, `PETSCBLASREAL`, `PETSCBLASR`
+M*/
   #define PETSCBLASCOMPLEX(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_COMPLEX, X, PETSC_BLASLAPACK_SUFFIX_)
-  #define PETSCBLASR(x, X)       PETSC_PASTE3(PETSC_BLASLAPACK_RPREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
+  /*MC
+    PETSCBLASR - Mangle a BLAS or LAPACK subroutine name for a routine that returns a real value from inputs of the configured `PetscScalar` type
+
+    Synopsis:
+    #include <petscblaslapack.h>
+    PETSCBLASR(x, X)
+
+    Not Collective; No Fortran Support
+
+    Input Parameters:
+  + x - the lowercase root of the BLAS/LAPACK routine name (e.g. `nrm2`)
+  - X - the uppercase root of the BLAS/LAPACK routine name (e.g. `NRM2`)
+
+    Level: developer
+
+    Note:
+    For real `PetscScalar` this resolves to the same name as `PETSCBLASREAL()`; for complex
+    `PetscScalar` it prefixes with `sc` or `dz` (e.g. `scnrm2`, `dznrm2`).
+
+.seealso: `PETSCBLAS`, `PETSCBLASREAL`, `PETSCBLASCOMPLEX`
+M*/
+  #define PETSCBLASR(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_RPREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
 #else
   #define PETSCBLAS(x, X)        PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
   #define PETSCBLASREAL(x, X)    PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, x, PETSC_BLASLAPACK_SUFFIX_)
