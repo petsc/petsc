@@ -1045,8 +1045,11 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         m = re.match(r'^-I.*$', arg)
         if m:
           inc = arg.replace('-I','',1)
-          self.logPrint('Found include directory: '+inc, 4, 'compilers')
-          fincs.append(inc)
+          if os.path.exists(inc):
+            self.logPrint('Found include directory: '+inc, 4, 'compilers')
+            fincs.append(inc)
+          else:
+            self.logPrint('Skipping non-existent include directory: '+inc, 4, 'compilers')
           continue
         # Check for ???
         m = re.match(r'^-bI:.*$', arg)

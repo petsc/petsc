@@ -1129,7 +1129,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           self.found     = 1
           self.dlib      = self.lib+self.dlib
           dinc = []
-          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
+          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc and os.path.exists(inc)]
           self.dinclude = dinc
           self.checkMacros(timeout = 60.0)
           if not hasattr(self.framework, 'packages'):
@@ -2069,7 +2069,9 @@ class CMakePackage(Package):
           else:
             with self.Language('C++'):
               args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.getCompiler()))
-        break
+      elif package.found and package.name == 'HIP':
+        if hasattr(package, 'hipDir') and os.path.exists(package.hipDir):
+          args.append('-DHIP_ROOT_DIR:STRING="{}"'.format(package.hipDir))
     if self.need35policy:
       args.append('-DCMAKE_POLICY_VERSION_MINIMUM=3.5')
     return args
