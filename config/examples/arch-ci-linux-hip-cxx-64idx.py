@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import os
+petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+
+if __name__ == '__main__':
+  import sys
+  import os
+  sys.path.insert(0, os.path.abspath('config'))
+  import configure
+  configure_options = [
+    '--package-prefix-hash='+petsc_hash_pkgs,
+    '--with-make-np=24',
+    '--with-make-test-np=8',
+    '--with-hipc=/opt/rocm-5.4.3/bin/hipcc',
+    '--with-hip-dir=/opt/rocm-5.4.3',
+    'COPTFLAGS=-g -O',
+    'FOPTFLAGS=-g -O',
+    'CXXOPTFLAGS=-g -O',
+    'HIPOPTFLAGS=-g -O',
+    '--with-cuda=0',
+    '--with-hip=1',
+    '--with-precision=double',
+    '--with-64-bit-indices=1',
+    '--download-kokkos',
+    '--download-kokkos-commit=4.7.01', #TODO: Update to Kokkos-5.0 with rocm-6.2+
+    '--download-kokkos-kernels',
+    '--download-kokkos-kernels-commit=4.7.01',
+    '--with-clanguage=cxx',
+    '--with-strict-petscerrorcode',
+    #'--with-coverage',
+  ]
+
+  configure.petsc_configure(configure_options)
