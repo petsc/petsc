@@ -279,11 +279,9 @@ PetscErrorCode PetscDALETKFGetLocalizationMatrix(const PetscInt n_obs_vertex, co
   // Deep copy will handle layout conversion (transpose) if device views are LayoutLeft
   // Note: Kokkos::deep_copy cannot copy between different layouts if the memory spaces are different (e.g. GPU to Host).
   // We need an intermediate mirror view on the host with the same layout as the device view.
-  Kokkos::View<PetscInt **, Kokkos::LayoutLeft, Kokkos::HostSpace>    indices_host_left = Kokkos::create_mirror_view(indices_dev);
-  Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, Kokkos::HostSpace> values_host_left  = Kokkos::create_mirror_view(values_dev);
-
-  Kokkos::deep_copy(indices_host_left, indices_dev);
-  Kokkos::deep_copy(values_host_left, values_dev);
+  // Use create_mirror_view_and_copy with explicit HostSpace to avoid HIP host_mirror_type mismatch.
+  auto indices_host_left = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{}, indices_dev);
+  auto values_host_left  = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{}, values_dev);
 
   // Now copy from LayoutLeft host view to LayoutRight host view
   Kokkos::deep_copy(indices_host, indices_host_left);
