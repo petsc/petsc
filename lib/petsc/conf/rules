@@ -185,9 +185,8 @@ LINK.cc = $(CXXLINKER) $(CXXCPPFLAGS) $(LDFLAGS)
 # make macros KOKKOS_USE_CUDA_COMPILER etc are defined in `${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables`
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
-  # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files. The command is adapted from PETSC_COMPILE.kokkos.cxx
-  # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o instead of foo.kokkos.o
-  KOKKOS_COMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda --expt-relaxed-constexpr -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
+  # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files.
+  KOKKOS_COMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda --expt-relaxed-constexpr -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $@
   KOKKOS_LINK = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda --expt-relaxed-constexpr $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   KOKKOS_COMPILE_SINGLE = ${PETSC_HIPCOMPILE_SINGLE}
@@ -215,36 +214,20 @@ endif
 LDLIBS += $(PRELIBS) $(PETSC_LIB) $(LIBS)
 
 % : %.c
-	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
-% : %.F90
-	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
-% : %.kokkos.cxx
-	$(LINK.kokkos.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
-% : %.cxx
-	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
-% : %.hip.cxx
-	$(LINK.hip.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
-
-# Shall we compile *.c to *.o and then link *.o to executables in two separate steps?
-SEPARATE_COMPILE_LINK =
-
-# See MR !2750
-ifneq (,$(findstring -TP,$(PCC_FLAGS)))
-  SEPARATE_COMPILE_LINK = 1
-endif
-
-# To avoid warnings when compiling *.c with sycl compilers
-#   icx -fsycl -o ex1 ex1.c ..
-#   icx: warning: treating 'c' input as 'c++' when -fsycl is used [-Wexpected-file-type]
-ifneq (,$(findstring -fsycl,$(PCC_LINKER_FLAGS)))
-  SEPARATE_COMPILE_LINK = 1
-endif
-
-ifdef SEPARATE_COMPILE_LINK
-% : %.c
 	$(subst $@, $@.o, ${PETSC_COMPILE_SINGLE}) $<
-	${CLINKER} -o $@ $@.o $(filter-out $@.o $<,$^) $(LOADLIBES) $(LDLIBS)
-endif
+	${LINK.c} -o $@ $@.o $(filter-out $@.o $<, $^) $(LOADLIBES) $(LDLIBS)
+% : %.F90
+	$(subst $@, $@.o, ${PETSC_FCOMPILE_SINGLE}) $<
+	${LINK.F} -o $@ $@.o $(filter-out $@.o $<, $^) $(LOADLIBES) $(LDLIBS)
+% : %.kokkos.cxx
+	$(subst $@, $@.o, $(PETSC_KOKKOSCOMPILE_SINGLE)) $<
+	${LINK.kokkos.cxx} -o $@ $@.o $(filter-out $@.o $<, $^) $(LOADLIBES) $(LDLIBS)
+% : %.cxx
+	$(subst $@, $@.o, ${PETSC_CXXCOMPILE_SINGLE}) $<
+	${LINK.cc} -o $@ $@.o $(filter-out $@.o $<, $^) $(LOADLIBES) $(LDLIBS)
+% : %.hip.cxx
+	$(subst $@, $@.o, ${PETSC_HIPCOMPILE_SINGLE}) $<
+	${LINK.hip.cxx} -o $@ $@.o $(filter-out $@.o $<, $^) $(LOADLIBES) $(LDLIBS)
 
 # We don't have % : %.cu target as we can't use nvcc as linker - due to difference in linker options [wrt CLINKER etc.]. For example, nvcc does not accept -Wl,-rpath
 # % : %.cu
