@@ -1,7 +1,7 @@
 /*
     Defines the vector component of PETSc. Vectors generally represent
   degrees of freedom for finite element/finite difference functions
-  on a grid. They have more mathematical structure then simple arrays.
+  on a grid. They have more mathematical structure than simple arrays.
 */
 #pragma once
 
@@ -56,7 +56,7 @@ typedef enum {
 M*/
 
 /*MC
-    SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated
+    SCATTER_REVERSE - Moves the values in the opposite direction than the directions indicated
                       in the `VecScatterCreate()` during `VecScatterBegin()` and `VecScatterEnd()`
 
     Level: beginner
@@ -76,7 +76,7 @@ M*/
 M*/
 
 /*MC
-    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated
+    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction than the directions indicated
                            in the `VecScatterCreate()`  during `VecScatterBegin()` and `VecScatterEnd()` except NO parallel communication
                            is done. Any variables that have be moved between processes are ignored
 
