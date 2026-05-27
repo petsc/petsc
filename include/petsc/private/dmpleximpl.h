@@ -854,6 +854,7 @@ PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is
 PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_Plex(DM, PetscInt *, char ***, IS **, IS **, DM **);
 PETSC_INTERN PetscErrorCode DMCreateSectionPermutation_Plex(DM dm, IS *permutation, PetscBT *blockStarts);
+PETSC_INTERN PetscErrorCode DMPlexCellUnsplitVertices_Internal(DM, PetscInt, DMPolytopeType, PetscInt *);
 
 // Coordinate mapping functions
 PETSC_INTERN void coordMap_identity(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);

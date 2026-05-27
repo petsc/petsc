@@ -2986,9 +2986,14 @@ PetscErrorCode DMPlexLabelCohesiveCheck(DM dm, DMLabel label, DMLabel bdlabel)
         const PetscInt point   = points[i];
         PetscInt      *closure = NULL;
         PetscInt       fface   = -1;
+        DMPolytopeType ct;
         PetscReal      sense, vol, centroid[3], fcentroid[3];
-        PetscInt       clSize, val, fpoint = -1, fval = 0;
+        PetscInt       clSize, val, fpoint = -1, fval = 0, unsplit;
 
+        // Ignore edges/faces with clamped points in the cone
+        PetscCall(DMPlexGetCellType(dm, point, &ct));
+        PetscCall(DMPlexCellUnsplitVertices_Internal(dm, point, ct, &unsplit));
+        if (unsplit) continue;
         PetscCall(DMPlexComputeCellGeometryFVM(dm, point, &vol, centroid, NULL));
         PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
         // Find fault point, prefer split points

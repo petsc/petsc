@@ -9884,7 +9884,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 /*
   For submeshes with cohesive cells (see DMPlexConstructCohesiveCells()), we allow a special case where some of the boundary of a face (edges and vertices) are not duplicated. We call these special boundary points "unsplit", since the same edge or vertex appears in both copies of the face. These unsplit points throw off our counting, so we have to explicitly account for them here.
 */
-static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
+PetscErrorCode DMPlexCellUnsplitVertices_Internal(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
 {
   DMPolytopeType  cct;
   PetscInt        ptpoints[4];
@@ -9981,7 +9981,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
     if (Nv < DMPolytopeTypeGetNumVertices(ct)) {
       PetscInt unsplit;
 
-      PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+      PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
       if (Nv + unsplit == DMPolytopeTypeGetNumVertices(ct)) continue;
     }
     PetscCheck(Nv == DMPolytopeTypeGetNumVertices(ct), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " of type %s has %" PetscInt_FMT " vertices != %" PetscInt_FMT, c, DMPolytopeTypes[ct], Nv, DMPolytopeTypeGetNumVertices(ct));
@@ -10037,7 +10037,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
       PetscInt             *closure = NULL, closureSize, cl, numCorners = 0, fOff = 0, unsplit;
 
       PetscCall(DMPlexGetCellType(dm, c, &ct));
-      PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+      PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
       if (unsplit) continue;
       PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
       PetscCall(DMPlexGetCone(dm, c, &cone));
@@ -10136,7 +10136,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
     default:
       break;
     }
-    PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+    PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
     if (unsplit) continue;
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
     PetscCheck(detJ >= -PETSC_SMALL && (detJ > 0.0 || ignoreZeroVol), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double)detJ);
