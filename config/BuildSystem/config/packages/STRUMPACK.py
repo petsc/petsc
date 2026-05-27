@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.version          = '8.0.0'
     self.versionname      = 'STRUMPACK_VERSION_MAJOR.STRUMPACK_VERSION_MINOR.STRUMPACK_VERSION_PATCH'
     self.versioninclude   = 'StrumpackConfig.hpp'
-    self.gitcommit        = 'v'+self.version
+    self.gitcommit        = 'e08ec96e8514d3b8e374fd436eae5e1590a2c254' # master may-27-2026
     self.download         = ['git://https://github.com/pghysels/STRUMPACK','https://github.com/pghysels/STRUMPACK/archive/v'+self.version+'.tar.gz']
     self.functionsCxx     = [1,'STRUMPACK_init','']
     self.includes         = ['StrumpackSparseSolver.h']
