@@ -2795,7 +2795,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetCurrentMemType_SeqAIJCUSPARSE(PETSC_UNUSED Mat A, PetscMemType *m)
+static PetscErrorCode MatGetCurrentMemType_SeqAIJCUSPARSE(Mat A, PetscMemType *m)
 {
   PetscFunctionBegin;
   PetscCall(MatSeqAIJCUSPARSE_CUPM_t::GetCurrentMemType(A, m));
@@ -2815,7 +2815,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A, PetscBool flg)
     PetscCall(MatSeqAIJCUSPARSECopyFromGPU(A));
 
     A->ops->scale                     = MatScale_SeqAIJ;
-    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->getdiagonal               = MatGetDiagonal_SeqAIJ;
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->axpy                      = MatAXPY_SeqAIJ;
@@ -2837,7 +2836,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A, PetscBool flg)
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijcusparse_seqaijcusparse_C", NULL));
   } else {
     A->ops->scale                     = MatScale_SeqAIJCUSPARSE;
-    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJCUSPARSE;
     A->ops->getdiagonal               = MatGetDiagonal_SeqAIJCUSPARSE;
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJCUSPARSE;
     A->ops->axpy                      = MatAXPY_SeqAIJCUSPARSE;
