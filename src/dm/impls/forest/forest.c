@@ -250,7 +250,7 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
 . dm - the forest
 
   Output Parameter:
-. topology - the topology of the forest (e.g., 'cube', 'shell')
+. topology - the topology of the forest (e.g., `cube`, `shell`)
 
   Level: intermediate
 
