@@ -3354,7 +3354,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetCurrentMemType_SeqAIJHIPSPARSE(PETSC_UNUSED Mat A, PetscMemType *m)
+static PetscErrorCode MatGetCurrentMemType_SeqAIJHIPSPARSE(Mat A, PetscMemType *m)
 {
   PetscFunctionBegin;
   PetscCall(MatSeqAIJHIPSPARSE_CUPM_t::GetCurrentMemType(A, m));
@@ -3377,7 +3377,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->axpy                      = MatAXPY_SeqAIJ;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJ;
-    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->mult                      = MatMult_SeqAIJ;
     A->ops->multadd                   = MatMultAdd_SeqAIJ;
     A->ops->multtranspose             = MatMultTranspose_SeqAIJ;
@@ -3398,7 +3397,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJHIPSPARSE;
     A->ops->axpy                      = MatAXPY_SeqAIJHIPSPARSE;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJHIPSPARSE;
-    A->ops->diagonalscale             = MatDiagonalScale_SeqAIJHIPSPARSE;
     A->ops->mult                      = MatMult_SeqAIJHIPSPARSE;
     A->ops->multadd                   = MatMultAdd_SeqAIJHIPSPARSE;
     A->ops->multtranspose             = MatMultTranspose_SeqAIJHIPSPARSE;
