@@ -50,10 +50,11 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 {
   DMPolytopeType ct;
-  PetscInt       cStart, cEnd;
+  PetscInt       cStart, cEnd, cHeight;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cHeight));
+  PetscCall(DMPlexGetHeightStratum(dm, cHeight, &cStart, &cEnd));
   if (cEnd <= cStart) {
     *simplex = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
