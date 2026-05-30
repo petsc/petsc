@@ -611,7 +611,7 @@ freebsd-pkgs-opt:
 linux-hip-double:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test
     - .coverage-disable
   tags:
     - gpu:amd
@@ -622,13 +622,24 @@ linux-hip-double:
 linux-hip-cmplx:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test
     - .coverage-disable
   tags:
     - gpu:amd
     - os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-cmplx
+
+linux-hip-cxx-64idx:
+  extends:
+    - .stage-3
+    - .linux_test
+    - .coverage-disable
+  tags:
+    - gpu:amd
+    - os:linux
+  variables:
+    TEST_ARCH: arch-ci-linux-hip-cxx-64idx
 
 linux-sycl-double:
   extends:
