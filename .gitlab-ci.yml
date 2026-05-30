@@ -915,6 +915,7 @@ linux-pkgs-dbg:
     - linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg
+    LOAD_MODULES: python/3.13.13
     EXTRA_OPTIONS_INITIAL: -fp_trap
 
 linux-matlab-ilp64:
