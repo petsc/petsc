@@ -2123,7 +2123,7 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
 }
 
 /*
-  DMPlexTensorPointLexicographic_Private - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max' for that dimension.
+  DMPlexTensorPointLexicographic_Private - Returns all tuples of size `len` with nonnegative integers that are all less than or equal to `max` for that dimension.
 
   Input Parameters:
 + len - The length of the tuple

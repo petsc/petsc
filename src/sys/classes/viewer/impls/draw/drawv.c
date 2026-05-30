@@ -666,11 +666,11 @@ PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, c
 
   Input Parameters:
 + viewer - the viewer in which to display the line graphs, it not a `PETSCVIEWERDRAW` it will set to that `PetscViewerType`
-. host   - the host to open the window on, 'NULL' indicates the local host
+. host   - the host to open the window on, `NULL` indicates the local host
 . title  - the title at the top of the window
 . metric - the label above the graph
 . l      - the number of curves
-. names  - the names of each curve to be used in displaying the legend. May be 'NULL'
+. names  - the names of each curve to be used in displaying the legend. May be `NULL`
 . x      - horizontal screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
 . y      - vertical screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
 . m      - window width in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
