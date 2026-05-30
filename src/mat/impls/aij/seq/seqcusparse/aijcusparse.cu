@@ -19,6 +19,7 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/remove.h>
 #include <thrust/sort.h>
+#include <thrust/tuple.h>
 #include <thrust/unique.h>
 #if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0) && !PetscDefined(HAVE_THRUST)
   #include <cuda/std/functional>
