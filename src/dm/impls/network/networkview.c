@@ -187,7 +187,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   // Generate options string
   PetscCall(PetscMemzero(options, sizeof(options)));
   // If the draw is null run as a "test execute" ie. do nothing just test that the script was called correctly
-  PetscCall(PetscStrlcat(options, isnull ? " -tx " : " ", sizeof(options)));
+  PetscCall(PetscStrlcat(options, isnull ? " -tx " : " ", sizeof(options) - 1));
   PetscCall(PetscDrawGetPause(draw, &drawPause));
   if (drawPause > 0) {
     char pausebuffer[64];
