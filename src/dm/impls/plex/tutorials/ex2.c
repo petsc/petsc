@@ -2,6 +2,8 @@ static char help[] = "PETSc Annual Meeting 2025: Meshing Tutorial.\n\n\n";
 
 #include <petsc.h>
 
+/* Use FORCE=1 to run the PyVista tests */
+
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBeginUser;
@@ -68,11 +70,42 @@ int main(int argc, char **argv)
     args: -dm_view pyvista -dm_plex_shape sphere
     output_file: output/empty.out
 
+  # Draw the 2-sphere with PyVista with quadratic coordinates
+  test:
+    suffix: 5b
+    requires: pyvista
+    args: -dm_view pyvista -dm_plex_shape sphere \
+          -dm_coord_petscspace_degree 2
+    output_file: output/empty.out
+
+  # Draw the 2-sphere with PyVista using quads with quadratic coordinates
+  test:
+    suffix: 5c
+    requires: pyvista
+    args: -dm_view pyvista -dm_plex_shape sphere -dm_plex_simplex 0 \
+          -dm_coord_petscspace_degree 2
+    output_file: output/empty.out
+
   # Refine the sphere three times
   test:
     suffix: 6
     requires: pyvista
     args: -dm_view pyvista -dm_plex_shape sphere -dm_refine 3
+    output_file: output/empty.out
+
+  # Draw the 1-sphere with PyVista, which is a circle
+  test:
+    suffix: 7a
+    requires: pyvista
+    args: -dm_view pyvista -view_pyvista_line_width 5 -dm_plex_dim 1 -dm_plex_shape sphere
+    output_file: output/empty.out
+
+  # Draw the 1-sphere with PyVista with cubic coordinates
+  test:
+    suffix: 7b
+    requires: pyvista
+    args: -dm_view pyvista -view_pyvista_line_width 5 -dm_plex_dim 1 -dm_plex_shape sphere \
+          -dm_coord_petscspace_degree 3
     output_file: output/empty.out
 
   # Show the 3-sphere
@@ -191,6 +224,22 @@ int main(int argc, char **argv)
     suffix: 20
     args: -dm_plex_dim 1 -dm_plex_box_faces 8 -dm_plex_box_bd periodic \
           -dm_refine 1 -dm_plex_transform_type extrude -dm_plex_transform_extrude_layers 2 \
+          -dm_view
+
+  # Construct and refine a torus
+  #   Can use a custom polodial slice
+  #   -dm_plex_filename /Users/knepley/PETSc4/petsc/petsc-dev/share/petsc/datafiles/meshes/square_quad.msh
+  test:
+    suffix: 21
+    args: -dm_plex_option_phases phase1_,phase2_,phase3_ \
+          -dm_plex_simplex 0 -dm_plex_box_faces 2,2 \
+            -dm_refine_pre 0 \
+          -phase1_dm_refine 0 \
+          -phase2_dm_plex_transform_type extrude -phase2_dm_extrude 16 \
+            -phase2_dm_plex_transform_extrude_thickness 1 \
+            -phase2_dm_plex_transform_extrude_use_tensor 0 \
+            -phase2_dm_plex_transform_extrude_periodic \
+          -phase3_dm_coord_remap -phase3_dm_coord_map torus \
           -dm_view
 
 TEST*/

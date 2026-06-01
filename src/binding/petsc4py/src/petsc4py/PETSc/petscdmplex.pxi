@@ -124,6 +124,8 @@ cdef extern from * nogil:
 
     PetscErrorCode DMPlexCreateSection(PetscDM, PetscDMLabel[], const PetscInt[], const PetscInt[], PetscInt, const PetscInt[], const PetscIS[], const PetscIS[], PetscIS, PetscSection*)
 
+    PetscErrorCode DMPlexGetCellCoordinates(PetscDM, PetscInt, PetscBool*, PetscInt*, const PetscScalar *[], PetscScalar *[])
+    PetscErrorCode DMPlexRestoreCellCoordinates(PetscDM, PetscInt, PetscBool*, PetscInt*, const PetscScalar *[], PetscScalar *[])
     PetscErrorCode DMPlexComputeCellGeometryFVM(PetscDM, PetscInt, PetscReal*, PetscReal[], PetscReal[])
     PetscErrorCode DMPlexConstructGhostCells(PetscDM, const char[], PetscInt*, PetscDM*)
 

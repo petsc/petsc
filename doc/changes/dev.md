@@ -120,6 +120,7 @@
 - Add `DMPlexLabelCohesiveCheck()`
 - Add `DMPlexCheckOrientationLabel()`
 - Change `DMPlexLabelCohesiveComplete()` to remove split argument
+- Add `DM_COORD_MAP_TORUS`
 
 ## FE/FV
 

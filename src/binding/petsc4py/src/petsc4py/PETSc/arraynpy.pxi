@@ -57,6 +57,7 @@ cdef extern from "<petsc4py/numpy.h>":
 
 cdef extern from "<petsc4py/numpy.h>":
 
+    enum: NPY_MAXDIMS
     enum: NPY_INT
     enum: NPY_DOUBLE
 
@@ -118,6 +119,19 @@ cdef inline ndarray array_r(PetscInt size, const PetscReal* data):
         memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscReal))
     return ary
 
+cdef inline ndarray array_rd(PetscInt dim, PetscInt sizes[], const PetscReal* data):
+    cdef int d = <int> dim
+    cdef int tot = 1
+    cdef npy_intp sz[NPY_MAXDIMS]
+    assert(dim <= NPY_MAXDIMS)
+    for e in range(d):
+        sz[e] = <int> sizes[e]
+        tot *= <int> sizes[e]
+    cdef ndarray ary = PyArray_EMPTY(d, sz, NPY_PETSC_REAL, 0)
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, <size_t>tot*sizeof(PetscReal))
+    return ary
+
 cdef inline ndarray array_b(PetscInt size, const PetscBool* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_BOOL, 0)
@@ -130,6 +144,19 @@ cdef inline ndarray array_s(PetscInt size, const PetscScalar* data):
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
     if data != NULL:
         memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscScalar))
+    return ary
+
+cdef inline ndarray array_sd(PetscInt dim, PetscInt sizes[], const PetscScalar* data):
+    cdef int d = <int> dim
+    cdef int tot = 1
+    cdef npy_intp sz[NPY_MAXDIMS]
+    assert(dim <= NPY_MAXDIMS)
+    for e in range(d):
+        sz[e] = <int> sizes[e]
+        tot *= <int> sizes[e]
+    cdef ndarray ary = PyArray_EMPTY(d, sz, NPY_PETSC_SCALAR, 0)
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, <size_t>tot*sizeof(PetscScalar))
     return ary
 
 # --------------------------------------------------------------------

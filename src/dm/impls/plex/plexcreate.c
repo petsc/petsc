@@ -5400,7 +5400,16 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
-    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
+    if (coordSpace && deg <= 1) {
+      PetscPointFn *coordFunc;
+
+      PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
+      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
+      if (coordFunc) {
+        PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
+        PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
+      }
+    }
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (!coordSpace) {
       PetscDS      cds;
@@ -5605,6 +5614,14 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
           params[2] = 1.;
         }
         PetscCheck(Np == 3, comm, PETSC_ERR_ARG_WRONG, "The sinusoidal coordinate map must have 3 parameters, not %" PetscInt_FMT, Np);
+        break;
+      case DM_COORD_MAP_TORUS:
+        mapFunc = coordMap_torus;
+        if (!Np) {
+          Np        = 1;
+          params[0] = 2.;
+        }
+        PetscCheck(Np == 1, comm, PETSC_ERR_ARG_WRONG, "The toroidal coordinate map must have 1 parameter, not %" PetscInt_FMT, Np);
         break;
       default:
         mapFunc = coordMap_identity;
