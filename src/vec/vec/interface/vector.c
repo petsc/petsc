@@ -762,7 +762,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 
   Input Parameters:
 + A    - the vector
-. obj  - optional object that provides the options prefix for this viewing, use 'NULL' to use the prefix of `A`
+. obj  - optional object that provides the options prefix for this viewing, use `NULL` to use the prefix of `A`
 - name - command line option
 
   Options Database Key:

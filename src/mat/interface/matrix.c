@@ -1090,7 +1090,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   See share/petsc/matlab/PetscBinaryRead.m for a MATLAB code that can read in the binary file when the binary
   viewer is used and lib/petsc/bin/PetscBinaryIO.py for loading them into Python.
 
-  One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
+  One can use `-mat_view draw -draw_pause -1` to pause the graphical display of matrix nonzero structure,
   and then use the following mouse functions.
 .vb
   left mouse: zoom in
@@ -4721,7 +4721,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFa
   MatSolverTypeGet - Gets the function that creates the factor matrix if it exist
 
   Input Parameters:
-+ type  - name of the package, for example `petsc` or `superlu`, if this is 'NULL', then the first result that satisfies the other criteria is returned
++ type  - name of the package, for example `petsc` or `superlu`, if this is `NULL`, then the first result that satisfies the other criteria is returned
 . ftype - the type of factorization supported by the type
 - mtype - the matrix type that works with this type
 
@@ -4891,7 +4891,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 
   Input Parameters:
 + mat   - the matrix
-. type  - name of solver type, for example, `superlu_dist`, `petsc` (to use PETSc's solver if it is available), if this is 'NULL', then the first result that satisfies
+. type  - name of solver type, for example, `superlu_dist`, `petsc` (to use PETSc's solver if it is available), if this is `NULL`, then the first result that satisfies
           the other criteria is returned
 - ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
@@ -11471,7 +11471,7 @@ PetscErrorCode MatSetInf(Mat A)
 . sym     - `PETSC_TRUE` indicates that the graph should be symmetrized
 . scale   - `PETSC_TRUE` indicates that the graph edge weights should be symmetrically scaled with the diagonal entry
 . filter  - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries with abs(entries) <= value
-. num_idx - size of 'index' array
+. num_idx - size of `index` array
 - index   - array of block indices to use for graph strength of connection weight
 
   Output Parameter:

@@ -327,7 +327,7 @@ ai-review-optional:
       else
         echo "No review output to convert"
       fi
-  timeout: 15m
+  timeout: 30m
   allow_failure: true
   interruptible: true
   environment:
@@ -729,6 +729,7 @@ linux-cuda-latest:
     TEST_ARCH: arch-ci-linux-cuda-latest
     TEST_OPTS: -j3 query='requires,requires' queryval='cuda,kokkos_kernels'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
+    LOAD_MODULES: cuda/13.3.0-none-none-4vp2dph
 
 linux-cuda-single-cxx:
   extends:

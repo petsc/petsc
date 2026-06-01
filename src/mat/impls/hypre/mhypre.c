@@ -83,15 +83,15 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
 {
-  HYPRE_Int rstart, rend, cstart, cend;
+  HYPRE_BigInt rstart, rend, cstart, cend;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
-  rstart = (HYPRE_Int)A->rmap->rstart;
-  rend   = (HYPRE_Int)A->rmap->rend;
-  cstart = (HYPRE_Int)A->cmap->rstart;
-  cend   = (HYPRE_Int)A->cmap->rend;
+  rstart = A->rmap->rstart;
+  rend   = A->rmap->rend;
+  cstart = A->cmap->rstart;
+  cend   = A->cmap->rend;
   PetscCall(PetscHYPREInitialize());
   if (hA->ij) {
     if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;

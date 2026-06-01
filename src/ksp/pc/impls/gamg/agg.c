@@ -90,7 +90,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 }
 
 /*@
-  PCGAMGMISkSetAggressive - Number (k) distance in MIS coarsening (>2 is 'aggressive')
+  PCGAMGMISkSetAggressive - Number (k) distance in MIS coarsening (> 2 is aggressive)
 
   Logically Collective
 

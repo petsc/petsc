@@ -13,7 +13,7 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map, VecHYPRE_IJVector *ij)
   PetscFunctionBegin;
   PetscCall(PetscNew(&nij));
   PetscCall(PetscLayoutSetUp(map));
-  PetscCallHYPRE(HYPRE_IJVectorCreate(map->comm, (HYPRE_Int)map->rstart, (HYPRE_Int)map->rend - 1, &nij->ij));
+  PetscCallHYPRE(HYPRE_IJVectorCreate(map->comm, map->rstart, map->rend - 1, &nij->ij));
   PetscCallHYPRE(HYPRE_IJVectorSetObjectType(nij->ij, HYPRE_PARCSR));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   {

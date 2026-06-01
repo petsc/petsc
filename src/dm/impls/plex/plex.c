@@ -7029,7 +7029,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
 }
 
 /*@C
-  DMPlexVecGetOrientedClosure - Get an array of the values on the closure of 'point' with a given orientation, optionally applying the closure permutation.
+  DMPlexVecGetOrientedClosure - Get an array of the values on the closure of `point` with a given orientation, optionally applying the closure permutation.
 
   Not collective
 
@@ -7116,7 +7116,7 @@ PetscErrorCode DMPlexVecGetOrientedClosure(DM dm, PetscSection section, PetscBoo
 }
 
 /*@C
-  DMPlexVecGetClosure - Get an array of the values on the closure of 'point'
+  DMPlexVecGetClosure - Get an array of the values on the closure of `point`
 
   Not collective
 
@@ -7183,7 +7183,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 }
 
 /*@C
-  DMPlexVecGetClosureAtDepth - Get an array of the values on the closure of 'point' that are at a specific depth
+  DMPlexVecGetClosureAtDepth - Get an array of the values on the closure of `point` that are at a specific depth
 
   Not collective
 
@@ -7320,7 +7320,7 @@ PetscErrorCode DMPlexVecGetClosureAtDepth(DM dm, PetscSection section, Vec v, Pe
 }
 
 /*@C
-  DMPlexVecRestoreClosure - Restore the array of the values on the closure of 'point' obtained with `DMPlexVecGetClosure()`
+  DMPlexVecRestoreClosure - Restore the array of the values on the closure of `point` obtained with `DMPlexVecGetClosure()`
 
   Not collective
 
@@ -8074,7 +8074,7 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
 
   Level: developer
 
-  Note: The indices could be local or global, depending on the value of 'off'.
+  Note: The indices could be local or global, depending on the value of `off`.
 */
 PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool islocal, PetscInt point, PetscInt off, PetscInt *loff, PetscBool setBC, const PetscInt perm[], const PetscInt indperm[], PetscInt indices[])
 {
@@ -8197,7 +8197,7 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscB
 /*
   This version believes the globalSection offsets for each field, rather than just the point offset
 
- . foffs - The offset into 'indices' for each field, since it is segregated by field
+ . foffs - The offset into `indices` for each field, since it is segregated by field
 
  Notes:
  The semantics of this function relate to that of setBC=FALSE in DMPlexGetIndicesPointFields_Internal.
@@ -8904,7 +8904,7 @@ PetscErrorCode DMPlexMatSetClosure_Internal(DM dm, PetscSection section, PetscSe
 }
 
 /*@C
-  DMPlexMatSetClosure - Set an array of the values on the closure of 'point'
+  DMPlexMatSetClosure - Set an array of the values on the closure of `point`
 
   Not collective
 
@@ -8929,7 +8929,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 }
 
 /*@C
-  DMPlexMatSetClosureGeneral - Set an array of the values on the closure of 'point' using a different row and column section
+  DMPlexMatSetClosureGeneral - Set an array of the values on the closure of `point` using a different row and column section
 
   Not collective
 

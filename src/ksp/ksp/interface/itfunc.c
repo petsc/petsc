@@ -2442,7 +2442,7 @@ PetscErrorCode KSPGetMonitorContext(KSP ksp, PetscCtxRt ctx)
 
   Notes:
   If provided, `a` is NOT freed by PETSc so the user needs to keep track of it and destroy once the `KSP` object is destroyed.
-  If 'a' is `NULL` then space is allocated for the history. If 'na' `PETSC_DECIDE` or (deprecated) `PETSC_DEFAULT` then a
+  If `a` is `NULL` then space is allocated for the history. If `na` is `PETSC_DECIDE` or (deprecated) `PETSC_DEFAULT` then a
   default array of length 10,000 is allocated.
 
   If the array is not long enough then once the iterations is longer than the array length `KSPSolve()` stops recording the history
@@ -2529,7 +2529,7 @@ PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[], PetscInt *na
 
   Notes:
   If provided, `a` is NOT freed by PETSc so the user needs to keep track of it and destroy once the `KSP` object is destroyed.
-  If 'a' is `NULL` then space is allocated for the history. If 'na' is `PETSC_DECIDE` or (deprecated) `PETSC_DEFAULT` then a default array of length 1,0000 is allocated.
+  If `a` is `NULL` then space is allocated for the history. If `na` is `PETSC_DECIDE` or (deprecated) `PETSC_DEFAULT` then a default array of length 1,0000 is allocated.
 
   If the array is not long enough then once the iterations is longer than the array length `KSPSolve()` stops recording the history
 

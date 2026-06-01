@@ -8,6 +8,7 @@
 #include <thrust/advance.h>
 #include <thrust/partition.h>
 #include <thrust/sort.h>
+#include <thrust/tuple.h>
 #include <thrust/unique.h>
 
 struct MatMPIAIJCUSPARSE_Policy {
