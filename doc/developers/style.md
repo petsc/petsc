@@ -231,6 +231,17 @@ Even with the use of `clang-format` there are still many decisions about code fo
     else {YYY;}
     ```
 
+    When the controlled statement is a `for` or `while` loop, place it on its own line below the `if` or `else`:
+
+    ```
+    if ( )
+      for ( ; ; ) XXXX;
+    else
+      while ( ) YYY;
+    ```
+
+    `do { ... } while`, `switch`, and a plain single statement (including `else if`) are unaffected and stay on the same line.
+
 10. Do not leave sections of commented-out code or dead source code protected with `ifdef foo` in the source files.
 
 11. Use classic block comments (`/* There must be a space before the first word in the comment and a space at the end */`,

@@ -327,7 +327,7 @@ ai-review-optional:
       else
         echo "No review output to convert"
       fi
-  timeout: 15m
+  timeout: 30m
   allow_failure: true
   interruptible: true
   environment:
