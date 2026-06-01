@@ -28,6 +28,19 @@ typedef struct {
   PetscInt *rows_d;
 } Mat_HYPRE;
 
-PETSC_INTERN PetscErrorCode MatZeroRows_CUDA(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
-PETSC_INTERN PetscErrorCode MatZeroRows_HIP(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
-PETSC_INTERN PetscErrorCode MatZeroRows_Kokkos(PetscInt n, const PetscInt *rows, const HYPRE_Int *i, const HYPRE_Int *j, HYPRE_Complex *a, HYPRE_Complex diag);
+PETSC_INTERN PetscErrorCode MatZeroRows_CUDA(PetscInt, const PetscInt *, const HYPRE_Int *, const HYPRE_Int *, HYPRE_Complex *, HYPRE_Complex);
+PETSC_INTERN PetscErrorCode MatZeroRows_HIP(PetscInt, const PetscInt *, const HYPRE_Int *, const HYPRE_Int *, HYPRE_Complex *, HYPRE_Complex);
+PETSC_INTERN PetscErrorCode MatZeroRows_Kokkos(PetscInt, const PetscInt *, const HYPRE_Int *, const HYPRE_Int *, HYPRE_Complex *, HYPRE_Complex);
+
+// Cast entries in PetscInt a[] to HYPRE_Int b[] on device
+PETSC_INTERN PetscErrorCode PetscHypreIntCastArray_CUDA(PetscInt, const PetscInt *, HYPRE_Int *);
+PETSC_INTERN PetscErrorCode PetscHypreIntCastArray_HIP(PetscInt, const PetscInt *, HYPRE_Int *);
+PETSC_INTERN PetscErrorCode PetscHypreIntCastArray_Kokkos(PetscInt, const PetscInt *, HYPRE_Int *);
+
+PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_CUDA(size_t, void **);
+PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_HIP(size_t, void **tr);
+PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_Kokkos(size_t, void **);
+
+PETSC_INTERN PetscErrorCode MatHypreDeviceFree_CUDA(void *);
+PETSC_INTERN PetscErrorCode MatHypreDeviceFree_HIP(void *);
+PETSC_INTERN PetscErrorCode MatHypreDeviceFree_Kokkos(void *);
