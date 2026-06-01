@@ -56,7 +56,7 @@ class Configure(config.package.Package):
       for prefix in self.getSearchDirectories():
         if not self.version_tuple:
           self.checkVersion()
-        if self.version_tuple[0] >= 6 and self.version_tuple[1] >= 4:
+        if self.version_tuple[:2] >= (6, 4):
           if os.path.exists(os.path.join(prefix, 'rocprofiler-sdk-roctx', 'roctx.h')):
             self.includes = ['hip/hip_runtime.h', 'rocprofiler-sdk-roctx/roctx.h']
             self.liblist[0] += ['librocprofiler-sdk-roctx.a']
