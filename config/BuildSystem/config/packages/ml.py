@@ -83,7 +83,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DTrilinos_ENABLE_ML=ON')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DBUILD_SHARED_LIBS=ON')
     args.append('-DTPL_ENABLE_MPI=ON')
     if self.metis.found:
       args.append('-DTPL_ENABLE_METIS=ON')
