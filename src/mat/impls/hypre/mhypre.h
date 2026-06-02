@@ -38,7 +38,7 @@ PETSC_INTERN PetscErrorCode PetscHypreIntCastArray_HIP(PetscInt, const PetscInt 
 PETSC_INTERN PetscErrorCode PetscHypreIntCastArray_Kokkos(PetscInt, const PetscInt *, HYPRE_Int *);
 
 PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_CUDA(size_t, void **);
-PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_HIP(size_t, void **tr);
+PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_HIP(size_t, void **);
 PETSC_INTERN PetscErrorCode MatHypreDeviceMalloc_Kokkos(size_t, void **);
 
 PETSC_INTERN PetscErrorCode MatHypreDeviceFree_CUDA(void *);
