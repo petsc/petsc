@@ -150,6 +150,8 @@ class CompilerOptions(config.base.Configure):
             config.setCompilers.Configure.isHIP(compiler, self.log),
         ]):
           flags.extend(['-fstack-protector'])
+        if config.setCompilers.Configure.isHIP(compiler, self.log):
+            flags.extend(['-Wno-unused-command-line-argument'])
         if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(compiler, self.log):
           flags.extend(['-fno-stack-check'])
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
