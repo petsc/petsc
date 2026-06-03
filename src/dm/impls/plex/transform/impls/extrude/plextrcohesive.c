@@ -260,8 +260,8 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Segment(DMPlexTransfor
   //   0: no unsplit vertex
   //   1: unsplit vertex 0
   //   2: unsplit vertex 1
-  //   3: both vertices unsplit (impossible)
-  for (PetscInt s = 0; s < 3; ++s) {
+  //   3: both vertices unsplit (can only happen in 3D)
+  for (PetscInt s = 0; s < 4; ++s) {
     rt         = (DM_POLYTOPE_SEGMENT * 2 + 1) * 100 + s;
     ex->Nt[rt] = 2;
     Nc         = 8 * 2 + 14;
@@ -276,11 +276,11 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Segment(DMPlexTransfor
       ex->cone[rt][8 * i + 0] = DM_POLYTOPE_POINT;
       ex->cone[rt][8 * i + 1] = 1;
       ex->cone[rt][8 * i + 2] = 0;
-      ex->cone[rt][8 * i + 3] = s == 1 ? 0 : i;
+      ex->cone[rt][8 * i + 3] = s & 1 ? 0 : i;
       ex->cone[rt][8 * i + 4] = DM_POLYTOPE_POINT;
       ex->cone[rt][8 * i + 5] = 1;
       ex->cone[rt][8 * i + 6] = 1;
-      ex->cone[rt][8 * i + 7] = s == 2 ? 0 : i;
+      ex->cone[rt][8 * i + 7] = s & 2 ? 0 : i;
     }
     for (PetscInt i = 0; i < 2 * 2; ++i) ex->ornt[rt][i] = 0;
     //   cone for quad/tensor quad
