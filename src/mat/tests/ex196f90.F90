@@ -1,6 +1,7 @@
 !
 !
-!   This program demonstrates use of MatSeqAIJGetArray()
+!   This program demonstrates use of MatSeqAIJGetArray() and the
+!   MatSeqAIJGetArrayRead()/MatSeqAIJGetArrayWrite() variants
 !
 #include <petsc/finclude/petscmat.h>
 program main
@@ -28,6 +29,19 @@ program main
 
   PetscCallA(MatSeqAIJGetArray(A, aa, ierr))
   print *, aa(3)
+  PetscCallA(MatSeqAIJRestoreArray(A, aa, ierr))
+
+  PetscCallA(MatSeqAIJGetArrayRead(A, aa, ierr))
+  print *, aa(3)
+  PetscCallA(MatSeqAIJRestoreArrayRead(A, aa, ierr))
+
+  PetscCallA(MatSeqAIJGetArrayWrite(A, aa, ierr))
+  aa(3) = 2.0
+  PetscCallA(MatSeqAIJRestoreArrayWrite(A, aa, ierr))
+
+  PetscCallA(MatSeqAIJGetArrayRead(A, aa, ierr))
+  print *, aa(3)
+  PetscCallA(MatSeqAIJRestoreArrayRead(A, aa, ierr))
 
   PetscCallA(MatDestroy(A, ierr))
   PetscCallA(PetscViewerDestroy(v, ierr))
