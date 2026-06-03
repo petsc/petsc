@@ -4626,10 +4626,11 @@ static PetscErrorCode DMPlexStratify_CellType_Private(DM dm, DMLabel label)
 
 static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
 {
-  PetscInt pStart, pEnd;
+  PetscInt dim, pStart, pEnd;
   PetscInt numRoots = 0, numLeaves = 0;
 
   PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   {
     /* Initialize roots and count leaves */
@@ -4670,10 +4671,14 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
     }
     PetscCall(DMPlexCreateDepthStratum(dm, label, 1, sMin, sMax + 1));
   } else {
-    PetscInt level = 0;
-    PetscInt qStart, qEnd;
+    PetscInt  level = 0;
+    PetscInt  qStart, qEnd;
+    PetscInt *bounds;
 
+    PetscCall(PetscMalloc1((dim + 3) * 2, &bounds));
     PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+    bounds[level * 2 + 0] = qStart;
+    bounds[level * 2 + 1] = qEnd;
     while (qEnd > qStart) {
       PetscInt sMin = PETSC_INT_MAX;
       PetscInt sMax = PETSC_INT_MIN;
@@ -4692,7 +4697,27 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
       PetscCall(DMLabelGetNumValues(label, &level));
       PetscCall(DMPlexCreateDepthStratum(dm, label, level, sMin, sMax + 1));
       PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+      bounds[level * 2 + 0] = qStart;
+      bounds[level * 2 + 1] = qEnd;
+      for (PetscInt l = 0; l < level; ++l) {
+        PetscBool intersect = PETSC_FALSE;
+
+        if (bounds[level * 2 + 0] <= bounds[l * 2 + 0]) {
+          if (bounds[level * 2 + 1] > bounds[l * 2 + 0]) intersect = PETSC_TRUE;
+        } else {
+          if (bounds[l * 2 + 1] > bounds[level * 2 + 0]) intersect = PETSC_TRUE;
+        }
+        if (intersect) {
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] numRoots %" PetscInt_FMT " numLeaves %" PetscInt_FMT "\n", PetscGlobalRank, numRoots, numLeaves));
+          for (PetscInt m = 0; m < level; ++m) {
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]   Level %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ")\n", PetscGlobalRank, m, bounds[m * 2 + 0], bounds[m * 2 + 1]));
+          }
+        }
+        PetscCheck(!intersect, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ") intersects depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ")", level, bounds[level * 2 + 0], bounds[level * 2 + 1], l, bounds[l * 2 + 0], bounds[l * 2 + 1]);
+      }
+      PetscCheck(level <= dim + 1 || sMax < sMin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Mesh of dimension %" PetscInt_FMT " trying to create depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ") with chart [%" PetscInt_FMT ", %" PetscInt_FMT ")", dim, level, sMin, sMax + 1, pStart, pEnd);
     }
+    PetscCall(PetscFree(bounds));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
