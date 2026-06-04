@@ -167,7 +167,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         /* Update column k of M: M[k:s-1][k] = P[k:s-1]^H G[k] */
         PetscCall(VecMDot(G[k], s - k, &P[k], &M[k + k * s]));
 
-        if (M[k + k * s] == 0.0) {
+        if (PetscAbsScalar(M[k + k * s]) < 10 * PETSC_MACHINE_EPSILON) {
           PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown due to zero M[k,k] in IDR(s)");
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscCall(PetscInfo(ksp, "Breakdown in IDR(s) half-step: M[k,k] = 0\n"));
@@ -213,7 +213,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         break;
       }
       om = tr / (nt * nt);
-      if (idr->angle > 0.0) {
+      if (idr->angle > 0.0) { /* 0 is a flag */
         rho = PetscAbsScalar(tr) / (nt * nr);
         if (rho < idr->angle) om *= idr->angle / rho;
       }
