@@ -23,6 +23,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/functional.h>
 #include <thrust/fill.h>
+#include <thrust/tuple.h>
 #include <thrust/transform.h>
 #include <thrust/for_each.h>
 #include <thrust/equal.h>
