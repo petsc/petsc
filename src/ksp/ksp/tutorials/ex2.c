@@ -418,11 +418,19 @@ int main(int argc, char **args)
 
    test:
       suffix: idr_2
+      requires: !complex
+      nsize: 2
+      args: -ksp_type idr -pc_type bjacobi
+
+   test:
+      suffix: idr_2_complex
+      requires: complex
       nsize: 2
       args: -ksp_type idr -pc_type bjacobi
 
    test:
       suffix: idr_3
+      requires: !complex
       nsize: 4
       args: -ksp_type idr -pc_type bjacobi
 
