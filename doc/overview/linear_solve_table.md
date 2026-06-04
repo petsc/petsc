@@ -595,6 +595,11 @@ ______________________________________________________________________
      - ---
      - X
      - X
+   * - IDR(s) - Induced Dimension Reduction
+     - ``KSPIDR``
+     - ---
+     - X
+     - X
    * - Conjugate Residual
      - ``KSPCR``
      - ---

@@ -90,6 +90,7 @@ typedef const char *KSPType;
 #define KSPCGLS       "cgls"
 #define KSPFETIDP     "fetidp"
 #define KSPHPDDM      "hpddm"
+#define KSPIDR        "idr"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
@@ -417,6 +418,11 @@ PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
+
+PETSC_EXTERN PetscErrorCode KSPIDRSetS(KSP, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPIDRGetS(KSP, PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPIDRSetOmega(KSP, PetscReal);
+PETSC_EXTERN PetscErrorCode KSPIDRGetOmega(KSP, PetscReal *);
 
 PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
 static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
