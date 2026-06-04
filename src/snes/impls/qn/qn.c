@@ -475,14 +475,14 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
 
       Options Database Keys:
-+     -snes_qn_m m                                        - Number of past states saved for the L-Broyden methods.
-.     -snes_qn_restart_type (powell|periodic|none)        - set the restart type
-.     -snes_qn_powell_gamma gamma                         - Angle condition for restart.
-.     -snes_qn_powell_descent                             - Descent condition for restart.
-.     -snes_qn_type (lbfgs|broyden|badbroyden)            - QN type
-.     -snes_qn_scale_type (diagonal|none|scalar|jacobian) - scaling performed on inner Jacobian
-.     -snes_linesearch_type (cp|l2|basic)                 - Type of line search.
--     -snes_qn_monitor                                    - Monitors the quasi-newton Jacobian.
++     -snes_qn_m m                                                            - Number of past states saved for the L-Broyden methods.
+.     -snes_qn_restart_type (powell|periodic|none)                            - set the restart type
+.     -snes_qn_powell_gamma gamma                                             - Angle condition for restart.
+.     -snes_qn_powell_descent                                                 - Descent condition for restart.
+.     -snes_qn_type (lbfgs|broyden|badbroyden)                                - QN type
+.     -snes_qn_scale_type (diagonal|none|scalar|jacobian)                     - scaling performed on inner Jacobian
+.     -snes_linesearch_type (none|basic|bt|secant|cp|nleqerr|bisection|shell) - Line search type, see `SNESLineSearchType`
+-     -snes_qn_monitor                                                        - Monitors the quasi-newton Jacobian.
 
       Level: beginner
 
