@@ -386,7 +386,7 @@ static PetscErrorCode KSPIDRGetOmega_IDR(KSP ksp, PetscReal *angle)
   Level: intermediate
 
   Notes:
-  Increasing s generally improves convergence but requires s additional
+  Increasing s generally improves convergence but requires `s` additional
   vectors. If s is changed after `KSPSetUp()` has been called, the solver
   is reset automatically.
 
@@ -485,20 +485,18 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
    linear systems {cite}`van2011idr`.
 
    Options Database Keys:
-+  -ksp_idr_s s - shadow space dimension (default 4); larger s improves
-   convergence at the cost of s additional vectors and s extra inner products
-   per step, see `KSPIDRSetS()`
--  -ksp_idr_angle angle - omega stabilization threshold (default 0.7, 0 = off);
-   prevents near-orthogonality stalling in the minimal-residual omega step
++  -ksp_idr_s s         - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
++                         and `s` extra inner products per step, see `KSPIDRSetS()`
+-  -ksp_idr_angle angle - omega stabilization threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
 
    Level: intermediate
 
    Notes:
    IDR(s) is a short-recurrence, non-restarting Krylov method for general
    nonsymmetric linear systems. It requires no growing subspace and avoids
-   the restart stagnation of `KSPGMRES`. The parameter s controls the
+   the restart stagnation of `KSPGMRES`. The parameter `s` controls the
    trade-off between memory and convergence speed\: s=1 is mathematically
-   equivalent to `KSPBCGS` (BiCGSTAB); s=4 typically converges as fast as
+   equivalent to `KSPBCGS`; s=4 typically converges as fast as
    GMRES(50); s=8 often outperforms GMRES(100).
 
    Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
