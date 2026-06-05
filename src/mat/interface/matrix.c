@@ -3284,7 +3284,7 @@ PetscErrorCode MatLUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
   See, e.g., `KSPCreate()`.
 
   Probably really in-place only when level of fill is zero, otherwise allocates
-  new space to store factored matrix and deletes previous memory. The preferred approach is to use `MatGetFactor()`, `MatILUFactorSymbolic()`, and `MatILUFactorNumeric()`
+  new space to store factored matrix and deletes previous memory. The preferred approach is to use `MatGetFactor()`, `MatILUFactorSymbolic()`, and `MatLUFactorNumeric()`
   when not using `KSP`.
 
   Fortran Note:
@@ -4888,8 +4888,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 
 /*@
   MatGetFactor - Returns a matrix suitable to calls to routines such as `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatILUFactorSymbolic()`,
-  `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactorNumeric()`, `MatILUFactorNumeric()`, and
-  `MatICCFactorNumeric()`
+  `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, and `MatCholeskyFactorNumeric()`
 
   Collective
 
@@ -4936,8 +4935,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
           `MatGetFactorAvailable()`, `MatFactorGetCanUseOrdering()`, `MatSolverTypeRegister()`, `MatSolverTypeGet()`,
           `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`, `MatInitializePackage()`,
           `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatILUFactorSymbolic()`,
-          `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactorNumeric()`, `MatILUFactorNumeric()`,
-          `MatICCFactorNumeric()`
+          `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactorNumeric()`
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Mat *f)
 {
