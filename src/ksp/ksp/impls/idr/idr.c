@@ -237,7 +237,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
 
   /* Recover the true solution: unwind right preconditioning and add back guess */
   PetscCall(KSPUnwindPreconditioner(ksp, X, T));
-  if (idr->guess) PetscCall(VecAXPY(X, 1.0, idr->guess));
+  if (ksp->pc_side == PC_RIGHT && !ksp->guess_zero) PetscCall(VecAXPY(X, 1.0, idr->guess));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
