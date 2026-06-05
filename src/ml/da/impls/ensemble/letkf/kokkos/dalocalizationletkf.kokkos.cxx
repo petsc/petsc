@@ -39,6 +39,10 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>           values_dev;
   Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>     row_counts_host, row_offsets_host, col_indices_host;
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace>  values_host;
+#if defined(PETSC_USE_DEBUG)
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>          actual_counts_dev;
+  Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace> actual_counts_host;
+#endif
 
   PetscFunctionBegin;
   /* Single source of truth for the cutoff policy lives in letkf_kernels.h; see CPU
@@ -125,6 +129,13 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   col_indices_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("col_indices", total_nnz);
   values_dev      = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>("values", total_nnz);
 
+#if defined(PETSC_USE_DEBUG)
+  /* Mirror the CPU backend's PetscAssert(pos == row_counts[i]): record the actual Pass-2 write
+     count per row in a device View and verify on host that it matches Pass 1. Allocated only in
+     debug builds; release builds skip both the View and the per-row write. */
+  PetscCallCXX(actual_counts_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("actual_counts", n_vert_local));
+#endif
+
   Kokkos::parallel_for(
     "FillLocalizationMatrix", Kokkos::RangePolicy<ExecSpace>(0, n_vert_local), KOKKOS_LAMBDA(const PetscInt i) {
       PetscInt offset = row_offsets_dev(i);
@@ -141,8 +152,18 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
           pos++;
         }
       }
+#if defined(PETSC_USE_DEBUG)
+      actual_counts_dev(i) = pos;
+#endif
     });
   Kokkos::fence();
+
+#if defined(PETSC_USE_DEBUG)
+  PetscCallCXX(actual_counts_host = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("actual_counts_host", n_vert_local));
+  PetscCallCXX(Kokkos::deep_copy(actual_counts_host, actual_counts_dev));
+  for (PetscInt i = 0; i < n_vert_local; ++i)
+    PetscCheck(actual_counts_host(i) == row_counts_host(i), PETSC_COMM_SELF, PETSC_ERR_PLIB, "LETKF localization Pass 1/2 mismatch on row %" PetscInt_FMT ": pass1=%" PetscInt_FMT " pass2=%" PetscInt_FMT, i, row_counts_host(i), actual_counts_host(i));
+#endif
 
   /* Copy results to host */
   col_indices_host = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("col_indices_host", total_nnz);
