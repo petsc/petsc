@@ -4626,10 +4626,11 @@ static PetscErrorCode DMPlexStratify_CellType_Private(DM dm, DMLabel label)
 
 static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
 {
-  PetscInt pStart, pEnd;
+  PetscInt dim, pStart, pEnd;
   PetscInt numRoots = 0, numLeaves = 0;
 
   PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   {
     /* Initialize roots and count leaves */
@@ -4670,10 +4671,14 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
     }
     PetscCall(DMPlexCreateDepthStratum(dm, label, 1, sMin, sMax + 1));
   } else {
-    PetscInt level = 0;
-    PetscInt qStart, qEnd;
+    PetscInt  level = 0;
+    PetscInt  qStart, qEnd;
+    PetscInt *bounds;
 
+    PetscCall(PetscMalloc1((dim + 3) * 2, &bounds));
     PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+    bounds[level * 2 + 0] = qStart;
+    bounds[level * 2 + 1] = qEnd;
     while (qEnd > qStart) {
       PetscInt sMin = PETSC_INT_MAX;
       PetscInt sMax = PETSC_INT_MIN;
@@ -4692,7 +4697,27 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
       PetscCall(DMLabelGetNumValues(label, &level));
       PetscCall(DMPlexCreateDepthStratum(dm, label, level, sMin, sMax + 1));
       PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+      bounds[level * 2 + 0] = qStart;
+      bounds[level * 2 + 1] = qEnd;
+      for (PetscInt l = 0; l < level; ++l) {
+        PetscBool intersect = PETSC_FALSE;
+
+        if (bounds[level * 2 + 0] <= bounds[l * 2 + 0]) {
+          if (bounds[level * 2 + 1] > bounds[l * 2 + 0]) intersect = PETSC_TRUE;
+        } else {
+          if (bounds[l * 2 + 1] > bounds[level * 2 + 0]) intersect = PETSC_TRUE;
+        }
+        if (intersect) {
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] numRoots %" PetscInt_FMT " numLeaves %" PetscInt_FMT "\n", PetscGlobalRank, numRoots, numLeaves));
+          for (PetscInt m = 0; m < level; ++m) {
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]   Level %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ")\n", PetscGlobalRank, m, bounds[m * 2 + 0], bounds[m * 2 + 1]));
+          }
+        }
+        PetscCheck(!intersect, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ") intersects depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ")", level, bounds[level * 2 + 0], bounds[level * 2 + 1], l, bounds[l * 2 + 0], bounds[l * 2 + 1]);
+      }
+      PetscCheck(level <= dim + 1 || sMax < sMin, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Mesh of dimension %" PetscInt_FMT " trying to create depth %" PetscInt_FMT " [%" PetscInt_FMT ", %" PetscInt_FMT ") with chart [%" PetscInt_FMT ", %" PetscInt_FMT ")", dim, level, sMin, sMax + 1, pStart, pEnd);
     }
+    PetscCall(PetscFree(bounds));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -9695,7 +9720,24 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   PetscCall(DMGetDimension(rdm, &dim));
   PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
   if (cEnd > cStart) PetscCall(DMPlexGetCellType(rdm, cStart, &ct));
-  else ct = DM_POLYTOPE_SEGMENT;
+  else {
+    switch (dim) {
+    case 0:
+      ct = DM_POLYTOPE_POINT;
+      break;
+    case 1:
+      ct = DM_POLYTOPE_SEGMENT;
+      break;
+    case 2:
+      ct = DM_POLYTOPE_TRIANGLE;
+      break;
+    case 3:
+      ct = DM_POLYTOPE_TETRAHEDRON;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No default cell type for dimension %" PetscInt_FMT, dim);
+    }
+  }
   PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, 1, ct, 0, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "rank"));
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
@@ -9884,7 +9926,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 /*
   For submeshes with cohesive cells (see DMPlexConstructCohesiveCells()), we allow a special case where some of the boundary of a face (edges and vertices) are not duplicated. We call these special boundary points "unsplit", since the same edge or vertex appears in both copies of the face. These unsplit points throw off our counting, so we have to explicitly account for them here.
 */
-static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
+PetscErrorCode DMPlexCellUnsplitVertices_Internal(DM dm, PetscInt c, DMPolytopeType ct, PetscInt *unsplit)
 {
   DMPolytopeType  cct;
   PetscInt        ptpoints[4];
@@ -9981,7 +10023,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
     if (Nv < DMPolytopeTypeGetNumVertices(ct)) {
       PetscInt unsplit;
 
-      PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+      PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
       if (Nv + unsplit == DMPolytopeTypeGetNumVertices(ct)) continue;
     }
     PetscCheck(Nv == DMPolytopeTypeGetNumVertices(ct), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " of type %s has %" PetscInt_FMT " vertices != %" PetscInt_FMT, c, DMPolytopeTypes[ct], Nv, DMPolytopeTypeGetNumVertices(ct));
@@ -10037,7 +10079,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
       PetscInt             *closure = NULL, closureSize, cl, numCorners = 0, fOff = 0, unsplit;
 
       PetscCall(DMPlexGetCellType(dm, c, &ct));
-      PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+      PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
       if (unsplit) continue;
       PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
       PetscCall(DMPlexGetCone(dm, c, &cone));
@@ -10136,7 +10178,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
     default:
       break;
     }
-    PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
+    PetscCall(DMPlexCellUnsplitVertices_Internal(dm, c, ct, &unsplit));
     if (unsplit) continue;
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
     PetscCheck(detJ >= -PETSC_SMALL && (detJ > 0.0 || ignoreZeroVol), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double)detJ);

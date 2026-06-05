@@ -993,6 +993,14 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   PetscCall(DMGetDimension(dm, &cdim));
   PetscCall(PetscDualSpaceGetDimension(Q, &Nb));
   PetscCall(PetscFEGetNumComponents(fem, &Nc));
+  {
+    PetscSpace sp;
+    PetscInt   Nv;
+
+    PetscCall(PetscFEGetBasisSpace(fem, &sp));
+    PetscCall(PetscSpaceGetNumVariables(sp, &Nv));
+    PetscCheck(cdim == Nv, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Dual space mesh dim %" PetscInt_FMT " != %" PetscInt_FMT " number of space variables", cdim, Nv);
+  }
   PetscCall(PetscMalloc1(1, T));
   (*T)->K    = !cdim ? 0 : K;
   (*T)->Nr   = nrepl;
