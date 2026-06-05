@@ -1,6 +1,7 @@
 #include <../src/ml/da/impls/ensemble/letkf/letkf.h>
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>
+#include <climits>
 
 #if defined(KOKKOS_ENABLE_CUDA)
   #include <cusolverDn.h>
@@ -293,7 +294,7 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
       #else
     hip_status = rocsolver_dsyevd(rocblasH, rocblas_evect_original, rocblas_fill_upper, n_size, A_ptr, n_size, W_ptr, d_work, info_ptr);
       #endif
-    PetscCheck(hip_status == rocblas_status_success, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocsolver_*syevd failed for batch %" PetscInt_FMT, i);
+    PetscCheck(hip_status == rocblas_status_success, PETSC_COMM_SELF, PETSC_ERR_LIB, "rocsolver_*syevd failed for batch %" PetscInt_FMT, (PetscInt)i);
   }
     #endif
 
@@ -321,7 +322,6 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
   PetscFunctionBegin;
   /* Use pre-allocated workspace */
   PetscScalar *d_work     = work->d_work;
-  int         *d_info     = work->d_info;
   PetscScalar *d_A_contig = work->d_A_contig;
   PetscScalar *d_W_contig = work->d_W_contig;
 
@@ -334,33 +334,18 @@ static PetscErrorCode BatchedEigenSolve_Device(Kokkos::View<PetscScalar ***, Kok
     });
   Kokkos::fence();
 
-  /* oneMKL doesn't have a native batched syevd, so we loop over batch */
-  /* Use oneapi::mkl::lapack::syevd which computes eigenvalues and eigenvectors */
+  /* oneMKL doesn't have a native batched syevd, so we loop over batch and call the USM
+     overload of oneapi::mkl::lapack::syevd. The USM overload reports failures via
+     oneapi::mkl::lapack::lapack_exception (a sycl::exception subclass), not through an
+     output `info` parameter; PetscCallCXX() catches std::exception and converts to a
+     PETSc error. */
   for (int i = 0; i < n_batch; i++) {
     PetscScalar *A_ptr = d_A_contig + i * n_size * n_size;
     PetscScalar *W_ptr = d_W_contig + i * n_size;
-    // int         *info_ptr = d_info + i;
 
-    try {
-    #if defined(PETSC_USE_REAL_SINGLE)
-      // oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
-      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device);
-    #else
-      // oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device, info_ptr);
-      oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device);
-    #endif
-      q->wait();
-    } catch (sycl::exception const &e) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "oneMKL syevd failed for batch %d: %s", i, e.what());
-    }
+    PetscCallCXX(oneapi::mkl::lapack::syevd(*q, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, n_size, A_ptr, n_size, W_ptr, d_work, work->lwork_device));
+    PetscCallCXX(q->wait_and_throw());
   }
-
-  /* Check info */
-  int *h_info;
-  PetscCall(PetscMalloc1(n_batch, &h_info));
-  q->memcpy(h_info, d_info, sizeof(int) * n_batch).wait();
-  for (PetscInt i = 0; i < n_batch; i++) PetscCheck(h_info[i] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "oneMKL eigendecomposition failed for matrix %" PetscInt_FMT ": info=%d", i, h_info[i]);
-  PetscCall(PetscFree(h_info));
 
   /* Copy results back from contiguous layout to V_batch */
   Kokkos::parallel_for(
@@ -957,24 +942,21 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
     }
   #elif defined(KOKKOS_ENABLE_SYCL)
     {
-      /* Query workspace size for oneapi::mkl::lapack::syevd */
-      /* For syevd, workspace size is typically: */
-      /* lwork >= 1 + 6*n + 2*n*n for real, or */
-      /* lwork >= 2*n + n*n for complex */
-      int lwork;
-    #if defined(PETSC_USE_COMPLEX)
-      lwork = 2 * m + m * m;
-    #else
-      lwork = 1 + 6 * m + 2 * m * m;
-    #endif
-      eigen_work->lwork_device = lwork;
+      /* Query the exact scratchpad size oneMKL needs for syevd. The hand-rolled formula that
+         used to live here was guessed from textbook LAPACK requirements and is not guaranteed
+         to match every oneMKL backend. */
+      std::int64_t lwork = 0;
+      PetscCallCXX(lwork = oneapi::mkl::lapack::syevd_scratchpad_size<PetscScalar>(*device_handle, oneapi::mkl::job::vec, oneapi::mkl::uplo::upper, m, m));
+      PetscCheck(lwork <= (std::int64_t)INT_MAX, PETSC_COMM_SELF, PETSC_ERR_PLIB, "oneMKL syevd_scratchpad_size %lld exceeds INT_MAX", (long long)lwork);
+      eigen_work->lwork_device = (int)lwork;
 
-      /* Allocate workspace using SYCL malloc_device */
+      /* Allocate workspace using SYCL malloc_device. The USM overload of syevd reports failures
+         via lapack_exception, not an info argument, so d_info is not allocated. */
       eigen_work->d_work     = sycl::malloc_device<PetscScalar>(lwork, *device_handle);
-      eigen_work->d_info     = sycl::malloc_device<int>(chunk_size, *device_handle);
       eigen_work->d_A_contig = sycl::malloc_device<PetscScalar>(chunk_size * m * m, *device_handle);
       eigen_work->d_W_contig = sycl::malloc_device<PetscScalar>(chunk_size * m, *device_handle);
-      PetscCheck(eigen_work->d_work && eigen_work->d_info && eigen_work->d_A_contig && eigen_work->d_W_contig, PETSC_COMM_SELF, PETSC_ERR_MEM, "SYCL memory allocation failed");
+      eigen_work->d_info     = nullptr;
+      PetscCheck(eigen_work->d_work && eigen_work->d_A_contig && eigen_work->d_W_contig, PETSC_COMM_SELF, PETSC_ERR_MEM, "SYCL memory allocation failed");
     }
   #endif
 #else
