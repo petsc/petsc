@@ -69,11 +69,8 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 
   PetscFunctionBegin;
   /* Initialize or update V matrix */
-  if (!en->V) {
-    PetscCall(MatDuplicate(en->I_StS, MAT_COPY_VALUES, &en->V));
-  } else {
-    PetscCall(MatCopy(en->I_StS, en->V, SAME_NONZERO_PATTERN));
-  }
+  if (!en->V) PetscCall(MatDuplicate(en->I_StS, MAT_COPY_VALUES, &en->V));
+  else PetscCall(MatCopy(en->I_StS, en->V, SAME_NONZERO_PATTERN));
 
   /* Initialize or update eigenvalue vector */
   if (!en->sqrt_eigen_vals) PetscCall(MatCreateVecs(en->I_StS, &en->sqrt_eigen_vals, NULL));
@@ -99,8 +96,10 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 #endif
   PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV work query: info=%" PetscBLASInt_FMT, info);
 
-  /* Allocate workspace */
-  lwork = (PetscBLASInt)PetscRealPart(work[0]);
+  /* Allocate workspace. LAPACK returns the optimal lwork as a double-valued integer in work[0];
+     wrap with PetscCeilReal before narrowing so a 1-ulp shrink (some LAPACK builds return
+     e.g. 2591.999...) cannot under-allocate. PetscBLASIntCast then checks the int range. */
+  PetscCall(PetscBLASIntCast((PetscInt)PetscCeilReal(PetscRealPart(work[0])), &lwork));
   PetscCall(PetscFree(work));
   PetscCall(PetscMalloc1(lwork, &work));
 
@@ -117,6 +116,22 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   PetscCall(PetscFree(work));
   PetscCall(VecRestoreArrayWrite(en->sqrt_eigen_vals, &eig_array));
   PetscCall(MatDenseRestoreArrayWrite(en->V, &a_array));
+
+  /* T = (1/rho)*I + S^T*S is SPD by construction (rho >= 1, S^T*S is PSD), so a strongly negative
+     eigenvalue means the decomposition went wrong upstream. Catch in debug builds before
+     VecSqrtAbs() rewrites the sign and the analysis silently uses garbage T^{-1/2}. The tolerance
+     is sqrt(eps_machine)*||T||_F so the test scales with both working precision and problem
+     magnitude; this is far tighter than MATRIX_SQRT_TOLERANCE_FACTOR (used downstream for
+     matrix-reconstruction verification) because we are checking a sign error, not the
+     accuracy of an O(eps)-noisy reconstruction. */
+  if (PetscDefined(USE_DEBUG)) {
+    PetscReal lambda_min, norm_T, tol;
+
+    PetscCall(VecMin(en->sqrt_eigen_vals, NULL, &lambda_min));
+    PetscCall(MatNorm(en->I_StS, NORM_FROBENIUS, &norm_T));
+    tol = PetscSqrtReal(PETSC_MACHINE_EPSILON) * norm_T;
+    PetscCheck(lambda_min >= -tol, PetscObjectComm((PetscObject)da), PETSC_ERR_PLIB, "T = (1/rho)I + S^T*S has eigenvalue %g; expected >= -%g (sqrt(eps)*||T||, ||T|| = %g)", (double)lambda_min, (double)tol, (double)norm_T);
+  }
 
   /* Compute sqrt(eigenvalues) */
   PetscCall(VecSqrtAbs(en->sqrt_eigen_vals));
