@@ -12,7 +12,7 @@ do
   make checkbadFileChange
   make -f gmakefile check_output
   make check_petsc4py_rst
-  make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror all
+  make -f makefile CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror libs V=0
   make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror check
   make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap gmakesearch=snes_tutorials-ex48%
 done

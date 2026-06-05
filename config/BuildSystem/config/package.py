@@ -6,6 +6,7 @@ import sys
 import re
 import itertools
 from hashlib import sha256 as checksum_algo
+import platform
 
 def sliding_window(seq, n=2):
   """
@@ -928,6 +929,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     retriever = self.retriever
     retriever.saveLog()
     self.logPrint('Downloading '+self.name)
+    # Check for 'NoDefault' URL
+    if self.download == 'NoDefault':
+      raise RuntimeError(self.PACKAGE +' is not available for this platform')
     # now attempt to download each url until any one succeeds.
     err =''
     for proto, url in retriever.generateURLs():
@@ -1372,12 +1376,15 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
     return
 
   def configure(self):
-    if hasattr(self, 'download_solaris') and config.setCompilers.Configure.isSolaris(self.log):
-      self.download = self.download_solaris
-    if hasattr(self, 'download_darwin') and config.setCompilers.Configure.isDarwin(self.log):
-      self.download = self.download_darwin
-    if hasattr(self, 'download_mingw') and config.setCompilers.Configure.isMINGW(self.framework.getCompiler(), self.log):
-      self.download = self.download_mingw
+    l_os = sys.platform
+    downloadvar = 'download_'+l_os # For ex.: self.download_darwin, self.download_cygwin, self.download_sunos5, self.download_linux or self.download_freebsd14
+    if hasattr(self, downloadvar):
+      self.download = getattr(self, downloadvar)
+    arch = platform.machine()
+    downloadvar = 'download_'+l_os+'_'+arch # For ex.: self.download_linux_x86_64 or self.download_linux_aarch64
+    if hasattr(self, downloadvar):
+      self.download = getattr(self, downloadvar)
+
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]

@@ -177,7 +177,7 @@ Unable to download package %s from: %s
     localFile = os.path.join(root,'_d_'+filename)
     self.logPrint('Retrieving %s as tarball to %s' % (url,localFile) , 3, 'install')
     ext =  os.path.splitext(localFile)[1]
-    if ext not in ['.bz2','.tbz','.gz','.tgz','.zip','.ZIP']:
+    if ext not in ['.bz2','.tbz','.gz','.tgz','.zip','.ZIP','.xz']:
       raise RuntimeError('Unknown compression type in URL: '+ url)
 
     self.removeTarget(localFile)
