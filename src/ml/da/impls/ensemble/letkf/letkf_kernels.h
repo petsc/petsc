@@ -70,20 +70,25 @@ LETKF_KERNEL_FN PetscReal LETKFBoxcar(PetscReal distance, PetscReal radius)
   return distance < radius ? 1.0 : 0.0;
 }
 
-/* Squared cutoff distance beyond which the kernel is guaranteed to return zero. */
-LETKF_KERNEL_FN PetscReal LETKFCutoffSquared(PetscDALETKFLocalizationType type, PetscReal radius)
+/* Cutoff distance beyond which the kernel is guaranteed to return zero. Callers square
+   the result inline rather than going through a sqrt(cutoff^2) round-trip so the bbox
+   prune in PetscDALETKFGatherObsBbox() does not pick up a 1-ulp shrink that could drop
+   a boundary observation under the BOXCAR kernel's strict (distance < radius) test. */
+LETKF_KERNEL_FN PetscReal LETKFCutoff(PetscDALETKFLocalizationType type, PetscReal radius)
 {
   switch (type) {
   case PETSCDA_LETKF_LOC_GASPARI_COHN:
   case PETSCDA_LETKF_LOC_GAUSSIAN:
-    return 4.0 * radius * radius; /* (2*radius)^2 */
+    return 2.0 * radius;
   case PETSCDA_LETKF_LOC_BOXCAR:
-    return radius * radius;
-  default:
-    /* Unreachable: callers PetscCheck() the type before reaching here, and LOC_NONE skips Q construction entirely. */
-    LETKF_KERNEL_UNREACHABLE("LETKFCutoffSquared: invalid localization type");
-    return 0.0;
+    return radius;
+  case PETSCDA_LETKF_LOC_NONE:
+  case PETSCDA_LETKF_LOC_NUM_TYPES:
+    break;
   }
+  /* Unreachable: callers PetscCheck() the type before reaching here, and LOC_NONE skips Q construction entirely. */
+  LETKF_KERNEL_UNREACHABLE("LETKFCutoff: invalid localization type");
+  return 0.0;
 }
 
 LETKF_KERNEL_FN PetscReal LETKFKernelEval(PetscDALETKFLocalizationType type, PetscReal distance, PetscReal radius)
@@ -95,9 +100,11 @@ LETKF_KERNEL_FN PetscReal LETKFKernelEval(PetscDALETKFLocalizationType type, Pet
     return LETKFGaussian(distance, radius);
   case PETSCDA_LETKF_LOC_BOXCAR:
     return LETKFBoxcar(distance, radius);
-  default:
-    /* Unreachable: see LETKFCutoffSquared(). */
-    LETKF_KERNEL_UNREACHABLE("LETKFKernelEval: invalid localization type");
-    return 0.0;
+  case PETSCDA_LETKF_LOC_NONE:
+  case PETSCDA_LETKF_LOC_NUM_TYPES:
+    break;
   }
+  /* Unreachable: see LETKFCutoff(). */
+  LETKF_KERNEL_UNREACHABLE("LETKFKernelEval: invalid localization type");
+  return 0.0;
 }

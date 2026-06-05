@@ -281,10 +281,10 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
     PetscCall(VecRestoreArrayRead(xyz[d], &local_coords_array));
   }
 
-  /* Compute cutoff and cutoff^2 directly per type to avoid sqrt(r*r) round-trip FP error in the
-     bbox prune; the BOXCAR kernel uses a strict (distance < radius) test, so a 1-ulp shrink of
-     cutoff could otherwise drop a boundary observation in the GatherObsBbox stage. */
-  cutoff  = (type == PETSCDA_LETKF_LOC_BOXCAR) ? radius : 2.0 * radius;
+  /* Single source of truth for the cutoff policy lives in letkf_kernels.h; LETKFCutoff() returns
+     the un-squared bound directly to avoid sqrt(r*r) round-trip FP error in the bbox prune
+     (matters for the BOXCAR kernel's strict (distance < radius) test on boundary obs). */
+  cutoff  = LETKFCutoff(type, radius);
   cutoff2 = cutoff * cutoff;
 
   /* Bbox-pruned obs gather: replaces the all-to-all materialization of the global obs coord set. */

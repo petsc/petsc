@@ -39,12 +39,13 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>           values_dev;
   Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>     row_counts_host, row_offsets_host, col_indices_host;
   Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, Kokkos::HostSpace>  values_host;
-  /* Compute cutoff and cutoff^2 directly per type to avoid sqrt(r*r) round-trip FP error in the
-     bbox prune (see CPU dalocalizationletkf.c for the full rationale). */
-  const PetscReal cutoff  = (type == PETSCDA_LETKF_LOC_BOXCAR) ? radius : 2.0 * radius;
-  const PetscReal cutoff2 = cutoff * cutoff;
+  PetscReal                                                           cutoff, cutoff2;
 
   PetscFunctionBegin;
+  /* Single source of truth for the cutoff policy lives in letkf_kernels.h; see CPU
+     dalocalizationletkf.c for why this is computed directly rather than via sqrt(cutoff^2). */
+  cutoff  = LETKFCutoff(type, radius);
+  cutoff2 = cutoff * cutoff;
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
