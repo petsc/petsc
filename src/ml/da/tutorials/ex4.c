@@ -326,7 +326,7 @@ int main(int argc, char **argv)
   PetscReal            init_perturb_amplitude = DEFAULT_INIT_PERTURB_AMPLITUDE, init_h_bias = DEFAULT_INIT_H_BIAS;
   PetscReal            obs_error_std       = DEFAULT_OBS_ERROR_STD;
   PetscReal            localization_radius = DEFAULT_LOCALIZATION_RADIUS;
-  PetscReal            rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal            rmse_initial = 0.0, rmse_forecast = 0.0, rmse_analysis = 0.0, truth_time = 0.0;
   PetscReal            sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
   PetscReal            dx, dy, c, cfl;
   PetscBool            output_enabled = PETSC_FALSE;
@@ -393,7 +393,8 @@ int main(int argc, char **argv)
     PetscInt spinup_progress_interval = (n_spin >= 10) ? (n_spin / 10) : 1;
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth trajectory for %" PetscInt_FMT " steps...\n", n_spin));
     for (PetscInt k = 0; k < n_spin; k++) {
-      PetscCall(ShallowWaterStep2DVec(sw_ctx, k * dt, truth_state));
+      PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_time, truth_state));
+      truth_time += dt;
       if ((k + 1) % spinup_progress_interval == 0 || (k + 1) == n_spin) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Spinup progress: %" PetscInt_FMT "/%" PetscInt_FMT "\n", k + 1, n_spin));
     }
     PetscCall(VecCopy(truth_state, x0));
@@ -515,7 +516,8 @@ int main(int argc, char **argv)
 
     /* Propagate ensemble and truth trajectory */
     PetscCall(PetscDAEnsembleForecast(da, ShallowWaterStep2D, sw_ctx));
-    PetscCall(ShallowWaterStep2DVec(sw_ctx, (step - 1) * dt, truth_state));
+    PetscCall(ShallowWaterStep2DVec(sw_ctx, truth_time, truth_state));
+    truth_time += dt;
 
     /* Forecast step: compute ensemble mean and forecast RMSE */
     PetscCall(PetscDAEnsembleComputeMean(da, x_mean));
