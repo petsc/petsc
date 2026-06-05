@@ -489,7 +489,7 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
 
    Options Database Keys:
 +  -ksp_idr_s s         - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
-+                         and `s` extra inner products per step, see `KSPIDRSetS()`
+                         and `s` extra inner products per step, see `KSPIDRSetS()`
 -  -ksp_idr_angle angle - omega stabilization threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
 
    Level: intermediate
