@@ -91,11 +91,12 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
 
-  X = ksp->vec_sol;
-  B = ksp->vec_rhs;
-  R = idr->r;
-  V = idr->v;
-  T = idr->t;
+  X  = ksp->vec_sol;
+  B  = ksp->vec_rhs;
+  R  = idr->r;
+  V  = idr->v;
+  T  = idr->t;
+  nr = 1.0;
 
   /* Compute initial (preconditioned for left PC) residual R */
   PetscCall(KSPInitialResidual(ksp, X, V, T, R, B));
@@ -167,7 +168,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         /* Update column k of M: M[k:s-1][k] = P[k:s-1]^H G[k] */
         PetscCall(VecMDot(G[k], s - k, &P[k], &M[k + k * s]));
 
-        if (PetscAbsScalar(M[k + k * s]) < 10 * PETSC_MACHINE_EPSILON) {
+        if (PetscAbsScalar(M[k + k * s]) < 10 * PETSC_MACHINE_EPSILON * nr) {
           PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown due to zero M[k,k] in IDR(s)");
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscCall(PetscInfo(ksp, "Breakdown in IDR(s) half-step: M[k,k] = 0\n"));
@@ -179,6 +180,8 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         PetscCall(VecAXPY(R, -beta, G[k]));
         PetscCall(VecAXPY(X, beta, U[k]));
 
+        /* With right preconditioning: R doubles as both the residual for x_0 and the
+           RHS for the shifted system A K^{-1} y = R iterated from y = 0 */
         if (ksp->normtype != KSP_NORM_NONE) {
           PetscCall(VecNorm(R, NORM_2, &dp));
           KSPCheckNorm(ksp, dp);
