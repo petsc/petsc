@@ -337,7 +337,7 @@ static PetscErrorCode KSPIDRSetS_IDR(KSP ksp, PetscInt s)
 
   PetscFunctionBegin;
   PetscCheck(s >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Shadow space dimension s must be >= 1, got %" PetscInt_FMT, s);
-  if (!ksp->setupstage) idr->s = s;
+  if (ksp->setupstage != KSP_SETUP_NEW) idr->s = s;
   else if (idr->s != s) {
     PetscCall(KSPReset_IDR(ksp));
     idr->s          = s;
@@ -501,9 +501,7 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
    trade-off between memory and convergence speed\: s=1 is mathematically
    equivalent to `KSPBCGS`; s=4 typically converges as fast as
    GMRES(50); s=8 often outperforms GMRES(100).
-
    Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
-
    This implements the biorthogonal variant (IDRbio) described in
    Meurant & Duintjer Tebbens, "Krylov Methods for Nonsymmetric Linear
    Systems", Springer 2020. The algorithm is closely related to
