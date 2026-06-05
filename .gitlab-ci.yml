@@ -656,6 +656,19 @@ linux-sycl-double:
     TEST_OPTS: query=requires queryval=kokkos_kernels
     MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
+linux-sycl-gpu:
+  extends:
+    - .stage-3
+    - .linux_test_nofflags
+    - .coverage-disable
+  tags:
+    - fr-sycl
+  variables:
+    TEST_ARCH: arch-ci-linux-sycl-gpu
+    INIT_SCRIPT: /opt/intel/oneapi/setvars.sh
+    TEST_OPTS: -j1 query='requires,requires' queryval='sycl,kokkos_kernels'
+    MAKE_CFLAGS: -Wno-expected-file-type -Werror
+
 linux-cuda-pkgs:
   extends:
     - .stage-3
