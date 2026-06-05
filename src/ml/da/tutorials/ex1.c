@@ -90,9 +90,6 @@ static PetscErrorCode Lorenz96RHS(TS ts, PetscReal t, Vec X, Vec F_vec, PetscCtx
   PetscInt           xs, xm, i;
 
   PetscFunctionBeginUser;
-  (void)ts; /* Mark as intentionally unused to avoid compiler warnings */
-  (void)t;
-
   /* Work with a local (ghosted) vector so the Lorenz-96 stencil has the
    * required neighbors for periodic boundary conditions. */
   PetscCall(DMDAGetCorners(l95->da, &xs, NULL, NULL, &xm, NULL, NULL));

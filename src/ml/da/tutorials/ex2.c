@@ -49,9 +49,6 @@ static PetscErrorCode Lorenz96RHS(TS ts, PetscReal t, Vec X, Vec F_vec, PetscCtx
   PetscInt           xs, xm, i;
 
   PetscFunctionBeginUser;
-  (void)ts;
-  (void)t;
-
   PetscCall(DMDAGetCorners(l95->da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(DMGetLocalVector(l95->da, &X_local));
   PetscCall(DMGlobalToLocalBegin(l95->da, X, INSERT_VALUES, X_local));
