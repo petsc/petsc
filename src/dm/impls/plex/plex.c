@@ -9720,7 +9720,24 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   PetscCall(DMGetDimension(rdm, &dim));
   PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
   if (cEnd > cStart) PetscCall(DMPlexGetCellType(rdm, cStart, &ct));
-  else ct = DM_POLYTOPE_SEGMENT;
+  else {
+    switch (dim) {
+    case 0:
+      ct = DM_POLYTOPE_POINT;
+      break;
+    case 1:
+      ct = DM_POLYTOPE_SEGMENT;
+      break;
+    case 2:
+      ct = DM_POLYTOPE_TRIANGLE;
+      break;
+    case 3:
+      ct = DM_POLYTOPE_TETRAHEDRON;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No default cell type for dimension %" PetscInt_FMT, dim);
+    }
+  }
   PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, 1, ct, 0, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "rank"));
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
