@@ -19,6 +19,8 @@
 
 - Add `PetscGetConfiguration()`
 - Add `PetscObjectViewSynchronizedFromOptions()`
+- Add `PetscSetMPIThreadRequiredType()`
+- Deprecate `PETSC_MPI_THREAD_REQUIRED`
 
 ## Event Logging
 
