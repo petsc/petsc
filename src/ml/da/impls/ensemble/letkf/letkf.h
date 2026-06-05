@@ -31,6 +31,11 @@ typedef struct {
   PetscInt n_grid;          /* Number of grid points (n_grid = state_size / da->ndof) */
   PetscInt batch_size;      /* Batch size for GPU processing */
 
+  /* True after the first analysis call has emitted -petscda_view, so subsequent analyses do not
+     re-print the (unchanging) data structure. Reset by PetscDALETKFResetLocalization(), which is
+     the funnel for every setter that can change what would be displayed. */
+  PetscBool view_emitted;
+
   /* Localization support for MPI */
   IS         obs_is_local;    /* Indices of observations needed by this process */
   VecScatter obs_scat;        /* Scatter context for observations */

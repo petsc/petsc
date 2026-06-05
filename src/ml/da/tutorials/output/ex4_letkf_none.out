@@ -1,13 +1,4 @@
 Localization disabled (LETKF NONE; equivalent to global ETKF)
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: none
 2D Shallow Water LETKF Example
 ==============================
   Mode                  : Data Assimilation
@@ -25,7 +16,7 @@ PetscDA Object: 1 MPI process
   Wave speed (c)        : 3.8360
   Time step (dt)        : 0.0200
   CFL number            : 0.0403
-  Total steps           : 10
+  Total steps           : 5
   Observation frequency : 2
   Init perturb amp      : 0.050
   Init height bias      : 0.000
@@ -34,19 +25,23 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00776
-Step    3, time  0.060  RMSE_forecast 0.00771  RMSE_analysis 0.00771
-Step    4, time  0.080  RMSE_forecast 0.00766  RMSE_analysis 0.00937
-Step    5, time  0.100  RMSE_forecast 0.00931  RMSE_analysis 0.00931
-Step    6, time  0.120  RMSE_forecast 0.00925  RMSE_analysis 0.00689
-Step    7, time  0.140  RMSE_forecast 0.00685  RMSE_analysis 0.00685
-Step    8, time  0.160  RMSE_forecast 0.00680  RMSE_analysis 0.00817
-Step    9, time  0.180  RMSE_forecast 0.00811  RMSE_analysis 0.00811
-Step   10, time  0.200  RMSE_forecast 0.00806  RMSE_analysis 0.00634
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: none
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00432
+Step    3, time  0.060  RMSE_forecast 0.00429  RMSE_analysis 0.00429
+Step    4, time  0.080  RMSE_forecast 0.00426  RMSE_analysis 0.00843
+Step    5, time  0.100  RMSE_forecast 0.00837  RMSE_analysis 0.00837
 
-Statistics (10 steps):
+Statistics (5 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00638
-  Mean RMSE (analysis) : 0.00705
-  Observations used    : 5
+  Mean RMSE (forecast) : 0.00339
+  Mean RMSE (analysis) : 0.00508
+  Observations used    : 2
 

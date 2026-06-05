@@ -9,6 +9,7 @@ PetscDA Object: 1 MPI process
   Local analysis: Kokkos
   Localization type: gaspari_cohn
   Localization radius: 20.
+  Localization matrix: not set
   GPU batch size: auto
 2D Shallow Water LETKF Example
 ==============================

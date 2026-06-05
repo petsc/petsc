@@ -337,8 +337,6 @@ int main(int argc, char **argv)
   /* Initialize ensemble members from spun-up truth state */
   PetscCall(PetscDAEnsembleInitialize(da, truth_state, ensemble_init_std, rng));
 
-  PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
-
   /* Print configuration summary */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Lorenz-96 LETKF Example\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "======================\n"));

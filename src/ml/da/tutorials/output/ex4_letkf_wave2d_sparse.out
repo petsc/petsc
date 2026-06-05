@@ -1,14 +1,4 @@
 Using Gaspari-Cohn localization with radius 30.
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 9
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: gaspari_cohn
-  Localization radius: 30.
 2D Shallow Water LETKF Example
 ==============================
   Mode                  : Data Assimilation
@@ -26,7 +16,7 @@ PetscDA Object: 1 MPI process
   Wave speed (c)        : 3.8360
   Time step (dt)        : 0.0200
   CFL number            : 0.0403
-  Total steps           : 10
+  Total steps           : 5
   Observation frequency : 2
   Init perturb amp      : 0.050
   Init height bias      : 0.000
@@ -35,19 +25,24 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 9
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 30.
 Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00273
 Step    3, time  0.060  RMSE_forecast 0.00271  RMSE_analysis 0.00271
 Step    4, time  0.080  RMSE_forecast 0.00268  RMSE_analysis 0.00290
 Step    5, time  0.100  RMSE_forecast 0.00288  RMSE_analysis 0.00288
-Step    6, time  0.120  RMSE_forecast 0.00285  RMSE_analysis 0.00402
-Step    7, time  0.140  RMSE_forecast 0.00399  RMSE_analysis 0.00399
-Step    8, time  0.160  RMSE_forecast 0.00395  RMSE_analysis 0.00463
-Step    9, time  0.180  RMSE_forecast 0.00459  RMSE_analysis 0.00459
-Step   10, time  0.200  RMSE_forecast 0.00456  RMSE_analysis 0.00681
 
-Statistics (10 steps):
+Statistics (5 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00282
-  Mean RMSE (analysis) : 0.00353
-  Observations used    : 5
+  Mean RMSE (forecast) : 0.00165
+  Mean RMSE (analysis) : 0.00224
+  Observations used    : 2
 

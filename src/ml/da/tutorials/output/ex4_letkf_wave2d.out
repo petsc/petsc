@@ -1,14 +1,4 @@
 Using Gaspari-Cohn localization with radius 20.
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: gaspari_cohn
-  Localization radius: 20.
 2D Shallow Water LETKF Example
 ==============================
   Mode                  : Data Assimilation
@@ -26,7 +16,7 @@ PetscDA Object: 1 MPI process
   Wave speed (c)        : 3.8360
   Time step (dt)        : 0.0200
   CFL number            : 0.0403
-  Total steps           : 10
+  Total steps           : 5
   Observation frequency : 2
   Init perturb amp      : 0.050
   Init height bias      : 0.000
@@ -35,19 +25,24 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01376
-Step    3, time  0.060  RMSE_forecast 0.01361  RMSE_analysis 0.01361
-Step    4, time  0.080  RMSE_forecast 0.01346  RMSE_analysis 0.01237
-Step    5, time  0.100  RMSE_forecast 0.01224  RMSE_analysis 0.01224
-Step    6, time  0.120  RMSE_forecast 0.01211  RMSE_analysis 0.01177
-Step    7, time  0.140  RMSE_forecast 0.01164  RMSE_analysis 0.01164
-Step    8, time  0.160  RMSE_forecast 0.01151  RMSE_analysis 0.01102
-Step    9, time  0.180  RMSE_forecast 0.01090  RMSE_analysis 0.01090
-Step   10, time  0.200  RMSE_forecast 0.01078  RMSE_analysis 0.00937
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 20.
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01210
+Step    3, time  0.060  RMSE_forecast 0.01196  RMSE_analysis 0.01196
+Step    4, time  0.080  RMSE_forecast 0.01183  RMSE_analysis 0.01105
+Step    5, time  0.100  RMSE_forecast 0.01093  RMSE_analysis 0.01093
 
-Statistics (10 steps):
+Statistics (5 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00963
-  Mean RMSE (analysis) : 0.01067
-  Observations used    : 5
+  Mean RMSE (forecast) : 0.00694
+  Mean RMSE (analysis) : 0.00921
+  Observations used    : 2
 

@@ -239,7 +239,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCoalesceNnzMinMax(MPI_Comm comm, PetscIn
 */
 static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocalizationType type, PetscReal radius, Vec xyz[], PetscReal bd[], Mat H, Mat *Q)
 {
-  PetscInt     dim = 0, n_vert_local, d, n_obs_global, n_obs_local, n_obs_cand;
+  PetscInt     dim = 0, n_vert_local, n_obs_global, n_obs_local, n_obs_cand;
   PetscInt     rstart, cstart, cend;
   PetscInt     total_nnz   = 0;
   PetscInt64   total_nnz64 = 0;
@@ -257,7 +257,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   PetscCall(PetscObjectGetComm((PetscObject)H, &comm));
   PetscCall(MatGetLocalSize(H, &n_obs_local, NULL));
   PetscCall(MatGetSize(H, &n_obs_global, NULL));
-  for (d = 0; d < 3; ++d) {
+  for (PetscInt d = 0; d < 3; ++d) {
     if (xyz[d]) {
       PetscCheck(d == dim, comm, PETSC_ERR_ARG_WRONG, "Coordinate slots must be contiguous from xyz[0]; got NULL before xyz[%" PetscInt_FMT "]", d);
       dim++;
@@ -267,14 +267,14 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
 
   /* Compute observation coordinates: obs_locs[d] = H * xyz[d] */
   PetscCall(PetscMalloc1(dim, &obs_vecs));
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     PetscCall(MatCreateVecs(H, NULL, &obs_vecs[d]));
     PetscCall(MatMult(H, xyz[d], obs_vecs[d]));
   }
 
   /* Vertex coordinates flattened as [vert][dim] (row-major). */
   PetscCall(PetscMalloc1((size_t)n_vert_local * dim, &vertex_coords));
-  for (d = 0; d < dim; ++d) {
+  for (PetscInt d = 0; d < dim; ++d) {
     const PetscScalar *local_coords_array;
     PetscCall(VecGetArrayRead(xyz[d], &local_coords_array));
     for (PetscInt i = 0; i < n_vert_local; ++i) vertex_coords[i * dim + d] = PetscRealPart(local_coords_array[i]);
@@ -405,7 +405,7 @@ static PetscErrorCode PetscDALETKFCreateLocalizationMat_AIJ(PetscDALETKFLocaliza
   PetscCall(PetscDALETKFCoalesceNnzMinMax(comm, &local_min, &local_max));
   PetscCall(PetscInfo((PetscObject)*Q, "LETKF localization (type=%s, radius=%g): %" PetscInt_FMT " vertices, %" PetscInt_FMT " obs, nnz/row min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", PetscDALETKFLocalizationTypes[type], (double)radius, n_vert_local, n_obs_global, local_min, local_max));
 
-  for (d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
+  for (PetscInt d = 0; d < dim; ++d) PetscCall(VecDestroy(&obs_vecs[d]));
   PetscCall(PetscFree(obs_vecs));
   PetscCall(PetscFree(vertex_coords));
   PetscCall(PetscFree(obs_coords));

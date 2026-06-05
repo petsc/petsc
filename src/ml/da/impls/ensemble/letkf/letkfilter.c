@@ -610,7 +610,7 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
     PetscCall(MatDestroy(&impl->T_sqrt));
     PetscCall(MatDestroy(&impl->w_ones));
 
-    /* Create mean vector from ensemble matrix (right vector = state space) */
+    /* Create mean vector from ensemble matrix (left vector = state space) */
     PetscCall(MatCreateVecs(impl->en.ensemble, NULL, &impl->mean));
 
     /* Create Z matrix (obs_size x m) */
@@ -738,6 +738,14 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
   }
 
   PetscCall(MatDestroy(&X));
+  /* Emit -petscda_view once per localization configuration, after the first analysis has built Q
+     so the viewer can report the localization-matrix state. The flag is cleared whenever
+     PetscDALETKFResetLocalization_LETKF() drops Q (radius/type/coords change), so reconfiguring
+     fires a fresh view. Matches KSPSolve()/SNESSolve() which self-call ViewFromOptions at the tail. */
+  if (!impl->view_emitted) {
+    PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
+    impl->view_emitted = PETSC_TRUE;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -760,6 +768,7 @@ static PetscErrorCode PetscDALETKFResetLocalization_LETKF(PetscDA da)
   PetscCall(PetscDALETKFDestroyObsScatter(impl));
   PetscCall(MatDestroy(&impl->Q));
   impl->max_nnz_per_row = 0;
+  impl->view_emitted    = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -937,7 +946,6 @@ static PetscErrorCode PetscDAView_LETKF(PetscDA da, PetscViewer viewer)
     if (impl->type != PETSCDA_LETKF_LOC_NONE) {
       if (impl->localization_radius > 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization radius: %g\n", (double)impl->localization_radius));
       else PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization radius: (unset)\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization matrix: %s\n", impl->Q ? "built" : "not built"));
       if (is_kokkos) {
         if (impl->batch_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "  GPU batch size: %" PetscInt_FMT "\n", impl->batch_size));
         else PetscCall(PetscViewerASCIIPrintf(viewer, "  GPU batch size: auto\n"));
@@ -1020,6 +1028,7 @@ PETSC_INTERN PetscErrorCode PetscDACreate_LETKF(PetscDA da)
   impl->Q                   = NULL;
   impl->batch_size          = 0;
   impl->type                = PETSCDA_LETKF_LOC_GASPARI_COHN;
+  impl->view_emitted        = PETSC_FALSE;
   for (PetscInt d = 0; d < 3; d++) {
     impl->coord_xyz[d] = NULL;
     impl->coord_bd[d]  = 0.0;

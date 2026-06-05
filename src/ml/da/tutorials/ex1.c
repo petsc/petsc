@@ -384,7 +384,6 @@ int main(int argc, char **argv)
   PetscCall(PetscDASetFromOptions(da));
   PetscCall(PetscDAEnsembleGetSize(da, &ensemble_size));
   PetscCall(PetscDASetUp(da));
-  PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
   PetscCall(PetscDASetObsErrorVariance(da, obs_error_var));
 
   /* Initialize ensemble members from spun-up truth state with appropriate spread */

@@ -10,6 +10,7 @@ PetscDA Object: 3 MPI processes
   Local analysis: Kokkos
   Localization type: gaspari_cohn
   Localization radius: 5.
+  Localization matrix: not set
   GPU batch size: auto
 Lorenz-96 LETKF Example
 ======================

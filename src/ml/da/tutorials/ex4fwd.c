@@ -96,10 +96,10 @@ static PetscErrorCode RunManufacturedCase(PetscInt nx, PetscInt ny, PetscInt ste
 int main(int argc, char **argv)
 {
   PetscInt           nx = DEFAULT_NX, ny = DEFAULT_NY, steps = DEFAULT_STEPS, progress_freq = DEFAULT_PROGRESS_FREQ, verification_freq = DEFAULT_VERIFICATION_FREQ;
+  PetscInt           conv_nx_coarse = DEFAULT_CONV_NX_COARSE, conv_ny_coarse = DEFAULT_CONV_NY_COARSE, conv_refine = DEFAULT_CONV_REFINE;
   PetscReal          g = DEFAULT_G, dt = DEFAULT_DT, Lx = DEFAULT_LX, Ly = DEFAULT_LY, h0 = DEFAULT_H0, Ax = DEFAULT_AX, Ay = DEFAULT_AY;
   PetscBool          verify_mms = PETSC_FALSE, test_mms_spatial_order = PETSC_FALSE;
   PetscBool          need_mms;
-  PetscInt           conv_nx_coarse = DEFAULT_CONV_NX_COARSE, conv_ny_coarse = DEFAULT_CONV_NY_COARSE, conv_refine = DEFAULT_CONV_REFINE;
   Ex4FluxType        flux_type = EX4_FLUX_RUSANOV;
   DM                 da_state;
   ShallowWater2DCtx *sw_ctx = NULL;
@@ -131,6 +131,7 @@ int main(int argc, char **argv)
   PetscCheck(nx > 0 && ny > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Grid dimensions must be positive");
   PetscCheck(steps >= 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of steps must be non-negative");
   PetscCheck(dt > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Time step must be positive");
+  PetscCheck(!test_mms_spatial_order || steps > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-test_mms_spatial_order requires -steps > 0 (got %" PetscInt_FMT ")", steps);
   PetscCheck(!test_mms_spatial_order || conv_refine >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-conv_refine must be >= 2 for spatial-order check (got %" PetscInt_FMT ")", conv_refine);
   PetscCheck(verification_freq > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "-verification_freq must be positive (got %" PetscInt_FMT ")", verification_freq);
   need_mms = (PetscBool)(verify_mms || test_mms_spatial_order);
@@ -142,9 +143,9 @@ int main(int argc, char **argv)
     PetscReal order_cm_L1, order_cm_L2, order_cm_Linf;
     PetscReal order_mf_L1, order_mf_L2, order_mf_Linf;
 
-    PetscCall(RunManufacturedCase(conv_nx_coarse, conv_ny_coarse, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &coarse_L1, &coarse_L2, &coarse_Linf));
-    PetscCall(RunManufacturedCase(medium_nx, medium_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &medium_L1, &medium_L2, &medium_Linf));
-    PetscCall(RunManufacturedCase(fine_nx, fine_ny, PetscMax(1, steps), g, dt, Lx, Ly, h0, Ax, flux_type, &fine_L1, &fine_L2, &fine_Linf));
+    PetscCall(RunManufacturedCase(conv_nx_coarse, conv_ny_coarse, steps, g, dt, Lx, Ly, h0, Ax, flux_type, &coarse_L1, &coarse_L2, &coarse_Linf));
+    PetscCall(RunManufacturedCase(medium_nx, medium_ny, steps, g, dt, Lx, Ly, h0, Ax, flux_type, &medium_L1, &medium_L2, &medium_Linf));
+    PetscCall(RunManufacturedCase(fine_nx, fine_ny, steps, g, dt, Lx, Ly, h0, Ax, flux_type, &fine_L1, &fine_L2, &fine_Linf));
     PetscCheck(coarse_L1 > 0.0 && medium_L1 > 0.0 && fine_L1 > 0.0 && coarse_L2 > 0.0 && medium_L2 > 0.0 && fine_L2 > 0.0 && coarse_Linf > 0.0 && medium_Linf > 0.0 && fine_Linf > 0.0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "MMS error norm collapsed to zero on at least one grid (truncation below print precision); increase -steps or -dt to obtain a measurable error before the order check");
     order_cm_L1   = PetscLogReal(coarse_L1 / medium_L1) / PetscLogReal((PetscReal)conv_refine);
     order_cm_L2   = PetscLogReal(coarse_L2 / medium_L2) / PetscLogReal((PetscReal)conv_refine);

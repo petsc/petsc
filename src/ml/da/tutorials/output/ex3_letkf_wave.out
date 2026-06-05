@@ -8,6 +8,7 @@ PetscDA Object: 1 MPI process
   Local analysis: CPU
   Localization type: gaspari_cohn
   Localization radius: 100.
+  Localization matrix: not set
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Traveling wave

@@ -687,8 +687,6 @@ int main(int argc, char **argv)
      This is critical for convergence - ensemble needs spread even after spinup */
   PetscCall(PetscDAEnsembleInitialize(da, x0, obs_error_std, rng));
 
-  PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
-
   /* Print configuration summary */
   {
     const char *test_name = (test_type == EX3_TEST_DAM) ? "Dam-break" : "Traveling wave";

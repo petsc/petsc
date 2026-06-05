@@ -1,14 +1,4 @@
 Using boxcar localization with radius 15.
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 1323
-  Observation size: 121
-  Ensemble size: 3
-  Assembled: true
-  Inflation: 1.
-  Local analysis: CPU
-  Localization type: boxcar
-  Localization radius: 15.
 2D Shallow Water LETKF Example
 ==============================
   Mode                  : Data Assimilation
@@ -26,7 +16,7 @@ PetscDA Object: 1 MPI process
   Wave speed (c)        : 3.8360
   Time step (dt)        : 0.0200
   CFL number            : 0.0403
-  Total steps           : 10
+  Total steps           : 5
   Observation frequency : 2
   Init perturb amp      : 0.050
   Init height bias      : 0.000
@@ -35,19 +25,24 @@ PetscDA Object: 1 MPI process
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01948
-Step    3, time  0.060  RMSE_forecast 0.01916  RMSE_analysis 0.01916
-Step    4, time  0.080  RMSE_forecast 0.01886  RMSE_analysis 0.01683
-Step    5, time  0.100  RMSE_forecast 0.01650  RMSE_analysis 0.01650
-Step    6, time  0.120  RMSE_forecast 0.01618  RMSE_analysis 0.01881
-Step    7, time  0.140  RMSE_forecast 0.01849  RMSE_analysis 0.01849
-Step    8, time  0.160  RMSE_forecast 0.01818  RMSE_analysis 0.01755
-Step    9, time  0.180  RMSE_forecast 0.01724  RMSE_analysis 0.01724
-Step   10, time  0.200  RMSE_forecast 0.01694  RMSE_analysis 0.01716
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 1323
+  Observation size: 121
+  Ensemble size: 3
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: boxcar
+  Localization radius: 15.
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01942
+Step    3, time  0.060  RMSE_forecast 0.01911  RMSE_analysis 0.01911
+Step    4, time  0.080  RMSE_forecast 0.01881  RMSE_analysis 0.01672
+Step    5, time  0.100  RMSE_forecast 0.01640  RMSE_analysis 0.01640
 
-Statistics (10 steps):
+Statistics (5 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.01415
-  Mean RMSE (analysis) : 0.01612
-  Observations used    : 5
+  Mean RMSE (forecast) : 0.01086
+  Mean RMSE (analysis) : 0.01433
+  Observations used    : 2
 

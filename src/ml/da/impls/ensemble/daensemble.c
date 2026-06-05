@@ -117,7 +117,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   PetscCall(VecRestoreArrayWrite(en->sqrt_eigen_vals, &eig_array));
   PetscCall(MatDenseRestoreArrayWrite(en->V, &a_array));
 
-  /* T = (1/rho)*I + S^T*S is SPD by construction (rho >= 1, S^T*S is PSD), so a strongly negative
+  /* T = (1/rho)*I + S^T*S is SPD by construction (rho > 0, S^T*S is PSD), so a strongly negative
      eigenvalue means the decomposition went wrong upstream. Catch in debug builds before
      VecSqrtAbs() rewrites the sign and the analysis silently uses garbage T^{-1/2}. The tolerance
      is sqrt(eps_machine)*||T||_F so the test scales with both working precision and problem
