@@ -870,8 +870,11 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
     eigen_work->max_nnz        = max_nnz_copy;
 
     /* Allocate Kokkos Views */
-    eigen_work->S_batch               = view_3d("S_batch", chunk_size, max_nnz_copy, m);
-    eigen_work->T_batch               = view_3d("T_batch", chunk_size, m, m);
+    eigen_work->S_batch = view_3d("S_batch", chunk_size, max_nnz_copy, m);
+    eigen_work->T_batch = view_3d("T_batch", chunk_size, m, m);
+    /* Alias: the eigensolve overwrites T in place, so V and T share storage. Any future
+       kernel that needs the original symmetric T after the eigensolve must allocate V
+       separately (view_3d("V_batch", chunk_size, m, m)) instead of aliasing. */
     eigen_work->V_batch               = eigen_work->T_batch;
     eigen_work->Lambda_batch          = view_2d("Lambda_batch", chunk_size, m);
     eigen_work->T_sqrt_batch          = view_3d("T_sqrt_batch", chunk_size, m, m);
