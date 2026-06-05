@@ -4,7 +4,7 @@
 # Absolute and relative tolerances
 -waternet_snes_atol 1e-8
 -waternet_snes_rtol 1e-20
-# Line search method (bt and secant lead to convergence, basic diverges)
+# Line search method (bt and secant lead to convergence, none diverges)
 -waternet_snes_linesearch_type secant
 # Finite differenced Jacobian
 -waternet_snes_fd

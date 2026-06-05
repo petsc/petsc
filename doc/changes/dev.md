@@ -74,6 +74,7 @@
 
 ## SNESLineSearch
 
+- Deprecate `SNESLINESEARCHBASIC` in favor of `SNESLINESEARCHNONE`
 
 ## TS
 

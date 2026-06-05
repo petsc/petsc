@@ -371,8 +371,7 @@ listed in Table {any}`tab-linesearches`.
    **Line Search**      **SNESLineSearchType**      **Options Name**
    ==================== =========================== ================
    Backtracking         ``SNESLINESEARCHBT``        ``bt``
-   (damped) step        ``SNESLINESEARCHBASIC``     ``basic``
-   identical to above   ``SNESLINESEARCHNONE``      ``none``
+   (damped) step        ``SNESLINESEARCHNONE``      ``none``
    Secant method        ``SNESLINESEARCHSECANT``    ``secant``
    Critical point       ``SNESLINESEARCHCP``        ``cp``
    Error-oriented       ``SNESLINESEARCHNLEQERR``   ``nleqerr``
@@ -687,7 +686,7 @@ The quasi-Newton methods support the use of a nonlinear preconditioner that can 
    * - “Good” Broyden
      - ``SNES_QN_BROYDEN``
      - ``broyden``
-     - ``SNESLINESEARCHBASIC`` (or equivalently ``SNESLINESEARCHNONE``)
+     - ``SNESLINESEARCHNONE``
    * - “Bad” Broyden
      - ``SNES_QN_BADBROYDEN``
      - ``badbroyden``

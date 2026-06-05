@@ -345,7 +345,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   snes->ops->view           = SNESView_Patch;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE));
   snes->usesksp = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;

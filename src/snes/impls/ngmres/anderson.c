@@ -221,7 +221,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
+  if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE));
 
   ngmres->additive_linesearch = NULL;
   ngmres->approxfunc          = PETSC_FALSE;

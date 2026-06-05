@@ -289,7 +289,7 @@ program main
 
   PetscCallA(TSGetSNES(ts, snes, ierr))
   PetscCallA(SNESGetLineSearch(snes, linesearch, ierr))
-  PetscCallA(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC, ierr))
+  PetscCallA(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE, ierr))
 
   PetscCallA(TSSetMaxTime(ts, ftime, ierr))
   PetscCallA(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER, ierr))
