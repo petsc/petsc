@@ -935,7 +935,9 @@ static PetscErrorCode PetscDAView_LETKF(PetscDA da, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Local analysis: %s\n", is_kokkos ? "Kokkos" : "CPU"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization type: %s\n", PetscDALETKFLocalizationTypes[impl->type]));
     if (impl->type != PETSCDA_LETKF_LOC_NONE) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization radius: %g\n", (double)impl->localization_radius));
+      if (impl->localization_radius > 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization radius: %g\n", (double)impl->localization_radius));
+      else PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization radius: (unset)\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Localization matrix: %s\n", impl->Q ? "built" : "not built"));
       if (is_kokkos) {
         if (impl->batch_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, "  GPU batch size: %" PetscInt_FMT "\n", impl->batch_size));
         else PetscCall(PetscViewerASCIIPrintf(viewer, "  GPU batch size: auto\n"));
