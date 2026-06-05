@@ -37,6 +37,7 @@ static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
   PetscCall(MatHasCongruentLayouts(A, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
   PetscCall(MatShellGetContext(A, &a));
+  PetscCheck(a->block_diagonal_hmatrix, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Block diagonal htool::HMatrix not found");
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCallExternalVoid("copy_diagonal_in_user_numbering", htool::copy_diagonal_in_user_numbering(*a->block_diagonal_hmatrix, x));
   PetscCall(VecRestoreArrayWrite(v, &x));
@@ -47,7 +48,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
 {
   Mat_Htool  *a, *c;
   Mat         B;
-  PetscScalar shift, scale;
+  PetscScalar shift[2], scale[2];
   PetscBool   flg;
 
   PetscFunctionBegin;
@@ -55,8 +56,13 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B)); /* same logic as in MatGetDiagonalBlock_MPIDense() */
+  PetscCall(MatShellGetScalingShifts(A, shift, scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  if (B) {
+    PetscCall(MatShellGetScalingShifts(B, shift + 1, scale + 1, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+    /* invalidate cache when scale or shift changed; PetscObjectCompose() below releases the old entry */
+    if (scale[0] != scale[1] || shift[0] != shift[1]) B = nullptr;
+  }
   if (!B) {
-    PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     PetscCheck(a->block_diagonal_hmatrix, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Block diagonal htool::HMatrix not found");
     PetscCall(MatCreate(PETSC_COMM_SELF, &B));
     PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
@@ -82,12 +88,9 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
     *b = B;
     PetscCall(MatDestroy(&B));
-    PetscCall(MatShift(*b, shift));
-    PetscCall(MatScale(*b, scale));
-  } else {
-    PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
-    *b = B;
-  }
+    PetscCall(MatScale(*b, *scale));
+    PetscCall(MatShift(*b, *shift));
+  } else *b = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -267,8 +270,8 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
     PetscCall(ISRestoreIndices(irow[i], &idxr));
     PetscCall(ISRestoreIndices(icol[i], &idxc));
     PetscCall(MatDenseRestoreArrayWrite((*submat)[i], &ptr));
-    PetscCall(MatShift((*submat)[i], shift));
     PetscCall(MatScale((*submat)[i], scale));
+    PetscCall(MatShift((*submat)[i], shift));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -421,7 +424,7 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
     PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
     if (flg) {
       PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
-      PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->block_diagonal_hmatrix->get_symmetry()));
+      PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->block_diagonal_hmatrix ? a->block_diagonal_hmatrix->get_symmetry() : 'N'));
       if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
@@ -825,8 +828,8 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscCall(MatDenseGetArrayWrite(C, &array));
   PetscCallExternalVoid("copy_to_dense_in_user_numbering", htool::copy_to_dense_in_user_numbering(*a->local_hmatrix, array));
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
-  PetscCall(MatShift(C, shift));
   PetscCall(MatScale(C, scale));
+  PetscCall(MatShift(C, shift));
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
   else *B = C;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -878,8 +881,8 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
   }
   PetscCall(MatShellGetContext(C, &c));
   c->dim = a->dim;
-  PetscCall(MatShift(C, shift));
   PetscCall(MatScale(C, scale));
+  PetscCall(MatShift(C, shift));
   c->kernel = GenEntriesTranspose;
   if (kernelt->A != A) {
     PetscCall(MatDestroy(&kernelt->A));
@@ -911,18 +914,25 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDestroy_Factor(Mat F)
+struct MatFactorCtx {
+  htool::HMatrix<PetscScalar> *hmatrix; /* factorized HMatrix filled by MatFactorNumeric_Htool() */
+  PetscScalar                  scale;   /* scaling factor from MatShellGetScalingShifts(), applied as inverse scaling in Mat[Mat]Solve() */
+};
+
+static PetscErrorCode MatFactorCtxDestroy(PetscCtxRt ctx)
 {
-  PetscContainer               container;
-  htool::HMatrix<PetscScalar> *A;
+  MatFactorCtx *data = *(MatFactorCtx **)ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject)F, "HMatrix", (PetscObject *)&container));
-  if (container) {
-    PetscCall(PetscContainerGetPointer(container, &A));
-    delete A;
-    PetscCall(PetscObjectCompose((PetscObject)F, "HMatrix", nullptr));
-  }
+  delete data->hmatrix;
+  PetscCall(PetscFree(data));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatDestroy_Factor(Mat F)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectCompose((PetscObject)F, "HMatrix", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)F, "MatFactorGetSolverType_C", nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -937,25 +947,25 @@ static PetscErrorCode MatFactorGetSolverType_Htool(Mat, MatSolverType *type)
 template <char trans>
 static inline PetscErrorCode MatSolve_Private(Mat A, htool::Matrix<PetscScalar> &X)
 {
-  PetscContainer               container;
-  htool::HMatrix<PetscScalar> *B;
+  PetscContainer container;
+  MatFactorCtx  *data;
 
   PetscFunctionBegin;
-  PetscCheck(A->factortype == MAT_FACTOR_LU || A->factortype == MAT_FACTOR_CHOLESKY, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_UNKNOWN_TYPE, "Only MAT_LU_FACTOR and MAT_CHOLESKY_FACTOR are supported");
   PetscCall(PetscObjectQuery((PetscObject)A, "HMatrix", (PetscObject *)&container));
   PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call Mat%sFactorNumeric() before Mat%sSolve%s()", A->factortype == MAT_FACTOR_LU ? "LU" : "Cholesky", X.nb_cols() == 1 ? "" : "Mat", trans == 'N' ? "" : "Transpose");
-  PetscCall(PetscContainerGetPointer(container, &B));
-  if (A->factortype == MAT_FACTOR_LU) PetscCallExternalVoid("lu_solve", htool::lu_solve(trans, *B, X));
-  else PetscCallExternalVoid("cholesky_solve", htool::cholesky_solve('U', *B, X));
+  PetscCall(PetscContainerGetPointer(container, &data));
+  if (A->factortype == MAT_FACTOR_LU) PetscCallExternalVoid("lu_solve", htool::lu_solve(trans, *data->hmatrix, X));
+  else PetscCallExternalVoid("cholesky_solve", htool::cholesky_solve('U', *data->hmatrix, X));
+  PetscCallExternalVoid("scale", htool::scale(1.0 / data->scale, X));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <char trans, class Type, typename std::enable_if<std::is_same<Type, Vec>::value>::type * = nullptr>
 static PetscErrorCode MatSolve_Htool(Mat A, Type b, Type x)
 {
-  PetscInt                   n;
   htool::Matrix<PetscScalar> v;
   PetscScalar               *array;
+  PetscInt                   n;
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(b, &n));
@@ -970,13 +980,15 @@ static PetscErrorCode MatSolve_Htool(Mat A, Type b, Type x)
 template <char trans, class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::type * = nullptr>
 static PetscErrorCode MatSolve_Htool(Mat A, Type B, Type X)
 {
-  PetscInt                   m, N;
   htool::Matrix<PetscScalar> v;
   PetscScalar               *array;
+  PetscInt                   m, N, lda;
 
   PetscFunctionBegin;
   PetscCall(MatGetLocalSize(B, &m, nullptr));
   PetscCall(MatGetLocalSize(B, nullptr, &N));
+  PetscCall(MatDenseGetLDA(X, &lda));
+  PetscCheck(lda == X->rmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")", lda, X->rmap->n);
   PetscCall(MatCopy(B, X, SAME_NONZERO_PATTERN));
   PetscCall(MatDenseGetArrayWrite(X, &array));
   v.assign(m, N, array, false);
@@ -988,21 +1000,29 @@ static PetscErrorCode MatSolve_Htool(Mat A, Type B, Type X)
 template <MatFactorType ftype>
 static PetscErrorCode MatFactorNumeric_Htool(Mat F, Mat A, const MatFactorInfo *)
 {
-  Mat_Htool                   *a;
-  htool::HMatrix<PetscScalar> *B;
+  Mat_Htool     *a;
+  PetscContainer container;
+  MatFactorCtx  *data;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  B = new htool::HMatrix<PetscScalar>(*a->local_hmatrix);
-  if (ftype == MAT_FACTOR_LU) PetscCallExternalVoid("sequential_lu_factorization", htool::sequential_lu_factorization(*B));
-  else PetscCallExternalVoid("sequential_cholesky_factorization", htool::sequential_cholesky_factorization('U', *B));
-  PetscCall(PetscObjectContainerCompose((PetscObject)F, "HMatrix", B, nullptr));
+  PetscCall(PetscObjectQuery((PetscObject)F, "HMatrix", (PetscObject *)&container));
+  PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Mat%sFactorSymbolic() must be called before Mat%sFactorNumeric()", ftype == MAT_FACTOR_LU ? "LU" : "Cholesky", ftype == MAT_FACTOR_LU ? "LU" : "Cholesky");
+  PetscCall(PetscContainerGetPointer(container, &data));
+  delete data->hmatrix;
+  data->hmatrix = new htool::HMatrix<PetscScalar>(*a->local_hmatrix);
+  PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &data->scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  if (ftype == MAT_FACTOR_LU) PetscCallExternalVoid("sequential_lu_factorization", htool::sequential_lu_factorization(*data->hmatrix));
+  else PetscCallExternalVoid("sequential_cholesky_factorization", htool::sequential_cholesky_factorization('U', *data->hmatrix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <MatFactorType ftype>
 PetscErrorCode MatFactorSymbolic_Htool(Mat F, Mat)
 {
+  PetscContainer container;
+  MatFactorCtx  *data;
+
   PetscFunctionBegin;
   F->preallocated  = PETSC_TRUE;
   F->assembled     = PETSC_TRUE;
@@ -1015,6 +1035,11 @@ PetscErrorCode MatFactorSymbolic_Htool(Mat F, Mat)
   F->ops->destroy = MatDestroy_Factor;
   if (ftype == MAT_FACTOR_LU) F->ops->lufactornumeric = MatFactorNumeric_Htool<MAT_FACTOR_LU>;
   else F->ops->choleskyfactornumeric = MatFactorNumeric_Htool<MAT_FACTOR_CHOLESKY>;
+  PetscCall(PetscObjectQuery((PetscObject)F, "HMatrix", (PetscObject *)&container));
+  if (!container) {
+    PetscCall(PetscNew(&data));
+    PetscCall(PetscObjectContainerCompose((PetscObject)F, "HMatrix", data, MatFactorCtxDestroy));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1052,8 +1077,9 @@ static PetscErrorCode MatGetFactor_htool_htool(Mat A, MatFactorType ftype, Mat *
   B->factortype      = ftype;
   B->trivialsymbolic = PETSC_TRUE;
 
+  PetscCheck(ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_CHOLESKY, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only MAT_FACTOR_LU and MAT_FACTOR_CHOLESKY are supported");
   if (ftype == MAT_FACTOR_LU) B->ops->lufactorsymbolic = MatLUFactorSymbolic_Htool;
-  else if (ftype == MAT_FACTOR_CHOLESKY) B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Htool;
+  else B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Htool;
 
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERHTOOL, &B->solvertype));

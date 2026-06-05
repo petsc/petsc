@@ -38,7 +38,7 @@ typedef struct {
   PetscObjectState Xstate; /* state of vector given to TSComputeIFunction() with 0 Xdot to compute `residual`*/
 } TS_Pseudo_Residual;
 
-static PetscErrorCode TSPseudoResidualDestroy(PetscCtx ctx)
+static PetscErrorCode TSPseudoResidualDestroy(PetscCtxRt ctx)
 {
   TS_Pseudo_Residual *pseudo_residual = *(TS_Pseudo_Residual **)ctx;
 

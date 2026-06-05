@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   PetscScalar      *ptr;
   PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon;
   MatHtoolKernelFn *kernel = GenEntries;
-  PetscBool         flg, sym = PETSC_FALSE, recompression = PETSC_FALSE;
+  PetscBool         flg, sym = PETSC_FALSE, recompression = PETSC_FALSE, consistent;
   PetscRandom       rdm;
   IS                iss, ist, is[2];
   Vec               right, left, perm;
@@ -73,6 +73,7 @@ int main(int argc, char **argv)
   PetscCall(MatHtoolUseRecompression(A, recompression));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatHtoolGetEpsilon(A, &epsilon));
+  PetscCall(MatHtoolGetBlockTreeConsistency(A, &consistent));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));
@@ -232,7 +233,7 @@ int main(int argc, char **argv)
     }
   }
   /* verify that MatGetDiagonalBlock() returns the proper matrix */
-  {
+  if (consistent) {
     Mat D, B, C;
 
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, M, size, NULL, &B));
@@ -295,17 +296,21 @@ int main(int argc, char **argv)
       requires: htool
 
    test:
-      requires: htool
       suffix: 1
       nsize: 4
       args: -m_local 80 -n_local 25 -mat_htool_epsilon 1.0e-11 -symmetric {{false true}shared output} -recompression {{false true}shared output}
       output_file: output/empty.out
 
    test:
-      requires: htool
       suffix: 2
       nsize: 4
       args: -m_local 120 -mat_htool_epsilon 1.0e-2 -mat_htool_compressor {{sympartialACA fullACA SVD}shared output} -mat_htool_clustering {{PCARegular PCAGeometric BoundingBox1Regular BoundingBox1Geometric}shared output}
+      output_file: output/empty.out
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -m_local 80 -n_local 25 -mat_htool_epsilon 1.0e-11 -mat_htool_block_tree_consistency false
       output_file: output/empty.out
 
 TEST*/
