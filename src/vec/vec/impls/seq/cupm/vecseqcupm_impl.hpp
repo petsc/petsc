@@ -1472,26 +1472,16 @@ inline PetscErrorCode VecSeq_CUPM<T>::CopyAsync(Vec xin, Vec yout, PetscDeviceCo
     // translate from PetscOffloadMask to cupmMemcpyKind
     PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
     switch (const auto ymask = yout->offloadmask) {
+    case PETSC_OFFLOAD_CPU:
     case PETSC_OFFLOAD_UNALLOCATED: {
       PetscBool yiscupm;
 
       PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yout), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
-      if (yiscupm) {
-        mode = PetscOffloadDevice(xmask) ? cupmMemcpyDeviceToDevice : cupmMemcpyHostToHost;
-        break;
-      }
-    } // fall-through if unallocated and not cupm
-#if PETSC_CPP_VERSION >= 17
-      [[fallthrough]];
-#endif
-    case PETSC_OFFLOAD_CPU: {
-      PetscBool yiscupm;
-
-      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yout), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
-      if (yiscupm) {
-        mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToDevice : cupmMemcpyDeviceToDevice;
+      if (yiscupm && !yout->boundtocpu) {
+        /* If GPU vector, also ensure output is on GPU unless explicitly bound to CPU */
+        mode = PetscOffloadDevice(xmask) ? cupmMemcpyDeviceToDevice : cupmMemcpyHostToDevice;
       } else {
-        mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToHost : cupmMemcpyDeviceToHost;
+        mode = PetscOffloadDevice(xmask) ? cupmMemcpyDeviceToHost : cupmMemcpyHostToHost;
       }
       break;
     }

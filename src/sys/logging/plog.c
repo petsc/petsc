@@ -2015,6 +2015,7 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 . -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
 . -log_view :filename.xml:ascii_xml        - Saves a summary of the logging information in a nested format (see below for how to view it)
 . -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
+. -log_view :filename.csv:ascii_csv        - Saves logging information as a comma-separated values file
 . -log_view_memory                         - Also display memory usage in each event
 . -log_view_gpu_time                       - Also display time in each event for GPU kernels (Note this may slow the computation)
 . -log_view_gpu_energy                     - Also display energy (estimated with power*gtime) in Joules for GPU kernels
