@@ -3,9 +3,6 @@
 /*
    KSPIDRInitShadowSpace_IDR - Fill shadow space P[0..s-1] with random
    orthonormal vectors (modified Gram-Schmidt). Called from KSPSetUp_IDR.
-
-   Input Parameter:
-.  ksp - the KSP context
 */
 static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 {
@@ -34,9 +31,6 @@ static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 /*
    KSPSetUp_IDR - Allocate the (3s+3) work vectors and the s*s+2s scalar
    arrays, then initialize the shadow space P.
-
-   Input Parameter:
-.  ksp - the KSP context
 */
 static PetscErrorCode KSPSetUp_IDR(KSP ksp)
 {
@@ -70,11 +64,6 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
    lower triangular: it is initialized to the identity and only its lower
    part is updated, so the small system M[k:s-1,k:s-1] c = f[k:s-1] is a
    forward substitution.
-
-   Application Interface Routine: KSPSolve()
-
-   Input Parameter:
-.  ksp - the KSP context
 */
 static PetscErrorCode KSPSolve_IDR(KSP ksp)
 {
@@ -215,9 +204,9 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         break;
       }
       om = tr / (nt * nt);
-      if (idr->angle > 0.0) { /* 0 is a flag */
+      if (idr->cth > 0.0) { /* 0 is a flag */
         rho = PetscAbsScalar(tr) / (nt * nr);
-        if (rho < idr->angle) om *= idr->angle / rho;
+        if (rho < idr->cth) om *= idr->cth / rho;
       }
       PetscCall(VecAXPY(X, om, R));
       PetscCall(VecAXPY(R, -om, T));
@@ -247,9 +236,6 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
    KSPReset_IDR - Free all work vectors and scalar arrays allocated by
    KSPSetUp_IDR. Safe to call when Setup has never been called (all
    pointers are NULL from PetscNew).
-
-   Input Parameter:
-.  ksp - the KSP context
 */
 static PetscErrorCode KSPReset_IDR(KSP ksp)
 {
@@ -269,9 +255,6 @@ static PetscErrorCode KSPReset_IDR(KSP ksp)
 
 /*
    KSPDestroy_IDR - Free private data and clear composed functions.
-
-   Input Parameter:
-.  ksp - the KSP context
 */
 static PetscErrorCode KSPDestroy_IDR(KSP ksp)
 {
@@ -280,17 +263,13 @@ static PetscErrorCode KSPDestroy_IDR(KSP ksp)
   PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetOmega_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetOmega_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetCosine_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
    KSPView_IDR - Print solver parameters to a viewer.
-
-   Input Parameters:
-+  ksp    - the KSP context
--  viewer - the viewer
 */
 static PetscErrorCode KSPView_IDR(KSP ksp, PetscViewer viewer)
 {
@@ -301,22 +280,18 @@ static PetscErrorCode KSPView_IDR(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  s (shadow space dimension) = %" PetscInt_FMT "\n", idr->s));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  omega stabilization angle  = %g\n", (double)idr->angle));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  omega stabilization cosine threshold = %g\n", (double)idr->cth));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
    KSPSetFromOptions_IDR - Read solver options from the database.
-
-   Input Parameters:
-+  ksp               - the KSP context
--  PetscOptionsObject - options context
 */
 static PetscErrorCode KSPSetFromOptions_IDR(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_IDR  *idr = (KSP_IDR *)ksp->data;
-  PetscReal angle;
+  PetscReal cth;
   PetscInt  s;
   PetscBool flg;
 
@@ -324,8 +299,8 @@ static PetscErrorCode KSPSetFromOptions_IDR(KSP ksp, PetscOptionItems PetscOptio
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP IDR(s) options");
   PetscCall(PetscOptionsInt("-ksp_idr_s", "Shadow space dimension", "KSPIDRSetS", idr->s, &s, &flg));
   if (flg) PetscCall(KSPIDRSetS(ksp, s));
-  PetscCall(PetscOptionsReal("-ksp_idr_angle", "Omega stabilization angle (0 = off)", "KSPIDRSetOmega", idr->angle, &angle, &flg));
-  if (flg) PetscCall(KSPIDRSetOmega(ksp, angle));
+  PetscCall(PetscOptionsReal("-ksp_idr_cosine", "Omega stabilization cosine threshold (0 = off)", "KSPIDRSetCosine", idr->cth, &cth, &flg));
+  if (flg) PetscCall(KSPIDRSetCosine(ksp, cth));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -354,22 +329,22 @@ static PetscErrorCode KSPIDRGetS_IDR(KSP ksp, PetscInt *s)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPIDRSetOmega_IDR(KSP ksp, PetscReal angle)
+static PetscErrorCode KSPIDRSetCosine_IDR(KSP ksp, PetscReal cth)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(angle >= 0.0 && angle < 1.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Omega stabilization angle must be in [0,1), got %g", (double)angle);
-  idr->angle = angle;
+  PetscCheck(cth >= 0.0 && cth < 1.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Omega stabilization cosine threshold must be in [0,1), got %g", (double)cth);
+  idr->cth = cth;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPIDRGetOmega_IDR(KSP ksp, PetscReal *angle)
+static PetscErrorCode KSPIDRGetCosine_IDR(KSP ksp, PetscReal *cth)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
   PetscFunctionBegin;
-  *angle = idr->angle;
+  *cth = idr->cth;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -388,8 +363,8 @@ static PetscErrorCode KSPIDRGetOmega_IDR(KSP ksp, PetscReal *angle)
   Level: intermediate
 
   Notes:
-  Increasing s generally improves convergence but requires `s` additional
-  vectors. If s is changed after `KSPSetUp()` has been called, the solver
+  Increasing `s` generally improves convergence but requires `s` additional
+  vectors. If `s` is changed after `KSPSetUp()` has been called, the solver
   is reset automatically.
 
 .seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetS()`
@@ -428,16 +403,16 @@ PetscErrorCode KSPIDRGetS(KSP ksp, PetscInt *s)
 }
 
 /*@
-  KSPIDRSetOmega - Sets the omega stabilization angle for the `KSPIDR` solver.
+  KSPIDRSetCosine - Sets the omega stabilization cosine threshold for the `KSPIDR` solver.
 
   Logically Collective
 
   Input Parameters:
-+ ksp   - the Krylov solver context
-- angle - stabilization angle threshold in [0,1) (default 0.7, 0 = off)
++ ksp - the Krylov solver context
+- cth - stabilization cosine threshold in [0,1) (default 0.7, 0 = off)
 
   Options Database Key:
-. -ksp_idr_angle angle - omega stabilization angle
+. -ksp_idr_cosine cth - omega stabilization cosine threshold
 
   Level: intermediate
 
@@ -445,21 +420,21 @@ PetscErrorCode KSPIDRGetS(KSP ksp, PetscInt *s)
   When the cosine of the angle between the residual and the preconditioned
   residual drops below this threshold, omega is scaled to prevent the
   near-orthogonality stalling described in {cite}`sleijpen:1993,sleijpen:1995`.
-  Setting angle to 0 disables stabilization.
+  Setting `cth` to 0 disables stabilization.
 
-.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetOmega()`, `KSPIDRSetS()`
+.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetCosine()`, `KSPIDRSetS()`
 @*/
-PetscErrorCode KSPIDRSetOmega(KSP ksp, PetscReal angle)
+PetscErrorCode KSPIDRSetCosine(KSP ksp, PetscReal cth)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidLogicalCollectiveReal(ksp, angle, 2);
-  PetscTryMethod(ksp, "KSPIDRSetOmega_C", (KSP, PetscReal), (ksp, angle));
+  PetscValidLogicalCollectiveReal(ksp, cth, 2);
+  PetscTryMethod(ksp, "KSPIDRSetCosine_C", (KSP, PetscReal), (ksp, cth));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  KSPIDRGetOmega - Gets the omega stabilization angle used by the `KSPIDR` solver.
+  KSPIDRGetCosine - Gets the omega stabilization cosine threshold used by the `KSPIDR` solver.
 
   Not Collective
 
@@ -467,18 +442,18 @@ PetscErrorCode KSPIDRSetOmega(KSP ksp, PetscReal angle)
 . ksp - the Krylov solver context
 
   Output Parameter:
-. angle - the stabilization angle threshold
+. cth - the stabilization cosine threshold
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRSetOmega()`, `KSPIDRGetS()`
+.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRSetCosine()`, `KSPIDRGetS()`
 @*/
-PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
+PetscErrorCode KSPIDRGetCosine(KSP ksp, PetscReal *cth)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscAssertPointer(angle, 2);
-  PetscUseMethod(ksp, "KSPIDRGetOmega_C", (KSP, PetscReal *), (ksp, angle));
+  PetscAssertPointer(cth, 2);
+  PetscUseMethod(ksp, "KSPIDRGetCosine_C", (KSP, PetscReal *), (ksp, cth));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -487,9 +462,9 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
    linear systems {cite}`van2011idr`.
 
    Options Database Keys:
-+  -ksp_idr_s s         - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
++  -ksp_idr_s s        - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
                          and `s` extra inner products per step, see `KSPIDRSetS()`
--  -ksp_idr_angle angle - omega stabilization threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
+-  -ksp_idr_cosine cth - omega stabilization cosine threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
 
    Level: intermediate
 
@@ -505,7 +480,7 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPBCGS`, `KSPBCGSL`, `KSPGMRES`, `KSPIDRSetS()`, `KSPIDRGetS()`,
-          `KSPIDRSetOmega()`, `KSPIDRGetOmega()`
+          `KSPIDRSetCosine()`, `KSPIDRGetCosine()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
 {
@@ -513,9 +488,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&idr));
-  idr->s     = 4;
-  idr->angle = 0.7;
-  ksp->data  = (void *)idr;
+  idr->s    = 4;
+  idr->cth  = 0.7;
+  ksp->data = (void *)idr;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
@@ -532,7 +507,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetS_C", KSPIDRSetS_IDR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", KSPIDRGetS_IDR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetOmega_C", KSPIDRSetOmega_IDR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetOmega_C", KSPIDRGetOmega_IDR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", KSPIDRSetCosine_IDR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetCosine_C", KSPIDRGetCosine_IDR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

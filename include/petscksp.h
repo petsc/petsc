@@ -421,8 +421,8 @@ PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode KSPIDRSetS(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPIDRGetS(KSP, PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPIDRSetOmega(KSP, PetscReal);
-PETSC_EXTERN PetscErrorCode KSPIDRGetOmega(KSP, PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPIDRSetCosine(KSP, PetscReal);
+PETSC_EXTERN PetscErrorCode KSPIDRGetCosine(KSP, PetscReal *);
 
 PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
 static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)

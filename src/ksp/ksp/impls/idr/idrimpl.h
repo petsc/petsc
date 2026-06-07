@@ -17,5 +17,5 @@ typedef struct {
   PetscScalar *M;     /* s*s matrix M[j,k] = <G[k],P[j]>, column-major */
   PetscScalar *f;     /* length s: P^T r */
   PetscScalar *c;     /* length s: solution of M c = f */
-  PetscReal    angle; /* omega stabilization threshold (0 = off, default 0.7) */
+  PetscReal    cth;   /* omega stabilization threshold (0 = off, default 0.7) */
 } KSP_IDR;
