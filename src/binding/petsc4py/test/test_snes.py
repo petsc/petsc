@@ -128,6 +128,16 @@ class BaseTestSNES:
         snes.setUseKSP(ouse)
         self.assertEqual(ouse, snes.use_ksp)
 
+    def testGetSetObjective(self):
+        obj = self.snes.getObjective()
+        self.assertTrue(obj is None)
+        objf = lambda snes, x: 0
+        self.snes.setObjective(objf)
+        obj, _, _ = self.snes.getObjective()
+        self.assertEqual(obj, objf)
+        self.snes.setObjective(None)
+        self.assertTrue(self.snes.getObjective() is None)
+
     def testGetSetFunc(self):
         r, func = self.snes.getFunction()
         self.assertFalse(r)
@@ -146,6 +156,10 @@ class BaseTestSNES:
         self.assertEqual(r, r3)
         self.assertEqual(func, func3[0])
         self.assertEqual(getrefcount(func), refcnt + 1)
+        self.snes.setFunction(None)
+        r, func = self.snes.getFunction()
+        self.assertTrue(r)
+        self.assertTrue(func is None)
 
     def testCompFunc(self):
         r = PETSc.Vec().createSeq(2)
@@ -181,6 +195,11 @@ class BaseTestSNES:
         self.assertEqual(J3, P3)
         self.assertEqual(jac, jac3[0])
         self.assertEqual(getrefcount(jac), refcnt + 1)
+        self.snes.setJacobian(None)
+        J3, P3, jac3 = self.snes.getJacobian()
+        self.assertEqual(J, J3)
+        self.assertEqual(J3, P3)
+        self.assertTrue(jac3 is None)
 
     def testCompJac(self):
         J = PETSc.Mat().create(PETSc.COMM_SELF)

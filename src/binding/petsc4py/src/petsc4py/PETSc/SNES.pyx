@@ -854,6 +854,8 @@ cdef class SNES(Object):
             self.set_attr('__function__', context)
             CHKERR(SNESSetFunction(self.snes, fvec, SNES_Function, <void*>context))
         else:
+            if f is None:
+                self.set_attr('__function__', None)
             CHKERR(SNESSetFunction(self.snes, fvec, NULL, NULL))
 
     def getFunction(self) -> SNESFunction:
@@ -966,6 +968,8 @@ cdef class SNES(Object):
             self.set_attr('__jacobian__', context)
             CHKERR(SNESSetJacobian(self.snes, Jmat, Pmat, SNES_Jacobian, <void*>context))
         else:
+            if J is None and P is None:
+                self.set_attr('__jacobian__', None)
             CHKERR(SNESSetJacobian(self.snes, Jmat, Pmat, NULL, NULL))
 
     def getJacobian(self) -> tuple[Mat, Mat, SNESJacobianFunction]:
@@ -1024,6 +1028,7 @@ cdef class SNES(Object):
             self.set_attr('__objective__', context)
             CHKERR(SNESSetObjective(self.snes, SNES_Objective, <void*>context))
         else:
+            self.set_attr('__objective__', None)
             CHKERR(SNESSetObjective(self.snes, NULL, NULL))
 
     def getObjective(self) -> SNESObjFunction:
@@ -1036,9 +1041,7 @@ cdef class SNES(Object):
         setObjective
 
         """
-        CHKERR(SNESGetObjective(self.snes, NULL, NULL))
-        cdef object objective = self.get_attr('__objective__')
-        return objective
+        return self.get_attr('__objective__')
 
     def computeFunction(self, Vec x, Vec f) -> None:
         """Compute the function.
@@ -1130,6 +1133,7 @@ cdef class SNES(Object):
             self.set_attr('__ngs__', context)
             CHKERR(SNESSetNGS(self.snes, SNES_NGS, <void*>context))
         else:
+            self.set_attr('__ngs__', None)
             CHKERR(SNESSetNGS(self.snes, NULL, NULL))
 
     def getNGS(self) -> SNESNGSFunction:
@@ -1142,9 +1146,7 @@ cdef class SNES(Object):
         setNGS, computeNGS
 
         """
-        CHKERR(SNESGetNGS(self.snes, NULL, NULL))
-        cdef object ngs = self.get_attr('__ngs__')
-        return ngs
+        return self.get_attr('__ngs__')
 
     def computeNGS(self, Vec x, Vec b=None) -> None:
         """Compute a nonlinear Gauss-Seidel step.

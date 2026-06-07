@@ -293,6 +293,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
   `SNESSetFunction()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
+  If both `f` and `ctx` are `NULL`, it removes the callback.
 
   Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
@@ -314,6 +315,10 @@ PetscErrorCode DMSNESSetFunction(DM dm, SNESFunctionFn *f, PetscCtx ctx)
     PetscCall(PetscObjectCompose((PetscObject)sdm, "function ctx", (PetscObject)ctxcontainer));
     sdm->functionctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
+  }
+  if (!f && !ctx) {
+    sdm->ops->computefunction = NULL;
+    PetscCall(DMSNESUnsetFunctionContext_DMSNES(sdm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -366,7 +371,8 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
   Level: developer
 
   Note:
-  If not provided then the function provided with `SNESSetFunction()` is used
+  If not provided then the function provided with `SNESSetFunction()` is used.
+  If both `func` and `ctx` are `NULL`, it removes the callback.
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESFunctionFn`
 @*/
@@ -376,9 +382,13 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, PetscCtx ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (func || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
+  PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (func) sdm->ops->computemffunction = func;
   if (ctx) sdm->mffunctionctx = ctx;
+  if (!func && !ctx) {
+    sdm->ops->computemffunction = NULL;
+    sdm->mffunctionctx          = NULL;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -429,6 +439,9 @@ PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, PetscCtxRt ctx)
 
   Level: developer
 
+  Note:
+  If both `obj` and `ctx` are `NULL`, it removes the callback.
+
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESGetObjective()`, `DMSNESSetFunction()`, `SNESObjectiveFn`
 @*/
 PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, PetscCtx ctx)
@@ -437,9 +450,13 @@ PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, PetscCtx ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (obj || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
+  PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (obj) sdm->ops->computeobjective = obj;
   if (ctx) sdm->objectivectx = ctx;
+  if (!obj && !ctx) {
+    sdm->ops->computeobjective = NULL;
+    sdm->objectivectx          = NULL;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -491,6 +508,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, PetscCtxRt ctx)
   `SNESSetNGS()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
+  If both `f` and `ctx` are `NULL`, it removes the callback.
 
   Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of supplying the smoother
@@ -503,9 +521,13 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (f || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
+  PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (f) sdm->ops->computegs = f;
   if (ctx) sdm->gsctx = ctx;
+  if (!f && !ctx) {
+    sdm->ops->computegs = NULL;
+    sdm->gsctx          = NULL;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -560,6 +582,7 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
   Note:
   `SNESSetJacobian()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
+  If both `J` and `ctx` are `NULL`, it removes the callback.
 
   Developer Note:
   This makes the interface consistent regardless of whether the user interacts with a `DM` or
@@ -573,7 +596,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm, SNESJacobianFn *J, PetscCtx ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (J || ctx) PetscCall(DMGetDMSNESWrite(dm, &sdm));
+  PetscCall(DMGetDMSNESWrite(dm, &sdm));
   if (J) sdm->ops->computejacobian = J;
   if (ctx) {
     PetscContainer ctxcontainer;
@@ -582,6 +605,10 @@ PetscErrorCode DMSNESSetJacobian(DM dm, SNESJacobianFn *J, PetscCtx ctx)
     PetscCall(PetscObjectCompose((PetscObject)sdm, "jacobian ctx", (PetscObject)ctxcontainer));
     sdm->jacobianctxcontainer = ctxcontainer;
     PetscCall(PetscContainerDestroy(&ctxcontainer));
+  }
+  if (!J && !ctx) {
+    sdm->ops->computejacobian = NULL;
+    PetscCall(DMSNESUnsetJacobianContext_DMSNES(sdm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
