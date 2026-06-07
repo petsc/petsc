@@ -18,4 +18,5 @@ typedef struct {
   PetscScalar *f;     /* length s: P^T r */
   PetscScalar *c;     /* length s: solution of M c = f */
   PetscReal    cth;   /* omega stabilization threshold (0 = off, default 0.7) */
+  PetscRandom  rand;  /* random context to initialize shadow vectors */
 } KSP_IDR;
