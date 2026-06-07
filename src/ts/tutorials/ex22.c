@@ -99,7 +99,7 @@ int main(int argc, char **argv)
    * SNESSetType(snes,SNESKSPONLY). */
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESGetLineSearch(snes, &linesearch));
-  PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
+  PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE));
 
   ftime = .1;
   PetscCall(TSSetMaxTime(ts, ftime));

@@ -1,6 +1,6 @@
 #include <petsc/private/linesearchimpl.h> /*I  "petscsnes.h"  I*/
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_None(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Secant(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch);
@@ -24,11 +24,10 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHSHELL, SNESLineSearchCreate_Shell));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC, SNESLineSearchCreate_Basic));
-  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE, SNESLineSearchCreate_Basic));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE, SNESLineSearchCreate_None));
+  PetscCall(SNESLineSearchRegister("basic", SNESLineSearchCreate_None)); // deprecated since version 3.26.0
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHSECANT, SNESLineSearchCreate_Secant));
-  // PETSC_DEPRECATED 3.24.0 This should eventually be removed
-  PetscCall(SNESLineSearchRegister("l2", SNESLineSearchCreate_Secant));
+  PetscCall(SNESLineSearchRegister("l2", SNESLineSearchCreate_Secant)); // deprecated since version 3.24.0
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT, SNESLineSearchCreate_BT));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR, SNESLineSearchCreate_NLEQERR));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHCP, SNESLineSearchCreate_CP));

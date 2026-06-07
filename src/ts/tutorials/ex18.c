@@ -1172,13 +1172,13 @@ int main(int argc, char **argv)
       suffix: adv_delta_yper_fim_1
       requires: !complex
       TODO: broken
-      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_time_step 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_time_step 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type none
 
     test:
       suffix: adv_delta_yper_fim_2
       requires: !complex
       TODO: broken
-      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_time_step 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_time_step 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type none
 
     test:
       suffix: adv_delta_yper_im_0

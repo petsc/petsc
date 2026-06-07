@@ -46,7 +46,7 @@ program DMPlexTestLandauInterface
   PetscCallA(TSGetSNES(ts, snes, ierr))
   PetscCallA(SNESSetOptionsPrefix(snes, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
   PetscCallA(SNESGetLineSearch(snes, linesearch, ierr))
-  PetscCallA(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC, ierr))
+  PetscCallA(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE, ierr))
   PetscCallA(TSSetIFunction(ts, PETSC_NULL_VEC, DMPlexLandauIFunction, PETSC_NULL_VEC, ierr))
   PetscCallA(TSSetIJacobian(ts, J, J, DMPlexLandauIJacobian, PETSC_NULL_VEC, ierr))
   PetscCallA(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER, ierr))

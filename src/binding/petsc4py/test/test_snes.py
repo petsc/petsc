@@ -458,9 +458,9 @@ class TestSNESLineSearchAPI(unittest.TestCase):
 
     def test_type_set_get(self):
         ls = PETSc.SNESLineSearch().create()
-        ls.setType(PETSc.SNESLineSearch.Type.BASIC)
+        ls.setType(PETSc.SNESLineSearch.Type.NONE)
         typ = ls.getType()
-        self.assertEqual(typ, 'basic')
+        self.assertEqual(typ, 'none')
         ls.destroy()
 
     def test_tolerances_set_get(self):

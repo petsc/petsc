@@ -4,7 +4,7 @@
 -snes_converged_reason
 -snes_atol 1e-8
 -snes_rtol 1e-20
--snes_linesearch_type basic
+-snes_linesearch_type none
 -ksp_type gmres
 -pc_type bjacobi
 -sub_pc_type lu

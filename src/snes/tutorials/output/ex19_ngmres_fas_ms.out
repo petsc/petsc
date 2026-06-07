@@ -20,7 +20,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
     total number of grid sequence refinements=2
     Jacobian is built using a DMDA local Jacobian
     SNESLineSearch Object: 2 MPI processes
-      type: basic
+      type: none
       maxlambda=1.000000e+00, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1

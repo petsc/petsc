@@ -258,11 +258,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Mat jac, 
 
    test:
       suffix: fm_rise_2
-      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise
+      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type none -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise
       requires: !single
 
    test:
       suffix: fm_rise_4
-      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic -snes_ngmres_restart_it 2 -snes_ngmres_restart_fm_rise -snes_rtol 1.e-2 -snes_max_it 5
+      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type none -snes_ngmres_restart_it 2 -snes_ngmres_restart_fm_rise -snes_rtol 1.e-2 -snes_max_it 5
 
 TEST*/

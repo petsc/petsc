@@ -1,7 +1,7 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petsc/private/snesimpl.h>
 
-static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchApply_None(SNESLineSearch linesearch)
 {
   PetscBool changed_y, changed_w;
   Vec       X, F, Y, W;
@@ -52,11 +52,11 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 }
 
 /*MC
-   SNESLINESEARCHBASIC - This line search implementation is not a line
+   SNESLINESEARCHNONE - This line search implementation is not a line
    search at all; it simply uses the full step $x_{k+1} = x_k - \lambda Y_k$ with $\lambda=1$.
    Alternatively, $\lambda$ can be configured to be a constant damping factor by setting `snes_linesearch_damping`.
    Thus, this routine is intended for methods with well-scaled updates; i.e. Newton's method (`SNESNEWTONLS`), on
-   well-behaved problems. Also named `SNESLINESEARCHNONE`.
+   well-behaved problems.
 
    Options Database Keys:
 +  -snes_linesearch_damping damp        - step length is scaled by this factor
@@ -71,10 +71,10 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchType`, `SNESGetLineSearch()`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNESLineSearchSetDamping()`, `SNESLineSearchSetComputeNorms()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_None(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_Basic;
+  linesearch->ops->apply          = SNESLineSearchApply_None;
   linesearch->ops->destroy        = NULL;
   linesearch->ops->setfromoptions = NULL;
   linesearch->ops->reset          = NULL;

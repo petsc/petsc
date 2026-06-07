@@ -746,7 +746,7 @@ typedef struct _p_LineSearch *SNESLineSearch;
                         in PETSc.
 
    Values:
-+  `SNESLINESEARCHBASIC`     - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
++  `SNESLINESEARCHNONE`      - Simple damping line search, defaults to using the full Newton step
 .  `SNESLINESEARCHBT`        - Backtracking line search over the L2 norm of the function or an objective function
 .  `SNESLINESEARCHSECANT`    - Secant line search over the L2 norm of the function or an objective function
 .  `SNESLINESEARCHCP`        - Critical point secant line search assuming $F(x) = \nabla G(x)$ for some unknown $G(x)$
@@ -765,10 +765,10 @@ J*/
 typedef const char *SNESLineSearchType;
 #define SNESLINESEARCHBT        "bt"
 #define SNESLINESEARCHNLEQERR   "nleqerr"
-#define SNESLINESEARCHBASIC     "basic"
 #define SNESLINESEARCHNONE      "none"
+#define SNESLINESEARCHBASIC     PETSC_DEPRECATED_MACRO(3, 26, 0, "SNESLINESEARCHNONE", ) SNESLINESEARCHNONE
 #define SNESLINESEARCHSECANT    "secant"
-#define SNESLINESEARCHL2        PETSC_DEPRECATED_MACRO(3, 24, 0, "SNESLINESEARCHSECANT", ) "secant"
+#define SNESLINESEARCHL2        PETSC_DEPRECATED_MACRO(3, 24, 0, "SNESLINESEARCHSECANT", ) SNESLINESEARCHSECANT
 #define SNESLINESEARCHCP        "cp"
 #define SNESLINESEARCHSHELL     "shell"
 #define SNESLINESEARCHNCGLINEAR "ncglinear"

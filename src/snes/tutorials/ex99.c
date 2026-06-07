@@ -28,7 +28,7 @@ Monitor run (with default back-tracking line search; solve fails):
   ./ex99 -snes_converged_reason -snes_monitor -snes_linesearch_monitor -ksp_converged_reason -ksp_monitor
 
 Run without a line search; solve succeeds:
-  ./ex99 -snes_linesearch_type basic
+  ./ex99 -snes_linesearch_type none
 
 Run with a critical point line search; solve succeeds:
   ./ex99 -snes_linesearch_type cp
@@ -199,7 +199,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
       args: -snes_linesearch_type cp
    test:
       suffix: 2
-      args: -snes_linesearch_type basic
+      args: -snes_linesearch_type none
    test:
       suffix: 3
    test:
