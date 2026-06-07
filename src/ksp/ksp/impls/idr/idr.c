@@ -59,8 +59,8 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
 /*
    KSPSolve_IDR - IDR(s) biorthogonal solve kernel.
 
-   This implements the biorthogonal IDR(s) recurrence (van Gijzen &
-   Sonneveld, ACM TOMS 38(1), 2011, Algorithm 2) applied to the
+   This implements the biorthogonal IDR(s) recurrence (Algorithm 2 of
+   {cite}`van2011idr`) applied to the
    preconditioned operator A' (= K^{-1}A for left, AK^{-1} for right
    preconditioning, evaluated by KSP_PCApplyBAorAB()). Working on A'
    keeps x and r consistent through left/right preconditioning and makes
@@ -199,7 +199,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
       }
       if (ksp->reason || ksp->its >= ksp->max_it) break;
 
-      /* Minimal-residual (omega) step with Sleijpen-Fokkema angle stabilization.
+      /* Minimal-residual (omega) step with angle stabilization.
          Batch ||r||, ||t||, (r,t) into a single MPI collective via Begin/End. */
       PetscCall(KSP_PCApplyBAorAB(ksp, R, T, V));
       PetscCall(VecNormBegin(R, NORM_2, &nr));
@@ -444,7 +444,7 @@ PetscErrorCode KSPIDRGetS(KSP ksp, PetscInt *s)
   Notes:
   When the cosine of the angle between the residual and the preconditioned
   residual drops below this threshold, omega is scaled to prevent the
-  near-orthogonality stalling described in Sleijpen & Fokkema (1993).
+  near-orthogonality stalling described in {cite}`sleijpen:1993,sleijpen:1995`.
   Setting angle to 0 disables stabilization.
 
 .seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetOmega()`, `KSPIDRSetS()`
@@ -501,10 +501,7 @@ PetscErrorCode KSPIDRGetOmega(KSP ksp, PetscReal *angle)
    equivalent to `KSPBCGS`; s=4 typically converges as fast as
    GMRES(50); s=8 often outperforms GMRES(100).
    Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
-   This implements the biorthogonal variant (IDRbio) described in
-   Meurant & Duintjer Tebbens, "Krylov Methods for Nonsymmetric Linear
-   Systems", Springer 2020. The algorithm is closely related to
-   Algorithm 913 of van Gijzen & Sonneveld, ACM TOMS 38(1), 2011.
+   This implements the biorthogonal variant described in {cite}`gijzen:2011`.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPBCGS`, `KSPBCGSL`, `KSPGMRES`, `KSPIDRSetS()`, `KSPIDRGetS()`,
