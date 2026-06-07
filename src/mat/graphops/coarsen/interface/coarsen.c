@@ -68,8 +68,8 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
 . coarser - the coarsen
 
   Options Database Keys:
-+ -mat_coarsen_type mis|hem|misk - mis: maximal independent set based; misk: distance k MIS; hem: heavy edge matching
-- -mat_coarsen_view              - view the coarsening object
++ -mat_coarsen_type (mis|hem|misk) - `mis`: maximal independent set based; `misk`: distance k MIS; `hem`: heavy edge matching
+- -mat_coarsen_view                - view the coarsening object
 
   Level: advanced
 
@@ -335,8 +335,9 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 . coarser - the coarsen context.
 
   Options Database Key:
-+ -mat_coarsen_type  type - see `MatCoarsenType`
-- -mat_coarsen_max_it its - number of iterations to use in the coarsening process, see `MatCoarsenSetMaximumIterations()`
++ -mat_coarsen_type  (mis|hem|misk) - see `MatCoarsenType`
+. -mat_coarsen_max_it its           - number of iterations to use in the coarsening process, see `MatCoarsenSetMaximumIterations()`
+- -mat_coarsen_threshold threshold  - see `MatCoarsenSetThreshold()`, for `MATCOARSENHEM` only
 
   Level: advanced
 
@@ -346,7 +347,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
   Sets the `MatCoarsenType` to `MATCOARSENMISK` if has not been set previously
 
 .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`,
-          `MatCoarsenSetMaximumIterations()`
+          `MatCoarsenSetMaximumIterations()`, `MATCOARSENHEM`, `MATCOARSENMIS`, `MATCOARSENMISK`
 @*/
 PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 {
@@ -365,7 +366,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   if (flag) PetscCall(MatCoarsenSetType(coarser, type));
 
   PetscCall(PetscOptionsInt("-mat_coarsen_max_it", "Number of iterations (for HEM)", "MatCoarsenSetMaximumIterations", coarser->max_it, &coarser->max_it, NULL));
-  PetscCall(PetscOptionsInt("-mat_coarsen_threshold", "Threshold (for HEM)", "MatCoarsenSetThreshold", coarser->max_it, &coarser->max_it, NULL));
+  PetscCall(PetscOptionsReal("-mat_coarsen_threshold", "Threshold (for HEM)", "MatCoarsenSetThreshold", coarser->threshold, &coarser->threshold, NULL));
   coarser->strength_index_size = MAT_COARSEN_STRENGTH_INDEX_SIZE;
   PetscCall(PetscOptionsIntArray("-mat_coarsen_strength_index", "Array of indices to use strength of connection measure (default is all indices)", "MatCoarsenSetStrengthIndex", coarser->strength_index, &coarser->strength_index_size, NULL));
   /*
@@ -457,7 +458,7 @@ static PetscErrorCode MatCoarsenSetStrengthIndex_MATCOARSEN(MatCoarsen coarse, P
 
   Input Parameters:
 + coarse - the coarsen context
-- b      - threshold value, default is -1
+- b      - threshold value, default is 0
 
   Options Database Key:
 . -mat_coarsen_threshold b - threshold
