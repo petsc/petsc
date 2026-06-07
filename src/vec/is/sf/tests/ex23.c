@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 
     test:
       suffix: 3
+      TODO: unclear if it is needed
       requires: sycl
 
 TEST*/

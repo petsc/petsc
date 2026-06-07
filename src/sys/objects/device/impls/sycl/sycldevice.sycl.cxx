@@ -75,10 +75,7 @@ public:
 
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-      PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] device: %s\n", rank, syclDevice_.get_info<::sycl::info::device::name>().c_str()));
-      PetscCall(PetscViewerASCIIPushTab(sviewer));
-      PetscCall(PetscViewerASCIIPrintf(sviewer, "-> Device vendor: %s\n", syclDevice_.get_info<::sycl::info::device::vendor>().c_str()));
-      PetscCall(PetscViewerASCIIPopTab(sviewer));
+      PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] device : %s; vendor: %s\n", rank, syclDevice_.get_info<::sycl::info::device::name>().c_str(), syclDevice_.get_info<::sycl::info::device::vendor>().c_str()));
       PetscCall(PetscViewerFlush(sviewer));
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     }

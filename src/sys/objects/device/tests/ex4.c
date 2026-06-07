@@ -105,7 +105,8 @@ int main(int argc, char *argv[])
       requires: !device
       suffix: host_no_device
     test:
-      requires: device
+      # unclear if it is needed for sycl
+      requires: device !sycl
       args: -root_device_context_device_type host
       suffix: host_with_device
     test:

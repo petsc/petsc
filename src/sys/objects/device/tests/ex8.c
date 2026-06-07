@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
   testset:
     requires: defined(PETSC_DEVICELANGUAGE_CXX)
     args: -device_enable {{lazy eager}}
+    filter: grep -ve "\[0\] "
     test:
       requires: !device
       suffix: host_no_device

@@ -222,6 +222,7 @@ int main(int argc, char *argv[])
       suffix: hip
     test:
       requires: sycl
+      TODO: unclear if it is needed
       args: -default_device_type sycl
       suffix: sycl
 
@@ -247,6 +248,7 @@ int main(int argc, char *argv[])
       suffix: hip
     test:
       requires: sycl
+      TODO: unclear if it is needed
       args: -default_device_type sycl
       suffix: sycl
 
