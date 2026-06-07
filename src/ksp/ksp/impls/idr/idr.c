@@ -23,14 +23,12 @@ typedef struct {
 static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 {
   KSP_IDR    *idr = (KSP_IDR *)ksp->data;
-  PetscRandom rnd;
   PetscScalar dot;
   PetscInt    k, j;
 
   PetscFunctionBegin;
-  PetscCall(KSPIDRGetRandomContext(ksp, &rnd));
-  for (k = 0; k < idr->s; k++) PetscCall(VecSetRandom(idr->PP[k], rnd));
-  PetscCall(PetscRandomDestroy(&rnd));
+  PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+  for (k = 0; k < idr->s; k++) PetscCall(VecSetRandom(idr->PP[k], idr->rand));
   /* Modified Gram-Schmidt orthonormalization */
   for (k = 0; k < idr->s; k++) {
     PetscCall(VecNormalize(idr->PP[k], NULL));
@@ -272,9 +270,12 @@ static PetscErrorCode KSPReset_IDR(KSP ksp)
 */
 static PetscErrorCode KSPDestroy_IDR(KSP ksp)
 {
+  KSP_IDR *idr = (KSP_IDR *)ksp->data;
+
   PetscFunctionBegin;
   PetscCall(KSPReset_IDR(ksp));
   PetscCall(KSPDestroyDefault(ksp));
+  PetscCall(PetscRandomDestroy(&idr->rand));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", NULL));
@@ -297,6 +298,10 @@ static PetscErrorCode KSPView_IDR(KSP ksp, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  s (shadow space dimension) = %" PetscInt_FMT "\n", idr->s));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  omega stabilization cosine threshold = %g\n", (double)idr->cth));
+    PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscRandomView(idr->rand, viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -318,6 +323,8 @@ static PetscErrorCode KSPSetFromOptions_IDR(KSP ksp, PetscOptionItems PetscOptio
   PetscCall(PetscOptionsReal("-ksp_idr_cosine", "Omega stabilization cosine threshold (0 = off)", "KSPIDRSetCosine", idr->cth, &cth, &flg));
   if (flg) PetscCall(KSPIDRSetCosine(ksp, cth));
   PetscOptionsHeadEnd();
+  PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+  PetscCall(PetscRandomSetFromOptions(idr->rand));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -382,8 +389,10 @@ static PetscErrorCode KSPIDRGetRandomContext_IDR(KSP ksp, PetscRandom *rand)
   PetscFunctionBegin;
   if (!idr->rand) {
     PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)ksp), &idr->rand));
-    PetscCall(PetscRandomSetSeed(idr->rand, 0x12345678ULL));
-    PetscCall(PetscRandomSeed(idr->rand));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)idr->rand, (PetscObject)ksp, 1));
+    PetscCall(PetscRandomSetOptionsPrefix(idr->rand, ((PetscObject)ksp)->prefix));
+    PetscCall(PetscRandomAppendOptionsPrefix(idr->rand, "ksp_idr_"));
+    PetscCall(PetscObjectSetOptions((PetscObject)idr->rand, ((PetscObject)ksp)->options));
   }
   *rand = idr->rand;
   PetscFunctionReturn(PETSC_SUCCESS);
