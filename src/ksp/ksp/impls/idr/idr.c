@@ -150,8 +150,7 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
         for (j = k; j < s; j++) c[j] = -c[j];
 
         /* U[k] = omega*v + sum_{j=k}^{s-1} c[j] U[j]  (scale U[k] by c[k] first to avoid aliasing) */
-        PetscCall(VecScale(U[k], c[k]));
-        PetscCall(VecAXPY(U[k], om, V));
+        PetscCall(VecAXPBY(U[k], om, c[k], V));
         if (s - k - 1 > 0) PetscCall(VecMAXPY(U[k], s - k - 1, c + k + 1, U + k + 1));
 
         /* G[k] = A' U[k] */
