@@ -514,15 +514,15 @@ PetscErrorCode KSPIDRGetCosine(KSP ksp, PetscReal *cth)
   Collective
 
   Input Parameters:
-+ bv   - the Krylov solver context
++ ksp  - the Krylov solver context
 - rand - the random number generator context
 
   Level: advanced
 
   Note:
   `KSPIDR` creates its own random number generator internally that can be accessed
-   with `KSPIDRGetRandom()` and controlled from the options database with the options
-   prefix of the `KSP` object.
+  with `KSPIDRGetRandom()` and controlled from the options database with the options
+  prefix of the `KSP` object.
 
 .seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetRandom()`, `PetscRandomCreate()`
 @*/
@@ -561,29 +561,29 @@ PetscErrorCode KSPIDRGetRandom(KSP ksp, PetscRandom *rand)
 }
 
 /*MC
-   KSPIDR - IDR(s): Induced Dimension Reduction method for general nonsymmetric
-   linear systems {cite}`van2011idr`.
+  KSPIDR - IDR(s): Induced Dimension Reduction method for general nonsymmetric
+  linear systems {cite}`van2011idr`.
 
-   Options Database Keys:
-+  -ksp_idr_s s        - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
-                         and `s` extra inner products per step, see `KSPIDRSetS()`
--  -ksp_idr_cosine cth - omega stabilization cosine threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
+  Options Database Keys:
++ -ksp_idr_s s        - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors
+                        and `s` extra inner products per step, see `KSPIDRSetS()`
+- -ksp_idr_cosine cth - omega stabilization cosine threshold (default 0.7, 0 = off); prevents near-orthogonality stalling in the minimal-residual omega step
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   IDR(s) is a short-recurrence, non-restarting Krylov method for general
-   nonsymmetric linear systems. It requires no growing subspace and avoids
-   the restart stagnation of `KSPGMRES`. The parameter `s` controls the
-   trade-off between memory and convergence speed\: s=1 is mathematically
-   equivalent to `KSPBCGS`; s=4 typically converges as fast as
-   GMRES(50); s=8 often outperforms GMRES(100).
-   Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
-   This implements the biorthogonal variant described in {cite}`gijzen:2011`.
+  Notes:
+  IDR(s) is a short-recurrence, non-restarting Krylov method for general
+  nonsymmetric linear systems. It requires no growing subspace and avoids
+  the restart stagnation of `KSPGMRES`. The parameter `s` controls the
+  trade-off between memory and convergence speed\: s=1 is mathematically
+  equivalent to `KSPBCGS`; s=4 typically converges as fast as
+  GMRES(50); s=8 often outperforms GMRES(100).
+  Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
+  This implements the biorthogonal variant described in {cite}`gijzen:2011`.
 
   `KSPIDR` uses a `PetscRandom` which may be obtained with `KSPIDRGetRandom()`
-   (see also `KSPIDRSetRandom()`). The `PetscRandom` may be controlled from the
-   options database with the options prefix of the `KSP` object.
+  (see also `KSPIDRSetRandom()`). The `PetscRandom` may be controlled from the
+  options database with the options prefix of the `KSP` object.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPBCGS`, `KSPBCGSL`, `KSPGMRES`, `KSPIDRSetS()`, `KSPIDRGetS()`,
