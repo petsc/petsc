@@ -16,7 +16,9 @@
 . `DM_SHAPE_GYROID`      - The Gyroid triply periodic minimal surface
 . `DM_SHAPE_DOUBLET`     - The mesh of two cells of a specified type
 . `DM_SHAPE_ANNULUS`     - The area between two concentric spheres in dimension d
-- `DM_SHAPE_HYPERCUBIC`  - The skeleton of the tensor product of the intervals
+. `DM_SHAPE_HYPERCUBIC`  - The skeleton of the tensor product of the intervals
+. `DM_SHAPE_ZBOX`        - The box, tensor product of the intervals, in tensor order
+- `DM_SHAPE_DIIID`       - The poloidal cross-section of the DIII tokamak
 
   Level: beginner
 
@@ -34,6 +36,7 @@ typedef enum {
   DM_SHAPE_ANNULUS,
   DM_SHAPE_HYPERCUBIC,
   DM_SHAPE_ZBOX,
+  DM_SHAPE_DIIID,
   DM_SHAPE_UNKNOWN
 } DMPlexShape;
 PETSC_EXTERN const char *const DMPlexShapes[];
@@ -43,6 +46,7 @@ PETSC_EXTERN const char *const DMPlexShapes[];
 
   Values:
 + `DM_COORD_MAP_NONE`     - The identity map
+. `DM_COORD_MAP_ROTATE`   - Rotation about some axis
 . `DM_COORD_MAP_SHEAR`    - The shear (additive) map along some dimension
 . `DM_COORD_MAP_FLARE`    - The flare (multiplicative) map along some dimension
 . `DM_COORD_MAP_ANNULUS`  - The map from a rectangle to an annulus
@@ -56,6 +60,7 @@ PETSC_EXTERN const char *const DMPlexShapes[];
 E*/
 typedef enum {
   DM_COORD_MAP_NONE,
+  DM_COORD_MAP_ROTATE,
   DM_COORD_MAP_SHEAR,
   DM_COORD_MAP_FLARE,
   DM_COORD_MAP_ANNULUS,

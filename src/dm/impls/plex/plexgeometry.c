@@ -3,7 +3,7 @@
 #include <petscblaslapack.h>
 #include <petsctime.h>
 
-const char *const DMPlexCoordMaps[] = {"none", "shear", "flare", "annulus", "shell", "sinusoid", "torus", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
+const char *const DMPlexCoordMaps[] = {"none", "rotate", "shear", "flare", "annulus", "shell", "sinusoid", "torus", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
 
 /*@
   DMPlexFindVertices - Try to find DAG points based on their coordinates.
@@ -3997,6 +3997,46 @@ void coordMap_identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
   PetscInt       c;
 
   for (c = 0; c < Nc; ++c) f0[c] = u[c];
+}
+
+/* Constants are
+     center location
+     axis vector
+     rotation angle
+ */
+void coordMap_rotate(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt     Nc     = PetscMin(uOff[1] - uOff[0], 3);
+  const PetscScalar *center = constants;
+  const PetscScalar *k      = &constants[Nc]; // The rotation axis k
+  const PetscReal    theta  = PetscRealPart(constants[Nc * 2]);
+  const PetscReal    ct     = PetscCosReal(theta);
+  const PetscReal    st     = PetscSinReal(theta);
+  PetscReal          v[3];
+
+  // Translate to coordinate with center at the origin
+  for (PetscInt d = 0; d < Nc; ++d) v[d] = PetscRealPart(u[d] - center[d]);
+  switch (dim) {
+  case 2:
+    /* Rotate point, axis is ignored in 2D
+       / ct -st \
+       \ st  ct / */
+    f0[0] = ct * v[0] - st * v[1];
+    f0[1] = st * v[0] + ct * v[1];
+    break;
+  case 3:
+    /* / ct + k_x^2 (1 - ct)       & k_x k_y (1 - ct) - k_z st & k_x k_z (1 - ct) + k_y st \
+       | k_y k_x (1 - ct) + k_z st & ct + k_y^2 (1 - ct)       & k_y k_z (1 - ct) - k_x st |
+       \ k_z k_x (1 - ct) - k_y st & k_z k_y (1 - ct) + k_x st & ct + k_z^2 (1 - ct)       / */
+    f0[0] = (ct + k[0] * k[0] * (1. - ct)) * v[0] + (k[0] * k[1] * (1. - ct) - k[2] * st) * v[1] + (k[0] * k[2] * (1. - ct) + k[1] * st) * v[2];
+    f0[1] = (k[1] * k[0] * (1. - ct) + k[2] * st) * v[0] + (ct + k[1] * k[1] * (1. - ct)) * v[1] + (k[1] * k[2] * (1. - ct) - k[0] * st) * v[2];
+    f0[2] = (k[2] * k[0] * (1. - ct) - k[1] * st) * v[0] + (k[2] * k[1] * (1. - ct) + k[0] * st) * v[1] + (ct + k[2] * k[2] * (1. - ct)) * v[2];
+    break;
+  default:
+    for (PetscInt d = 0; d < Nc; ++d) f0[d] = v[d];
+  }
+  // Translate back to original coordinates
+  for (PetscInt d = 0; d < Nc; ++d) f0[d] += center[d];
 }
 
 /* Shear applies the transformation, assuming we fix z,
