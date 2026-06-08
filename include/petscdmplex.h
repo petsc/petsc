@@ -208,7 +208,13 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTriangleSetOptions(DM, const char *);
+PETSC_EXTERN PetscErrorCode DMPlexTriangleSetAngleBound(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexTriangleGetAngleBound(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexTetgenSetOptions(DM, const char *);
+PETSC_EXTERN PetscErrorCode DMPlexTetgenSetRadiusEdgeBound(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexTetgenGetRadiusEdgeBound(DM, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexTetgenSetDihedralBound(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexTetgenGetDihedralBound(DM, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromFile(MPI_Comm, const char[], const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateExodus(MPI_Comm, PetscExodusIIInt, PetscBool, DM *);

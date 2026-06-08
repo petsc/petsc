@@ -165,10 +165,13 @@ typedef struct {
   PetscBool regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
 
   /* Generation */
-  char            *tetgenOpts;
-  char            *triangleOpts;
-  PetscPartitioner partitioner;
-  PetscBool        partitionBalance; /* Evenly divide partition overlap when distributing */
+  char            *tetgenOpts;            // COmmand line options for Tetgen
+  PetscReal        tetgenRadiusEdgeBound; // Maximum tetgen radius-edge ratio
+  PetscReal        tetgenDihedralBound;   // Minimum tetgen dihedral angle
+  char            *triangleOpts;          // Comand line options for Triangle
+  PetscReal        triangleAngBound;      // Minimum triangle angle
+  PetscPartitioner partitioner;           // Partitioner object
+  PetscBool        partitionBalance;      // Evenly divide partition overlap when distributing
   PetscBool        remeshBd;
 
   /* Submesh */

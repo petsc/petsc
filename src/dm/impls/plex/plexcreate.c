@@ -4475,6 +4475,9 @@ static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscRe
   PetscCall(DMPlexCreateSphereMesh_Internal(sdm, dim - 1, PETSC_TRUE, R));
   PetscCall(DMSetFromOptions(sdm));
   PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));
+  PetscCall(DMPlexTriangleSetAngleBound(sdm, 30.));
+  PetscCall(DMPlexTetgenSetRadiusEdgeBound(sdm, 1.4));
+  PetscCall(DMPlexTetgenSetDihedralBound(sdm, 20.));
   PetscCall(DMPlexGenerate(sdm, NULL, PETSC_TRUE, &vol));
   PetscCall(DMDestroy(&sdm));
   PetscCall(DMPlexReplace_Internal(dm, &vol));

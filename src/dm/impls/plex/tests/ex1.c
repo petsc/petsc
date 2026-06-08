@@ -971,7 +971,7 @@ int main(int argc, char **argv)
     test:
       suffix: ball_1
       requires: ctetgen
-      args: -dm_plex_dim 3 -bd_dm_refine 2
+      args: -dm_plex_dim 3 -bd_dm_refine 1
 
     test:
       suffix: ball_2

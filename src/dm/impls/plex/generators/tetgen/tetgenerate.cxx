@@ -147,9 +147,17 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
 
     /* Take away 'Q' for verbose output */
 #ifdef PETSC_HAVE_EGADS
-    PetscCall(PetscStrncpy(args, "pYqezQY", sizeof(args)));
+    if (mesh->tetgenRadiusEdgeBound > 0.) {
+      PetscCall(PetscSNPrintf(args, sizeof(args), "pYq%.2f/%.0fezQY", (double)mesh->tetgenRadiusEdgeBound, (double)mesh->tetgenDihedralBound));
+    } else {
+      PetscCall(PetscStrncpy(args, "pYqezQY", sizeof(args)));
+    }
 #else
-    PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
+    if (mesh->tetgenRadiusEdgeBound > 0.) {
+      PetscCall(PetscSNPrintf(args, sizeof(args), "pq%.2f/%.0fezQ", (double)mesh->tetgenRadiusEdgeBound, (double)mesh->tetgenDihedralBound));
+    } else {
+      PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
+    }
 #endif
     if (mesh->tetgenOpts) {
       ::tetrahedralize(mesh->tetgenOpts, &in, &out);

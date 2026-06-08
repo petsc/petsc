@@ -135,7 +135,11 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
+    if (mesh->triangleAngBound > 0.) {
+      PetscCall(PetscSNPrintf(args, sizeof(args), "pq%.0fezQ", (double)mesh->triangleAngBound));
+    } else {
+      PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
+    }
     if (createConvexHull) PetscCall(PetscStrlcat(args, "c", sizeof(args)));
     if (constrained) PetscCall(PetscStrncpy(args, "zepDQ", sizeof(args)));
     if (mesh->triangleOpts) {

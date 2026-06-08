@@ -123,6 +123,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
   }
   if (rank == 0) {
     TetGenOpts t;
+    PetscReal  minratio, mindihedral;
 
     PetscCall(TetGenOptsInitialize(&t));
     t.in        = boundary; /* Should go away */
@@ -132,6 +133,10 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
     t.zeroindex = 1;
     t.quiet     = 1;
     t.verbose   = verbose;
+    PetscCall(DMPlexTetgenGetRadiusEdgeBound(boundary, &minratio));
+    PetscCall(DMPlexTetgenGetDihedralBound(boundary, &mindihedral));
+    if (minratio > 0.) t.minratio = minratio;
+    if (mindihedral > 0.) t.mindihedral = mindihedral;
 #if 0
   #ifdef PETSC_HAVE_EGADS
     /* Need to add in more TetGen code */
