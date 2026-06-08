@@ -27,7 +27,7 @@ static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
   PetscInt    k, j;
 
   PetscFunctionBegin;
-  PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+  PetscCall(KSPIDRGetRandom(ksp, &idr->rand));
   for (k = 0; k < idr->s; k++) PetscCall(VecSetRandom(idr->PP[k], idr->rand));
   /* Modified Gram-Schmidt orthonormalization */
   for (k = 0; k < idr->s; k++) {
@@ -280,8 +280,8 @@ static PetscErrorCode KSPDestroy_IDR(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetCosine_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetRandomContext_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetRandomContext_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetRandom_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetRandom_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -298,7 +298,7 @@ static PetscErrorCode KSPView_IDR(KSP ksp, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  s (shadow space dimension) = %" PetscInt_FMT "\n", idr->s));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  omega stabilization cosine threshold = %g\n", (double)idr->cth));
-    PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+    PetscCall(KSPIDRGetRandom(ksp, &idr->rand));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscRandomView(idr->rand, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -323,7 +323,7 @@ static PetscErrorCode KSPSetFromOptions_IDR(KSP ksp, PetscOptionItems PetscOptio
   PetscCall(PetscOptionsReal("-ksp_idr_cosine", "Omega stabilization cosine threshold (0 = off)", "KSPIDRSetCosine", idr->cth, &cth, &flg));
   if (flg) PetscCall(KSPIDRSetCosine(ksp, cth));
   PetscOptionsHeadEnd();
-  PetscCall(KSPIDRGetRandomContext(ksp, &idr->rand));
+  PetscCall(KSPIDRGetRandom(ksp, &idr->rand));
   PetscCall(PetscRandomSetFromOptions(idr->rand));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -371,7 +371,7 @@ static PetscErrorCode KSPIDRGetCosine_IDR(KSP ksp, PetscReal *cth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPIDRSetRandomContext_IDR(KSP ksp, PetscRandom rand)
+static PetscErrorCode KSPIDRSetRandom_IDR(KSP ksp, PetscRandom rand)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
@@ -382,7 +382,7 @@ static PetscErrorCode KSPIDRSetRandomContext_IDR(KSP ksp, PetscRandom rand)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPIDRGetRandomContext_IDR(KSP ksp, PetscRandom *rand)
+static PetscErrorCode KSPIDRGetRandom_IDR(KSP ksp, PetscRandom *rand)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
@@ -508,7 +508,7 @@ PetscErrorCode KSPIDRGetCosine(KSP ksp, PetscReal *cth)
 }
 
 /*@
-  KSPIDRSetRandomContext - Sets the `PetscRandom` object used by the `KSPIDR` solver
+  KSPIDRSetRandom - Sets the `PetscRandom` object used by the `KSPIDR` solver
   to initialize the shadow vectors.
 
   Collective
@@ -519,20 +519,25 @@ PetscErrorCode KSPIDRGetCosine(KSP ksp, PetscReal *cth)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetRandomContext()`, `PetscRandomCreate()`
+  Note:
+  `KSPIDR` creates its own random number generator internally that can be accessed
+   with `KSPIDRGetRandom()` and controlled from the options database with the options
+   prefix of the `KSP` object.
+
+.seealso: [](ch_ksp), `KSPIDR`, `KSPIDRGetRandom()`, `PetscRandomCreate()`
 @*/
-PetscErrorCode KSPIDRSetRandomContext(KSP ksp, PetscRandom rand)
+PetscErrorCode KSPIDRSetRandom(KSP ksp, PetscRandom rand)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(rand, PETSC_RANDOM_CLASSID, 2);
   PetscCheckSameComm(ksp, 1, rand, 2);
-  PetscTryMethod(ksp, "KSPIDRSetRandomContext_C", (KSP, PetscRandom), (ksp, rand));
+  PetscTryMethod(ksp, "KSPIDRSetRandom_C", (KSP, PetscRandom), (ksp, rand));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  KSPIDRGetRandomContext - Gets the `PetscRandom` object used by the `KSPIDR` solver.
+  KSPIDRGetRandom - Gets the `PetscRandom` object used by the `KSPIDR` solver.
 
   Collective
 
@@ -544,14 +549,14 @@ PetscErrorCode KSPIDRSetRandomContext(KSP ksp, PetscRandom rand)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPIDRSetRandomContext()`
+.seealso: [](ch_ksp), `KSPIDRSetRandom()`
 @*/
-PetscErrorCode KSPIDRGetRandomContext(KSP ksp, PetscRandom *rand)
+PetscErrorCode KSPIDRGetRandom(KSP ksp, PetscRandom *rand)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscAssertPointer(rand, 2);
-  PetscTryMethod(ksp, "KSPIDRGetRandomContext_C", (KSP, PetscRandom *), (ksp, rand));
+  PetscTryMethod(ksp, "KSPIDRGetRandom_C", (KSP, PetscRandom *), (ksp, rand));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -576,9 +581,13 @@ PetscErrorCode KSPIDRGetRandomContext(KSP ksp, PetscRandom *rand)
    Memory usage is (3s+3) vectors plus an s-by-s dense matrix.
    This implements the biorthogonal variant described in {cite}`gijzen:2011`.
 
+  `KSPIDR` uses a `PetscRandom` which may be obtained with `KSPIDRGetRandom()`
+   (see also `KSPIDRSetRandom()`). The `PetscRandom` may be controlled from the
+   options database with the options prefix of the `KSP` object.
+
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPBCGS`, `KSPBCGSL`, `KSPGMRES`, `KSPIDRSetS()`, `KSPIDRGetS()`,
-          `KSPIDRSetCosine()`, `KSPIDRGetCosine()`
+          `KSPIDRSetCosine()`, `KSPIDRGetCosine()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
 {
@@ -607,7 +616,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", KSPIDRGetS_IDR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", KSPIDRSetCosine_IDR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetCosine_C", KSPIDRGetCosine_IDR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetRandomContext_C", KSPIDRSetRandomContext_IDR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetRandomContext_C", KSPIDRGetRandomContext_IDR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetRandom_C", KSPIDRSetRandom_IDR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetRandom_C", KSPIDRGetRandom_IDR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

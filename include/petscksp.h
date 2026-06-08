@@ -423,8 +423,8 @@ PETSC_EXTERN PetscErrorCode KSPIDRSetS(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPIDRGetS(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPIDRSetCosine(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPIDRGetCosine(KSP, PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPIDRSetRandomContext(KSP, PetscRandom);
-PETSC_EXTERN PetscErrorCode KSPIDRGetRandomContext(KSP, PetscRandom *);
+PETSC_EXTERN PetscErrorCode KSPIDRSetRandom(KSP, PetscRandom);
+PETSC_EXTERN PetscErrorCode KSPIDRGetRandom(KSP, PetscRandom *);
 
 PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
 static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
