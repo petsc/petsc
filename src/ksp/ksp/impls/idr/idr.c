@@ -274,8 +274,8 @@ static PetscErrorCode KSPDestroy_IDR(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(KSPReset_IDR(ksp));
-  PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscRandomDestroy(&idr->rand));
+  PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetCosine_C", NULL));
