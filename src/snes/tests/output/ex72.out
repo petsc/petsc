@@ -1,0 +1,1 @@
+Custom convergence test preserved after SNESSetType() to SNESVINEWTONRSLS
