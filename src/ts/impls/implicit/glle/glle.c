@@ -148,8 +148,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     PetscCall(PetscBLASIntCast(r - 1, &m));
     PetscCall(PetscBLASIntCast(r, &n));
     PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&m, &one, ImV, &n, ipiv, scheme->alpha + 1, &n, &info));
-    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GESV");
-    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Bad LU factorization");
+    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GESV LAPACK routine %" PetscBLASInt_FMT, info);
+    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Bad LU factorization in GESV LAPACK routine %" PetscBLASInt_FMT, info);
 
     /* Build right-hand side for beta (tp1 - glm.B(2:end,:)*(glm.c.^(p+1)./factorial(p+1)) - e.alpha) */
     for (i = 1; i < r; i++) {
@@ -157,8 +157,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
       for (j = 0; j < s; j++) scheme->beta[i] -= b[i * s + j] * CPowF(c[j], p + 1);
     }
     PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("No transpose", &m, &one, ImV, &n, ipiv, scheme->beta + 1, &n, &info));
-    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GETRS");
-    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Should not happen");
+    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GETRS LAPACK routine %" PetscBLASInt_FMT, info);
+    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Failure in GETRS LAPACK routine %" PetscBLASInt_FMT, info);
 
     /* Build stage_error vector
            xi = glm.c.^(p+1)/factorial(p+1) - glm.A*glm.c.^p/factorial(p) + glm.U(:,2:end)*e.alpha;
@@ -182,8 +182,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
       for (j = 0; j < s; j++) scheme->gamma[i] += b[i * s + j] * scheme->stage_error[j];
     }
     PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("No transpose", &m, &one, ImV, &n, ipiv, scheme->gamma + 1, &n, &info));
-    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GETRS");
-    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Should not happen");
+    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GETRS LAPACK routine %" PetscBLASInt_FMT, info);
+    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Failure in GETRS LAPACK routine %" PetscBLASInt_FMT, info);
 
     /* beta[0] (rho in B,J,W 2007)
         e.rho = 1/factorial(p+2) - glm.B(1,:)*glm.c.^(p+1)/factorial(p+1) ...
@@ -242,8 +242,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
     PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&m, &n, &m, H, &m, bmat, &ldb, sing, &rcond, &rank, workscalar, &lwork, &info));
 #endif
-    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
-    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
+    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS LAPACK routine %" PetscBLASInt_FMT, info);
+    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge in GELSS LAPACK routine %" PetscBLASInt_FMT, info);
 
     for (j = 0; j < 3; j++) {
       for (k = 0; k < s; k++) scheme->phi[k + j * s] = bmat[k + j * ss];

@@ -31,7 +31,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
 #else
   PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &bn, &bn, R, &bN, realpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, realpart + N, &lierr));
 #endif
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SVD Lapack routine %" PetscBLASInt_FMT, lierr);
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SVD LAPACK routine %" PetscBLASInt_FMT, lierr);
   PetscCall(PetscFPTrapPop());
 
   *emin = realpart[n - 1];
@@ -96,7 +96,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r,
   /* compute eigenvalues */
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "N", &bn, R, &bN, eigs, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, gmres->Dsvd, &lierr));
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine");
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GEEV LAPACK routine %" PetscBLASInt_FMT, lierr);
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscMalloc1(n, &perm));
   for (i = 0; i < n; i++) perm[i] = i;
@@ -162,7 +162,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
       PetscBLASInt *ipiv;
       PetscCall(PetscMalloc1(bn, &ipiv));
       PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
-      PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Error while calling the Lapack routine DGESV");
+      PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error while calling the LAPACK routine DGESV %" PetscBLASInt_FMT, info);
       PetscCall(PetscFree(ipiv));
       PetscCall(PetscFree(Ht));
     }
@@ -190,7 +190,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
     PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "V", &bn, H, &bN, wr, &sdummy, &idummy, Q, &bn, work, &lwork, rwork, &info));
     PetscCall(PetscFree(rwork));
 #endif
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine");
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GEEV LAPACK routine %" PetscBLASInt_FMT, info);
     PetscCall(PetscFPTrapPop());
     PetscCall(PetscFree(work));
   }

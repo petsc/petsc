@@ -125,10 +125,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Compute the Schur form */
   if (IsReduced) { /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
     PetscCallBLAS("LAPACKhgeqz", LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
-    PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
+    PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error while calling LAPACK routine xhgeqz %" PetscBLASInt_FMT, info);
   } else {
     PetscCallBLAS("LAPACKgges", LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
-    PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
+    PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error while calling LAPACK routine xgges %" PetscBLASInt_FMT, info);
   }
 
   /* We should avoid computing these ratio...  */
@@ -156,7 +156,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     for (j = 0; j < r; j++) select[perm[KspSize - j - 1]] = 1;
   }
   PetscCallBLAS("LAPACKtgsen", LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &Dif[0], work, &lwork, iwork, &liwork, &info));
-  PetscCheck(info != 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+  PetscCheck(info == 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the TGSEN LAPACK routine: ill-conditioned problem %" PetscBLASInt_FMT, info);
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   PetscCall(PetscArrayzero(Sr, (N + 1) * r));
   for (j = 0; j < r; j++) {
