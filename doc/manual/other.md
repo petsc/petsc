@@ -365,30 +365,47 @@ with calls to the appropriate object viewer with the viewer format
 ## Using SAWs with PETSc
 
 The Scientific Application Web server, SAWs [^saws], allows one to monitor
-running PETSc applications from a browser. To use SAWs you must `configure` PETSc with
+running PETSc applications from a browser or from a Model Context Protocol (MCP) client. To use SAWs you must `configure` PETSc with
 the option `--download-saws`. Options to use SAWs include
 
-- `-saws_options` - allows setting values in the PETSc options
-  database via the browser (works only on one process).
-- `-stack_view saws` - allows monitoring the current stack frame that
-  PETSc is in; refresh to see the new location.
-- `-snes_monitor_saws, -ksp_monitor_saws` - monitor the solvers’
-  iterations from the web browser.
+- `-saws_options`      - allows setting values in the PETSc options database (works only on one process)
+- `-stack_view saws`   - allows monitoring the current stack frame that PETSc is in; refresh to see the new location
+- `-ksp_monitor_saws`  - monitor the `KSP` iterations
+- `-snes_monitor_saws` - monitor the `SNES` iterations
+- `-xxx_view saws`     - allows viewing any PETSc object with SAWs, for example `-snes_view saws`
+- `-ksp_saws_block`    - block the program at the end of `KSPSolve()` so that one can continue to view the `KSP` object with SAWs instead of having the program end
+- `-snes_saws_block`   - block the program at the end of `SNESSolve()` so that one can continue to view the `SNES` object with SAWs instead of having the program end
+- `-ts_saws_block`     - block the program at the end of `TSSolve()` so that one can continue to view the `TS` object with SAWs instead of having the program end
 
-For each of these you need to point your browser to
-`http://hostname:8080`, for example `http://localhost:8080`. Options
-that control behavior of SAWs include
+Options that control behavior of SAWs include
 
-- `-saws_log filename` - log all SAWs actions in a file.
-- `-saws_https certfile` - use HTTPS instead of HTTP with a
-  certificate.
-- `-saws_port_auto_select` - have SAWs pick a port number instead of
-  using 8080.
-- `-saws_port port` - use `port` instead of 8080.
-- `-saws_root rootdirectory` - local directory to which the SAWs
-  browser will have read access.
-- `-saws_local` - use the local file system to obtain the SAWS
-  javascript files (they much be in `rootdirectory/js`).
+- `-saws_log filename`       - log all SAWs actions in a file
+- `-saws_https certfile`     - use HTTPS instead of HTTP with a certificate
+- `-saws_port_auto_select`   - have SAWs pick a port number instead of using 8080. The port number will be printed to the screen in the appropriate URL
+- `-saws_port port`          - use `port` instead of 8080
+- `-saws_root rootdirectory` - local directory to which the SAWs browser will have read access
+- `-saws_local`              - use the local file system to obtain the SAWs javascript files (they must be in `rootdirectory/js`)
+
+If the PETSc program errors at startup with the error message `Error in SAWs_Initialize() 11` this may indicate the port is already in use. Try again using the
+`-saws_port_auto_select` or `-saws_port port` option.
+
+To access the information in a browser point it to `http://hostname:8080`, for example `http://localhost:8080`.
+
+To access the MCP server use the URL `http://hostname:8080/mcp`.
+
+A full test of the MCP server capability can be done by running `src/snes/tutorials/ex19` with
+
+```
+./ex19 -snes_view saws -snes_saws_block
+```
+
+Then, from a clone of the [petsc_mcp_servers](https://gitlab.com/petsc/petsc_mcp_servers) repository run
+
+```
+python petsc_mcp_client.py --url http://hostname:8080/mcp get
+```
+
+and it will print out the published information about SAWs.
 
 Also see the manual pages for `PetscSAWsBlock()`,
 `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`,
