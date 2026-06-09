@@ -99,7 +99,7 @@ class Configure(config.package.GNUPackage):
     syclbuild = False
     hasharch = 'with-gpu-arch' in args
     if self.hip.found:
-      stdflag  = '-std=c++14'
+      stdflag  = '-std=c++17'
       hipbuild = True
       args.append('ROCM_PATH="{0}"'.format(self.hip.hipDir))
       args.append('--enable-gpu-aware-mpi') # By default, GPU-aware MPI is off in Hypre configure, see https://hypre.readthedocs.io/en/latest/ch-misc.html#gpu-build-options

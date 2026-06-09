@@ -201,6 +201,7 @@ class Configure(config.package.Package):
           raise RuntimeError('HIP arch name ' + self.hipArch + ' is not in the supported gfxnnn or gfxnnn_apu format')
         # See https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html, even for MI300A, the LLVM target name is still gfx942
         self.setCompilers.HIPFLAGS += ' --offload-arch=' + self.hipArch +' '
+        self.addDefine('HIP_ROCM_ARCH', self.hipArch)
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx942_apu, gfx942, gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
