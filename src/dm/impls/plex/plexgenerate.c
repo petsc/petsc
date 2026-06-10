@@ -87,10 +87,59 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
+/*@
+  DMPlexTriangleSetAngleBound - Set the minimum angle bound for the Triangle mesh generator
+
+  Logically Collective
+
+  Input Parameters:
++ dm  - The `DMPLEX` object
+- ang - The minimum angle for a triangle
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleGetAngleBound()`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTriangleSetAngleBound(DM dm, PetscReal ang)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->triangleAngBound = ang;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTriangleGetAngleBound - Get the minimum angle bound for the Triangle mesh generator
 
   Not Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Output Parameter:
+. ang - The minimum angle for a triangle
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetAngleBound()`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTriangleGetAngleBound(DM dm, PetscReal *ang)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(ang, 2);
+  *ang = mesh->triangleAngBound;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
+
+  Logically Collective
 
   Input Parameters:
 + dm   - The `DMPLEX` object
@@ -112,10 +161,108 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  DMPlexTetgenSetOptions - Set the options used for the Tetgen mesh generator
+/*@
+  DMPlexTetgenSetRadiusEdgeBound - Set the maximum radius-edge ratio bound for the Tetgen mesh generator
+
+  Logically Collective
+
+  Input Parameters:
++ dm    - The `DMPLEX` object
+- ratio - The maximum radius-edge ratio for a tetrahedron
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenGetRadiusEdgeBound()`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTetgenSetRadiusEdgeBound(DM dm, PetscReal ratio)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->tetgenRadiusEdgeBound = ratio;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTetgenGetRadiusEdgeBound - Get the maximum radius-edge ratio for the Tetgen mesh generator
 
   Not Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Output Parameter:
+. ratio - The maximum radius-edge ratio for a tetrahedron
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetRadiusEdgeBound()`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTetgenGetRadiusEdgeBound(DM dm, PetscReal *ratio)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(ratio, 2);
+  *ratio = mesh->tetgenRadiusEdgeBound;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTetgenSetDihedralBound - Set the minimum dihedral angle bound for the Tetgen mesh generator
+
+  Logically Collective
+
+  Input Parameters:
++ dm  - The `DMPLEX` object
+- ang - The minimum dihedral angle for a tetrahedron
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenGetDihedralBound()`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTetgenSetDihedralBound(DM dm, PetscReal ang)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->tetgenDihedralBound = ang;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTetgenGetDihedralBound - Get the minimum dihedral angle bound for the Tetgen mesh generator
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Output Parameter:
+. ang - The minimum dihedral angle for a tetrahedron
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetDihedralBound()`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+@*/
+PetscErrorCode DMPlexTetgenGetDihedralBound(DM dm, PetscReal *ang)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(ang, 2);
+  *ang = mesh->tetgenDihedralBound;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTetgenSetOptions - Set the options used for the Tetgen mesh generator
+
+  Logically Collective
 
   Input Parameters:
 + dm   - The `DMPLEX` object
@@ -123,7 +270,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 
   Level: developer
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetRadiusEdgeBound()`, `DMPlexTetgenSetDihedralBound()`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 {
