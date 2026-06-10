@@ -1974,8 +1974,12 @@ PetscErrorCode SNESSetFunction(SNES snes, Vec r, SNESFunctionFn *f, PetscCtx ctx
     PetscCall(VecDestroy(&snes->vec_func));
     snes->vec_func = r;
   }
+  /* update DMSNES
+     We support incremental information; so update the function context only if r is not specified
+     (which allows to disable the callbacks when both f and ctx are NULL),
+     or, if r is specified, when at least one of f and ctx is not NULL */
   PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(DMSNESSetFunction(dm, f, ctx));
+  if (!r || f || ctx) PetscCall(DMSNESSetFunction(dm, f, ctx));
   if (f == SNESPicardComputeFunction) PetscCall(DMSNESSetMFFunction(dm, SNESPicardComputeMFFunction, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3254,8 +3258,12 @@ PetscErrorCode SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, SNESJacobianFn *J,
   if (Pmat) PetscValidHeaderSpecific(Pmat, MAT_CLASSID, 3);
   if (Amat) PetscCheckSameComm(snes, 1, Amat, 2);
   if (Pmat) PetscCheckSameComm(snes, 1, Pmat, 3);
+  /* update DMSNES
+     We support incremental information; so update the function context only if both Amat and Pmat are not specified
+     (which allows to disable the callbacks when both J and ctx are NULL),
+     or, if any of the mats is specified, when at least one of J and ctx is not NULL */
   PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(DMSNESSetJacobian(dm, J, ctx));
+  if ((!Amat && !Pmat) || J || ctx) PetscCall(DMSNESSetJacobian(dm, J, ctx));
   if (Amat) {
     PetscCall(PetscObjectReference((PetscObject)Amat));
     PetscCall(MatDestroy(&snes->jacobian));
