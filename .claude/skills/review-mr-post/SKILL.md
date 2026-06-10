@@ -1,13 +1,18 @@
-Review the code changes in GitLab MR $ARGUMENTS and post inline comments with apply-able suggestions.
+---
+name: review-mr-post
+description: Review a PETSc GitLab merge request and post the findings back as inline DiffNote comments (with apply-able suggestion blocks where possible). Use when the user asks to "post review comments on MR <N>", "leave inline comments on the MR", or "review and post" — anything that should land on GitLab, not stdout.
+argument-hint: <MR_IID | diff-file | empty for current branch>
+---
 
 Adhere to @CLAUDE.md while reviewing and drafting comments.
 
-## Steps
+## Identify and fetch
+Follow @../review-mr/identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for drift.
 
-### 1–3. Review the MR
-Follow steps 1–3 from `.claude/commands/review-mr.md` to identify the MR, collect metadata, and review the diff.
+## Review
+Follow @../review-mr/review-procedure.md (Sections 4–6) to classify and verify findings. Then continue below to filter and post.
 
-### 4. Filter findings
+## 7. Filter findings
 Only post findings that have a **concrete, actionable fix** (a code change the author can apply). Do NOT post:
 - Informational or observational notes ("just noting...", "no issue, but...")
 - Findings that acknowledge correctness but flag theoretical fragility
@@ -16,7 +21,7 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 
 Each posted comment opens a discussion thread the author must resolve — avoid noise.
 
-### 5. Post inline comments as DiffNotes
+## 8. Post inline comments as DiffNotes
 Use the GitLab Discussions API with JSON input to create inline DiffNote comments.
 
 **IMPORTANT:** Use `--input -` with `-H "Content-Type: application/json"` — the `-f` flag with bracket notation does NOT work for nested `position` fields.
@@ -56,7 +61,7 @@ p = subprocess.run(
 assert '"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
 ```
 
-### 6. Use GitLab suggestion blocks for concrete fixes
+## 9. Use GitLab suggestion blocks for concrete fixes
 When a comment has a specific code fix, include a suggestion block in the body so the author can click "Apply suggestion":
 
 ````
@@ -72,9 +77,9 @@ corrected line here
 - Only use suggestions for concrete fixes. Use plain comments for design/architectural feedback.
 - **Only comment on lines that are part of the MR diff.** Do not suggest changes to unchanged code that happens to be near the diff.
 
-### 7. Line number mapping
+## 10. Line number mapping
 - For **new files**: `new_line` = the line number in the file itself.
 - For **modified files**: `new_line` = the line number in the new version of the file. Parse the `@@` hunk headers to map correctly.
 
-### 8. Verify
+## 11. Verify
 After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
