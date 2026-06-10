@@ -227,8 +227,6 @@ int main(int argc, char **argv)
           -dm_view
 
   # Construct and refine a torus
-  #   Can use a custom polodial slice
-  #   -dm_plex_filename /Users/knepley/PETSc4/petsc/petsc-dev/share/petsc/datafiles/meshes/square_quad.msh
   test:
     suffix: 21
     args: -dm_plex_option_phases phase1_,phase2_,phase3_ \
@@ -240,6 +238,22 @@ int main(int argc, char **argv)
             -phase2_dm_plex_transform_extrude_use_tensor 0 \
             -phase2_dm_plex_transform_extrude_periodic \
           -phase3_dm_coord_remap -phase3_dm_coord_map torus \
+          -dm_view
+
+  # Construct a torus with a custom poloidial slice
+  #   Looks better with -phase2_dm_refine 2 -phase3_dm_extrude 32
+  test:
+    suffix: 22
+    requires: triangle
+    args: -dm_plex_option_phases phase1_,phase2_,phase3_,phase4_ \
+          -dm_plex_shape diiid -dm_refine 0 -bd_dm_plex_generate_triangle_opts zpQq30e \
+          -phase1_dm_coord_remap -phase1_dm_coord_map rotate -phase1_dm_coord_map_params 0,0,0,0,1.5707 \
+          -phase2_dm_refine 0 \
+          -phase3_dm_plex_transform_type extrude -phase3_dm_extrude 16 \
+            -phase3_dm_plex_transform_extrude_thickness 1 \
+            -phase3_dm_plex_transform_extrude_use_tensor 0 \
+            -phase3_dm_plex_transform_extrude_periodic \
+          -phase4_dm_coord_remap -phase4_dm_coord_map torus \
           -dm_view
 
 TEST*/

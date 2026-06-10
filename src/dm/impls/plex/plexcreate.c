@@ -4514,6 +4514,107 @@ PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Build a 1D DMPlex boundary (PSLG) from the DIIID wall coordinates
+#define DIIID_NPTS 40
+static const PetscReal DIIID_WALL[][2] = {
+  // Outboard midplane -> upper outboard
+  {2.370, 0.000 },
+  {2.360, 0.200 },
+  {2.340, 0.400 },
+  {2.300, 0.600 },
+  {2.240, 0.800 },
+  {2.150, 0.950 },
+  {2.040, 1.080 },
+  {1.900, 1.180 },
+  // Upper dome
+  {1.750, 1.250 },
+  {1.600, 1.300 },
+  {1.450, 1.330 },
+  {1.300, 1.350 },
+  // Upper inboard
+  {1.180, 1.320 },
+  {1.100, 1.250 },
+  {1.050, 1.150 },
+  {1.020, 1.000 },
+  // Inboard straight section
+  {1.010, 0.800 },
+  {1.010, 0.600 },
+  {1.010, 0.400 },
+  {1.010, 0.200 },
+  {1.010, 0.000 },
+  {1.010, -0.200},
+  {1.010, -0.400},
+  {1.010, -0.600},
+  {1.010, -0.800},
+  // Lower inboard
+  {1.020, -1.000},
+  {1.050, -1.150},
+  {1.100, -1.250},
+  {1.180, -1.320},
+  // Lower dome
+  {1.300, -1.350},
+  {1.450, -1.330},
+  {1.600, -1.300},
+  {1.750, -1.250},
+  // Lower outboard
+  {1.900, -1.180},
+  {2.040, -1.080},
+  {2.150, -0.950},
+  {2.240, -0.800},
+  {2.300, -0.600},
+  {2.340, -0.400},
+  {2.360, -0.200},
+};
+
+static PetscErrorCode DMPlexCreateDIIIDBoundary_Private(MPI_Comm comm, DM *boundary)
+{
+  const PetscInt Nv   = DIIID_NPTS;
+  const PetscInt dim  = 1;
+  const PetscInt cdim = 2;
+  PetscInt       edges[DIIID_NPTS * 2];
+  PetscReal      coords[DIIID_NPTS * 2];
+
+  PetscFunctionBegin;
+  for (PetscInt v = 0; v < Nv; ++v) {
+    edges[v * 2 + 0] = v;
+    edges[v * 2 + 1] = (v + 1) % Nv;
+  }
+  for (PetscInt v = 0; v < Nv; ++v) {
+    coords[v * 2 + 0] = DIIID_WALL[v][0];
+    coords[v * 2 + 1] = DIIID_WALL[v][1];
+  }
+  PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, Nv, Nv, 2, PETSC_FALSE, edges, cdim, coords, boundary));
+  {
+    DMLabel  label;
+    PetscInt pStart, pEnd;
+
+    PetscCall(DMCreateLabel(*boundary, "marker"));
+    PetscCall(DMGetLabel(*boundary, "marker", &label));
+    PetscCall(DMPlexGetChart(*boundary, &pStart, &pEnd));
+    for (PetscInt p = pStart; p < pEnd; ++p) PetscCall(DMLabelSetValue(label, p, 1));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexCreateDIIIDMesh_Internal(DM dm)
+{
+  DM          sdm, vol;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexCreateDIIIDBoundary_Private(PetscObjectComm((PetscObject)dm), &sdm));
+  PetscCall(DMPlexDistributeSetDefault(sdm, PETSC_FALSE));
+  PetscCall(DMGetOptionsPrefix(dm, &prefix));
+  PetscCall(DMSetOptionsPrefix(sdm, prefix));
+  PetscCall(DMAppendOptionsPrefix(sdm, "bd_"));
+  PetscCall(DMSetFromOptions(sdm));
+  PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));
+  PetscCall(DMPlexGenerate(sdm, NULL, PETSC_TRUE, &vol));
+  PetscCall(DMDestroy(&sdm));
+  PetscCall(DMPlexReplace_Internal(dm, &vol));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType ct)
 {
   PetscFunctionBegin;
@@ -4745,7 +4846,7 @@ static PetscErrorCode ProcessCohesiveLabel_Faces(DM dm, DMLabel label, PetscInt 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *flg);
 
-const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
+const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "diiid", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
@@ -5008,6 +5109,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
       PetscCall(PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMPlexDistribute", overlap, &overlap, NULL, 0));
       PetscCall(DMPlexCreateHypercubicMesh_Internal(dm, dim, lower, upper, edges, overlap, bdt));
       PetscCall(PetscFree4(edges, lower, upper, bdt));
+    } break;
+    case DM_SHAPE_DIIID: {
+      PetscCall(DMPlexCreateDIIIDMesh_Internal(dm));
     } break;
     default:
       SETERRQ(comm, PETSC_ERR_SUP, "Domain shape %s is unsupported", DMPlexShapes[shape]);
@@ -5568,6 +5672,16 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       switch (map) {
       case DM_COORD_MAP_NONE:
         mapFunc = coordMap_identity;
+        break;
+      case DM_COORD_MAP_ROTATE:
+        mapFunc = coordMap_rotate;
+        if (!Np) {
+          Np = cdim * 2 + 1;
+          for (PetscInt d = 0; d < cdim * 2; ++d) params[d] = 0.;
+          params[cdim * 2 - 1] = 1.;
+          params[cdim * 2 + 0] = 0.;
+        }
+        PetscCheck(Np == cdim * 2 + 1, comm, PETSC_ERR_ARG_WRONG, "The rotate coordinate map must have cdim * 2 + 1 = %" PetscInt_FMT " parameters, not %" PetscInt_FMT, cdim * 2 + 1, Np);
         break;
       case DM_COORD_MAP_SHEAR:
         mapFunc = coordMap_shear;

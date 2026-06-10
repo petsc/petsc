@@ -1,0 +1,11 @@
+DM Object: diiid 1 MPI process
+  type: plex
+diiid in 3 dimensions:
+  Number of 0-cells per rank: 1280
+  Number of 1-cells per rank: 4432
+  Number of 2-cells per rank: 5040 (3152)
+  Number of 3-cells per rank: 1888
+Labels:
+  celltype: 5 strata with value/size (0 (1280), 1 (4432), 3 (1888), 4 (3152), 8 (1888))
+  depth: 4 strata with value/size (0 (1280), 1 (4432), 2 (5040), 3 (1888))
+  marker: 1 strata with value/size (1 (2560))
