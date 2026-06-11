@@ -70,6 +70,8 @@
 
 ## KSP
 
+- Fix for `KSP` pre- and post-solve callbacks, that can now be used together with Eisenstat and Walker trick for `SNES`
+- Add `KSPPreSolve()` and `KSPPostSolve()` to run the registered `KSP` pre/post solve callbacks
 
 ## SNES
 

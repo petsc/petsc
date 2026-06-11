@@ -210,6 +210,9 @@ cdef extern from * nogil:
     PetscErrorCode KSPBuildResidual(PetscKSP, PetscVec, PetscVec, PetscVec*)
     PetscErrorCode KSPBuildResidualDefault(PetscKSP, PetscVec, PetscVec, PetscVec*)
 
+    PetscErrorCode KSPPreSolve(PetscKSP, PetscVec, PetscVec)
+    PetscErrorCode KSPPostSolve(PetscKSP, PetscVec, PetscVec)
+
     PetscErrorCode KSPSetDiagonalScale(PetscKSP, PetscBool)
     PetscErrorCode KSPGetDiagonalScale(PetscKSP, PetscBool*)
     PetscErrorCode KSPSetDiagonalScaleFix(PetscKSP, PetscBool)

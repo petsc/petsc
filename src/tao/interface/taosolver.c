@@ -1,5 +1,6 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 #include <petsc/private/snesimpl.h>
+#include <petsc/private/kspimpl.h>
 #include <petscdmshell.h>
 
 PetscBool         TaoRegisterAllCalled = PETSC_FALSE;
@@ -57,8 +58,11 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
   if (tao->ksp_ewconv) {
     if (!tao->snes_ewdummy) PetscCall(SNESCreate(PetscObjectComm((PetscObject)tao), &tao->snes_ewdummy));
     tao->snes_ewdummy->ksp_ewconv = PETSC_TRUE;
-    PetscCall(KSPSetPreSolve(tao->ksp, KSPPreSolve_TAOEW_Private, tao));
-    PetscCall(KSPSetPostSolve(tao->ksp, KSPPostSolve_TAOEW_Private, tao));
+
+    tao->ksp->presolve_ew  = KSPPreSolve_TAOEW_Private;
+    tao->ksp->prectx_ew    = tao;
+    tao->ksp->postsolve_ew = KSPPostSolve_TAOEW_Private;
+    tao->ksp->postctx_ew   = tao;
 
     PetscCall(KSPGetOptionsPrefix(tao->ksp, &ewprefix));
     kctx = (SNESKSPEW *)tao->snes_ewdummy->kspconvctx;

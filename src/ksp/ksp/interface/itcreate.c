@@ -635,7 +635,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
   The functions `PCPreSolve()` and `PCPostSolve()` provide a similar functionality and are used, for example with `PCEISENSTAT`.
 
-.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`, `PCPreSolve()`, `PCPostSolve()`
+.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCPreSolve()`, `PCPostSolve()`
 @*/
 PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, PetscCtx ctx)
 {
@@ -658,7 +658,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, PetscCtx ctx)
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `KSPPostSolve()`
 @*/
 PetscErrorCode KSPSetPostSolve(KSP ksp, KSPPSolveFn *postsolve, PetscCtx ctx)
 {
@@ -666,6 +666,62 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, KSPPSolveFn *postsolve, PetscCtx ctx)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ksp->postsolve = postsolve;
   ksp->postctx   = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPPreSolve - Runs the KSP pre-solve callbacks. Used in conjunction with `KSPSetPreSolve()` or the Eisenstat-Walker method.
+
+  Collective
+
+  Input Parameters:
++ ksp - the solver object
+. rhs - the right-hand side vector
+- sol - the solution vector
+
+  Level: developer
+
+  Note:
+  `KSPPreSolve()` is typically used within `KSPSolve()`, so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ksp), `KSPSolve()`, `KSP`, `KSPSetPreSolve()`, `KSPPostSolve()`, `SNESKSPSetUseEW()`
+@*/
+PetscErrorCode KSPPreSolve(KSP ksp, Vec rhs, Vec sol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(sol, VEC_CLASSID, 3);
+  if (ksp->presolve_ew) PetscCall((*ksp->presolve_ew)(ksp, rhs, sol, ksp->prectx_ew));
+  if (ksp->presolve) PetscCall((*ksp->presolve)(ksp, rhs, sol, ksp->prectx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPPostSolve - Runs the KSP post-solve callbacks. Used in conjunction with `KSPSetPostSolve()` or the Eisenstat-Walker method.
+
+  Collective
+
+  Input Parameters:
++ ksp - the solver object
+. rhs - the right-hand side vector
+- sol - the solution vector
+
+  Level: developer
+
+  Note:
+  `KSPPostSolve()` is typically used within `KSPSolve()`, so most users would not generally call this routine themselves.
+
+.seealso: [](ch_ksp), `KSPSolve()`, `KSP`, `KSPSetPostSolve()`, `KSPPreSolve()`, `SNESKSPSetUseEW()`
+@*/
+PetscErrorCode KSPPostSolve(KSP ksp, Vec rhs, Vec sol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(sol, VEC_CLASSID, 3);
+  if (ksp->postsolve_ew) PetscCall((*ksp->postsolve_ew)(ksp, rhs, sol, ksp->postctx_ew));
+  if (ksp->postsolve) PetscCall((*ksp->postsolve)(ksp, rhs, sol, ksp->postctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

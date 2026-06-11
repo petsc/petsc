@@ -193,28 +193,30 @@ class BaseTestKSP:
     def testSetPreSolveTest(self):
         check = {'val': 0}
 
-        def presolve(ksp, rhs, x):
-            check['val'] = 1
+        def presolve(ksp, rhs, x, ch, inc=1):
+            ch['val'] += inc
 
         refcnt = getrefcount(presolve)
-        self.ksp.setPreSolve(presolve)
+        self.ksp.setPreSolve(presolve, (check,), {'inc': 3})
         self.assertEqual(getrefcount(presolve), refcnt + 1)
         self.testSolve()
-        self.assertEqual(check['val'], 1)
+        self.ksp.preSolve(self.ksp.getRhs(), self.ksp.getSolution())
+        self.assertEqual(check['val'], 2 * 3)
         self.ksp.setPreSolve(None)
         self.assertEqual(getrefcount(presolve), refcnt)
 
     def testSetPostSolveTest(self):
         check = {'val': 0}
 
-        def postsolve(ksp, rhs, x):
-            check['val'] = 1
+        def postsolve(ksp, rhs, x, ch, inc=1):
+            ch['val'] += inc
 
         refcnt = getrefcount(postsolve)
-        self.ksp.setPostSolve(postsolve)
+        self.ksp.setPostSolve(postsolve, (check,), {'inc': 2})
         self.assertEqual(getrefcount(postsolve), refcnt + 1)
         self.testSolve()
-        self.assertEqual(check['val'], 1)
+        self.ksp.postSolve(self.ksp.getRhs(), self.ksp.getSolution())
+        self.assertEqual(check['val'], 2 * 2)
         self.ksp.setPostSolve(None)
         self.assertEqual(getrefcount(postsolve), refcnt)
 
