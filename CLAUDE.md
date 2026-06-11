@@ -39,6 +39,7 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
   - Inside the `Options Database Keys:` linter block (the bullet entries `+ -opt val - desc`), the option-name is **bare** — no backticks. Example: `. -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel`.
   - In inline prose elsewhere (Notes blocks, `.md` chapters, `/*MC M*/` body), wrap the option in backticks as code: `` `-petscda_type name` ``, `` `-log_view` ``. This matches the convention used throughout `doc/manual/` and PETSc's docstring prose.
 - Function typedef names should end in `Fn`.
+- `MPI_Comm_size()` → local `size`; `MPI_Comm_rank()` → `rank`. No prefixed variants (`comm_size`, `nprocs`). If `size` is taken, rename the other local.
 
 ## PETSc Data Type Rules
 
@@ -53,9 +54,7 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Formatting is controlled by `.clang-format`. Use `make clangformat` when needed.
 - CI also checks source rules with `make checkbadSource`.
 - Header prototypes should not include parameter names, but function typedef declarations should.
-- Group local variables by type. Do not mix pointer arities on the same declaration line.
-- Initialize local variables in the declaration when practical.
-- In PETSc routines, place exactly one blank line between local declarations and `PetscFunctionBegin`.
+- The local-declaration block is one contiguous group at the top of the routine: variables grouped by type (all `PetscInt`s adjacent, all `PetscReal`s adjacent, etc.), no mixed pointer arities on a single line, no blank lines or section comments splitting the block. Initialize in the declaration when practical. Exactly one blank line separates the block from `PetscFunctionBegin`/`PetscFunctionBeginUser`.
 - PETSc example functions, including `main()`, should begin with `PetscFunctionBeginUser` after declarations.
 - Functions that begin with `PetscFunctionBegin` must return with `PetscFunctionReturn(...)` or `PetscFunctionReturnVoid()`, not raw `return`.
 - For `PetscErrorCode` functions, return `PetscFunctionReturn(PETSC_SUCCESS)` on success.
@@ -75,10 +74,13 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - Check object validity and arguments using the usual PETSc validation macros when working in code paths that already use them.
 - Reuse existing PETSc utility routines and macros before adding custom helpers.
 - Do not wrap `PetscCheck()` in an outer `if (...)` when the condition can be expressed directly in the check. Prefer a single guard such as `PetscCheck(!use_mms || sw->Ax == sw->Ay, ...)` over `if (use_mms) PetscCheck(sw->Ax == sw->Ay, ...)`.
+- Do not call `MatAssemblyBegin()`/`MatAssemblyEnd()` after `MatDenseRestoreArray*()` or `MatDenseRestoreColumnVec*()`. The Get/Restore pair is the assembled write path for dense matrices — the matrix stays assembled across it. Adding "just to be safe" assembly is wrong, not defensive. Assembly is only needed after `MatSetValues()`-style entry, where deferred stashing actually requires a flush.
 
 ## Kokkos / Device Code
 
 For an unreachable guard (a `default:` arm or "can't happen" branch) inside a `KOKKOS_INLINE_FUNCTION`, use `Kokkos::abort("message")`. `SETERRQ`/`SETERRABORT` are not device-callable.
+
+When a persistent workspace view is processed in chunks, only build a `Kokkos::subview` for the active range when a consumer actually reads the view extent (e.g. `KokkosBatched::TeamVectorGMRES` infers batch size from `view.extent(0)`). If every kernel is bounded by an explicit count parameter (`RangePolicy(0, n_active)`, or a function arg like `n_batch`), pass the full-capacity view directly — the subview adds no safety and obscures intent.
 
 ## Docstring Conventions (`/*@ ... @*/`)
 
