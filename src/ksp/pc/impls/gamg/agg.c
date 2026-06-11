@@ -631,7 +631,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
     if (jj > 0) {
       const PetscInt lid = mm, cgid = my0crs + clid;
       PetscInt       cids[100]; /* max bs */
-      PetscBLASInt   asz, M, N, INFO;
+      PetscBLASInt   asz, M, N, info;
       PetscBLASInt   Mdata, LDA, LWORK;
       PetscScalar   *qqc, *qqr, *TAU, *WORK;
       PetscInt      *fids;
@@ -683,9 +683,9 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
 
       /* QR */
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
       PetscCall(PetscFPTrapPop());
-      PetscCheck(INFO == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xGEQRF error");
+      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in xGEQRF LAPACK routine %" PetscBLASInt_FMT, info);
       /* get R - column-oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid * nSAvec];
@@ -700,8 +700,8 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       }
 
       /* get Q - row-oriented */
-      PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
-      PetscCheck(INFO == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xORGQR error arg %" PetscBLASInt_FMT, -INFO);
+      PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
+      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ORGQR LAPACK routine argument %" PetscBLASInt_FMT, -info);
 
       for (ii = 0; ii < M; ii++) {
         for (jj = 0; jj < N; jj++) qqr[N * ii + jj] = qqc[jj * Mdata + ii];
@@ -1678,7 +1678,7 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
           const PetscInt    *cols;
           const PetscScalar *vals;
           PetscInt           grow = rStart + row;
-          PetscBLASInt       NRHS = 1, LDA = N_b, LDB = N_b, INFO;
+          PetscBLASInt       NRHS = 1, LDA = N_b, LDB = N_b, info;
 
           row_offsets[row] = offset;
           PetscCall(MatGetRow(Prol, grow, &ncols, &cols, &vals));
@@ -1738,8 +1738,8 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
 
           /* solve G * x = rhs */
           for (PetscInt i = 0; i < nSAvec; i++) x[i] = rhs[i];
-          PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N_b, &NRHS, G, &LDA, ipiv, x, &LDB, &INFO));
-          if (INFO != 0) {
+          PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N_b, &NRHS, G, &LDA, ipiv, x, &LDB, &info));
+          if (info != 0) {
             /* G is singular despite ncols >= nSAvec (Bc columns linearly dependent);
                keep filtered values as-is (near-null space constraint not enforced for this row) */
             n_singular++;

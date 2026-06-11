@@ -1105,7 +1105,7 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
           }
         }
         PetscCall(LAPACKsyevFail(dim, Mpos));
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV LAPACK routine %" PetscBLASInt_FMT, lierr);
       }
       PetscCall(PetscFPTrapPop());
     }
@@ -1506,7 +1506,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 #endif
       if (lierr) {
         PetscCall(LAPACKsyevFail(dim, M1));
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV LAPACK routine %" PetscBLASInt_FMT, lierr);
       }
       PetscCall(PetscFPTrapPop());
 
@@ -1555,7 +1555,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
           }
         }
         PetscCall(LAPACKsyevFail(dim, evecs));
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV LAPACK routine %" PetscBLASInt_FMT, lierr);
       }
       PetscCall(PetscFPTrapPop());
 

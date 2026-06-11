@@ -1022,7 +1022,7 @@ PetscErrorCode PetscDALETKFLocalAnalysis_GPU(PetscDA da, PetscDA_LETKF *impl, Pe
   #else
       LAPACKsyev_("V", "U", &n_blas, &work_query, &n_blas, &work_query, &work_query, &lwork_query, &info);
   #endif
-      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK workspace query failed");
+      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK workspace query failed on SYEV %" PetscBLASInt_FMT, info);
       eigen_work->lwork = (PetscBLASInt)PetscRealPart(work_query);
 
       /* Allocate workspace */

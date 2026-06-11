@@ -53,7 +53,7 @@ static PetscErrorCode PetscDAEnsembleTFactor_Cholesky(PetscDA da)
 
   /* Compute Cholesky factorization: A = L * L^T (lower triangular) */
   PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("L", &n, a_array, &lda, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky factorization (xPOTRF): info=%" PetscInt_FMT ". Matrix T is not positive definite.", (PetscInt)info);
+  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky factorization (xPOTRF): info=%" PetscBLASInt_FMT ". Matrix T is not positive definite.", info);
 
   /* Zero out upper triangular part (LAPACK leaves it unchanged) */
   for (j = 0; j < n; j++) {
@@ -117,7 +117,7 @@ static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 #else
   PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
 #endif
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV work query: info=%" PetscInt_FMT, (PetscInt)info);
+  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV work query: info=%" PetscBLASInt_FMT, info);
 
   /* Allocate workspace */
   lwork = (PetscBLASInt)PetscRealPart(work[0]);
@@ -131,7 +131,7 @@ static PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 #else
   PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
 #endif
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV: info=%" PetscInt_FMT, (PetscInt)info);
+  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV: info=%" PetscBLASInt_FMT, info);
 
   /* Cleanup */
   PetscCall(PetscFree(work));
@@ -286,7 +286,7 @@ static PetscErrorCode ApplyTInverse_Cholesky(PetscDA da, Vec sdel, Vec w)
   /* Solve L * L^T * w = sdel using LAPACK's Cholesky solve (xPOTRS) */
   /* Note: POTRS expects the input B (w) to contain the RHS, and overwrites it with the solution */
   PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("L", &n, &nrhs, a_array, &lda, b_array, &n, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky solve (xPOTRS): info=%" PetscInt_FMT, (PetscInt)info);
+  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK Cholesky solve (xPOTRS): info=%" PetscBLASInt_FMT, info);
 
   /* Restore arrays */
   PetscCall(MatDenseRestoreArrayRead(en->L_cholesky, &a_array));
@@ -429,7 +429,7 @@ static PetscErrorCode ApplySqrtTInverse_Cholesky(PetscDA da, Mat U, Mat Y)
   /* Solve L^T * Y = U using LAPACK triangular solve (L is lower, so L^T is upper)
      TRTRS args: UPLO='L', TRANS='T', DIAG='N' */
   PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("L", "T", "N", &n, &nrhs, (PetscScalar *)l_array, &lda, y_array, &n, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK triangular solve (xTRTRS): info=%" PetscInt_FMT, (PetscInt)info);
+  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK triangular solve (xTRTRS): info=%" PetscBLASInt_FMT, info);
 
   /* Restore arrays */
   PetscCall(MatDenseRestoreArrayRead(en->L_cholesky, &l_array));
