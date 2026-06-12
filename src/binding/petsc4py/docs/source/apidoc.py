@@ -1,5 +1,6 @@
 import os
 import sys
+import enum
 import inspect
 import textwrap
 from sphinx.util import logging
@@ -163,6 +164,13 @@ def visit_data(constant):
     return f'{name}: {typename} = {init}  {doc}\n'
 
 
+def visit_enum(member):
+    name, value = member
+    typename = type(value).__name__
+    doc = f'#: Enum member ``{name}`` of ``{typename}``'
+    return f'{name} = {value.value}  {doc}\n'
+
+
 def visit_function(function):
     sig = signature(function)
     doc = docstring(function)
@@ -226,6 +234,8 @@ def visit_class(cls, outer=None, done=None):
         '__enum2str',  # FIXME refactor implementation
         '_traceback_',  # FIXME maybe refactor?
     }
+    if isinstance(cls, type) and issubclass(cls, enum.Enum):
+        skip.update(set(cls.__dict__) - set(cls.__members__))
     special = {
         '__len__': '__len__(self) -> int',
         '__bool__': '__bool__(self) -> bool',
@@ -323,7 +333,10 @@ def visit_class(cls, outer=None, done=None):
 
         if is_constant(attr):
             done.add(name)
-            lines.add = visit_data((name, attr))
+            if isinstance(attr, enum.Enum):
+                lines.add = visit_enum((name, attr))
+            else:
+                lines.add = visit_data((name, attr))
             continue
 
     leftovers = [name for name in keys if name not in done and name not in skip]
@@ -440,6 +453,7 @@ def visit_module(module, done=None):
 IMPORTS = """
 from __future__ import annotations
 import sys
+from enum import IntEnum
 from typing import (
     Any,
     Union,
