@@ -10,17 +10,27 @@ import numpy as np
 
 class Function:
     def __call__(self, snes, x, f):
-        f[0] = (x[0] * x[0] + x[0] * x[1] - 3.0).item()
-        f[1] = (x[0] * x[1] + x[1] * x[1] - 6.0).item()
+        if snes.appctx is not None:
+            f[0] = snes.appctx[0] * x[0].item()
+            f[1] = snes.appctx[-1] * x[1].item()
+        else:
+            f[0] = (x[0] * x[0] + x[0] * x[1] - 3.0).item()
+            f[1] = (x[0] * x[1] + x[1] * x[1] - 6.0).item()
         f.assemble()
 
 
 class Jacobian:
     def __call__(self, snes, x, J, P):
-        P[0, 0] = (2.0 * x[0] + x[1]).item()
-        P[0, 1] = (x[0]).item()
-        P[1, 0] = (x[1]).item()
-        P[1, 1] = (x[0] + 2.0 * x[1]).item()
+        if snes.appctx is not None:
+            P[0, 0] = snes.appctx[0]
+            P[0, 1] = 0.0
+            P[1, 0] = 0.0
+            P[1, 1] = snes.appctx[-1]
+        else:
+            P[0, 0] = (2.0 * x[0] + x[1]).item()
+            P[0, 1] = (x[0]).item()
+            P[1, 0] = (x[1]).item()
+            P[1, 1] = (x[0] + 2.0 * x[1]).item()
         P.assemble()
         if J != P:
             J.assemble()
@@ -426,8 +436,34 @@ class BaseTestSNES:
 
     def testNPC(self):
         self.snes.appctx = (1, 2, 3)
+        r = PETSc.Vec().createSeq(2)
+        J = PETSc.Mat().create(PETSc.COMM_SELF)
+        J.setSizes([2, 2])
+        J.setType(PETSc.Mat.Type.SEQAIJ)
+        J.setUp()
+        self.snes.setFunction(Function(), r)
+        self.snes.setJacobian(Jacobian(), J)
+        x = r.duplicate()
+        f1 = r.duplicate()
+        f2 = r.duplicate()
+        J1 = J.duplicate()
+        J2 = J.duplicate()
+        r.destroy()
+        J.destroy()
         npc = self.snes.getNPC()
+        self.snes.setUp()
         self.assertEqual(npc.appctx, (1, 2, 3))
+        x[0], x[1] = [1, 2]
+        self.snes.computeFunction(x, f1)
+        npc.computeFunction(x, f2)
+        self.snes.computeJacobian(x, J1)
+        npc.computeJacobian(x, J2)
+        self.assertEqual(f1[0], f2[0])
+        self.assertEqual(f1[1], f2[1])
+        self.assertEqual(J1[0,0], J2[0,0])
+        self.assertEqual(J1[0,1], J2[0,1])
+        self.assertEqual(J1[1,0], J2[1,0])
+        self.assertEqual(J1[1,1], J2[1,1])
 
     def testTRAPI(self):
         newreg = (1,2,3)
