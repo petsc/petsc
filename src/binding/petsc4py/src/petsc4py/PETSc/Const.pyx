@@ -43,8 +43,13 @@ More constants:
 
 # ------------------------------------------------------------------------------
 
+cdef object enum = None
+import enum
 
-class InsertMode(object):
+# ------------------------------------------------------------------------------
+
+
+class InsertMode(enum.IntEnum):
     """Insertion mode.
 
     Most commonly used insertion modes are:
@@ -82,7 +87,7 @@ class InsertMode(object):
 # ------------------------------------------------------------------------------
 
 
-class ScatterMode(object):
+class ScatterMode(enum.IntEnum):
     """Scatter mode.
 
     Most commonly used scatter modes are:
@@ -112,7 +117,7 @@ class ScatterMode(object):
 # ------------------------------------------------------------------------------
 
 
-class NormType(object):
+class NormType(enum.IntEnum):
     """Norm type.
 
     Commonly used norm types:
