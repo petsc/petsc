@@ -1,0 +1,9 @@
+2D Shallow Water Forward Example
+==============================
+Step   10, time  0.200  L1=7.29074e-01  L2=1.12308e-02  Linf=2.84312e-04
+Step   20, time  0.400  L1=5.38589e+00  L2=8.29339e-02  Linf=2.09393e-03
+Step   30, time  0.600  L1=1.71769e+01  L2=2.64460e-01  Linf=6.68366e-03
+Step   40, time  0.800  L1=3.90113e+01  L2=6.00587e-01  Linf=1.52067e-02
+Step   50, time  1.000  L1=7.33607e+01  L2=1.12937e+00  Linf=2.86589e-02
+
+MMS forward run complete.

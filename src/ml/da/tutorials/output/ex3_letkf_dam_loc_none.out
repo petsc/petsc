@@ -1,0 +1,43 @@
+Shallow Water [L]ETKF Example
+============================
+  Test case             : Dam-break
+  Flux scheme           : Rusanov (1st order)
+  State dimension       : 160 (80 grid points x 2 DOF)
+  Observation dimension : 40
+  Ensemble size         : 10
+  Domain length (L)     : 80.0000
+  Gravitational const   : 9.8100
+  Time step (dt)        : 0.0200
+  Total steps           : 10
+  Observation frequency : 2
+  Observation noise std : 0.030
+  Random seed           : 12345
+  Localization radius   : 160.
+
+Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
+Step    1, time  0.020  RMSE_forecast 0.00002  RMSE_analysis 0.00002
+Step    2, time  0.040  RMSE_forecast 0.00004  RMSE_analysis 0.01693
+Step    3, time  0.060  RMSE_forecast 0.01693  RMSE_analysis 0.01693
+Step    4, time  0.080  RMSE_forecast 0.01712  RMSE_analysis 0.01264
+Step    5, time  0.100  RMSE_forecast 0.01287  RMSE_analysis 0.01287
+Step    6, time  0.120  RMSE_forecast 0.01313  RMSE_analysis 0.00772
+Step    7, time  0.140  RMSE_forecast 0.00786  RMSE_analysis 0.00786
+Step    8, time  0.160  RMSE_forecast 0.00798  RMSE_analysis 0.00771
+Step    9, time  0.180  RMSE_forecast 0.00778  RMSE_analysis 0.00778
+Step   10, time  0.200  RMSE_forecast 0.00781  RMSE_analysis 0.00895
+
+Statistics (10 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00915
+  Mean RMSE (analysis) : 0.00994
+  Observations used    : 5
+
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 10
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: none

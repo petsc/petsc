@@ -5,7 +5,7 @@
 #include <petscts.h>
 #include <petscvec.h>
 
-static char help[] = "Deterministic ETKF example for the Lorenz-96 model. See "
+static char help[] = "Deterministic LETKF (NONE-localization) example for the Lorenz-96 model. See "
                      "Algorithm 6.4 of \n"
                      "Asch, Bocquet, and Nodet (2016) \"Data Assimilation\" "
                      "(SIAM, doi:10.1137/1.9781611974546).\n\n"
@@ -90,9 +90,6 @@ static PetscErrorCode Lorenz96RHS(TS ts, PetscReal t, Vec X, Vec F_vec, PetscCtx
   PetscInt           xs, xm, i;
 
   PetscFunctionBeginUser;
-  (void)ts; /* Mark as intentionally unused to avoid compiler warnings */
-  (void)t;
-
   /* Work with a local (ghosted) vector so the Lorenz-96 stencil has the
    * required neighbors for periodic boundary conditions. */
   PetscCall(DMDAGetCorners(l95->da, &xs, NULL, NULL, &xm, NULL, NULL));
@@ -161,28 +158,43 @@ static PetscErrorCode Lorenz96ContextDestroy(Lorenz96Ctx **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Advance a single state vector one TS step. Used by the truth trajectory and as the per-column kernel of Lorenz96Step(). */
+static PetscErrorCode Lorenz96StepVec(Lorenz96Ctx *l95, Vec x)
+{
+  PetscFunctionBeginUser;
+  PetscCall(TSSetStepNumber(l95->ts, 0));
+  PetscCall(TSSetTime(l95->ts, 0.0));
+  PetscCall(TSSolve(l95->ts, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
-  Lorenz96Step - Advance state vector one time step using Lorenz-96 dynamics
+  Lorenz96Step - Advance every column of the ensemble matrix one time step using Lorenz-96 dynamics.
 
   Input Parameters:
-+ input - state vector to be advanced
-- ctx   - Lorenz96 context (contains reusable TS)
-
-  Output Parameter:
-. output - state vector after one time step
++ ensemble - ensemble matrix whose columns are advanced in place
+- ctx      - Lorenz96 context (contains reusable TS)
 
   Notes:
-  Uses a single explicit RK4 step with the pre-configured TS object for efficiency.
+  TS only advances one state at a time, so loop over the columns here. Uses a single explicit RK4 step
+  with the pre-configured TS object for efficiency.
 */
-static PetscErrorCode Lorenz96Step(Vec input, Vec output, PetscCtx ctx)
+static PetscErrorCode Lorenz96Step(Mat ensemble, PetscCtx ctx)
 {
   Lorenz96Ctx *l95 = (Lorenz96Ctx *)ctx;
+  PetscInt     n;
 
   PetscFunctionBeginUser;
-  /* Reset the TS time for each integration */
-  PetscCall(TSSetTime(l95->ts, 0.0));
-  if (input != output) PetscCall(VecCopy(input, output));
-  PetscCall(TSSolve(l95->ts, output));
+  PetscCall(MatGetSize(ensemble, NULL, &n));
+  /* Collective: dense ensemble Mat is row-distributed, so every rank visits every global column j and
+     MatDenseGetColumnVec returns the parallel column-Vec that all ranks step together. */
+  for (PetscInt j = 0; j < n; j++) {
+    Vec col;
+
+    PetscCall(MatDenseGetColumnVec(ensemble, j, &col));
+    PetscCall(Lorenz96StepVec(l95, col));
+    PetscCall(MatDenseRestoreColumnVec(ensemble, j, &col));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -278,40 +290,27 @@ static PetscErrorCode ComputeRMSE(Vec v1, Vec v2, Vec work, PetscInt n, PetscRea
 
 int main(int argc, char **argv)
 {
-  /* Configuration parameters */
-  PetscInt  n                 = DEFAULT_N;
-  PetscInt  steps             = DEFAULT_STEPS;
-  PetscInt  burn              = DEFAULT_BURN;
-  PetscInt  obs_freq          = DEFAULT_OBS_FREQ;
-  PetscInt  random_seed       = DEFAULT_RANDOM_SEED;
-  PetscInt  ensemble_size     = DEFAULT_ENSEMBLE_SIZE;
-  PetscReal F                 = DEFAULT_F;
-  PetscReal dt                = DEFAULT_DT;
-  PetscReal obs_error_std     = DEFAULT_OBS_ERROR_STD;
-  PetscReal ensemble_init_std = 1; /* Initial ensemble spread */
-
-  /* PETSc objects */
   Lorenz96Ctx *l95_ctx = NULL, *truth_ctx = NULL;
   DM           da_state;
   PetscDA      da;
   Vec          x0, x_mean, x_forecast;
   Vec          truth_state, rmse_work;
   Vec          observation, obs_noise, obs_error_var;
-  PetscRandom  rng;
   Mat          H = NULL; /* Observation operator matrix */
-
-  /* Statistics tracking */
-  PetscReal rmse_forecast = 0.0, rmse_analysis = 0.0;
-  PetscReal sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
-  PetscInt  n_stat_steps = 0;
-  PetscInt  obs_count    = 0;
-  PetscInt  step, progress_interval;
+  PetscRandom  rng;
+  PetscInt     n = DEFAULT_N, steps = DEFAULT_STEPS, burn = DEFAULT_BURN, obs_freq = DEFAULT_OBS_FREQ;
+  PetscInt     random_seed = DEFAULT_RANDOM_SEED, ensemble_size = DEFAULT_ENSEMBLE_SIZE;
+  PetscInt     n_stat_steps = 0, obs_count = 0, step, progress_interval;
+  PetscReal    F = DEFAULT_F, dt = DEFAULT_DT, obs_error_std = DEFAULT_OBS_ERROR_STD;
+  PetscReal    ensemble_init_std = 1; /* Initial ensemble spread */
+  PetscReal    rmse_forecast = 0.0, rmse_analysis = 0.0;
+  PetscReal    sum_rmse_forecast = 0.0, sum_rmse_analysis = 0.0;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Parse command-line options */
-  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Lorenz-96 ETKF Quick Example", NULL);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Lorenz-96 LETKF Quick Example", NULL);
   PetscCall(PetscOptionsInt("-n", "State dimension", "", n, &n, NULL));
   PetscCall(PetscOptionsInt("-steps", "Number of time steps", "", steps, &steps, NULL));
   PetscCall(PetscOptionsInt("-burn", "Burn-in steps excluded from statistics", "", burn, &burn, NULL));
@@ -358,7 +357,7 @@ int main(int argc, char **argv)
 
   /* Spin up truth to get onto attractor */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Spinning up truth for %" PetscInt_FMT " steps...\n", (PetscInt)SPINUP_STEPS));
-  for (PetscInt k = 0; k < SPINUP_STEPS; k++) PetscCall(Lorenz96Step(truth_state, truth_state, truth_ctx));
+  for (PetscInt k = 0; k < SPINUP_STEPS; k++) PetscCall(Lorenz96StepVec(truth_ctx, truth_state));
 
   /* Initialize observation vectors */
   PetscCall(VecDuplicate(x0, &observation));
@@ -375,20 +374,19 @@ int main(int argc, char **argv)
 
   /* Create and configure PetscDA for ensemble data assimilation */
   PetscCall(PetscDACreate(PETSC_COMM_WORLD, &da));
-  PetscCall(PetscDASetType(da, PETSCDAETKF)); /* Set ETKF type */
+  PetscCall(PetscDALETKFSetLocalizationType(da, PETSCDA_LETKF_LOC_NONE));
   PetscCall(PetscDASetSizes(da, n, n));
   PetscCall(PetscDAEnsembleSetSize(da, ensemble_size));
   PetscCall(PetscDASetFromOptions(da));
   PetscCall(PetscDAEnsembleGetSize(da, &ensemble_size));
   PetscCall(PetscDASetUp(da));
-  PetscCall(PetscDAViewFromOptions(da, NULL, "-petscda_view"));
   PetscCall(PetscDASetObsErrorVariance(da, obs_error_var));
 
   /* Initialize ensemble members from spun-up truth state with appropriate spread */
   PetscCall(PetscDAEnsembleInitialize(da, truth_state, ensemble_init_std, rng));
 
   /* Print configuration summary */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Lorenz-96 ETKF Example\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Lorenz-96 LETKF Example\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "======================\n"));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                         "  State dimension       : %" PetscInt_FMT "\n"
@@ -443,7 +441,7 @@ int main(int argc, char **argv)
     /* Propagate ensemble and truth trajectory */
     if (step < steps) {
       PetscCall(PetscDAEnsembleForecast(da, Lorenz96Step, l95_ctx));
-      PetscCall(Lorenz96Step(truth_state, truth_state, truth_ctx));
+      PetscCall(Lorenz96StepVec(truth_ctx, truth_state));
     }
   }
 
@@ -543,6 +541,8 @@ int main(int argc, char **argv)
     }
   }
 
+  PetscCall(PetscDAView(da, PETSC_VIEWER_STDOUT_WORLD));
+
   /* Cleanup */
   PetscCall(MatDestroy(&H));
   PetscCall(VecDestroy(&x_forecast));
@@ -567,15 +567,10 @@ int main(int argc, char **argv)
 
   testset:
     nsize: 1
-    args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_view -petscda_ensemble_size 30
+    args: -steps 112 -burn 10 -obs_freq 1 -obs_error 1 -petscda_ensemble_size 30
 
     test:
       requires: !complex
       suffix: eigen
-      args: -petscda_ensemble_sqrt_type eigen
-
-    test:
-      suffix: chol
-      args: -petscda_ensemble_sqrt_type cholesky
 
 TEST*/

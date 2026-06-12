@@ -1,0 +1,52 @@
+Spinning up truth trajectory for 2 steps...
+  Spinup progress: 1/2
+  Spinup progress: 2/2
+Spinup complete.
+
+Using Gaspari-Cohn localization with radius 10.
+2D Shallow Water LETKF Example
+==============================
+  Mode                  : Data Assimilation
+  Flux scheme           : Rusanov (1st order)
+  Grid dimensions       : 11 x 11
+  State dimension       : 363 (121 grid points x 3 DOF)
+  Observation dimension : 36
+  Observation stride    : 2
+  Ensemble size         : 5
+  Domain size           : 80.00 x 80.00
+  Grid spacing          : dx=7.2727, dy=7.2727
+  Mean height (h0)      : 1.5000
+  Wave amplitudes       : Ax=0.2000, Ay=0.2000
+  Gravitational const   : 9.8100
+  Wave speed (c)        : 3.8360
+  Time step (dt)        : 0.0200
+  CFL number            : 0.0211
+  Total steps           : 3
+  Observation frequency : 2
+  Init perturb amp      : 0.050
+  Init height bias      : 0.000
+  Observation noise std : 0.100
+  Random seed           : 12345
+
+Writing output to: ex4_spinup_io.dat
+
+Step    0, time  0.000  RMSE_forecast 0.00678  RMSE_analysis 0.00678 [initial]
+Step    3, time  0.060  RMSE_forecast 0.00775  RMSE_analysis 0.00775
+
+Statistics (3 steps):
+==================================================
+  Mean RMSE (forecast) : 0.00711
+  Mean RMSE (analysis) : 0.00744
+  Observations used    : 1
+
+Output written to: ex4_spinup_io.dat
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 363
+  Observation size: 36
+  Ensemble size: 5
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 10.

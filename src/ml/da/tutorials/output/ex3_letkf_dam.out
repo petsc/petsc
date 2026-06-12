@@ -1,16 +1,3 @@
-Localization matrix Q created using PetscDALETKFGetLocalizationMatrix
-PetscDA Object: 1 MPI process
-  type: letkf
-  State size: 160
-  Observation size: 40
-  Ensemble size: 7
-  Assembled: true
-  Inflation: 1.
-  Square root type: eigen
-  Local analysis: CPU
-  Local observations per vertex: 7
-  GPU batch size: auto
-  Localization matrix: set
 Shallow Water [L]ETKF Example
 ============================
   Test case             : Dam-break
@@ -25,23 +12,33 @@ Shallow Water [L]ETKF Example
   Observation frequency : 2
   Observation noise std : 0.030
   Random seed           : 12345
-  Localization          : None/Global (7 obs per vertex)
+  Localization radius   : 160.
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00003  RMSE_analysis 0.00003
-Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.01103
-Step    3, time  0.060  RMSE_forecast 0.01096  RMSE_analysis 0.01096
-Step    4, time  0.080  RMSE_forecast 0.01103  RMSE_analysis 0.00933
-Step    5, time  0.100  RMSE_forecast 0.00936  RMSE_analysis 0.00936
-Step    6, time  0.120  RMSE_forecast 0.00942  RMSE_analysis 0.00892
-Step    7, time  0.140  RMSE_forecast 0.00900  RMSE_analysis 0.00900
-Step    8, time  0.160  RMSE_forecast 0.00907  RMSE_analysis 0.01114
-Step    9, time  0.180  RMSE_forecast 0.01128  RMSE_analysis 0.01128
-Step   10, time  0.200  RMSE_forecast 0.01139  RMSE_analysis 0.01129
+Step    2, time  0.040  RMSE_forecast 0.00005  RMSE_analysis 0.00896
+Step    3, time  0.060  RMSE_forecast 0.00874  RMSE_analysis 0.00874
+Step    4, time  0.080  RMSE_forecast 0.00867  RMSE_analysis 0.00505
+Step    5, time  0.100  RMSE_forecast 0.00501  RMSE_analysis 0.00501
+Step    6, time  0.120  RMSE_forecast 0.00501  RMSE_analysis 0.00404
+Step    7, time  0.140  RMSE_forecast 0.00408  RMSE_analysis 0.00408
+Step    8, time  0.160  RMSE_forecast 0.00411  RMSE_analysis 0.00255
+Step    9, time  0.180  RMSE_forecast 0.00259  RMSE_analysis 0.00259
+Step   10, time  0.200  RMSE_forecast 0.00263  RMSE_analysis 0.00301
 
 Statistics (10 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00816
-  Mean RMSE (analysis) : 0.00923
+  Mean RMSE (forecast) : 0.00409
+  Mean RMSE (analysis) : 0.00441
   Observations used    : 5
 
+PetscDA Object: 1 MPI process
+  type: letkf
+  State size: 160
+  Observation size: 40
+  Ensemble size: 7
+  Assembled: true
+  Inflation: 1.
+  Local analysis: CPU
+  Localization type: gaspari_cohn
+  Localization radius: 160.

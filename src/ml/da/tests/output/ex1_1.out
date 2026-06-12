@@ -1,10 +1,11 @@
 Forecast error norm: 1.59405
 Analysis error norm: 1.05873
 PetscDA Object: 1 MPI process
-  type: etkf
+  type: letkf
   State size: 10
   Observation size: 10
   Ensemble size: 20
   Assembled: true
   Inflation: 1.
-  Square root type: eigen
+  Local analysis: CPU
+  Localization type: none

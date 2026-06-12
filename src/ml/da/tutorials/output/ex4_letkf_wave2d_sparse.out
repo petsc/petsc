@@ -1,13 +1,13 @@
-Using Gaspari-Cohn localization with radius 10.
+Using Gaspari-Cohn localization with radius 30.
 2D Shallow Water LETKF Example
 ==============================
   Mode                  : Data Assimilation
   Flux scheme           : Rusanov (1st order)
   Grid dimensions       : 21 x 21
   State dimension       : 1323 (441 grid points x 3 DOF)
-  Observation dimension : 121
-  Observation stride    : 2
-  Ensemble size         : 5
+  Observation dimension : 9
+  Observation stride    : 8
+  Ensemble size         : 7
   Domain size           : 80.00 x 80.00
   Grid spacing          : dx=3.8095, dy=3.8095
   Mean height (h0)      : 1.5000
@@ -20,30 +20,29 @@ Using Gaspari-Cohn localization with radius 10.
   Observation frequency : 2
   Init perturb amp      : 0.050
   Init height bias      : 0.000
-  Observation noise std : 0.030
+  Observation noise std : 0.300
   Random seed           : 12345
 
 Step    0, time  0.000  RMSE_forecast 0.00000  RMSE_analysis 0.00000 [initial]
 Step    1, time  0.020  RMSE_forecast 0.00000  RMSE_analysis 0.00000
-Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.01085
-Step    3, time  0.060  RMSE_forecast 0.01066  RMSE_analysis 0.01066
-Step    4, time  0.080  RMSE_forecast 0.01048  RMSE_analysis 0.01106
-Step    5, time  0.100  RMSE_forecast 0.01086  RMSE_analysis 0.01086
+Step    2, time  0.040  RMSE_forecast 0.00000  RMSE_analysis 0.00273
+Step    3, time  0.060  RMSE_forecast 0.00271  RMSE_analysis 0.00271
+Step    4, time  0.080  RMSE_forecast 0.00268  RMSE_analysis 0.00290
+Step    5, time  0.100  RMSE_forecast 0.00288  RMSE_analysis 0.00288
 
 Statistics (5 steps):
 ==================================================
-  Mean RMSE (forecast) : 0.00640
-  Mean RMSE (analysis) : 0.00869
+  Mean RMSE (forecast) : 0.00165
+  Mean RMSE (analysis) : 0.00224
   Observations used    : 2
 
-PetscDA Object: 3 MPI processes
+PetscDA Object: 1 MPI process
   type: letkf
   State size: 1323
-  Observation size: 121
-  Ensemble size: 5
+  Observation size: 9
+  Ensemble size: 7
   Assembled: true
   Inflation: 1.
-  Local analysis: Kokkos
+  Local analysis: CPU
   Localization type: gaspari_cohn
-  Localization radius: 10.
-  GPU batch size: auto
+  Localization radius: 30.

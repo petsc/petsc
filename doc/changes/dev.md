@@ -96,6 +96,18 @@
 
 ## PetscDA
 
+- Add the `PetscDALETKFLocalizationType` enum (`PETSCDA_LETKF_LOC_NONE`, `PETSCDA_LETKF_LOC_GASPARI_COHN`, `PETSCDA_LETKF_LOC_GAUSSIAN`, `PETSCDA_LETKF_LOC_BOXCAR`) selecting the LETKF localization kernel
+- Add `PetscDALETKFSetLocalizationType()`, `PetscDALETKFGetLocalizationType()`, `PetscDALETKFSetLocalizationRadius()`, `PetscDALETKFGetLocalizationRadius()`, and `PetscDALETKFSetLocalizationCoordinates()`; the localization matrix is built lazily from these distance-based kernel parameters
+- Add `PetscDALETKFResetLocalization()` to drop the cached localization matrix so the next analysis rebuilds it from the current kernel parameters
+- Remove `PETSCDAETKF`; use `PETSCDALETKF` with `PetscDALETKFSetLocalizationType(da, PETSCDA_LETKF_LOC_NONE)` for identical behavior
+- Remove `PetscDAEnsembleSetSqrtType()`, `PetscDAEnsembleGetSqrtType()`, the `PetscDASqrtType` enum (`PETSCDA_SQRT_CHOLESKY`, `PETSCDA_SQRT_EIGEN`), and the `-petscda_ensemble_sqrt_type` option; the symmetric-eigendecomposition square root is now the only path
+- Remove `PetscDALETKFSetLocalization()`; use the distance-based API `PetscDALETKFSetLocalizationType()`, `PetscDALETKFSetLocalizationRadius()`, and `PetscDALETKFSetLocalizationCoordinates()` instead
+- Remove `PetscDALETKFSetObsPerVertex()` and `PetscDALETKFGetObsPerVertex()`; per-vertex observation counts are now derived from the distance-based localization kernel
+- Remove `PetscDALETKFGetLocalizationMatrix()`; the localization matrix is an internal cached object built lazily on the first analysis. Callers that previously supplied this matrix should switch to `PetscDALETKFSetLocalizationCoordinates()` and let the implementation build the matrix from the chosen kernel
+- Change the LETKF distance-based periodicity convention: per-axis periodicity is now activated by `bd[d] > 0.0` (the period), and negative `bd[d]` now raises `PETSC_ERR_ARG_OUTOFRANGE`; previously any non-zero `bd[d]` (including negative values) enabled periodicity
+- Add `PetscDAEnsembleForecastFn` typedef for the `PetscDAEnsembleForecast()` model callback
+- Change the `PetscDAEnsembleForecast()` model callback signature from `(Vec, Vec, PetscCtx)` to `(Mat, PetscCtx)`; the model now receives the entire ensemble matrix and advances all members in place. Existing per-member callbacks should iterate over the columns with `MatDenseGetColumnVec()`/`MatDenseRestoreColumnVec()` (see `ShallowWaterStep2D()` in `src/ml/da/tutorials/ex4.c`)
+- Change `-petscda_view` to fire at the tail of every `PetscDAEnsembleAnalysis()` call (mirroring `KSPSolve()`/`SNESSolve()`), so it now emits once per analysis cycle rather than once per run; code that wants a single end-of-run snapshot should call `PetscDAView()` explicitly after the assimilation loop
 
 ## DM
 
