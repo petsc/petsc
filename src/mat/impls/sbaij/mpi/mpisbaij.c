@@ -649,6 +649,8 @@ static PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
   PetscInt      bs = mat->rmap->bs, i, j, bsrstart = mat->rmap->rstart, bsrend = mat->rmap->rend;
   PetscInt      bscstart = mat->cmap->rstart, bscend = mat->cmap->rend, row, col, data;
+  PetscBool     roworiented = baij->roworiented;
+  PetscScalar  *value;
 
   PetscFunctionBegin;
   for (i = 0; i < m; i++) {
@@ -659,9 +661,10 @@ static PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
     for (j = 0; j < n; j++) {
       if (idxn[j] < 0) continue; /* negative column */
       PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
+      value = roworiented ? &v[j + i * n] : &v[i + j * m];
       if (idxn[j] >= bscstart && idxn[j] < bscend) {
         col = idxn[j] - bscstart;
-        PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
+        PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, value));
       } else {
         if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if PetscDefined(USE_CTABLE)
@@ -670,10 +673,10 @@ static PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
 #else
         data = baij->colmap[idxn[j] / bs] - 1;
 #endif
-        if (data < 0 || baij->garray[data / bs] != idxn[j] / bs) *(v + i * n + j) = 0.0;
+        if (data < 0 || baij->garray[data / bs] != idxn[j] / bs) *value = 0.0;
         else {
           col = data + idxn[j] % bs;
-          PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, v + i * n + j));
+          PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, value));
         }
       }
     }

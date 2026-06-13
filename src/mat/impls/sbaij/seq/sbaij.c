@@ -502,31 +502,28 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
   PetscInt     *ai = a->i, *ailen = a->ilen;
   PetscInt      brow, bcol, ridx, cidx, bs = A->rmap->bs, bs2 = a->bs2;
   MatScalar    *ap, *aa = a->a;
+  PetscBool     roworiented = a->roworiented;
+  PetscScalar  *value;
 
   PetscFunctionBegin;
   for (k = 0; k < m; k++) { /* loop over rows */
-    row  = im[k];
-    brow = row / bs;
-    if (row < 0) {
-      v += n;
-      continue;
-    } /* negative row */
+    row = im[k];
+    if (row < 0) continue; /* negative row */
     PetscCheck(row < A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, row, A->rmap->N - 1);
+    brow = row / bs;
     rp   = aj + ai[brow];
     ap   = aa + bs2 * ai[brow];
     nrow = ailen[brow];
-    for (l = 0; l < n; l++) { /* loop over columns */
-      if (in[l] < 0) {
-        v++;
-        continue;
-      } /* negative column */
+    for (l = 0; l < n; l++) {  /* loop over columns */
+      if (in[l] < 0) continue; /* negative column */
       PetscCheck(in[l] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[l], A->cmap->n - 1);
-      col  = in[l];
-      bcol = col / bs;
-      cidx = col % bs;
-      ridx = row % bs;
-      high = nrow;
-      low  = 0; /* assume unsorted */
+      value = roworiented ? &v[l + k * n] : &v[k + l * m];
+      col   = in[l];
+      bcol  = col / bs;
+      cidx  = col % bs;
+      ridx  = row % bs;
+      high  = nrow;
+      low   = 0; /* assume unsorted */
       while (high - low > 5) {
         t = (low + high) / 2;
         if (rp[t] > bcol) high = t;
@@ -535,11 +532,11 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
       for (i = low; i < high; i++) {
         if (rp[i] > bcol) break;
         if (rp[i] == bcol) {
-          *v++ = ap[bs2 * i + bs * cidx + ridx];
+          *value = ap[bs2 * i + bs * cidx + ridx];
           goto finished;
         }
       }
-      *v++ = 0.0;
+      *value = 0.0;
     finished:;
     }
   }

@@ -2255,6 +2255,9 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A, MatOption op, PetscBool flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     hA->donotstash = flg;
     break;
+  case MAT_ROW_ORIENTED:
+    PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for column oriented MatSetValues()/MatGetValues() access");
+    break;
   default:
     break;
   }

@@ -167,6 +167,8 @@ static PetscErrorCode MatGetValues_MPIDense(Mat mat, PetscInt m, const PetscInt 
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *)mat->data;
   PetscInt      i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend, row;
+  PetscBool     roworiented = mdn->roworiented;
+  PetscScalar  *value;
 
   PetscFunctionBegin;
   for (i = 0; i < m; i++) {
@@ -177,7 +179,8 @@ static PetscErrorCode MatGetValues_MPIDense(Mat mat, PetscInt m, const PetscInt 
     for (j = 0; j < n; j++) {
       if (idxn[j] < 0) continue; /* negative column */
       PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large");
-      PetscCall(MatGetValues(mdn->A, 1, &row, 1, &idxn[j], v + i * n + j));
+      value = roworiented ? &v[j + i * n] : &v[i + j * m];
+      PetscCall(MatGetValues(mdn->A, 1, &row, 1, &idxn[j], value));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

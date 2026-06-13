@@ -722,9 +722,11 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat, const PetscInt mat
 
 static PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
-  PetscInt    i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend;
-  PetscInt    cstart = mat->cmap->rstart, cend = mat->cmap->rend, row, col;
+  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *)mat->data;
+  PetscInt     i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend;
+  PetscInt     cstart = mat->cmap->rstart, cend = mat->cmap->rend, row, col;
+  PetscBool    roworiented = aij->roworiented;
+  PetscScalar *value;
 
   PetscFunctionBegin;
   for (i = 0; i < m; i++) {
@@ -735,9 +737,10 @@ static PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt id
     for (j = 0; j < n; j++) {
       if (idxn[j] < 0) continue; /* negative column */
       PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
+      value = roworiented ? &v[j + i * n] : &v[i + j * m];
       if (idxn[j] >= cstart && idxn[j] < cend) {
         col = idxn[j] - cstart;
-        PetscCall(MatGetValues(aij->A, 1, &row, 1, &col, v + i * n + j));
+        PetscCall(MatGetValues(aij->A, 1, &row, 1, &col, value));
       } else {
         if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
 #if PetscDefined(USE_CTABLE)
@@ -746,8 +749,8 @@ static PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt id
 #else
         col = aij->colmap[idxn[j]] - 1;
 #endif
-        if ((col < 0) || (aij->garray[col] != idxn[j])) *(v + i * n + j) = 0.0;
-        else PetscCall(MatGetValues(aij->B, 1, &row, 1, &col, v + i * n + j));
+        if ((col < 0) || (aij->garray[col] != idxn[j])) *value = 0.0;
+        else PetscCall(MatGetValues(aij->B, 1, &row, 1, &col, value));
       }
     }
   }

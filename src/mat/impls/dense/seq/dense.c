@@ -1291,23 +1291,19 @@ static PetscErrorCode MatGetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
   Mat_SeqDense      *mat = (Mat_SeqDense *)A->data;
   const PetscScalar *vv;
   PetscInt           i, j;
+  PetscBool          roworiented = mat->roworiented;
+  PetscScalar       *value;
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArrayRead(A, &vv));
-  /* row-oriented output */
   for (i = 0; i < m; i++) {
-    if (indexm[i] < 0) {
-      v += n;
-      continue;
-    }
+    if (indexm[i] < 0) continue;
     PetscCheck(indexm[i] < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " requested larger than number rows %" PetscInt_FMT, indexm[i], A->rmap->n);
     for (j = 0; j < n; j++) {
-      if (indexn[j] < 0) {
-        v++;
-        continue;
-      }
+      if (indexn[j] < 0) continue;
       PetscCheck(indexn[j] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column %" PetscInt_FMT " requested larger than number columns %" PetscInt_FMT, indexn[j], A->cmap->n);
-      *v++ = vv[indexn[j] * mat->lda + indexm[i]];
+      value  = roworiented ? &v[j + i * n] : &v[i + j * m];
+      *value = vv[indexn[j] * mat->lda + indexm[i]];
     }
   }
   PetscCall(MatDenseRestoreArrayRead(A, &vv));

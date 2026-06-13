@@ -8,23 +8,21 @@ int main(int argc, char **args)
   PetscReal   err;
   PetscInt    i, j, M = 20;
   PetscMPIInt NP;
-  MPI_Comm    comm;
   PetscInt   *rows;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  comm = PETSC_COMM_WORLD;
-  PetscCallMPI(MPI_Comm_size(comm, &NP));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &NP));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCheck(M >= 6, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Matrix has to have more than 6 columns");
   /* Hypre matrix */
-  PetscCall(MatCreate(comm, &B));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, M));
   PetscCall(MatSetType(B, MATHYPRE));
   PetscCall(MatHYPRESetPreallocation(B, 9, NULL, 9, NULL));
 
   /* PETSc AIJ matrix */
-  PetscCall(MatCreate(comm, &A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, M));
   PetscCall(MatSetType(A, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(A, 9, NULL));
@@ -124,14 +122,14 @@ int main(int argc, char **args)
     PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
     PetscCall(PetscCalloc3((rend - rstart) * 6, &valuesA, (rend - rstart) * 6, &valuesB, rend - rstart, &rows));
     for (i = rstart; i < rend; i++) rows[i - rstart] = i;
-
     PetscCall(MatGetValues(A, rend - rstart, rows, 6, cols, valuesA));
     PetscCall(MatGetValues(B, rend - rstart, rows, 6, cols, valuesB));
-
-    for (i = 0; i < (rend - rstart); i++) {
-      PetscCall(PetscArraycmp(valuesA + 6 * i, valuesB + 6 * i, 6, &flg));
-      PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error MatGetValues %" PetscInt_FMT, i + rstart);
+    PetscCall(PetscArraycmp(valuesA, valuesB, 6 * (rend - rstart), &flg));
+    if (!flg) {
+      PetscCall(PetscScalarView(6 * (rend - rstart), valuesA, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(PetscScalarView(6 * (rend - rstart), valuesB, PETSC_VIEWER_STDOUT_WORLD));
     }
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error unexpected values from MatGetValues");
     PetscCall(PetscFree3(valuesA, valuesB, rows));
   }
 
