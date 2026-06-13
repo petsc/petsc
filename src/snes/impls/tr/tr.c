@@ -83,18 +83,20 @@ static PetscErrorCode SNESTR_KSPConverged_Destroy(PetscCtxRt cctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESTR_Converged_Private(SNES snes, PetscInt it, PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy)
+static PetscErrorCode SNESTR_Converged_Private(SNES snes, PetscReal xnorm, PetscReal ynorm, PetscReal fnorm)
 {
   SNES_NEWTONTR *neP = (SNES_NEWTONTR *)snes->data;
 
   PetscFunctionBegin;
-  *reason = SNES_CONVERGED_ITERATING;
+  /* only check convergence for iter > 0 */
+  if (snes->iter) PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+  if (snes->reason > 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (neP->delta < neP->deltam) {
     PetscCall(PetscInfo(snes, "Diverged due to too small a trust region %g<%g\n", (double)neP->delta, (double)neP->deltam));
-    *reason = SNES_DIVERGED_TR_DELTA;
+    snes->reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
     PetscCall(PetscInfo(snes, "Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n", snes->max_funcs));
-    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+    snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -525,7 +527,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PC                        pc;
   Mat                       J, Jp;
   PetscBool                 already_done = PETSC_FALSE, on_boundary, use_cauchy;
-  PetscBool                 clear_converged_test, rho_satisfied, has_objective;
+  PetscBool                 clear_converged_test, step_ok, has_objective;
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
   SNESObjectiveFn          *objective;
@@ -584,7 +586,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
 
   /* test convergence */
-  rho_satisfied = PETSC_FALSE;
+  step_ok = PETSC_FALSE;
   PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
@@ -777,32 +779,33 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     }
 
     PetscCall(VecNorm(Y, neP->norm, &ynorm));
-    PetscCall(PetscInfo(snes, "rho=%g, delta=%g, fk=%g, fkp1=%g, deltaqm=%g, gTy=%g, yTHy=%g, ynormk=%g\n", (double)rho, (double)delta, (double)fk, (double)fkp1, (double)deltaqm, (double)gTy, (double)yTHy, (double)ynorm));
+    PetscCall(PetscInfo(snes, "rho=%g, delta=%g, fk=%g, fkp1=%g, deltaqm=%g, gTy=%g, yTHy=%g, ynormk=%g, gnorm=%g\n", (double)rho, (double)delta, (double)fk, (double)fkp1, (double)deltaqm, (double)gTy, (double)yTHy, (double)ynorm, (double)gnorm));
 
     /* update the size of the trust region */
     if (rho < neP->eta2) delta *= neP->t1;                     /* shrink the region */
     else if (rho > neP->eta3 && on_boundary) delta *= neP->t2; /* expand the region */
     delta = PetscMin(delta, neP->deltaM);                      /* but not greater than deltaM */
 
-    /* log 2-norm of update for moniroting routines */
+    /* log 2-norm of update for monitoring routines */
     PetscCall(VecNorm(Y, NORM_2, &ynorm));
 
     /* decide on new step */
     neP->delta = delta;
     if (rho > neP->eta1) {
-      rho_satisfied = PETSC_TRUE;
+      step_ok = PETSC_TRUE;
     } else {
-      rho_satisfied = PETSC_FALSE;
-      PetscCall(PetscInfo(snes, "Trying again in smaller region\n"));
-      /* check to see if progress is hopeless */
-      PetscCall(SNESTR_Converged_Private(snes, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP));
-      if (!snes->reason) PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
-      if (snes->reason == SNES_CONVERGED_SNORM_RELATIVE) snes->reason = SNES_DIVERGED_TR_DELTA;
-      snes->numFailures++;
-      /* We're not progressing, so return with the current iterate */
-      if (snes->reason) break;
+      step_ok = PETSC_FALSE;
+      /* check convergence */
+      PetscCall(SNESTR_Converged_Private(snes, xnorm, ynorm, gnorm));
+      if (snes->reason < 0) {
+        snes->numFailures++;
+        break;
+      } else if (!snes->reason) {
+        snes->numFailures++;
+        PetscCall(PetscInfo(snes, "Trying again in smaller region\n"));
+      } else step_ok = PETSC_TRUE;
     }
-    if (rho_satisfied) {
+    if (step_ok) {
       /* Update function values */
       already_done = PETSC_FALSE;
       fnorm        = gnorm;
