@@ -452,11 +452,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fn
   PetscCall(MatDenseGetArray(dJdense, &a));
 #if !defined(PETSC_USE_COMPLEX)
   {
-    PetscBLASInt lierr;
-    PetscInt     i;
+    PetscInt i;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "N", &nb, a, &nb, eigr, eigi, NULL, &nb, NULL, &nb, work, &lwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "geev() error %" PetscBLASInt_FMT, lierr);
+    PetscCallLAPACKInfo("LAPACKgeev", LAPACKgeev_("N", "N", &nb, a, &nb, eigr, eigi, NULL, &nb, NULL, &nb, work, &lwork, &info));
     PetscCall(PetscFPTrapPop());
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "Eigenvalues of J_%" PetscInt_FMT " - J_%" PetscInt_FMT ":\n", it, it - 1));
     for (i = 0; i < n; i++) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "%5" PetscInt_FMT ": %20.5g + %20.5gi\n", i, (double)eigr[i], (double)eigi[i]));

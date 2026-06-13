@@ -187,7 +187,7 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
       LAPACKsyev_("V", "U", &n, v_ptr, &lda, lambda_ptr, work_ptr, &lw, &info);
   #endif
 
-      /* PetscCheck/SETERRQ are not device-callable; abort the parallel region instead. */
+      /* Kokkos::parallel_for() cannot return error codes; abort the parallel region instead. */
       if (info != 0) Kokkos::abort("LAPACK eigendecomposition failed in parallel region");
 
       /* Write results directly back to the batch views (already in HostSpace) */

@@ -83,7 +83,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   if (cond) {
     PetscReal   *S;
     PetscScalar *work;
-    PetscBLASInt n, lwork, lierr;
+    PetscBLASInt n, lwork;
 
     PetscCall(PetscBLASIntCast(Nbpt, &n));
     PetscCall(PetscBLASIntCast(5 * Nbpt, &lwork));
@@ -91,7 +91,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(PetscMalloc1(5 * Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
 
-    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &n, &n, Mcopy, &n, S, NULL, &n, NULL, &n, work, &lwork, &lierr));
+    PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &n, &n, Mcopy, &n, S, NULL, &n, NULL, &n, work, &lwork, &info));
     PetscReal cond = S[0] / S[Nbpt - 1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double)cond));
     PetscCall(PetscFree(work));

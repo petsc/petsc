@@ -44,12 +44,12 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
   }
   /* H = (X^T X)^{-1} */
   {
-    PetscBLASInt two = 2, ipiv[2], info;
+    PetscBLASInt two = 2, ipiv[2];
     PetscScalar  work[2];
 
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
-    PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
+    PetscCallLAPACKInfo("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
+    PetscCallLAPACKInfo("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
     PetscCall(PetscFPTrapPop());
   }
   /* Y = H X^T */

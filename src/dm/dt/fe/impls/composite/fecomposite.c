@@ -86,6 +86,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       PetscCall(PetscFree(Bf));
     }
     PetscCall(PetscBLASIntCast(spdim, &n));
+    // The next two lines are likely long-standing incorrect code. Do not check info as it was not previously checked but is nonzero
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &invVscalar[s * spdim * spdim], &n, pivots, &info));
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &invVscalar[s * spdim * spdim], &n, pivots, work, &n, &info));
   }

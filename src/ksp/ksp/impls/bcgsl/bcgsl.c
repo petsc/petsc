@@ -19,7 +19,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   PetscBool    bUpdateX;
   PetscInt     maxit;
   PetscInt     h, i, j, k, vi, ell;
-  PetscBLASInt ldMZ, bierr;
+  PetscBLASInt ldMZ;
   PetscScalar  utb;
   PetscReal    max_s, pinv_tol;
 
@@ -161,17 +161,17 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
     PetscCall(PetscArraycpy(MZb, MZa, ldMZ * ldMZ));
 
     if (!bcgsl->bConvex || bcgsl->ell == 1) {
-      PetscBLASInt ione = 1, bell;
+      PetscBLASInt ione = 1, bell, info;
       PetscCall(PetscBLASIntCast(bcgsl->ell, &bell));
 
       AY0c[0] = -1;
       if (bcgsl->pinv) {
 #if defined(PETSC_USE_COMPLEX)
-        PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, bcgsl->realwork, &bierr));
+        PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, bcgsl->realwork, &info));
 #else
-        PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, &bierr));
+        PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, &info));
 #endif
-        if (bierr != 0) {
+        if (info != 0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(PETSC_SUCCESS);
         }
@@ -192,32 +192,32 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
           }
         }
       } else {
-        PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &bell, &MZa[1 + ldMZ], &ldMZ, &bierr));
-        if (bierr != 0) {
+        PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &bell, &MZa[1 + ldMZ], &ldMZ, &info));
+        if (info != 0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(PETSC_SUCCESS);
         }
         PetscCall(PetscArraycpy(&AY0c[1], &MZb[1], bcgsl->ell));
-        PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("Lower", &bell, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
+        PetscCallLAPACKInfo("LAPACKpotrs", LAPACKpotrs_("Lower", &bell, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &info));
       }
     } else {
-      PetscBLASInt ione = 1;
+      PetscBLASInt ione = 1, info;
       PetscScalar  aone = 1.0, azero = 0.0;
       PetscBLASInt neqs;
       PetscCall(PetscBLASIntCast(bcgsl->ell - 1, &neqs));
 
-      PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &neqs, &MZa[1 + ldMZ], &ldMZ, &bierr));
-      if (bierr != 0) {
+      PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &neqs, &MZa[1 + ldMZ], &ldMZ, &info));
+      if (info != 0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
       PetscCall(PetscArraycpy(&AY0c[1], &MZb[1], bcgsl->ell - 1));
-      PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
+      PetscCallLAPACKInfo("LAPACKpotrs", LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &info));
       AY0c[0]          = -1;
       AY0c[bcgsl->ell] = 0.;
 
       PetscCall(PetscArraycpy(&AYlc[1], &MZb[1 + ldMZ * (bcgsl->ell)], bcgsl->ell - 1));
-      PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1 + ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
+      PetscCallLAPACKInfo("LAPACKpotrs", LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1 + ldMZ], &ldMZ, &AYlc[1], &ldMZ, &info));
 
       AYlc[0]          = 0.;
       AYlc[bcgsl->ell] = -1;

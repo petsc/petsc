@@ -115,12 +115,11 @@ static PetscBool LoewnerGE(const PetscScalar A[3][3], const PetscScalar B[3][3],
 
   PetscScalar  w[3];    /* eigenvalues */
   PetscScalar  work[9]; /* minimal workspace for 3x3 */
-  PetscBLASInt n = 3, lda = 3, lwork = 9, info;
+  PetscBLASInt n = 3, lda = 3, lwork = 9;
 
   /* jobz='N' (eigenvalues only), uplo='L' (lower-triangular part).
      Column-major vs row-major does not matter for symmetric matrices. */
-  PetscCallBLAS("LAPACKsyev", LAPACKsyev_("N", "L", &n, C, &lda, w, work, &lwork, &info));
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKsyev failed in LoewnerGE info=%" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("N", "L", &n, C, &lda, w, work, &lwork, &info));
 
   /* Smallest eigenvalue >= -tol? */
   return (w[0] >= -tol) ? PETSC_TRUE : PETSC_FALSE;

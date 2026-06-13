@@ -130,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscScalar *a;
     PetscReal   *realpart, *imagpart, *eigvec, *work;
     PetscReal    sdummy;
-    PetscBLASInt bn, bN, lwork = 0, lierr, idummy;
+    PetscBLASInt bn, bN, lwork = 0, idummy;
     PetscInt     n, i, evInd, *perm, tmp;
 
     PetscCall(MatConvert(L, MATDENSE, MAT_INITIAL_MATRIX, &LD));
@@ -142,8 +142,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscCall(PetscBLASIntCast(1, &idummy));
     PetscCall(PetscMalloc4(n, &realpart, n, &imagpart, n * n, &eigvec, lwork, &work));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "V", &bn, a, &bN, realpart, imagpart, &sdummy, &idummy, eigvec, &bN, work, &lwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+    PetscCallLAPACKInfo("LAPACKgeev", LAPACKgeev_("N", "V", &bn, a, &bN, realpart, imagpart, &sdummy, &idummy, eigvec, &bN, work, &lwork, &info));
     PetscCall(PetscFPTrapPop());
     PetscCall(MatDenseRestoreArray(LD, &a));
     PetscCall(MatDestroy(&LD));

@@ -47,7 +47,7 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
   PetscReal    *work;
   PetscBLASInt *pivots;
-  PetscBLASInt  n, info;
+  PetscBLASInt  n;
   PetscInt      pdim;
 
   PetscFunctionBegin;
@@ -76,10 +76,8 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 
   PetscCall(PetscMalloc2(pdim, &pivots, pdim, &work));
   PetscCall(PetscBLASIntCast(pdim, &n));
-  PetscCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscBLASInt_FMT, info);
-  PetscCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
+  PetscCallLAPACKInfo("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
   PetscCall(PetscFree2(pivots, work));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

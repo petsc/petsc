@@ -38,7 +38,6 @@ typedef struct {
   PetscScalar *work;      /* the work vector */
   PetscReal   *rwork;     /* the real work vector used for complex */
   PetscBLASInt lwork;     /* the size of the work vector */
-  PetscBLASInt info;      /* the output condition */
 
   PetscReal rtol; /* restart tolerance for accepting the combination */
   PetscReal stol; /* restart tolerance for the combination */
@@ -256,17 +255,14 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
     jac->beta[i] = ftf - jac->g[i];
   }
 
-  jac->info  = 0;
   jac->rcond = -1.;
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
-  PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, jac->rwork, &jac->info));
+  PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, jac->rwork, &info));
 #else
-  PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, &jac->info));
+  PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, &info));
 #endif
   PetscCall(PetscFPTrapPop());
-  PetscCheck(jac->info >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "Bad argument to GELSS");
-  PetscCheck(jac->info <= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD failed to converge");
   tot   = 0.;
   total = 0.;
   for (i = 0; i < jac->n; i++) {

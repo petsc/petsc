@@ -31,11 +31,11 @@
 
 /*MC
    PetscCallBLAS - Calls a BLAS or LAPACK routine so that the stack trace returned from any signal received inside the function call
-   includes the name of the BLAS/LAPACK routine
+   includes the name of the BLAS/LAPACK routine.
 
    Synopsis:
-   #include <petscsys.h>
-   void PetscCallBLAS(char *name,routine)
+   #include <petscblaslapack.h>
+   void PetscCallBLAS(char *name, routine)
 
    Not Collective
 
@@ -49,20 +49,49 @@
    This does not check error codes returned from the BLAS/LAPACK routine or ever return from the current subroutine. It merely pushes onto the PETSc
    stack the name of the BLAS/LAPACK routine before calling the routine and removes it after a successful call.
 
-   LAPACK routines that return info codes should be followed by
-.vb
-   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, ...)
-.ve
+   LAPACK routines that return `info` codes should be called with `PetscCallLAPACKInfo()`
 
    This macro exists so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalVoid()`
+.seealso: `PetscCall()`, `PetscCallLAPACKInfo()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalVoid()`
 M*/
 #define PetscCallBLAS(name, routine) \
   do { \
     PetscStackPushExternal(name); \
     routine; \
     PetscStackPop; \
+  } while (0)
+
+/*MC
+  PetscCallLAPACKInfo - Calls a LAPACK routine that has an `info` return flag so that the stack trace returned from any signal received
+                        inside the function call includes the name of the LAPACK routine. Also checks the `info` flag.
+
+  Synopsis:
+  #include <petscblaslapack.h>
+  void PetscCallLAPACKInfo(char *name, routine)
+
+  Not Collective
+
+  Input Parameters:
++  name    - string that gives the name of the function being called
+-  routine - actual call to the routine including its arguments
+
+  Level: developer
+
+  Notes:
+  The calling routine should not declare the argument `info` but must call it `info` in the calling sequence.
+
+  In a small number of cases, calls to LAPACK routines that return a positive `info` code are allowed without ending the PETSc program.
+  In these situations the macro `PetscCallBLAS()` should be used, not `PetscCallLAPACKInfo()`.
+
+.seealso: `PetscCall()`, `PetscCallBLAS()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalVoid()`
+M*/
+#define PetscCallLAPACKInfo(name, routine) \
+  do { \
+    PetscBLASInt info; \
+    PetscCallBLAS(name, routine); \
+    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LAPACK routine %s %" PetscBLASInt_FMT "-th argument had an illegal value", name, -info); \
+    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine %s failed with INFO = %" PetscBLASInt_FMT ". Search at https://www.netlib.org/lapack/explore-html/index.html to decode the error code.", name, info); \
   } while (0)
 
 static inline void PetscMissingLapack(const char *fname, ...)

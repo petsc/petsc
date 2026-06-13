@@ -163,14 +163,12 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscCall(PetscMalloc2(n, &realpart, n, &imagpart));
     PetscCall(PetscMalloc1(5 * n, &work));
     {
-      PetscBLASInt lierr;
       PetscScalar  sdummy;
       PetscBLASInt bn;
 
       PetscCall(PetscBLASIntCast(n, &bn));
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "N", &bn, array, &bn, realpart, imagpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, &lierr));
-      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+      PetscCallLAPACKInfo("LAPACKgeev", LAPACKgeev_("N", "N", &bn, array, &bn, realpart, imagpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, &info));
       PetscCall(PetscFPTrapPop());
     }
     PetscCall(PetscFree(work));
@@ -198,13 +196,11 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscCall(PetscMalloc1(2 * n, &rwork));
     PetscCall(PetscMalloc1(n, &eigs));
     {
-      PetscBLASInt lierr;
       PetscScalar  sdummy;
       PetscBLASInt nb;
       PetscCall(PetscBLASIntCast(n, &nb));
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "N", &nb, array, &nb, eigs, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, rwork, &lierr));
-      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
+      PetscCallLAPACKInfo("LAPACKgeev", LAPACKgeev_("N", "N", &nb, array, &nb, eigs, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, rwork, &info));
       PetscCall(PetscFPTrapPop());
     }
     PetscCall(PetscFree(work));

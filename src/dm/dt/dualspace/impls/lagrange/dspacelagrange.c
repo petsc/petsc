@@ -2553,7 +2553,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
      * of V and W should always be the same, so the solution of the normal equations works */
     {
       char         transpose = 'N';
-      PetscBLASInt bm, bn, bnrhs, blda, bldb, blwork, info;
+      PetscBLASInt bm, bn, bnrhs, blda, bldb, blwork;
 
       PetscCall(PetscBLASIntCast(nodeVecDim, &bm));
       PetscCall(PetscBLASIntCast(groupSize, &bn));
@@ -2561,8 +2561,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       PetscCall(PetscBLASIntCast(bm, &blda));
       PetscCall(PetscBLASIntCast(bm, &bldb));
       PetscCall(PetscBLASIntCast(2 * nodeVecDim, &blwork));
-      PetscCallBLAS("LAPACKgels", LAPACKgels_(&transpose, &bm, &bn, &bnrhs, V, &blda, W, &bldb, work, &blwork, &info));
-      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELS");
+      PetscCallLAPACKInfo("LAPACKgels", LAPACKgels_(&transpose, &bm, &bn, &bnrhs, V, &blda, W, &bldb, work, &blwork, &info));
       /* repack */
       {
         PetscInt i;

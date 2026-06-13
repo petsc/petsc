@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscMPIInt  size;
   PetscInt     m, i, j, cklvl = 2;
   PetscReal    vl, vu, abstol = 1.e-8;
-  PetscBLASInt nn, nevs, il, iu, *iwork, *ifail, lwork, lierr, bn, one = 1;
+  PetscBLASInt nn, nevs, il, iu, *iwork, *ifail, lwork, bn, one = 1;
   PetscReal    tols[2];
   PetscScalar  v, sigma2;
   PetscRandom  rctx;
@@ -136,7 +136,7 @@ int main(int argc, char **args)
   if (TestZHEEV) { /* test zheev() */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsyev: compute all %" PetscInt_FMT " eigensolutions...\n", m));
     PetscCall(PetscMalloc1(3 * n - 2, &rwork));
-    PetscCallBLAS("LAPACKsyev_", LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, rwork, &lierr));
+    PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, rwork, &info));
     PetscCall(PetscFree(rwork));
 
     evecs_array = arrayA;
@@ -157,7 +157,7 @@ int main(int argc, char **args)
     vl = 0.0;
     vu = 8.0;
     PetscCall(PetscBLASIntCast(n, &nn));
-    PetscCallBLAS("LAPACKsyevx_", LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr));
+    PetscCallLAPACKInfo("LAPACKsyevx", LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &info));
     PetscCall(PetscFree(iwork));
     PetscCall(PetscFree(ifail));
     PetscCall(PetscFree(rwork));
@@ -166,7 +166,7 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsygv: compute all %" PetscInt_FMT " eigensolutions...\n", m));
     PetscCall(PetscMalloc1(3 * n + 1, &rwork));
     PetscCall(MatDenseGetArray(B, &arrayB));
-    PetscCallBLAS("LAPACKsygv_", LAPACKsygv_(&one, "V", "U", &bn, arrayA, &bn, arrayB, &bn, evals, work, &lwork, rwork, &lierr));
+    PetscCallLAPACKInfo("LAPACKsygv", LAPACKsygv_(&one, "V", "U", &bn, arrayA, &bn, arrayB, &bn, evals, work, &lwork, rwork, &info));
     evecs_array = arrayA;
     PetscCall(PetscBLASIntCast(m, &nevs));
     il = 1;
@@ -186,7 +186,7 @@ int main(int argc, char **args)
     vl = 0.0;
     vu = 8.0;
     PetscCall(PetscBLASIntCast(n, &nn));
-    PetscCallBLAS("LAPACKsygvx_", LAPACKsygvx_(&one, "V", "I", "U", &bn, arrayA, &bn, arrayB, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &lierr));
+    PetscCallLAPACKInfo("LAPACKsygvx", LAPACKsygvx_(&one, "V", "I", "U", &bn, arrayA, &bn, arrayB, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &nn, work, &lwork, rwork, iwork, ifail, &info));
     PetscCall(MatDenseRestoreArray(B, &arrayB));
     PetscCall(PetscFree(iwork));
     PetscCall(PetscFree(rwork));

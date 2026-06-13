@@ -24,6 +24,7 @@
 - Deprecate `PETSC_MPI_THREAD_REQUIRED`
 - Add support for running PETSc applications as MCP servers that can be accessed by LLMs
 - Add `PetscRandomAppendOptionsPrefix()` and `PetscRandomGetOptionsPrefix()`
+- Add `PetscCallLAPACKInfo()` for calling LAPACK routines with an `info` argument where the caller requires an `info` value of 0 for the program to continue
 
 ## Event Logging
 

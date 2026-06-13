@@ -2007,7 +2007,7 @@ static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
 static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
 {
   PetscBool    debug = PETSC_FALSE;
-  PetscBLASInt M, N, K, lda, ldb, ldwork, info;
+  PetscBLASInt M, N, K, lda, ldb, ldwork;
   PetscScalar *R, *Q, *Aback, Alpha;
 
   PetscFunctionBegin;
@@ -2021,17 +2021,15 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscI
   PetscCall(PetscBLASIntCast(mstride, &lda));
   PetscCall(PetscBLASIntCast(worksize, &ldwork));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&M, &N, A, &lda, tau, work, &ldwork, &info));
+  PetscCallLAPACKInfo("LAPACKgeqrf", LAPACKgeqrf_(&M, &N, A, &lda, tau, work, &ldwork, &info));
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
 
   /* Extract an explicit representation of Q */
   Q = Ainv;
   PetscCall(PetscArraycpy(Q, A, mstride * n));
   K = N; /* full rank */
-  PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&M, &N, &K, Q, &lda, tau, work, &ldwork, &info));
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "xORGQR/xUNGQR error");
+  PetscCallLAPACKInfo("LAPACKorgqr", LAPACKorgqr_(&M, &N, &K, Q, &lda, tau, work, &ldwork, &info));
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
@@ -2063,7 +2061,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, Pet
 #endif
   PetscInt     i, j, maxmn;
   PetscBLASInt M, N, lda, ldb, ldwork;
-  PetscBLASInt nrhs, irank, info;
+  PetscBLASInt nrhs, irank;
 
   PetscFunctionBegin;
   /* initialize to identity */
@@ -2086,7 +2084,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, Pet
   PetscCall(PetscMalloc1(rworkSize, &rwork));
   PetscCall(PetscMalloc1(PetscMin(M, N), &rtau));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&M, &N, &nrhs, A, &lda, Brhs, &ldb, rtau, &rcond, &irank, tmpwork, &ldwork, rwork, &info));
+  PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &nrhs, A, &lda, Brhs, &ldb, rtau, &rcond, &irank, tmpwork, &ldwork, rwork, &info));
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscFree(rwork));
   for (i = 0; i < PetscMin(M, N); i++) tau[i] = rtau[i];
@@ -2094,10 +2092,9 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, Pet
 #else
   nrhs = M;
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&M, &N, &nrhs, A, &lda, Brhs, &ldb, tau, &rcond, &irank, tmpwork, &ldwork, &info));
+  PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &nrhs, A, &lda, Brhs, &ldb, tau, &rcond, &irank, tmpwork, &ldwork, &info));
   PetscCall(PetscFPTrapPop());
 #endif
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
   PetscCheck(irank >= PetscMin(M, N), PETSC_COMM_SELF, PETSC_ERR_USER, "Rank deficient least squares fit, indicates an isolated cell with two collinear points");
   PetscFunctionReturn(PETSC_SUCCESS);

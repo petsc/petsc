@@ -677,7 +677,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     }
 
     PetscCallBLAS("LAPACKpttrf", LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
-
     if (0 == info) break;
 
     pert += pert;
@@ -692,7 +691,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   for (i = 1; i < t_size; ++i) t_soln[i] = 0.0;
 
   PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
-
   if (0 != info) {
     /* Calculation of the initial step failed; return the Steihaug-Toint     */
     /* direction.                                                            */
@@ -714,7 +712,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* This is the hard case; compute the eigenvector associated with the  */
       /* minimum eigenvalue and move along this direction to the boundary.   */
       PetscCallBLAS("LAPACKstein", LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu, e_iblk, e_splt, e_vect, &nldb, e_rwrk, e_iwrk, e_iwrk + t_size, &info));
-
       if (0 != info) {
         /* Calculation of the minimum eigenvalue failed.  Return the         */
         /* Steihaug-Toint direction.                                         */
@@ -772,7 +769,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       PetscCall(PetscArraycpy(e_rwrk, t_soln, t_size));
 
       PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
-
       if (0 != info) {
         /* Calculation of the step failed; return the Steihaug-Toint         */
         /* direction.                                                        */
@@ -794,7 +790,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       }
 
       PetscCallBLAS("LAPACKpttrf", LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
-
       if (0 != info) {
         /* Calculation of factorization failed; return the Steihaug-Toint    */
         /* direction.                                                        */
@@ -808,7 +803,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       for (j = 1; j < t_size; ++j) t_soln[j] = 0.0;
 
       PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
-
       if (0 != info) {
         /* Calculation of the step failed; return the Steihaug-Toint         */
         /* direction.                                                        */

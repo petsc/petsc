@@ -284,7 +284,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
       if (!ise) {
         const PetscInt lid = mm;
         PetscScalar    AA[3][3];
-        PetscBLASInt   N = 3, NRHS = 1, LDA = 3, IPIV[3], LDB = 3, INFO;
+        PetscBLASInt   N = 3, NRHS = 1, LDA = 3, IPIV[3], LDB = 3;
         PetscCDIntNd  *pos;
 
         PetscCall(PetscCDGetHeadPos(agg_lists_1, lid, &pos));
@@ -316,8 +316,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
 
               for (tt = 0; tt < 3; tt++) alpha[tt] = (PetscScalar)fcoord[tt];
 
-              /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallLAPACKInfo("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &info));
               {
                 PetscBool have   = PETSC_TRUE;
                 PetscReal lowest = 1.e10;
@@ -345,8 +344,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
                   clids[tt]     = cid2; /* store for interp */
                 }
                 for (tt = 0; tt < 3; tt++) alpha[tt] = fcoord[tt];
-                /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-                PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+                PetscCallLAPACKInfo("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &info));
                 {
                   PetscBool have  = PETSC_TRUE;
                   PetscReal worst = 0.0, v;
@@ -374,8 +372,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
                 clids[tt]     = cid2; /* store for interp */
               }
               for (tt = 0; tt < 3; tt++) alpha[tt] = fcoord[tt];
-              /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallLAPACKInfo("LAPACKgesv", LAPACKgesv_(&N, &NRHS, (PetscScalar *)AA, &LDA, IPIV, alpha, &LDB, &info));
             }
 
             /* put in row of P */

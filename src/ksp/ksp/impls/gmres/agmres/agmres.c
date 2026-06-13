@@ -340,7 +340,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscBLASInt   N;
   PetscBLASInt   ldH;
   PetscBLASInt   lwork;
-  PetscBLASInt   info, nrhs = 1;
+  PetscBLASInt   nrhs = 1;
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(it + 1, &ldH));
@@ -354,18 +354,15 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
     for (PetscInt i = 0; i < N; i++) *HS(i, j) = *H(i, j);
   }
   /* QR factorize the Hessenberg matrix */
-  PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
-  PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XGEQRF INFO=%" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   /* Update the right-hand side of the least square problem */
   PetscCall(PetscArrayzero(agmres->nrs, N));
 
   agmres->nrs[0] = ksp->rnorm;
-  PetscCallBLAS("LAPACKormqr", LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
-  PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XORMQR INFO=%" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKormqr", LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
   ksp->rnorm = PetscAbsScalar(agmres->nrs[KspSize]);
   /* solve the least-square problem */
-  PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
-  PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XTRTRS INFO=%" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
   PetscCall(VecMAXPBY(VEC_TMP, max_k, agmres->nrs, 0, &VEC_V(0)));
   if (!agmres->DeflPrecond) PetscCall(VecMAXPY(VEC_TMP, r, &agmres->nrs[max_k], agmres->U));

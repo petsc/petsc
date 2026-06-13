@@ -21,7 +21,7 @@ int main(int argc, char **args)
   PetscScalar *evecs_array, *D, *E, *evals;
   Mat          T;
   PetscReal    vl = 0.0, vu = 4.0, tol = 1000 * PETSC_MACHINE_EPSILON;
-  PetscBLASInt nsplit, info;
+  PetscBLASInt nsplit;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -46,14 +46,12 @@ int main(int argc, char **args)
 
   /* Solve eigenvalue problem: A*evec = eval*evec */
   PetscCall(PetscPrintf(PETSC_COMM_SELF, " LAPACKstebz_: compute %d eigenvalues...\n", nevs));
-  LAPACKstebz_("I", "E", &n, &vl, &vu, &il, &iu, &tol, (PetscReal *)D, (PetscReal *)E, &nevs, &nsplit, (PetscReal *)evals, iblock, isplit, work, iwork, &info);
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_USER, "LAPACKstebz_ fails. info %" PetscBLASInt_FMT, info);
-
+  PetscCallLAPACKInfo("LAPACKstebz", LAPACKstebz_("I", "E", &n, &vl, &vu, &il, &iu, &tol, (PetscReal *)D, (PetscReal *)E, &nevs, &nsplit, (PetscReal *)evals, iblock, isplit, work, iwork, &info));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, " LAPACKstein_: compute %d found eigenvectors...\n", nevs));
   PetscCall(PetscMalloc1(n * nevs, &evecs_array));
   PetscCall(PetscMalloc1(nevs, &ifail));
-  LAPACKstein_(&n, (PetscReal *)D, (PetscReal *)E, &nevs, (PetscReal *)evals, iblock, isplit, evecs_array, &n, work, iwork, ifail, &info);
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_USER, "LAPACKstein_ fails. info %" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKstein", LAPACKstein_(&n, (PetscReal *)D, (PetscReal *)E, &nevs, (PetscReal *)evals, iblock, isplit, evecs_array, &n, work, iwork, ifail, &info));
+
   /* View evals */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-eig_view", &flg));
   if (flg) {
@@ -124,7 +122,7 @@ int main(int argc, char **args)
 #undef DEBUG_CkEigenSolutions
 PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu, PetscScalar *eval, Vec *evec, PetscReal *tols)
 {
-  PetscInt    ierr, i, j, nev;
+  PetscInt    i, j, nev;
   Vec         vt1, vt2; /* tmp vectors */
   PetscReal   norm, norm_max;
   PetscScalar dot, tmp;

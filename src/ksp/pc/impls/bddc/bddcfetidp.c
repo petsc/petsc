@@ -495,7 +495,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       PetscScalar        *W, lwork, *Bwork;
       const PetscInt     *idxs = NULL;
       PetscInt            cum, mss, *nnz;
-      PetscBLASInt       *pivots, B_lwork, B_N, B_ierr;
+      PetscBLASInt       *pivots, B_lwork, B_N;
 
       PetscCheck(pcbddc->deluxe_singlemat, comm, PETSC_ERR_USER, "Cannot compute B_Ddelta! rerun with -pc_bddc_deluxe_singlemat");
       mss = 0;
@@ -525,9 +525,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         B_lwork = -1;
         PetscCall(PetscBLASIntCast(mss, &B_N));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-        PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&B_N, &dummy, &B_N, &B_N, &lwork, &B_lwork, &B_ierr));
+        PetscCallLAPACKInfo("LAPACKgetri", LAPACKgetri_(&B_N, &dummy, &B_N, &B_N, &lwork, &B_lwork, &info));
         PetscCall(PetscFPTrapPop());
-        PetscCheck(!B_ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GETRI Lapack routine %" PetscBLASInt_FMT, B_ierr);
         PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lwork), &B_lwork));
       }
       PetscCall(PetscMalloc3(mss * mss, &W, mss, &pivots, B_lwork, &Bwork));
@@ -542,10 +541,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         PetscCall(PetscArraycpy(W, M, subset_size * subset_size));
         PetscCall(MatDenseRestoreArrayRead(deluxe_ctx->seq_mat[i], &M));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-        PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&B_N, &B_N, W, &B_N, pivots, &B_ierr));
-        PetscCheck(!B_ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRF Lapack routine %" PetscBLASInt_FMT, B_ierr);
-        PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&B_N, W, &B_N, pivots, Bwork, &B_lwork, &B_ierr));
-        PetscCheck(!B_ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRI Lapack routine %" PetscBLASInt_FMT, B_ierr);
+        PetscCallLAPACKInfo("LAPACKgetrf", LAPACKgetrf_(&B_N, &B_N, W, &B_N, pivots, &info));
+        PetscCallLAPACKInfo("LAPACKgetri", LAPACKgetri_(&B_N, W, &B_N, pivots, Bwork, &B_lwork, &info));
         PetscCall(PetscFPTrapPop());
         /* silent static analyzer */
         PetscCheck(idxs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "IDXS not present");

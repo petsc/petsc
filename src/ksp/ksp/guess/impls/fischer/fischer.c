@@ -199,7 +199,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
   PetscInt         i, j, m;
   PetscReal       *s_values;
   PetscScalar     *corr, *work, *scratch_vec, zero = 0.0, one = 1.0;
-  PetscBLASInt     blas_m, blas_info, blas_rank = 0, blas_lwork, blas_one = 1;
+  PetscBLASInt     blas_m, blas_rank = 0, blas_lwork, blas_one = 1, info;
 #if defined(PETSC_USE_COMPLEX)
   PetscReal *rwork;
 #endif
@@ -225,12 +225,12 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
 #if defined(PETSC_USE_COMPLEX)
-    PetscCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &blas_info));
+    PetscCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &info));
 #else
-    PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, &blas_info));
+    PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, &info));
 #endif
 
-    if (blas_info == 0) {
+    if (info == 0) {
       /* make corr store singular vectors and s_values store singular values */
       for (j = 0; j < m; ++j) {
         if (s_values[j] < 0.0) {
@@ -253,12 +253,12 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &blas_m, &blas_m, &one, corr, &blas_m, scratch_vec, &blas_one, &zero, itg->alpha, &blas_one));
 
     } else {
-      PetscCall(PetscInfo(guess, "Warning eigenvalue solver failed with error code %" PetscBLASInt_FMT " - setting initial guess to zero\n", blas_info));
+      PetscCall(PetscInfo(guess, "Warning eigenvalue solver failed with error code %" PetscBLASInt_FMT " - setting initial guess to zero\n", info));
       PetscCall(PetscMemzero(itg->alpha, sizeof(*itg->alpha) * itg->maxl));
     }
     PetscCall(PetscFPTrapPop());
 
-    if (itg->monitor && blas_info == 0) {
+    if (itg->monitor && info == 0) {
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess correlation rank = %" PetscBLASInt_FMT "\n", blas_rank));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess singular values = "));
       for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)s_values[i]));

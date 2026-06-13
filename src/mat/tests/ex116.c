@@ -25,7 +25,7 @@ int main(int argc, char **args)
   PetscInt      m, n, i, cklvl = 2;
   PetscBLASInt  nevs, il, iu, in;
   PetscReal     vl, vu, abstol = 1.e-8;
-  PetscBLASInt *iwork, *ifail, lwork, lierr, bn;
+  PetscBLASInt *iwork, *ifail, lwork, bn;
   PetscReal     tols[2];
 
   PetscFunctionBeginUser;
@@ -70,7 +70,7 @@ int main(int argc, char **args)
 
   if (!TestSYEVX) { /* test syev() */
     PetscCall(PetscPrintf(PETSC_COMM_SELF, " LAPACKsyev: compute all %" PetscInt_FMT " eigensolutions...\n", m));
-    LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, &lierr);
+    PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &bn, arrayA, &bn, evals, work, &lwork, &info));
     evecs_array = arrayA;
     PetscCall(PetscBLASIntCast(m, &nevs));
     il = 1;
@@ -87,7 +87,7 @@ int main(int argc, char **args)
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0;
     vu = 8.0;
-    LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &in, work, &lwork, iwork, ifail, &lierr);
+    PetscCallLAPACKInfo("LAPACKsyevx", LAPACKsyevx_("V", "I", "U", &bn, arrayA, &bn, &vl, &vu, &il, &iu, &abstol, &nevs, evals, evecs_array, &in, work, &lwork, iwork, ifail, &info));
     PetscCall(PetscFree(iwork));
   }
   PetscCall(MatDenseRestoreArray(A_dense, &arrayA));
@@ -126,7 +126,7 @@ int main(int argc, char **args)
     /* Convert aij matrix to MatSeqDense for LAPACK */
     PetscScalar *arrayU, *arrayVT, *arrayErr, alpha = 1.0, beta = -1.0;
     Mat          Err;
-    PetscBLASInt minMN, maxMN, im, in;
+    PetscBLASInt minMN, maxMN, im, in, info;
     PetscReal    norm;
 
     PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &A_dense));
@@ -149,9 +149,9 @@ int main(int argc, char **args)
     PetscCall(PetscBLASIntCast(m, &im));
     PetscCall(PetscBLASIntCast(n, &in));
     /* Compute A = U*SIGMA*VT */
-    LAPACKgesvd_("S", "S", &im, &in, arrayA, &im, evals, arrayU, &minMN, arrayVT, &minMN, work, &lwork, &lierr);
+    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("S", "S", &im, &in, arrayA, &im, evals, arrayU, &minMN, arrayVT, &minMN, work, &lwork, &info));
     PetscCall(MatDenseRestoreArray(A_dense, &arrayA));
-    if (!lierr) {
+    if (!info) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, " 1st 10 of %" PetscBLASInt_FMT " singular values: \n", minMN));
       for (i = 0; i < 10; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "  %g\n", i, (double)evals[i]));
     } else {
