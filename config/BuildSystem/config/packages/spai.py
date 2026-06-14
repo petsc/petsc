@@ -13,6 +13,7 @@ class Configure(config.package.Package):
     self.complex          = 0
     self.hastests         = 1
     self.requirekandr     = 1
+    self.brokengnu23      = 1
     return
 
   def setupDependencies(self, framework):
