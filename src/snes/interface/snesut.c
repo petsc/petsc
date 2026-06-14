@@ -1,5 +1,6 @@
 #include <petsc/private/snesimpl.h> /*I   "petsc/private/snesimpl.h"   I*/
 #include <petscdm.h>
+#include <petscdmshell.h>
 #include <petscsection.h>
 #include <petscblaslapack.h>
 
@@ -832,16 +833,29 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
 @*/
 PetscErrorCode SNESSetWorkVecs(SNES snes, PetscInt nw)
 {
-  DM  dm;
-  Vec v;
+  DM        dm;
+  Vec       v;
+  PetscBool restore = PETSC_FALSE;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(snes, nw, 2);
   if (snes->work) PetscCall(VecDestroyVecs(snes->nwork, &snes->work));
   snes->nwork = nw;
+  if (!nw) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(DMGetGlobalVector(dm, &v));
+  if (snes->dmAuto) {
+    PetscCall(DMShellGetGlobalVector(dm, &v));
+    if (!v) v = snes->vec_sol;
+    if (!v) v = snes->vec_func;
+    if (!v) v = snes->vec_rhs;
+  } else {
+    restore = PETSC_TRUE;
+    PetscCall(DMGetGlobalVector(dm, &v));
+  }
+  PetscCheck(v, PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "Vector to be duplicated not found");
   PetscCall(VecDuplicateVecs(v, snes->nwork, &snes->work));
-  PetscCall(DMRestoreGlobalVector(dm, &v));
+  if (restore) PetscCall(DMRestoreGlobalVector(dm, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
