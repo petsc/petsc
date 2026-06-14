@@ -99,9 +99,8 @@ deleteshared:
 	fi
 
 deletefortranbindings:
-	-@find src -type d -name ftn-auto* | xargs rm -rf
-	-@if [ -n "${PETSC_ARCH}" ] && [ -d ${PETSC_ARCH} ] && [ -d ${PETSC_ARCH}/src ]; then\
-          find ${PETSC_ARCH}/src -type d -name ftn-auto* | xargs rm -rf ;\
+	-@if [ -n "${PETSC_ARCH}" ] && [ -d ${PETSC_ARCH} ] && [ -d ${PETSC_ARCH}/ftn ]; then\
+          ${RM} -rf ${PETSC_ARCH}/ftn ;\
         fi
 
 reconfigure: allclean
