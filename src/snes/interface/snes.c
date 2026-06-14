@@ -3393,7 +3393,7 @@ PetscErrorCode SNESSetUp(SNES snes)
 
   if (!snes->vec_func) PetscCall(DMCreateGlobalVector(dm, &snes->vec_func));
 
-  if (!snes->ksp) PetscCall(SNESGetKSP(snes, &snes->ksp));
+  if (snes->usesksp && !snes->ksp) PetscCall(SNESGetKSP(snes, &snes->ksp));
 
   if (snes->linesearch) {
     PetscCall(SNESGetLineSearch(snes, &snes->linesearch));
@@ -3641,9 +3641,9 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(snes, lag, 2);
   PetscCheck(lag >= -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lag must be -2, -1, 1 or greater");
   PetscCheck(lag, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lag cannot be 0");
-  PetscValidLogicalCollectiveInt(snes, lag, 2);
   snes->lagpreconditioner = lag;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
