@@ -1279,6 +1279,19 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
   for i in manualpages.keys():
     verbosePrint(verbose, manualpages[i])
 
+  # All values for a given enum must be provided or none of them
+  for i in enums.keys():
+    givenvalue = 0
+    for j in enums[i].values:
+      if j.find('=') > -1:
+        if givenvalue == -1:
+          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
+        givenvalue = 1
+      else:
+        if givenvalue == 1:
+          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
+        givenvalue = -1
+
   #file = open('classes.data','wb')
   #pickle.dump(enums,file)
   #pickle.dump(senums,file)
