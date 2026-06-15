@@ -104,7 +104,8 @@ struct _n_PetscOptions {
 static PetscOptions defaultoptions = NULL; /* the options database routines query this object for options */
 
 /* list of options which precede others, i.e., are processed in PetscOptionsProcessPrecedentFlags() */
-/* these options can only take boolean values, the code will crash if given a non-boolean value */
+/* these options can only take boolean values, the code will crash if given a non-boolean value.
+   -help is the exception: it also accepts "intro", and any other non-logical value turns the help output on */
 static const char *precedentOptions[] = {"-petsc_ci", "-options_monitor", "-options_monitor_cancel", "-help", "-skip_petscrc"};
 enum PetscPrecedentOption {
   PO_CI_ENABLE,
@@ -117,6 +118,7 @@ enum PetscPrecedentOption {
 
 PETSC_INTERN PetscErrorCode PetscOptionsSetValue_Private(PetscOptions, const char[], const char[], int *, PetscOptionSource);
 PETSC_INTERN PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions, const char[], PetscOptionSource);
+static PetscErrorCode       PetscOptionsStringToBool_Private(const char[], PetscBool *, PetscBool *);
 
 /*
     Options events monitor
@@ -752,6 +754,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options, in
   const char       **val;
   char             **cval;
   PetscBool         *set, unneeded;
+  PetscBool          isbool = PETSC_FALSE, helpval = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc2(n, &cval, n, &set));
@@ -778,9 +781,11 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options, in
   }
 
   /* Process flags */
+  /* "-help" accepts a logical value or "intro"; PetscOptionsSetValue_Private() reads it the same way below */
+  PetscCall(PetscOptionsStringToBool_Private(val[PO_HELP], &helpval, &isbool));
   PetscCall(PetscStrcasecmp(val[PO_HELP], "intro", &options->help_intro));
-  if (options->help_intro) options->help = PETSC_TRUE;
-  else PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_HELP, val, set, &options->help));
+  if (set[PO_HELP]) options->help = isbool ? helpval : PETSC_TRUE;
+  else options->help = PETSC_FALSE;
   PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_CI_ENABLE, val, set, &unneeded));
   /* need to manage PO_CI_ENABLE option before the PetscOptionsMonitor is turned on, so its setting is not monitored */
   if (set[PO_CI_ENABLE]) PetscCall(PetscOptionsSetValue_Private(options, opt[PO_CI_ENABLE], val[PO_CI_ENABLE], &a, PETSC_OPT_COMMAND_LINE));
@@ -1413,8 +1418,11 @@ setvalue:
 
   /* handle -help so that it can be set from anywhere */
   if (!PetscOptNameCmp(name, "help")) {
-    options->help       = PETSC_TRUE;
-    options->help_intro = (value && !PetscOptNameCmp(value, "intro")) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool isbool = PETSC_FALSE, helpval = PETSC_FALSE;
+
+    PetscCall(PetscOptionsStringToBool_Private(value, &helpval, &isbool));
+    options->help       = isbool ? helpval : PETSC_TRUE;
+    options->help_intro = (!isbool && value && !PetscOptNameCmp(value, "intro")) ? PETSC_TRUE : PETSC_FALSE;
     options->used[n]    = PETSC_TRUE;
   }
 
@@ -1729,7 +1737,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options, const char pre[], const 
 }
 
 /*@
-  PetscOptionsHasHelp - Determines whether the "-help" option is in the database.
+  PetscOptionsHasHelp - Determines whether help output has been requested with the "-help" option.
 
   Not Collective
 
@@ -1737,9 +1745,13 @@ PetscErrorCode PetscOptionsReject(PetscOptions options, const char pre[], const 
 . options - options database, use `NULL` for default global database
 
   Output Parameter:
-. set - `PETSC_TRUE` if found else `PETSC_FALSE`.
+. set - `PETSC_TRUE` if requested else `PETSC_FALSE`.
 
   Level: advanced
+
+  Note:
+  `-help` accepts a logical value, so this returns `PETSC_FALSE` for `-help 0`, `-help no`, `-help false`
+  and `-help off` even though "-help" is then in the database.
 
 .seealso: `PetscOptionsHasName()`
 @*/
@@ -2163,31 +2175,17 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  PetscOptionsStringToBool - Converts a string to a `PetscBool`
-
-  Not Collective
-
-  Input Parameter:
-. value - the string to convert; may be `NULL` or `""`
-
-  Output Parameter:
-. a - the resulting `PetscBool`
-
-  Level: developer
-
-  Note:
-  Recognizes (case-insensitive) `TRUE`, `YES`, `1`, `on` as `PETSC_TRUE` and `FALSE`, `NO`, `0`, `off` as `PETSC_FALSE`.
-  An empty or `NULL` string is treated as `PETSC_TRUE`. Any other input generates an error.
-
-.seealso: `PetscOptionsStringToInt()`, `PetscOptionsStringToReal()`, `PetscOptionsStringToScalar()`, `PetscOptionsGetBool()`
-@*/
-PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
+/*
+   Same as PetscOptionsStringToBool() but reports in isbool whether value is one of the recognized
+   logical values instead of raising an error when it is not.
+*/
+static PetscErrorCode PetscOptionsStringToBool_Private(const char value[], PetscBool *a, PetscBool *isbool)
 {
   PetscBool istrue, isfalse;
   size_t    len;
 
   PetscFunctionBegin;
+  *isbool = PETSC_TRUE;
   /* PetscStrlen() returns 0 for NULL or "" */
   PetscCall(PetscStrlen(value, &len));
   if (!len) {
@@ -2234,7 +2232,38 @@ PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
     *a = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
+  *a      = PETSC_FALSE;
+  *isbool = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscOptionsStringToBool - Converts a string to a `PetscBool`
+
+  Not Collective
+
+  Input Parameter:
+. value - the string to convert; may be `NULL` or `""`
+
+  Output Parameter:
+. a - the resulting `PetscBool`
+
+  Level: developer
+
+  Note:
+  Recognizes (case-insensitive) `TRUE`, `YES`, `1`, `on` as `PETSC_TRUE` and `FALSE`, `NO`, `0`, `off` as `PETSC_FALSE`.
+  An empty or `NULL` string is treated as `PETSC_TRUE`. Any other input generates an error.
+
+.seealso: `PetscOptionsStringToInt()`, `PetscOptionsStringToReal()`, `PetscOptionsStringToScalar()`, `PetscOptionsGetBool()`
+@*/
+PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
+{
+  PetscBool isbool;
+
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsStringToBool_Private(value, a, &isbool));
+  PetscCheck(isbool, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@

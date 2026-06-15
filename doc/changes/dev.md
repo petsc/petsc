@@ -35,6 +35,7 @@
 - Add `PetscRandomAppendOptionsPrefix()` and `PetscRandomGetOptionsPrefix()`
 - Add `PetscCallLAPACKInfo()` for calling LAPACK routines with an `info` argument where the caller requires an `info` value of 0 for the program to continue
 - Add `PetscIntCSRView()` to inspect CSR graph
+- Change `-help 0`, `-help no`, `-help false` and `-help off` to turn the help output off; they previously turned it on
 
 ## Event Logging
 

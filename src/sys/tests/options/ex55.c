@@ -59,7 +59,7 @@ int main(int argc, char **argv)
       localrunfiles: ex55options .petscrc petscrc
       args: -options_left 0 -options_view -options_monitor
    testset:
-      # test -help / -help intro / -version from command line
+      # test -help / -help intro / -help false / -version from command line
       localrunfiles: ex55options .petscrc petscrc
       filter: grep -E -e "(version|help|^See)"
       args: -options_left -options_view -options_monitor
@@ -72,6 +72,9 @@ int main(int argc, char **argv)
       test:
         suffix: 5c
         args: -version
+      test:
+        suffix: 5d
+        args: -help false
    testset:
       # test -help / -help intro / -version from file
       localrunfiles: ex55options rc_help rc_help_intro rc_version
