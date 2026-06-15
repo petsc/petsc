@@ -6537,10 +6537,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* some quantities */
   PetscInt  n_vertices, total_primal_vertices, valid_constraints;
   PetscInt  size_of_constraint, max_size_of_constraint = 0, max_constraints, temp_constraints;
-  PetscReal tol; /* tolerance for retaining eigenmodes */
+  PetscReal tol      = PetscSqrtReal(PETSC_SMALL); /* tolerance for retaining eigenmodes */
+  PetscReal null_tol = PETSC_SMALL;                /* tolerance for retaining imported nearnullspace vectors */
 
   PetscFunctionBegin;
-  tol = PetscSqrtReal(PETSC_SMALL);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)pc), ((PetscObject)pc)->prefix, "BDDC constraints options", "PC");
+  PetscCall(PetscOptionsReal("-pc_bddc_constraint_near_null_space_tol", "Retain nearnullspace data if larger than tolerance", NULL, null_tol, &null_tol, NULL));
+  PetscCall(PetscOptionsReal("-pc_bddc_constraint_singular_tol", "Retain singular vectors up to tolerance", NULL, tol, &tol, NULL));
+  PetscOptionsEnd();
+
   /* Destroy Mat objects computed previously */
   PetscCall(MatDestroy(&pcbddc->ChangeOfBasisMatrix));
   PetscCall(MatDestroy(&pcbddc->ConstraintMatrix));
@@ -6780,8 +6785,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscCall(VecRestoreArrayRead(localnearnullsp[k], (const PetscScalar **)&array));
         /* check if array is null on the connected component */
         PetscCall(PetscBLASIntCast(size_of_constraint, &Blas_N));
-        PetscCallBLAS("BLASasum", real_value = BLASasum_(&Blas_N, ptr_to_data, &Blas_one));
-        if (real_value > tol * size_of_constraint) { /* keep indices and values */
+        PetscCallBLAS("BLASnrm2", real_value = BLASnrm2_(&Blas_N, ptr_to_data, &Blas_one));
+        if (real_value > null_tol) { /* keep indices and values */
           temp_constraints++;
           total_counts++;
           if (!idxs_copied) {
