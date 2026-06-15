@@ -22,7 +22,7 @@ if __name__ == '__main__':
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
     '--with-64-bit-indices=1',
-    '--with-cuda-dir=/usr/local/cuda-12.6',
+    '--with-cuda-dir=/usr/local/cuda-13.0',
     '--with-precision=double',
     '--with-clanguage=c',
     # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang

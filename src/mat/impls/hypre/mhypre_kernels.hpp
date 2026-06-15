@@ -18,3 +18,12 @@ __global__ static void ZeroRows(PetscInt n, const PetscInt rows[], const HYPRE_I
     }
   }
 }
+
+template <typename STYPE, typename DTYPE>
+__global__ static void CastArray(PetscInt n, const STYPE *src, DTYPE *dst)
+{
+  size_t i      = blockIdx.x * blockDim.x + threadIdx.x;
+  size_t stride = blockDim.x * gridDim.x;
+
+  for (; i < n; i += stride) dst[i] = static_cast<DTYPE>(src[i]);
+}

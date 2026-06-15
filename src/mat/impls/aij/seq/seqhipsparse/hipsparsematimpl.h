@@ -91,33 +91,31 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
   #endif /* Single or double */
 #endif   /* not complex */
 
-#if PETSC_PKG_HIP_VERSION_GE(4, 5, 0)
-  // #define cusparse_csr2csc cusparseCsr2cscEx2
-  #if defined(PETSC_USE_COMPLEX)
-    #if defined(PETSC_USE_REAL_SINGLE)
-      #define hipsparse_scalartype                                                             HIP_C_32F
-      #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) hipsparseCcsrgeam2(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
-      #define hipsparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
-        hipsparseCcsrgeam2_bufferSizeExt(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
-    #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define hipsparse_scalartype HIP_C_64F
-      #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
-        hipsparseZcsrgeam2(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
-      #define hipsparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
-        hipsparseZcsrgeam2_bufferSizeExt(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
-    #endif /* Single or double */
-  #else    /* not complex */
-    #if defined(PETSC_USE_REAL_SINGLE)
-      #define hipsparse_scalartype            HIP_R_32F
-      #define hipsparse_csr_spgeam            hipsparseScsrgeam2
-      #define hipsparse_csr_spgeam_bufferSize hipsparseScsrgeam2_bufferSizeExt
-    #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define hipsparse_scalartype            HIP_R_64F
-      #define hipsparse_csr_spgeam            hipsparseDcsrgeam2
-      #define hipsparse_csr_spgeam_bufferSize hipsparseDcsrgeam2_bufferSizeExt
-    #endif /* Single or double */
-  #endif   /* complex or not */
-#endif     /* PETSC_PKG_HIP_VERSION_GE(4, 5, 0) */
+// #define cusparse_csr2csc cusparseCsr2cscEx2
+#if defined(PETSC_USE_COMPLEX)
+  #if defined(PETSC_USE_REAL_SINGLE)
+    #define hipsparse_scalartype                                                             HIP_C_32F
+    #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) hipsparseCcsrgeam2(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
+    #define hipsparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
+      hipsparseCcsrgeam2_bufferSizeExt(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
+  #elif defined(PETSC_USE_REAL_DOUBLE)
+    #define hipsparse_scalartype HIP_C_64F
+    #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
+      hipsparseZcsrgeam2(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
+    #define hipsparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
+      hipsparseZcsrgeam2_bufferSizeExt(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
+  #endif /* Single or double */
+#else    /* not complex */
+  #if defined(PETSC_USE_REAL_SINGLE)
+    #define hipsparse_scalartype            HIP_R_32F
+    #define hipsparse_csr_spgeam            hipsparseScsrgeam2
+    #define hipsparse_csr_spgeam_bufferSize hipsparseScsrgeam2_bufferSizeExt
+  #elif defined(PETSC_USE_REAL_DOUBLE)
+    #define hipsparse_scalartype            HIP_R_64F
+    #define hipsparse_csr_spgeam            hipsparseDcsrgeam2
+    #define hipsparse_csr_spgeam_bufferSize hipsparseDcsrgeam2_bufferSizeExt
+  #endif /* Single or double */
+#endif   /* complex or not */
 
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)
@@ -166,18 +164,17 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
   #endif /* Single or double */
 #endif   /* complex or not */
 
-#define THRUSTINTARRAY32 thrust::device_vector<int>
-#define THRUSTINTARRAY   thrust::device_vector<PetscInt>
-#define THRUSTARRAY      thrust::device_vector<PetscScalar>
+#define THRUSTINTARRAY thrust::device_vector<PetscInt>
+#define THRUSTARRAY    thrust::device_vector<PetscScalar>
 
 /* A CSR matrix nonzero structure */
 struct CsrMatrix {
-  PetscInt          num_rows;
-  PetscInt          num_cols;
-  PetscInt          num_entries;
-  THRUSTINTARRAY32 *row_offsets;
-  THRUSTINTARRAY32 *column_indices;
-  THRUSTARRAY      *values;
+  PetscInt        num_rows;
+  PetscInt        num_cols;
+  PetscInt        num_entries;
+  THRUSTINTARRAY *row_offsets;
+  THRUSTINTARRAY *column_indices;
+  THRUSTARRAY    *values;
 };
 
 /* This is struct holding the relevant data needed to a MatSolve */
@@ -197,34 +194,28 @@ struct Mat_SeqAIJHIPSPARSETriFactorStruct {
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
 struct Mat_SeqAIJHIPSPARSETriFactors {
-  Mat_SeqAIJHIPSPARSETriFactorStruct *loTriFactorPtr;          /* pointer for lower triangular (factored matrix) on GPU */
-  Mat_SeqAIJHIPSPARSETriFactorStruct *upTriFactorPtr;          /* pointer for upper triangular (factored matrix) on GPU */
-  Mat_SeqAIJHIPSPARSETriFactorStruct *loTriFactorPtrTranspose; /* pointer for lower triangular (factored matrix) on GPU for the transpose (useful for BiCG) */
-  Mat_SeqAIJHIPSPARSETriFactorStruct *upTriFactorPtrTranspose; /* pointer for upper triangular (factored matrix) on GPU for the transpose (useful for BiCG)*/
-  THRUSTINTARRAY                     *rpermIndices;            /* indices used for any reordering */
-  THRUSTINTARRAY                     *cpermIndices;            /* indices used for any reordering */
-  THRUSTARRAY                        *workVector;
-  hipsparseHandle_t                   handle; /* a handle to the hipsparse library */
-  PetscInt                            nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  hipDeviceProp_t                     dev_prop;
-  PetscBool                           init_dev_prop;
+  THRUSTINTARRAY   *rpermIndices; /* indices used for any reordering */
+  THRUSTINTARRAY   *cpermIndices; /* indices used for any reordering */
+  THRUSTARRAY      *workVector;
+  hipsparseHandle_t handle; /* a handle to the hipsparse library */
+  PetscInt          nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
+  hipDeviceProp_t   dev_prop;
+  PetscBool         init_dev_prop;
 
-  /* csrilu0/csric0 appeared in earlier versions of AMD ROCm^{TM}, but we use it along with hipsparseSpSV,
-     which first appeared in hipsparse with ROCm-4.5.0.
-  */
-#if PETSC_PKG_HIP_VERSION_GE(4, 5, 0)
-  PetscScalar *csrVal;
-  int         *csrRowPtr, *csrColIdx; /* a,i,j of M. Using int since some hipsparse APIs only support 32-bit indices */
+  PetscScalar *csrVal, *diag;             // the diagonal D in UtDU of Cholesky
+  int         *csrRowPtr32, *csrColIdx32; // i,j of M. hipsparseShcsrilu02/ic02() etc require 32-bit indices
+  PetscInt    *csrRowPtr, *csrColIdx;     // i, j of M on device for HIP APIs that support 64-bit indices
+  PetscScalar *csrVal_h, *diag_h;         // Since LU is done on host, we prepare a factored matrix in regular csr format on host and then copy it to device
+  PetscInt    *csrRowPtr_h;               // csrColIdx_h is temporary, so it is not here
 
   /* Mixed mat descriptor types? yes, different hipsparse APIs use different types */
   hipsparseMatDescr_t   matDescr_M;
   hipsparseSpMatDescr_t spMatDescr_L, spMatDescr_U;
   hipsparseSpSVDescr_t  spsvDescr_L, spsvDescr_Lt, spsvDescr_U, spsvDescr_Ut;
-
   hipsparseDnVecDescr_t dnVecDescr_X, dnVecDescr_Y;
   PetscScalar          *X, *Y; /* data array of dnVec X and Y */
 
-  /* Mixed size types? yes */
+  /* Mixed size types? yes, CUDA-11.7.0 declared cusparseDcsrilu02_bufferSizeExt() that returns size_t but did not implement it! */
   int    factBufferSize_M; /* M ~= LU or LLt */
   size_t spsvBufferSize_L, spsvBufferSize_Lt, spsvBufferSize_U, spsvBufferSize_Ut;
   /* hipsparse needs various buffers for factorization and solve of L, U, Lt, or Ut.
@@ -239,10 +230,10 @@ struct Mat_SeqAIJHIPSPARSETriFactors {
 
   /* In MatSolveTranspose() for ILU0, we use the two flags to do on-demand solve */
   PetscBool createdTransposeSpSVDescr;    /* Have we created SpSV descriptors for Lt, Ut? */
-  PetscBool updatedTransposeSpSVAnalysis; /* Have we updated SpSV analysis with the latest L, U values? */
+  PetscBool updatedTransposeSpSVAnalysis; /* Have we ever updated (done) SpSV analysis for Lt, Ut */
+  PetscBool updatedSpSVAnalysis;          /* Have we ever updated (done) SpSV Analysis for L, U? */
 
   PetscLogDouble numericFactFlops; /* Estimated FLOPs in ILU0/ICC0 numeric factorization */
-#endif
 };
 
 struct Mat_HipsparseSpMV {
@@ -273,7 +264,7 @@ struct Mat_SeqAIJHIPSPARSE {
   Mat_SeqAIJHIPSPARSEMultStruct *mat;               /* pointer to the matrix on the GPU */
   Mat_SeqAIJHIPSPARSEMultStruct *matTranspose;      /* pointer to the matrix on the GPU (for the transpose ... useful for BiCG) */
   THRUSTARRAY                   *workVector;        /* pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
-  THRUSTINTARRAY32              *rowoffsets_gpu;    /* rowoffsets on GPU in non-compressed-row format. It is used to convert CSR to CSC */
+  THRUSTINTARRAY                *rowoffsets_gpu;    /* rowoffsets on GPU in non-compressed-row format. It is used to convert CSR to CSC */
   PetscInt                       nrows;             /* number of rows of the matrix seen by GPU */
   MatHIPSPARSEStorageFormat      format;            /* the storage format for the matrix on the device */
   PetscBool                      use_cpu_solve;     /* Use AIJ_Seq (I)LU solve */
