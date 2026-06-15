@@ -31,7 +31,6 @@ static char help[] = "----------------------------------------------------------
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmswarm.h>
-#include <petsc/private/dmimpl.h>
 
 static PetscErrorCode DMDAApplyBoundaryConditions(DM, Mat, Vec);
 

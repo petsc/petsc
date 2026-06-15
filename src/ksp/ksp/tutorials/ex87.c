@@ -1,15 +1,15 @@
+static char help[] = "Solves a saddle-point linear system using PCHPDDM.\n\n";
+
 #include <petscksp.h>
 #include <petsc/private/petscimpl.h>
-
-static char help[] = "Solves a saddle-point linear system using PCHPDDM.\n\n";
 
 static PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, IS is, Mat N, PetscMPIInt size);
 
 int main(int argc, char **args)
 {
-  Vec               b, x;            /* computed solution and RHS */
-  Mat               A[4], aux[2], S; /* linear system matrix */
-  KSP               ksp, *subksp;    /* linear solver context */
+  Vec               b, x;               /* computed solution and RHS */
+  Mat               A[4], aux[2], nest; /* linear system matrix */
+  KSP               ksp, *subksp;       /* linear solver context */
   PC                pc;
   IS                is[2];
   PetscMPIInt       size;
@@ -107,15 +107,17 @@ int main(int argc, char **args)
   flg[1] = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-all_transpose", flg + 1, NULL));
   if (flg[1] && flg[2]) {
+    Mat S;
+
     PetscCall(MatTranspose(A[1], MAT_INITIAL_MATRIX, &S));
     PetscCall(MatDestroy(A + 1));
     PetscCall(MatCreateHermitianTranspose(S, A + 1));
     PetscCall(MatDestroy(&S));
   }
   /* global coefficient matrix */
-  PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, A, &S));
+  PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, A, &nest));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(KSPSetOperators(ksp, S, S));
+  PetscCall(KSPSetOperators(ksp, nest, nest));
   PetscCall(KSPGetPC(ksp, &pc));
   /* outer preconditioner */
   PetscCall(PCSetType(pc, PCFIELDSPLIT));
@@ -144,7 +146,7 @@ int main(int argc, char **args)
     PetscCall(PetscFree(subksp));
   } else PetscCall(MatSetBlockSize(A[0], 2));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(MatCreateVecs(S, &b, &x));
+  PetscCall(MatCreateVecs(nest, &b, &x));
   if (id != 2) {
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 3 ? "D" : (id == 1 ? "B" : "A")));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
@@ -164,7 +166,7 @@ int main(int argc, char **args)
     PetscCall(KSPGetTotalIterations(ksp, iterations));
     PetscCall(KSPMonitorCancel(ksp));
     PetscCall(PetscOptionsClearValue(NULL, "-ksp_monitor"));
-    PetscCall(PetscObjectStateIncrease((PetscObject)S));
+    PetscCall(PetscObjectStateIncrease((PetscObject)nest));
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCSetUp(pc)); /* update PCFIELDSPLIT submatrices */
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
@@ -189,7 +191,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(MatDestroy(&S));
+  PetscCall(MatDestroy(&nest));
   PetscCall(MatDestroy(A + 1));
   PetscCall(MatDestroy(A + 2));
   for (PetscInt i = 0; i < 2; ++i) {

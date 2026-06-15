@@ -1,10 +1,10 @@
+static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
+
 #include <petsc.h>
 
 #if PetscDefined(HAVE_HYPRE_DEVICE)
   #include <petsc/private/petschypre.h>
 #endif
-
-static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
 
 PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 {
