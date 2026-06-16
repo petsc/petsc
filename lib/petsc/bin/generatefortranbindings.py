@@ -663,18 +663,11 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + v + '\n')
       fd.write('#endif\n')
       cnt = 0
-      givenvalue = 0
       for j in enums[i].values:
         if j.find('=') > -1:
-          if givenvalue == -1:
-            print('Some enum values for ' + i + ' are set but others are not set')
           v = j.replace(' = ',' = e' + i + '(') + ')'
-          givenvalue = 1
         else:
-          if givenvalue == 1:
-            print('Some enum values for ' + i + ' are set but others are not set')
           v = j + ' = e' + i + '(' + str(cnt) + ')'
-          givenvalue = -1
         fd.write('    ' + i + ', parameter :: ' + v + '\n')
         cnt = cnt + 1
       fd.write('\n')

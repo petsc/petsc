@@ -40,10 +40,10 @@ typedef struct _p_PetscDA *PetscDA;
           `PetscDALETKFSetLocalizationRadius()`, `PetscDALETKFSetLocalizationCoordinates()`
 E*/
 typedef enum {
-  PETSCDA_LETKF_LOC_NONE         = 0,
-  PETSCDA_LETKF_LOC_GASPARI_COHN = 1,
-  PETSCDA_LETKF_LOC_GAUSSIAN     = 2,
-  PETSCDA_LETKF_LOC_BOXCAR       = 3,
+  PETSCDA_LETKF_LOC_NONE,
+  PETSCDA_LETKF_LOC_GASPARI_COHN,
+  PETSCDA_LETKF_LOC_GAUSSIAN,
+  PETSCDA_LETKF_LOC_BOXCAR,
   PETSCDA_LETKF_LOC_NUM_TYPES
 } PetscDALETKFLocalizationType;
 
