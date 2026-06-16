@@ -63,3 +63,9 @@ routines for many other operations. See the OpenBLAS manual for more information
 
 BLIS does not bundle LAPACK with it so PETSc's configure attempts to locate a compatible system LAPACK library to use if `--download-blis` is
 selected. One can use `--download-f2cblaslapack --download-blis`. This is recommended as a portable high-performance option. It is possible if you use `--download-blis` without `--download-f2cblaslapack` the BLIS library installed will **not** be used! Instead, PETSc will link in some LAPACK implementation and the BLAS that comes with that implementation!
+
+(ch_blas_lapack_mkl_on_amd)=
+
+## Use Intel MKL's BLAS/LAPACK libraries on AMD CPUs
+
+Intel MKL may detect the CPU vendor at runtime and select less optimized code paths on non-Intel processors. A common workaround is to intercept MKL's CPU detection functions (`mkl_serv_intel_cpu_true()` or `mkl_serv_get_cpu_true()`) and force them to report that the processor is an Intel CPU. PETSc provides a macro to help users with this need. See the manual page of `PetscOverrideIntelMKLCPUVendorDetection()` for details.

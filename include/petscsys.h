@@ -2999,3 +2999,30 @@ PETSC_EXTERN PetscErrorCode PetscStackView(FILE *);
 #else
   #define PetscStackView(file) PETSC_SUCCESS
 #endif
+
+/*MC
+  PetscOverrideIntelMKLCPUVendorDetection - a macro to override Intel MKL's CPU vendor detection routines
+
+  Level: developer
+
+  Note:
+  Intel MKL may detect the CPU vendor at runtime and select less optimized code paths on non-Intel CPUs, such as AMD processors.
+  A common workaround is to intercept MKL's CPU detection functions (`mkl_serv_intel_cpu_true()` or `mkl_serv_get_cpu_true()`)
+  and force them to report that the processor is an Intel CPU, thus enabling the optimized code paths of MKL.
+
+  Put `PetscOverrideIntelMKLCPUVendorDetection();` before
+  `main()`, and then compile and link the main object file before the MKL libraries (which is typically already the case).
+  See <https://danieldk.eu/software/misc/intel-mkl-on-amd-zen>.
+
+.seealso: `PetscInitialize()`
+M*/
+#define PetscOverrideIntelMKLCPUVendorDetection() \
+  PETSC_EXTERN int mkl_serv_intel_cpu_true(void) \
+  { \
+    return 1; \
+  } \
+  typedef int (*fakeintel_fptr)(void); \
+  PETSC_EXTERN fakeintel_fptr mkl_serv_get_cpu_true(void) \
+  { \
+    return &mkl_serv_intel_cpu_true; \
+  }
