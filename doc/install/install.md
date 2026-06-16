@@ -318,7 +318,8 @@ to PETSc `configure` with `--with-blaslapack-dir=$MKLROOT` or
 `--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl`. If the above option does
 not work - one could determine the correct library list for your compilers using Intel
 [MKL Link Line Advisor] and specify with the `configure` option
-`--with-blaslapack-lib`
+`--with-blaslapack-lib`. When using Intel MKL on non-Intel CPUs, there is a
+workaround to force MKL to choose optimized code paths. See {ref}`the manual <ch_blas_lapack_mkl_on_amd>` for details.
 
 ### IBM ESSL
 
@@ -686,7 +687,7 @@ Examples that use CUDA have the suffix .cu; see `$PETSC_DIR/src/snes/tutorials/e
 In most cases you need only pass the configure option `--download-kokkos` `--download-kokkos-kernels`
 and one of `--with-cuda`, `--with-hip`, `--with-sycl`, `--with-openmp`, or `--with-pthread` (or nothing to use sequential
 [Kokkos]). See the {ref}`CUDA installation documentation <doc_config_accel_cuda>`,
-{ref}`OpenMP installation documentation <doc_config_accel_openmp>` for further reference on 
+{ref}`OpenMP installation documentation <doc_config_accel_openmp>` for further reference on
 respective requirements of some installations.
 
 Examples that use [Kokkos] at user-level have the suffix .kokkos.cxx; see

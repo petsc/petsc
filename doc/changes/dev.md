@@ -20,6 +20,7 @@
 - Add `PetscGetConfiguration()`
 - Add `PetscObjectViewSynchronizedFromOptions()`
 - Add `PetscSetMPIThreadRequiredType()`
+- Add `PetscOverrideIntelMKLCPUVendorDetection()`
 - Deprecate `PETSC_MPI_THREAD_REQUIRED`
 - Add support for running PETSc applications as MCP servers that can be accessed by LLMs
 
