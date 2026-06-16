@@ -4356,7 +4356,7 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar *array[])
 /*@C
   MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - a `MATSEQAIJ` matrix
@@ -4384,7 +4384,7 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar *array[])
 /*@C
   MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - a `MATSEQAIJ` matrix
@@ -4412,7 +4412,7 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar *array[])
 /*@C
   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - a `MATSEQAIJ` matrix
@@ -4422,7 +4422,7 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar *array[])
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayWrite()`
 @*/
 PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar *array[])
 {
@@ -4439,19 +4439,19 @@ PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar *array[])
 }
 
 /*@C
-  MatSeqAIJRestoreArrayWrite - restore the read-only access array obtained from MatSeqAIJGetArrayRead
+  MatSeqAIJRestoreArrayWrite - restore the write-only access array obtained from `MatSeqAIJGetArrayWrite()`
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameter:
-. A - a MATSEQAIJ matrix
+. A - a `MATSEQAIJ` matrix
 
   Output Parameter:
 . array - pointer to the data
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayWrite()`
 @*/
 PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar *array[])
 {

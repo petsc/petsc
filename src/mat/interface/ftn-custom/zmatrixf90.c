@@ -22,6 +22,10 @@
   #define matdenserestorecolumn_       MATDENSERESTORECOLUMN
   #define matseqaijgetarray_           MATSEQAIJGETARRAY
   #define matseqaijrestorearray_       MATSEQAIJRESTOREARRAY
+  #define matseqaijgetarrayread_       MATSEQAIJGETARRAYREAD
+  #define matseqaijrestorearrayread_   MATSEQAIJRESTOREARRAYREAD
+  #define matseqaijgetarraywrite_      MATSEQAIJGETARRAYWRITE
+  #define matseqaijrestorearraywrite_  MATSEQAIJRESTOREARRAYWRITE
   #define matgetghosts_                MATGETGHOSTS
   #define matgetrowij_                 MATGETROWIJ
   #define matrestorerowij_             MATRESTOREROWIJ
@@ -46,6 +50,10 @@
   #define matdenserestorecolumn_       matdenserestorecolumn
   #define matseqaijgetarray_           matseqaijgetarray
   #define matseqaijrestorearray_       matseqaijrestorearray
+  #define matseqaijgetarrayread_       matseqaijgetarrayread
+  #define matseqaijrestorearrayread_   matseqaijrestorearrayread
+  #define matseqaijgetarraywrite_      matseqaijgetarraywrite
+  #define matseqaijrestorearraywrite_  matseqaijrestorearraywrite
   #define matgetghosts_                matgetghosts
   #define matgetrowij_                 matgetrowij
   #define matrestorerowij_             matrestorerowij
@@ -309,6 +317,44 @@ PETSC_EXTERN void matseqaijrestorearray_(Mat *mat, F90Array1d *ptr, int *ierr PE
   *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
   *ierr = MatSeqAIJRestoreArray(*mat, &fa);
+}
+PETSC_EXTERN void matseqaijgetarrayread_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscScalar *fa;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ *)(*mat)->data;
+  PetscInt           nz = (*mat)->rmap->n ? a->i[(*mat)->rmap->n] : 0;
+
+  *ierr = MatSeqAIJGetArrayRead(*mat, &fa);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate((void *)fa, MPIU_SCALAR, 1, nz, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matseqaijrestorearrayread_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = MatSeqAIJRestoreArrayRead(*mat, &fa);
+}
+PETSC_EXTERN void matseqaijgetarraywrite_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)(*mat)->data;
+  PetscInt     nz = (*mat)->rmap->n ? a->i[(*mat)->rmap->n] : 0;
+
+  *ierr = MatSeqAIJGetArrayWrite(*mat, &fa);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, nz, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matseqaijrestorearraywrite_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = MatSeqAIJRestoreArrayWrite(*mat, &fa);
 }
 PETSC_EXTERN void matgetrowij_(Mat *B, PetscInt *shift, PetscBool *sym, PetscBool *blockcompressed, PetscInt *n, F90Array1d *ia, F90Array1d *ja, PetscBool *done, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
 {

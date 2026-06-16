@@ -213,8 +213,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     buf = 'Environmental variables'
     for key,val in os.environ.items():
-      if key.find('KEY') > -1: continue
-      buf += '\n'+str(key)+'='+str(val)
+      maskvar = ('KEY', 'TOKEN', 'PASSWORD', 'SECRET', 'CRED')
+      if any(var in str(key) for var in maskvar):
+        buf += '\n'+str(key)+'=masked'
+      else:
+        buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
     def logPrintFilesInPath(path):
       for d in path:

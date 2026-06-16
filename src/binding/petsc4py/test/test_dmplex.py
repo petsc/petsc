@@ -263,7 +263,6 @@ class BaseTestPlex:
         self.plex.createDS()
         self.plex.setUseNatural(True)
         self.plex.distribute()
-        self.plex.view()
         gv = self.plex.createGlobalVec()
         nv = self.plex.createNaturalVec()
         self.plex.globalToNaturalBegin(gv, nv)
