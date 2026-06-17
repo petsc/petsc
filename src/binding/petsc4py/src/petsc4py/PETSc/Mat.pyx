@@ -4144,6 +4144,32 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(submat.obj))
         return submat
 
+    def getMultPetscSF(self) -> SF:
+        """Return the `SF` used to communicate off-process entries in `mult`.
+
+        Not collective.
+
+        Returns the `SF` that gathers the off-process vector entries coupled to the
+        local rows for parallel matrix types such as `Type.MPIAIJ`, `Type.MPIBAIJ`,
+        `Type.MPISBAIJ`, `Type.MPIDENSE`, and `Type.MPISELL`. For `Type.MPIAIJ`,
+        `Type.MPIBAIJ`, `Type.MPIDENSE`, and `Type.MPISELL` this is the `SF` used
+        during `mult`; for `Type.MPISBAIJ` it is instead the off-process column
+        gather used by operations such as `Mat.diagonalScale`, since `mult` on that
+        type uses a separate, augmented scatter context. The `SF` is owned by the
+        matrix and is only valid while the matrix is assembled. For `Type.MPIDENSE`
+        the `SF` is built lazily on the first `mult`, so it may be `None` on an
+        assembled matrix that has not yet been multiplied.
+
+        See Also
+        --------
+        petsc.MatGetMultPetscSF
+
+        """
+        cdef SF sf = SF()
+        CHKERR(MatGetMultPetscSF(self.mat, &sf.sf))
+        CHKERR(PetscINCREF(sf.obj))
+        return sf
+
     def increaseOverlap(self, IS iset, overlap: int = 1) -> None:
         """Increase the overlap of a index set.
 

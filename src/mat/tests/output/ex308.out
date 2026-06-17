@@ -1,0 +1,1 @@
+MatGetMultPetscSF() OK (PetscSF valid, all gathered columns off-process: yes)

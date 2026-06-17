@@ -378,6 +378,15 @@ static PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetMultPetscSF_MPISELL(Mat A, PetscSF *sf)
+{
+  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
+
+  PetscFunctionBegin;
+  *sf = a->Mvctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
@@ -526,6 +535,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpisellcuda_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1857,6 +1867,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpisellcuda_C", MatConvert_MPISELL_MPISELLCUDA));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPISELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatGetMultPetscSF_C", MatGetMultPetscSF_MPISELL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPISELL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
