@@ -15,6 +15,7 @@ petsc-dist/.editorconfig
 petsc-dist/.claude
 petsc-dist/.clang-format
 petsc-dist/CLAUDE.md
+petsc-dist/AGENTS.md
 petsc-dist/configtest.mod
 petsc-dist/bitbucket-pipelines.yml
 petsc-dist/README.md
