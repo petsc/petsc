@@ -73,7 +73,6 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscInt         *cpcol_gid = NULL, *cpcol_state, *lid_cprowID, *lid_state, *lid_parent_gid = NULL;
     PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ai, Iend, my0, nremoved, gid, cpid, lidj, sgid, t1, t2, slid, nDone, nselected = 0, state;
     PetscBool        *lid_removed, isOK;
-    PetscLayout       layout;
     PetscSF           sf;
 
     if (isMPI) {
@@ -97,9 +96,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       for (kk = 0, gid = my0; kk < nloc_inner; kk++, gid++) lid_gid[kk] = gid;
       PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
       PetscCall(PetscMalloc2(num_fine_ghosts, &cpcol_gid, num_fine_ghosts, &cpcol_state));
-      PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)cMat), &sf));
-      PetscCall(MatGetLayouts(cMat, &layout, NULL));
-      PetscCall(PetscSFSetGraphLayout(sf, layout, num_fine_ghosts, NULL, PETSC_COPY_VALUES, mpimat->garray));
+      PetscCall(MatGetMultPetscSF(cMat, &sf));
       PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
       for (kk = 0; kk < num_fine_ghosts; kk++) cpcol_state[kk] = MIS_NOT_DONE;
@@ -240,7 +237,6 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       }
       // done - cleanup
       PetscCall(PetscFree2(icpcol_gid, cpcol_sel_gid));
-      PetscCall(PetscSFDestroy(&sf));
       PetscCall(PetscFree2(cpcol_gid, cpcol_state));
     }
     PetscCall(PetscFree4(lid_cprowID, lid_removed, lid_parent_gid, lid_state));
