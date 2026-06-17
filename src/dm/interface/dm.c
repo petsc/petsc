@@ -1500,7 +1500,8 @@ PetscErrorCode DMCreateColoring(DM dm, ISColoringType ctype, ISColoring *colorin
 }
 
 /*@
-  DMCreateMatrix - Gets an empty matrix for a `DM` that is most commonly used to store the Jacobian of a discrete PDE operator.
+  DMCreateMatrix - Creates a matrix of appropriate size and nonzero structure for a `DM`. The matrix is most commonly used to store the Jacobian
+  of a discrete PDE operator.
 
   Collective
 
@@ -1508,10 +1509,10 @@ PetscErrorCode DMCreateColoring(DM dm, ISColoringType ctype, ISColoring *colorin
 . dm - the `DM` object
 
   Output Parameter:
-. mat - the empty Jacobian
+. mat - the matrix
 
   Options Database Key:
-. -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill it with zeros
+. -dm_preallocate_only (true|false) - Only preallocate the matrix for `DMCreateMatrix()` and `DMCreateMassMatrix()`, but do not fill its nonzero structure
 
   Level: beginner
 
