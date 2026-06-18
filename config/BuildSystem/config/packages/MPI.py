@@ -712,6 +712,27 @@ Unable to run hostname to check the network')
     self.libraries.popLanguage()
     return 0
 
+  def configureMPIFortranCBool(self):
+    '''Determine whether MPI_C_BOOL is exposed to the Fortran MPI bindings.
+       MPI_C_BOOL is an MPI-2.2 C datatype; some MPIs (e.g. MS-MPI) declare it only in mpi.h, not
+       in mpif.h/the mpi module. If Fortran has it, define HAVE_MPI_C_BOOL_FORTRAN; otherwise PETSc
+       declares MPI_C_BOOL as a Fortran module variable populated at PetscInitialize() from C via
+       MPI_Type_c2f(MPI_C_BOOL).'''
+    if not hasattr(self.compilers, 'FC'):
+      return 0
+    self.libraries.pushLanguage('FC')
+    oldFlags = self.compilers.FPPFLAGS
+    self.compilers.FPPFLAGS += ' '+self.headers.toString(self.include)
+    self.log.write('Checking whether MPI_C_BOOL is available in the Fortran MPI bindings\n')
+    # Initialize a parameter from MPI_C_BOOL: if the name is undefined it becomes an implicit real
+    # variable, which is not a constant expression, so the compile fails. This avoids relying on
+    # implicit none placement around the include.
+    if self.libraries.check(self.lib, '', call = '#include "mpif.h"\n       integer, parameter :: petsc_test = MPI_C_BOOL'):
+      self.addDefine('HAVE_MPI_C_BOOL_FORTRAN', 1)
+    self.compilers.FPPFLAGS = oldFlags
+    self.libraries.popLanguage()
+    return 0
+
   def configureIO(self):
     '''Check for the functions in MPI/IO
        - Define HAVE_MPIIO if they are present
@@ -995,6 +1016,7 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
     self.executeTest(self.FortranMPICheck) #depends on checkMPIDistro
+    self.executeTest(self.configureMPIFortranCBool) #depends on FortranMPICheck
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIIncludeAndLib)
     self.executeTest(self.PetscArchMPICheck)
