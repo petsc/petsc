@@ -1482,6 +1482,7 @@ static PetscErrorCode MatSetOption_MPIBAIJ(Mat A, MatOption op, PetscBool flg)
     a->ht_flag = flg;
     a->ht_fact = 1.39;
     break;
+  case MAT_SPD:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
