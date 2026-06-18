@@ -321,7 +321,7 @@ fortify:
 
 checkgitclean:
 	@if ! git diff --quiet HEAD; then\
-           echo "The repository has uncommitted files, cannot run checkclangformat" ;\
+           echo "Git repository has uncommitted changes, cannot run checkclangformat" ;\
            git status -s --untracked-files=no ;\
            false;\
         fi;

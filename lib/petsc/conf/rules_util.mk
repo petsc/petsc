@@ -211,6 +211,7 @@ checkbadManualPages:
 .PHONY: branch-review
 branch-review:
 	@command -v claude >/dev/null 2>&1 || { echo "Claude Code not installed"; exit 1; }
+	@git diff --quiet HEAD || { echo "Git repository has uncommitted changes"; exit 1; }
 	@claude $(CLAUDE_OPTS) "/review-branch"
 
 # Note that the LLM could run make checkbadSource, rm, and make clangformat from a larger prompt
