@@ -1714,6 +1714,48 @@ cdef class KSP(Object):
             self.set_attr('__postsolve__', None)
             CHKERR(KSPSetPostSolve(self.ksp, NULL, NULL))
 
+    def preSolve(self, Vec rhs, Vec sol) -> None:
+        """Run the pre-solve callbacks.
+
+        Collective.
+
+        Parameters
+        ----------
+        rhs
+            Right hand side vector.
+        sol
+            Solution vector.
+
+        See Also
+        --------
+        setPreSolve, postSolve, petsc.KSPPreSolve
+
+        """
+        cdef PetscVec rhs_vec = rhs.vec
+        cdef PetscVec sol_vec = sol.vec
+        CHKERR(KSPPreSolve(self.ksp, rhs_vec, sol_vec))
+
+    def postSolve(self, Vec rhs, Vec sol) -> None:
+        """Run the post-solve callbacks.
+
+        Collective.
+
+        Parameters
+        ----------
+        rhs
+            Right hand side vector.
+        sol
+            Solution vector.
+
+        See Also
+        --------
+        setPostSolve, preSolve, petsc.KSPPostSolve
+
+        """
+        cdef PetscVec rhs_vec = rhs.vec
+        cdef PetscVec sol_vec = sol.vec
+        CHKERR(KSPPostSolve(self.ksp, rhs_vec, sol_vec))
+
     def solve(self, Vec b, Vec x) -> None:
         """Solve the linear system.
 

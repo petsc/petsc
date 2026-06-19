@@ -221,6 +221,8 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPPSolveFn(KSP ksp, Vec rhs, Vec x,
 
 PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP, KSPPSolveFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP, KSPPSolveFn *, PetscCtx);
+PETSC_EXTERN PetscErrorCode KSPPreSolve(KSP, Vec, Vec);
+PETSC_EXTERN PetscErrorCode KSPPostSolve(KSP, Vec, Vec);
 
 PETSC_EXTERN PetscErrorCode KSPSetPC(KSP, PC);
 PETSC_EXTERN PetscErrorCode KSPGetPC(KSP, PC *);

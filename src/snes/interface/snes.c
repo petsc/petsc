@@ -5679,6 +5679,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#include <petsc/private/kspimpl.h>
 /*@
   SNESGetKSP - Returns the `KSP` context for a `SNES` solver.
 
@@ -5711,8 +5712,10 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp)
     PetscCall(KSPCreate(PetscObjectComm((PetscObject)snes), &snes->ksp));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->ksp, (PetscObject)snes, 1));
 
-    PetscCall(KSPSetPreSolve(snes->ksp, KSPPreSolve_SNESEW, snes));
-    PetscCall(KSPSetPostSolve(snes->ksp, KSPPostSolve_SNESEW, snes));
+    snes->ksp->presolve_ew  = KSPPreSolve_SNESEW;
+    snes->ksp->prectx_ew    = snes;
+    snes->ksp->postsolve_ew = KSPPostSolve_SNESEW;
+    snes->ksp->postctx_ew   = snes;
 
     PetscCall(KSPMonitorSetFromOptions(snes->ksp, "-snes_monitor_ksp", "snes_preconditioned_residual", snes));
     PetscCall(PetscObjectSetOptions((PetscObject)snes->ksp, ((PetscObject)snes)->options));
