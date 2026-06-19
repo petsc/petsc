@@ -1095,39 +1095,19 @@ PetscErrorCode VecGetOwnershipRanges(Vec x, const PetscInt *ranges[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
-  VecSetOption - Sets an option for controlling a vector's behavior.
+  VecSetOption - Sets an option for controlling a vector's behavior with `VecSetValues()` and related routines
 
   Collective
 
   Input Parameters:
 + x    - the vector
-. op   - the option
+. op   - the `VecOption`
 - flag - turn the option on or off
-
-  Supported Options:
-+ `VEC_IGNORE_OFF_PROC_ENTRIES` - which causes `VecSetValues()` to ignore
-          entries destined to be stored on a separate processor. This can be used
-          to eliminate the global reduction in the `VecAssemblyBegin()` if you know
-          that you have only used `VecSetValues()` to set local elements
-. `VEC_IGNORE_NEGATIVE_INDICES` - which means you can pass negative indices
-          in ix in calls to `VecSetValues()` or `VecGetValues()`. These rows are simply
-          ignored.
-- `VEC_SUBSET_OFF_PROC_ENTRIES` - which causes `VecAssemblyBegin()` to assume that the off-process
-          entries will always be a subset (possibly equal) of the off-process entries set on the
-          first assembly which had a true `VEC_SUBSET_OFF_PROC_ENTRIES` and the vector has not
-          changed this flag afterwards. If this assembly is not such first assembly, then this
-          assembly can reuse the communication pattern setup in that first assembly, thus avoiding
-          a global reduction. Subsequent assemblies setting off-process values should use the same
-          InsertMode as the first assembly.
 
   Level: intermediate
 
-  Developer Notes:
-  The `InsertMode` restriction could be removed by packing the stash messages out of place.
-
-.seealso: [](ch_vectors), `Vec`, `VecSetValues()`
+.seealso: [](ch_vectors), `Vec`, `VecSetValues()`, `VecOption`, `MatSetOption()`
 @*/
 PetscErrorCode VecSetOption(Vec x, VecOption op, PetscBool flag)
 {

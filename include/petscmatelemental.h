@@ -27,6 +27,17 @@
   #if defined(PETSC_USE_COMPLEX)
 typedef El::Complex<PetscReal> PetscElemScalar;
   #else
+/*MC
+  PetscElemScalar - Scalar datatype used when interfacing PETSc to the Elemental dense linear algebra library through `MATELEMENTAL`
+
+  Level: developer
+
+  Note:
+  When PETSc is configured with complex scalars, `PetscElemScalar` is `El::Complex<PetscReal>` so that PETSc complex values can be passed to Elemental without conversion.
+  In the real case it is the same as `PetscScalar`.
+
+.seealso: `PetscScalar`, `MATELEMENTAL`, `MatSetType()`
+M*/
 typedef PetscScalar PetscElemScalar;
   #endif
 #endif

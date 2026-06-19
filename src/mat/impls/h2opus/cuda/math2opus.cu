@@ -1261,7 +1261,7 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg)
    Level: beginner
 
    Notes:
-   H2Opus implements hierarchical matrices in the $H^2$ flavour. It supports CPU or NVIDIA GPUs.
+   H2Opus implements hierarchical matrices in the $H^2$ flavor. It supports CPU or NVIDIA GPUs.
 
    For CPU only builds, use `./configure --download-h2opus --download-thrust` to install PETSc to use H2Opus.
    In order to run on NVIDIA GPUs, use `./configure --download-h2opus --download-magma --download-kblas`.

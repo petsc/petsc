@@ -2054,7 +2054,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
     }
   }
   PetscCall(PetscLogEventBegin(DMPLEX_DistributeOverlap, dm, 0, 0, 0));
-  /* Compute point overlap with neighbouring processes on the distributed DM */
+  /* Compute point overlap with neighboring processes on the distributed DM */
   PetscCall(PetscLogEventBegin(DMPLEX_Partition, dm, 0, 0, 0));
   PetscCall(PetscSectionCreate(newcomm, &rootSection));
   PetscCall(PetscSectionCreate(newcomm, &leafSection));

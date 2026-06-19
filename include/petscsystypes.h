@@ -36,34 +36,6 @@
   #define PETSC_ERROR_CODE_ENUM_NAME
 #endif
 
-/*E
-  PetscErrorCode - Datatype used to return PETSc error codes.
-
-  Level: beginner
-
-  Notes:
-  Virtually all PETSc functions return an error code. It is the callers responsibility to check
-  the value of the returned error code after each PETSc call to determine if any errors
-  occurred. A set of convenience macros (e.g. `PetscCall()`, `PetscCallVoid()`) are provided
-  for this purpose. Failing to properly check for errors is not supported, as errors may leave
-  PETSc in an undetermined state.
-
-  One can retrieve the error string corresponding to a particular error code using
-  `PetscErrorMessage()`.
-
-  The user can also configure PETSc with the `--with-strict-petscerrorcode` option to enable
-  compiler warnings when the returned error codes are not captured and checked. Users are
-  *heavily* encouraged to opt-in to this option, as it will become enabled by default in a
-  future release.
-
-  Developer Notes:
-  These are the generic error codes. These error codes are used in many different places in the
-  PETSc source code. The C-string versions are at defined in `PetscErrorStrings[]` in
-  `src/sys/error/err.c`, while the Fortran versions are defined in
-  `src/sys/ftn-mod/petscerror.h`. Any changes here must also be made in both locations.
-
-.seealso: `PetscErrorMessage()`, `PetscCall()`, `SETERRQ()`
-E*/
 PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
   PETSC_SUCCESS                   = 0,
   PETSC_ERR_BOOLEAN_MACRO_FAILURE = 1, /* do not use */
@@ -132,6 +104,34 @@ PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
 } PETSC_ERROR_CODE_ENUM_NAME;
 
 #if !defined(PETSC_USE_STRICT_PETSCERRORCODE)
+/*E
+  PetscErrorCode - Datatype used to return PETSc error codes.
+
+  Level: beginner
+
+  Notes:
+  Virtually all PETSc functions return an error code. It is the callers responsibility to check
+  the value of the returned error code after each PETSc call to determine if any errors
+  occurred. A set of convenience macros (e.g., `PetscCall()` or `PetscCallVoid()`) are provided
+  for this purpose. Failing to properly check for errors is not supported, as errors may leave
+  PETSc in an undetermined state.
+
+  One can retrieve the error string corresponding to a particular error code using
+  `PetscErrorMessage()`.
+
+  The user can also configure PETSc with the `--with-strict-petscerrorcode` option to enable
+  compiler warnings when the returned error codes are not captured and checked. Users are
+  *heavily* encouraged to opt-in to this option, as it will become enabled by default in a
+  future release.
+
+  Developer Notes:
+  These are the generic error codes. These error codes are used in many different places in the
+  PETSc source code. The C-string versions are at defined in `PetscErrorStrings[]` in
+  `src/sys/error/err.c`, while the Fortran versions are defined in
+  `src/sys/ftn-mod/petscerror.h`. Any changes here must also be made in both locations.
+
+.seealso: `PetscErrorMessage()`, `PetscCall()`, `SETERRQ()`
+E*/
 typedef int PetscErrorCode;
 
   /*
@@ -226,7 +226,28 @@ typedef enum {
   ENUM_DUMMY
 } PetscEnum;
 
+/*MC
+   PetscShort - PETSc datatype for the C `short` type
+
+   Level: beginner
+
+   Note:
+   Provided so that values of C type `short` can be referenced through a PETSc-style typedef. Most user code should prefer `PetscInt` for integers.
+
+.seealso: `PetscInt`, `PetscFloat`, `PetscEnum`
+M*/
 typedef short PetscShort;
+
+/*MC
+   PetscFloat - PETSc datatype for the C `float` type
+
+   Level: beginner
+
+   Note:
+   Provided so that values of C type `float` can be referenced through a PETSc-style typedef. Most user code should prefer `PetscReal` for real-valued floating-point data, which is `float` only when PETSc is configured `--with-precision=single`.
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscShort`
+M*/
 typedef float PetscFloat;
 
 #if defined(PETSC_HAVE_STDINT_H)
@@ -909,7 +930,27 @@ typedef enum {
 } PetscFileMode;
 PETSC_EXTERN const char *const PetscFileModes[];
 
+/*S
+   PetscDLHandle - dynamic library handler object returned from `PetscDLOpen()`
+
+   Level: developer
+
+.seealso: `PetscDLOpen()`, `PetscDLClose()`, `PetscDLSym()`
+S*/
 typedef void *PetscDLHandle;
+
+/*E
+   PetscDLMode - Controls when the symbols of a dynamic library opened with `PetscDLOpen()` are resolved and whether they are visible to subsequently loaded libraries
+
+   Values:
++   `PETSC_DL_DECIDE` - let PETSc choose a sensible default, lazy resolution and global visibility: `RTLD_LAZY` | `RTLD_GLOBAL`
+.   `PETSC_DL_NOW`    - resolve all symbols of the library immediately on load (corresponds to `RTLD_NOW`)
+-   `PETSC_DL_LOCAL`  - keep them private to this library (corresponds to `RTLD_LOCAL`)
+
+   Level: developer
+
+.seealso: `PetscDLOpen()`, `PetscDLClose()`, `PetscDLSym()`, `PetscDLHandle`
+E*/
 typedef enum {
   PETSC_DL_DECIDE = 0,
   PETSC_DL_NOW    = 1,
@@ -1092,11 +1133,6 @@ M*/
 /*S
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
-   Values:
-+   `PETSC_SUBCOMM_GENERAL`    - similar to `MPI_Comm_split()` each process sets the new communicator (color) they will belong to and the order within that communicator
-.   `PETSC_SUBCOMM_CONTIGUOUS` - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
--   `PETSC_SUBCOMM_INTERLACED` - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
-
    Sample Usage:
 .vb
        PetscSubcommCreate()
@@ -1104,13 +1140,6 @@ M*/
        PetscSubcommSetType(PETSC_SUBCOMM_INTERLACED);
        ccomm = PetscSubcommChild()
        PetscSubcommDestroy()
-.ve
-
-   Example:
-   Consider a communicator with six processes split into 3 subcommunicators.
-.vb
-   PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
-   PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
 .ve
 
    Level: advanced
@@ -1126,10 +1155,30 @@ M*/
    This is used in objects such as `PCREDUNDANT` to manage the subcommunicators on which the redundant computations
    are performed.
 
-.seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
+.seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`,
+          `PetscSubcommType`
 S*/
 typedef struct _n_PetscSubcomm *PetscSubcomm;
 
+/*E
+   PetscSubcommType - How a `PetscSubcomm` is constructed
+
+   Values:
++   `PETSC_SUBCOMM_GENERAL`    - similar to `MPI_Comm_split()` each process sets the new communicator (color) they will belong to and the order within that communicator
+.   `PETSC_SUBCOMM_CONTIGUOUS` - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
+-   `PETSC_SUBCOMM_INTERLACED` - each new communicator contains a set of processes equally far apart in rank from the others in that new communicator
+
+   Level: advanced
+
+   Example:
+   Consider a communicator with six processes split into 3 subcommunicators.
+.vb
+   PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0 and 1, the second rank 2 and 3, and the third rank 4 and 5 in the original ordering of the original communicator
+   PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0 and 3, the second rank 1 and 4, and the third process 2 and 5
+.ve
+
+.seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
+E*/
 typedef enum {
   PETSC_SUBCOMM_GENERAL    = 0,
   PETSC_SUBCOMM_CONTIGUOUS = 1,

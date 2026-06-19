@@ -140,8 +140,29 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t); /* PETSC
   * */
     #if defined(__HIP_PLATFORM_NVCC__)
       #include <cusolverDn.h>
+/*MC
+   hipsolverHandle_t - Opaque handle to a hipSolver context used by PETSc to call into the hipSolver dense linear algebra library
+
+   Level: developer
+
+   Note:
+   On modern ROCm releases (>= 4.5) this is the native hipSolver handle. On older releases PETSc provides a compatibility shim that aliases the handle to `cusolverDnHandle_t` on the NVIDIA HIP platform or to `rocblas_handle` on the AMD HIP platform.
+
+.seealso: `PetscHIPSOLVERGetHandle()`, `hipsolverStatus_t`, `PetscCallHIPSOLVER()`
+M*/
 typedef cusolverDnHandle_t hipsolverHandle_t;
-typedef cusolverStatus_t   hipsolverStatus_t;
+
+/*MC
+   hipsolverStatus_t - Return-status enumeration used by hipSolver to report success or failure of a hipSolver call
+
+   Level: developer
+
+   Note:
+   On modern ROCm releases (>= 4.5) this is the native hipSolver status type. On older releases PETSc provides a compatibility shim that aliases the status to `cusolverStatus_t` on the NVIDIA HIP platform or to `rocblas_status` on the AMD HIP platform. Use `PetscCallHIPSOLVER()` to check the return value.
+
+.seealso: `hipsolverHandle_t`, `PetscCallHIPSOLVER()`, `PetscHIPSolverGetErrorName()`
+M*/
+typedef cusolverStatus_t hipsolverStatus_t;
 
 /* Alias hipsolverDestroy to cusolverDnDestroy */
 static inline hipsolverStatus_t hipsolverDestroy(hipsolverHandle_t *hipsolverhandle)

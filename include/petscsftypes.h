@@ -86,15 +86,53 @@ typedef struct {
 
 #define MPIU_SF_NODE MPIU_2INT
 
+/*E
+   PetscSFDirection - Direction in which a `PetscSF` communication is performed
+
+   Values:
++   `PETSCSF_ROOT2LEAF` - data flows from roots to leaves (broadcast direction)
+-   `PETSCSF_LEAF2ROOT` - data flows from leaves to roots (reduce/fetch direction)
+
+   Level: developer
+
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFOperation`, `PetscSFBcastBegin()`, `PetscSFReduceBegin()`
+E*/
 typedef enum {
   PETSCSF_ROOT2LEAF = 0,
   PETSCSF_LEAF2ROOT = 1
 } PetscSFDirection;
+
+/*E
+   PetscSFOperation - Identifies the high-level operation being performed by a `PetscSF` communication
+
+   Values:
++   `PETSCSF_BCAST`  - broadcast from roots to leaves
+.   `PETSCSF_REDUCE` - reduce from leaves to roots with an `MPI_Op`
+-   `PETSCSF_FETCH`  - fetch-and-op: each leaf receives the current root value and contributes its own
+
+   Level: developer
+
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFDirection`, `PetscSFBcastBegin()`, `PetscSFReduceBegin()`, `PetscSFFetchAndOpBegin()`
+E*/
 typedef enum {
   PETSCSF_BCAST  = 0,
   PETSCSF_REDUCE = 1,
   PETSCSF_FETCH  = 2
 } PetscSFOperation;
+
+/*E
+   PetscSFBackend - Device backend used by a `PetscSF` to pack, unpack, and exchange data when doing device-aware communication
+
+   Values:
++   `PETSCSF_BACKEND_INVALID` - no backend has been selected (the default for a host-only SF)
+.   `PETSCSF_BACKEND_CUDA`    - use CUDA-aware pack/unpack and MPI
+.   `PETSCSF_BACKEND_HIP`     - use HIP-aware pack/unpack and MPI
+-   `PETSCSF_BACKEND_KOKKOS`  - use the Kokkos backend (which itself may dispatch to CUDA, HIP, or OpenMP)
+
+   Level: developer
+
+.seealso: [](sec_petscsf), `PetscSF`, `PetscSFLink`, `PetscSFDirection`, `PetscSFOperation`
+E*/
 /* When doing device-aware MPI, a backend refers to the SF/device interface */
 typedef enum {
   PETSCSF_BACKEND_INVALID = 0,

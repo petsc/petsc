@@ -1390,6 +1390,21 @@ PETSC_EXTERN PetscErrorCode PetscDetermineInitialFPTrap(void);
 */
 
 #define PETSCSTACKSIZE 64
+
+/*S
+  PetscStack - Fixed-size record of the chain of PETSc functions that are currently active on the calling thread;
+  maintained by `PetscFunctionBegin`/`PetscFunctionReturn` to provide meaningful PETSc-level back traces and to drive the SAWs stack viewer
+
+  Level: developer
+
+  Notes:
+  The global stack `petscstack` is maintained only when PETSc is configured `--with-debugging` and without thread safety;
+  in other configurations the stack-manipulation macros become no-ops. Inspect a stack with `PetscStackView()` or `PetscStackViewSAWs()`.
+
+  The depth is bounded by `PETSCSTACKSIZE`; deeper call chains silently saturate at that depth
+
+.seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturn()`, `PetscStackView()`, `PetscStackViewSAWs()`, `PetscMallocGetStack()`
+S*/
 typedef struct {
   const char *function[PETSCSTACKSIZE];
   const char *file[PETSCSTACKSIZE];

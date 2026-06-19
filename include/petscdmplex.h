@@ -434,6 +434,16 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceGeometry(DM, PetscInt, PetscInt, Ve
 PETSC_EXTERN PetscErrorCode DMPlexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetScale(DM, PetscUnit, PetscReal);
 
+/*S
+   JacActionCtx - Application context used by matrix-free `DMPLEX` examples to compute the action of a Jacobian at a fixed base state on a vector
+
+   Level: developer
+
+   Note:
+   Holds the `DM` defining the discretization, the base state vector `u` at which the Jacobian is linearized, an optional assembled `J` used as a preconditioner or for testing, and a pointer to the user's own application context. Created and consumed by example codes rather than the core PETSc library.
+
+.seealso: `DMPLEX`, `Mat`, `MATSHELL`, `DMPlexComputeJacobianActionByKey()`
+S*/
 typedef struct {
   DM    dm;
   Vec   u; /* The base vector for the Jacobian action J(u) x */

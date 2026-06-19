@@ -410,20 +410,23 @@ static PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-   SNESSetUp_VI - Does setup common to all VI solvers -- basically makes sure bounds have been properly set up
-   of the SNESVI nonlinear solver.
+  SNESSetUp_VI - Does setup common to all VI solvers -- basically makes sure bounds have been properly set up
+  of the SNESVI nonlinear solver.
 
-   Input Parameter:
-.  snes - the SNES context
+  Input Parameter:
+. snes - the SNES context
 
-   Application Interface Routine: SNESSetUp()
+  Level: developer
 
-   Notes:
-   For basic use of the SNES solvers, the user need not explicitly call
-   SNESSetUp(), since these actions will automatically occur during
-   the call to SNESSolve().
- */
+  Note:
+  For basic use of the SNES solvers, the user need not explicitly call
+  SNESSetUp(), since these actions will automatically occur during
+  the call to SNESSolve().
+
+.seealso: `SNESSetUp()`
+*/
 PetscErrorCode SNESSetUp_VI(SNES snes)
 {
   PetscInt i_start[3], i_end[3];

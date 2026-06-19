@@ -14,14 +14,14 @@
 
   Input Parameters:
 + cond           - Preprocessor conditional
-. result_if_true - Result of macro expansion if cond expands to 1
-- __VA_ARGS__    - Result of macro expansion if cond expands to 0
+. result_if_true - Result of macro expansion if `cond` expands to 1
+- __VA_ARGS__    - Result of macro expansion if `cond` expands to 0
 
   Level: intermediate
 
   Note:
-  cond must be defined and expand (not evaluate!) to either integer literal 0 or 1. Must have
-  at least 1 argument for __VA_ARGS__, but it may expand empty.
+  `cond` must be defined and expand (not evaluate!) to either integer literal 0 or 1. Must have
+  at least 1 argument for `__VA_ARGS__`, but it may expand empty.
 
   Example usage:
 .vb
@@ -40,20 +40,20 @@
 #define PetscIf(cond, result_if_true, ...) PetscConcat_(PETSC_IF_INTERNAL_, cond)(result_if_true, __VA_ARGS__)
 
 /*
-  PetscIfPetscDefined - Like PetscIf(), but passes cond through PetscDefined() first
+  PetscIfPetscDefined - Like `PetscIf()`, but passes `cond` through `PetscDefined()` first
 
   No Fortran Support
 
   Input Parameters:
-+ cond           - Condition passed to PetscDefined()
-. result_if_true - Result of macro expansion if PetscDefined(cond) expands to 1
-- __VA_ARGS__    - Result of macro expansion if PetscDefined(cond) expands to 0
++ cond           - Condition passed to `PetscDefined()`
+. result_if_true - Result of macro expansion if `PetscDefined(cond)` expands to 1
+- __VA_ARGS__    - Result of macro expansion if `PetscDefined(cond)` expands to 0
 
   Level: intermediate
 
   Note:
-  cond must satisfy all conditions for PetscDefined(). Must have at least 1 argument for
-  __VA_ARGS__, but it may expand empty.
+  `cond` must satisfy all conditions for `PetscDefined()`. It must have at least 1 argument for
+  `__VA_ARGS__`, but it may expand empty.
 
   Example usage:
 .vb

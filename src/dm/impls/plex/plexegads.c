@@ -3931,7 +3931,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 
     // Get Current Face Surface Area
     PetscScalar fSA, faceData[14];
-    PetscCall(EG_getMassProperties(face, faceData)); // This doesn't have a EGlite version. Will it work for EGADSlite files??  KNOWN_ISSUE
+    PetscCall(EG_getMassProperties(face, faceData)); // This doesn't have an EGlite version. Will it work for EGADSlite files??  KNOWN_ISSUE
     fSA = faceData[1];
 
     // Get Start Row in cpEquiv Matrix
@@ -4358,14 +4358,14 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
 
 #if defined(PETSC_HAVE_EGADS)
   PetscFunctionBegin;
-  // Look to see if DM has a Container with either a EGADS or EGADSlite Model
+  // Look to see if DM has a Container with either an EGADS or EGADSlite Model
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
   if (!modelObj) {
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
     islite = PETSC_TRUE;
   }
   PetscCheck(!islite, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot modify geometries defined by EGADSlite (.egadslite)! Please use another geometry file format STEP, IGES, EGADS or BRep");
-  PetscCheck(modelObj, PETSC_COMM_SELF, PETSC_ERR_SUP, "DM does not have a EGADS Geometry Model attached to it!");
+  PetscCheck(modelObj, PETSC_COMM_SELF, PETSC_ERR_SUP, "DM does not have an EGADS Geometry Model attached to it!");
 
   // Get attached EGADS model (pointer)
   PetscCall(PetscContainerGetPointer(modelObj, &model));
@@ -4716,7 +4716,7 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
 }
 
 /*@C
-  DMPlexGetGeomModelTUV - Gets the [t] (EDGES) and [u, v] (FACES) geometry parameters of DM points that are associated geometry relationships. Requires a DM with a EGADS model attached.
+  DMPlexGetGeomModelTUV - Gets the [t] (EDGES) and [u, v] (FACES) geometry parameters of DM points that are associated geometry relationships. Requires a DM with an EGADS model attached.
 
   Collective
 

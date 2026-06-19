@@ -30,7 +30,7 @@ typedef void *dlsymbol_t;
 
   Input Parameters:
 + name - name of library
-- mode - options on how to open library
+- mode - options on how to open library, see `PetscDLMode`
 
   Output Parameter:
 . handle - opaque pointer to be used with `PetscDLSym()`
@@ -38,7 +38,8 @@ typedef void *dlsymbol_t;
   Level: developer
 
 .seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
-          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`,
+          `PetscDLMode`, `PetscDLHandle`
 @*/
 PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *handle)
 {
@@ -194,7 +195,7 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 - symbol - name of symbol
 
   Output Parameter:
-. value - pointer to the function, `NULL` if not found
+. value - returns pointer to the function, `NULL` if not found
 
   Level: developer
 
@@ -204,7 +205,7 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
   systems this requires platform-specific linker flags.
 
 .seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
-          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`, `PetscDLHandle`
 @*/
 PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **value)
 {

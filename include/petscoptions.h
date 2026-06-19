@@ -8,6 +8,20 @@
 
 /* SUBMANSEC = Sys */
 
+/*E
+   PetscOptionSource - Records where a value in the PETSc options database came from, passed to options-database monitors
+
+   Values:
++   `PETSC_OPT_CODE`         - the option was set by a call from inside source code, for example `PetscOptionsSetValue()`
+.   `PETSC_OPT_COMMAND_LINE` - the option came from the command-line arguments of the program
+.   `PETSC_OPT_FILE`         - the option came from an options file processed by `PetscOptionsInsertFile()` (or its YAML counterpart)
+.   `PETSC_OPT_ENVIRONMENT`  - the option came from the `PETSC_OPTIONS` (or related) environment variable
+-   `NUM_PETSC_OPT_SOURCE`   - sentinel; equals the number of valid option sources
+
+   Level: developer
+
+.seealso: `PetscOptions`, `PetscOptionsMonitorSet()`, `PetscOptionsMonitorDefault()`
+E*/
 typedef enum {
   PETSC_OPT_CODE,
   PETSC_OPT_COMMAND_LINE,
@@ -103,6 +117,27 @@ PETSC_EXTERN PetscBool PetscOptionsPublish;
   options being handled with a PetscOptionsBegin/End()
 
 */
+/*E
+   PetscOptionType - Identifies the kind of value held by a `PetscOptionItem` inside a `PetscOptionsBegin()`/`PetscOptionsEnd()` block
+
+   Values:
++   `OPTION_INT`          - a single `PetscInt`
+.   `OPTION_BOOL`         - a single `PetscBool`
+.   `OPTION_REAL`         - a single `PetscReal`
+.   `OPTION_FLIST`        - a selection from a registered `PetscFunctionList`
+.   `OPTION_STRING`       - a single string
+.   `OPTION_REAL_ARRAY`   - an array of `PetscReal`
+.   `OPTION_SCALAR_ARRAY` - an array of `PetscScalar`
+.   `OPTION_HEAD`         - a section heading inserted with `PetscOptionsHead()`
+.   `OPTION_INT_ARRAY`    - an array of `PetscInt`
+.   `OPTION_ELIST`        - a selection from an enumerated list of strings
+.   `OPTION_BOOL_ARRAY`   - an array of `PetscBool`
+-   `OPTION_STRING_ARRAY` - an array of strings
+
+   Level: developer
+
+.seealso: `PetscOptions`, `PetscOptionItem`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsInt()`, `PetscOptionsReal()`
+E*/
 typedef enum {
   OPTION_INT,
   OPTION_BOOL,
