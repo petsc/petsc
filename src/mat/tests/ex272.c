@@ -21,12 +21,45 @@ static PetscErrorCode CreateTestMatrix(MPI_Comm comm, const char prefix[], Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Check correctness of C = P^T A P via mat-vec
+   For AIJ-type P matrix, check if factorization is possible */
+static PetscErrorCode VerifyPtAP(MPI_Comm comm, Mat A, Mat P, Mat C)
+{
+  PetscBool flg, can_chol;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
+  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MatPtAPMultEqual() failed");
+
+  PetscCall(MatGetFactorAvailable(C, MATSOLVERPETSC, MAT_FACTOR_CHOLESKY, &can_chol));
+  if (can_chol) {
+    Mat           Cshift, fact;
+    IS            perm, cperm;
+    MatFactorInfo info;
+    PetscReal     norm;
+
+    PetscCall(MatDuplicate(C, MAT_COPY_VALUES, &Cshift));
+    PetscCall(MatNorm(Cshift, NORM_INFINITY, &norm));
+    PetscCall(MatShift(Cshift, 2.0 * norm + 1.0));
+    PetscCall(MatGetFactor(Cshift, MATSOLVERPETSC, MAT_FACTOR_CHOLESKY, &fact));
+    PetscCall(MatGetOrdering(Cshift, MATORDERINGNATURAL, &perm, &cperm));
+    PetscCall(MatFactorInfoInitialize(&info));
+    info.fill = 5.0;
+    PetscCall(MatCholeskyFactorSymbolic(fact, Cshift, perm, &info));
+    PetscCall(MatCholeskyFactorNumeric(fact, Cshift, &info));
+    PetscCall(ISDestroy(&perm));
+    PetscCall(ISDestroy(&cperm));
+    PetscCall(MatDestroy(&fact));
+    PetscCall(MatDestroy(&Cshift));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  Mat       A, P, C;
-  MPI_Comm  comm;
-  PetscInt  m = 10, n = 8;
-  PetscBool flg;
+  Mat      A, P, C;
+  MPI_Comm comm;
+  PetscInt m = 10, n = 8;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -42,39 +75,33 @@ int main(int argc, char **argv)
 
   /* Initial PtAP */
   PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_INITIAL_MATRIX: MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   /* Reuse with modified A */
   PetscCall(MatScale(A, 2.0));
   PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_REUSE_MATRIX (modified A): MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   /* Reuse with modified P */
   PetscCall(MatScale(P, 0.5));
   PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_REUSE_MATRIX (modified P): MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   /* Reuse with modified A */
   PetscCall(MatScale(A, 1.1));
   PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_REUSE_MATRIX (modified A): MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   /* Reuse with modified P */
   PetscCall(MatScale(P, 3.7));
   PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_REUSE_MATRIX (modified P): MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   /* Modify both A and P */
   PetscCall(MatScale(A, 0.23));
   PetscCall(MatScale(P, 1.43));
   PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatPtAPMultEqual(A, P, C, 10, &flg));
-  PetscCheck(flg, comm, PETSC_ERR_PLIB, "MAT_REUSE_MATRIX (modified A and P): MatPtAPMultEqual() failed");
+  PetscCall(VerifyPtAP(comm, A, P, C));
 
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&P));

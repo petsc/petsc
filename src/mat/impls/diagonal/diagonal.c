@@ -944,8 +944,10 @@ static PetscErrorCode MatProductSymbolic_PtAP_Diagonal_Anytype(Mat C)
   PetscCall(MatDuplicate(ctx->PtAP, MAT_DO_NOT_COPY_VALUES, &Cwork));
   C->product = NULL;
   PetscCall(MatHeaderReplace(C, &Cwork));
-  C->product             = product;
-  C->assembled           = PETSC_TRUE;
+  C->product = product;
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   product->data          = ctx;
   product->destroy       = MatProductCtxDestroy_PtAP_Diagonal_Anytype;
   C->ops->productnumeric = MatProductNumeric_PtAP_Diagonal_Anytype;
