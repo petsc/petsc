@@ -1,5 +1,6 @@
 static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and various read/write Kokkos view APIs on the device.\n\n";
 
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <petscdevice.h>
 #include <petscmat.h>
@@ -163,7 +164,7 @@ int main(int argc, char **argv)
       nnz_AA = (PetscInt)ro_view.extent(0);
 
       PetscScalar device_sum = 0.0;
-      Kokkos::parallel_reduce("ex302k_sum", nnz_AA, KOKKOS_LAMBDA(const PetscInt k, PetscScalar &lsum) { lsum += ro_view(k); }, device_sum);
+      Kokkos::parallel_reduce("ex302k_sum", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, nnz_AA), KOKKOS_LAMBDA(const PetscInt k, PetscScalar &lsum) { lsum += ro_view(k); }, device_sum);
 
       const PetscScalar *aa_host;
       PetscCall(MatSeqAIJGetArrayRead(AA, &aa_host));
@@ -208,13 +209,14 @@ int main(int argc, char **argv)
     {
       Kokkos::View<PetscScalar *> rw_view;
       PetscCall(MatSeqAIJGetKokkosView(AA, &rw_view));
-      Kokkos::parallel_for("ex302k_scale_up", nnz_AA, KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)2.0; });
+      // It seems with SYCL, the user code has to use the same execution space as PETSc's. MatNorm() will sync the execution space before accessing data on host
+      Kokkos::parallel_for("ex302k_scale_up", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, nnz_AA), KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)2.0; });
       PetscCall(MatSeqAIJRestoreKokkosView(AA, &rw_view));
     }
     {
       Kokkos::View<PetscScalar *> rw_view;
       PetscCall(MatSeqAIJGetKokkosView(AA, &rw_view));
-      Kokkos::parallel_for("ex302k_scale_down", nnz_AA, KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)0.5; });
+      Kokkos::parallel_for("ex302k_scale_down", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, nnz_AA), KOKKOS_LAMBDA(const PetscInt k) { rw_view(k) *= (PetscScalar)0.5; });
       PetscCall(MatSeqAIJRestoreKokkosView(AA, &rw_view));
     }
 
