@@ -1495,8 +1495,7 @@ PetscErrorCode MatDestroy(Mat *A)
   `MatSetValues()` uses 0-based row and column numbers in Fortran
   as well as in C.
 
-  Negative indices may be passed in `idxm` and `idxn`, these rows and columns are
-  simply ignored. This allows easily inserting element stiffness matrices
+  Negative indices may be passed in `idxm` and `idxn`, these rows and columns are simply ignored. This allows easily inserting element stiffness matrices
   with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
 
@@ -1510,11 +1509,8 @@ PetscErrorCode MatDestroy(Mat *A)
   call MatSetValues(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
 .ve
 
-  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
-
-  Developer Note:
-  This is labeled with C so does not automatically generate Fortran stubs and interfaces
-  because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
 .seealso: [](ch_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
@@ -1596,7 +1592,8 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
   in the matrix.
 
   Fortran Note:
-  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
   Efficiency Alert:
   The routine `MatSetValuesBlocked()` may offer much better efficiency
@@ -1625,21 +1622,19 @@ PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], In
 }
 
 /*@
-  MatSetValuesRowLocal - Inserts a row (block row for `MATBAIJ` matrices) of nonzero
-  values into a matrix
+  MatSetValuesRowLocal - Inserts a row of nonzero values into a matrix
 
   Not Collective
 
   Input Parameters:
 + mat - the matrix
-. row - the (block) row to set
-- v   - a one-dimensional array that contains the values. For `MATBAIJ` they are implicitly stored as a two-dimensional array, by default in row-major order.
-        See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
+. row - the row to set
+- v   - a one-dimensional array that contains the values
 
   Level: intermediate
 
   Notes:
-  The values, `v`, are column-oriented (for the block version) and sorted
+  Currently only supported for `MATAIJ`.
 
   All the nonzero values in `row` must be provided
 
@@ -1647,11 +1642,8 @@ PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], In
 
   `row` must belong to this MPI process
 
-  Fortran Note:
-  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
-
 .seealso: [](ch_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
-          `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`, `MatSetValuesRow()`, `MatSetLocalToGlobalMapping()`
+          `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`, `MatSetValuesRow()`, `MatSetLocalToGlobalMapping()`, `MATAIJ`
 @*/
 PetscErrorCode MatSetValuesRowLocal(Mat mat, PetscInt row, const PetscScalar v[])
 {
@@ -1667,29 +1659,28 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat, PetscInt row, const PetscScalar v[]
 }
 
 /*@
-  MatSetValuesRow - Inserts a row (block row for `MATBAIJ` matrices) of nonzero
-  values into a matrix
+  MatSetValuesRow - Inserts a row of nonzero values into a matrix
 
   Not Collective
 
   Input Parameters:
 + mat - the matrix
-. row - the (block) row to set
-- v   - a logically two-dimensional (column major) array of values for  block matrices with blocksize larger than one, otherwise a one dimensional array of values
+. row - the row to set
+- v   - a one dimensional array of values
 
   Level: advanced
 
   Notes:
-  The values, `v`, are column-oriented for the block version.
+  Currently only supported for `MATAIJ`.
 
   All the nonzeros in `row` must be provided
 
-  THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually `MatSetValues()` is used.
+  The matrix must have previously had its column indices set, likely by having been assembled.
 
   `row` must belong to this process
 
 .seealso: [](ch_matrices), `Mat`, `MatSetValues()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
-          `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
+          `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MATAIJ`
 @*/
 PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
 {
@@ -1765,8 +1756,14 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
   Inspired by the structured grid interface to the HYPRE package
   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
-  Fortran Note:
-  If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  Fortran Notes:
+  If any of `idxm`, `idxn`, and `v` are scalars pass them using, for example,
+.vb
+  call MatSetValuesStencil(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
+.ve
+
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
   Efficiency Alert:
   The routine `MatSetValuesBlockedStencil()` may offer much better efficiency
@@ -1872,19 +1869,13 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
   Fortran Notes:
-  `idxm` and `idxn` should be declared as
+  If any of `idxm`, `idxn`, and `v` are scalars pass them using, for example,
 .vb
-    MatStencil idxm(4,m),idxn(4,n)
-.ve
-  and the values inserted using
-.vb
-    idxm(MatStencil_i,1) = i
-    idxm(MatStencil_j,1) = j
-    idxm(MatStencil_k,1) = k
-   etc
+  call MatSetValuesBlockedStencil(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
 .ve
 
-  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
 .seealso: [](ch_matrices), `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `MatSetValues()`, `MatSetValuesStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`,
@@ -2053,7 +2044,8 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
   call MatSetValuesBlocked(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
 .ve
 
-  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
 .seealso: [](ch_matrices), `Mat`, `MatSetBlockSize()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesBlockedLocal()`
 @*/
@@ -2414,7 +2406,7 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
 . irow - the row local indices
 . ncol - number of columns
 . icol - the column local indices
-. y    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
          See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
@@ -2431,17 +2423,18 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
   MUST be called after all calls to `MatSetValuesLocal()` have been completed.
 
   Fortran Notes:
-  If any of `irow`, `icol`, and `y` are scalars pass them using, for example,
+  If any of `irow`, `icol`, and `v` are scalars pass them using, for example,
 .vb
-  call MatSetValuesLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES, ierr)
+  call MatSetValuesLocal(mat, one, [irow], one, [icol], [v], INSERT_VALUES, ierr)
 .ve
 
-  If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
           `MatGetValuesLocal()`
 @*/
-PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar v[], InsertMode addv)
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -2462,7 +2455,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
     mat->assembled     = PETSC_FALSE;
   }
   PetscCall(PetscLogEventBegin(MAT_SetValues, mat, 0, 0, 0));
-  if (mat->ops->setvalueslocal) PetscUseTypeMethod(mat, setvalueslocal, nrow, irow, ncol, icol, y, addv);
+  if (mat->ops->setvalueslocal) PetscUseTypeMethod(mat, setvalueslocal, nrow, irow, ncol, icol, v, addv);
   else {
     PetscInt        buf[8192], *bufr = NULL, *bufc = NULL;
     const PetscInt *irowm, *icolm;
@@ -2483,7 +2476,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
       if (mat->cmap->mapping != mat->rmap->mapping || ncol != nrow || icol != irow) PetscCall(ISLocalToGlobalMappingApply(mat->cmap->mapping, ncol, icol, bufc));
       else icolm = irowm;
     } else icolm = icol;
-    PetscCall(MatSetValues(mat, nrow, irowm, ncol, icolm, y, addv));
+    PetscCall(MatSetValues(mat, nrow, irowm, ncol, icolm, v, addv));
     if (bufr != buf) PetscCall(PetscFree2(bufr, bufc));
   }
   PetscCall(PetscLogEventEnd(MAT_SetValues, mat, 0, 0, 0));
@@ -2502,7 +2495,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
 . irow - the row local indices
 . ncol - number of columns
 . icol - the column local indices
-. y    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
          See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
@@ -2520,17 +2513,18 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
   MUST be called after all calls to `MatSetValuesBlockedLocal()` have been completed.
 
   Fortran Notes:
-  If any of `irow`, `icol`, and `y` are scalars pass them using, for example,
+  If any of `irow`, `icol`, and `v` are scalars pass them using, for example,
 .vb
-  call MatSetValuesBlockedLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES, ierr)
+  call MatSetValuesBlockedLocal(mat, one, [irow], one, [icol], [v], INSERT_VALUES, ierr)
 .ve
 
-  If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
+  If `v` is a two-dimensional array make sure to first call `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE, ierr)` before using this function,
+  otherwise the transpose of `v` will seemingly be inserted in the matrix, since Fortran passes two-dimensional arrays with column orientation.
 
 .seealso: [](ch_matrices), `Mat`, `MatSetBlockSize()`, `MatSetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`,
           `MatSetValuesLocal()`, `MatSetValuesBlocked()`
 @*/
-PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar v[], InsertMode addv)
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -2563,7 +2557,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt i
     PetscCheck(cbs == icbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Different col block sizes! mat %" PetscInt_FMT ", col l2g map %" PetscInt_FMT, cbs, icbs);
   }
   PetscCall(PetscLogEventBegin(MAT_SetValues, mat, 0, 0, 0));
-  if (mat->ops->setvaluesblockedlocal) PetscUseTypeMethod(mat, setvaluesblockedlocal, nrow, irow, ncol, icol, y, addv);
+  if (mat->ops->setvaluesblockedlocal) PetscUseTypeMethod(mat, setvaluesblockedlocal, nrow, irow, ncol, icol, v, addv);
   else {
     PetscInt        buf[8192], *bufr = NULL, *bufc = NULL;
     const PetscInt *irowm, *icolm;
@@ -2584,7 +2578,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt i
       if (mat->cmap->mapping != mat->rmap->mapping || ncol != nrow || icol != irow) PetscCall(ISLocalToGlobalMappingApplyBlock(mat->cmap->mapping, ncol, icol, bufc));
       else icolm = irowm;
     } else icolm = icol;
-    PetscCall(MatSetValuesBlocked(mat, nrow, irowm, ncol, icolm, y, addv));
+    PetscCall(MatSetValuesBlocked(mat, nrow, irowm, ncol, icolm, v, addv));
     if (bufr != buf) PetscCall(PetscFree2(bufr, bufc));
   }
   PetscCall(PetscLogEventEnd(MAT_SetValues, mat, 0, 0, 0));
