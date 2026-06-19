@@ -496,7 +496,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// used in GEO
+/* Computes the symbolic part of Gmat1^T * Gmat1 */
 PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat *Gmat2)
 {
   const char *prefix;
@@ -1084,7 +1084,7 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 }
 
 /*@
-  PCGAMGSetRepartition - Repartition the degrees of freedom across the processors on the coarser grids when reducing the number of MPI ranks to use
+  PCGAMGSetRepartition - Repartition the degrees of freedom across the processors on the coarser grids when reducing the number of MPI processes used
 
   Collective
 
@@ -1098,7 +1098,7 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
   Level: intermediate
 
   Note:
-  This will generally improve the loading balancing of the work on each level so the solves will be faster but it adds to the
+  This will generally improve the load balance of the work on each level so the solves will be faster but it increases the
   preconditioner setup time.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
@@ -1122,7 +1122,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 }
 
 /*@
-  PCGAMGSetUseSAEstEig - Use the eigen estimate from smoothed aggregation for the Chebyshev smoother during the solution process
+  PCGAMGSetUseSAEstEig - Use the eigenvalue estimate from smoothed aggregation for the Chebyshev smoother during the solution process
 
   Collective
 
@@ -1141,7 +1141,6 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
   If `KSPCHEBYSHEV` with `PCJACOBI` (diagonal) preconditioning is used for smoothing on the finest level, then the eigenvalue estimates
   can be reused during the solution process.
   This option is only used when the smoother uses `PCJACOBI`, and should be turned off when a different `PCJacobiType` is used.
-  It became default in PETSc 3.17.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `PCGAMGSetRecomputeEstEig()`
 @*/
@@ -1164,7 +1163,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool b)
 }
 
 /*@
-  PCGAMGSetRecomputeEstEig - Set flag for Chebyshev smoothers to recompute the eigen estimates when a new matrix is used
+  PCGAMGSetRecomputeEstEig - Set flag for Chebyshev smoothers to recompute the eigenvalue estimates when a new matrix is used
 
   Collective
 
@@ -1173,12 +1172,12 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool b)
 - b  - flag, default is `PETSC_TRUE`
 
   Options Database Key:
-. -pc_gamg_recompute_esteig (true|false) - use the eigen estimate
+. -pc_gamg_recompute_esteig (true|false) - recompute the eigenvalue estimate
 
   Level: advanced
 
   Note:
-  If the matrix changes only slightly in a new solve using ``PETSC_FALSE`` will save time in the setting up of the preconditioner
+  If the matrix changes only slightly in a new solve using `PETSC_FALSE` will save time in setting up the preconditioner
   and may not affect the solution time much.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
@@ -1240,7 +1239,7 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc, PetscReal emax, PetscReal
 }
 
 /*@
-  PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding a `PCGAMG` algebraic multigrid preconditioner
+  PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding a `PCGAMG` algebraic multigrid preconditioner when the matrix has changed
 
   Collective
 
@@ -1279,7 +1278,7 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 
 /*@
   PCGAMGASMSetUseAggs - Have the `PCGAMG` smoother on each level use `PCASM` where the aggregates defined by the coarsening process are
-  the subdomains for the additive Schwarz preconditioner used as the smoother
+  used as the subdomains for the additive Schwarz preconditioner smoother
 
   Collective
 
@@ -1325,7 +1324,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 - flg - `PETSC_TRUE` to not force coarse grid onto one processor
 
   Options Database Key:
-. -pc_gamg_parallel_coarse_grid_solver - use a parallel coarse grid solver
+. -pc_gamg_parallel_coarse_grid_solver (true|false) - use a parallel coarse grid solver
 
   Level: intermediate
 
@@ -1359,7 +1358,7 @@ static PetscErrorCode PCGAMGSetParallelCoarseGridSolve_GAMG(PC pc, PetscBool flg
 - flg - `PETSC_TRUE` to pin coarse grids to the CPU
 
   Options Database Key:
-. -pc_gamg_cpu_pin_coarse_grids - pin the coarse grids to the CPU
+. -pc_gamg_cpu_pin_coarse_grids (true|false) - pin the coarse grids to the CPU
 
   Level: intermediate
 
@@ -1393,7 +1392,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 - flg - `PCGAMGLayoutType` type, either `PCGAMG_LAYOUT_COMPACT` or `PCGAMG_LAYOUT_SPREAD`
 
   Options Database Key:
-. -pc_gamg_coarse_grid_layout_type - place the coarse grids with natural ordering
+. -pc_gamg_coarse_grid_layout_type (compact|spread) - place the coarse grids with natural ordering
 
   Level: intermediate
 
@@ -1468,9 +1467,6 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
   Level: intermediate
 
-  Developer Notes:
-  Should be called `PCGAMGSetMaximumNumberlevels()` and possible be shared with `PCMG`
-
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`
 @*/
 PetscErrorCode PCGAMGASMSetHEM(PC pc, PetscInt n)
@@ -1498,23 +1494,28 @@ static PetscErrorCode PCGAMGASMSetHEM_GAMG(PC pc, PetscInt n)
 
   Input Parameters:
 + pc - the preconditioner context
-. v  - array of threshold values for finest n levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
+. v  - array of threshold values for finest `n` levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
 - n  - number of threshold values provided in array
 
   Options Database Key:
-. -pc_gamg_threshold threshold - the threshold to drop edges
+. -pc_gamg_threshold l0,l1,... - the thresholds to drop edges
 
   Level: intermediate
 
   Notes:
-  Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
-  Before coarsening or aggregating the graph, `PCGAMG` removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
+  Before coarsening or aggregating the graph, `PCGAMG` removes small values from the graph with this threshold, reducing the coupling
+  in the graph and yielding a different (perhaps better) coarser set of points.
+
+  Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening)
+  and thereby reduces the complexity of the coarse grids, and generally results in slower solver convergence rates.
 
   If `n` is less than the total number of coarsenings (see `PCGAMGSetNlevels()`), then threshold scaling (see `PCGAMGSetThresholdScale()`) is used for each successive coarsening.
   In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
-  If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
 
-.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetMinDegreeOrderingMISk()`, `PCGAMGSetThresholdScale()`
+  If `n` is greater than the total number of levels, the excess entries in threshold are ignored.
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`,
+          `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetThresholdScale()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1538,7 +1539,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 }
 
 /*@
-  PCGAMGSetRankReductionFactors - Set a manual schedule for MPI rank reduction on coarse grids
+  PCGAMGSetRankReductionFactors - Set a manual schedule for MPI process reduction on coarse grids
 
   Collective
 
@@ -1548,7 +1549,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 - n  - number of values provided in array
 
   Options Database Key:
-. -pc_gamg_rank_reduction_factors factors - provide the schedule
+. -pc_gamg_rank_reduction_factors r0,r1,... - provide the schedule
 
   Level: intermediate
 
@@ -1873,28 +1874,30 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
   Options Database Keys:
 + -pc_gamg_type type (agg|geo|classical)     - see `PCGAMGType`
 . -pc_gamg_repartition  (true|false)         - repartition the degrees of freedom across the coarse grids as they are determined
-. -pc_gamg_asm_use_agg (true|false)          - use the aggregates from the coasening process to defined the subdomains on each level for the `PCASM` smoother.
-                                               That is using `-mg_levels_pc_type asm`
-. -pc_gamg_process_eq_limit limit            - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around limit
+. -pc_gamg_asm_use_agg (true|false)          - use the aggregates from the coarsening process to define the subdomains on each level for the `PCASM` smoother,
+                                               this also forces using `-mg_levels_pc_type asm`
+. -pc_gamg_process_eq_limit limit            - `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around limit
                                                equations on each process that has degrees of freedom
-. -pc_gamg_coarse_eq_limit limit             - Set maximum number of equations on coarsest grid to aim for.
+. -pc_gamg_coarse_eq_limit limit             - set maximum number of equations on coarsest grid to aim for
 . -pc_gamg_reuse_interpolation (true|false)  - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
-. -pc_gamg_threshold l0,l1,...               - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
-- -pc_gamg_threshold_scale scale             - Scaling of threshold on each coarser grid if not specified
+. -pc_gamg_threshold l0,l1,...               - before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
+- -pc_gamg_threshold_scale scale             - scaling of threshold on each coarser grid if not specified
 
   Options Database Keys for Aggregation:
 + -pc_gamg_agg_nsmooths nsmooth                       - number of smoothing steps to use with smooth aggregation to construct prolongation
-. -pc_gamg_aggressive_coarsening n                    - number of aggressive coarsening (MIS-2) levels from finest.
-. -pc_gamg_aggressive_square_graph (true|false)       - Use square graph $ A^T A$ for coarsening. Otherwise, MIS-k (k=2) is used, see `PCGAMGMISkSetAggressive()`.
-. -pc_gamg_mis_k_minimum_degree_ordering (true|false) - Use minimum degree ordering in greedy MIS algorithm
-. -pc_gamg_pc_gamg_asm_hem_aggs n                      - Number of HEM aggregation steps for `PCASM` smoother
-- -pc_gamg_aggressive_mis_k n                          - Number (k) distance in MIS coarsening (>2 is 'aggressive')
+. -pc_gamg_aggressive_coarsening n                    - number of aggressive coarsening (MIS-2 or square graph) levels from finest.
+. -pc_gamg_aggressive_square_graph (true|false)       - use square graph ($A^T A$) for coarsening. Otherwise, MIS-k (k=2) is used, see `PCGAMGMISkSetAggressive()`
+. -pc_gamg_square[_i]_mat_product_algorithm algorithm - `MatProductAlgorithm` to use when squaring the matrix for aggressive coarsening (on level i < `n`)
+. -pc_gamg_mis_k_minimum_degree_ordering (true|false) - use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_asm_hem_aggs n                             - number of HEM aggregation steps for `PCASM` smoother
+- -pc_gamg_aggressive_mis_k n                         - number (k) distance in MIS coarsening (>2 is 'aggressive')
 
   Options Database Keys for Multigrid:
-+ -pc_mg_cycle_type (v|w)                              - see `PCMGSetCycleType()`
-. -pc_mg_distinct_smoothup                             - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
-. -pc_mg_type (additive|multiplicative|full|kascade)   - see `PCMGType`
-- -pc_mg_levels levels                                 - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
++ -pc_mg_cycle_type (v|w)                            - see `PCMGSetCycleType()`
+. -pc_mg_distinct_smoothup                           - configure the up and down (pre and post) smoothers separately, see `PCMGSetDistinctSmoothUp()`
+. -pc_mg_type (additive|multiplicative|full|kaskade) - see `PCMGType`
+- -pc_mg_levels levels                               - number of levels of multigrid to use; `PCGAMG` has a heuristic to determine the number of levels so
+                                                       this is not usually used with `PCGAMG`
 
   Level: intermediate
 
