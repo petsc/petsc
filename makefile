@@ -320,22 +320,22 @@ fortify:
 #********* Rules for running clangformat ************************************************************************************************************
 
 checkgitclean:
-	@if ! git diff --quiet; then\
-           echo "The repository has uncommitted files, cannot run checkclangformat" ;\
+	@if ! git diff --quiet HEAD; then\
+           echo "Git repository has uncommitted changes, cannot run checkclangformat" ;\
            git status -s --untracked-files=no ;\
            false;\
         fi;
 
 # Check that all the C/C++ source code in the repository satisfies the .clang_format
 checkclangformat: checkclangformatversion checkgitclean clangformat
-	@if ! git diff --quiet; then\
+	@if ! git diff --quiet HEAD; then\
           printf "The current commit has C/C++ source code formatting problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}"  ]; then\
-            printf "Please run 'git diff' to check\n";\
-            git diff --stat;\
+            printf "Please run 'git diff HEAD' to check\n";\
+            git diff --stat HEAD;\
           else\
-            git diff --patch-with-stat >  ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch;\
-            git diff --patch-with-stat --color=always | head -1000;\
+            git diff --patch-with-stat HEAD >  ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch;\
+            git diff --patch-with-stat --color=always HEAD | head -1000;\
             if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch` -gt 1000 ]; then\
               printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch (in CI artifacts) for all changes\n";\
             fi;\
@@ -345,14 +345,14 @@ checkclangformat: checkclangformatversion checkgitclean clangformat
 
 # Check that all the Fortran source code in the repository satisfies the fprettify format
 checkfprettifyformat: checkgitclean fprettify
-	@if ! git diff --quiet; then\
+	@if ! git diff --quiet HEAD; then\
           printf "The current commit has Fortran source code formatting problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}" ]; then\
-            printf "Please run 'git diff' to check\n";\
-            git diff --stat;\
+            printf "Please run 'git diff HEAD' to check\n";\
+            git diff --stat HEAD;\
           else\
-            git diff --patch-with-stat > ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch;\
-            git diff --patch-with-stat --color=always | head -1000;\
+            git diff --patch-with-stat HEAD > ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch;\
+            git diff --patch-with-stat --color=always HEAD | head -1000;\
             if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch` -gt 1000 ]; then\
               printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch (in CI artifacts) for all changes\n";\
             fi;\
@@ -367,14 +367,14 @@ shellcheck:
 # Cannot use the following line since it encounters many problems we will likely not fix
 #   shellcheck --format=tty $$(git ls-files \*.sh) $$(file lib/petsc/bin/* lib/petsc/bin/maint/* | grep "/usr/bin/env sh" | cut -d: -f1)
 checkshellcheck: shellcheck
-	@if ! git diff --quiet; then\
+	@if ! git diff --quiet HEAD; then\
           printf "The current commit has shellcheck problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}" ]; then\
-            printf "Please run 'git diff' to check\n";\
-            git diff --stat;\
+            printf "Please run 'git diff HEAD' to check\n";\
+            git diff --stat HEAD;\
           else\
-            git diff --patch-with-stat > ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch;\
-            git diff --patch-with-stat --color=always | head -1000;\
+            git diff --patch-with-stat HEAD > ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch;\
+            git diff --patch-with-stat --color=always HEAD | head -1000;\
             if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch` -gt 1000 ]; then\
               printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkshellcheck.patch (in CI artifacts) for all changes\n";\
             fi;\
