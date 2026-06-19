@@ -28,13 +28,10 @@ static char help[] = "Krylov methods to solve u''  = f in parallel with periodic
 
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscsnes.h>
-#include <petsc/private/kspimpl.h>
+#include <petscksp.h>
 
-PetscBool symmetric = PETSC_TRUE;
-
-PetscErrorCode FormMatrix(Mat, void *);
-PetscErrorCode FormRightHandSide(Vec, void *);
+PetscErrorCode FormMatrix(Mat, DM, PetscBool);
+PetscErrorCode FormRightHandSide(Vec, DM);
 
 int main(int argc, char **argv)
 {
@@ -44,6 +41,7 @@ int main(int argc, char **argv)
   Vec          x, r; /* vectors */
   PetscInt     M = 10;
   MatNullSpace constants, nconstants;
+  PetscBool    symmetric = PETSC_TRUE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -109,7 +107,7 @@ int main(int argc, char **argv)
     PetscCall(VecDestroy(&n));
   }
   PetscCall(MatSetNullSpace(J, constants));
-  PetscCall(FormMatrix(J, da));
+  PetscCall(FormMatrix(J, da, symmetric));
 
   PetscCall(KSPSetOperators(ksp, J, J));
 
@@ -133,9 +131,8 @@ int main(int argc, char **argv)
      Since MatSetNullSpace() is called and the matrix is symmetric; the Krylov method automatically removes this
      portion of the right-hand side before solving the linear system.
 */
-PetscErrorCode FormRightHandSide(Vec f, PetscCtx ctx)
+PetscErrorCode FormRightHandSide(Vec f, DM da)
 {
-  DM           da = (DM)ctx;
   PetscScalar *ff;
   PetscInt     i, M, xs, xm;
   PetscReal    h;
@@ -163,12 +160,11 @@ PetscErrorCode FormRightHandSide(Vec f, PetscCtx ctx)
   PetscCall(DMDAVecRestoreArray(da, f, &ff));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------------------- */
-PetscErrorCode FormMatrix(Mat jac, PetscCtx ctx)
+
+PetscErrorCode FormMatrix(Mat jac, DM da, PetscBool symmetric)
 {
   PetscScalar A[3];
   PetscInt    i, M, xs, xm;
-  DM          da = (DM)ctx;
   MatStencil  row, cols[3];
   PetscReal   h;
 

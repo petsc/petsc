@@ -1,4 +1,4 @@
-#include <petsc/private/taoimpl.h>
+#include <petsctao.h>
 
 typedef struct {
   PetscInt  n;            /*  Number of variables */
