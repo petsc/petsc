@@ -469,12 +469,13 @@ int main(int argc, char **argv)
       args: -petscda_letkf_localization_type none
 
   testset:
-    requires: kokkos_kernels !complex
+    requires: kokkos_kernels !complex !sycl
     args: -steps 20 -burn 5 -obs_freq 1 -obs_error 1 -petscda_ensemble_size 5 -petscda_type letkf -mat_type aijkokkos -dm_vec_type kokkos
 
     test:
       nsize: 3
       suffix: letkf
+      # oneapi::mkl::lapack::syevd: invalid argument: On entry, parameter 8 had an illegal value
       args: -info :vec -petscda_letkf_localization_radius 5.0
 
     test:
