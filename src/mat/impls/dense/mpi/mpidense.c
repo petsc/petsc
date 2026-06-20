@@ -1063,7 +1063,7 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscCall(MatNorm(mdn->A, type, nrm));
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
-    } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for two norm");
+    } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Unsupported norm type %s", NormTypes[type]);
   }
   PetscCall(MatDenseRestoreArrayRead(mdn->A, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
