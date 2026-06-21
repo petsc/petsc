@@ -328,9 +328,7 @@ static PetscErrorCode KSPIDRSetS_IDR(KSP ksp, PetscInt s)
 
   PetscFunctionBegin;
   PetscCheck(s >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Shadow space dimension s must be >= 1, got %" PetscInt_FMT, s);
-  if (ksp->setupstage != KSP_SETUP_NEW) idr->s = s;
-  else if (idr->s != s) {
-    PetscCall(KSPReset_IDR(ksp));
+  if (idr->s != s) {
     idr->s          = s;
     ksp->setupstage = KSP_SETUP_NEW;
   }
