@@ -47,10 +47,8 @@ static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 static PetscErrorCode KSPSetUp_IDR(KSP ksp)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
-  Mat      A;
 
   PetscFunctionBegin;
-  PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(KSPSetWorkVecs(ksp, 3 + 3 * idr->s));
   idr->r  = ksp->work[0];
   idr->v  = ksp->work[1];
