@@ -68,7 +68,7 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
    KSPSolve_IDR - IDR(s) biorthogonal solve kernel.
 
    This implements the biorthogonal IDR(s) recurrence (Algorithm 2 of
-   {cite}`van2011idr`) applied to the
+   {cite}`gijzen:2011`) applied to the
    preconditioned operator A' (= K^{-1}A for left, AK^{-1} for right
    preconditioning, evaluated by KSP_PCApplyBAorAB()). Working on A'
    keeps x and r consistent through left/right preconditioning and makes
@@ -554,7 +554,7 @@ PetscErrorCode KSPIDRGetRandom(KSP ksp, PetscRandom *rand)
 
 /*MC
   KSPIDR - IDR(s): Induced Dimension Reduction method for general nonsymmetric
-  linear systems {cite}`van2011idr`.
+  linear systems {cite}`gijzen:2011`.
 
   Options Database Keys:
 + -ksp_idr_s s        - shadow space dimension (default 4); larger `s` improves convergence at the cost of `s` additional vectors

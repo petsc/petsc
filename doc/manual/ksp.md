@@ -372,7 +372,7 @@ KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
   * - Enhanced BiCGSTAB(L)
     - ``KSPBCGSL``
     - ``bcgsl``
-  * - IDR(s) :cite:`van2011idr`
+  * - IDR(s) :cite:`gijzen:2011`
     - ``KSPIDR``
     - ``idr``
   * - Minimal Residual Method :cite:`paige.saunders:solution`
