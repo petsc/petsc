@@ -16,7 +16,6 @@ PC Object: 2 MPI processes
           type: strumpack
           rows=56, cols=56
           package used to perform factorization: strumpack
-          total: nonzeros=0, allocated nonzeros=0
             STRUMPACK sparse solver
               Compression type BLR
               Reordering GEOMETRIC
