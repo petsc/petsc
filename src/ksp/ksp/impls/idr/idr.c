@@ -51,12 +51,14 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(KSPGetOperators(ksp, &A, NULL));
-  PetscCall(MatCreateVecs(A, NULL, &idr->r));
-  PetscCall(VecDuplicateVecs(idr->r, idr->s, &idr->GG));
-  PetscCall(VecDuplicateVecs(idr->r, idr->s, &idr->UU));
-  PetscCall(VecDuplicateVecs(idr->r, idr->s, &idr->PP));
-  PetscCall(VecDuplicate(idr->r, &idr->v));
-  PetscCall(VecDuplicate(idr->r, &idr->t));
+  PetscCall(KSPSetWorkVecs(ksp, 3 + 3 * idr->s));
+  idr->r  = ksp->work[0];
+  idr->v  = ksp->work[1];
+  idr->t  = ksp->work[2];
+  idr->GG = ksp->work + 3;
+  idr->UU = ksp->work + 3 + idr->s;
+  idr->PP = ksp->work + 3 + 2 * idr->s;
+  if (idr->M) PetscCall(PetscFree3(idr->M, idr->f, idr->c));
   PetscCall(PetscMalloc3(idr->s * idr->s, &idr->M, idr->s, &idr->f, idr->s, &idr->c));
   PetscCall(KSPIDRInitShadowSpace_IDR(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -245,23 +247,14 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
 }
 
 /*
-   KSPReset_IDR - Free all work vectors and scalar arrays allocated by
-   KSPSetUp_IDR. Safe to call when Setup has never been called (all
-   pointers are NULL from PetscNew).
+   KSPReset_IDR - Free work vectors not handled with KSPSetWorkVecs().
 */
 static PetscErrorCode KSPReset_IDR(KSP ksp)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDestroy(&idr->r));
-  PetscCall(VecDestroy(&idr->v));
-  PetscCall(VecDestroy(&idr->t));
   PetscCall(VecDestroy(&idr->guess));
-  PetscCall(VecDestroyVecs(idr->s, &idr->GG));
-  PetscCall(VecDestroyVecs(idr->s, &idr->UU));
-  PetscCall(VecDestroyVecs(idr->s, &idr->PP));
-  PetscCall(PetscFree3(idr->M, idr->f, idr->c));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -275,6 +268,7 @@ static PetscErrorCode KSPDestroy_IDR(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_IDR(ksp));
   PetscCall(PetscRandomDestroy(&idr->rand));
+  PetscCall(PetscFree3(idr->M, idr->f, idr->c));
   PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRSetS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPIDRGetS_C", NULL));
