@@ -569,6 +569,42 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  VecSetStdBasis - Set the vector to the i-th standard basis vector
+
+  Logically Collective
+
+  Input Parameters:
++ x - the vector
+- i - the component to be set to one
+
+  Level: beginner
+
+  Note:
+  This function sets x[i] = 1, and 0 otherwise.
+
+.seealso: [](ch_vectors), `Vec`, `VecSetValues()`
+@*/
+PetscErrorCode VecSetStdBasis(Vec x, PetscInt i)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(x, i, 2);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (x->ops->setstdbasis) PetscUseTypeMethod(x, setstdbasis, i);
+  else {
+    PetscInt st, en;
+
+    PetscCall(VecGetOwnershipRange(x, &st, &en));
+    PetscCall(VecSet(x, 0.));
+    if (st <= i && i < en) PetscCall(VecSetValue(x, i, 1.0, INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(x));
+    PetscCall(VecAssemblyEnd(x));
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecAXPYAsync_Private(Vec y, PetscScalar alpha, Vec x, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
@@ -595,6 +631,7 @@ PetscErrorCode VecAXPYAsync_Private(Vec y, PetscScalar alpha, Vec x, PetscDevice
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@
   VecAXPY - Computes `y = alpha x + y`.
 

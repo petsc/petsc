@@ -1,14 +1,13 @@
-static char help[] = "Tests VecMax() with index.\n\
+static char help[] = "Tests VecMax() with index and VecSetStdBasis()\n\
   -n <length> : vector length\n\n";
 
 #include <petscvec.h>
 
 int main(int argc, char **argv)
 {
-  PetscInt    n = 5, idx;
-  PetscReal   value, value2;
-  Vec         x;
-  PetscScalar one = 1.0;
+  PetscInt  n = 6, idx;
+  PetscReal value, value2;
+  Vec       x;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -18,12 +17,18 @@ int main(int argc, char **argv)
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetSizes(x, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetStdBasis(x, n / 2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "STD %" PetscInt_FMT "\n", n / 2));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(VecSet(x, one));
+  PetscCall(VecSet(x, 2.0));
   PetscCall(VecSetValue(x, 0, 0.0, INSERT_VALUES));
-  PetscCall(VecSetValue(x, n - 1, 2.0, INSERT_VALUES));
+  PetscCall(VecSetValue(x, 1, -1.0, INSERT_VALUES));
+  PetscCall(VecSetValue(x, n - 2, 0.0, INSERT_VALUES));
+  PetscCall(VecSetValue(x, n - 1, -1.0, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Vector for min/max\n"));
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecMax(x, &idx, &value));
   PetscCall(VecMax(x, NULL, &value2));

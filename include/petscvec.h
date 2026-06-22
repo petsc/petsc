@@ -327,6 +327,7 @@ PETSC_EXTERN PetscErrorCode VecCopy(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecSetRandom(Vec, PetscRandom);
 PETSC_EXTERN PetscErrorCode VecSetRandomGaussian(Vec, PetscRandom, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode VecSet(Vec, PetscScalar);
+PETSC_EXTERN PetscErrorCode VecSetStdBasis(Vec, PetscInt);
 PETSC_DEPRECATED_FUNCTION(3, 22, 0, "VecFlag()", ) PetscErrorCode VecSetInf(Vec);
 PETSC_EXTERN PetscErrorCode VecSwap(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPY(Vec, PetscScalar, Vec);

@@ -106,6 +106,7 @@ struct _VecOps {
   PetscErrorCode (*setvaluescoo)(Vec, const PetscScalar[], InsertMode);
   PetscErrorCode (*errorwnorm)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
   PetscErrorCode (*maxpby)(Vec, PetscInt, const PetscScalar *, PetscScalar, Vec *); /* y = beta y + alpha[j] x[j] */
+  PetscErrorCode (*setstdbasis)(Vec, PetscInt);
 };
 
 #if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))
@@ -438,6 +439,7 @@ static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, Pet
 #define VEC_SqrtAbs_ASYNC_FN_NAME         VEC_ASYNC_FN_NAME("SqrtAbs")
 #define VEC_Swap_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("Swap")
 #define VEC_WAXPY_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("WAXPY")
+#define VEC_SetStdBasis_ASYNC_FN_NAME     VEC_ASYNC_FN_NAME("SetStdBasis")
 
 PETSC_INTERN PetscErrorCode VecAbsAsync_Private(Vec, PetscDeviceContext);
 PETSC_INTERN PetscErrorCode VecAXPBYAsync_Private(Vec, PetscScalar, PetscScalar, Vec, PetscDeviceContext);

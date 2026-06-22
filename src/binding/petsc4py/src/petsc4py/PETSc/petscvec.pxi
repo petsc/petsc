@@ -157,6 +157,7 @@ cdef extern from * nogil:
     PetscErrorCode VecLog(PetscVec)
     PetscErrorCode VecSqrtAbs(PetscVec)
     PetscErrorCode VecAbs(PetscVec)
+    PetscErrorCode VecSetStdBasis(PetscVec, PetscInt)
 
     PetscErrorCode VecStrideMin(PetscVec, PetscInt, PetscInt*, PetscReal*)
     PetscErrorCode VecStrideMax(PetscVec, PetscInt, PetscInt*, PetscReal*)
