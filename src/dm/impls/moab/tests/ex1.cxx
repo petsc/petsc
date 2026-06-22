@@ -45,7 +45,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   moab::Tag        ltog_tag = NULL;
   moab::Range      range;
   PetscInt         tagsize;
-  moab::ErrorCode  merr;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(user->createMeshEvent, 0, 0, 0, 0));
@@ -55,51 +54,41 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   // load file and get entities of requested or max dimension
   if (strlen(user->filename) > 0) {
-    merr = iface->load_file(user->filename);
-    MBERRNM(merr);
+    PetscCallMOAB(iface->load_file(user->filename));
     std::cout << "Read mesh from file " << user->filename << std::endl;
   } else {
     // make a simple structured mesh
     moab::ScdInterface *scdi;
-    merr = iface->query_interface(scdi);
+    PetscCallMOAB(iface->query_interface(scdi));
 
     moab::ScdBox *box;
-    merr = scdi->construct_box(moab::HomCoord(0, 0, 0), moab::HomCoord(5, 5, 5), NULL, 0, box);
-    MBERRNM(merr);
+    PetscCallMOAB(scdi->construct_box(moab::HomCoord(0, 0, 0), moab::HomCoord(5, 5, 5), NULL, 0, box));
     user->dim = 3;
-    merr      = iface->set_dimension(user->dim);
-    MBERRNM(merr);
+    PetscCallMOAB(iface->set_dimension(user->dim));
     std::cout << "Created structured 5x5x5 mesh." << std::endl;
   }
   if (-1 == user->dim) {
     moab::Range tmp_range;
-    merr = iface->get_entities_by_handle(0, tmp_range);
-    MBERRNM(merr);
-    if (tmp_range.empty()) MBERRNM(moab::MB_FAILURE);
+    PetscCallMOAB(iface->get_entities_by_handle(0, tmp_range));
+    PetscCheck(!tmp_range.empty(), PETSC_COMM_SELF, PETSC_ERR_LIB, "Tmp range is empty");
     user->dim = iface->dimension_from_handle(*tmp_range.rbegin());
   }
-  merr = iface->get_entities_by_dimension(0, user->dim, range);
-  MBERRNM(merr);
+  PetscCallMOAB(iface->get_entities_by_dimension(0, user->dim, range));
   PetscCall(DMMoabSetLocalVertices(*dm, &range));
 
   // get the requested tag and create if necessary
   std::cout << "Creating tag with name: " << user->tagname << ";\n";
-  merr = iface->tag_get_handle(user->tagname, 1, moab::MB_TYPE_DOUBLE, tag, moab::MB_TAG_CREAT | moab::MB_TAG_DENSE);
-  MBERRNM(merr);
+  PetscCallMOAB(iface->tag_get_handle(user->tagname, 1, moab::MB_TYPE_DOUBLE, tag, moab::MB_TAG_CREAT | moab::MB_TAG_DENSE));
   {
     // initialize new tag with gids
     std::vector<double> tag_vals(range.size());
-    merr = iface->tag_get_data(ltog_tag, range, tag_vals.data());
-    MBERRNM(merr); // read them into ints
+    PetscCallMOAB(iface->tag_get_data(ltog_tag, range, tag_vals.data()));
     double *dval = tag_vals.data();
     int    *ival = reinterpret_cast<int *>(dval); // "stretch" them into doubles, from the end
     for (int i = tag_vals.size() - 1; i >= 0; i--) dval[i] = ival[i];
-    merr = iface->tag_set_data(tag, range, tag_vals.data());
-    MBERRNM(merr); // write them into doubles
+    PetscCallMOAB(iface->tag_set_data(tag, range, tag_vals.data()));
   }
-  merr = iface->tag_get_length(tag, tagsize);
-  MBERRNM(merr);
-
+  PetscCallMOAB(iface->tag_get_length(tag, tagsize));
   PetscCall(DMSetUp(*dm));
 
   // create the dmmoab and initialize its data
@@ -112,7 +101,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 int main(int argc, char **argv)
 {
   AppCtx           user; /* user-defined work context */
-  moab::ErrorCode  merr;
   Vec              vec;
   moab::Interface *mbImpl  = NULL;
   moab::Tag        datatag = NULL;
@@ -124,8 +112,7 @@ int main(int argc, char **argv)
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &user.dm)); /* create the MOAB dm and the mesh */
 
   PetscCall(DMMoabGetInterface(user.dm, &mbImpl));
-  merr = mbImpl->tag_get_handle(user.tagname, datatag);
-  MBERRNM(merr);
+  PetscCallMOAB(mbImpl->tag_get_handle(user.tagname, datatag));
   PetscCall(DMMoabCreateVector(user.dm, datatag, NULL, PETSC_TRUE, PETSC_FALSE, &vec)); /* create a vec from user-input tag */
 
   std::cout << "Created VecMoab from existing tag." << std::endl;

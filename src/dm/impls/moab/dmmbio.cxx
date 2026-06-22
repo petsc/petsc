@@ -52,10 +52,9 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 @*/
 PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopts)
 {
-  DM_Moab        *dmmoab;
-  const char     *writeopts;
-  PetscBool       isftype;
-  moab::ErrorCode merr;
+  DM_Moab    *dmmoab;
+  const char *writeopts;
+  PetscBool   isftype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -76,8 +75,7 @@ PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopt
   }
 
   /* output file, using parallel write */
-  merr = dmmoab->mbiface->write_file(filename, NULL, writeopts, &dmmoab->fileset, 1);
-  MBERRVM(dmmoab->mbiface, "Writing output of DMMoab failed.", merr);
+  PetscCallMOAB(dmmoab->mbiface->write_file(filename, NULL, writeopts, &dmmoab->fileset, 1));
   PetscCall(PetscFree(writeopts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
