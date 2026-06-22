@@ -882,7 +882,7 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    requires: kokkos_kernels !complex
+    requires: kokkos_kernels !complex !sycl
     diff_args: -j
     args: -ex3_test dam -steps 10 -progress_freq 1 -petscda_ensemble_size 10 -obs_freq 2 -obs_error 0.03
 
@@ -896,11 +896,12 @@ int main(int argc, char **argv)
 
     test:
       nsize: 3
+      # oneapi::mkl::lapack::syevd: invalid argument: On entry, parameter 8 had an illegal value
       suffix: kokkos_dam
       args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_letkf_batch_size 13 -info :vec -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 
   testset:
-    requires: kokkos_kernels !complex
+    requires: kokkos_kernels !complex !sycl
     diff_args: -j
     args: -ex3_test wave -steps 10 -petscda_ensemble_size 10 -petscda_type letkf -obs_freq 2 -obs_error 0.03
 
@@ -910,6 +911,7 @@ int main(int argc, char **argv)
 
     test:
       nsize: 3
+      # oneapi::mkl::lapack::syevd: invalid argument: On entry, parameter 8 had an illegal value
       suffix: kokkos_wave
       args: -petscda_type letkf -mat_type aijkokkos -vec_type kokkos -petscda_letkf_batch_size 13 -info :vec -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 

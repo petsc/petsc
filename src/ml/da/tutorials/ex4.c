@@ -638,13 +638,14 @@ int main(int argc, char **argv)
 
     test:
       suffix: kokkos_wave2d_serial
-      requires: kokkos_kernels
+      requires: kokkos_kernels !sycl
       args: -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 7
 
     test:
       nsize: 3
+      # oneapi::mkl::lapack::syevd: invalid argument: On entry, parameter 8 had an illegal value
       suffix: kokkos_wave2d
-      requires: kokkos_kernels
+      requires: kokkos_kernels !sycl
       args: -mat_type aijkokkos -vec_type kokkos -petscda_ensemble_size 5 -petscda_letkf_localization_radius 10.0
 
     test:

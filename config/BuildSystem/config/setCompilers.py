@@ -2407,6 +2407,7 @@ class Configure(config.base.Configure):
     if self.checkLinkerFlag(flag):
       flagsArg = self.getLinkerFlagsArg()
       setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
+      self.log.write('Added to '+self.language[-1]+' linker flag '+flagsArg+': '+flag+'\n')
       return
     raise RuntimeError('Bad linker flag: '+flag)
 
