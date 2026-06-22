@@ -1147,6 +1147,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mat, viewer));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatNullSpace nullsp, transnullsp;
+      PetscBool    nz_factor = PETSC_TRUE;
 
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(MatGetSize(mat, &rows, &cols));
@@ -1157,15 +1158,18 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
       } else PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT "\n", rows, cols));
       if (mat->factortype) {
         MatSolverType solver;
+
         PetscCall(MatFactorGetSolverType(mat, &solver));
         PetscCall(PetscViewerASCIIPrintf(viewer, "package used to perform factorization: %s\n", solver));
+        PetscCall(PetscStrcmpAny(solver, &nz_factor, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, MATSOLVERSUPERLU, MATSOLVERSUPERLU_DIST, MATSOLVERSTRUMPACK, MATSOLVERHTOOL, ""));
+        nz_factor = !nz_factor;
       }
       if (mat->ops->getinfo) {
         PetscBool is_constant_or_diagonal;
 
         // Don't print nonzero information for constant or diagonal matrices, it just adds noise to the output
         PetscCall(PetscObjectTypeCompareAny((PetscObject)mat, &is_constant_or_diagonal, MATCONSTANTDIAGONAL, MATDIAGONAL, ""));
-        if (!is_constant_or_diagonal) {
+        if (!is_constant_or_diagonal && nz_factor) {
           MatInfo info;
 
           PetscCall(MatGetInfo(mat, MAT_GLOBAL_SUM, &info));
