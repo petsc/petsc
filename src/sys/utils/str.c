@@ -644,7 +644,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 
   Input Parameters:
 + src - pointer to input the string
-- cmp - list of non-null and non-empty strings to be compared against, pass the empty string "" to terminate the list
+- cmp - one or more string arguments, pass the empty string `""` as the last argument
 
   Output Parameter:
 . match - `PETSC_TRUE` if the input string matches any in the list, else `PETSC_FALSE`

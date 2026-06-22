@@ -62,7 +62,8 @@ runex19_hypre:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with HYPRE, diffs above\n=========================================\n";\
+		printf "${PWD}\nPossible problem with ex19 running with HYPRE\n=========================================\n";\
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -73,7 +74,8 @@ runex19_hypre_cuda:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/CUDA"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with HYPRE/CUDA, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with HYPRE/CUDA\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -84,7 +86,8 @@ runex19_hypre_hip:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/HIP"; \
 	else \
-		printf "${PWD}\nPossible problem with ex19 running with HYPRE/HIP, diffs above\n=========================================\n";\
+		printf "${PWD}\nPossible problem with ex19 running with HYPRE/HIP\n=========================================\n";\
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -94,7 +97,8 @@ runex19_cuda:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with CUDA"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with CUDA, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with CUDA\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -104,7 +108,8 @@ runex19_hip:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HIP"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with HIP, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with HIP\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -114,7 +119,8 @@ runex19_ml:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with ML"; \
 	else \
-		printf "${PWD}\nPossible problem with ex19 running with ML, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with ML\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -124,7 +130,8 @@ runex19_fieldsplit_mumps:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with MUMPS"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with MUMPS, diffs above\n=========================================\n";\
+		printf "${PWD}\nPossible problem with ex19 running with MUMPS\n=========================================\n";\
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -134,7 +141,8 @@ runex19_superlu_dist:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with SuperLU_DIST"; \
 	else  \
-		printf "${PWD}\nPossible problem with ex19 running with SuperLU_DIST, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with SuperLU_DIST\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -144,7 +152,8 @@ runex19_suitesparse:
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with SuiteSparse"; \
 	else \
-		printf "${PWD}\nPossible problem with ex19 running with SuiteSparse, diffs above\n=========================================\n"; \
+		printf "${PWD}\nPossible problem with ex19 running with SuiteSparse\n=========================================\n"; \
+		cat ex19.tmp; \
 		touch ../../../check_error;\
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
@@ -154,7 +163,8 @@ runex3k_kokkos: ex3k.PETSc
 	-@if [ ! -s ex3k.dtmp ];  then \
     echo "C/C++ example src/snes/tutorials/ex3k run successfully with Kokkos Kernels"; \
   else \
-    printf "${PWD}\nPossible problem with ex3k running with Kokkos Kernels, diffs above\n=========================================\n"; \
+    printf "${PWD}\nPossible problem with ex3k running with Kokkos Kernels\n=========================================\n"; \
+    cat ex3k.tmp; \
     touch ../../../check_error;\
   fi; \
 	${RM} -f ex3k.tmp ex3k.dtmp;

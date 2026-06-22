@@ -254,7 +254,7 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
   Input Parameters:
 + obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`),
               for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
-- type_name - one or more string arguments containing type names, pass the empty string "" as the last argument
+- type_name - one or more string arguments containing type names, pass the empty string `""` as the last argument
 
   Output Parameter:
 . match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
@@ -293,7 +293,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   Input Parameters:
 + obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`),
               for example, `PetscObjectBaseTypeCompareAny`((`PetscObject`)mat,...);
-- type_name - one or more string arguments containing type names, pass the empty string "" as the last argument
+- type_name - one or more string arguments containing type names, pass the empty string `""` as the last argument
 
   Output Parameter:
 . match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
