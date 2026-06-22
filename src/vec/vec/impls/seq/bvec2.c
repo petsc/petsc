@@ -98,7 +98,7 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win, Vec xin, Vec yin)
 
 static PetscScalar ScalDiv(PetscScalar x, PetscScalar y)
 {
-  return y == 0.0 ? 0.0 : x / y;
+  return y == 0.0 ? (x == 0.0 ? 1.0 : 0.0) : x / y;
 }
 
 PetscErrorCode VecPointwiseDivide_Seq(Vec win, Vec xin, Vec yin)

@@ -1020,7 +1020,7 @@ PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec win, Vec xin, Vec yin)
     PetscCallCXX(Kokkos::parallel_for(
       Kokkos::RangePolicy<Kokkos::DefaultHostExecutionSpace>(0, n), KOKKOS_LAMBDA(const PetscInt &i) {
         if (yv(i) != 0.0) wv(i) = xv(i) / yv(i);
-        else wv(i) = 0.0;
+        else wv(i) = ((xv(i) == 0.0) ? 1.0 : 0.0);
       }));
 
     PetscCall(VecRestoreArrayRead(xin, &xp));
@@ -1036,7 +1036,7 @@ PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec win, Vec xin, Vec yin)
     PetscCallCXX(Kokkos::parallel_for(
       Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, n), KOKKOS_LAMBDA(const PetscInt &i) {
         if (yv(i) != 0.0) wv(i) = xv(i) / yv(i);
-        else wv(i) = 0.0;
+        else wv(i) = ((xv(i) == 0.0) ? 1.0 : 0.0);
       }));
     PetscCall(VecRestoreKokkosView(yin, &yv));
     PetscCall(VecRestoreKokkosView(xin, &xv));

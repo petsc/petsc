@@ -536,7 +536,7 @@ namespace detail
 {
 
 struct divides {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return rhs == PetscScalar{0.0} ? rhs : lhs / rhs; }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return rhs == PetscScalar{0.0} ? (lhs == PetscScalar{0.0} ? PetscScalar{1.0} : rhs) : lhs / rhs; }
 };
 
 } // namespace detail
