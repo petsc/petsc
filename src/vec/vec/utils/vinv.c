@@ -1402,16 +1402,14 @@ PetscErrorCode VecSqrtAbs(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if PetscDefined(USE_COMPLEX)
 static PetscScalar ScalarImaginaryPart_Function(PetscScalar x)
 {
   const PetscReal imag = PetscImaginaryPart(x);
 
-#if PetscDefined(USE_COMPLEX)
   return PetscCMPLX(imag, 0.0);
-#else
-  return imag;
-#endif
 }
+#endif
 
 /*@
   VecImaginaryPart - Replaces a complex vector with its imaginary part
@@ -1429,20 +1427,22 @@ PetscErrorCode VecImaginaryPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+#if defined(PETSC_USE_COMPLEX)
   PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Function));
+#else
+  PetscCall(VecZeroEntries(v));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if PetscDefined(USE_COMPLEX)
 static PetscScalar ScalarRealPart_Function(PetscScalar x)
 {
   const PetscReal real = PetscRealPart(x);
 
-#if PetscDefined(USE_COMPLEX)
   return PetscCMPLX(real, 0.0);
-#else
-  return real;
-#endif
 }
+#endif
 
 /*@
   VecRealPart - Replaces a complex vector with its real part
@@ -1460,7 +1460,9 @@ PetscErrorCode VecRealPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+#if defined(PETSC_USE_COMPLEX)
   PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Function));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
