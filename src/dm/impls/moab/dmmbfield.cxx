@@ -33,31 +33,25 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   PetscCheck(!(ifield < 0) && !(ifield >= dmmoab->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The field %d should be positive and less than %d.", ifield, dmmoab->numFields);
 
   /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
-  merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
-  MBERRNM(merr);
-
+  PetscCallMOAB(dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT));
   PetscCall(DMMoabGetVecTag(fvec, &vtag));
 
   merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
   if (!tag_name.length() && merr != moab::MB_SUCCESS) {
     PetscCall(VecGetArrayRead(fvec, &varray));
     /* use the entity handle and the Dof index to set the right value */
-    merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)varray);
-    MBERRNM(merr);
+    PetscCallMOAB(dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)varray));
     PetscCall(VecRestoreArrayRead(fvec, &varray));
   } else {
     PetscCall(PetscMalloc1(dmmoab->nloc, &farray));
     /* we are using a MOAB Vec - directly copy the tag data to new one */
-    merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void *)farray);
-    MBERRNM(merr);
-    merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray);
-    MBERRNM(merr);
+    PetscCallMOAB(dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void *)farray));
+    PetscCallMOAB(dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray));
     /* make sure the parallel exchange for ghosts are done appropriately */
     PetscCall(PetscFree(farray));
   }
 #ifdef MOAB_HAVE_MPI
-  merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vowned);
-  MBERRNM(merr);
+  PetscCallMOAB(dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vowned));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -102,37 +96,30 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
     PetscCall(VecGetArrayRead(fvec, &rarray));
     for (ifield = 0; ifield < dmmoab->numFields; ++ifield) {
       /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
-      merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
-      MBERRNM(merr);
-
+      PetscCallMOAB(dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT));
       for (i = 0; i < dmmoab->nloc; i++) farray[i] = (dmmoab->bs == 1 ? rarray[ifield * dmmoab->nloc + i] : rarray[i * dmmoab->numFields + ifield]);
 
       /* use the entity handle and the Dof index to set the right value */
-      merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray);
-      MBERRNM(merr);
+      PetscCallMOAB(dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray));
     }
     PetscCall(VecRestoreArrayRead(fvec, &rarray));
   } else {
     PetscCall(PetscMalloc1(dmmoab->nloc * dmmoab->numFields, &varray));
 
     /* we are using a MOAB Vec - directly copy the tag data to new one */
-    merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void *)varray);
-    MBERRNM(merr);
+    PetscCallMOAB(dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void *)varray));
     for (ifield = 0; ifield < dmmoab->numFields; ++ifield) {
       /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
-      merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
-      MBERRNM(merr);
+      PetscCallMOAB(dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT));
 
       /* we are using a MOAB Vec - directly copy the tag data to new one */
       for (i = 0; i < dmmoab->nloc; i++) farray[i] = (dmmoab->bs == 1 ? varray[ifield * dmmoab->nloc + i] : varray[i * dmmoab->numFields + ifield]);
 
-      merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray);
-      MBERRNM(merr);
+      PetscCallMOAB(dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void *)farray));
 
 #ifdef MOAB_HAVE_MPI
       /* make sure the parallel exchange for ghosts are done appropriately */
-      merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);
-      MBERRNM(merr);
+      PetscCallMOAB(dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal));
 #endif
     }
     PetscCall(PetscFree(varray));

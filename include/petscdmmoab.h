@@ -22,35 +22,65 @@
   #include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
 #endif
 
-/* The MBERR macro is used to save typing. It checks a MOAB error code
- * (rval) and calls SETERRQ if not MB_SUCCESS. A message (msg) can
- * also be passed in. */
-#define MBERR(msg, rval) PetscCheck(rval == moab::MB_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB ERROR (%i): %s", (PetscErrorCode)rval, msg)
-#define MBERRNM(rval)    PetscCheck(rval == moab::MB_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB ERROR (%i)", rval)
-#define MBERRV(mbif, rval) \
+/*MC
+  PetscCallMOAB - Calls a MOAB function and then checks the resulting error code, if it is
+  non-zero it calls the error handler and returns from the current function with the error
+  code `PETSC_ERR_LIB`.
+
+  Synopsis:
+  #include <petscdmmoab.h>
+  void PetscCallMOAB(MOABFunction(args))
+
+  Not Collective
+
+  Input Parameter:
+. MOABFunction - any MOAB function that returns an error code
+
+  Level: beginner
+
+.seealso: `PetscCall()`, `SETERRQ()`, `PetscCheck()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`,
+          `PetscPushErrorHandler()`, `PetscError()`
+M*/
+#define PetscCallMOAB(...) \
   do { \
-    if (rval != moab::MB_SUCCESS) { \
-      std::string emsg; \
-      mbif->get_last_error(emsg); \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB ERROR (%i): %s", (PetscErrorCode)rval, emsg.c_str()); \
-    } \
-  } while (0)
-#define MBERRVM(mbif, msg, rval) \
-  do { \
-    if (rval != moab::MB_SUCCESS) { \
-      std::string emsg; \
-      mbif->get_last_error(emsg); \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB ERROR (%i): %s :: %s", (PetscErrorCode)rval, msg, emsg.c_str()); \
-    } \
+    moab::ErrorCode ierr_moab_call_q; \
+    PetscStackUpdateLine; \
+    ierr_moab_call_q = __VA_ARGS__; \
+    PetscCheck(ierr_moab_call_q == moab::MB_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB ERROR (%i)", (int)ierr_moab_call_q); \
   } while (0)
 
 /* define enums for options to read and write MOAB files in parallel */
+
+/*E
+  MoabReadMode - Parallel I/O strategy passed to MOAB when reading a mesh file through `DMMOAB`
+
+  Values:
++ `READ_PART`    - each MPI rank reads only the portion of the file describing its partition (requires a partition-aware file)
+. `READ_DELETE`  - every rank reads the entire file and then deletes the entities it does not own
+- `BCAST_DELETE` - rank 0 reads the file and broadcasts it, then every rank deletes the entities it does not own
+
+  Level: intermediate
+
+.seealso: `DMMOAB`, `MoabWriteMode`, `DMMoabCreate()`
+E*/
 typedef enum {
   READ_PART,
   READ_DELETE,
   BCAST_DELETE
 } MoabReadMode;
 static const char *const MoabReadModes[] = {"READ_PART", "READ_DELETE", "BCAST_DELETE", "MoabReadMode", "", 0};
+
+/*E
+  MoabWriteMode - Parallel I/O strategy passed to MOAB when writing a mesh file through `DMMOAB`
+
+  Values:
++ `WRITE_PART` - write a partitioned file with one section per MPI rank
+- `FORMAT`     - write a single non-partitioned file in the requested MOAB output format
+
+  Level: intermediate
+
+.seealso: `DMMOAB`, `MoabReadMode`, `DMMoabOutput()`
+E*/
 typedef enum {
   WRITE_PART,
   FORMAT
