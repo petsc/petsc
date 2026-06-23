@@ -8565,7 +8565,7 @@ PetscErrorCode MatSetUnfactored(Mat mat)
 
   The index sets may not have duplicate entries.
 
-  The first time this is called you should use a cll of `MAT_INITIAL_MATRIX`,
+  The first time this is called you should use a `cll` of `MAT_INITIAL_MATRIX`,
   the `MatCreateSubMatrix()` routine will create the newmat for you. Any additional calls
   to this routine with a mat of the same nonzero structure and with a call of `MAT_REUSE_MATRIX`
   will reuse the matrix generated the first time.  You should call `MatDestroy()` on `newmat` when
