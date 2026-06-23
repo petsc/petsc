@@ -750,7 +750,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         bsize: MatBlockSizeSpec | None = None,
         nnz: NNZSpec | None = None,
-        csr: CSRIndicesSpec | None = None,
+        csr: CSRSpec | CSRIndicesSpec | None = None,
         comm: Comm | None = None) -> Self:
         """Create a sparse `Type.AIJ` matrix, optionally preallocating.
 
@@ -795,7 +795,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         bsize: MatBlockSizeSpec,
         nnz: NNZSpec | None = None,
-        csr: CSRIndicesSpec | None = None,
+        csr: CSRSpec | CSRIndicesSpec | None = None,
         comm: Comm | None = None) -> Self:
         """Create a sparse blocked `Type.BAIJ` matrix, optionally preallocating.
 
@@ -839,7 +839,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         bsize: MatBlockSizeSpec,
         nnz: NNZSpec | None = None,
-        csr: CSRIndicesSpec | None = None,
+        csr: CSRSpec | CSRIndicesSpec | None = None,
         comm: Comm | None = None) -> Self:
         """Create a sparse `Type.SBAIJ` matrix in symmetric block format.
 
@@ -883,7 +883,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         bsize: MatBlockSizeSpec | None = None,
         nnz: NNZSpec | None = None,
-        csr: CSRIndicesSpec | None = None,
+        csr: CSRSpec | CSRIndicesSpec | None = None,
         comm: Comm | None = None) -> Self:
         """Create a sparse `Type.AIJCRL` matrix.
 
