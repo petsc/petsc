@@ -32,6 +32,16 @@ subroutine F90Array1dCreateInt(array, start, len1, ptr)
   ptr => array
 end subroutine
 
+subroutine F90Array1dCreateBool(array, start, len1, ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscInt start, len1
+  PetscBool, target :: array(start:start + len1 - 1)
+  PetscBool, pointer :: ptr(:)
+
+  ptr => array
+end subroutine
+
 subroutine F90Array1dCreateMPIInt(array, start, len1, ptr)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -98,6 +108,21 @@ subroutine F90Array1dAccessInt(ptr, address)
   end if
 end subroutine
 
+subroutine F90Array1dAccessBool(ptr, address)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:)
+  PetscFortranAddr address
+  PetscInt start
+
+  if (.not. associated(ptr)) then
+    address = 0
+  else
+    start = lbound(ptr, 1)
+    call F90Array1dGetAddrBool(ptr(start), address)
+  end if
+end subroutine
+
 subroutine F90Array1dAccessMPIInt(ptr, address)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -153,6 +178,14 @@ subroutine F90Array1dDestroyInt(ptr)
   nullify (ptr)
 end subroutine
 
+subroutine F90Array1dDestroyBool(ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:)
+
+  nullify (ptr)
+end subroutine
+
 subroutine F90Array1dDestroyMPIInt(ptr)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -200,6 +233,17 @@ subroutine F90Array2dCreateInt(array, start1, len1, start2, len2, ptr)
   PetscInt start2, len2
   PetscInt, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1)
   PetscInt, pointer :: ptr(:, :)
+
+  ptr => array
+end subroutine
+
+subroutine F90Array2dCreateBool(array, start1, len1, start2, len2, ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscInt start1, len1
+  PetscInt start2, len2
+  PetscBool, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1)
+  PetscBool, pointer :: ptr(:, :)
 
   ptr => array
 end subroutine
@@ -252,6 +296,18 @@ subroutine F90Array2dAccessInt(ptr, address)
   call F90Array2dGetAddrInt(ptr(start1, start2), address)
 end subroutine
 
+subroutine F90Array2dAccessBool(ptr, address)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :)
+  PetscFortranAddr address
+  PetscInt start1, start2
+
+  start1 = lbound(ptr, 1)
+  start2 = lbound(ptr, 2)
+  call F90Array2dGetAddrBool(ptr(start1, start2), address)
+end subroutine
+
 subroutine F90Array2dAccessFortranAddr(ptr, address)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -285,6 +341,14 @@ subroutine F90Array2dDestroyInt(ptr)
   use, intrinsic :: ISO_C_binding
   implicit none
   PetscInt, pointer :: ptr(:, :)
+
+  nullify (ptr)
+end subroutine
+
+subroutine F90Array2dDestroyBool(ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :)
 
   nullify (ptr)
 end subroutine
@@ -331,6 +395,18 @@ subroutine F90Array3dCreateInt(array, start1, len1, start2, len2, start3, len3, 
   PetscInt start3, len3
   PetscInt, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1, start3:start3 + len3 - 1)
   PetscInt, pointer :: ptr(:, :, :)
+
+  ptr => array
+end subroutine
+
+subroutine F90Array3dCreateBool(array, start1, len1, start2, len2, start3, len3, ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscInt start1, len1
+  PetscInt start2, len2
+  PetscInt start3, len3
+  PetscBool, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1, start3:start3 + len3 - 1)
+  PetscBool, pointer :: ptr(:, :, :)
 
   ptr => array
 end subroutine
@@ -387,6 +463,19 @@ subroutine F90Array3dAccessInt(ptr, address)
   call F90Array3dGetAddrInt(ptr(start1, start2, start3), address)
 end subroutine
 
+subroutine F90Array3dAccessBool(ptr, address)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :, :)
+  PetscFortranAddr address
+  PetscInt start1, start2, start3
+
+  start1 = lbound(ptr, 1)
+  start2 = lbound(ptr, 2)
+  start3 = lbound(ptr, 3)
+  call F90Array3dGetAddrBool(ptr(start1, start2, start3), address)
+end subroutine
+
 subroutine F90Array3dAccessFortranAddr(ptr, address)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -421,6 +510,14 @@ subroutine F90Array3dDestroyInt(ptr)
   use, intrinsic :: ISO_C_binding
   implicit none
   PetscInt, pointer :: ptr(:, :, :)
+
+  nullify (ptr)
+end subroutine
+
+subroutine F90Array3dDestroyBool(ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :, :)
 
   nullify (ptr)
 end subroutine
@@ -469,6 +566,19 @@ subroutine F90Array4dCreateInt(array, start1, len1, start2, len2, start3, len3, 
   PetscInt start4, len4
   PetscInt, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1, start3:start3 + len3 - 1, start4:start4 + len4 - 1)
   PetscInt, pointer :: ptr(:, :, :, :)
+
+  ptr => array
+end subroutine
+
+subroutine F90Array4dCreateBool(array, start1, len1, start2, len2, start3, len3, start4, len4, ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscInt start1, len1
+  PetscInt start2, len2
+  PetscInt start3, len3
+  PetscInt start4, len4
+  PetscBool, target :: array(start1:start1 + len1 - 1, start2:start2 + len2 - 1, start3:start3 + len3 - 1, start4:start4 + len4 - 1)
+  PetscBool, pointer :: ptr(:, :, :, :)
 
   ptr => array
 end subroutine
@@ -528,6 +638,20 @@ subroutine F90Array4dAccessInt(ptr, address)
   call F90Array4dGetAddrInt(ptr(start1, start2, start3, start4), address)
 end subroutine
 
+subroutine F90Array4dAccessBool(ptr, address)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :, :, :)
+  PetscFortranAddr address
+  PetscInt start1, start2, start3, start4
+
+  start1 = lbound(ptr, 1)
+  start2 = lbound(ptr, 2)
+  start3 = lbound(ptr, 3)
+  start4 = lbound(ptr, 4)
+  call F90Array4dGetAddrBool(ptr(start1, start2, start3, start4), address)
+end subroutine
+
 subroutine F90Array4dAccessFortranAddr(ptr, address)
   use, intrinsic :: ISO_C_binding
   implicit none
@@ -562,6 +686,14 @@ subroutine F90Array4dDestroyInt(ptr)
   use, intrinsic :: ISO_C_binding
   implicit none
   PetscInt, pointer :: ptr(:, :, :, :)
+
+  nullify (ptr)
+end subroutine
+
+subroutine F90Array4dDestroyBool(ptr)
+  use, intrinsic :: ISO_C_binding
+  implicit none
+  PetscBool, pointer :: ptr(:, :, :, :)
 
   nullify (ptr)
 end subroutine

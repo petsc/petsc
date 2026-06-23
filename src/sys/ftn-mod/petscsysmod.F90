@@ -17,6 +17,13 @@ module petscmpi
   MPIU_Datatype :: MPIU_INTEGER
   MPIU_Op :: MPIU_SUM
 
+! MPI_C_BOOL is an MPI-2.2 C datatype that some MPIs (e.g. MS-MPI) do not expose to Fortran.
+! When configure finds it missing from the Fortran bindings, declare it as a module variable
+! populated at PetscInitialize() from C via MPI_Type_c2f(MPI_C_BOOL).
+#if !defined(PETSC_HAVE_MPI_C_BOOL_FORTRAN)
+  MPIU_Datatype :: MPI_C_BOOL
+#endif
+
   MPIU_Comm:: PETSC_COMM_WORLD
   MPIU_Comm:: PETSC_COMM_SELF
 
@@ -27,6 +34,9 @@ module petscmpi
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_SELF
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_WORLD
+#if !defined(PETSC_HAVE_MPI_C_BOOL_FORTRAN)
+!DEC$ ATTRIBUTES DLLEXPORT::MPI_C_BOOL
+#endif
 #endif
 end module petscmpi
 
@@ -662,18 +672,21 @@ subroutine PetscSetModuleBlock()
                                    PETSC_NULL_SCALAR_POINTER, PETSC_NULL_REAL_POINTER)
 end subroutine PetscSetModuleBlock
 
-subroutine PetscSetModuleBlockMPI(freal, fscalar, fsum, finteger)
+subroutine PetscSetModuleBlockMPI(freal, fscalar, fsum, finteger, fcbool)
   use, intrinsic :: ISO_C_binding
   use petscmpi
   implicit none
 
-  MPIU_Datatype freal, fscalar, finteger
+  MPIU_Datatype freal, fscalar, finteger, fcbool
   MPIU_Op fsum
 
   MPIU_REAL = freal
   MPIU_SCALAR = fscalar
   MPIU_SUM = fsum
   MPIU_INTEGER = finteger
+#if !defined(PETSC_HAVE_MPI_C_BOOL_FORTRAN)
+  MPI_C_BOOL = fcbool
+#endif
 end subroutine PetscSetModuleBlockMPI
 
 subroutine PetscSetModuleBlockNumeric(pi, maxreal, minreal, eps, seps, small, pinf, pninf)

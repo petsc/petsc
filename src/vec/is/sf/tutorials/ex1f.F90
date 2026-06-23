@@ -15,6 +15,7 @@ program main
   PetscMPIInt rank, size
   PetscSF sf
   PetscInt rootdata(6), leafdata(6)
+  PetscBool rootbool(6), leafbool(6)
 
 ! used with PetscSFGetGraph()
   PetscSFNode, pointer ::       gremote(:)
@@ -109,6 +110,19 @@ program main
 ! Test PetscSFGet{Leaf,Root}Ranks
   PetscCallA(PetscSFGetLeafRanks(sf, niranks, iranks, ioffset, irootloc, ierr))
   PetscCallA(PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote, ierr))
+
+! Broadcast a PetscBool buffer using MPI_C_BOOL to exercise the Fortran -> C datatype conversion.
+! Every leaf references an active root slot, so each populated leaf slot must receive PETSC_TRUE.
+  rootbool(1:nrootsalloc) = PETSC_FALSE
+  do i = 1, nroots
+    rootbool(1 + (i - 1)*stride) = PETSC_TRUE
+  end do
+  leafbool(1:nleavesalloc) = PETSC_FALSE
+  PetscCallA(PetscSFBcastBegin(sf, MPI_C_BOOL, rootbool, leafbool, MPI_REPLACE, ierr))
+  PetscCallA(PetscSFBcastEnd(sf, MPI_C_BOOL, rootbool, leafbool, MPI_REPLACE, ierr))
+  do i = 1, nleaves
+    PetscCheckA(leafbool(mine(i) + 1) .eqv. PETSC_TRUE, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'PetscSFBcast with MPI_C_BOOL did not deliver expected value')
+  end do
 
 !    Clean storage for star forest.
   PetscCallA(PetscSFDestroy(sf, ierr))

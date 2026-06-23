@@ -16,7 +16,7 @@
   #endif
 
 PETSC_EXTERN void petscsetmoduleblock_(void);
-PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *);
+PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *);
 PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN void petscsetcomm_(MPI_Fint *, MPI_Fint *);
 #endif
@@ -54,12 +54,13 @@ PetscErrorCode PetscInitializeFortran(void)
   petscsetcomm_(&c1, &c2);
 
   {
-    MPI_Fint freal, fscalar, fsum, fint;
+    MPI_Fint freal, fscalar, fsum, fint, fcbool;
     freal   = MPI_Type_c2f(MPIU_REAL);
     fscalar = MPI_Type_c2f(MPIU_SCALAR);
     fsum    = MPI_Op_c2f(MPIU_SUM);
     fint    = MPI_Type_c2f(MPIU_INT);
-    petscsetmoduleblockmpi_(&freal, &fscalar, &fsum, &fint);
+    fcbool  = MPI_Type_c2f(MPI_C_BOOL);
+    petscsetmoduleblockmpi_(&freal, &fscalar, &fsum, &fint, &fcbool);
   }
 
   {
