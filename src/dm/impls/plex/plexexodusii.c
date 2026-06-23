@@ -16,11 +16,11 @@
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
 @*/
-PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
+PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, PetscExodusIIInt *exoid)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscTryMethod(viewer, "PetscViewerGetId_C", (PetscViewer, int *), (viewer, exoid));
+  PetscUseMethod(viewer, "PetscViewerGetId_C", (PetscViewer, PetscExodusIIInt *), (viewer, exoid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -32,8 +32,6 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
   Input Parameters:
 + viewer - the `PETSCVIEWEREXODUSII` viewer
 - order  - elements order
-
-  Output Parameter:
 
   Level: beginner
 
@@ -52,11 +50,11 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 
   Collective
 
-  Input Parameters:
-+ viewer - the `PETSCVIEWEREXODUSII` viewer
-- order  - elements order
+  Input Parameter:
+. viewer - the `PETSCVIEWEREXODUSII` viewer
 
   Output Parameter:
+. order - elements order
 
   Level: beginner
 
@@ -125,15 +123,15 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_EXODUSII)
-  PetscMPIInt      rank;
-  PetscExodusIIInt CPU_word_size = sizeof(PetscReal), IO_word_size = 0, exoid = -1;
-  float            version;
+  PetscMPIInt        rank;
+  PetscExodusIIInt   CPU_word_size = sizeof(PetscReal), IO_word_size = 0, exoid = -1;
+  PetscExodusIIFloat version;
 
   PetscAssertPointer(filename, 2);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-    PetscCheck(exoid > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
+    PetscCheck(exoid >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
   }
   PetscCall(DMPlexCreateExodus(comm, exoid, interpolate, dm));
   if (rank == 0) PetscCallExternal(ex_close, exoid);
