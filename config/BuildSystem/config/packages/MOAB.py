@@ -3,8 +3,11 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://web.cels.anl.gov/projects/sigma/downloads/moab/moab-5.5.0.tar.gz']
-    self.downloaddirnames  = ['moab']
+    self.gitcommit         = '3612170c3f22b05c7b38510a5526c34868cc1285' # master 2026-05-27 v5.6+
+    self.download          = ['git://https://bitbucket.org/fathomteam/moab.git',
+                              'https://bitbucket.org/fathomteam/moab/get/'+self.gitcommit+'.tar.gz',
+                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/moab/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames  = ['fathomteam-moab', 'moab']
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
     self.functionsCxx      = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
