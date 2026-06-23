@@ -557,6 +557,42 @@ static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reus
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatCreateSubMatrix_Transpose(Mat N, IS isrow, IS iscol, MatReuse reuse, Mat *newmat)
+{
+  Mat         A, B;
+  IS          aisrow = iscol;
+  PetscScalar vscale, vshift;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatShellGetScalingShifts(N, &vshift, &vscale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  if (!aisrow) {
+    PetscInt rstart, rend;
+
+    PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), rend - rstart, rstart, 1, &aisrow));
+  }
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatCreateSubMatrix(A, aisrow, isrow, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatCreateTranspose(B, newmat));
+    PetscCall(MatDestroy(&B));
+    PetscCall(MatScale(*newmat, vscale));
+    PetscCall(MatShift(*newmat, vshift));
+  } else {
+    PetscScalar oldvscale, oldvshift, alpha;
+
+    PetscCall(MatTransposeGetMat(*newmat, &B));
+    PetscCall(MatCreateSubMatrix(A, aisrow, isrow, MAT_REUSE_MATRIX, &B));
+    PetscCall(MatShellGetScalingShifts(*newmat, &oldvshift, &oldvscale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+    PetscCheck(oldvscale != 0.0 || vscale == 0.0, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot reuse a scaled-to-zero submatrix for a nonzero parent scale");
+    alpha = oldvscale == 0.0 ? 1.0 : vscale / oldvscale;
+    PetscCall(MatScale(*newmat, alpha));
+    PetscCall(MatShift(*newmat, vshift - alpha * oldvshift));
+  }
+  if (!iscol) PetscCall(ISDestroy(&aisrow));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatTransposeGetMat_Transpose(Mat N, Mat *M)
 {
   PetscFunctionBegin;
@@ -656,6 +692,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_COPY, (PetscErrorCodeFn *)MatCopy_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (PetscErrorCodeFn *)MatConvert_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_CREATE_SUBMATRIX, (PetscErrorCodeFn *)MatCreateSubMatrix_Transpose));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatTransposeGetMat_C", MatTransposeGetMat_Transpose));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
