@@ -49,6 +49,7 @@ cdef extern from * nogil:
     PetscKSPType KSPCGLS
     PetscKSPType KSPFETIDP
     PetscKSPType KSPHPDDM
+    PetscKSPType KSPIDR
 
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_DEFAULT
@@ -225,6 +226,13 @@ cdef extern from * nogil:
     PetscErrorCode KSPCreateVecs(PetscKSP, PetscInt, PetscVec**, PetscInt, PetscVec**)
 
     PetscErrorCode KSPGMRESSetRestart(PetscKSP, PetscInt)
+
+    PetscErrorCode KSPIDRSetS(PetscKSP, PetscInt)
+    PetscErrorCode KSPIDRGetS(PetscKSP, PetscInt*)
+    PetscErrorCode KSPIDRSetCosine(PetscKSP, PetscReal)
+    PetscErrorCode KSPIDRGetCosine(PetscKSP, PetscReal*)
+    PetscErrorCode KSPIDRSetRandom(PetscKSP, PetscRandom)
+    PetscErrorCode KSPIDRGetRandom(PetscKSP, PetscRandom*)
 
     PetscErrorCode KSPCGGetObjFcn(PetscKSP, PetscReal*)
 
