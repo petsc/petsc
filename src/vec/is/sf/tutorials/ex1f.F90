@@ -30,23 +30,14 @@ program main
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
   PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
-  if (rank == 0) then
-    nroots = 3
-  else
-    nroots = 2
-  end if
+  nroots = merge(3, 2, rank == 0)
   nrootsalloc = nroots*stride
-  if (rank > 0) then
-    nleaves = 3
-  else
-    nleaves = 2
-  end if
+  nleaves = merge(2, 3, rank == 0)
   nleavesalloc = nleaves*stride
-  if (stride > 1) then
-    do i = 1, nleaves
-      mine(i) = stride*(i - 1)
-    end do
-  end if
+
+  do i = 1, nleaves
+    mine(i) = stride*(i - 1)
+  end do
 
 ! Left periodic neighbor
   remote(1)%rank = modulo(rank + size - 1, size)
@@ -114,14 +105,12 @@ program main
 ! Broadcast a PetscBool buffer using MPI_C_BOOL to exercise the Fortran -> C datatype conversion.
 ! Every leaf references an active root slot, so each populated leaf slot must receive PETSC_TRUE.
   rootbool(1:nrootsalloc) = PETSC_FALSE
-  do i = 1, nroots
-    rootbool(1 + (i - 1)*stride) = PETSC_TRUE
-  end do
+  rootbool(1 + ([(i, i=0, nroots - 1)])*stride) = PETSC_TRUE
   leafbool(1:nleavesalloc) = PETSC_FALSE
   PetscCallA(PetscSFBcastBegin(sf, MPI_C_BOOL, rootbool, leafbool, MPI_REPLACE, ierr))
   PetscCallA(PetscSFBcastEnd(sf, MPI_C_BOOL, rootbool, leafbool, MPI_REPLACE, ierr))
   do i = 1, nleaves
-    PetscCheckA(leafbool(mine(i) + 1) .eqv. PETSC_TRUE, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'PetscSFBcast with MPI_C_BOOL did not deliver expected value')
+    PetscCheckA(leafbool(mine(i) + 1), PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'PetscSFBcast with MPI_C_BOOL did not deliver expected value')
   end do
 
 !    Clean storage for star forest.

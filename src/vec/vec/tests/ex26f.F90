@@ -17,11 +17,7 @@ program main
   PetscCallA(PetscInitialize(ierr))
   PetscCallMPIA(MPI_COMM_RANK(PETSC_COMM_WORLD, rank, ierr))
 
-  if (rank == 0) then
-    num_cells = 1
-  else
-    num_cells = 0
-  end if
+  num_cells = merge(1, 0, rank == 0)
 
   PetscCallA(VecCreate(PETSC_COMM_WORLD, v, ierr))
   PetscCallA(VecSetSizes(v, num_cells*blocksize, PETSC_DECIDE, ierr))
