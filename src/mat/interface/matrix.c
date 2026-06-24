@@ -4830,6 +4830,41 @@ PetscErrorCode MatSolverTypeDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetFactor_Private(Mat mat, MatFactorType ftype, PetscBool exact, PetscBool *found, Mat *f)
+{
+  MatSolverTypeHolder         next = MatSolverTypeHolders;
+  MatSolverTypeForSpecifcType inext;
+  PetscBool                   flg, same;
+
+  PetscFunctionBegin;
+  *found = PETSC_FALSE;
+  *f     = NULL;
+  /* When no solver type is requested, MatGetFactor() must honor registration order, but a registered
+     MatSolverType may only be able to reject a particular MatType at runtime by returning NULL in *f.
+     Keep walking the registry until a matching backend actually creates a factor. */
+  while (next) {
+    inext = next->handlers;
+    while (inext) {
+      PetscCall(PetscStrcmp(((PetscObject)mat)->type_name, inext->mtype, &same));
+      if (exact) flg = same;
+      else {
+        /* Do the base-type pass separately from the exact pass so exact registrations for the MatType
+           are all tried before broader registrations such as implementation base classes. */
+        PetscCall(PetscStrbeginswith(((PetscObject)mat)->type_name, inext->mtype, &flg));
+        flg = (PetscBool)(flg && !same);
+      }
+      if (flg && inext->createfactor[(int)ftype - 1]) {
+        *found = PETSC_TRUE;
+        PetscCall((*inext->createfactor[(int)ftype - 1])(mat, ftype, f));
+        if (*f) PetscFunctionReturn(PETSC_SUCCESS);
+      }
+      inext = inext->next;
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatFactorGetCanUseOrdering - Indicates if the factorization can use the ordering provided in `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`
 
@@ -4950,15 +4985,24 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Ma
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(MatSolverTypeGet(type, ((PetscObject)mat)->type_name, ftype, &foundtype, &foundmtype, &conv));
-  if (!foundtype) {
-    if (type) {
-      SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "Could not locate solver type %s for factorization type %s and matrix type %s. Perhaps you must ./configure with --download-%s", type, MatFactorTypes[ftype],
-              ((PetscObject)mat)->type_name, type);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "Could not locate a solver type for factorization type %s and matrix type %s.", MatFactorTypes[ftype], ((PetscObject)mat)->type_name);
+  if (!type) {
+    PetscBool foundbase;
+
+    /* First try exact MatType registrations in solver registration order. If all matching backends
+       decline this matrix instance by returning NULL, then try base-type registrations. */
+    PetscCall(MatGetFactor_Private(mat, ftype, PETSC_TRUE, &foundtype, f));
+    if (!*f) {
+      PetscCall(MatGetFactor_Private(mat, ftype, PETSC_FALSE, &foundbase, f));
+      foundtype = (PetscBool)(foundtype || foundbase);
     }
+    PetscCheck(foundtype, PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "Could not locate a solver type for factorization type %s and matrix type %s.", MatFactorTypes[ftype], ((PetscObject)mat)->type_name);
+    if (mat->factorprefix) PetscCall(MatSetOptionsPrefix(*f, mat->factorprefix));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
+
+  PetscCall(MatSolverTypeGet(type, ((PetscObject)mat)->type_name, ftype, &foundtype, &foundmtype, &conv));
+  PetscCheck(foundtype, PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "Could not locate solver type %s for factorization type %s and matrix type %s. Perhaps you must ./configure with --download-%s", type, MatFactorTypes[ftype],
+             ((PetscObject)mat)->type_name, type);
   PetscCheck(foundmtype, PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "MatSolverType %s does not support matrix type %s", type, ((PetscObject)mat)->type_name);
   PetscCheck(conv, PetscObjectComm((PetscObject)mat), PETSC_ERR_MISSING_FACTOR, "MatSolverType %s does not support factorization type %s for matrix type %s", type, MatFactorTypes[ftype], ((PetscObject)mat)->type_name);
 
