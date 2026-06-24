@@ -172,6 +172,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   PetscCall(PetscGetMemType(v, &memtype));
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
     vv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(const_cast<PetscScalar *>(v), vecmpi->coo_n));
+    PetscCall(PetscLogCpuToGpu(vecmpi->coo_n * sizeof(PetscScalar)));
   } else {
     vv = ConstPetscScalarKokkosView(v, vecmpi->coo_n); /* Directly use v[]'s memory */
   }

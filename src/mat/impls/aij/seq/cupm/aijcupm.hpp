@@ -423,6 +423,7 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     if (PetscMemTypeHost(memtype)) { /* copy host values to device */
       PetscCallCUPM(cupmMalloc((void **)&v1, coo->n * sizeof(PetscScalar)));
       PetscCallCUPM(cupmMemcpy((void *)v1, v, coo->n * sizeof(PetscScalar), cupmMemcpyHostToDevice));
+      PetscCall(PetscLogCpuToGpu(coo->n * sizeof(PetscScalar)));
     }
 
     if (imode == INSERT_VALUES) PetscCall(GetArrayWrite(A, &Aa));
