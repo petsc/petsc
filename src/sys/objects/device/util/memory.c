@@ -43,7 +43,8 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
   #else
     mtype = attr.type;
   #endif
-    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+    // CUDA managed memory is device accessible, so we treat it as device memory?
+    if (cerr == cudaSuccess && (mtype == cudaMemoryTypeDevice || mtype == cudaMemoryTypeManaged)) *type = PETSC_MEMTYPE_DEVICE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
@@ -60,7 +61,7 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
   #else
     mtype = attr.memoryType;
   #endif
-    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+    if (cerr == hipSuccess && (mtype == hipMemoryTypeDevice || mtype == hipMemoryTypeManaged)) *type = PETSC_MEMTYPE_DEVICE;
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

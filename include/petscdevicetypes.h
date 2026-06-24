@@ -61,7 +61,7 @@ typedef enum {
 #endif
 
 /*MC
-  PetscMemTypeHost - Returns `PETSC_TRUE` if a given `PetscMemType` refers to host (CPU) memory
+  PetscMemTypeHost - Returns `PETSC_TRUE` if a given `PetscMemType` refers to memory ONLY accessible from the host, thus Unified Virtual Memory (UVM) managed memory would return `PETSC_FALSE`
 
   Synopsis:
   #include <petscdevicetypes.h>
@@ -79,7 +79,7 @@ M*/
 #define PetscMemTypeHost(m) ((((m) & 0x1) == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE)
 
 /*MC
-  PetscMemTypeDevice - Returns `PETSC_TRUE` if a given `PetscMemType` refers to any kind of device (GPU) memory
+  PetscMemTypeDevice - Returns `PETSC_TRUE` if a given `PetscMemType` refers to any kind of memory accessible from the device, including Unified Virtual Memory (UVM) managed memory
 
   Synopsis:
   #include <petscdevicetypes.h>

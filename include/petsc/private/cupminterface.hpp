@@ -596,7 +596,8 @@ public:
     const auto mtype = attr.type;
     if (managed) *managed = static_cast<PetscBool>(mtype == cupmMemoryTypeManaged);
 #endif // CUDART_VERSION && CUDART_VERSION < 10000 || (defined(__HIP_PLATFORM_HCC__) && PETSC_PKG_HIP_VERSION_LT(5, 5, 0))
-    if (type) *type = ((cerr == cupmSuccess) && (mtype == cupmMemoryTypeDevice)) ? PETSC_MEMTYPE_CUPM() : PETSC_MEMTYPE_HOST;
+    // managed memory is device accessible, so we treat it as device memory?
+    if (type) *type = (cerr == cupmSuccess && (mtype == cupmMemoryTypeDevice || mtype == cupmMemoryTypeManaged)) ? PETSC_MEMTYPE_CUPM() : PETSC_MEMTYPE_HOST;
     if (registered && (cerr == cupmSuccess) && (mtype == cupmMemoryTypeHost)) *registered = PETSC_TRUE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -681,8 +682,6 @@ public:
     // cannot dereference (i.e. cannot call PetscAssertPointer() here)
     PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
     PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
-    // do early return after nullptr check since we need to check that they are not both nullptrs
-    if (PetscUnlikely(dest == src)) PetscFunctionReturn(PETSC_SUCCESS);
     if (kind == cupmMemcpyHostToHost) {
       // If we are HTOH it is cheaper to check if the stream is idle and do a basic mempcy()
       // than it is to just call the vendor functions. This assumes of course that the stream
