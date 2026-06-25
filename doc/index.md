@@ -11,10 +11,9 @@ Immediately jump in and run PETSc and TAO code {any}`handson`.
 
 ## News
 
-The exciting [2026 PETSc Annual User Meeting](https://www.firedrakeproject.org/firedrake_26.html) will take place June 1-3, 2026 in Oxford, UK. It is paired with the Firedrake Meeting taking place at the end of the week, and we would encourage everyone to try and stay the whole week. More info at {any}`community/meetings/meeting`.
+The 2026 PETSc Annual User Meeting was held on June 1-3, 2026 in Oxford, UK. It was paired with the Firedrake Meeting. More info at {any}`community/meetings/meeting`.
 
-
-The PETSc community held an online Birds-of-a-Feather (BoF) session on February 11, 2026, as part of the [CASS BoF Days](https://cass.community/news/2026-02-10-cass-bof-days.html). The session was not recorded. The agenda and slides are availabe at {any}`here<2026-feb-cass-petsc-bof>`.
+The PETSc community held an online Birds-of-a-Feather (BoF) session on February 11, 2026, as part of the [CASS BoF Days](https://cass.community/news/2026-02-10-cass-bof-days.html). The session was not recorded. The agenda and slides are available at {any}`here<2026-feb-cass-petsc-bof>`.
 
 Pierre Jolivet replaces Mrs. Hong Zhang as NumFOCUS signatory due
 to Mrs. Hong Zhang's retirement by unanimous vote of the PETSc council. {any}`Current list of NumFOCUS signatories<numfocus-signatories>`.
