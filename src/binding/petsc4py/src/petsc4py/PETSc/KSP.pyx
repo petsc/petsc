@@ -165,6 +165,9 @@ class KSPType(object):
         further select methods that are currently not implemented
         natively in PETSc, e.g., GCRODR, a recycled Krylov
         method which is similar to KSPLGMRES. `petsc.KSPHPDDM`
+    `IDR`
+        Induced Dimension Reduction method for general nonsymmetric
+        linear systems
 
     See Also
     --------
@@ -219,6 +222,7 @@ class KSPType(object):
     CGLS       = S_(KSPCGLS)
     FETIDP     = S_(KSPFETIDP)
     HPDDM      = S_(KSPHPDDM)
+    IDR        = S_(KSPIDR)
 
 
 class KSPNormType(object):
@@ -2204,6 +2208,119 @@ cdef class KSP(Object):
         """
         cdef PetscInt ival = asInt(restart)
         CHKERR(KSPGMRESSetRestart(self.ksp, ival))
+
+    # --- IDR ---
+
+    def setIDRS(self, s: int) -> None:
+        """Set the shadow space dimension for the IDR solver.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        s
+            Shadow space dimension.
+
+        See Also
+        --------
+        getIDRS, petsc.KSPIDRSetS
+
+        """
+        cdef PetscInt ival = asInt(s)
+        CHKERR(KSPIDRSetS(self.ksp, ival))
+
+    def getIDRS(self) -> int:
+        """Get the shadow space dimension for the IDR solver.
+
+        Not collective.
+
+        Returns
+        -------
+        s: int
+            Shadow space dimension.
+
+        See Also
+        --------
+        setIDRS, petsc.KSPIDRGetS
+
+        """
+        cdef PetscInt ival = 0
+        CHKERR(KSPIDRGetS(self.ksp, &ival))
+        return toInt(ival)
+
+    def setIDRCosine(self, cth: float) -> None:
+        """Set the omega stabilization cosine threshold for IDR.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        cth
+            Stabilization cosine threshold.
+
+        See Also
+        --------
+        getIDRCosine, petsc.KSPIDRSetCosine
+
+        """
+        cdef PetscReal rval = asReal(cth)
+        CHKERR(KSPIDRSetCosine(self.ksp, rval))
+
+    def getIDRCosine(self) -> float:
+        """Get the omega stabilization cosine threshold for IDR.
+
+        Not collective.
+
+        Returns
+        -------
+        cth: float
+            Stabilization cosine threshold.
+
+        See Also
+        --------
+        setIDRCosine, petsc.KSPIDRGetCosine
+
+        """
+        cdef PetscReal rval = 0
+        CHKERR(KSPIDRGetCosine(self.ksp, &rval))
+        return toReal(rval)
+
+    def setIDRRandom(self, Random rnd) -> None:
+        """Set the `Random` object used by the IDR solver.
+
+        Collective.
+
+        Parameters
+        ----------
+        rnd
+            The random number generator context.
+
+        See Also
+        --------
+        getIDRRandom, petsc.KSPIDRSetRandom
+
+        """
+        CHKERR(KSPIDRSetRandom(self.ksp, rnd.rnd))
+
+    def getIDRRandom(self) -> Random:
+        """Get the `Random` object used by the IDR solver.
+
+        Collective.
+
+        Returns
+        -------
+        Random
+            The random number generator context.
+
+        See Also
+        --------
+        setIDRRandom, petsc.KSPIDRGetRandom
+
+        """
+        cdef Random rnd = Random()
+        CHKERR(KSPIDRGetRandom(self.ksp, &rnd.rnd))
+        CHKERR(PetscINCREF(rnd.obj))
+        return rnd
 
     # --- Python ---
 

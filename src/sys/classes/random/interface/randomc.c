@@ -209,13 +209,63 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
-.seealso: `PetscRandom`, `PetscRandomSetFromOptions()`
+.seealso: `PetscRandom`, `PetscRandomAppendOptionsPrefix()`, `PetscRandomSetFromOptions()`
 @*/
 PetscErrorCode PetscRandomSetOptionsPrefix(PetscRandom r, const char prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscRandomAppendOptionsPrefix - Appends to the prefix used for searching for all
+  `PetscRandom` options in the database.
+
+  Logically Collective
+
+  Input Parameters:
++ r      - the random number generator context
+- prefix - the prefix string to prepend to all `PetscRandom` option requests
+
+  Level: advanced
+
+  Note:
+  A hyphen (-) must NOT be given at the beginning of the prefix name.
+  The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+.seealso: `PetscRandom`, `PetscRandomSetOptionsPrefix()`, `PetscRandomSetFromOptions()`
+@*/
+PetscErrorCode PetscRandomAppendOptionsPrefix(PetscRandom r, const char prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)r, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscRandomGetOptionsPrefix - Gets the prefix used for searching for all
+  `PetscRandom` options in the database.
+
+  Not Collective
+
+  Input Parameter:
+. r - the random number generator context
+
+  Output Parameter:
+. prefix - pointer to the prefix string used
+
+  Level: advanced
+
+.seealso: `PetscRandom`, `PetscRandomSetOptionsPrefix()`, `PetscRandomAppendOptionsPrefix()`
+@*/
+PetscErrorCode PetscRandomGetOptionsPrefix(PetscRandom r, const char *prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)r, prefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -408,4 +408,22 @@ int main(int argc, char **args)
       nsize: 2
       args: -ksp_view -pc_type redundant -redundant_pc_type redundant -redundant_redundant_pc_type redundant -redundant_redundant_redundant_pc_type redundant -redundant_redundant_redundant_redundant_pc_type redundant
 
+   testset:
+      args: -ksp_type idr
+      test:
+         suffix: idr
+         args: -pc_type ilu
+      test:
+         suffix: idr_1
+         args: -ksp_idr_s 1 -pc_type ilu
+      test:
+         suffix: idr_2
+         nsize: 2
+         args: -pc_type jacobi
+      test:
+         suffix: idr_3
+         requires: !complex
+         nsize: 4
+         args: -pc_type bjacobi
+
  TEST*/
