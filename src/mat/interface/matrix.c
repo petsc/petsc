@@ -9828,7 +9828,6 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat, IS is)
   PetscCheck(mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Only for factored matrix");
   PetscCall(PetscObjectQueryFunction((PetscObject)mat, "MatFactorSetSchurIS_C", &f));
   PetscCheck(f, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "The selected MatSolverType does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
-  PetscCall(MatDestroy(&mat->schur));
   PetscCall((*f)(mat, is));
   PetscCheck(mat->schur, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Schur complement has not been created");
   PetscFunctionReturn(PETSC_SUCCESS);
