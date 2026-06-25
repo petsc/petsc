@@ -302,15 +302,14 @@ ai-review-optional:
       when: manual
   stage: .pre
   tags:
-    - gce-stage1
+    - feature:ai
   before_script:
     - date
     - hostname
   script:
     - test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
-    - command -v claude >/dev/null 2>&1 || { echo "claude not installed"; exit 1; }
-    - command -v glab >/dev/null 2>&1 || { echo "glab not installed"; exit 1; }
-    - command -v pandoc >/dev/null 2>&1 || { echo "pandoc not installed"; exit 1; }
+    - claude --version || { echo "claude not installed"; exit 1; }
+    - glab --version || { echo "glab not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
       if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'AI review'; then
@@ -318,15 +317,8 @@ ai-review-optional:
       else
         REVIEW_CMD="/review-mr"
       fi
-      set -o pipefail
       # --max-turns 100: large MRs were hitting the 30-turn cap before the review finished.
-      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 100 | tee ai-review.md
-    - |
-      if test -s ai-review.md; then
-        pandoc --from=markdown --to=html --standalone --metadata title="AI Review" ai-review.md --output ai-review.html
-      else
-        echo "No review output to convert"
-      fi
+      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 100
   timeout: 1h
   allow_failure: true
   interruptible: true
