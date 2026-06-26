@@ -25,10 +25,10 @@ simulations by scientists and engineers.
 
 ## Upcoming Meetings
 
-- {any}`Oxford, UK; June 1-3, 2026 <2026_meeting>`
 
 ## Previous Meetings
 
+- {any}`Oxford, UK; June 1-3, 2026 <2026_meeting>`
 - {any}`Buffalo, New York, USA; May 20-21, 2025 <2025_meeting>`
 - {any}`Cologne, Germany; May 23-24, 2024 <2024_meeting>`
 - {any}`Chicago, Illinois, USA; June 5-7, 2023 <2023_meeting>`

@@ -1015,7 +1015,7 @@ cdef class Mat(Object):
         CHKERR(MatSetPreallocationCOOLocal(self.mat, ncoo, ccoo_i, ccoo_j))
         return self
 
-    def setPreallocationCSR(self, csr: CSRIndicesSpec) -> Self:
+    def setPreallocationCSR(self, csr: CSRSpec | CSRIndicesSpec) -> Self:
         """Preallocate memory for the matrix with a CSR layout.
 
         Collective.
