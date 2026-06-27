@@ -54,6 +54,5 @@ typedef struct {
 #define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + (i) + lgmres->aug_dim] /*A times error vector */
 #define AUG_TEMP     lgmres->augvecs[0]                                  /* work vector */
 
-#define LGMRES_DELTA_DIRECTIONS 10
-#define LGMRES_DEFAULT_MAXK     30
-#define LGMRES_DEFAULT_AUGDIM   2 /*default number of augmentation vectors */
+#define LGMRES_DEFAULT_MAXK   30
+#define LGMRES_DEFAULT_AUGDIM 2 /*default number of augmentation vectors */
