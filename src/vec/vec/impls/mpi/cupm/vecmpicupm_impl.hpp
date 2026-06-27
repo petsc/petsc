@@ -342,6 +342,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::SetValuesCOO(Vec x, const PetscScalar v[],
       /* If user gave v[] in host, we might need to copy it to device if any */
       PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), size, &vv));
       PetscCall(PetscCUPMMemcpyAsync(vv, v, size, cupmMemcpyHostToDevice, stream));
+      PetscCall(PetscLogCpuToGpu(size * sizeof(PetscScalar)));
     }
 
     /* Pack entries to be sent to remote */

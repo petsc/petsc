@@ -363,14 +363,15 @@ inline PetscErrorCode CUPMObject<T>::CheckPointerMatchesMemType_(const void *ptr
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG) && ptr) {
     PetscMemType ptr_mtype;
+    PetscBool    managed;
 
-    PetscCall(PetscCUPMGetMemType(ptr, &ptr_mtype));
+    PetscCall(PetscCUPMGetMemType(ptr, &ptr_mtype, nullptr, &managed));
     if (mtype == PETSC_MEMTYPE_HOST) {
-      PetscCheck(PetscMemTypeHost(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
+      PetscCheck(managed || PetscMemTypeHost(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
     } else if (mtype == PETSC_MEMTYPE_DEVICE) {
       // generic "device" memory should only care if the actual memtype is also generically
       // "device"
-      PetscCheck(PetscMemTypeDevice(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
+      PetscCheck(managed || PetscMemTypeDevice(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
     } else {
       PetscCheck(mtype == ptr_mtype, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
     }

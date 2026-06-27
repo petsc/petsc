@@ -2293,6 +2293,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetValuesCOO(Vec x, const PetscScalar v[],
     // If user gave v[] in host, we might need to copy it to device if any
     PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), size, &vv));
     PetscCall(PetscCUPMMemcpyAsync(vv, v, size, cupmMemcpyHostToDevice, stream));
+    PetscCall(PetscLogCpuToGpu(size * sizeof(PetscScalar)));
   }
 
   if (const auto n = x->map->n) {

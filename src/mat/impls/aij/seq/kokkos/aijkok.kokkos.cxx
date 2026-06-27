@@ -1409,6 +1409,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A, const PetscScalar v[],
   PetscCall(PetscGetMemType(v, &memtype));
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
     kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), ConstMatScalarKokkosViewHost(v, n));
+    PetscCall(PetscLogCpuToGpu(n * sizeof(PetscScalar)));
   } else {
     kv = ConstMatScalarKokkosView(v, n); /* Directly use v[]'s memory */
   }
