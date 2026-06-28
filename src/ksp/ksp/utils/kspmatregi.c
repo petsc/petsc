@@ -2,6 +2,10 @@
 #include <../src/ksp/ksp/utils/schurm/schurm.h>
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
+#if PetscDefined(HAVE_HTOOL)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_NestHtool(void);
+#endif
+
 static PetscBool KSPMatRegisterAllCalled = PETSC_FALSE;
 
 /*@C
@@ -30,5 +34,8 @@ PetscErrorCode KSPMatRegisterAll(void)
   PetscCall(MatRegister(MATLMVMSYMBROYDEN, MatCreate_LMVMSymBrdn));
   PetscCall(MatRegister(MATLMVMSYMBADBROYDEN, MatCreate_LMVMSymBadBrdn));
   PetscCall(MatRegister(MATLMVMDIAGBROYDEN, MatCreate_LMVMDiagBrdn));
+#if PetscDefined(HAVE_HTOOL)
+  PetscCall(MatSolverTypeRegister_NestHtool());
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

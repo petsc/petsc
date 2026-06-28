@@ -63,16 +63,18 @@ PC Object: 4 MPI processes
           factor fill ratio given 0., needed 0.
             Factored matrix:
               Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
-                type: seqdense
+                type: htool
                 rows=202, cols=202
-                package used to perform factorization: petsc
-                total: nonzeros=40804, allocated nonzeros=40804
+                package used to perform factorization: htool
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
-          type: seqdense
+          type: nest
           rows=202, cols=202
-          total: nonzeros=40804, allocated nonzeros=40804
-          total number of mallocs used during MatSetValues calls=0
+              MatNest, rows=2, cols=2, structure:
+              (0,0) : prefix="fieldsplit_0_", type=htool, rows=200, cols=200
+              (0,1) : type=seqdense, rows=200, cols=2
+              (1,0) : type=seqdense, rows=2, cols=200
+              (1,1) : prefix="fieldsplit_1_", type=seqdense, rows=2, cols=2
     linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 4 MPI processes
       type: htool
