@@ -197,6 +197,18 @@ int main(int argc, char **args)
 /*TEST
 
     test:
+      suffix: vector_allocate_1
+      filter: grep -w -A15 "Destructions" | grep -w -m 1 "Vector" | awk "{print ((\$2 + 0) <= 20)}"
+      requires: defined(PETSC_USE_LOG)
+      args: -pc_type jacobi -m 5 -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_gmres_vector_allocation_size 1 -log_view
+
+    test:
+      suffix: vector_allocate_2
+      filter: grep -w -A15 "Destructions" | grep -w -m 1 "Vector" | awk "{print ((\$2 + 0) > 20)}"
+      requires: defined(PETSC_USE_LOG)
+      args: -pc_type jacobi -m 5 -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_gmres_vector_allocation_size 20 -log_view
+
+    test:
       args: -pc_type jacobi -ksp_monitor -m 5 -ksp_orthogonalization_cgs_refinement_type refine_always
 
     test:
