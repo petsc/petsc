@@ -660,20 +660,125 @@ static PetscErrorCode MatNestGetBlock_Private(Mat A, PetscInt rbegin, PetscInt r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNestFindSubMat(Mat A, struct MatNestISPair *is, IS isrow, IS iscol, Mat *B)
+static PetscErrorCode MatNestFindSubMat(Mat A, IS isrow, IS iscol, PetscBool global, PetscBool *found, Mat *B)
 {
   Mat_Nest *vs = (Mat_Nest *)A->data;
   PetscInt  rbegin, rend, cbegin, cend;
 
   PetscFunctionBegin;
-  PetscCall(MatNestFindISRange(A, vs->nr, is->row, isrow, &rbegin, &rend));
-  PetscCall(MatNestFindISRange(A, vs->nc, is->col, iscol, &cbegin, &cend));
+  *B = NULL;
+  PetscCall(MatNestFindISRange(A, vs->nr, global ? vs->isglobal.row : vs->islocal.row, isrow, &rbegin, &rend));
+  PetscCall(MatNestFindISRange(A, vs->nc, global ? vs->isglobal.col : vs->islocal.col, iscol, &cbegin, &cend));
   if (rend == rbegin + 1 && cend == cbegin + 1) {
     if (!vs->m[rbegin][cbegin]) PetscCall(MatNestFillEmptyMat_Private(A, rbegin, cbegin, vs->m[rbegin] + cbegin));
     *B = vs->m[rbegin][cbegin];
+    if (found) *found = PETSC_TRUE;
   } else if (rbegin != -1 && cbegin != -1) {
+    PetscCheck(global == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_SUP, "MATNEST local submatrix cannot select more than a single submatrix");
     PetscCall(MatNestGetBlock_Private(A, rbegin, rend, cbegin, cend, B));
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Could not find index set");
+    if (found) *found = PETSC_TRUE;
+  } else if (found) *found = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatNestFindFullBlocks_Private(Mat A, PetscInt n, const IS blockis[], IS is, const char axis[], PetscInt *nselected, PetscInt **selected, IS **isout)
+{
+  const PetscInt *idx;
+  PetscInt       *blocks;
+  IS             *out;
+  PetscInt        N, bs, cursor = 0, i, nblock, nlocal, nout = 0, offset = 0, start;
+  PetscBool       complete, match;
+
+  PetscFunctionBegin;
+  PetscCall(ISGetSize(is, &N));
+  PetscCheck(N, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Empty %s index sets are not supported for MATNEST submatrices", axis);
+  PetscCall(ISGetLocalSize(is, &nlocal));
+  PetscCall(ISGetIndices(is, &idx));
+  PetscCall(PetscMalloc1(n, &blocks));
+  for (i = 0; i < n; i++) {
+    const PetscInt *bidx;
+
+    PetscCall(ISGetSize(blockis[i], &N));
+    if (!N) continue;
+    PetscCall(ISGetLocalSize(blockis[i], &nblock));
+    match = (PetscBool)(cursor + nblock <= nlocal);
+    if (match && nblock) {
+      PetscCall(ISGetIndices(blockis[i], &bidx));
+      PetscCall(PetscArraycmp(idx + cursor, bidx, nblock, &match));
+      PetscCall(ISRestoreIndices(blockis[i], &bidx));
+    }
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &match, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+    if (match) {
+      blocks[nout++] = i;
+      cursor += nblock;
+    }
+  }
+  complete = (PetscBool)(cursor == nlocal);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &complete, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCall(ISRestoreIndices(is, &idx));
+  if (!complete || !nout) PetscCall(PetscFree(blocks));
+  PetscCheck(complete && nout, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MATNEST submatrix %s index set must be an ordered union of complete MATNEST blocks", axis);
+
+  PetscCallMPI(MPI_Scan(&nlocal, &start, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+  start -= nlocal;
+  PetscCall(PetscMalloc1(nout, &out));
+  for (i = 0; i < nout; i++) {
+    PetscCall(ISGetLocalSize(blockis[blocks[i]], &nblock));
+    PetscCall(ISGetBlockSize(blockis[blocks[i]], &bs));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), nblock, start + offset, 1, out + i));
+    PetscCall(ISSetBlockSize(out[i], bs));
+    offset += nblock;
+  }
+  PetscCheck(offset == nlocal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent MATNEST submatrix %s layout", axis);
+  *nselected = nout;
+  *selected  = blocks;
+  *isout     = out;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCreateSubMatrix_Nest_Nontrivial(Mat A, IS isrow, IS iscol, MatReuse reuse, Mat *B)
+{
+  Mat_Nest *vs = (Mat_Nest *)A->data;
+  Mat      *submats;
+  IS       *rowis, *colis;
+  PetscInt *rows, *cols;
+  PetscInt  nr, nc;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscCall(MatNestFindFullBlocks_Private(A, vs->nr, vs->isglobal.row, isrow, "row", &nr, &rows, &rowis));
+  PetscCall(MatNestFindFullBlocks_Private(A, vs->nc, vs->isglobal.col, iscol, "column", &nc, &cols, &colis));
+  PetscCall(PetscMalloc1(nr * nc, &submats));
+  for (PetscInt i = 0; i < nr; i++) {
+    for (PetscInt j = 0; j < nc; j++) submats[i * nc + j] = vs->m[rows[i]][cols[j]];
+  }
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatCreateNest(PetscObjectComm((PetscObject)A), nr, rowis, nc, colis, submats, B));
+    (*B)->assembled = A->assembled;
+  } else {
+    PetscCheck(reuse == MAT_REUSE_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Invalid MatReuse %d", (int)reuse);
+    PetscCall(PetscObjectTypeCompare((PetscObject)*B, MATNEST, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse a non-MATNEST matrix for this MATNEST submatrix");
+    vs = (Mat_Nest *)(*B)->data;
+    PetscCheck(vs->nr == nr && vs->nc == nc, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse MATNEST submatrix with a different block layout");
+    for (PetscInt i = 0; i < nr; i++) {
+      PetscCall(ISEqualUnsorted(vs->isglobal.row[i], rowis[i], &flg));
+      PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse MATNEST submatrix with a different row layout");
+    }
+    for (PetscInt j = 0; j < nc; j++) {
+      PetscCall(ISEqualUnsorted(vs->isglobal.col[j], colis[j], &flg));
+      PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse MATNEST submatrix with a different column layout");
+    }
+    PetscCall(MatNestSetSubMats(*B, nr, rowis, nc, colis, submats));
+    (*B)->assembled = A->assembled;
+  }
+  PetscCall(PetscFree(submats));
+  for (PetscInt i = 0; i < nr; i++) PetscCall(ISDestroy(rowis + i));
+  for (PetscInt j = 0; j < nc; j++) PetscCall(ISDestroy(colis + j));
+  PetscCall(PetscFree(rows));
+  PetscCall(PetscFree(rowis));
+  PetscCall(PetscFree(cols));
+  PetscCall(PetscFree(colis));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -682,11 +787,15 @@ static PetscErrorCode MatNestFindSubMat(Mat A, struct MatNestISPair *is, IS isro
 */
 static PetscErrorCode MatCreateSubMatrix_Nest(Mat A, IS isrow, IS iscol, MatReuse reuse, Mat *B)
 {
-  Mat_Nest *vs = (Mat_Nest *)A->data;
   Mat       sub;
+  PetscBool found;
 
   PetscFunctionBegin;
-  PetscCall(MatNestFindSubMat(A, &vs->isglobal, isrow, iscol, &sub));
+  PetscCall(MatNestFindSubMat(A, isrow, iscol, PETSC_TRUE, &found, &sub));
+  if (!found) {
+    PetscCall(MatCreateSubMatrix_Nest_Nontrivial(A, isrow, iscol, reuse, B));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   switch (reuse) {
   case MAT_INITIAL_MATRIX:
     PetscCall(PetscObjectReference((PetscObject)sub));
@@ -705,11 +814,10 @@ static PetscErrorCode MatCreateSubMatrix_Nest(Mat A, IS isrow, IS iscol, MatReus
 
 static PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *B)
 {
-  Mat_Nest *vs = (Mat_Nest *)A->data;
-  Mat       sub;
+  Mat sub;
 
   PetscFunctionBegin;
-  PetscCall(MatNestFindSubMat(A, &vs->islocal, isrow, iscol, &sub));
+  PetscCall(MatNestFindSubMat(A, isrow, iscol, PETSC_FALSE, NULL, &sub));
   /* We allow the submatrix to be NULL, perhaps it would be better for the user to return an empty matrix instead */
   PetscCall(PetscObjectReference((PetscObject)sub));
   *B = sub;
@@ -718,11 +826,10 @@ static PetscErrorCode MatGetLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *
 
 static PetscErrorCode MatRestoreLocalSubMatrix_Nest(Mat A, IS isrow, IS iscol, Mat *B)
 {
-  Mat_Nest *vs = (Mat_Nest *)A->data;
-  Mat       sub;
+  Mat sub;
 
   PetscFunctionBegin;
-  PetscCall(MatNestFindSubMat(A, &vs->islocal, isrow, iscol, &sub));
+  PetscCall(MatNestFindSubMat(A, isrow, iscol, PETSC_FALSE, NULL, &sub));
   PetscCheck(*B == sub, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Local submatrix has not been gotten");
   if (sub) {
     PetscCheck(((PetscObject)sub)->refct > 1, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Local submatrix has had reference count decremented too many times");
@@ -1560,7 +1667,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A, PetscInt n, const
       PetscCall(PetscFree2(ilocal, iremote));
     } else {
       PetscCall(ISGetLocalSize(isglobal[i], &mi));
-      for (j = 0; j < mi; j++) ix[m + j] = ix2[i];
+      for (j = 0; j < mi; j++) ix[m + j] = ix2[j];
     }
     PetscCall(ISRestoreIndices(isglobal[i], &ix2));
     m += mi;
