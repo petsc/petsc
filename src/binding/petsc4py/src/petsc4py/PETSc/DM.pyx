@@ -2342,18 +2342,19 @@ cdef class DM(Object):
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
 
-    def setKSPComputeOperators(
-        self, operators,
+    def setKSPCreateOperators(
+        self, operators: KSPCreateOperatorsFunction | None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
-        """Matrix associated with the linear system.
+        """Matrix creation associated with the linear system.
 
         Collective.
 
         Parameters
         ----------
-        operator
-            Callback function to compute the operators.
+        operators
+            Callback function returning the operator and preconditioning
+            matrices. Pass `None` to remove the callback.
         args
             Positional arguments for the callback.
         kargs
@@ -2361,14 +2362,51 @@ cdef class DM(Object):
 
         See Also
         --------
-        petsc.DMKSPSetComputeOperators
+        setKSPComputeOperators, petsc.DMKSPSetCreateOperators
 
         """
-        if args  is None: args  = ()
-        if kargs is None: kargs = {}
-        context = (operators, args, kargs)
-        self.set_attr('__operators__', context)
-        CHKERR(DMKSPSetComputeOperators(self.dm, KSP_ComputeOps, <void*>context))
+        if operators is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (operators, args, kargs)
+            self.set_attr('__create_operators__', context)
+            CHKERR(DMKSPSetCreateOperators(self.dm, KSP_CreateOperators, <void*>context))
+        else:
+            self.set_attr('__create_operators__', None)
+            CHKERR(DMKSPSetCreateOperators(self.dm, NULL, NULL))
+
+    def setKSPComputeOperators(
+        self, operators: KSPComputeOperatorsFunction | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None) -> None:
+        """Matrix computation associated with the linear system.
+
+        Collective.
+
+        Parameters
+        ----------
+        operators
+            Callback function to compute the operators. Pass `None` to
+            remove the callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        setKSPCreateOperators, petsc.DMKSPSetComputeOperators
+
+        """
+        if operators is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (operators, args, kargs)
+            self.set_attr('__operators__', context)
+            CHKERR(DMKSPSetComputeOperators(self.dm, KSP_ComputeOperators, <void*>context))
+        else:
+            self.set_attr('__operators__', None)
+            CHKERR(DMKSPSetComputeOperators(self.dm, NULL, NULL))
 
     def createFieldDecomposition(self) -> tuple[list, list, list]:
         """Return field splitting information.

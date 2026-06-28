@@ -57,7 +57,8 @@ cdef DMRestrictHookFunction
 # --- KSP ---
 
 cdef KSPRHSFunction
-cdef KSPOperatorsFunction
+cdef KSPCreateOperatorsFunction
+cdef KSPComputeOperatorsFunction
 cdef KSPConvergenceTestFunction
 cdef KSPMonitorFunction
 cdef KSPPreSolveFunction

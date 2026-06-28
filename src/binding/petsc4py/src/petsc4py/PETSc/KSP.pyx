@@ -778,7 +778,7 @@ cdef class KSP(Object):
 
     def setComputeOperators(
         self,
-        operators: KSPOperatorsFunction,
+        operators: KSPComputeOperatorsFunction,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
         """Set routine to compute the linear operators.
@@ -819,7 +819,7 @@ cdef class KSP(Object):
         if kargs is None: kargs = {}
         context = (operators, args, kargs)
         self.set_attr('__operators__', context)
-        CHKERR(KSPSetComputeOperators(self.ksp, KSP_ComputeOps, <void*>context))
+        CHKERR(KSPSetComputeOperators(self.ksp, KSP_ComputeOperators, <void*>context))
 
     def setOperators(self, Mat A=None, Mat P=None) -> None:
         """Set matrix associated with the linear system.

@@ -310,6 +310,119 @@ class BaseTestDA:
         self.assertTrue(ans.equal(diag2))
 
 
+class TestDMKSPCreateOperators(unittest.TestCase):
+    def setUp(self):
+        self.da = PETSc.DMDA().create([3], comm=PETSc.COMM_SELF)
+
+    def tearDown(self):
+        self.da.destroy()
+
+    def _assemble_diagonal(self, mat, value):
+        mat.zeroEntries()
+        rstart, rend = mat.getOwnershipRange()
+        for row in range(rstart, rend):
+            mat.setValue(row, row, value)
+        mat.assemble()
+
+    def _create_ksp(self, createops, args = None, kargs = None):
+        cargs = ('a', 3)
+        ckargs = {'c': 1}
+        def computeops(ksp, A, P, a1, a2, c=0):
+            self.assertTrue(a1 == 'a')
+            self.assertTrue(a2 == 3)
+            self.assertTrue(c == 1)
+            self._assemble_diagonal(A, 2.0)
+            if A != P:
+                self._assemble_diagonal(P, 3.0)
+
+        self.da.setKSPCreateOperators(createops, args=args, kargs=kargs)
+        self.da.setKSPComputeOperators(computeops, args=cargs, kargs=ckargs)
+        ksp = PETSc.KSP().create(self.da.comm)
+        ksp.setType(PETSc.KSP.Type.PREONLY)
+        ksp.getPC().setType(PETSc.PC.Type.NONE)
+        ksp.setDM(self.da)
+        return ksp
+
+    def testCreateOperatorsReturnsPair(self):
+        args = ('n', 2)
+        kargs = {'b': 3}
+        def createops(ksp, a1, a2, b=0, retlist=False):
+            self.assertTrue(a1 == 'n')
+            self.assertTrue(a2 == 2)
+            self.assertTrue(b == 3)
+            A = self.da.createMat()
+            P = self.da.createMat()
+            if retlist:
+                return [A, P]
+            return A, P
+
+        for retlist in [False,True]:
+            tkargs = kargs.copy()
+            tkargs.update({'retlist': retlist})
+            ksp = self._create_ksp(createops, args=args, kargs=tkargs)
+            ksp.setUp()
+            A, P = ksp.getOperators()
+            self.assertTrue(bool(A))
+            self.assertTrue(bool(P))
+            self.assertFalse(A == P)
+            ksp.destroy()
+
+    def testCreateOperatorsCanBeRemoved(self):
+        called = {"n": 0}
+
+        def createops(ksp):
+            called["n"] += 1
+            A = self.da.createMat()
+            P = self.da.createMat()
+            return A, P
+
+        ksp = self._create_ksp(createops)
+        self.da.setKSPCreateOperators(None)
+        ksp.setUp()
+        self.assertEqual(called["n"], 0)
+        ksp.destroy()
+
+    def testComputeOperatorsCanBeRemoved(self):
+        def createops(ksp):
+            A = self.da.createMat()
+            P = self.da.createMat()
+            return A, P
+
+        ksp = self._create_ksp(createops)
+        self.da.setKSPComputeOperators(None)
+        with self.assertRaises(PETSc.Error):
+            ksp.setUp()
+        ksp.destroy()
+
+    def testCreateOperatorsSingleMat(self):
+        def createops(ksp, rettuple):
+            A = self.da.createMat()
+            if rettuple:
+                if rettuple > 0:
+                   return A, None
+                return A, A
+            return A
+
+        for rettuple in [-1, 0, 1]:
+            ksp = self._create_ksp(createops, args=(rettuple,))
+            ksp.setUp()
+            A, P = ksp.getOperators()
+            self.assertTrue(bool(A))
+            self.assertTrue(bool(P))
+            self.assertTrue(A == P)
+            ksp.destroy()
+
+    def testCreateOperatorsPmatOnlyError(self):
+        def createops(ksp):
+            return None, self.da.createMat()
+
+        ksp = self._create_ksp(createops)
+        with self.assertRaises(PETSc.Error):
+            ksp.setUp()
+        ksp.destroy()
+        PETSc.garbage_cleanup()
+
+
 MIRROR = PETSc.DMDA.BoundaryType.MIRROR
 GHOSTED = PETSc.DMDA.BoundaryType.GHOSTED
 PERIODIC = PETSc.DMDA.BoundaryType.PERIODIC

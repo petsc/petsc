@@ -290,6 +290,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP, PetscInt, const Pe
 typedef struct _p_DMKSP  *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
+  KSPCreateOperatorsFn     *createoperators;
   KSPComputeOperatorsFn    *computeoperators;
   KSPComputeRHSFn          *computerhs;
   KSPComputeInitialGuessFn *computeinitialguess;
@@ -331,6 +332,7 @@ struct _DMKSPOps {
 S*/
 struct _p_DMKSP {
   PETSCHEADER(struct _DMKSPOps);
+  void *createoperatorsctx;
   void *operatorsctx;
   void *rhsctx;
   void *initialguessctx;

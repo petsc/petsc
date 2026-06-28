@@ -201,7 +201,8 @@ cdef extern from * nogil:
     PetscErrorCode DMShellSetGlobalVector(PetscDM, PetscVec)
     PetscErrorCode DMShellSetLocalVector(PetscDM, PetscVec)
 
-    PetscErrorCode DMKSPSetComputeOperators(PetscDM, PetscKSPComputeOpsFunction, void*)
+    PetscErrorCode DMKSPSetComputeOperators(PetscDM, PetscKSPComputeOperatorsFunction, void*)
+    PetscErrorCode DMKSPSetCreateOperators(PetscDM, PetscKSPCreateOperatorsFunction, void*)
 
     PetscErrorCode DMCreateFieldDecomposition(PetscDM, PetscInt*, char***, PetscIS**, PetscDM**)
 

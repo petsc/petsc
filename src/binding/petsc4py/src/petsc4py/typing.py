@@ -55,7 +55,8 @@ __all__ = [
     'DMCoarsenHookFunction',
     'DMRestrictHookFunction',
     'KSPRHSFunction',
-    'KSPOperatorsFunction',
+    'KSPCreateOperatorsFunction',
+    'KSPComputeOperatorsFunction',
     'KSPConvergenceTestFunction',
     'KSPMonitorFunction',
     'KSPPreSolveFunction',
@@ -314,8 +315,11 @@ DMRestrictHookFunction = Callable[[DM, Mat, Vec, Mat, DM], None]
 KSPRHSFunction = Callable[[KSP, Vec], None]
 """`PETSc.KSP` right-hand side function callback."""
 
-KSPOperatorsFunction = Callable[[KSP, Mat, Mat], None]
-"""`PETSc.KSP` operators function callback."""
+KSPCreateOperatorsFunction = Callable[[KSP], Mat | tuple[Mat, Mat]]
+"""`PETSc.KSP` create operators function callback."""
+
+KSPComputeOperatorsFunction = Callable[[KSP, Mat, Mat], None]
+"""`PETSc.KSP` compute operators function callback."""
 
 KSPConvergenceTestFunction = Callable[[KSP, int, float], KSP.ConvergedReason]
 """`PETSc.KSP` convergence test callback."""
