@@ -88,6 +88,7 @@
 ```{rubric} KSP:
 ```
 
+- Add `KSPGMRESSetVectorAllocationSize()` to indicate how many additional vectors are allocated each time more restart vectors are allocated for GMRES implementations
 - Add `KSPCGTRNormType`, `KSPCGSetTRNormType()`, and `KSPCGGetTRNormType()` to select the trust-region norm in `KSPCG`, `KSPSTCG`, `KSPNASH`, and `KSPGLTR`
 - Deprecate `KSPCGGetNormD()` in favor of `KSPCGGetTRSolutionNorm()` and `-ksp_cg_dtype` in favor of `-ksp_cg_tr_norm_type`
 - Implement `KSPSTCG` as a specialization of `KSPCG`, sharing trust-region norms, feasible Euclidean initial guesses, and objective targets
