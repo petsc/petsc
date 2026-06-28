@@ -35,29 +35,30 @@ public:
 };
 
 struct Mat_Htool {
-  PetscInt                                                         dim;
-  PetscReal                                                       *gcoords_target;
-  PetscReal                                                       *gcoords_source;
-  PetscInt                                                         max_cluster_leaf_size;
-  PetscReal                                                        epsilon;
-  PetscReal                                                        eta;
-  PetscInt                                                         depth[2];
-  PetscBool                                                        block_tree_consistency;
-  PetscBool                                                        permutation;
-  PetscBool                                                        recompression;
-  MatHtoolCompressorType                                           compressor;
-  MatHtoolClusteringType                                           clustering;
-  MatHtoolKernelFn                                                *kernel;
-  void                                                            *kernelctx;
-  WrapperHtool                                                    *wrapper;
-  std::unique_ptr<htool::Cluster<PetscReal>>                       target_cluster;
-  std::unique_ptr<htool::Cluster<PetscReal>>                       source_cluster;
-  std::unique_ptr<htool::DefaultApproximationBuilder<PetscScalar>> distributed_operator_holder_w_assembly;
-  std::unique_ptr<htool::VirtualLocalToLocalOperator<PetscScalar>> local_to_local_operator;
-  std::unique_ptr<htool::CustomApproximationBuilder<PetscScalar>>  distributed_operator_holder_wo_assembly;
-  const htool::DistributedOperator<PetscScalar>                   *distributed_operator;
-  const htool::HMatrix<PetscScalar>                               *block_diagonal_hmatrix;
-  const htool::HMatrix<PetscScalar>                               *local_hmatrix;
+  PetscInt                                                          dim;
+  PetscReal                                                        *gcoords_target;
+  PetscReal                                                        *gcoords_source;
+  PetscInt                                                          max_cluster_leaf_size;
+  PetscReal                                                         epsilon;
+  PetscReal                                                         eta;
+  PetscInt                                                          depth[2];
+  PetscBool                                                         block_tree_consistency;
+  PetscBool                                                         permutation;
+  PetscBool                                                         recompression;
+  MatHtoolCompressorType                                            compressor;
+  MatHtoolClusteringType                                            clustering;
+  MatHtoolKernelFn                                                 *kernel;
+  void                                                             *kernelctx;
+  WrapperHtool                                                     *wrapper;
+  std::shared_ptr<htool::Cluster<PetscReal>>                        target_cluster;
+  std::shared_ptr<htool::Cluster<PetscReal>>                        source_cluster;
+  std::unique_ptr<htool::HMatrix<PetscScalar>>                      local_hmatrix;
+  std::unique_ptr<htool::VirtualLocalToLocalOperator<PetscScalar>>  local_to_local_operator;
+  std::unique_ptr<htool::VirtualGlobalToLocalOperator<PetscScalar>> global_to_local_operator;
+  std::unique_ptr<htool::CustomApproximationBuilder<PetscScalar>>   distributed_operator_holder;
+  const htool::DistributedOperator<PetscScalar>                    *distributed_operator;
+  const htool::HMatrix<PetscScalar>                                *block_diagonal_hmatrix;
+  const htool::HMatrix<PetscScalar>                                *local_hmatrix_view;
 };
 
 struct MatHtoolKernelTranspose {
