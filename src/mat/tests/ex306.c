@@ -33,7 +33,7 @@ int main(int argc, char **args)
 
   /* Block-tridiagonal matrix: each row has one diagonal entry of value 4.0
      and -1.0 entries at every other column in its own block and the two
-     neighbouring blocks.  All `blocksize` rows of a block share the same column
+     neighboring blocks.  All `blocksize` rows of a block share the same column
      pattern, so MatSeqAIJCheckInode() forms `nblock` inodes of size `blocksize`. */
   for (PetscInt Ib = 0; Ib < nblock; Ib++) {
     PetscInt    Jlo = PetscMax(Ib - 1, 0), Jhi = PetscMin(Ib + 1, nblock - 1);

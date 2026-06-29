@@ -187,19 +187,18 @@ M*/
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscEnum);
 #define MPIU_BOOL MPI_C_BOOL PETSC_DEPRECATED_MACRO(3, 24, 0, "MPI_C_BOOL", )
 
+PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
+
 /*MC
-   MPIU_INT - Portable MPI datatype corresponding to `PetscInt` independent of the precision of `PetscInt`
+   MPIU_INT - Portable `MPI_Datatype` corresponding to `PetscInt` independent of the precision of `PetscInt`
 
    Level: beginner
 
    Note:
-   In MPI calls that require an MPI datatype that matches a `PetscInt` or array of `PetscInt` values, pass this value.
+   In MPI calls that require an `MPI_Datatype` that matches a `PetscInt` or array of `PetscInt` values, pass this value.
 
-.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_COUNT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+.seealso: `MPI_Datatype`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_COUNT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
-
-PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
-
 #if defined(PETSC_USE_64BIT_INDICES)
   #define MPIU_INT MPIU_INT64
 #else
@@ -207,17 +206,18 @@ PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 #endif
 
 /*MC
-   MPIU_COUNT - Portable MPI datatype corresponding to `PetscCount` independent of the precision of `PetscCount`
+   MPIU_COUNT - Portable `MPI_Datatype` corresponding to `PetscCount` independent of the precision of `PetscCount`
 
    Level: beginner
 
    Note:
-   In MPI calls that require an MPI datatype that matches a `PetscCount` or array of `PetscCount` values, pass this value.
+   In MPI calls that require an `MPI_Datatype` that matches a `PetscCount` or array of `PetscCount` values, pass this value.
 
   Developer Note:
   It seems `MPI_AINT` is unsigned so this may be the wrong choice here since `PetscCount` is signed
 
-.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_INT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+.seealso: `MPI_Datatype`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_INT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`,
+          `MPI_Count`
 M*/
 #define MPIU_COUNT MPI_AINT
 
@@ -1012,6 +1012,28 @@ M*/
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 
+/*MC
+   PetscNewLog - Deprecated alias for `PetscNew()`; previously logged the allocation against a `PetscObject`
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode PetscNewLog(PetscObject obj, type **result)
+
+   Not Collective
+
+   Input Parameter:
+.  obj - the `PetscObject` to which the allocation used to be charged (now ignored)
+
+   Output Parameter:
+.  result - the newly allocated memory, sized to match `type`
+
+   Level: deprecated
+
+   Note:
+   This macro is retained only for source compatibility. Use `PetscNew()` instead; PETSc no longer associates allocations with a specific `PetscObject`.
+
+.seealso: `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscFree()`
+M*/
 #define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscNew()", ) PetscNew(b)
 
 /*MC
@@ -1263,7 +1285,7 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 
 #if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
 /*MC
-   MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for `MPI_SUM` with
+   MPIU_SUM___FP16___FLOAT128 - `MPI_Op` that acts as a replacement for `MPI_SUM` with
    custom `MPI_Datatype` `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
 
    Level: advanced
@@ -1271,7 +1293,7 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
    Developer Note:
    This should be unified with `MPIU_SUM`
 
-.seealso: `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+.seealso: `MPI_Op`, `MPI_Datatype`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
 PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 #endif
@@ -1444,7 +1466,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscBool PetscObjectParameterDeclare(type, char* NAME)
+   PetscObjectParameterDeclare(type, NAME)
 
    Input Parameters:
 +  type - the type of the parameter, for example `PetscInt`
@@ -1454,7 +1476,28 @@ M*/
 
 .seealso: `PetscObjectParameterSetDefault()`, `PetscInitialize()`, `PetscFinalize()`, `PetscObject`, `SNESParametersInitialize()`
 M*/
-#define PetscObjectParameterDeclare(type, NAME)    type NAME, default_##NAME
+#define PetscObjectParameterDeclare(type, NAME) type NAME, default_##NAME
+
+/*MC
+   PetscObjectParameterDeclarePtr - declares a pointer-valued parameter inside a `PetscObject` together with a slot for its default
+
+   No Fortran Support
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscObjectParameterDeclarePtr(type, NAME)
+
+   Input Parameters:
++  type - the pointee type of the parameter, for example `PetscReal`
+-  NAME - the name of the parameter, unquoted
+
+   Level: developer
+
+   Note:
+   Equivalent to `PetscObjectParameterDeclare()` but for pointer-valued parameters: declares `type *NAME` and `type *default_##NAME` so that `PetscObjectParameterSetDefault()` can record and propagate the default value.
+
+.seealso: `PetscObjectParameterDeclare()`, `PetscObjectParameterSetDefault()`, `PetscInitialize()`, `PetscFinalize()`, `PetscObject`, `SNESParametersInitialize()`
+M*/
 #define PetscObjectParameterDeclarePtr(type, NAME) type *NAME, *default_##NAME
 
 /*MC
@@ -1577,6 +1620,30 @@ PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm, PetscIn
 PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject, PetscViewer);
+/*MC
+   PetscObjectQueryFunction - Retrieve a function pointer that was previously composed onto a `PetscObject` with `PetscObjectComposeFunction()`
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], void (**fptr)(void))
+
+   Logically Collective
+
+   Input Parameters:
++  obj  - the `PetscObject`
+-  name - the string under which the function was composed
+
+   Output Parameter:
+.  fptr - the address into which the function pointer is written; set to `NULL` if no function of this name is composed onto `obj`
+
+   Level: advanced
+
+   Note:
+   The macro casts `fptr` to the internal `PetscErrorCodeFn **` representation before calling `PetscObjectQueryFunction_Private()`
+   so that any function-pointer type can be supplied without an explicit cast.
+
+.seealso: `PetscObjectComposeFunction()`, `PetscObjectHasFunction()`, `PetscObject`
+M*/
 #define PetscObjectQueryFunction(obj, name, fptr) PetscObjectQueryFunction_Private((obj), (name), (PetscErrorCodeFn **)(fptr))
 PETSC_EXTERN PetscErrorCode PetscObjectHasFunction(PetscObject, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject, const char[], PetscErrorCodeFn **);
@@ -1647,10 +1714,57 @@ PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList, PetscObjec
   link libraries that will be loaded as needed.
 */
 
+/*MC
+   PetscFunctionListAdd - Add a function pointer to a `PetscFunctionList`, under a string name
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode PetscFunctionListAdd(PetscFunctionList *list, const char name[], void (*fptr)(void))
+
+   Not Collective
+
+   Input Parameters:
++  list - the function list; if `*list` is `NULL`, a new list is created
+.  name - string under which to register the function
+-  fptr - the function pointer; if `NULL`, any previous registration under `name` is removed
+
+   Level: developer
+
+   Notes:
+   Users who wish to register new classes for use by a particular PETSc component (e.g., `SNES`) should generally call the registration routine for that particular component (e.g., `SNESRegister()`) instead of calling `PetscFunctionListAdd()` directly.
+
+   The macro casts `fptr` to the internal `PetscErrorCodeFn *` representation before calling `PetscFunctionListAdd_Private()` so that any error-code-returning function-pointer type may be supplied without an explicit cast.
+
+.seealso: `PetscFunctionList`, `PetscFunctionListFind()`, `PetscFunctionListDestroy()`, `PetscFunctionListDuplicate()`, `PetscFunctionListView()`, `PetscObjectComposeFunction()`,
+          `SNESRegister()`, `KSPRegister()`, `PCRegister()`, `TSRegister()`
+M*/
 #define PetscFunctionListAdd(list, name, fptr) PetscFunctionListAdd_Private((list), (name), (PetscErrorCodeFn *)(fptr))
 PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *, const char[], PetscErrorCodeFn *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListClear(PetscFunctionList);
+/*MC
+   PetscFunctionListFind - Look up a function pointer in a `PetscFunctionList` by its registered string name
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode PetscFunctionListFind(PetscFunctionList list, const char name[], void (**fptr)(void))
+
+   Not Collective; No Fortran Support
+
+   Input Parameters:
++  list - the function list
+-  name - string under which the function was registered with `PetscFunctionListAdd()`
+
+   Output Parameter:
+.  fptr - the address into which the function pointer is written; set to `NULL` if no function of this name is registered
+
+   Level: developer
+
+   Note:
+   The macro casts `fptr` to the internal `PetscErrorCodeFn **` representation before calling `PetscFunctionListFind_Private()` so that any function-pointer type can be supplied without an explicit cast.
+
+.seealso: `PetscFunctionList`, `PetscFunctionListAdd()`, `PetscFunctionListDestroy()`, `PetscObjectQueryFunction()`
+M*/
 #define PetscFunctionListFind(list, name, fptr) PetscFunctionListFind_Private((list), (name), (PetscErrorCodeFn **)(fptr))
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList, const char[], PetscErrorCodeFn **);
 PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm, FILE *, const char[], const char[], const char[], const char[], PetscFunctionList, const char[], const char[]);
@@ -1938,6 +2052,16 @@ PETSC_EXTERN PetscErrorCode MPIU_File_write_at_all(MPI_File, MPI_Offset, void *,
 PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 5);
 #endif
 
+/*MC
+   MPIU_Count - PETSc datatype used to hold message-size counts for large MPI messages
+
+   Level: intermediate
+
+   Note:
+   When the underlying MPI implementation supports `MPI_Count` (which is wide enough to express counts that do not fit in `int`), `MPIU_Count` is a typedef for `MPI_Count`; otherwise it is defined as `PetscInt64`. Use `MPIU_Count` together with the PETSc MPI wrappers such as `MPIU_Send()`, `MPIU_Recv()`, and `MPIU_Allreduce()` so that codes can be written portably regardless of the available MPI version.
+
+.seealso: `MPI_Count`, `MPIU_COUNT`, `MPIU_Send()`, `MPIU_Recv()`, `MPIU_Reduce()`, `PetscInt64`
+M*/
 #if defined(PETSC_HAVE_MPI_COUNT)
 typedef MPI_Count MPIU_Count;
 #else
@@ -2922,9 +3046,9 @@ static inline unsigned int PetscStrHash(const char *str)
   Input Parameters:
 + a     - pointer to the input data to be reduced
 . count - the number of MPI data items in `a` and `b`
-. dtype - the MPI datatype, for example `MPI_INT`
-. op    - the MPI operation, for example `MPI_SUM`
-- comm   - the MPI communicator on which the operation occurs
+. dtype - the `MPI_Datatype`, for example `MPI_INT`
+. op    - the `MPI_Op`, for example `MPI_SUM`
+- comm  - the `MPI_Comm` on which the operation occurs
 
   Output Parameter:
 . b - the reduced values
@@ -2969,6 +3093,16 @@ PETSC_EXTERN PetscErrorCode PetscShmgetMapAddresses(MPI_Comm, PetscInt, const vo
 PETSC_EXTERN PetscErrorCode PetscShmgetUnmapAddresses(PetscInt, void **);
 PETSC_EXTERN PetscErrorCode PetscShmgetAddressesFinalize(void);
 
+/*S
+   PCMPIServerAddresses - Small bookkeeping record used by the `PCMPI` server to track shared-memory address mappings that have been distributed across the participating MPI ranks
+
+   Level: developer
+
+   Note:
+   Allocated and managed by the `PCMPI` server when running with shared-memory transfers enabled (`PCMPIServerUseShmget`). Destroyed with `PCMPIServerAddressesDestroy()`. Not intended to be inspected or constructed by user code.
+
+.seealso: `PCMPI`, `PCMPIServerBegin()`, `PCMPIServerEnd()`, `PCMPIServerAddressesDestroy()`, `PCMPIServerUseShmget`
+S*/
 typedef struct {
   PetscInt n;
   void    *addr[3];

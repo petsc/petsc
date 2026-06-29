@@ -14,8 +14,40 @@
    a DMPlex. */
 #include <egads.h>
 #include <egads_lite.h>
+
+/*S
+   PetscGeom - Handle for an EGADS geometric entity (body, shell, face, loop, edge, or node) attached to a `DMPLEX`
+
+   Level: intermediate
+
+   Note:
+   `PetscGeom` is a typedef for the EGADS `ego` handle. It is used by the `DMPlexGetGeom...()` family of routines to navigate the CAD model that PETSc associates with a mesh.
+
+.seealso: `DMPlexGetGeomModelBodies()`, `DMPlexGetGeomObject()`, `DMPlexFreeGeomObject()`, `DMPlexGeomDataAndGrads()`
+S*/
 typedef ego PetscGeom;
 
+/*MC
+  PetscCallEGADS - Calls an EGADS function and then checks the resulting error code, if it is
+  non-zero it calls the error handler and returns from the current function with the error
+  code `PETSC_ERR_LIB`.
+
+  Synopsis:
+  #include <petscdmplexegads.h>
+  void PetscCallEGADS(func, args)
+
+  Not Collective
+
+  Input Parameters:
++ func - any EGADS function that returns an error code
+- args - the arguments to the function
+
+  Level: beginner
+
+.seealso: `PetscCall()`, `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`,
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`,
+          `CHKERRMPI()`, `PetscCallBack()`, `PetscCallAbort()`, `PetscCallVoid()`, `PetscCallNull()`
+M*/
 #define PetscCallEGADS(func, args) \
   do { \
     int _status; \

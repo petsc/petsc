@@ -33,6 +33,19 @@ PETSC_EXTERN PetscErrorCode    DMFieldSetType(DMField, DMFieldType);
 PETSC_EXTERN PetscErrorCode    DMFieldGetType(DMField, DMFieldType *);
 PETSC_EXTERN PetscErrorCode    DMFieldRegister(const char[], PetscErrorCode (*)(DMField));
 
+/*E
+   DMFieldContinuity - Indicates the smallest mesh entity across which a `DMField` is continuous; equivalently, the largest entity at which the field may be discontinuous
+
+   Values:
++   `DMFIELD_VERTEX` - continuous across vertices (i.e., everywhere on the mesh; standard $H^1$ finite elements)
+.   `DMFIELD_EDGE`   - continuous across edges, but may jump at vertices
+.   `DMFIELD_FACET`  - continuous across facets (faces in 3D, edges in 2D); may jump at lower-dimensional points
+-   `DMFIELD_CELL`   - field is defined per cell, with no continuity between adjacent cells (cell-centered finite volume)
+
+   Level: intermediate
+
+.seealso: `DMField`, `DMFieldCreateShell()`, `DMFieldEvaluate()`, `DMFieldEvaluateFE()`, `DMFieldEvaluateFV()`
+E*/
 typedef enum {
   DMFIELD_VERTEX,
   DMFIELD_EDGE,

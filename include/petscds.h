@@ -84,6 +84,18 @@ J*/
 typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"
 
+/*E
+   PetscDiscType - Identifies the discretization family attached to a `PetscDS` field
+
+   Values:
++   `PETSC_DISC_NONE` - no discretization (or one not known to PETSc) is attached
+.   `PETSC_DISC_FE`   - a `PetscFE` finite-element discretization is attached
+-   `PETSC_DISC_FV`   - a `PetscFV` finite-volume discretization is attached
+
+   Level: intermediate
+
+.seealso: `PetscDS`, `PetscFE`, `PetscFV`, `PetscDSGetDiscretization()`
+E*/
 typedef enum {
   PETSC_DISC_NONE,
   PETSC_DISC_FE,

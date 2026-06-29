@@ -871,7 +871,7 @@ L20:
 	}
 /* +       END WHILE */
 
-/*        Now compute the base.  a and c  are neighbouring floating point */
+/*        Now compute the base.  a and c  are neighboring floating point */
 /*        numbers  in the  interval  ( beta**t, beta**( t + 1 ) )  and so */
 /*        their difference is beta. Adding 0.25 to c is to ensure that it */
 /*        is truncated to beta and not ( beta - 1 ). */
@@ -1865,7 +1865,7 @@ L20:
 	}
 /* +       END WHILE */
 
-/*        Now compute the base.  a and c  are neighbouring floating point */
+/*        Now compute the base.  a and c  are neighboring floating point */
 /*        numbers  in the  interval  ( beta**t, beta**( t + 1 ) )  and so */
 /*        their difference is beta. Adding 0.25 to c is to ensure that it */
 /*        is truncated to beta and not ( beta - 1 ). */
@@ -2861,7 +2861,7 @@ L20:
 	}
 /* +       END WHILE */
 
-/*        Now compute the base.  a and c  are neighbouring floating point */
+/*        Now compute the base.  a and c  are neighboring floating point */
 /*        numbers  in the  interval  ( beta**t, beta**( t + 1 ) )  and so */
 /*        their difference is beta. Adding 0.25 to c is to ensure that it */
 /*        is truncated to beta and not ( beta - 1 ). */
@@ -3856,7 +3856,7 @@ L20:
 	}
 /* +       END WHILE */
 
-/*        Now compute the base.  a and c  are neighbouring floating point */
+/*        Now compute the base.  a and c  are neighboring floating point */
 /*        numbers  in the  interval  ( beta**t, beta**( t + 1 ) )  and so */
 /*        their difference is beta. Adding 0.25 to c is to ensure that it */
 /*        is truncated to beta and not ( beta - 1 ). */

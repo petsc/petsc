@@ -191,6 +191,33 @@ PETSC_EXTERN PetscErrorCode PetscOptionsPopCreateViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetCreateViewerOff(PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsCreateViewer(MPI_Comm, PetscOptions, const char[], const char[], PetscViewer *, PetscViewerFormat *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsCreateViewers(MPI_Comm, PetscOptions, const char[], const char[], PetscInt *, PetscViewer *, PetscViewerFormat *, PetscBool *);
+/*MC
+   PetscOptionsViewer - From a `PetscOptionsBegin()`/`PetscOptionsEnd()` block, read a viewer specification from the options database and create the requested `PetscViewer`
+
+   Synopsis:
+   #include <petscviewer.h>
+   PetscErrorCode PetscOptionsViewer(const char opt[], const char text[], const char man[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
+
+   Logically Collective
+
+   Input Parameters:
++  opt  - the option name, for example `-vec_view`
+.  text - help string shown by `-help`
+-  man  - manual page name (the name of an `.html` file under the PETSc doc tree)
+
+   Output Parameters:
++  viewer - the `PetscViewer` created, or `NULL` if the option was not given
+.  format - the `PetscViewerFormat` requested by the option, or the default
+-  set    - `PETSC_TRUE` if the user supplied the option, `PETSC_FALSE` otherwise
+
+   Level: beginner
+
+   Note:
+   Must be called between `PetscOptionsBegin()` and `PetscOptionsEnd()`; expands to a call to the internal `PetscOptionsViewer_Private()`, which has access to the current `PetscOptionsObject`. Destroy `viewer` with `PetscViewerDestroy()` when finished.
+
+.seealso: `PetscOptionsCreateViewer()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscViewer`, `PetscViewerFormat`,
+          `PetscViewerDestroy()`
+M*/
 #define PetscOptionsViewer(a, b, c, d, e, f) PetscOptionsViewer_Private(PetscOptionsObject, a, b, c, d, e, f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems, const char[], const char[], const char[], PetscViewer *, PetscViewerFormat *, PetscBool *);
 
@@ -219,6 +246,18 @@ PETSC_DEPRECATED_FUNCTION(3, 22, 0, "PetscOptionsPushCreateViewerOff()", ) stati
   return PetscOptionsPopCreateViewerOff();
 }
 
+/*S
+  PetscViewerAndFormat - A struct that contains both a `PetscViewer` and a `PetscViewerFormat` plus some optional situation-dependent data
+
+  Level: beginner
+
+  Note:
+  Used by most monitor functions including, for example, `KSPMonitorResidual()`
+
+.seealso: [](sec_viewers), `PetscViewerType`, `PETSCVIEWERASCII`, `PetscViewerCreate()`, `PetscViewerSetType()`,
+          `VecView()`, `VecViewFromOptions()`, `PetscObjectView()`, `PetscViewerFormat`, `PetscViewer`,
+          `PetscViewerAndFormatCreate()`, `PetscViewerAndFormatDestroy()`, `KSPMonitorResidual()`
+S*/
 typedef struct {
   PetscViewer        viewer;
   PetscViewerFormat  format;
@@ -226,6 +265,7 @@ typedef struct {
   void              *data;
   PetscCtxDestroyFn *data_destroy;
 } PetscViewerAndFormat;
+
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatCreate(PetscViewer, PetscViewerFormat, PetscViewerAndFormat **);
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **);
 
@@ -319,6 +359,20 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
 
+/*E
+   PetscViewerVTKFieldType - Categorizes a field that is being written through a `PETSCVIEWERVTK` viewer so that the VTK writer can place it on the correct mesh entity and with the correct component layout
+
+   Values:
++   `PETSC_VTK_INVALID`            - sentinel for an uninitialized entry
+.   `PETSC_VTK_POINT_FIELD`        - scalar (or generic multi-component) field stored at mesh points
+.   `PETSC_VTK_POINT_VECTOR_FIELD` - vector-valued field stored at mesh points
+.   `PETSC_VTK_CELL_FIELD`         - scalar (or generic multi-component) field stored on mesh cells
+-   `PETSC_VTK_CELL_VECTOR_FIELD`  - vector-valued field stored on mesh cells
+
+   Level: developer
+
+.seealso: `PETSCVIEWERVTK`, `PetscViewerVTKAddField()`, `PetscViewerVTKOpen()`, `PetscViewer`
+E*/
 typedef enum {
   PETSC_VTK_INVALID,
   PETSC_VTK_POINT_FIELD,

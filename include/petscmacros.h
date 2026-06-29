@@ -116,6 +116,10 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   #define __has_feature(x) 0
 #endif
 
+#if !defined(__has_attribute)
+  #define __has_attribute(x) 0
+#endif
+
 /*MC
   PetscHasAttribute - Determine whether a particular __attribute__ is supported by the compiler
 
@@ -162,10 +166,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
 .seealso: `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
 `PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`
 M*/
-#if !defined(__has_attribute)
-  #define __has_attribute(x) 0
-#endif
 #define PetscHasAttribute(name) __has_attribute(name)
+
+#if !defined(__has_builtin)
+  #define __has_builtin(x) 0
+#endif
 
 /*MC
   PetscHasBuiltin - Determine whether a particular builtin method is supported by the compiler
@@ -207,15 +212,14 @@ M*/
   }
 .ve
 
+  Developer Note:
+  Clang's `__has_builtin()` prior to Clang 10 did not properly handle non-function builtins such as
+  `__builtin_types_compatible_p()` which take types or other non-functiony things as
+  arguments. The correct way to detect these then is to use `__is_identifier()` (also a Clang
+  extension). GCC has always worked as expected. See https://stackoverflow.com/a/45043153
+
 .seealso: `PetscHasAttribute()`, `PetscAssume()`
 M*/
-#if !defined(__has_builtin)
-  #define __has_builtin(x) 0
-#endif
-// clangs __has_builtin prior to clang 10 did not properly handle non-function builtins such as
-// __builtin_types_compatible_p which take types or other non-functiony things as
-// arguments. The correct way to detect these then is to use __is_identifier (also a clang
-// extension). GCC has always worked as expected. see https://stackoverflow.com/a/45043153
 #if defined(__clang__) && defined(__clang_major__) && (__clang_major__ < 10) && defined(__is_identifier)
   #define PetscHasBuiltin(name) __is_identifier(name)
 #else
@@ -869,8 +873,8 @@ M*/
   Level: beginner
 
   Notes:
-  Expands to integer literal 0 if b expands to 1, or integer literal 1 if b expands to
-  0. Behaviour is undefined if b expands to anything else. PetscCompl() will expand its
+  Expands to integer literal 0 if `b` expands to 1, or integer literal 1 if `b` expands to
+  0. Behavior is undefined if `b` expands to anything else. `PetscCompl()` will expand its
   argument before returning the complement.
 
   This macro can be useful for negating `PetscDefined()` inside macros e.g.
@@ -892,6 +896,14 @@ M*/
 M*/
 #define PetscCompl(b) PetscConcat_(PETSC_INTERNAL_COMPL_, PetscExpand(b))
 
+#define PetscDefined_arg_1                                    shift,
+#define PetscDefined_arg_                                     shift,
+#define PetscDefined__take_second_expanded(ignored, val, ...) val
+#define PetscDefined__take_second_expand(args)                PetscDefined__take_second_expanded args
+#define PetscDefined__take_second(...)                        PetscDefined__take_second_expand((__VA_ARGS__))
+#define PetscDefined__(arg1_or_junk)                          PetscDefined__take_second(arg1_or_junk 1, 0, at_)
+#define PetscDefined_(value)                                  PetscDefined__(PetscConcat_(PetscDefined_arg_, value))
+
 /*MC
   PetscDefined - Determine whether a boolean macro is defined
 
@@ -902,7 +914,7 @@ M*/
   No Fortran Support
 
   Input Parameter:
-. def - PETSc-style preprocessor variable (without PETSC_ prepended!)
+. def - PETSc-style preprocessor variable (without `PETSC_` prepended!)
 
   Output Parameter:
 . <return-value> - Either integer literal 0 or 1
@@ -910,12 +922,12 @@ M*/
   Level: intermediate
 
   Notes:
-  `PetscDefined()` returns 1 if and only if "PETSC_ ## def" is defined (but empty) or defined to
+  `PetscDefined()` returns 1 if and only if `PETSC_ ## def` is defined (but empty) or defined to
   integer literal 1. In all other cases, `PetscDefined()` returns integer literal 0. Therefore
   this macro should not be used if its argument may be defined to a non-empty value other than
   1.
 
-  The prefix "PETSC_" is automatically prepended to def. To avoid prepending "PETSC_", say to
+  The prefix `PETSC_` is automatically prepended to `def`. To avoid prepending `PETSC_`, say to
   add custom checks in user code, one should use `PetscDefined_()`.
 .vb
   #define FooDefined(d) PetscDefined_(PetscConcat(FOO_, d))
@@ -932,7 +944,7 @@ M*/
   nonconforming implementation of variadic macros.
 
   Example Usage:
-  Suppose you would like to call either "foo()" or "bar()" depending on whether PETSC_USE_DEBUG
+  Suppose you would like to call either `foo()` or `bar()` depending on whether `PETSC_USE_DEBUG`
   is defined then
 
 .vb
@@ -969,14 +981,7 @@ M*/
 .seealso: `PetscHasAttribute()`, `PetscUnlikely()`, `PetscLikely()`, `PetscConcat()`,
           `PetscExpandToNothing()`, `PetscCompl()`
 M*/
-#define PetscDefined_arg_1                                    shift,
-#define PetscDefined_arg_                                     shift,
-#define PetscDefined__take_second_expanded(ignored, val, ...) val
-#define PetscDefined__take_second_expand(args)                PetscDefined__take_second_expanded args
-#define PetscDefined__take_second(...)                        PetscDefined__take_second_expand((__VA_ARGS__))
-#define PetscDefined__(arg1_or_junk)                          PetscDefined__take_second(arg1_or_junk 1, 0, at_)
-#define PetscDefined_(value)                                  PetscDefined__(PetscConcat_(PetscDefined_arg_, value))
-#define PetscDefined(def)                                     PetscDefined_(PetscConcat(PETSC_, def))
+#define PetscDefined(def) PetscDefined_(PetscConcat(PETSC_, def))
 
 /*MC
   PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
@@ -1000,7 +1005,7 @@ M*/
   optimized mode.
 
   Example usage:
-  This routine is shorthand for checking both the condition and whether PetscDefined(USE_DEBUG)
+  This routine is shorthand for checking both the condition and whether `PetscDefined(USE_DEBUG)`
   is true. So
 
 .vb
@@ -1085,7 +1090,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Due to limitations of the C-preprocessor retexpr cannot depend on symbols declared in the
+  Due to limitations of the C-preprocessor `retexpr` cannot depend on symbols declared in the
   body of the macro and should not depend on values produced as a result of the expression. The
   user should not assume that the result of this macro is equivalent to a single logical source
   line. It is not portable to use macros defined using this one in conditional or loop bodies
@@ -1319,7 +1324,32 @@ M*/
 #include <petsc/private/petscadvancedmacros.h>
 
 #define PetscConcat6_(a, b, c, d, e, f) a##b##c##d##e##f
-#define PetscConcat6(a, b, c, d, e, f)  PetscConcat6_(a, b, c, d, e, f)
+
+/*MC
+  PetscConcat6 - Concatenate six preprocessor tokens after expansion
+
+  Synopsis:
+  #include <petscmacros.h>
+  <macro-expansion> PetscConcat6(a, b, c, d, e, f)
+
+  No Fortran Support
+
+  Input Parameters:
++ a - first token
+. b - second token
+. c - third token
+. d - fourth token
+. e - fifth token
+- f - sixth token
+
+  Level: developer
+
+  Note:
+  Like `PetscConcat()` but for six arguments. Used internally to build identifier names that mix several macro arguments, for example version-stamped silence macros for deprecation warnings.
+
+.seealso: `PetscConcat()`, `PetscStringize()`, `PetscExpand()`
+M*/
+#define PetscConcat6(a, b, c, d, e, f) PetscConcat6_(a, b, c, d, e, f)
 
 #define PETSC_DEPRECATED_IDENTIFIER_(__PETSC_DEPRECATION_MACRO__, __SILENCE_MACRO__, major, minor, subminor, replacement, ...) \
   PetscIfPetscDefined(__SILENCE_MACRO__, PetscExpandToNothing, \

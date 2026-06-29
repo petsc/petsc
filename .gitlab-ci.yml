@@ -965,6 +965,7 @@ linux-misc-dbg:
     - .linux_test
   tags:
     - gce-u22-stage3
+    - large-fs
   variables:
     TEST_ARCH: arch-ci-linux-misc-dbg
     LOAD_MODULES: gcc/12.1.0

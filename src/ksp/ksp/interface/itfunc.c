@@ -2206,14 +2206,14 @@ PETSC_INTERN PetscErrorCode PCCreate_MPI(PC);
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
-   KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
+  KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
 
-   Collective, No Fortran Support
+  Collective, No Fortran Support
 
-   Input Parameter:
-.  ksp - iterative solver obtained from `KSPCreate()`
+  Input Parameter:
+. ksp - iterative solver obtained from `KSPCreate()`
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPSetPC()`, `KSP`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
 @*/

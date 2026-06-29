@@ -55,7 +55,7 @@ if [ -z "${CI_PIPELINE_ID+x}" ]; then
   cd $PETSC_DIR
   /bin/rm -rf $PETSC_DIR/$PETSC_ARCH
   git clean -q -f -d -x
-  git fetch -q origin $branch
+  git fetch -q --tags origin $branch
   if [ "$?" != "0" ]; then
     echo 'Error: branch: $branch does not exist in $PETSC_DIR'
     exit

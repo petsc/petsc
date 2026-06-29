@@ -11,11 +11,16 @@
 
 #define ALL_COMPONENTS -1
 
-/*
-  DMNetworkComponentGenericDataType - This is the data type that PETSc uses for storing the component data.
-            For compatibility with PetscSF, which is used for data distribution, its declared as PetscInt.
-            To get the user-specific data type, one needs to cast it to the appropriate type.
-*/
+/*MC
+   DMNetworkComponentGenericDataType - The integer-sized datatype used by `DMNETWORK` to store user-registered component data on the network
+
+   Level: developer
+
+   Note:
+   `DMNetworkComponentGenericDataType` is a typedef for `PetscInt`. The type is needed so that the buffer holding the component data can be communicated with `PetscSF` during `DMNetwork` distribution. User code obtains a pointer to the buffer with `DMNetworkGetComponent()` and must cast it to the appropriate user-defined component struct.
+
+.seealso: [](ch_network), `DM`, `DMNETWORK`, `DMNetworkRegisterComponent()`, `DMNetworkGetComponent()`, `DMNetworkAddComponent()`
+M*/
 typedef PetscInt DMNetworkComponentGenericDataType;
 
 PETSC_EXTERN PetscErrorCode DMNetworkCreate(MPI_Comm, DM *);

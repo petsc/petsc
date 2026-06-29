@@ -219,7 +219,7 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
 @*/
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObject dest)
 {
-  PetscFortranCallbackId cbtype, numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  PetscFortranCallbackId cbtype;
 
   PetscFunctionBegin;
   PetscValidHeader(src, 1);
@@ -232,10 +232,9 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
 
-  PetscCall(PetscFortranCallbackGetSizes(src->classid, &numcb[PETSC_FORTRAN_CALLBACK_CLASS], &numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
   for (cbtype = PETSC_FORTRAN_CALLBACK_CLASS; cbtype < PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
     PetscCall(PetscFree(dest->fortrancallback[cbtype]));
-    PetscCall(PetscCalloc1(numcb[cbtype], &dest->fortrancallback[cbtype]));
+    PetscCall(PetscCalloc1(src->num_fortrancallback[cbtype], &dest->fortrancallback[cbtype]));
     PetscCall(PetscArraycpy(dest->fortrancallback[cbtype], src->fortrancallback[cbtype], src->num_fortrancallback[cbtype]));
     dest->num_fortrancallback[cbtype] = src->num_fortrancallback[cbtype];
   }
@@ -820,27 +819,6 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscObjectQueryFunction - Gets a function associated with a given object.
-
-  Synopsis:
-  #include <petscsys.h>
-  PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
-
-  Logically Collective
-
-  Input Parameters:
-+ obj  - the PETSc object; this must be cast with (`PetscObject`), for example,
-         `PetscObjectQueryFunction`((`PetscObject`)ksp,...);
-- name - name associated with the child function
-
-  Output Parameter:
-. fptr - function pointer
-
-  Level: advanced
-
-.seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`
-M*/
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
 {
   PetscFunctionBegin;

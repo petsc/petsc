@@ -1669,10 +1669,22 @@ M*/
 
 #endif /* PETSC_USE_COMPLEX */
 
-/*
-   Certain objects may be created using either single or double precision.
-   This is currently not used.
-*/
+/*E
+   PetscScalarPrecision - Names of the floating-point precisions that a `PetscScalar` could in principle be built with
+
+   Values:
++   `PETSC_SCALAR_DOUBLE`      - IEEE double precision
+.   `PETSC_SCALAR_SINGLE`      - IEEE single precision
+.   `PETSC_SCALAR_LONG_DOUBLE` - C `long double` precision
+-   `PETSC_SCALAR_HALF`        - IEEE half precision
+
+   Level: developer
+
+   Note:
+   This enum is reserved for situations where an object might be created in a precision different from `PetscScalar`; the current PETSc code does not use it.
+
+.seealso: `PetscScalar`, `PetscReal`, `PetscComplex`
+E*/
 typedef enum {
   PETSC_SCALAR_DOUBLE,
   PETSC_SCALAR_SINGLE,
@@ -2110,8 +2122,30 @@ static inline PetscBool PetscIsCloseAtTolScalar(PetscScalar lhs, PetscScalar rhs
     MatScalar from PetscScalar. We left the MatScalar in the source just in case we use it again.
  */
 #define MPIU_MATSCALAR MPIU_SCALAR
+
+/*MC
+   MatScalar - Datatype used inside matrix implementations to store matrix entries
+
+   Level: developer
+
+   Note:
+   `MatScalar` is currently a synonym for `PetscScalar`. It exists so that matrix internals can, in principle, store entries in a different precision from the rest of PETSc. No PETSc matrix implementation currently exploits this.
+
+.seealso: `PetscScalar`, `MatReal`, `Mat`, `PETSC_USE_COMPLEX`
+M*/
 typedef PetscScalar MatScalar;
-typedef PetscReal   MatReal;
+
+/*MC
+   MatReal - Datatype used inside matrix implementations to store real-valued matrix data
+
+   Level: developer
+
+   Note:
+   `MatReal` is currently a synonym for `PetscReal`. It exists so that matrix internals can, in principle, store data in a different precision from the rest of PETSc. No PETSc matrix implementation currently exploits this.
+
+.seealso: `PetscReal`, `MatScalar`, `Mat`
+M*/
+typedef PetscReal MatReal;
 
 struct petsc_mpiu_2scalar {
   PetscScalar a, b;

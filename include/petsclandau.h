@@ -15,6 +15,16 @@ PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
+/*MC
+   LandauIdx - Integer type used to index entries in the `DMPLEX` Landau collision-operator data structures, such as the COO matrix workspaces and the `P4estVertexMaps` reduced-quadrature maps
+
+   Level: developer
+
+   Note:
+   `LandauIdx` is a `PetscInt`; it is named separately so the device-side data structures used by the Landau collision operator can be sized independently from the rest of PETSc if needed.
+
+.seealso: `DMPlexLandauCreateVelocitySpace()`, `LandauStaticData`, `LandauCtx`, `P4estVertexMaps`
+M*/
 typedef PetscInt LandauIdx;
 
 /* the Fokker-Planck-Landau context */
@@ -55,12 +65,33 @@ typedef PetscInt LandauIdx;
   #define LANDAU_DIM          3
 #endif
 
+/*E
+   LandauDeviceType - Selects the backend used to evaluate the Landau collision-operator Jacobian and to hold its workspace data
+
+   Values:
++   `LANDAU_KOKKOS` - run on the device with the Kokkos backend (requires PETSc configured `--with-kokkos`)
+-   `LANDAU_CPU`    - run on the host (default when Kokkos is not enabled)
+
+   Level: intermediate
+
+.seealso: `DMPlexLandauCreateVelocitySpace()`, `LandauCtx`, `LandauStaticData`
+E*/
 typedef enum {
   LANDAU_KOKKOS,
   LANDAU_CPU
 } LandauDeviceType;
 
-// static data - will be "device" data
+/*S
+   LandauStaticData - Workspace of pre-computed quadrature, geometry, and physics data that is shared by every Jacobian assembly of the `DMPLEX` Landau collision operator
+
+   Level: developer
+
+   Note:
+   The fields are typed as `void *` so that the same struct can hold either host arrays or device (Kokkos/CUDA/HIP) arrays depending on `LandauDeviceType`.
+   The contents are managed by `DMPlexLandauCreateVelocitySpace()` and friends and are not intended to be inspected by user code.
+
+.seealso: `DMPlexLandauCreateVelocitySpace()`, `LandauCtx`, `LandauDeviceType`, `LandauIdx`
+S*/
 typedef struct {
   void *invJ;    // nip*dim*dim
   void *D;       // nq*nb*dim
@@ -97,6 +128,26 @@ typedef struct {
   LandauIdx  coo_max_fullnb;
 } LandauStaticData;
 
+/*E
+   LandauOMPTimers - Identifiers for the timing slots kept in `LandauCtx.times[]` for the `DMPLEX` Landau collision operator
+
+   Values:
++   `LANDAU_EX2_TSSOLVE`    - total `TSSolve()` time of the Landau example
+.   `LANDAU_MATRIX_TOTAL`   - total time spent constructing the Jacobian and mass matrices
+.   `LANDAU_OPERATOR`       - time inside the Landau operator evaluation
+.   `LANDAU_JACOBIAN_COUNT` - number of Jacobian evaluations (stored as a count, reused as a timer slot)
+.   `LANDAU_JACOBIAN`       - time inside Jacobian construction
+.   `LANDAU_MASS`           - time inside mass-matrix construction
+.   `LANDAU_F_DF`           - time evaluating the distribution function and its derivatives
+.   `LANDAU_KERNEL`         - time inside the Landau collision kernel
+.   `KSP_FACTOR`            - time inside the KSP factor stage when using a direct solver
+.   `KSP_SOLVE`             - time inside `KSPSolve()`
+-   `LANDAU_NUM_TIMERS`     - sentinel; equals the number of timer slots allocated in `LandauCtx`
+
+   Level: developer
+
+.seealso: `LandauCtx`, `DMPlexLandauCreateVelocitySpace()`
+E*/
 typedef enum {
   LANDAU_EX2_TSSOLVE,
   LANDAU_MATRIX_TOTAL,
@@ -111,6 +162,17 @@ typedef enum {
   LANDAU_NUM_TIMERS
 } LandauOMPTimers;
 
+/*S
+   LandauCtx - Application context for the `DMPLEX` Landau collision operator that records the species data, mesh configuration, AMR settings, batching parameters, and pre-computed static data needed to evaluate the operator
+
+   Level: intermediate
+
+   Note:
+   The context is created and managed by `DMPlexLandauCreateVelocitySpace()` and is attached to the returned `DM` as its application context. User code normally obtains it with `DMGetApplicationContext()` rather than constructing it directly.
+
+.seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauDestroyVelocitySpace()`, `DMPlexLandauIFunction()`, `DMPlexLandauIJacobian()`,
+          `LandauStaticData`, `LandauDeviceType`, `LandauOMPTimers`
+S*/
 typedef struct {
   PetscBool interpolate; /* Generate intermediate mesh elements */
   PetscBool gpu_assembly;
@@ -201,6 +263,16 @@ typedef struct {
   #define LAND_MOFFSET(_b, _g, _nbch, _ngrid, _mat_off) (_nbch * _mat_off[_g] + _b * (_mat_off[_g + 1] - _mat_off[_g]))
 #endif
 
+/*S
+   pointInterpolationP4est - One entry in the reduced quadrature-point map used by the `DMPLEX` Landau collision operator; pairs a global Landau matrix index with the weight that scales the contribution of the corresponding quadrature point
+
+   Level: developer
+
+   Note:
+   These records are arrays inside `P4estVertexMaps` and describe how multiple coincident quadrature points produced by the p4est-based AMR mesh are combined into a single entry of the Landau Jacobian.
+
+.seealso: `LandauIdx`, `LandauCtx`, `LandauStaticData`, `DMPlexLandauCreateVelocitySpace()`
+S*/
 typedef struct {
   PetscReal scale;
   LandauIdx gid; // Landau matrix index (<10,000)
