@@ -396,6 +396,7 @@ cdef extern from * nogil:
     PetscErrorCode MatGetColumnVector(PetscMat, PetscVec, PetscInt)
 
     PetscErrorCode MatNorm(PetscMat, PetscNormType, PetscReal*)
+    PetscErrorCode MatNormApproximate(PetscMat, PetscNormType, PetscInt, PetscReal*)
 
     PetscErrorCode MatMult(PetscMat, PetscVec, PetscVec)
     PetscErrorCode MatMultAdd(PetscMat, PetscVec, PetscVec, PetscVec)

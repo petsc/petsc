@@ -61,6 +61,22 @@ class BaseTestMatAnyDense:
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
 
+    def testNorm(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        a1 = self.A.norm(PETSc.NormType.NORM_1)
+        ai = self.A.norm(PETSc.NormType.NORM_INFINITY)
+        aa1 = self.A.normApproximate(PETSc.NormType.NORM_1)
+        aai = self.A.normApproximate(PETSc.NormType.NORM_INFINITY)
+        if self.A.comm.size == 1:
+            a2 = self.A.norm(PETSc.NormType.NORM_2)
+            aa2 = self.A.normApproximate(PETSc.NormType.NORM_2)
+        self.assertAlmostEqual(a1, aa1, places=2)
+        self.assertAlmostEqual(ai, aai, places=2)
+        if self.A.comm.size == 1:
+            self.assertAlmostEqual(a2, aa2, places=2)
+
     def testSubMatrix(self):
         self._preallocate()
         self._set_values()

@@ -875,6 +875,7 @@ PETSC_EXTERN PetscErrorCode MatRARtMultEqual(Mat, Mat, Mat, PetscInt, PetscBool 
 PETSC_EXTERN PetscErrorCode MatIsLinear(Mat, PetscInt, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat, NormType, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatNormApproximate(Mat, NormType, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat, NormType, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatGetColumnSums(Mat, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatGetColumnSumsRealPart(Mat, PetscReal *);
