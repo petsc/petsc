@@ -493,6 +493,17 @@ PETSC_EXTERN PetscErrorCode MatScatterGetVecScatter(Mat, VecScatter *);
 PETSC_EXTERN PetscErrorCode MatCreateBlockMat(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt *, Mat *);
 PETSC_EXTERN PetscErrorCode MatCompositeAddMat(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatCompositeMerge(Mat);
+/*E
+   MatCompositeMergeType - Selects the order in which the matrices held by a `MATCOMPOSITE` are combined when `MatCompositeMerge()` is called
+
+   Values:
++   `MAT_COMPOSITE_MERGE_RIGHT` - merge into a single matrix starting from the rightmost matrix (multiplicative compositions use this to preserve the natural left-to-right application order)
+-   `MAT_COMPOSITE_MERGE_LEFT`  - merge into a single matrix starting from the leftmost matrix
+
+   Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MATCOMPOSITE`, `MatCompositeMerge()`, `MatCompositeSetMergeType()`, `MatCompositeType`
+E*/
 typedef enum {
   MAT_COMPOSITE_MERGE_RIGHT,
   MAT_COMPOSITE_MERGE_LEFT
@@ -633,7 +644,7 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat, PetscBool *);
    Developer Note:
    Entries that are negative need not be called collectively by all processes.
 
-.seealso: [](ch_matrices), `Mat`, `MatSetOption()`
+.seealso: [](ch_matrices), `Mat`, `MatSetOption()`, `VecOption`
 E*/
 typedef enum {
   MAT_OPTION_MIN                  = -3,
@@ -1590,6 +1601,19 @@ PETSC_EXTERN PetscErrorCode MatSolveTransposeAdd(Mat, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatSolves(Mat, Vecs, Vecs);
 PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
+/*E
+   MatFactorSchurStatus - Records the current state of the dense Schur complement that is maintained by a factored matrix when a user has requested its formation with `MatFactorSetSchurIS()`
+
+   Values:
++   `MAT_FACTOR_SCHUR_UNFACTORED` - the Schur complement has been assembled but has not yet been factored or inverted
+.   `MAT_FACTOR_SCHUR_FACTORED`   - the Schur complement has been factored (for example via dense LU) and can be used to solve via `MatFactorSolveSchurComplement()`
+-   `MAT_FACTOR_SCHUR_INVERTED`   - the Schur complement has been explicitly inverted in place; subsequent solves multiply by the dense inverse
+
+   Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MatFactorSetSchurIS()`, `MatFactorGetSchurComplement()`, `MatFactorRestoreSchurComplement()`,
+          `MatFactorInvertSchurComplement()`, `MatFactorCreateSchurComplement()`
+E*/
 typedef enum {
   MAT_FACTOR_SCHUR_UNFACTORED,
   MAT_FACTOR_SCHUR_FACTORED,
@@ -1837,6 +1861,21 @@ PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitionin
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
+/*E
+   MPChacoGlobalType - Global partitioning method used by `MATPARTITIONINGCHACO` when delegating to the Chaco library
+
+   Values:
++   `MP_CHACO_MULTILEVEL` - multilevel-Kernighan--Lin style partitioning
+.   `MP_CHACO_SPECTRAL`   - spectral partitioning using Lanczos or RQI eigensolvers
+.   `MP_CHACO_LINEAR`     - linear (rank-order) initial partition
+.   `MP_CHACO_RANDOM`     - random initial partition
+-   `MP_CHACO_SCATTERED`  - scattered (round-robin) initial partition
+
+   Level: intermediate
+
+.seealso: [](ch_matrices), `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`, `MatPartitioningChacoGetGlobal()`,
+          `MPChacoLocalType`, `MPChacoEigenType`
+E*/
 typedef enum {
   MP_CHACO_MULTILEVEL = 1,
   MP_CHACO_SPECTRAL   = 2,
@@ -1845,11 +1884,35 @@ typedef enum {
   MP_CHACO_SCATTERED  = 6
 } MPChacoGlobalType;
 PETSC_EXTERN const char *const MPChacoGlobalTypes[];
+/*E
+   MPChacoLocalType - Local refinement method used by `MATPARTITIONINGCHACO` after the global partition has been chosen
+
+   Values:
++   `MP_CHACO_KERNIGHAN` - apply Kernighan--Lin local refinement to improve the partition
+-   `MP_CHACO_NONE`      - no local refinement
+
+   Level: intermediate
+
+.seealso: [](ch_matrices), `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetLocal()`, `MatPartitioningChacoGetLocal()`,
+          `MPChacoGlobalType`
+E*/
 typedef enum {
   MP_CHACO_KERNIGHAN = 1,
   MP_CHACO_NONE      = 2
 } MPChacoLocalType;
 PETSC_EXTERN const char *const MPChacoLocalTypes[];
+/*E
+   MPChacoEigenType - Eigensolver used by `MATPARTITIONINGCHACO` when the global partitioning method is `MP_CHACO_SPECTRAL`
+
+   Values:
++   `MP_CHACO_LANCZOS` - Lanczos algorithm
+-   `MP_CHACO_RQI`     - Rayleigh quotient iteration
+
+   Level: intermediate
+
+.seealso: [](ch_matrices), `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenSolver()`,
+          `MPChacoGlobalType`
+E*/
 typedef enum {
   MP_CHACO_LANCZOS = 0,
   MP_CHACO_RQI     = 1
@@ -1885,6 +1948,21 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning, 
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning, PetscBool);
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning, PetscBool);
 
+/*E
+   MPPTScotchStrategyType - Pre-defined strategy used by `MATPARTITIONINGPTSCOTCH` when delegating to the PT-Scotch library
+
+   Values:
++   `MP_PTSCOTCH_DEFAULT`     - the default PT-Scotch strategy
+.   `MP_PTSCOTCH_QUALITY`     - focus on partition quality at the expense of time
+.   `MP_PTSCOTCH_SPEED`       - focus on time to compute the partition
+.   `MP_PTSCOTCH_BALANCE`     - favor load balance
+.   `MP_PTSCOTCH_SAFETY`      - use the most reliable internal heuristics
+-   `MP_PTSCOTCH_SCALABILITY` - favor scalability at large process counts
+
+   Level: intermediate
+
+.seealso: [](ch_matrices), `MatPartitioning`, `MATPARTITIONINGPTSCOTCH`, `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetStrategy()`
+E*/
 typedef enum {
   MP_PTSCOTCH_DEFAULT,
   MP_PTSCOTCH_QUALITY,
@@ -1910,9 +1988,19 @@ PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitio
 
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat, PetscInt, Mat *);
 
-/*
-    If any of the enum values are changed, also update dMatOps dict at src/binding/petsc4py/src/petsc4py/PETSc/libpetsc4py.pyx
-*/
+/*E
+   MatOperation - Identifies one of the operations stored in a `Mat`'s function table, for example `MATOP_MULT` or `MATOP_LUFACTOR`
+
+   Level: developer
+
+   Notes:
+   Use `MatSetOperation()` to install a custom implementation of a given operation on a `Mat` (typically a `MATSHELL`), `MatGetOperation()` to retrieve the currently installed implementation, and `MatHasOperation()` to test whether one is installed.
+
+   The numeric values are part of the binary interface used by the petsc4py bindings; if any of these enum values are changed, the `dMatOps` dictionary in `src/binding/petsc4py/src/petsc4py/PETSc/libpetsc4py.pyx` must be updated to match.
+
+.seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatSetOperation()`, `MatGetOperation()`, `MatHasOperation()`,
+          `MatShellSetOperation()`, `MatShellGetOperation()`
+E*/
 typedef enum {
   MATOP_SET_VALUES                = 0,
   MATOP_GET_ROW                   = 1,

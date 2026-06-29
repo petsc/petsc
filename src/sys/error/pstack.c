@@ -54,12 +54,12 @@ void PetscStackSAWsTakeAccess(void)
 /*@C
   PetscStackViewSAWs - Publish PETSc's current debug call stack through the SAWs (Scientific Application Web server) so it can be inspected from a remote browser
 
-  Logically Collective on `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`; No Fortran Support
 
   Level: developer
 
   Note:
-  Only MPI rank 0 publishes; other ranks immediately return success. In non-debug builds the stack contents are not published but the call still succeeds.
+  Only MPI rank 0 publishes; other MPI processes immediately return success. In non-debug builds the stack contents are not published but the call still succeeds.
 
 .seealso: `PetscStackView()`, `PetscStackSAWsViewOff()`, `PetscObjectSAWsViewOff()`
 @*/
@@ -85,7 +85,7 @@ PetscErrorCode PetscStackViewSAWs(void)
   Level: developer
 
   Note:
-  No-op when `PetscStackViewSAWs()` was never called.
+  No-op when `PetscStackViewSAWs()` was never called. Compiled to a no-op when PETSc is not configured `--with-saws`.
 
 .seealso: `PetscStackViewSAWs()`, `PetscStackView()`, `PetscObjectSAWsViewOff()`
 @*/
@@ -116,7 +116,7 @@ PetscErrorCode PetscStackReset(void)
 /*@
   PetscStackView - Print the current (default) PETSc stack to an ASCII file
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . file - the file pointer, or `NULL` to use `PETSC_STDERR`
@@ -129,6 +129,8 @@ PetscErrorCode PetscStackReset(void)
   recommended to use the debugger if extensive information is needed to help debug the problem.
 
   If `file` is `PETSC_STDERR` (or `NULL`) then `PetscErrorPrintf()` is used to print the stack, otherwise `fprintf()` is used.
+
+  The stack is maintained only when PETSc is configured `--with-debugging` and without thread safety; in other configurations this becomes a no-op that returns `PETSC_SUCCESS`.
 
   Developer Note:
   The default stack is a global variable called `petscstack`.

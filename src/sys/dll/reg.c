@@ -273,34 +273,6 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
-  specified registry.
-
-  Synopsis:
-  #include <petscsys.h>
-  PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist, const char name[], PetscErrorCodeFn *fptr)
-
-  Not Collective
-
-  Input Parameters:
-+ fl   - pointer to function list object
-. name - string to identify routine
-- fptr - function pointer
-
-  Level: developer
-
-  Notes:
-  To remove a registered routine, pass in a `NULL` `fptr`.
-
-  Users who wish to register new classes for use by a particular PETSc
-  component (e.g., `SNES`) should generally call the registration routine
-  for that particular component (e.g., `SNESRegister()`) instead of
-  calling `PetscFunctionListAdd()` directly.
-
-.seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
-          `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
-M*/
 PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscErrorCodeFn *fptr)
 {
   PetscFunctionBegin;
@@ -422,26 +394,6 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscFunctionListFind - Find function registered under given name
-
-  Not Collective, No Fortran Support
-
-  Synopsis:
-  #include <petscsys.h>
-  PetscErrorCode PetscFunctionListFind(PetscFunctionList flist, const char name[], PetscErrorCodeFn **fptr)
-
-  Input Parameters:
-+ fl   - the function list
-- name - name registered for the function
-
-  Output Parameter:
-. fptr - the function pointer if name was found, else `NULL`
-
-  Level: developer
-
-.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
-M*/
 PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscErrorCodeFn **fptr)
 {
   PetscFunctionBegin;

@@ -1253,7 +1253,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   if (PetscDefined(USE_DEBUG)) {
     /* Inspects columns of lG (rows of lGt) and make sure the change of basis will
-     not interfere with neighbouring coarse edges */
+     not interfere with neighboring coarse edges */
     PetscCall(PetscMalloc1(nee + 1, &emarks));
     PetscCall(MatGetRowIJ(lGt, 0, PETSC_FALSE, PETSC_FALSE, &i, &ii, &jj, &done));
     for (i = 0; i < nv; i++) {
@@ -9520,7 +9520,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
 
   PetscFunctionBegin;
   /* attach interface graph for determining subsets */
-  if (pcbddc->sub_schurs_rebuild) { /* in case rebuild has been requested, it uses a graph generated only by the neighbouring information */
+  if (pcbddc->sub_schurs_rebuild) { /* in case rebuild has been requested, it uses a graph generated only by the neighboring information */
     IS       verticesIS, verticescomm;
     PetscInt vsize, *idxs;
 

@@ -5723,30 +5723,32 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-    MatGetBrowsOfAoCols_MPIAIJ - Creates a `MATSEQAIJ` matrix by taking rows of B that equal to nonzero columns
-    of the OFF-DIAGONAL portion of local A
+  MatGetBrowsOfAoCols_MPIAIJ - Creates a `MATSEQAIJ` matrix by taking rows of B that equal to nonzero columns
+  of the OFF-DIAGONAL portion of local A
 
-    Collective
+  Collective
 
-   Input Parameters:
-+    A,B - the matrices in `MATMPIAIJ` format
--    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+  Input Parameters:
++ A     - the first matrix in `MATMPIAIJ` format
+. B     - the second matrix in `MATMPIAIJ` format
+- scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
-   Output Parameter:
-+    startsj_s - starting point in B's sending j-arrays, saved for MAT_REUSE (or NULL)
-.    startsj_r - starting point in B's receiving j-arrays, saved for MAT_REUSE (or NULL)
-.    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or NULL)
--    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
+  Output Parameters:
++ startsj_s - starting point in B's sending j-arrays, saved for MAT_REUSE (or NULL)
+. startsj_r - starting point in B's receiving j-arrays, saved for MAT_REUSE (or NULL)
+. bufa_ptr  - array for sending matrix values, saved for MAT_REUSE (or NULL)
+- B_oth     - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
 
-    Developer Note:
-    This directly accesses information inside the VecScatter associated with the matrix-vector product
-     for this matrix. This is not desirable..
+  Level: developer
 
-    Level: developer
+  Developer Note:
+  This directly accesses information inside the VecScatter associated with the matrix-vector product
+  for this matrix. This is not desirable.
 
+.seealso: [](ch_mat), `Mat`, `MATMPIAIJ`
 */
-
 PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt **startsj_s, PetscInt **startsj_r, MatScalar **bufa_ptr, Mat *B_oth)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data;
@@ -7706,17 +7708,24 @@ static inline PetscErrorCode MatCollapseRows(Mat Amat, PetscInt start, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
- MatCreateGraph_Simple_AIJ - create simple scalar matrix (graph) from potentially blocked matrix
+  MatCreateGraph_Simple_AIJ - create simple scalar matrix (graph) from potentially blocked matrix
 
- Input Parameter:
- . Amat - matrix
- - symmetrize - make the result symmetric
- + scale - scale with diagonal
+  Input Parameters:
++ Amat       - matrix
+. symmetrize - make the result symmetric
+. scale      - scale with diagonal
+. filter     - threshold for filter
+. index_size - length of `index`
+- index      - indices of unknown purpose
 
- Output Parameter:
- . a_Gmat - output scalar graph >= 0
+  Output Parameter:
+. a_Gmat - output scalar graph >= 0
 
+  Level: developer
+
+.seealso: `MATAIJ`
 */
 PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, PetscReal filter, PetscInt index_size, PetscInt index[], Mat *a_Gmat)
 {

@@ -108,7 +108,7 @@
    PETSCBLASR for functions returning real values */
 #if defined(PETSC_BLASLAPACK_CAPS)
   /*MC
-    PETSCBLAS - Mangle a BLAS or LAPACK subroutine name to its `PetscScalar`-precision flavour with the configured Fortran name-mangling suffix
+    PETSCBLAS - Mangle a BLAS or LAPACK subroutine name to its `PetscScalar`-precision flavor with the configured Fortran name-mangling suffix
 
     Synopsis:
     #include <petscblaslapack.h>
@@ -132,7 +132,7 @@
 M*/
   #define PETSCBLAS(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
   /*MC
-    PETSCBLASREAL - Mangle a BLAS or LAPACK subroutine name for the real-arithmetic flavour of the routine
+    PETSCBLASREAL - Mangle a BLAS or LAPACK subroutine name for the real-arithmetic flavor of the routine
 
     Synopsis:
     #include <petscblaslapack.h>
@@ -150,7 +150,7 @@ M*/
 M*/
   #define PETSCBLASREAL(x, X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, X, PETSC_BLASLAPACK_SUFFIX_)
   /*MC
-    PETSCBLASCOMPLEX - Mangle a BLAS or LAPACK subroutine name for the complex-arithmetic flavour of the routine
+    PETSCBLASCOMPLEX - Mangle a BLAS or LAPACK subroutine name for the complex-arithmetic flavor of the routine
 
     Synopsis:
     #include <petscblaslapack.h>

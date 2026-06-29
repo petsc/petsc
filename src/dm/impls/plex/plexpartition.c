@@ -1174,7 +1174,7 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
 
   Note:
   This is required when generating multi-level overlaps to capture
-  overlap points from non-neighbouring partitions.
+  overlap points from non-neighboring partitions.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLabel`, `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`
 @*/

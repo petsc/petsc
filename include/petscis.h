@@ -72,6 +72,20 @@ typedef enum {
   IS_INFO_MAX    = 5
 } ISInfo;
 
+/*E
+   ISInfoType - Selects whether an `ISInfo` property of an `IS` is recorded with respect to the local indices on this MPI process or to the full global index set
+
+   Values:
++   `IS_LOCAL`  - the property holds for the local portion of the `IS`
+-   `IS_GLOBAL` - the property holds for the entire (parallel) index set
+
+   Level: intermediate
+
+   Note:
+   Some properties (for example `IS_SORTED`) may be true locally but not globally; `ISInfoType` lets the caller specify which interpretation is wanted in `ISSetInfo()`/`ISGetInfo()`.
+
+.seealso: `IS`, `ISInfo`, `ISSetInfo()`, `ISGetInfo()`, `ISClearInfoCache()`
+E*/
 typedef enum {
   IS_LOCAL,
   IS_GLOBAL

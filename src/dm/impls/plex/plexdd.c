@@ -286,23 +286,24 @@ PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
-     DMCreateNeumannOverlap_Plex - Generates an IS, an unassembled (Neumann) Mat, a setup function, and the corresponding context to be used by PCHPDDM.
+  DMCreateNeumannOverlap_Plex - Generates an IS, an unassembled (Neumann) Mat, a setup function, and the corresponding context to be used by PCHPDDM.
 
-   Input Parameter:
-.     dm - preconditioner context
+  Input Parameter:
+. dm - preconditioner context
 
-   Output Parameters:
-+     ovl - index set of overlapping subdomains
-.     J - unassembled (Neumann) local matrix
-.     setup - function for generating the matrix
--     setup_ctx - context for setup
+  Output Parameters:
++ ovl       - index set of overlapping subdomains
+. J         - unassembled (Neumann) local matrix
+. setup     - function for generating the matrix
+- setup_ctx - context for setup
 
-   Options Database Keys:
-+   -dm_plex_view_neumann_original - view the DM without overlap
--   -dm_plex_view_neumann_overlap  - view the DM with overlap as needed by `PCHPDDM`
+  Options Database Keys:
++ -dm_plex_view_neumann_original - view the DM without overlap
+- -dm_plex_view_neumann_overlap  - view the DM with overlap as needed by `PCHPDDM`
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `DMCreate()`, `DM`, `MATIS`, `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 */

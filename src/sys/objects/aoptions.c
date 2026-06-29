@@ -1167,40 +1167,6 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems PetscOptionsObject
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscOptionsViewer - Creates a viewer appropriate for the type indicated by the user
-
-  Synopsis:
-  #include <petscviewer.h>
-  PetscErrorCode PetscOptionsViewer(const char opt[], const char text[], const char man[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
-
-  Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
-  Input Parameters:
-+ opt  - option name
-. text - short string that describes the option
-- man  - manual page with additional information on option
-
-  Output Parameters:
-+ viewer - the viewer
-. format - the PetscViewerFormat requested by the user, pass `NULL` if not needed
-- set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
-
-  Level: beginner
-
-  Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-  See `PetscOptionsCreateViewer()` for the format of the supplied viewer and its options
-
-.seealso: `PetscOptionsCreateViewer()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
-          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
-          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
-          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
-          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
-          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
-          `PetscOptionsFList()`, `PetscOptionsEList()`
-M*/
 PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems PetscOptionsObject, const char opt[], const char text[], const char man[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
 {
   const MPI_Comm comm   = PetscOptionsObject->comm;

@@ -45,7 +45,7 @@ typedef struct {
 
   ISLocalToGlobalMapping mapping;
   PetscInt               n_neigh;  /* should use PetscMPIInt number of neighbours this subdomain/MPI process has (INCLUDING the subdomain itself). */
-  PetscInt              *neigh;    /* list of neighbouring subdomains, MPI processes  */
+  PetscInt              *neigh;    /* list of neighboring subdomains, MPI processes  */
   PetscInt              *n_shared; /* n_shared[j] is the number of nodes shared with subdomain neigh[j] */
   PetscInt             **shared;   /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j] */
   /*

@@ -577,11 +577,32 @@ PETSC_EXTERN PetscErrorCode VecGetPinnedMemoryMin(Vec, size_t *);
 
 PETSC_EXTERN PetscErrorCode VecGetOffloadMask(Vec, PetscOffloadMask *);
 
+/*E
+   VecOption - Options that may be set for a vector regarding entries passed to `VecSetValues()` and related routines
+
+   Values:
++   `VEC_IGNORE_OFF_PROC_ENTRIES` - causes `VecSetValues()` to ignore entries destined to be stored on a separate processor.
+                                    This can be used to eliminate the global reduction in `VecAssemblyBegin()` if you know that
+                                    you have only used `VecSetValues()` to set local elements
+.   `VEC_IGNORE_NEGATIVE_INDICES` - means you can pass negative indices in `ix` in calls to `VecSetValues()` or `VecGetValues()`.
+                                    These rows are simply ignored.
+-   `VEC_SUBSET_OFF_PROC_ENTRIES` - causes `VecAssemblyBegin()` to assume that the off-process entries will always be a subset
+                                    (possibly equal) of the off-process entries set on the first assembly which had a true
+                                    `VEC_SUBSET_OFF_PROC_ENTRIES` and the vector has not changed this flag afterwards. If this
+                                    assembly is not such first assembly, then this assembly can reuse the communication pattern
+                                    setup in that first assembly, thus avoiding a global reduction. Subsequent assemblies setting
+                                    off-process values should use the same `InsertMode` as the first assembly.
+
+   Level: beginner
+
+.seealso: [](ch_matrices), `Vec`, `MatSetOption()`, `VecSetOption()`, `VecSetValues()`, `VecAssemblyBegin()`
+E*/
 typedef enum {
   VEC_IGNORE_OFF_PROC_ENTRIES,
   VEC_IGNORE_NEGATIVE_INDICES,
   VEC_SUBSET_OFF_PROC_ENTRIES
 } VecOption;
+
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec, VecOption, PetscBool);
 
 PETSC_EXTERN PetscErrorCode VecGetArray(Vec, PetscScalar *[]);

@@ -820,27 +820,6 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  PetscObjectQueryFunction - Gets a function associated with a given object.
-
-  Synopsis:
-  #include <petscsys.h>
-  PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
-
-  Logically Collective
-
-  Input Parameters:
-+ obj  - the PETSc object; this must be cast with (`PetscObject`), for example,
-         `PetscObjectQueryFunction`((`PetscObject`)ksp,...);
-- name - name associated with the child function
-
-  Output Parameter:
-. fptr - function pointer
-
-  Level: advanced
-
-.seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`
-M*/
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
 {
   PetscFunctionBegin;

@@ -398,7 +398,7 @@ PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
 }
 
 /*
-1) only allows counters to be set on neighbouring cpus
+1) only allows counters to be set on neighboring cpus
 */
 PetscErrorCode DMSwarmDataExAddToSendCount(DMSwarmDataEx de, const PetscMPIInt proc_id, const PetscInt count)
 {

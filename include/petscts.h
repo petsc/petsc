@@ -356,6 +356,18 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetDirname(TSTrajectory, const char[]);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory, const char[]);
 PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS, TSTrajectory *);
 
+/*E
+   TSTrajectoryMemoryType - Selects the in-memory checkpointing scheme used by `TSTRAJECTORYMEMORY` to store the forward states needed for an adjoint or sensitivity computation
+
+   Values:
++   `TJ_REVOLVE` - the Revolve binomial checkpointing schedule of Griewank & Walther
+.   `TJ_CAMS`    - the CAMS (cache-aware multistage) checkpointing schedule
+-   `TJ_PETSC`   - PETSc's own in-memory checkpointing implementation
+
+   Level: advanced
+
+.seealso: `TSTrajectory`, `TSTRAJECTORYMEMORY`, `TSTrajectoryMemorySetType()`, `TSSetSaveTrajectory()`
+E*/
 typedef enum {
   TJ_REVOLVE,
   TJ_CAMS,
@@ -1580,6 +1592,18 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
+/*E
+   TSDGType - Selects the discrete-gradient flavor used by `TSDISCGRAD` when integrating gradient-system ODEs
+
+   Values:
++   `TS_DG_GONZALEZ` - Gonzalez's mid-point-style discrete gradient
+.   `TS_DG_AVERAGE`  - average vector field (AVF) discrete gradient
+-   `TS_DG_NONE`     - do not apply a discrete gradient correction; the integrator falls back to a standard mid-point rule
+
+   Level: advanced
+
+.seealso: `TS`, `TSDISCGRAD`, `TSDiscGradSetType()`, `TSDiscGradGetType()`, `TSDiscGradSetFormulation()`
+E*/
 typedef enum {
   TS_DG_GONZALEZ,
   TS_DG_AVERAGE,
@@ -1594,11 +1618,33 @@ PETSC_EXTERN PetscErrorCode TSDiscGradGetType(TS, TSDGType *);
        PETSc interface to Sundials
 */
 #ifdef PETSC_HAVE_SUNDIALS2
+/*E
+   TSSundialsLmmType - Selects which linear multistep method is used by the `TSSUNDIALS` interface to SUNDIALS' CVODE integrator
+
+   Values:
++   `SUNDIALS_ADAMS` - variable-order Adams methods (non-stiff problems)
+-   `SUNDIALS_BDF`   - variable-order backward differentiation formulas (stiff problems)
+
+   Level: intermediate
+
+.seealso: `TS`, `TSSUNDIALS`, `TSSundialsSetType()`, `TSSundialsGramSchmidtType`
+E*/
 typedef enum {
   SUNDIALS_ADAMS = 1,
   SUNDIALS_BDF   = 2
 } TSSundialsLmmType;
 PETSC_EXTERN const char *const TSSundialsLmmTypes[];
+/*E
+   TSSundialsGramSchmidtType - Selects the Gram--Schmidt orthogonalization variant used by SUNDIALS' internal GMRES inside `TSSUNDIALS`
+
+   Values:
++   `SUNDIALS_MODIFIED_GS`  - modified Gram--Schmidt (more stable)
+-   `SUNDIALS_CLASSICAL_GS` - classical Gram--Schmidt (cheaper, less stable)
+
+   Level: advanced
+
+.seealso: `TS`, `TSSUNDIALS`, `TSSundialsSetGramSchmidtType()`, `TSSundialsLmmType`
+E*/
 typedef enum {
   SUNDIALS_MODIFIED_GS  = 1,
   SUNDIALS_CLASSICAL_GS = 2
