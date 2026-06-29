@@ -2493,34 +2493,36 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
     }
     /* csr_spmv does y = alpha op(A) x + beta y */
     if (hipsparsestruct->format == MAT_HIPSPARSE_CSR) {
-#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0) && !(PETSC_PKG_HIP_VERSION_GT(6, 4, 3) && PETSC_PKG_HIP_VERSION_LE(7, 2, 0))
+      hipsparseSpMVAlg_t spmvAlg = hipsparsestruct->spmvAlg;
+
+#if PETSC_PKG_HIP_VERSION_GE(6, 4, 0) && PETSC_PKG_HIP_VERSION_LT(7, 3, 0) // ALG_DEFAULT in some versions don't support transpose. See https://github.com/ROCm/rocm-libraries/issues/4803
+      // We found rocm-7.2.4 also had this problem. We assume rocm-7.3+ will contain a fix.
+      if (opA != HIPSPARSE_OPERATION_NON_TRANSPOSE && spmvAlg == HIPSPARSE_SPMV_ALG_DEFAULT) spmvAlg = HIPSPARSE_SPMV_CSR_ALG1;
+#endif
       PetscCheck(opA >= 0 && opA <= 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE API on hipsparseOperation_t has changed and PETSc has not been updated accordingly");
+
       if (!matstruct->hipSpMV[opA].initialized) { /* built on demand */
+        CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
+        PetscCallHIPSPARSE(hipsparseCreateCsr(&matstruct->hipSpMV[opA].matDescr, mat->num_rows, mat->num_cols, mat->num_entries, mat->row_offsets->data().get(), mat->column_indices->data().get(), mat->values->data().get(), csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
         PetscCallHIPSPARSE(hipsparseCreateDnVec(&matstruct->hipSpMV[opA].vecXDescr, nx, xptr, hipsparse_scalartype));
         PetscCallHIPSPARSE(hipsparseCreateDnVec(&matstruct->hipSpMV[opA].vecYDescr, ny, dptr, hipsparse_scalartype));
-        PetscCallHIPSPARSE(hipsparseSpMV_bufferSize(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->matDescr, matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, hipsparsestruct->spmvAlg,
+        PetscCallHIPSPARSE(hipsparseSpMV_bufferSize(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->hipSpMV[opA].matDescr, matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, spmvAlg,
                                                     &matstruct->hipSpMV[opA].spmvBufferSize));
         PetscCallHIP(hipMalloc(&matstruct->hipSpMV[opA].spmvBuffer, matstruct->hipSpMV[opA].spmvBufferSize));
+#if PETSC_PKG_HIP_VERSION_GE(6, 4, 0) // hipsparseSpMV_preprocess is added in rocm-6.4.0
+        PetscCallHIPSPARSE(hipsparseSpMV_preprocess(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->hipSpMV[opA].matDescr, matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, spmvAlg,
+                                                    matstruct->hipSpMV[opA].spmvBuffer));
+#endif
         matstruct->hipSpMV[opA].initialized = PETSC_TRUE;
       } else {
         /* x, y's value pointers might change between calls, but their shape is kept, so we just update pointers */
         PetscCallHIPSPARSE(hipsparseDnVecSetValues(matstruct->hipSpMV[opA].vecXDescr, xptr));
         PetscCallHIPSPARSE(hipsparseDnVecSetValues(matstruct->hipSpMV[opA].vecYDescr, dptr));
       }
-      PetscCallHIPSPARSE(hipsparseSpMV(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->matDescr, /* built in MatSeqAIJHIPSPARSECopyToGPU() or MatSeqAIJHIPSPARSEFormExplicitTranspose() */
-                                       matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, hipsparsestruct->spmvAlg, matstruct->hipSpMV[opA].spmvBuffer));
-#else
-      CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
-      nx             = mat->num_rows; /* nx,ny are set before the #if block, set them again to avoid set-but-not-used warning */
-      ny             = mat->num_cols;
-      PetscCallHIPSPARSE(hipsparse_csr_spmv(hipsparsestruct->handle, opA, nx, ny, mat->num_entries, matstruct->alpha_one, matstruct->descr, mat->values->data().get(), mat->row_offsets->data().get(), mat->column_indices->data().get(), xptr, beta, dptr));
-#endif
-    } else {
-      if (hipsparsestruct->nrows) {
-        hipsparseHybMat_t hybMat = (hipsparseHybMat_t)matstruct->mat;
-        PetscCallHIPSPARSE(hipsparse_hyb_spmv(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->descr, hybMat, xptr, beta, dptr));
-      }
-    }
+      PetscCallHIPSPARSE(
+        hipsparseSpMV(hipsparsestruct->handle, opA, matstruct->alpha_one, matstruct->hipSpMV[opA].matDescr, matstruct->hipSpMV[opA].vecXDescr, beta, matstruct->hipSpMV[opA].vecYDescr, hipsparse_scalartype, spmvAlg, matstruct->hipSpMV[opA].spmvBuffer));
+    } else PetscCheck(hipsparsestruct->nrows == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_HIPSPARSE_ELL and MAT_HIPSPARSE_HYB are not supported");
+
     PetscCall(PetscLogGpuTimeEnd());
 
     if (opA == HIPSPARSE_OPERATION_NON_TRANSPOSE) {
@@ -2818,7 +2820,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat A, MatType mty
       PetscCallHIPSPARSE(hipsparseCreate(&spptr->handle));
       PetscCallHIPSPARSE(hipsparseSetStream(spptr->handle, PetscDefaultHipStream));
       spptr->format  = MAT_HIPSPARSE_CSR;
-      spptr->spmvAlg = HIPSPARSE_SPMV_CSR_ALG1;
+      spptr->spmvAlg = HIPSPARSE_SPMV_ALG_DEFAULT;
       spptr->spmmAlg = HIPSPARSE_SPMM_CSR_ALG1; /* default, only support column-major dense matrix B */
       //spptr->csr2cscAlg = HIPSPARSE_CSR2CSC_ALG1;
 
@@ -2947,6 +2949,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSEMu
         PetscCallHIP(hipFree(mdata->hipSpMV[i].spmvBuffer));
         PetscCallHIPSPARSE(hipsparseDestroyDnVec(mdata->hipSpMV[i].vecXDescr));
         PetscCallHIPSPARSE(hipsparseDestroyDnVec(mdata->hipSpMV[i].vecYDescr));
+        PetscCallHIPSPARSE(hipsparseDestroySpMat(mdata->hipSpMV[i].matDescr));
       }
     }
     delete *matstruct;
