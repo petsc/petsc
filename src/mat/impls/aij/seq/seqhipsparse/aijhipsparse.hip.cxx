@@ -1630,17 +1630,20 @@ struct VecHIPEqualsReverse {
 };
 
 struct MatProductCtx_MatMatHipsparse {
-  PetscBool              cisdense;
-  PetscScalar           *Bt;
-  Mat                    X;
-  PetscBool              reusesym; /* Hipsparse does not have split symbolic and numeric phases for sparse matmat operations */
-  PetscLogDouble         flops;
-  CsrMatrix             *Bcsr;
-  hipsparseSpMatDescr_t  matSpBDescr;
-  PetscBool              initialized; /* C = alpha op(A) op(B) + beta C */
-  hipsparseDnMatDescr_t  matBDescr;
-  hipsparseDnMatDescr_t  matCDescr;
-  PetscInt               Blda, Clda; /* Record leading dimensions of B and C here to detect changes*/
+  PetscBool             cisdense;
+  PetscScalar          *Bt;
+  Mat                   X;
+  PetscBool             reusesym; /* Hipsparse does not have split symbolic and numeric phases for sparse matmat operations */
+  PetscLogDouble        flops;
+  CsrMatrix            *Bcsr;
+  hipsparseSpMatDescr_t matSpBDescr;
+  PetscBool             initialized; /* C = alpha op(A) op(B) + beta C */
+  hipsparseDnMatDescr_t matBDescr;
+  hipsparseDnMatDescr_t matCDescr;
+  PetscInt              Blda, Clda; /* Record leading dimensions of B and C here to detect changes*/
+#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
+  void *dBuffer4, *dBuffer5;
+#endif
   size_t                 mmBufferSize;
   void                  *mmBuffer, *mmBuffer2; /* SpGEMM WorkEstimation buffer */
   hipsparseSpGEMMDescr_t spgemmDesc;
@@ -1657,6 +1660,10 @@ static PetscErrorCode MatProductCtxDestroy_MatMatHipsparse(PetscCtxRt data)
   if (mmdata->matBDescr) PetscCallHIPSPARSE(hipsparseDestroyDnMat(mmdata->matBDescr));
   if (mmdata->matCDescr) PetscCallHIPSPARSE(hipsparseDestroyDnMat(mmdata->matCDescr));
   if (mmdata->spgemmDesc) PetscCallHIPSPARSE(hipsparseSpGEMM_destroyDescr(mmdata->spgemmDesc));
+#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
+  PetscCallHIP(hipFree(mmdata->dBuffer4));
+  PetscCallHIP(hipFree(mmdata->dBuffer5));
+#endif
   PetscCallHIP(hipFree(mmdata->mmBuffer));
   PetscCallHIP(hipFree(mmdata->mmBuffer2));
   PetscCall(MatDestroy(&mmdata->X));
@@ -1944,8 +1951,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   PetscCall(PetscLogGpuTimeBegin());
   BmatSpDescr = mmdata->Bcsr ? mmdata->matSpBDescr : Bmat->matDescr; /* B may be in compressed row storage */
   PetscCallHIPSPARSE(hipsparseSetPointerMode(Ccusp->handle, HIPSPARSE_POINTER_MODE_DEVICE));
-  PetscCallHIPSPARSE(hipsparseSpGEMM_compute(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &mmdata->mmBufferSize, mmdata->mmBuffer));
-  PetscCallHIPSPARSE(hipsparseSpGEMM_copy(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc));
+  if (c->nz) PetscCallHIPSPARSE(hipsparseSpGEMMreuse_compute(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc));
   PetscCall(PetscLogGpuFlops(mmdata->flops));
   PetscCallHIP(WaitForHIP());
   PetscCall(PetscLogGpuTimeEnd());
@@ -1980,7 +1986,6 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   int64_t                        C_num_rows1, C_num_cols1, C_nnz1;
   hipsparseSpMatDescr_t          BmatSpDescr;
   hipsparseOperation_t           opA = HIPSPARSE_OPERATION_NON_TRANSPOSE, opB = HIPSPARSE_OPERATION_NON_TRANSPOSE; /* HIPSPARSE spgemm doesn't support transpose yet */
-  size_t                         bufSize2;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -2143,39 +2148,63 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   mmdata->flops = flops;
   PetscCall(PetscLogGpuTimeBegin());
 
-  PetscCallHIPSPARSE(hipsparseSetPointerMode(Ccusp->handle, HIPSPARSE_POINTER_MODE_DEVICE));
-  // cuda-12.2 requires non-null csrRowOffsets
-  PetscCallHIPSPARSE(hipsparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, 0, Ccsr->row_offsets->data().get(), NULL, NULL, csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
-  PetscCallHIPSPARSE(hipsparseSpGEMM_createDescr(&mmdata->spgemmDesc));
-  // Note that cusparseSpGEMMreuse is deprecated in CUDA 13.2.1
+  // cuSparse first had cusparseSpGEMM_compute(), then had cusparseSpGEMMreuse_compute(). But NVIDIA deprecated cusparseSpGEMMreuse_compute()
+  // later and went back to cusparseSpGEMM_compute(). AMD followed suit. However, hipsparseSpGEMM_compute() is correct on rocm-5.4.3 but buggy
+  // in rocm-6.2 and 7.2. Second call to hipsparseSpGEMM_compute() gives stale result with updated input matrices.
+  // See https://github.com/ROCm/rocm-libraries/issues/8878. So we will use the _reuse version until AMD fixes the bug.
+  {
+    PetscCallHIPSPARSE(hipsparseSetPointerMode(Ccusp->handle, HIPSPARSE_POINTER_MODE_DEVICE));
+    PetscCallHIPSPARSE(hipsparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, 0, Ccsr->row_offsets->data().get(), NULL, NULL, csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
+    PetscCallHIPSPARSE(hipsparseSpGEMM_createDescr(&mmdata->spgemmDesc));
 
-  /* ask bufferSize bytes for external memory */
-  PetscCallHIPSPARSE(hipsparseSpGEMM_workEstimation(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufSize2, NULL));
-  PetscCallHIP(hipMalloc((void **)&mmdata->mmBuffer2, bufSize2));
-  /* inspect the matrices A and B to understand the memory requirement for the next step */
-  PetscCallHIPSPARSE(hipsparseSpGEMM_workEstimation(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufSize2, mmdata->mmBuffer2));
-  /* ask bufferSize again bytes for external memory */
-  PetscCallHIPSPARSE(hipsparseSpGEMM_compute(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &mmdata->mmBufferSize, NULL));
-  /* The HIPSPARSE documentation is not clear, nor the API
-     We need both buffers to perform the operations properly!
-     mmdata->mmBuffer2 does not appear anywhere in the compute/copy API
-     it only appears for the workEstimation stuff, but it seems it is needed in compute, so probably the address
-     is stored in the descriptor! What a messy API... */
-  PetscCallHIP(hipMalloc((void **)&mmdata->mmBuffer, mmdata->mmBufferSize));
-  /* compute the intermediate product of A * B */
-  PetscCallHIPSPARSE(hipsparseSpGEMM_compute(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &mmdata->mmBufferSize, mmdata->mmBuffer));
-  /* get matrix C non-zero entries C_nnz1 */
-  PetscCallHIPSPARSE(hipsparseSpMatGetSize(Cmat->matDescr, &C_num_rows1, &C_num_cols1, &C_nnz1));
-  PetscCall(PetscIntCast(C_nnz1, &c->nz));
-  PetscCall(PetscInfo(C, "Buffer sizes for type %s, result %" PetscInt_FMT " x %" PetscInt_FMT " (k %" PetscInt_FMT ", nzA %" PetscInt_FMT ", nzB %" PetscInt_FMT ", nzC %" PetscInt_FMT ") are: %ldKB %ldKB\n", MatProductTypes[ptype], m, n, k, a->nz, b->nz, c->nz, bufSize2 / 1024,
-                      mmdata->mmBufferSize / 1024));
-  Ccsr->column_indices = new THRUSTINTARRAY(c->nz);
-  PetscCallHIP(hipPeekAtLastError()); /* catch out of memory errors */
-  Ccsr->values = new THRUSTARRAY(c->nz);
-  PetscCallHIP(hipPeekAtLastError()); /* catch out of memory errors */
-  // hipSparse errors with null pointers even with nz = 0
-  if (c->nz) PetscCallHIPSPARSE(hipsparseCsrSetPointers(Cmat->matDescr, Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(), Ccsr->values->data().get()));
-  PetscCallHIPSPARSE(hipsparseSpGEMM_copy(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc));
+    /* hipsparseSpGEMMreuse has more reasonable APIs than hipsparseSpGEMM, so we prefer to use it.
+     We follow the sample code at https://github.com/ROCmSoftwarePlatform/hipSPARSE/blob/develop/clients/include/testing_spgemmreuse_csr.hpp
+  */
+    void *dBuffer1 = NULL;
+    void *dBuffer2 = NULL;
+    void *dBuffer3 = NULL;
+    /* dBuffer4, dBuffer5 are needed by hipsparseSpGEMMreuse_compute, and therefore are stored in mmdata */
+    size_t bufferSize1 = 0;
+    size_t bufferSize2 = 0;
+    size_t bufferSize3 = 0;
+    size_t bufferSize4 = 0;
+    size_t bufferSize5 = 0;
+
+    /* ask bufferSize1 bytes for external memory */
+    PetscCallHIPSPARSE(hipsparseSpGEMMreuse_workEstimation(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize1, NULL));
+    PetscCallHIP(hipMalloc((void **)&dBuffer1, bufferSize1));
+    /* inspect the matrices A and B to understand the memory requirement for the next step */
+    PetscCallHIPSPARSE(hipsparseSpGEMMreuse_workEstimation(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize1, dBuffer1));
+
+    PetscCallHIPSPARSE(hipsparseSpGEMMreuse_nnz(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize2, NULL, &bufferSize3, NULL, &bufferSize4, NULL));
+    PetscCallHIP(hipMalloc((void **)&dBuffer2, bufferSize2));
+    PetscCallHIP(hipMalloc((void **)&dBuffer3, bufferSize3));
+    PetscCallHIP(hipMalloc((void **)&mmdata->dBuffer4, bufferSize4));
+    PetscCallHIPSPARSE(hipsparseSpGEMMreuse_nnz(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize2, dBuffer2, &bufferSize3, dBuffer3, &bufferSize4, mmdata->dBuffer4));
+    PetscCallHIP(hipFree(dBuffer1));
+    PetscCallHIP(hipFree(dBuffer2));
+
+    /* get matrix C non-zero entries C_nnz1 */
+    PetscCallHIPSPARSE(hipsparseSpMatGetSize(Cmat->matDescr, &C_num_rows1, &C_num_cols1, &C_nnz1));
+    PetscCall(PetscIntCast(C_nnz1, &c->nz));
+    /* allocate matrix C */
+    Ccsr->column_indices = new THRUSTINTARRAY(c->nz);
+    PetscCallHIP(hipPeekAtLastError()); /* catch out of memory errors */
+    Ccsr->values = new THRUSTARRAY(c->nz);
+    PetscCallHIP(hipPeekAtLastError()); /* catch out of memory errors */
+    /* update matC with the new pointers */
+    if (c->nz) { /* 5.5.1 has a bug with nz = 0, exposed by mat_tests_ex123_2_hypre */
+      PetscCallHIPSPARSE(hipsparseCsrSetPointers(Cmat->matDescr, Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(), Ccsr->values->data().get()));
+
+      PetscCallHIPSPARSE(hipsparseSpGEMMreuse_copy(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize5, NULL));
+      PetscCallHIP(hipMalloc((void **)&mmdata->dBuffer5, bufferSize5));
+      PetscCallHIPSPARSE(hipsparseSpGEMMreuse_copy(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc, &bufferSize5, mmdata->dBuffer5));
+      PetscCallHIPSPARSE(hipsparseSpGEMMreuse_compute(Ccusp->handle, opA, opB, Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr, hipsparse_scalartype, HIPSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc));
+    }
+    PetscCallHIP(hipFree(dBuffer3));
+    PetscCall(PetscInfo(C, "Buffer sizes for type %s, result %" PetscInt_FMT " x %" PetscInt_FMT " (k %" PetscInt_FMT ", nzA %" PetscInt_FMT ", nzB %" PetscInt_FMT ", nzC %" PetscInt_FMT ") are: %ldKB %ldKB\n", MatProductTypes[ptype], m, n, k, a->nz, b->nz, c->nz, bufferSize4 / 1024, bufferSize5 / 1024));
+  }
+
   PetscCall(PetscLogGpuFlops(mmdata->flops));
   PetscCall(PetscLogGpuTimeEnd());
 finalizesym:
