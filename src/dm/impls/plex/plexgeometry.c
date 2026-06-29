@@ -3526,16 +3526,14 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
     }
   } else {
     char         transpose = PetscDefined(USE_COMPLEX) ? 'C' : 'T';
-    PetscBLASInt m, n, one = 1, worksize, info;
+    PetscBLASInt m, n, one = 1, worksize;
 
     PetscCall(PetscBLASIntCast(dimR, &m));
     PetscCall(PetscBLASIntCast(dimC, &n));
     PetscCall(PetscBLASIntCast(dimC * dimC, &worksize));
     for (l = 0; l < dimC; l++) invJ[l] = resNeg[l];
 
-    PetscCallBLAS("LAPACKgels", LAPACKgels_(&transpose, &m, &n, &one, J, &m, invJ, &n, work, &worksize, &info));
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELS %" PetscBLASInt_FMT, info);
-
+    PetscCallLAPACKInfo("LAPACKgels", LAPACKgels_(&transpose, &m, &n, &one, J, &m, invJ, &n, work, &worksize, &info));
     for (l = 0; l < dimR; l++) guess[l] += PetscRealPart(invJ[l]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);

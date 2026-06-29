@@ -73,22 +73,16 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscCall(MatDenseGetArray(jac->Vt, &v));
   PetscCall(VecGetArray(jac->diag, &d));
 #if !defined(PETSC_USE_COMPLEX)
-  {
-    PetscBLASInt lierr;
-    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, d, u, &nb, v, &nb, work, &lwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "gesvd() error %" PetscBLASInt_FMT, lierr);
-    PetscCall(PetscFPTrapPop());
-  }
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, d, u, &nb, v, &nb, work, &lwork, &info));
+  PetscCall(PetscFPTrapPop());
 #else
   {
-    PetscBLASInt lierr;
-    PetscReal   *rwork, *dd;
+    PetscReal *rwork, *dd;
     PetscCall(PetscMalloc1(5 * nb, &rwork));
     PetscCall(PetscMalloc1(nb, &dd));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, dd, u, &nb, v, &nb, work, &lwork, rwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "gesv() error %" PetscBLASInt_FMT, lierr);
+    PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, dd, u, &nb, v, &nb, work, &lwork, rwork, &info));
     PetscCall(PetscFree(rwork));
     for (i = 0; i < n; i++) d[i] = dd[i];
     PetscCall(PetscFree(dd));

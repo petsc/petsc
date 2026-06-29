@@ -60,7 +60,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactorFromGram(PetscDA da, PetscInt 
 PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 {
   PetscDA_Ensemble *en = (PetscDA_Ensemble *)da->data;
-  PetscBLASInt      n, lda, lwork, info;
+  PetscBLASInt      n, lda, lwork;
   PetscScalar      *a_array, *work, *eig_array;
   PetscInt          m_V, N_V;
 #if defined(PETSC_USE_COMPLEX)
@@ -90,11 +90,10 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   PetscCall(PetscMalloc1(1, &work));
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscMalloc1(PetscMax(1, 3 * n - 2), &rwork));
-  PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
+  PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
 #else
-  PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
+  PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
 #endif
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV work query: info=%" PetscBLASInt_FMT, info);
 
   /* Allocate workspace. LAPACK returns the optimal lwork as a double-valued integer in work[0];
      wrap with PetscCeilReal before narrowing so a 1-ulp shrink (some LAPACK builds return
@@ -105,12 +104,11 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
 
   /* Compute eigendecomposition */
 #if defined(PETSC_USE_COMPLEX)
-  PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
+  PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
   PetscCall(PetscFree(rwork));
 #else
-  PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
+  PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, eig_array, work, &lwork, &info));
 #endif
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine xSYEV: info=%" PetscBLASInt_FMT, info);
 
   /* Cleanup */
   PetscCall(PetscFree(work));

@@ -12,7 +12,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
   PetscScalar *d, *e;
   PetscReal   *ee;
   PetscInt     n = ksp->its;
-  PetscBLASInt bn, lierr = 0, ldz = 1;
+  PetscBLASInt bn, ldz = 1;
 
   PetscFunctionBegin;
   PetscCheck(nmax >= n, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_SIZ, "Not enough room in work space r and c for eigenvalues");
@@ -32,8 +32,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
 
   PetscCall(PetscBLASIntCast(n, &bn));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallBLAS("LAPACKREALstev", LAPACKREALstev_("N", &bn, r, ee, NULL, &ldz, NULL, &lierr));
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in STEV LAPACK routine %" PetscBLASInt_FMT, lierr);
+  PetscCallLAPACKInfo("LAPACKREALstev", LAPACKREALstev_("N", &bn, r, ee, NULL, &ldz, NULL, &info));
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscSortReal(n, r));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -45,7 +44,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
   PetscScalar *d, *e;
   PetscReal   *dd, *ee;
   PetscInt     n = ksp->its;
-  PetscBLASInt bn, lierr = 0, ldz = 1;
+  PetscBLASInt bn, ldz = 1;
 
   PetscFunctionBegin;
   if (!n) {
@@ -65,8 +64,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
 
   PetscCall(PetscBLASIntCast(n, &bn));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscCallBLAS("LAPACKREALstev", LAPACKREALstev_("N", &bn, dd, ee, NULL, &ldz, NULL, &lierr));
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in STEV LAPACK routine %" PetscBLASInt_FMT, lierr);
+  PetscCallLAPACKInfo("LAPACKREALstev", LAPACKREALstev_("N", &bn, dd, ee, NULL, &ldz, NULL, &info));
   PetscCall(PetscFPTrapPop());
   *emin = dd[0];
   *emax = dd[n - 1];

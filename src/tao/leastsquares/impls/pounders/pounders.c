@@ -264,7 +264,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
   PetscInt     i, j, k, num, np = mfqP->nmodelpoints;
   PetscReal    one = 1.0, zero = 0.0, negone = -1.0;
   PetscBLASInt blasnpmax, blasnplus1, blasnp, blasint, blasint2;
-  PetscBLASInt info, ione = 1;
+  PetscBLASInt ione  = 1;
   PetscReal    sqrt2 = PetscSqrtReal(2.0);
 
   PetscFunctionBegin;
@@ -277,8 +277,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
   for (i = 0; i < mfqP->n * mfqP->n * mfqP->m; i++) mfqP->Hdel[i] = 0;
 
   /* factor M */
-  PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&blasnplus1, &blasnp, mfqP->M, &blasnplus1, mfqP->npmaxiwork, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine getrf returned with value %" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKgetrf", LAPACKgetrf_(&blasnplus1, &blasnp, mfqP->M, &blasnplus1, mfqP->npmaxiwork, &info));
 
   if (np == mfqP->n + 1) {
     for (i = 0; i < mfqP->npmax - mfqP->n - 1; i++) mfqP->omega[i] = 0.0;
@@ -288,16 +287,14 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
     PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &blasint2, &blasint2, &blasint, &one, &mfqP->L[(mfqP->n + 1) * blasint], &blasint, &mfqP->L[(mfqP->n + 1) * blasint], &blasint, &zero, mfqP->L_tmp, &blasint));
 
     /* factor Ltmp */
-    PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("L", &blasint2, mfqP->L_tmp, &blasint, &info));
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine potrf returned with value %" PetscBLASInt_FMT, info);
+    PetscCallLAPACKInfo("LAPACKpotrf", LAPACKpotrf_("L", &blasint2, mfqP->L_tmp, &blasint, &info));
   }
 
   for (k = 0; k < mfqP->m; k++) {
     if (np != mfqP->n + 1) {
       /* Solve L'*L*Omega = Z' * RESk*/
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &blasnp, &blasint2, &one, mfqP->Z, &blasnpmax, &mfqP->RES[mfqP->npmax * k], &ione, &zero, mfqP->omega, &ione));
-      PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("L", &blasint2, &ione, mfqP->L_tmp, &blasint, mfqP->omega, &blasint2, &info));
-      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine potrs returned with value %" PetscBLASInt_FMT, info);
+      PetscCallLAPACKInfo("LAPACKpotrs", LAPACKpotrs_("L", &blasint2, &ione, mfqP->L_tmp, &blasint, mfqP->omega, &blasint2, &info));
 
       /* Beta = L*Omega */
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &blasint, &blasint2, &one, &mfqP->L[(mfqP->n + 1) * blasint], &blasint, mfqP->omega, &ione, &zero, mfqP->beta, &ione));
@@ -305,8 +302,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
 
     /* solve M'*Alpha = RESk - N'*Beta */
     PetscCallBLAS("BLASgemv", BLASgemv_("T", &blasint, &blasnp, &negone, mfqP->N, &blasint, mfqP->beta, &ione, &one, &mfqP->RES[mfqP->npmax * k], &ione));
-    PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("T", &blasnplus1, &ione, mfqP->M, &blasnplus1, mfqP->npmaxiwork, &mfqP->RES[mfqP->npmax * k], &blasnplus1, &info));
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine getrs returned with value %" PetscBLASInt_FMT, info);
+    PetscCallLAPACKInfo("LAPACKgetrs", LAPACKgetrs_("T", &blasnplus1, &ione, mfqP->M, &blasnplus1, mfqP->npmaxiwork, &mfqP->RES[mfqP->npmax * k], &blasnplus1, &info));
 
     /* Gdel(:,k) = Alpha(2:n+1) */
     for (i = 0; i < mfqP->n; i++) mfqP->Gdel[i + mfqP->n * k] = mfqP->RES[mfqP->npmax * k + i + 1];
@@ -336,7 +332,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
    np is actual number of points in model (should equal npmax?) */
   PetscInt         point, i, j, offset;
   PetscInt         reject;
-  PetscBLASInt     blasn, blasnpmax, blasnplus1, info, blasnmax, blasint, blasint2, blasnp, blasmaxmn;
+  PetscBLASInt     blasn, blasnpmax, blasnplus1, blasnmax, blasint, blasint2, blasnp, blasmaxmn;
   const PetscReal *x;
   PetscReal        normd;
 
@@ -395,8 +391,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     PetscCall(PetscBLASIntCast(mfqP->nmodelpoints + 1, &blasnp));
     /* Q_tmp,R = qr(M') */
     PetscCall(PetscBLASIntCast(PetscMax(mfqP->m, mfqP->n + 1), &blasmaxmn));
-    PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->mwork, &blasmaxmn, &info));
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine geqrf returned with value %" PetscBLASInt_FMT, info);
+    PetscCallLAPACKInfo("LAPACKgeqrf", LAPACKgeqrf_(&blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->mwork, &blasmaxmn, &info));
 
     /* Reject if min(svd(N*Q(:,n+2:np+1)) <= theta2 */
     /* L = N*Qtmp */
@@ -406,8 +401,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     /* Copy L_save to L_tmp */
 
     /* L_tmp = N*Qtmp' */
-    PetscCallBLAS("LAPACKormqr", LAPACKormqr_("R", "N", &blasint2, &blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->L_tmp, &blasint2, mfqP->npmaxwork, &blasnmax, &info));
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine ormqr returned with value %" PetscBLASInt_FMT, info);
+    PetscCallLAPACKInfo("LAPACKormqr", LAPACKormqr_("R", "N", &blasint2, &blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->L_tmp, &blasint2, mfqP->npmaxwork, &blasnmax, &info));
 
     /* Copy L_tmp to L_save */
     for (i = 0; i < mfqP->npmax * mfqP->n * (mfqP->n + 1) / 2; i++) mfqP->L_save[i] = mfqP->L_tmp[i];
@@ -415,9 +409,8 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     /* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
     PetscCall(PetscBLASIntCast(mfqP->nmodelpoints - mfqP->n, &blasint));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &blasint2, &blasint, &mfqP->L_tmp[(mfqP->n + 1) * blasint2], &blasint2, mfqP->beta, mfqP->work, &blasn, mfqP->work, &blasn, mfqP->npmaxwork, &blasnmax, &info));
+    PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &blasint2, &blasint, &mfqP->L_tmp[(mfqP->n + 1) * blasint2], &blasint2, mfqP->beta, mfqP->work, &blasn, mfqP->work, &blasn, mfqP->npmaxwork, &blasnmax, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine gesvd returned with value %" PetscBLASInt_FMT, info);
 
     if (mfqP->beta[PetscMin(blasint, blasint2) - 1] > mfqP->theta2) {
       /* accept point */
@@ -441,8 +434,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
   for (i = 0; i < mfqP->npmax; i++) mfqP->Q_tmp[i + mfqP->npmax * i] = 1.0;
 
   /* Q_tmp = I * Q */
-  PetscCallBLAS("LAPACKormqr", LAPACKormqr_("R", "N", &blasnp, &blasnp, &blasnplus1, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork, &blasnmax, &info));
-  PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine ormqr returned with value %" PetscBLASInt_FMT, info);
+  PetscCallLAPACKInfo("LAPACKormqr", LAPACKormqr_("R", "N", &blasnp, &blasnp, &blasnplus1, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork, &blasnmax, &info));
 
   /* Copy Q_tmp(:,n+2:np) to Z) */
   offset = mfqP->npmax * (mfqP->n + 1);
@@ -487,7 +479,7 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   /* modeld = Q(:,np+1:n)' */
   PetscInt     i, j, minindex = 0;
   PetscReal    dp, half = 0.5, one = 1.0, minvalue = PETSC_INFINITY;
-  PetscBLASInt blasn, blasnpmax, blask, info;
+  PetscBLASInt blasn, blasnpmax, blask;
   PetscBLASInt blas1 = 1, blasnmax;
 
   PetscFunctionBegin;
@@ -503,7 +495,7 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   for (j = 0; j < mfqP->n; j++) mfqP->Q_tmp[j + mfqP->npmax * j] = 1.0;
 
   /* Qtmp = Q * I */
-  PetscCallBLAS("LAPACKormqr", LAPACKormqr_("R", "N", &blasn, &blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork, &blasnmax, &info));
+  PetscCallLAPACKInfo("LAPACKormqr", LAPACKormqr_("R", "N", &blasn, &blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork, &blasnmax, &info));
 
   for (i = mfqP->nmodelpoints; i < mfqP->n; i++) {
     PetscCallBLAS("BLASdot", dp = BLASdot_(&blasn, &mfqP->Q_tmp[i * mfqP->npmax], &blas1, mfqP->Gres, &blas1));
@@ -527,7 +519,7 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
 static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c)
 {
   PetscInt         i, j;
-  PetscBLASInt     blasm, blasj, blask, blasn, ione = 1, info;
+  PetscBLASInt     blasm, blasj, blask, blasn, ione = 1;
   PetscBLASInt     blasnpmax, blasmaxmn;
   PetscReal        proj, normd;
   const PetscReal *x;
@@ -547,8 +539,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
       if (!mfqP->q_is_I) {
         /* project D onto null */
         PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));
-        PetscCallBLAS("LAPACKormqr", LAPACKormqr_("R", "N", &ione, &blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->work2, &ione, mfqP->mwork, &blasm, &info));
-        PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "ormqr returned value %" PetscBLASInt_FMT, info);
+        PetscCallLAPACKInfo("LAPACKormqr", LAPACKormqr_("R", "N", &ione, &blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->work2, &ione, mfqP->mwork, &blasm, &info));
       }
       PetscCallBLAS("BLASnrm2", proj = BLASnrm2_(&blasj, &mfqP->work2[mfqP->nmodelpoints], &ione));
 
@@ -560,8 +551,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
         PetscCallBLAS("BLAScopy", BLAScopy_(&blask, mfqP->Q_tmp, &ione, mfqP->Q, &ione));
         PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));
         PetscCall(PetscBLASIntCast(PetscMax(mfqP->m, mfqP->n), &blasmaxmn));
-        PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->mwork, &blasmaxmn, &info));
-        PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "geqrf returned value %" PetscBLASInt_FMT, info);
+        PetscCallLAPACKInfo("LAPACKgeqrf", LAPACKgeqrf_(&blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->mwork, &blasmaxmn, &info));
         mfqP->q_is_I = 0;
       }
       if (mfqP->nmodelpoints == mfqP->n) break;

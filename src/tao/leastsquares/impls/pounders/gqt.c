@@ -216,7 +216,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
   PetscReal    f = 0.0, p001 = 0.001, p5 = 0.5, minusone = -1, delta2 = delta * delta;
   PetscInt     iter, j, rednc, info;
   PetscBLASInt indef;
-  PetscBLASInt blas1 = 1, blasn, iblas, blaslda, blasldap1, blasinfo;
+  PetscBLASInt blas1 = 1, blasn, iblas, blaslda, blasldap1;
   PetscReal    alpha, anorm, bnorm, parc, parf, parl, pars, par = *retpar, paru, prod, rxnorm, rznorm = 0.0, temp, xnorm;
 
   PetscFunctionBegin;
@@ -296,11 +296,9 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
 
       parf = par;
       PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, b, &blas1, wa2, &blas1));
-      PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-      PetscCheck(!blasinfo, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKtrtrs() returned info %" PetscBLASInt_FMT, blasinfo);
+      PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &info));
       PetscCallBLAS("BLASnrm2", rxnorm = BLASnrm2_(&blasn, wa2, &blas1));
-      PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-      PetscCheck(!blasinfo, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKtrtrs() returned info %" PetscBLASInt_FMT, blasinfo);
+      PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &info));
 
       PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, wa2, &blas1, x, &blas1));
       PetscCallBLAS("BLASscal", BLASscal_(&blasn, &minusone, x, &blas1));
@@ -344,8 +342,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
         PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, x, &blas1, wa2, &blas1));
         temp = 1.0 / xnorm;
         PetscCallBLAS("BLASscal", BLASscal_(&blasn, &temp, wa2, &blas1));
-        PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-        PetscCheck(!blasinfo, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKtrtrs() returned info %" PetscBLASInt_FMT, blasinfo);
+        PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &blasn, &blas1, a, &blaslda, wa2, &blasn, &info));
         PetscCallBLAS("BLASnrm2", temp = BLASnrm2_(&blasn, wa2, &blas1));
         parc = (xnorm - delta) / (delta * temp * temp);
       }
@@ -369,14 +366,12 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
 
         /* compute parc. */
         PetscCallBLAS("BLAScopy", BLAScopy_(&iblas, &a[0 + (indef - 1) * lda], &blas1, wa2, &blas1));
-        PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &iblas, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-        PetscCheck(!blasinfo, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKtrtrs() returned info %" PetscBLASInt_FMT, blasinfo);
+        PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &iblas, &blas1, a, &blaslda, wa2, &blasn, &info));
         PetscCallBLAS("BLAScopy", BLAScopy_(&iblas, wa2, &blas1, &a[0 + (indef - 1) * lda], &blas1));
         PetscCallBLAS("BLASnrm2", temp = BLASnrm2_(&iblas, &a[0 + (indef - 1) * lda], &blas1));
         CHKMEMQ;
         a[indef - 1 + (indef - 1) * lda] -= temp * temp;
-        PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &iblas, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-        PetscCheck(!blasinfo, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACKtrtrs() returned info %" PetscBLASInt_FMT, blasinfo);
+        PetscCallLAPACKInfo("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &iblas, &blas1, a, &blaslda, wa2, &blasn, &info));
       }
 
       wa2[indef - 1] = -1.0;

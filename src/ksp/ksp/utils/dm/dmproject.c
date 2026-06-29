@@ -224,7 +224,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   const PetscScalar *af, *ac;
   PetscScalar       *A, *b, *x, *workscalar;
   PetscReal         *w, *sing, *workreal, rcond = PETSC_SMALL;
-  PetscBLASInt       M, N, one = 1, irank, lwrk, info;
+  PetscBLASInt       M, N, one = 1, irank, lwrk;
   PetscInt           debug = 0, rStart, rEnd, r, maxcols = 0, k, Nc, ldac, ldaf;
   PetscBool          allocVc = PETSC_FALSE;
 
@@ -343,14 +343,10 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
 #endif
     }
 #if defined(PETSC_USE_COMPLEX)
-    /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO) */
-    PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, workreal, &info));
+    PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, workreal, &info));
 #else
-    /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
-    PetscCallBLAS("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
+    PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
 #endif
-    PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
-    PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
     if (debug) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %" PetscBLASInt_FMT " rcond %g\n", irank, (double)rcond));
 #if defined(PETSC_USE_COMPLEX)

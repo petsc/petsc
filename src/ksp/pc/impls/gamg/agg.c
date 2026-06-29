@@ -635,7 +635,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
     if (jj > 0) {
       const PetscInt lid = mm, cgid = my0crs + clid;
       PetscInt       cids[100]; /* max bs */
-      PetscBLASInt   asz, M, N, info;
+      PetscBLASInt   asz, M, N;
       PetscBLASInt   Mdata, LDA, LWORK;
       PetscScalar   *qqc, *qqr, *TAU, *WORK;
       PetscInt      *fids;
@@ -687,9 +687,8 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
 
       /* QR */
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
+      PetscCallLAPACKInfo("LAPACKgeqrf", LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
       PetscCall(PetscFPTrapPop());
-      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in xGEQRF LAPACK routine %" PetscBLASInt_FMT, info);
       /* get R - column-oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid * nSAvec];
@@ -704,8 +703,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       }
 
       /* get Q - row-oriented */
-      PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
-      PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ORGQR LAPACK routine argument %" PetscBLASInt_FMT, -info);
+      PetscCallLAPACKInfo("LAPACKorgqr", LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &info));
 
       for (ii = 0; ii < M; ii++) {
         for (jj = 0; jj < N; jj++) qqr[N * ii + jj] = qqc[jj * Mdata + ii];

@@ -52,7 +52,6 @@ typedef struct {
   PetscScalar *work;  /* the work vector */
   PetscReal   *rwork; /* the real work vector used for complex */
   PetscBLASInt lwork; /* the size of the work vector */
-  PetscBLASInt info;  /* the output condition */
 
   PetscBool setup_called; /* indicates whether SNESSetUp_NGMRES() has been called  */
 } SNES_NGMRES;
