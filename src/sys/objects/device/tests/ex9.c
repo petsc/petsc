@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscDeviceContextCreate(&dctx));
-  PetscCall(PetscDeviceContextSetStreamType(dctx, PETSC_STREAM_NONBLOCKING));
+  PetscCall(PetscDeviceContextSetStreamType(dctx, PETSC_STREAM_DEFAULT));
   PetscCall(PetscDeviceContextSetUp(dctx));
   PetscCall(TestQueryIdle(dctx));
   PetscCall(PetscDeviceContextDestroy(&dctx));
