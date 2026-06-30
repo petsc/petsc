@@ -43,12 +43,12 @@ int main(int argc, char *argv[])
       suffix: hip_no_env
     test:
       requires: hip
-      env: HIP_VISIBLE_DEVICES=0
+      env: ROCR_VISIBLE_DEVICES=0
       args: -device_enable_hip {{none lazy eager}separate output}
       suffix: hip_env_set
     test:
       requires: hip
-      env: HIP_VISIBLE_DEVICES=
+      env: ROCR_VISIBLE_DEVICES=
       args: -device_enable_hip {{none lazy eager}separate output}
       suffix: hip_env_set_empty
 

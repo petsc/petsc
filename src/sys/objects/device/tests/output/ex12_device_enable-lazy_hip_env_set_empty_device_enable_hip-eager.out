@@ -2,11 +2,18 @@
 [0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice host initialized, default device id 0, view FALSE, init type lazy
 [0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType cuda not available
 [0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType hip available, initializing
-[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice hip initialized, default device id 0, view FALSE, init type eager
-[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): Eagerly initializing hip PetscDevice
-[0] <sys> PetscDeviceInitializeFromOptions_Internal(): PetscDevice hip set as default device type due to eager initialization
-[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType sycl not available
-[0] <sys> PetscDeviceInitializeFromOptions_Internal(): Eagerly initializing PetscDeviceContext with hip device
-[0] <device> PetscDeviceContextSetupGlobalContext_Private(): Initializing global PetscDeviceContext with device type hip
-[0] <sys> PetscInitialize_Common(): PETSc successfully started: number of processors = 1
-[0] <device> operator()(): Destroying global PetscDeviceContext with device type hip
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Missing or incorrect user input
+[0]PETSC ERROR: Cannot eagerly initialize hip, as doing so results in hip error 100 (hipErrorNoDevice) : no ROCm-capable device is detected
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 initialize() at cupmdevice.cxx:0
+[0]PETSC ERROR: #2 PetscDeviceInitializeTypeFromOptions_Private() at device.cxx:0
+[0]PETSC ERROR: #3 PetscDeviceInitializeFromOptions_Internal() at device.cxx:0
+[0]PETSC ERROR: #4 PetscInitialize_Common() at pinit.c:0
+[0]PETSC ERROR: #5 PetscInitialize() at pinit.c:0
+[0]PETSC ERROR: #6 main() at ex12.c:0
+[0]PETSC ERROR: PETSc Option Table entries:
+[0]PETSC ERROR: -device_enable lazy (source: command line)
+[0]PETSC ERROR: -device_enable_hip eager (source: command line)
+[0]PETSC ERROR: -info (source: command line)
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------
