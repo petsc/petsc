@@ -15,9 +15,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
-#endif
+  PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 

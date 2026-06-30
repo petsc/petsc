@@ -21,9 +21,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
-#endif
+  PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex158");
   PetscCall(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex158", use_interface, &use_interface, NULL));

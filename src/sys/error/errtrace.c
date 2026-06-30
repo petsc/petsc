@@ -65,21 +65,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
       This function does not do error checking because it is called by the error handlers.
   */
 
-  if (!PetscErrorPrintfCalled) {
-    PetscErrorPrintfCalled = PETSC_TRUE;
-
-    /*
-        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-      different processors, the messages are printed all jumbled up; to try to
-      prevent this we have each processor wait based on their rank
-    */
-#if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
-    {
-      PetscMPIInt rank = PetscGlobalRank > 8 ? 8 : PetscGlobalRank;
-      (void)PetscSleep((PetscReal)rank);
-    }
-#endif
-  }
+  if (!PetscErrorPrintfCalled) PetscErrorPrintfCalled = PETSC_TRUE;
 
   (void)PetscFPrintf(PETSC_COMM_SELF, PETSC_STDERR, "[%d]PETSC ERROR: ", PetscGlobalRank);
   va_start(Argp, format);
