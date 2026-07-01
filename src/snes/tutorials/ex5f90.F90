@@ -92,8 +92,6 @@ contains
 !      the data array. Otherwise, the routine is implementation dependent.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-!    - Note that the interface to VecGetArray() differs from VecGetArray().
-
     PetscCall(VecGetArray(localX, lx_v, ierr))
     PetscCall(VecGetArray(F, lf_v, ierr))
 
@@ -149,8 +147,6 @@ contains
 !      the data array. Otherwise, the routine is implementation dependent.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-!    - Note that the interface to VecGetArray() differs from VecGetArray().
-
     PetscCallA(VecGetArray(X, lx_v, ierr))
 
 !  Compute initial guess over the locally owned part of the grid
