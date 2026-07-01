@@ -39,6 +39,8 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-opencl')
     args.append('--disable-cuda')
     args.append('--disable-nvml')
+    args.append('--disable-rsmi-amd')
+    args.append('--disable-rsmi-rocm')
     args.append('--disable-gl')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')

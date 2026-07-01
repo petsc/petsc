@@ -60,16 +60,17 @@ class Configure(config.package.Package):
     self.mpiexec           = None
     self.mpiexecExecutable = None
     self.mpiexecseq        = None
+    self.mpiexec_tail      = None
     return
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs. (should support "-n <np>" option)'))
-    help.addArgument('MPI', '-with-mpiexec-tail=<prog>',                         nargs.Arg(None, None, 'The utility you want to put at the very end of "mpiexec -n <np> ..." and right before your executable to launch MPI jobs.'))
+    help.addArgument('MPI', '-with-mpiexec-tail=<prog or options>',              nargs.Arg(None, None, 'The utility or options you want to put at the very end of "mpiexec -n <np> ..." and right before your executable to launch MPI jobs.'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-with-mpi-ftn-module=<mpi or mpi_f08>',                      nargs.ArgString(None, "mpi", 'Specify the MPI Fortran module to build with'))
+    help.addArgument('MPI', '-with-mpi-ftn-module=<mpi or mpi_f08>',             nargs.ArgString(None, "mpi", 'Specify the MPI Fortran module to build with'))
     return
 
   def setupDependencies(self, framework):
@@ -188,15 +189,10 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     return
 
   def configureMPIEXEC_TAIL(self):
-    '''Checking for location of mpiexec_tail'''
+    '''Checking for mpiexec_tail'''
     if 'with-mpiexec-tail' in self.argDB:
-      self.argDB['with-mpiexec-tail'] = os.path.expanduser(self.argDB['with-mpiexec-tail'])
-      # If found, the call below defines a make macro MPIEXEC_TAIL with full path
-      if not self.getExecutable(self.argDB['with-mpiexec-tail'], getFullPath=1, resultName = 'mpiexec_tail'):
-        raise RuntimeError('Invalid mpiexec-tail specified: '+str(self.argDB['with-mpiexec-tail']))
-    else:
-      self.mpiexec_tail =''
-      self.addMakeMacro('MPIEXEC_TAIL', '')
+      self.mpiexec_tail = self.argDB['with-mpiexec-tail']
+    self.addMakeMacro('MPIEXEC_TAIL', self.mpiexec_tail)
 
   def configureMPIEXEC(self):
     '''Checking for location of mpiexec'''

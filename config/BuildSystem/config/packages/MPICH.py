@@ -22,9 +22,10 @@ class Configure(config.package.GNUPackage):
     self.compilerFlags   = framework.require('config.compilerFlags',self)
     self.cuda            = framework.require('config.packages.CUDA',self)
     self.hip             = framework.require('config.packages.HIP',self)
+    self.sycl            = framework.require('config.packages.SYCL',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.python          = framework.require('config.packages.Python',self)
-    self.odeps           = [self.cuda, self.hip, self.hwloc]
+    self.odeps           = [self.cuda, self.hip, self.sycl, self.hwloc]
     return
 
   def versionToStandardForm(self,ver):
@@ -88,11 +89,16 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch4:ucx'
     elif self.hip.found:
       args.append('--with-hip='+self.hip.hipDir)
-      mpich_device = 'ch4:ofi' # per https://github.com/pmodels/mpich/wiki/Using-MPICH-on-Crusher@OLCF
+      mpich_device = 'ch4:ucx'
 
     if 'download-mpich-device' in self.argDB:
       mpich_device = self.argDB['download-mpich-device']
     args.append('--with-device='+mpich_device)
+
+    # Don't let MPICH build with devices we didn't ask for
+    if not self.cuda.found: args.append('--without-cuda')
+    if not self.hip.found: args.append('--without-hip')
+    if not self.sycl.found: args.append('--without-ze')
 
     if not self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.setCompilers.CC, self.log):
       args.append('pac_cv_have_float16=no')
