@@ -211,14 +211,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.conda_active = True
       self.addMakeMacro('CONDA_ACTIVE',1)
 
-    buf = 'Environmental variables'
-    for key,val in os.environ.items():
-      maskvar = ('KEY', 'TOKEN', 'PASSWORD', 'SECRET', 'CRED')
-      if any(var in str(key) for var in maskvar):
-        buf += '\n'+str(key)+'=masked'
-      else:
-        buf += '\n'+str(key)+'='+str(val)
-    self.logPrint(buf)
     def logPrintFilesInPath(path):
       for d in path:
         try:

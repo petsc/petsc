@@ -276,9 +276,9 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv | grep -ve KEY -ve TOKEN -ve PASSWORD -ve SECRET -ve CRED', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv | grep -ve KEY -ve TOKEN -ve PASSWORD -ve SECRET -ve CRED', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log, logOutputflg = False)
     if ret:
-      self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
+      self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+err)
     else:
       if out.find('MPIR_CVAR_CH3') > -1:
         if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from Open MPI but it appears your mpiexec is from MPICH");
