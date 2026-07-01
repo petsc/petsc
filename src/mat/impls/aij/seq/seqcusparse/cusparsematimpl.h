@@ -181,7 +181,8 @@ struct Mat_CusparseSpMV {
   PetscBool            initialized;    /* Don't rely on spmvBuffer != NULL to test if the struct is initialized, */
   size_t               spmvBufferSize; /* since I'm not sure if smvBuffer can be NULL even after cusparseSpMV_bufferSize() */
   void                *spmvBuffer;
-  cusparseDnVecDescr_t vecXDescr, vecYDescr; /* descriptor for the dense vectors in y=op(A)x */
+  cusparseDnVecDescr_t vecXDescr, vecYDescr; /* descriptors for the dense vectors and matrix in y=op(A)x */
+  cusparseSpMatDescr_t matDescr;             /* use separate MatDescr for opA's, since a MatDescr can only support one 'active' buffer in SpMV. See https://docs.nvidia.com/cuda/cusparse/#cusparsespmv */
 };
 
 /* This is struct holding the relevant data needed to a MatMult */
@@ -192,9 +193,8 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
   PetscScalar         *alpha_one;    /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
   PetscScalar         *beta_zero;    /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
   PetscScalar         *beta_one;     /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
-  cusparseSpMatDescr_t matDescr;     /* descriptor for the matrix, used by SpMV and SpMM */
+  cusparseSpMatDescr_t matDescr;     /* descriptor for the matrix, used by SpMM */
 #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-  cusparseSpMatDescr_t matDescr_SpMV[3]; // Use separate MatDescr for opA's, to workaround cusparse bugs after 12.4, see https://github.com/NVIDIA/CUDALibrarySamples/issues/212,
   cusparseSpMatDescr_t matDescr_SpMM[3]; // and known issues https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cusparse-release-12-6
 #endif
   Mat_CusparseSpMV cuSpMV[3]; /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
@@ -203,7 +203,6 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
     for (int i = 0; i < 3; i++) {
       cuSpMV[i].initialized = PETSC_FALSE;
 #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-      matDescr_SpMV[i] = NULL;
       matDescr_SpMM[i] = NULL;
 #endif
     }

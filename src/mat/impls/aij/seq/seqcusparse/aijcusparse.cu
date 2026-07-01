@@ -2501,29 +2501,19 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
 
     /* csr_spmv does y = alpha op(A) x + beta y */
     if (cusparsestruct->format == MAT_CUSPARSE_CSR) {
-#if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-      cusparseSpMatDescr_t &matDescr = matstruct->matDescr_SpMV[opA]; // All opA's should use the same matDescr, but the cusparse issue/bug (#212) after 12.4 forced us to create a new one for each opA.
-#else
-      cusparseSpMatDescr_t &matDescr = matstruct->matDescr;
-#endif
-
       PetscCheck(opA >= 0 && opA <= 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "cuSPARSE ABI on cusparseOperation_t has changed and PETSc has not been updated accordingly");
-#if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-      if (!matDescr) {
-        CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
-        PetscCallCUSPARSE(cusparseCreateCsr(&matDescr, mat->num_rows, mat->num_cols, mat->num_entries, mat->row_offsets->data().get(), mat->column_indices->data().get(), mat->values->data().get(), csrRowOffsetsType, csrColIndType, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype));
-      }
-#endif
 
       if (!matstruct->cuSpMV[opA].initialized) { /* built on demand */
+        CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
+        PetscCallCUSPARSE(cusparseCreateCsr(&matstruct->cuSpMV[opA].matDescr, mat->num_rows, mat->num_cols, mat->num_entries, mat->row_offsets->data().get(), mat->column_indices->data().get(), mat->values->data().get(), csrRowOffsetsType, csrColIndType, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype));
         PetscCallCUSPARSE(cusparseCreateDnVec(&matstruct->cuSpMV[opA].vecXDescr, nx, xptr, cusparse_scalartype));
         PetscCallCUSPARSE(cusparseCreateDnVec(&matstruct->cuSpMV[opA].vecYDescr, ny, dptr, cusparse_scalartype));
-        PetscCallCUSPARSE(
-          cusparseSpMV_bufferSize(cusparsestruct->handle, opA, matstruct->alpha_one, matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg, &matstruct->cuSpMV[opA].spmvBufferSize));
+        PetscCallCUSPARSE(cusparseSpMV_bufferSize(cusparsestruct->handle, opA, matstruct->alpha_one, matstruct->cuSpMV[opA].matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg,
+                                                  &matstruct->cuSpMV[opA].spmvBufferSize));
         PetscCallCUDA(cudaMalloc(&matstruct->cuSpMV[opA].spmvBuffer, matstruct->cuSpMV[opA].spmvBufferSize));
 #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0) // cusparseSpMV_preprocess is added in 12.4
-        PetscCallCUSPARSE(
-          cusparseSpMV_preprocess(cusparsestruct->handle, opA, matstruct->alpha_one, matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg, matstruct->cuSpMV[opA].spmvBuffer));
+        PetscCallCUSPARSE(cusparseSpMV_preprocess(cusparsestruct->handle, opA, matstruct->alpha_one, matstruct->cuSpMV[opA].matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg,
+                                                  matstruct->cuSpMV[opA].spmvBuffer));
 #endif
         matstruct->cuSpMV[opA].initialized = PETSC_TRUE;
       } else {
@@ -2532,7 +2522,8 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
         PetscCallCUSPARSE(cusparseDnVecSetValues(matstruct->cuSpMV[opA].vecYDescr, dptr));
       }
 
-      PetscCallCUSPARSE(cusparseSpMV(cusparsestruct->handle, opA, matstruct->alpha_one, matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg, matstruct->cuSpMV[opA].spmvBuffer));
+      PetscCallCUSPARSE(
+        cusparseSpMV(cusparsestruct->handle, opA, matstruct->alpha_one, matstruct->cuSpMV[opA].matDescr, matstruct->cuSpMV[opA].vecXDescr, beta, matstruct->cuSpMV[opA].vecYDescr, cusparse_scalartype, cusparsestruct->spmvAlg, matstruct->cuSpMV[opA].spmvBuffer));
 
     } else {
       if (cusparsestruct->nrows) {
@@ -2965,8 +2956,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMult
         PetscCallCUDA(cudaFree(mdata->cuSpMV[i].spmvBuffer));
         PetscCallCUSPARSE(cusparseDestroyDnVec(mdata->cuSpMV[i].vecXDescr));
         PetscCallCUSPARSE(cusparseDestroyDnVec(mdata->cuSpMV[i].vecYDescr));
+        PetscCallCUSPARSE(cusparseDestroySpMat(mdata->cuSpMV[i].matDescr));
 #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-        if (mdata->matDescr_SpMV[i]) PetscCallCUSPARSE(cusparseDestroySpMat(mdata->matDescr_SpMV[i]));
         if (mdata->matDescr_SpMM[i]) PetscCallCUSPARSE(cusparseDestroySpMat(mdata->matDescr_SpMM[i]));
 #endif
       }
