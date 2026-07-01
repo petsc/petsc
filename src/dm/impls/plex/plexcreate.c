@@ -6,7 +6,7 @@
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 #include <errno.h>

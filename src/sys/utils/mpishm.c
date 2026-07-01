@@ -27,7 +27,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_DeleteFn(MPI_Comm comm, Petsc
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#ifdef PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
+#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
   /* Data structures to support freeing comms created in PetscShmCommGet().
   Since we predict communicators passed to PetscShmCommGet() are very likely
   either a PETSc inner communicator or an MPI communicator with a linked PETSc
@@ -66,7 +66,7 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 @*/
 PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 {
-#ifdef PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
+#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
   MPI_Group         globgroup, shmgroup;
   PetscMPIInt      *shmranks, i, flg;
   PetscCommCounter *counter;

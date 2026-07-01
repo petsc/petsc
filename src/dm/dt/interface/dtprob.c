@@ -613,7 +613,7 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef PETSC_HAVE_KS
+#if PetscDefined(HAVE_KS)
 EXTERN_C_BEGIN
   #include <KolmogorovSmirnovDist.h>
 EXTERN_C_END

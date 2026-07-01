@@ -170,7 +170,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
       vj  = aj + ai[i] + 1;
       v   = aa + ai[i] + 1;
       sum = b[i] * d / omega;
-#ifdef USESHORT
+#if defined(USESHORT)
       PetscSparseDensePlusDot_no_function(sum, b, v, vj, nz);
 #else
       PetscSparseDensePlusDot(sum, b, v, vj, nz);

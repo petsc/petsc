@@ -48,7 +48,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   dmmoab->nhlevels = nlevels;
 
   /* Instantiate the nested refinement class */
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core *>(dmmoab->mbiface), dmmoab->pcomm, dmmoab->fileset);
 #else
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core *>(dmmoab->mbiface), NULL, dmmoab->fileset);
@@ -59,7 +59,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   /* generate the mesh hierarchy */
   PetscCallMOAB(dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets, false));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   if (dmmoab->pcomm->size() > 1) PetscCallMOAB(dmmoab->hierarchy->exchange_ghosts(hsets, dmmoab->nghostrings));
 #endif
 
@@ -68,7 +68,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   for (ilevel = 1; ilevel <= nlevels; ilevel++) {
     dmmoab->hsets[ilevel] = hsets[ilevel];
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     PetscCallMOAB(dmmoab->pcomm->assign_global_ids(hsets[ilevel], dmmoab->dim, 0, false, true, false));
 #endif
 
@@ -415,7 +415,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   dd2 = (DM_Moab *)dm2->data;
 
   dd2->mbiface = dmb->mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   dd2->pcomm = dmb->pcomm;
 #endif
   dd2->icreatedinstance = PETSC_FALSE;

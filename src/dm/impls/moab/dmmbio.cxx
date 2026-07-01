@@ -64,7 +64,7 @@ PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopt
 
   /* add mesh loading options specific to the DM */
   if (isftype) {
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     PetscCall(DMMoab_GetWriteOptions_Private(dmmoab->pcomm->get_id(), dmmoab->pcomm->size(), dmmoab->dim, dmmoab->write_mode, dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));
 #else
     PetscCall(DMMoab_GetWriteOptions_Private(0, 1, dmmoab->dim, dmmoab->write_mode, dmmoab->rw_dbglevel, dmmoab->extra_write_options, usrwriteopts, &writeopts));

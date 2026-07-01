@@ -855,7 +855,7 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems PetscOptionsObject, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
   #include <type_traits>
 #endif
 
@@ -876,7 +876,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems PetscOptionsObject, co
     PetscCall(PetscStrdup(currentvalue ? currentvalue : "", (char **)&amsopt->data));
     PetscCall(PetscStrNArrayallocpy(ntext, list, (char ***)&amsopt->list));
     PetscCheck(ntext <= CHAR_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of list entries %" PetscInt_FMT " > %d", ntext, CHAR_MAX);
-#ifdef __cplusplus
+#if defined(__cplusplus)
     static_assert(std::is_same<typename std::decay<decltype(amsopt->nlist)>::type, char>::value, "");
 #endif
     amsopt->nlist = (char)ntext;

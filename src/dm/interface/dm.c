@@ -8,7 +8,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscfeceed.h>
 #endif
 
@@ -775,7 +775,7 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscTryTypeMethod(*dm, destroy);
   PetscCall(DMMonitorCancel(*dm));
   PetscCall(DMCeedDestroy(&(*dm)->dmceed));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCallCEED(CeedElemRestrictionDestroy(&(*dm)->ceedERestrict));
   PetscCallCEED(CeedDestroy(&(*dm)->ceed));
 #endif
@@ -6113,7 +6113,7 @@ PetscErrorCode DMCreateDS(DM dm)
     DMLabel  label = dm->fields[f].label;
     PetscInt l;
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
     /* Move CEED context to discretizations */
     {
       PetscClassId id;

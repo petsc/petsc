@@ -196,7 +196,7 @@ static_assert(PetscMemTypeCUDA(PETSC_MEMTYPE_NVSHMEM), "");
 
 PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscMemTypeToString(PetscMemType mtype)
 {
-#ifdef __cplusplus
+#if defined(__cplusplus)
   static_assert(PETSC_MEMTYPE_CUDA == PETSC_MEMTYPE_DEVICE, "");
 #endif
 #define PETSC_CASE_NAME(v) \

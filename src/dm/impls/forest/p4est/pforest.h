@@ -3834,7 +3834,7 @@ static PetscErrorCode PforestQuadrantIsInterior(p4est_quadrant_t *quad, PetscBoo
   PetscFunctionBegin;
   p4est_qcoord_t h = P4EST_QUADRANT_LEN(quad->level);
   if ((quad->x > 0) && (quad->x + h < P4EST_ROOT_LEN)
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
       && (quad->z > 0) && (quad->z + h < P4EST_ROOT_LEN)
   #endif
       && (quad->y > 0) && (quad->y + h < P4EST_ROOT_LEN)) {
@@ -3874,7 +3874,7 @@ static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecO
 
       quad_coords[0] = quad->x;
       quad_coords[1] = quad->y;
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
       quad_coords[2] = quad->z;
   #endif
       for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
@@ -3919,7 +3919,7 @@ static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pfor
 
     quad_coords[0] = quad->x;
     quad_coords[1] = quad->y;
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
     quad_coords[2] = quad->z;
   #endif
     for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;

@@ -62,7 +62,7 @@ PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
   #if defined(PETSC_HAVE_RTLD_NOLOAD)
       mode |= RTLD_NOLOAD;
   #endif
-  #ifdef __APPLE__
+  #if defined(__APPLE__)
       if (!handle) handle = dlopen("libc++.1.dylib", mode);
   #else
       if (!handle) handle = dlopen("libstdc++.so.6", mode);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <petscdm.h>
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscdmceed.h>
 #endif
 #include <petsc/private/petscimpl.h>
@@ -325,7 +325,7 @@ struct _p_DM {
   PetscBool cloneOpts; /* Flag indicating that this is a linked clone and should not respond to some options. This is currently used to prevent transformations from also affecting the coordinate DM */
 
   PetscObject dmksp, dmsnes, dmts;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   Ceed                ceed;          // LibCEED context
   CeedElemRestriction ceedERestrict; // Map from the local vector (Lvector) to the cells (Evector)
 #endif

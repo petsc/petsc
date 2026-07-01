@@ -68,7 +68,7 @@ const char *const PetscDeviceInitTypes[] = {
   PETSC_NULLPTR
 };
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 #include <petsc/private/cpp/type_traits.hpp>
 
 static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_NONE) == 0, "");

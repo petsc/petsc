@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsString("-o", "Filename to write", "ex95", ofilename, ofilename, sizeof(ofilename), NULL));
   PetscOptionsEnd();
 
-#ifdef PETSC_USE_DEBUG
+#if PetscDefined(USE_DEBUG)
   PetscCallExternal(ex_opts, EX_VERBOSE + EX_DEBUG);
 #endif
 

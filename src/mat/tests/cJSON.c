@@ -28,7 +28,7 @@
   #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
   #pragma GCC visibility push(default)
 #endif
 #if defined(_MSC_VER)
@@ -45,26 +45,26 @@
 #include <ctype.h>
 #include <float.h>
 
-#ifdef ENABLE_LOCALES
+#if defined(ENABLE_LOCALES)
   #include <locale.h>
 #endif
 
 #if defined(_MSC_VER)
   #pragma warning(pop)
 #endif
-#ifdef __GNUC__
+#if defined(__GNUC__)
   #pragma GCC visibility pop
 #endif
 
 #include "cJSON.h"
 
 /* define our own boolean type */
-#ifdef true
+#if defined(true)
   #undef true
 #endif
 #define true ((cJSON_bool)1)
 
-#ifdef false
+#if defined(false)
   #undef false
 #endif
 #define false ((cJSON_bool)0)
@@ -78,7 +78,7 @@
 #endif
 
 #if !defined(NAN)
-  #ifdef _WIN32
+  #if defined(_WIN32)
     #define NAN sqrt(-1.0)
   #else
     #define NAN 0.0 / 0.0
@@ -230,7 +230,7 @@ CJSON_PUBLIC(void) cJSON_Delete(cJSON *item)
 /* get the decimal point character of the current locale */
 static unsigned char get_decimal_point(void)
 {
-#ifdef ENABLE_LOCALES
+#if defined(ENABLE_LOCALES)
   struct lconv *lconv = localeconv();
   return (unsigned char)lconv->decimal_point[0];
 #else
@@ -1533,7 +1533,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_AddItemToArray(cJSON *array, cJSON *item)
 #if defined(__clang__) || (defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 5))))
   #pragma GCC diagnostic push
 #endif
-#ifdef __GNUC__
+#if defined(__GNUC__)
   #pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 /* helper function to cast away const */

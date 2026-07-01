@@ -91,7 +91,7 @@ struct _n_User {
   PetscBool vtkmon;
 };
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
 // Free a plain data context that was allocated using PETSc; returning libCEED error codes
 static int FreeContextPetsc(void *data)
 {
@@ -383,7 +383,7 @@ static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob, Physics phys)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
 static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFunctionContext *qfCtx)
 {
   Physics_SW *in = (Physics_SW *)phys->data;
@@ -404,13 +404,13 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
 
 static PetscErrorCode SetupCEED_SW(DM dm, Physics physics)
 {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   Ceed                 ceed;
   CeedQFunctionContext qfCtx;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMGetCeed(dm, &ceed));
   PetscCall(CreateQFunctionContext_SW(physics, ceed, &qfCtx));
   PetscCall(DMCeedCreateFVM(dm, PETSC_TRUE, PhysicsRiemann_SW_Rusanov_CEED, PhysicsRiemann_SW_Rusanov_CEED_loc, qfCtx));
@@ -433,7 +433,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
 
   PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov", PhysicsRiemann_SW_Rusanov));
   PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_SW, "hll", PhysicsRiemann_SW_HLL));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov_ceed", PhysicsRiemann_SW_Rusanov_CEED));
 #endif
 
@@ -590,7 +590,7 @@ static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob, Physics phys)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
 static PetscErrorCode CreateQFunctionContext_Euler(Physics phys, Ceed ceed, CeedQFunctionContext *qfCtx)
 {
   Physics_Euler *in = (Physics_Euler *)phys->data;
@@ -611,13 +611,13 @@ static PetscErrorCode CreateQFunctionContext_Euler(Physics phys, Ceed ceed, Ceed
 
 static PetscErrorCode SetupCEED_Euler(DM dm, Physics physics)
 {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   Ceed                 ceed;
   CeedQFunctionContext qfCtx;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMGetCeed(dm, &ceed));
   PetscCall(CreateQFunctionContext_Euler(physics, ceed, &qfCtx));
   PetscCall(DMCeedCreateFVM(dm, PETSC_TRUE, PhysicsRiemann_Euler_Godunov_CEED, PhysicsRiemann_Euler_Godunov_CEED_loc, qfCtx));
@@ -639,7 +639,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
   mod->setupCEED = SetupCEED_Euler;
 
   PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_Euler, "godunov", PhysicsRiemann_Euler_Godunov));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_Euler, "godunov_ceed", PhysicsRiemann_Euler_Godunov_CEED));
 #endif
 
@@ -1066,7 +1066,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
 
 static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
 {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscBool useCeed;
 #endif
 
@@ -1076,7 +1076,7 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   PetscCall(TSSetDM(*ts, dm));
   if (user->vtkmon) PetscCall(TSMonitorSet(*ts, MonitorVTK, user, NULL));
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMPlexGetUseCeed(dm, &useCeed));
   if (useCeed) PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVMCEED, user));
   else
@@ -1442,7 +1442,7 @@ int main(int argc, char **argv)
       }
     }
   }
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   {
     PetscBool useCeed;
     PetscCall(DMPlexGetUseCeed(dm, &useCeed));

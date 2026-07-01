@@ -17,7 +17,7 @@
 //
 // This choice is consequential, since adding/checking marks is done for every
 // PetscDeviceContextMarkIntentFromID() call
-#ifdef __clang__
+#if defined(__clang__)
   #include <unordered_set>
   #define PETSC_USE_UNORDERED_SET_FOR_MARKED 1
 #else

@@ -1,7 +1,7 @@
 #include <petsc/private/dmimpl.h> /*I      "petscdm.h"          I*/
 #include <petscdmceed.h>
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petsc/private/dmpleximpl.h>
   #include <petscdmplexceed.h>
   #include <petscfeceed.h>
@@ -263,7 +263,7 @@ PetscErrorCode DMCeedCreate(DM dm, PetscBool createGeometry, CeedQFunctionUser f
   PetscFunctionBegin;
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexGetAllCells_Internal(plex, &cellIS));
-  #ifdef PETSC_HAVE_LIBCEED
+  #if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMCeedCreate_Internal(dm, cellIS, createGeometry, func, func_source, &dm->dmceed));
   #endif
   PetscCall(ISDestroy(&cellIS));
@@ -389,7 +389,7 @@ PetscErrorCode DMCeedCreateFVM(DM dm, PetscBool createGeometry, CeedQFunctionUse
   PetscFunctionBegin;
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexGetAllFaces_Internal(plex, &faceIS));
-  #ifdef PETSC_HAVE_LIBCEED
+  #if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMCeedCreateFVM_Internal(dm, faceIS, createGeometry, PETSC_TRUE, func, func_source, &dm->dmceed, qfCtx));
   #endif
   PetscCall(ISDestroy(&faceIS));
@@ -405,7 +405,7 @@ PetscErrorCode DMCeedDestroy(DMCeed *pceed)
 
   PetscFunctionBegin;
   if (!p) PetscFunctionReturn(PETSC_SUCCESS);
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(PetscFree(p->funcSource));
   if (p->qd) PetscCallCEED(CeedVectorDestroy(&p->qd));
   if (p->qi) PetscCallCEED(CeedVectorDestroy(&p->qi));
@@ -425,14 +425,14 @@ PetscErrorCode DMCeedDestroy(DMCeed *pceed)
 
 PetscErrorCode DMCeedComputeGeometry(DM dm, DMCeed sd)
 {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   Ceed       ceed;
   Vec        coords;
   CeedVector ccoords;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCall(DMGetCeed(dm, &ceed));
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   PetscCall(VecGetCeedVectorRead(coords, ceed, &ccoords));
@@ -446,12 +446,12 @@ PetscErrorCode DMCeedComputeGeometry(DM dm, DMCeed sd)
 
 PetscErrorCode DMCeedComputeInfo(DM dm, DMCeed sd)
 {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   CeedScalar *a;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCallCEED(CeedVectorGetArrayWrite(sd->qi, CEED_MEM_HOST, &a));
 
   IS              iterIS;

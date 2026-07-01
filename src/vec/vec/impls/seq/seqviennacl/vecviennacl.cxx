@@ -12,7 +12,7 @@
 #include "viennacl/linalg/norm_2.hpp"
 #include "viennacl/linalg/norm_inf.hpp"
 
-#ifdef VIENNACL_WITH_OPENCL
+#if defined(VIENNACL_WITH_OPENCL)
   #include "viennacl/ocl/backend.hpp"
 #endif
 

@@ -1,7 +1,7 @@
 #include <petscdm.h>
 #include <petscdmceed.h>
 
-#ifdef __CUDACC_RTC__
+#if defined(__CUDACC_RTC__)
   #define PETSC_HAVE_LIBCEED
 // Define PETSc types to be equal to Ceed types
 typedef CeedInt PetscInt;
@@ -224,7 +224,7 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
 #endif
 }
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
 CEED_QFUNCTION(PhysicsRiemann_SW_Rusanov_CEED)(PetscCtx ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
 {
   const CeedScalar *xL = in[0], *xR = in[1], *geom = in[2];
@@ -836,7 +836,7 @@ static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscR
   PetscFunctionReturnVoid();
 }
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
 CEED_QFUNCTION(PhysicsRiemann_Euler_Godunov_CEED)(PetscCtx ctx, CeedInt Q, const CeedScalar *const in[], CeedScalar *const out[])
 {
   const CeedScalar    *xL = in[0], *xR = in[1], *geom = in[2];

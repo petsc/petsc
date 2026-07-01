@@ -1789,7 +1789,7 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar *e[])
   for (p = 1, displs[0] = 0; p <= size; ++p) displs[p] = displs[p - 1] + N[p - 1];
   PetscCallMPI(MPI_Allgatherv(tmp, l, MPIU_SCALAR, vals, N, displs, MPIU_SCALAR, PetscObjectComm((PetscObject)vec)));
   /* Find unique entries */
-#ifdef PETSC_USE_COMPLEX
+#if PetscDefined(USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)vec), PETSC_ERR_SUP, "Does not work with complex numbers");
 #else
   *n = displs[size];

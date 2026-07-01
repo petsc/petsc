@@ -22,7 +22,7 @@
 
 #pragma once
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -30,7 +30,7 @@ extern "C" {
   #define __WINDOWS__
 #endif
 
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 
 /* When compiling for windows, we specify a specific calling convention to avoid issues where we are being called from a project with a different default calling convention.  For windows you have 3 define options:
 
@@ -285,6 +285,6 @@ CJSON_PUBLIC(char *) cJSON_SetValuestring(cJSON *object, const char *valuestring
 CJSON_PUBLIC(void *) cJSON_malloc(size_t size);
 CJSON_PUBLIC(void) cJSON_free(void *object);
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
 #endif

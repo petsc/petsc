@@ -1014,7 +1014,7 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
     } while (0)
 #endif
 
-#ifdef PETSC_CLANGUAGE_CXX
+#if PetscDefined(CLANGUAGE_CXX)
   /*MC
   PetscCallThrow - Checks error code, if non-zero it calls the C++ error handler which throws
   an exception

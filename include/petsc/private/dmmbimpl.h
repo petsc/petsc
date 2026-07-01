@@ -11,7 +11,7 @@
 */
 typedef struct {
   moab::Interface *mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::ParallelComm *pcomm;
 #endif
   moab::Range *tag_range; /* entities to which this tag applies */
@@ -59,7 +59,7 @@ typedef struct {
 
   /* common data */
   moab::Interface *mbiface; /* MOAB Interface/Core reference */
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::ParallelComm *pcomm; /* MOAB ParallelComm reference */
 #endif
   moab::Tag ltog_tag;         /* MOAB supports "global id" tags */
