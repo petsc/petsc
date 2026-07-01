@@ -51,7 +51,7 @@
 template <typename Cmplex, typename Atype> // operation on a complex and an arithmetic type
 struct petsccomplex_extended_type :
   std::integral_constant<bool, (std::is_same<Cmplex, PetscComplex>::value && std::is_arithmetic<Atype>::value && !std::is_same<Atype, PetscReal>::value)
-  #if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_USE_REAL___FP16)
+  #if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_USE_REAL___FP16) && !(defined(__NVCC__) && defined(__x86_64__))
                                  || std::is_same<Atype, __fp16>::value
   #endif
   #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FLOAT128)
