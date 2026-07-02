@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
 
 typedef struct {
   char            *filename;

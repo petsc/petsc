@@ -21,7 +21,7 @@ typedef struct {   /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and M
   PetscBool    singleis;
   PetscMPIInt *row2proc; /* row to process (MPI rank) map */
   PetscInt     nstages;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI cmap, rmap;
   PetscInt  *cmap_loc, *rmap_loc;
 #else
@@ -365,7 +365,7 @@ PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ_Binary(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ(Mat);
@@ -383,7 +383,7 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat, Mat, Pets
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat, Mat, PetscReal, Mat);
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 
@@ -439,7 +439,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat, Mat, PetscInt *);
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject, void *);
 #endif
@@ -448,7 +448,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat, MatType, MatReuse, Ma
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_SCALAPACK)
+#if PetscDefined(HAVE_SCALAPACK)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
@@ -501,7 +501,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
 
 .seealso: `PetscSparseDensePlusDot()`
 */
-#if defined(PETSC_KERNEL_USE_UNROLL_4)
+#if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
     do { \
       if (nnz > 0) { \
@@ -526,7 +526,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
       } \
     } while (0)
 
-#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#elif PetscDefined(KERNEL_USE_UNROLL_2)
   #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
@@ -567,7 +567,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
 
 .seealso: `PetscSparseDenseMinusDot()`
 */
-#if defined(PETSC_KERNEL_USE_UNROLL_4)
+#if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
     do { \
       if (nnz > 0) { \
@@ -592,7 +592,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
       } \
     } while (0)
 
-#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#elif PetscDefined(KERNEL_USE_UNROLL_2)
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
@@ -604,7 +604,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
       if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
     } while (0)
 
-#elif !(defined(__GNUC__) && defined(_OPENMP)) && defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
+#elif !(defined(__GNUC__) && defined(_OPENMP)) && PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES) && !PetscDefined(SKIP_IMMINTRIN_H_CUDAWORKAROUND)
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) PetscSparseDensePlusDot_AVX512_Private(&(sum), (r), (xv), (xi), (nnz))
 
 #else
@@ -615,7 +615,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
     } while (0)
 #endif
 
-#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
+#if PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES) && !PetscDefined(SKIP_IMMINTRIN_H_CUDAWORKAROUND)
   #include <immintrin.h>
   #if !defined(_MM_SCALE_8)
     #define _MM_SCALE_8 8

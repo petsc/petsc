@@ -22,7 +22,7 @@
 /*
     Real number definitions
  */
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   /*MC
     PetscSqrtReal - Returns the square root of a `PetscReal` value
 
@@ -504,7 +504,7 @@
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`
   M*/
   #define PetscTGamma(a) tgammaf(a)
-  #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+  #if PetscDefined(HAVE_LGAMMA_IS_GAMMA)
     /*MC
       PetscLGamma - Returns the natural logarithm of the absolute value of the gamma function in the configured `PetscReal` precision
 
@@ -526,7 +526,7 @@
     #define PetscLGamma(a) lgammaf(a)
   #endif
 
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define PetscSqrtReal(a)        sqrt(a)
   #define PetscCbrtReal(a)        cbrt(a)
   #define PetscHypotReal(a, b)    hypot(a, b)
@@ -555,13 +555,13 @@
   #define PetscFmodReal(a, b)     fmod(a, b)
   #define PetscCopysignReal(a, b) copysign(a, b)
   #define PetscTGamma(a)          tgamma(a)
-  #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+  #if PetscDefined(HAVE_LGAMMA_IS_GAMMA)
     #define PetscLGamma(a) gamma(a)
   #else
     #define PetscLGamma(a) lgamma(a)
   #endif
 
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define PetscSqrtReal(a)        sqrtq(a)
   #define PetscCbrtReal(a)        cbrtq(a)
   #define PetscHypotReal(a, b)    hypotq(a, b)
@@ -590,13 +590,13 @@
   #define PetscFmodReal(a, b)     fmodq(a, b)
   #define PetscCopysignReal(a, b) copysignq(a, b)
   #define PetscTGamma(a)          tgammaq(a)
-  #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+  #if PetscDefined(HAVE_LGAMMA_IS_GAMMA)
     #define PetscLGamma(a) gammaq(a)
   #else
     #define PetscLGamma(a) lgammaq(a)
   #endif
 
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #define PetscSqrtReal(a)        sqrtf(a)
   #define PetscCbrtReal(a)        cbrtf(a)
   #define PetscHypotReal(a, b)    hypotf(a, b)
@@ -625,7 +625,7 @@
   #define PetscFmodReal(a, b)     fmodf(a, b)
   #define PetscCopysignReal(a, b) copysignf(a, b)
   #define PetscTGamma(a)          tgammaf(a)
-  #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
+  #if PetscDefined(HAVE_LGAMMA_IS_GAMMA)
     #define PetscLGamma(a) gammaf(a)
   #else
     #define PetscLGamma(a) lgammaf(a)
@@ -638,7 +638,7 @@ static inline PetscReal PetscSignReal(PetscReal a)
   return (PetscReal)((a < (PetscReal)0) ? -1 : ((a > (PetscReal)0) ? 1 : 0));
 }
 
-#if !defined(PETSC_HAVE_LOG2)
+#if !PetscDefined(HAVE_LOG2)
   #undef PetscLog2Real
 static inline PetscReal PetscLog2Real(PetscReal a)
 {
@@ -646,10 +646,10 @@ static inline PetscReal PetscLog2Real(PetscReal a)
 }
 #endif
 
-#if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
+#if PetscDefined(HAVE_REAL___FLOAT128) && !PetscDefined(SKIP_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__float128);
 #endif
-#if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16)
+#if PetscDefined(HAVE_REAL___FP16) && !PetscDefined(SKIP_REAL___FP16)
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__fp16);
 #endif
 
@@ -663,21 +663,21 @@ PETSC_EXTERN MPI_Datatype MPIU___FP16 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__fp16);
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   #define MPIU_REAL MPI_FLOAT
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define MPIU_REAL MPI_DOUBLE
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define MPIU_REAL MPIU___FLOAT128
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #define MPIU_REAL MPIU___FP16
 #endif /* PETSC_USE_REAL_* */
 
 /*
     Complex number definitions
  */
-#if defined(PETSC_HAVE_COMPLEX)
-  #if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(HAVE_COMPLEX)
+  #if defined(__cplusplus) && !PetscDefined(USE_REAL___FLOAT128)
   /* C++ support of complex number */
 
     /*MC
@@ -1041,7 +1041,7 @@ M*/
 
   /* TODO: Add configure tests
 
-#if !defined(PETSC_HAVE_CXX_TAN_COMPLEX)
+#if !PetscDefined(HAVE_CXX_TAN_COMPLEX)
 #undef PetscTanComplex
 static inline PetscComplex PetscTanComplex(PetscComplex z)
 {
@@ -1049,7 +1049,7 @@ static inline PetscComplex PetscTanComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_TANH_COMPLEX)
+#if !PetscDefined(HAVE_CXX_TANH_COMPLEX)
 #undef PetscTanhComplex
 static inline PetscComplex PetscTanhComplex(PetscComplex z)
 {
@@ -1057,7 +1057,7 @@ static inline PetscComplex PetscTanhComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ASIN_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ASIN_COMPLEX)
 #undef PetscAsinComplex
 static inline PetscComplex PetscAsinComplex(PetscComplex z)
 {
@@ -1066,7 +1066,7 @@ static inline PetscComplex PetscAsinComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ACOS_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ACOS_COMPLEX)
 #undef PetscAcosComplex
 static inline PetscComplex PetscAcosComplex(PetscComplex z)
 {
@@ -1075,7 +1075,7 @@ static inline PetscComplex PetscAcosComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ATAN_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ATAN_COMPLEX)
 #undef PetscAtanComplex
 static inline PetscComplex PetscAtanComplex(PetscComplex z)
 {
@@ -1084,7 +1084,7 @@ static inline PetscComplex PetscAtanComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ASINH_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ASINH_COMPLEX)
 #undef PetscAsinhComplex
 static inline PetscComplex PetscAsinhComplex(PetscComplex z)
 {
@@ -1092,7 +1092,7 @@ static inline PetscComplex PetscAsinhComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ACOSH_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ACOSH_COMPLEX)
 #undef PetscAcoshComplex
 static inline PetscComplex PetscAcoshComplex(PetscComplex z)
 {
@@ -1100,7 +1100,7 @@ static inline PetscComplex PetscAcoshComplex(PetscComplex z)
 }
 #endif
 
-#if !defined(PETSC_HAVE_CXX_ATANH_COMPLEX)
+#if !PetscDefined(HAVE_CXX_ATANH_COMPLEX)
 #undef PetscAtanhComplex
 static inline PetscComplex PetscAtanhComplex(PetscComplex z)
 {
@@ -1112,7 +1112,7 @@ static inline PetscComplex PetscAtanhComplex(PetscComplex z)
 
   #else /* C99 support of complex number */
 
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define PetscRealPartComplex(a)      crealf(a)
       #define PetscImaginaryPartComplex(a) cimagf(a)
       #define PetscAbsComplex(a)           cabsf(a)
@@ -1135,7 +1135,7 @@ static inline PetscComplex PetscAtanhComplex(PetscComplex z)
       #define PetscAcoshComplex(a)         cacoshf(a)
       #define PetscAtanhComplex(a)         catanhf(a)
 
-    #elif defined(PETSC_USE_REAL_DOUBLE)
+    #elif PetscDefined(USE_REAL_DOUBLE)
       #define PetscRealPartComplex(a)      creal(a)
       #define PetscImaginaryPartComplex(a) cimag(a)
       #define PetscAbsComplex(a)           cabs(a)
@@ -1158,7 +1158,7 @@ static inline PetscComplex PetscAtanhComplex(PetscComplex z)
       #define PetscAcoshComplex(a)         cacosh(a)
       #define PetscAtanhComplex(a)         catanh(a)
 
-    #elif defined(PETSC_USE_REAL___FLOAT128)
+    #elif PetscDefined(USE_REAL___FLOAT128)
       #define PetscRealPartComplex(a)      crealq(a)
       #define PetscImaginaryPartComplex(a) cimagq(a)
       #define PetscAbsComplex(a)           cabsq(a)
@@ -1200,7 +1200,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-  #if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
+  #if defined(__cplusplus) && !PetscDefined(USE_REAL___FLOAT128)
   return PetscComplex(x, y);
   #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;
@@ -1228,9 +1228,9 @@ static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
   #define MPIU_C_COMPLEX        MPI_C_COMPLEX PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_C_COMPLEX", )
   #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_C_DOUBLE_COMPLEX", )
 
-  #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
+  #if PetscDefined(HAVE_REAL___FLOAT128) && !PetscDefined(SKIP_REAL___FLOAT128)
     // if complex is not used, then quadmath.h won't be included by petscsystypes.h
-    #if defined(PETSC_USE_COMPLEX)
+    #if PetscDefined(USE_COMPLEX)
       #define MPIU___COMPLEX128_ATTR_TAG PETSC_ATTRIBUTE_MPI_TYPE_TAG(__complex128)
     #else
       #define MPIU___COMPLEX128_ATTR_TAG
@@ -1251,13 +1251,13 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 MPIU___COMPLEX128_ATTR_TAG;
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define MPIU_COMPLEX MPI_C_COMPLEX
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define MPIU_COMPLEX MPI_C_DOUBLE_COMPLEX
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
     #define MPIU_COMPLEX MPIU___COMPLEX128
-  #elif defined(PETSC_USE_REAL___FP16)
+  #elif PetscDefined(USE_REAL___FP16)
     #define MPIU_COMPLEX MPI_C_COMPLEX
   #endif /* PETSC_USE_REAL_* */
 
@@ -1266,7 +1266,7 @@ M*/
 /*
     Scalar number definitions
  */
-#if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(USE_COMPLEX) && PetscDefined(HAVE_COMPLEX)
   /*MC
    MPIU_SCALAR - Portable MPI datatype corresponding to `PetscScalar` independent of the precision of `PetscScalar`
 
@@ -1837,13 +1837,13 @@ M*/
 
 .seealso: `PetscReal`, `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscSqr()`
 M*/
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   #define PetscAbsReal(a) fabsf(a)
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define PetscAbsReal(a) fabs(a)
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define PetscAbsReal(a) fabsq(a)
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #define PetscAbsReal(a) fabsf(a)
 #endif
 
@@ -1895,13 +1895,13 @@ M*/
 
 .seealso: `PetscReal`
 M*/
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   #define PetscRealConstant(constant) constant##F
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define PetscRealConstant(constant) constant
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define PetscRealConstant(constant) constant##Q
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #define PetscRealConstant(constant) constant##F
 #endif
 
@@ -2010,28 +2010,28 @@ M*/
          `PETSC_SQRT_MACHINE_EPSILON`
 M*/
 
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   #define PETSC_MAX_REAL             3.40282346638528860e+38F
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
   #define PETSC_REAL_MIN             1.1754944e-38F
   #define PETSC_MACHINE_EPSILON      1.19209290e-07F
   #define PETSC_SQRT_MACHINE_EPSILON 3.45266983e-04F
   #define PETSC_SMALL                1.e-5F
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define PETSC_MAX_REAL             1.7976931348623157e+308
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
   #define PETSC_REAL_MIN             2.225073858507201e-308
   #define PETSC_MACHINE_EPSILON      2.2204460492503131e-16
   #define PETSC_SQRT_MACHINE_EPSILON 1.490116119384766e-08
   #define PETSC_SMALL                1.e-10
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define PETSC_MAX_REAL             FLT128_MAX
   #define PETSC_MIN_REAL             (-FLT128_MAX)
   #define PETSC_REAL_MIN             FLT128_MIN
   #define PETSC_MACHINE_EPSILON      FLT128_EPSILON
   #define PETSC_SQRT_MACHINE_EPSILON 1.38777878078144567552953958511352539e-17Q
   #define PETSC_SMALL                1.e-20Q
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #define PETSC_MAX_REAL             65504.0F
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
   #define PETSC_REAL_MIN             .00006103515625F
@@ -2166,7 +2166,7 @@ struct petsc_mpiu_scalar_int {
 PETSC_EXTERN MPI_Datatype MPIU_REAL_INT PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_real_int);
 PETSC_EXTERN MPI_Datatype MPIU_SCALAR_INT PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_scalar_int);
 
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
 struct /* __attribute__((packed, aligned(alignof(PetscInt *)))) */ petsc_mpiu_2int {
   PetscInt a;
   PetscInt b;

@@ -2055,7 +2055,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, Pet
   PetscScalar *Brhs;
   PetscScalar *tmpwork;
   PetscReal    rcond;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscInt   rworkSize;
   PetscReal *rwork, *rtau;
 #endif
@@ -2079,7 +2079,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, Pet
   PetscCall(PetscBLASIntCast(worksize, &ldwork));
   rcond = -1;
   nrhs  = M;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   rworkSize = 5 * PetscMin(M, N);
   PetscCall(PetscMalloc1(rworkSize, &rwork));
   PetscCall(PetscMalloc1(PetscMin(M, N), &rtau));

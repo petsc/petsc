@@ -1,13 +1,13 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_FORTRAN_BINDINGS)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define petscinitializefortran_     PETSCINITIALIZEFORTRAN
     #define petscsetmoduleblock_        PETSCSETMODULEBLOCK
     #define petscsetmoduleblockmpi_     PETSCSETMODULEBLOCKMPI
     #define petscsetmoduleblocknumeric_ PETSCSETMODULEBLOCKNUMERIC
     #define petscsetcomm_               PETSCSETCOMM
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define petscinitializefortran_     petscinitializefortran
     #define petscsetmoduleblock_        petscsetmoduleblock
     #define petscsetmoduleblockmpi_     petscsetmoduleblockmpi
@@ -45,7 +45,7 @@ PETSC_EXTERN void petscsetcomm_(MPI_Fint *, MPI_Fint *);
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {
-#if defined(PETSC_USE_FORTRAN_BINDINGS)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
   MPI_Fint c1 = 0, c2 = 0;
 
   if (PETSC_COMM_WORLD) c1 = MPI_Comm_c2f(PETSC_COMM_WORLD);

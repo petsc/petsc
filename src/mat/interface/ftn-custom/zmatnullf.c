@@ -2,10 +2,10 @@
 #include <petscmat.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matnullspacegetvecs_     MATNULLSPACEGETVECS
   #define matnullspacerestorevecs_ MATNULLSPACERESTOREVECS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matnullspacegetvecs_     matnullspacegetvecs
   #define matnullspacerestorevecs_ matnullspacerestorevecs
 #endif

@@ -178,7 +178,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 

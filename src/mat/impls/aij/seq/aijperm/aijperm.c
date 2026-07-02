@@ -11,7 +11,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   #include <immintrin.h>
 
   #if !defined(_MM_SCALE_8)
@@ -281,7 +281,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   const MatScalar   *aa;
   const PetscInt    *aj, *ai;
   PetscInt           i, j;
-#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx, vec_ipos, vec_j;
   __mmask8 mask;
@@ -305,7 +305,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   PetscScalar yp[NDIM];
   PetscInt    ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aa)
 #endif
 
@@ -365,15 +365,15 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the
          * mat-vec one row at a time as in the usual CSR case. */
         if (nz > isize) {
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI preferstream
 #endif
           for (i = 0; i < isize; i++) {
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI prefervector
 #endif
 
-#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
             vec_y = _mm512_setzero_pd();
             ipos  = ip[i];
             for (j = 0; j < (nz >> 3); j++) {
@@ -408,7 +408,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
            * worthwhile to vectorize across the rows, that is, to do the
            * matvec by operating with "columns" of the chunk. */
           for (j = 0; j < nz; j++) {
-#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
             vec_j = _mm256_set1_epi32(j);
             for (i = 0; i < ((isize >> 3) << 3); i += 8) {
               vec_y    = _mm512_loadu_pd(&yp[i]);
@@ -433,7 +433,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
           }
         }
 
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
@@ -483,7 +483,7 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
   /* yp[] and ip[] are treated as vector "registers" for performing
    * the mat-vec. */
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aa)
 #endif
 
@@ -549,11 +549,11 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the
          * mat-vec one row at a time as in the usual CSR case. */
         if (nz > isize) {
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI preferstream
 #endif
           for (i = 0; i < isize; i++) {
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI prefervector
 #endif
             for (j = 0; j < nz; j++) {
@@ -574,7 +574,7 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
           }
         }
 
-#if defined(PETSC_HAVE_CRAY_VECTOR)
+#if PetscDefined(HAVE_CRAY_VECTOR)
   #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */

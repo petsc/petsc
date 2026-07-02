@@ -43,7 +43,7 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
   if (!XiWin) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(XiWin->font));
   if (XiWin->disp) {
-#if defined(PETSC_HAVE_SETJMP_H)
+#if PetscDefined(HAVE_SETJMP_H)
     jmp_buf                 jmpbuf;
     PetscXIOErrorHandlerFn *xioerrhdl;
     PetscCall(PetscMemcpy(&jmpbuf, &PetscXIOErrorHandlerJumpBuf, sizeof(jmpbuf)));
@@ -55,7 +55,7 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
       XCloseDisplay(XiWin->disp);
     }
     XiWin->disp = NULL;
-#if defined(PETSC_HAVE_SETJMP_H)
+#if PetscDefined(HAVE_SETJMP_H)
     (void)PetscSetXIOErrorHandler(xioerrhdl);
     PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &jmpbuf, sizeof(jmpbuf)));
 #endif

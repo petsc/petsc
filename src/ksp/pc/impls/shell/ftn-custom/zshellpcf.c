@@ -2,7 +2,7 @@
 #include <petscpc.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcshellsetapply_               PCSHELLSETAPPLY
   #define pcshellsetapplysymmetricleft_  PCSHELLSETAPPLYSYMMETRICLEFT
   #define pcshellsetapplysymmetricright_ PCSHELLSETAPPLYSYMMETRICRIGHT
@@ -14,7 +14,7 @@
   #define pcshellsetpresolve_            PCSHELLSETPRESOLVE
   #define pcshellsetpostsolve_           PCSHELLSETPOSTSOLVE
   #define pcshellsetview_                PCSHELLSETVIEW
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcshellsetapply_               pcshellsetapply
   #define pcshellsetapplysymmetricleft_  pcshellsetapplysymmetricleft
   #define pcshellsetapplysymmetricright_ pcshellsetapplysymmetricright

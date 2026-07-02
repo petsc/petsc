@@ -662,7 +662,7 @@ static PetscErrorCode KSViewerDestroy(PetscViewer *viewer)
 
 static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscInt n, PetscReal val[], PetscReal wgt[], PetscProbFn *cdf, PetscReal *alpha, OutputType outputType, PetscViewer viewer)
 {
-#if !defined(PETSC_HAVE_KS)
+#if !PetscDefined(HAVE_KS)
   SETERRQ(comm, PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
 #else
   PetscDraw     draw;

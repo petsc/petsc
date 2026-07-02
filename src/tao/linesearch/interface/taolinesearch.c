@@ -126,16 +126,12 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   ls->max_funcs = 30;
   ls->ftol      = 0.0001;
   ls->gtol      = 0.9;
-#if defined(PETSC_USE_REAL_SINGLE)
-  ls->rtol = 1.0e-5;
-#else
-  ls->rtol = 1.0e-10;
-#endif
-  ls->stepmin  = 1.0e-20;
-  ls->stepmax  = 1.0e+20;
-  ls->step     = 1.0;
-  ls->initstep = 1.0;
-  *newls       = ls;
+  ls->rtol      = PetscDefined(USE_REAL_SINGLE) ? 1.0e-5 : 1.0e-10;
+  ls->stepmin   = 1.0e-20;
+  ls->stepmax   = 1.0e+20;
+  ls->step      = 1.0;
+  ls->initstep  = 1.0;
+  *newls        = ls;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -390,13 +386,9 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   ls->max_funcs = 30;
   ls->ftol      = 0.0001;
   ls->gtol      = 0.9;
-#if defined(PETSC_USE_REAL_SINGLE)
-  ls->rtol = 1.0e-5;
-#else
-  ls->rtol = 1.0e-10;
-#endif
-  ls->stepmin = 1.0e-20;
-  ls->stepmax = 1.0e+20;
+  ls->rtol      = PetscDefined(USE_REAL_SINGLE) ? 1.0e-5 : 1.0e-10;
+  ls->stepmin   = 1.0e-20;
+  ls->stepmax   = 1.0e+20;
 
   ls->nfeval              = 0;
   ls->ngeval              = 0;

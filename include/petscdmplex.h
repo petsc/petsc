@@ -607,7 +607,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue, PetscInt *);
 PETSC_EXTERN PetscBool      DMPlexPointQueueEmpty(DMPlexPointQueue);
 PETSC_EXTERN PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject, DMPlexPointQueue, PetscBool *);
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 struct _n_DMPlexStorageVersion {
   int major, minor, subminor;
 };

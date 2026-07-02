@@ -92,10 +92,10 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
       /* A default (sequential) CPU backend is always available - even if OpenMP is not enabled. */
       if (flg_openmp) viennacl::backend::default_memory_type(viennacl::MAIN_MEMORY);
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       else if (flg_cuda) viennacl::backend::default_memory_type(viennacl::CUDA_MEMORY);
 #endif
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
       else if (flg_opencl) viennacl::backend::default_memory_type(viennacl::OPENCL_MEMORY);
 #endif
       else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: Backend not recognized or available: %s.\n Pass -viennacl_view to see available backends for ViennaCL.", string);
@@ -104,7 +104,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
     }
   }
 
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
   /* ViennaCL OpenCL device type configuration */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-viennacl_opencl_device_type", string, sizeof(string), &flg));
   if (flg) {
@@ -127,13 +127,13 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
   PetscCall(PetscOptionsHasName(NULL, NULL, "-viennacl_view", &flg));
   if (flg) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ViennaCL backends available: "));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "CUDA, "));
 #endif
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenCL, "));
 #endif
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP "));
 #else
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP (1 thread) "));
@@ -142,13 +142,13 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
     /* Print selected backends */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ViennaCL backend  selected: "));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     if (viennacl::backend::default_memory_type() == viennacl::CUDA_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "CUDA "));
 #endif
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
     if (viennacl::backend::default_memory_type() == viennacl::OPENCL_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenCL "));
 #endif
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
     if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP "));
 #else
     if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP (sequential - consider reconfiguration: --with-openmp=1) "));
@@ -1276,7 +1276,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get the associated cl_context.");
 #else
 
@@ -1315,7 +1315,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get the associated cl_command_queue.");
 #else
   PetscFunctionBegin;
@@ -1353,7 +1353,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get a Vec's cl_mem");
 #else
   PetscFunctionBegin;
@@ -1394,7 +1394,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get a Vec's cl_mem");
 #else
   PetscFunctionBegin;
@@ -1429,7 +1429,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to restore a Vec's cl_mem");
 #else
   PetscFunctionBegin;
@@ -1462,7 +1462,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get a Vec's cl_mem");
 #else
   PetscFunctionBegin;
@@ -1497,7 +1497,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
 {
-#if !defined(PETSC_HAVE_OPENCL)
+#if !PetscDefined(HAVE_OPENCL)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to restore a Vec's cl_mem");
 #else
   PetscFunctionBegin;

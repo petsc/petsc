@@ -1,12 +1,12 @@
 #include <petscis.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define islocaltoglobalmappinggetindices_          ISLOCALTOGLOBALMAPPINGGETINDICES
   #define islocaltoglobalmappingrestoreindices_      ISLOCALTOGLOBALMAPPINGRESTOREINDICES
   #define islocaltoglobalmappinggetblockindices_     ISLOCALTOGLOBALMAPPINGGETBLOCKINDICES
   #define islocaltoglobalmappingrestoreblockindices_ ISLOCALTOGLOBALMAPPINGRESTOREBLOCKINDICES
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define islocaltoglobalmappinggetindices_          islocaltoglobalmappinggetindices
   #define islocaltoglobalmappingrestoreindices_      islocaltoglobalmappingrestoreindices
   #define islocaltoglobalmappinggetblockindices_     islocaltoglobalmappinggetblockindices

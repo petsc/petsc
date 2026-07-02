@@ -7,7 +7,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscoptionsbegin_               PETSCOPTIONSBEGIN
   #define petscoptionsend_                 PETSCOPTIONSEND
   #define petscoptionsbool_                PETSCOPTIONSBOOL
@@ -27,7 +27,7 @@
   #define petscoptionsallused_             PETSCOPTIONSALLUSED
   #define petscoptionsgetenumprivate_      PETSCOPTIONSGETENUMPRIVATE
   #define petscoptionsgetstring_           PETSCOPTIONSGETSTRING
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscoptionsbegin_               petscoptionsbegin
   #define petscoptionsend_                 petscoptionsend
   #define petscoptionsbool_                petscoptionsbool

@@ -1141,14 +1141,14 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
           }
           if (k < 0) {
             PetscCall(PetscDTAltVStar(dim, PetscAbsInt(k), -1, work, workstar));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
             for (l = 0; l < Nk; l++) workS[l] = workstar[l];
             vals = &workS[0];
 #else
             vals = &workstar[0];
 #endif
           } else {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
             for (l = 0; l < Nk; l++) workS[l] = work[l];
             vals = &workS[0];
 #else

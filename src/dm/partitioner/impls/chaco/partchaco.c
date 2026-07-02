@@ -26,11 +26,11 @@ static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CHACO)
-  #if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_CHACO)
+  #if PetscDefined(HAVE_UNISTD_H)
     #include <unistd.h>
   #endif
-  #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+  #if PetscDefined(HAVE_CHACO_INT_ASSIGNMENT)
     #include <chaco.h>
   #else
 /* Older versions of Chaco do not have an include file */
@@ -41,7 +41,7 @@ extern int FREE_GRAPH;
 
 static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
-#if defined(PETSC_HAVE_CHACO)
+#if PetscDefined(HAVE_CHACO)
   enum {
     DEFAULT_METHOD  = 1,
     INERTIAL_METHOD = 3
@@ -64,7 +64,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   int      ndims         = 1;              /* number of eigenvectors (2^d sets) */
   double   eigtol        = 0.001;          /* tolerance on eigenvectors */
   long     seed          = 123636512;      /* for random graph mutations */
-  #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+  #if PetscDefined(HAVE_CHACO_INT_ASSIGNMENT)
   int *assignment; /* Output partition */
   #else
   short int *assignment; /* Output partition */
@@ -101,7 +101,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   PetscCall(PetscMalloc1(nvtxs, &assignment));
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
-  #if defined(PETSC_HAVE_UNISTD_H)
+  #if PetscDefined(HAVE_UNISTD_H)
   {
     int piperet;
     piperet = pipe(fd_pipe);
@@ -114,7 +114,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   if (part->usevwgt) PetscCall(PetscInfo(part, "PETSCPARTITIONERCHACO ignores vertex weights\n"));
   if (part->useewgt) PetscCall(PetscInfo(part, "PETSCPARTITIONERCHACO ignores edge weights\n"));
   err = interface(nvtxs, (int *)start, (int *)adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename, assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims, eigtol, seed);
-  #if defined(PETSC_HAVE_UNISTD_H)
+  #if PetscDefined(HAVE_UNISTD_H)
   {
     char msgLog[10000];
     int  count;

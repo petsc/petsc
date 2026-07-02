@@ -10,7 +10,7 @@
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/sfimpl.h>
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 
@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscStrcmp(alg, "hypre", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A, B, fill, C));
@@ -116,7 +116,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   PetscCheck(ptap->P_oth || size <= 1, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "AP cannot be reused. Do not call MatProductClear()");
 
   /* flag CPU mask for C */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
   if (c->A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->A->offloadmask = PETSC_OFFLOAD_CPU;
   if (c->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->B->offloadmask = PETSC_OFFLOAD_CPU;
@@ -327,14 +327,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (api[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (api[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -679,7 +677,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   PetscCheck(ptap->P_oth || size <= 1, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "AP cannot be reused. Do not call MatProductClear()");
 
   /* flag CPU mask for C */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
   if (c->A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->A->offloadmask = PETSC_OFFLOAD_CPU;
   if (c->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->B->offloadmask = PETSC_OFFLOAD_CPU;
@@ -948,14 +946,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (api[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (api[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1223,14 +1219,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (api[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (api[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
 
   PetscCall(MatDestroy(&aopoth));
   PetscCall(MatDestroy(&adpd));
@@ -2076,14 +2070,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
 
   C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
 
-#if defined(PETSC_USE_INFO)
-  if (bi[pn] != 0) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatTransposeMatMult(A,B,MatReuse,%g,&C) for best performance.\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (bi[pn] != 0) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatTransposeMatMult(A,B,MatReuse,%g,&C) for best performance.\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2145,7 +2137,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
 {
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   const char *algTypes[5] = {"scalable", "nonscalable", "seqmpi", "backend", "hypre"};
   PetscInt    nalg        = 5;
 #else
@@ -2278,7 +2270,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   MPI_Comm     comm;
   PetscBool    flg;
   PetscInt     alg = 1; /* set default algorithm */
-#if !defined(PETSC_HAVE_HYPRE)
+#if !PetscDefined(HAVE_HYPRE)
   const char *algTypes[5] = {"scalable", "nonscalable", "allatonce", "allatonce_merged", "backend"};
   PetscInt    nalg        = 5;
 #else

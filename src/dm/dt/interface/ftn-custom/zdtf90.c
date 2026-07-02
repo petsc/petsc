@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdt.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscquadraturegetdata_     PETSCQUADRATUREGETDATA
   #define petscquadraturerestoredata_ PETSCQUADRATURERESTOREDATA
   #define petscquadraturesetdata_     PETSCQUADRATURESETDATA
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscquadraturegetdata_     petscquadraturegetdata
   #define petscquadraturerestoredata_ petscquadraturerestoredata
   #define petscquadraturesetdata_     petscquadraturesetdata

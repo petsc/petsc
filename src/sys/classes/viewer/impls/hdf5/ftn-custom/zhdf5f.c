@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewerhdf5.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscviewerhdf5writeattributeint_    PETSCVIEWERHDF5WRITEATTRIBUTEINT
   #define petscviewerhdf5writeattributescalar_ PETSCVIEWERHDF5WRITEATTRIBUTESCALAR
   #define petscviewerhdf5writeattributereal_   PETSCVIEWERHDF5WRITEATTRIBUTEREAL
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscviewerhdf5writeattributeint_    petscviewerhdf5writeattributeint
   #define petscviewerhdf5writeattributescalar_ petscviewerhdf5writeattributescalar
   #define petscviewerhdf5writeattributereal_   petscviewerhdf5writeattributereal

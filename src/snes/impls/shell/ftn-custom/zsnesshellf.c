@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscsnes.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define snesshellsetsolve_ SNESSHELLSETSOLVE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define snesshellsetsolve_ snesshellsetsolve
 #endif
 

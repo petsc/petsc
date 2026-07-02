@@ -12,7 +12,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
   PetscBool   isascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
   Vec         coordinates;
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 
@@ -23,7 +23,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   if (isascii) {
@@ -57,7 +57,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "X range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Y range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Z range of indices: %" PetscInt_FMT " %" PetscInt_FMT "\n", info.xs,
                                                    info.xs + info.xm, info.ys, info.ys + info.ym, info.zs, info.zs + info.zm));
       PetscCall(DMGetCoordinates(da, &coordinates));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       if (coordinates) {
         PetscInt         last;
         const PetscReal *coors;
@@ -179,7 +179,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
     PetscCall(DMView_DA_GLVis(da, viewer));
   } else if (isbinary) {
     PetscCall(DMView_DA_Binary(da, viewer));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif
@@ -222,7 +222,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   PetscFunctionBegin;
   PetscCheck(stencil_type != DMDA_STENCIL_BOX || (bx != DM_BOUNDARY_MIRROR && by != DM_BOUNDARY_MIRROR && bz != DM_BOUNDARY_MIRROR), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Mirror boundary and box stencil");
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
-#if !defined(PETSC_USE_64BIT_INDICES)
+#if !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(((PetscInt64)M) * ((PetscInt64)N) * ((PetscInt64)P) * ((PetscInt64)dof) <= (PetscInt64)PETSC_MPI_INT_MAX, comm, PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " (dof) is too large for 32-bit indices", M, N, P, dof);
 #endif
   PetscCall(PetscMPIIntCast(dd->m, &m));

@@ -1,6 +1,6 @@
 #include <../src/sys/classes/draw/impls/x/ximpl.h> /*I  "petscsys.h" I*/
 
-#if defined(PETSC_HAVE_SETJMP_H)
+#if PetscDefined(HAVE_SETJMP_H)
 
 jmp_buf PetscXIOErrorHandlerJumpBuf;
 

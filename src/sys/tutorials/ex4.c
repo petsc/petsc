@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
   /* We must call MPI_Init() first, making us, not PETSc, responsible for MPI */
   PetscCallMPI(MPI_Init(&argc, &argv));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscElementalInitializePackage());
 #endif
   /* We can now change the communicator universe for PETSc */
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   */
   PetscCall(PetscFinalize());
   PetscCallMPI(MPI_Comm_free(&PETSC_COMM_WORLD));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscElementalFinalizePackage());
 #endif
   /* Since we initialized MPI, we must call MPI_Finalize() */

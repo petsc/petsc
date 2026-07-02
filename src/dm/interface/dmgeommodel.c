@@ -3,7 +3,7 @@
 PetscFunctionList DMGeomModelList              = NULL;
 PetscBool         DMGeomModelRegisterAllCalled = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
 PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 #endif
 
@@ -62,7 +62,7 @@ PetscErrorCode DMGeomModelRegisterAll(void)
   DMGeomModelRegisterAllCalled = PETSC_TRUE;
   PetscCall(DMGeomModelRegister("ball", DMSnapToGeomModelBall));
   PetscCall(DMGeomModelRegister("cylinder", DMSnapToGeomModelCylinder));
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   // FIXME: Brandon uses DMPlexSnapToGeomModel() here instead
   PetscCall(DMGeomModelRegister("egads", DMSnapToGeomModel_EGADS));
 #endif

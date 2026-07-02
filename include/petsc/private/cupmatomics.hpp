@@ -54,8 +54,8 @@ struct AtomicInsert {
   __device__ Type operator()(Type &x, Type y) const { return atomicExch(&x, y); }
 };
 
-  #if defined(PETSC_HAVE_COMPLEX)
-    #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(HAVE_COMPLEX)
+    #if PetscDefined(USE_REAL_DOUBLE)
 /* CUDA does not support 128-bit atomics. Users should not insert different 128-bit PetscComplex values to the same location */
 template <>
 struct AtomicInsert<PetscComplex> {
@@ -69,7 +69,7 @@ struct AtomicInsert<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-    #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif PetscDefined(USE_REAL_SINGLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -156,7 +156,7 @@ struct AtomicAdd<float> {
   }
 };
 
-  #if defined(PETSC_HAVE_COMPLEX)
+  #if PetscDefined(HAVE_COMPLEX)
 template <>
 struct AtomicAdd<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -176,7 +176,7 @@ struct AtomicAdd<PetscComplex> {
 
   CUDA has no atomicMult at all, so we build our own with atomicCAS
  */
-  #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(USE_REAL_DOUBLE)
 __device__ static double atomicMult(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -188,7 +188,7 @@ __device__ static double atomicMult(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-  #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif PetscDefined(USE_REAL_SINGLE)
 __device__ static float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -246,7 +246,7 @@ struct AtomicMult {
   atomicMax() is similar.
  */
 
-  #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(USE_REAL_DOUBLE)
 __device__ static double atomicMin(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -268,7 +268,7 @@ __device__ static double atomicMax(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-  #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif PetscDefined(USE_REAL_SINGLE)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -504,8 +504,8 @@ struct AtomicInsert {
   __device__ Type operator()(Type &x, Type y) const { return atomicExch(&x, y); }
 };
 
-  #if defined(PETSC_HAVE_COMPLEX)
-    #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(HAVE_COMPLEX)
+    #if PetscDefined(USE_REAL_DOUBLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -518,7 +518,7 @@ struct AtomicInsert<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-    #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif PetscDefined(USE_REAL_SINGLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -563,7 +563,7 @@ struct AtomicAdd<float> {
   }
 };
 
-  #if defined(PETSC_HAVE_COMPLEX)
+  #if PetscDefined(HAVE_COMPLEX)
 template <>
 struct AtomicAdd<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -583,7 +583,7 @@ struct AtomicAdd<PetscComplex> {
 
   HIP has no atomicMult at all, so we build our own with atomicCAS
  */
-  #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(USE_REAL_DOUBLE)
 __device__ static inline double atomicMult(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -595,7 +595,7 @@ __device__ static inline double atomicMult(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-  #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif PetscDefined(USE_REAL_SINGLE)
 __device__ static inline float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -641,7 +641,7 @@ struct AtomicMult {
   See CUDA version for comments.
  */
   #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-    #if defined(PETSC_USE_REAL_DOUBLE)
+    #if PetscDefined(USE_REAL_DOUBLE)
 __device__ static double atomicMin(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -663,7 +663,7 @@ __device__ static double atomicMax(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-    #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif PetscDefined(USE_REAL_SINGLE)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);

@@ -1,12 +1,12 @@
 #include <petsc/private/sfimpl.h>
 
-#if !defined(PETSC_HAVE_MPI_COMBINER_DUP) && !defined(MPI_COMBINER_DUP) /* We have no way to interpret output of MPI_Type_get_envelope without this. */
+#if !PetscDefined(HAVE_MPI_COMBINER_DUP) && !defined(MPI_COMBINER_DUP) /* We have no way to interpret output of MPI_Type_get_envelope without this. */
   #define MPI_COMBINER_DUP 0
 #endif
-#if !defined(PETSC_HAVE_MPI_COMBINER_NAMED) && !defined(MPI_COMBINER_NAMED)
+#if !PetscDefined(HAVE_MPI_COMBINER_NAMED) && !defined(MPI_COMBINER_NAMED)
   #define MPI_COMBINER_NAMED -2
 #endif
-#if !defined(PETSC_HAVE_MPI_COMBINER_CONTIGUOUS) && !defined(MPI_COMBINER_CONTIGUOUS) && MPI_VERSION < 2
+#if !PetscDefined(HAVE_MPI_COMBINER_CONTIGUOUS) && !defined(MPI_COMBINER_CONTIGUOUS) && MPI_VERSION < 2
   #define MPI_COMBINER_CONTIGUOUS -1
 #endif
 
@@ -28,7 +28,7 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype datatype, MPIU_Count *nints, MPIU_Count *naddrs, MPIU_Count *ncounts, MPIU_Count *ntypes, PetscMPIInt *combiner)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && !defined(PETSC_HAVE_MPIUNI) // MPIUNI does not really support large counts in datatype creation
+#if PetscDefined(HAVE_MPI_LARGE_COUNT) && !PetscDefined(HAVE_MPIUNI) // MPIUNI does not really support large counts in datatype creation
   PetscCallMPI(MPI_Type_get_envelope_c(datatype, nints, naddrs, ncounts, ntypes, combiner));
 #else
   PetscMPIInt mints, maddrs, mtypes;
@@ -47,7 +47,7 @@ PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype datatype, MPIU_Count *nin
 PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype datatype, MPIU_Count nints, MPIU_Count naddrs, MPIU_Count ncounts, MPIU_Count ntypes, int intarray[], MPI_Aint addrarray[], MPIU_Count countarray[], MPI_Datatype typearray[])
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && !defined(PETSC_HAVE_MPIUNI) // MPI-4.0, so MPIU_Count is MPI_Count
+#if PetscDefined(HAVE_MPI_LARGE_COUNT) && !PetscDefined(HAVE_MPIUNI) // MPI-4.0, so MPIU_Count is MPI_Count
   PetscCallMPI(MPI_Type_get_contents_c(datatype, nints, naddrs, ncounts, ntypes, intarray, addrarray, countarray, typearray));
 #else
   PetscCheck(nints <= PETSC_MPI_INT_MAX && naddrs <= PETSC_MPI_INT_MAX && ntypes <= PETSC_MPI_INT_MAX && ncounts == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input derived MPI datatype is created with large counts, but PETSc is configured with an MPI without the large count support");

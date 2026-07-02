@@ -463,7 +463,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fn
   PetscCall(PetscMalloc1(n, &eigi));
   PetscCall(PetscMalloc1(lwork, &work));
   PetscCall(MatDenseGetArray(dJdense, &a));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   {
     PetscInt i;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));

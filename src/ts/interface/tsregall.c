@@ -47,10 +47,10 @@ PetscErrorCode TSRegisterAll(void)
   PetscCall(TSRegister(TSTHETA, TSCreate_Theta));
   PetscCall(TSRegister(TSALPHA, TSCreate_Alpha));
   PetscCall(TSRegister(TSALPHA2, TSCreate_Alpha2));
-#if defined(PETSC_HAVE_SUNDIALS2)
+#if PetscDefined(HAVE_SUNDIALS2)
   PetscCall(TSRegister(TSSUNDIALS, TSCreate_Sundials));
 #endif
-#if defined(PETSC_HAVE_RADAU5)
+#if PetscDefined(HAVE_RADAU5)
   PetscCall(TSRegister(TSRADAU5, TSCreate_Radau5));
 #endif
   PetscCall(TSRegister(TSRK, TSCreate_RK));

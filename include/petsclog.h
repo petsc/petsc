@@ -13,7 +13,7 @@
 
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   #define PetscInfo(A, ...) PetscInfo_Private(PETSC_FUNCTION_NAME, ((PetscObject)A), __VA_ARGS__)
 #else
   #define PetscInfo(A, ...) PETSC_SUCCESS
@@ -197,7 +197,7 @@ typedef struct _n_PetscLogHandlerHot {
 } PetscLogHandlerHot;
 
 /* Handle multithreading */
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   #if defined(__cplusplus)
     #define PETSC_TLS thread_local
   #else
@@ -208,7 +208,7 @@ typedef struct _n_PetscLogHandlerHot {
   #define PETSC_EXTERN_TLS PETSC_EXTERN
   #define PETSC_TLS
 #endif
-#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_USE_LOG)
+#if PetscDefined(HAVE_THREADSAFETY) && PetscDefined(USE_LOG)
 PETSC_EXTERN PetscErrorCode PetscAddLogDouble(PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
 #else
@@ -322,7 +322,7 @@ PETSC_EXTERN PetscLogState petsc_log_state;
 #define PETSC_LOG_HANDLER_MAX 4
 PETSC_EXTERN PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX];
 
-#if defined(PETSC_USE_LOG) /* --- Logging is turned on --------------------------------*/
+#if PetscDefined(USE_LOG) /* --- Logging is turned on --------------------------------*/
 PETSC_EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
 
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
@@ -569,7 +569,7 @@ static inline PetscErrorCode PetscLogObjectDestroy(PetscObject o)
    among the various arithmetic operations.
  */
 
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     #define PETSC_FLOPS_PER_OP 4.0
   #else
     #define PETSC_FLOPS_PER_OP 1.0
@@ -608,7 +608,7 @@ static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
 
      It does not work with Windows because winmpich lacks MPI_Type_size()
 */
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
+  #if !defined(MPIUNI_H) && !PetscDefined(HAVE_BROKEN_RECURSIVE_MACRO)
 /*
    Logging of MPI activities
 */
@@ -937,7 +937,7 @@ M*/
 PETSC_EXTERN PetscBool PetscPreLoadingUsed; /* true if we are or have done preloading */
 PETSC_EXTERN PetscBool PetscPreLoadingOn;   /* true if we are currently in a preloading calculation */
 
-#if defined(PETSC_USE_LOG) && defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(USE_LOG) && PetscDefined(HAVE_DEVICE)
 
 PETSC_EXTERN PetscErrorCode PetscLogGpuTime(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);

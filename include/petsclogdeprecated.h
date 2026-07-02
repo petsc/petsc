@@ -38,10 +38,10 @@ typedef struct {
   char        *name;
   PetscClassId classid;
   PetscBool    collective;
-#if defined(PETSC_HAVE_TAU_PERFSTUBS)
+#if PetscDefined(HAVE_TAU_PERFSTUBS)
   void *timer;
 #endif
-#if defined(PETSC_HAVE_MPE)
+#if PetscDefined(HAVE_MPE)
   int mpe_id_begin;
   int mpe_id_end;
 #endif
@@ -66,7 +66,7 @@ typedef struct _PetscStageInfo {
   PetscBool          used;
   PetscEventPerfInfo perfInfo;
   PetscClassPerfLog  classLog;
-#if defined(PETSC_HAVE_TAU_PERFSTUBS)
+#if PetscDefined(HAVE_TAU_PERFSTUBS)
   void *timer;
 #endif
 } PetscStageInfo;

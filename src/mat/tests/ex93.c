@@ -12,13 +12,13 @@ int main(int argc, char **argv)
   PetscReal   fill = 4.0;
   PetscMPIInt size, rank;
   PetscBool   isequal;
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscBool test_hypre = PETSC_FALSE;
 #endif
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_hypre", &test_hypre, NULL));
 #endif
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

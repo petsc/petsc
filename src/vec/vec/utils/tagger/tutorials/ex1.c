@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   PetscCall(VecTaggerSetType(tagger, VECTAGGERABSOLUTE));
   PetscCall(PetscMalloc1(bs, &defaultBox));
   for (i = 0; i < bs; i++) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     defaultBox[i].min = 0.1;
     defaultBox[i].max = 1.5;
 #else
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
           PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", i));
           for (j = 0; j < bs; j++, k++) {
             if (j) PetscCall(PetscViewerASCIIPrintf(viewer, " x "));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
             PetscCall(PetscViewerASCIIPrintf(viewer, "[%g,%g]", (double)boxes[k].min, (double)boxes[k].max));
 #else
             PetscCall(PetscViewerASCIIPrintf(viewer, "[%g+%gi,%g+%gi]", (double)PetscRealPart(boxes[k].min), (double)PetscImaginaryPart(boxes[k].min), (double)PetscRealPart(boxes[k].max), (double)PetscImaginaryPart(boxes[k].max)));

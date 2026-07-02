@@ -1,7 +1,7 @@
 #include <petsc/private/sfimpl.h> /*I  "petscsf.h"  I*/
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if PetscDefined(HAVE_MPI_WIN_CREATE)
 PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF);
@@ -9,7 +9,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF);
-#if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
 PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF);
 #endif
 
@@ -31,7 +31,7 @@ PetscErrorCode PetscSFRegisterAll(void)
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscSFRegisterAllCalled = PETSC_TRUE;
   PetscCall(PetscSFRegister(PETSCSFBASIC, PetscSFCreate_Basic));
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if PetscDefined(HAVE_MPI_WIN_CREATE)
   PetscCall(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
 #endif
   PetscCall(PetscSFRegister(PETSCSFALLGATHERV, PetscSFCreate_Allgatherv));
@@ -39,7 +39,7 @@ PetscErrorCode PetscSFRegisterAll(void)
   PetscCall(PetscSFRegister(PETSCSFGATHERV, PetscSFCreate_Gatherv));
   PetscCall(PetscSFRegister(PETSCSFGATHER, PetscSFCreate_Gather));
   PetscCall(PetscSFRegister(PETSCSFALLTOALL, PetscSFCreate_Alltoall));
-#if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
   PetscCall(PetscSFRegister(PETSCSFNEIGHBOR, PetscSFCreate_Neighbor));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -6,7 +6,7 @@
 /* MANSEC = DM */
 /* SUBMANSEC = DMDA */
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
   #include <Kokkos_Core.hpp>
   #include <Kokkos_OffsetView.hpp>
 

@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscsys.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsctimsort_          PETSCTIMSORT
   #define petsctimsortwitharray_ PETSCTIMSORTWITHARRAY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petsctimsort_          petsctimsort
   #define petsctimsortwitharray_ petsctimsortwitharray
 #endif

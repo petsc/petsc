@@ -99,7 +99,7 @@ int main(int argc, char **args)
   info.zeropivot     = 0.0;
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type", pack, sizeof(pack), NULL));
-#if defined(PETSC_HAVE_MKL_PARDISO)
+#if PetscDefined(HAVE_MKL_PARDISO)
   PetscCall(PetscStrcmp(MATSOLVERMKL_PARDISO, pack, &use_mkl_pardiso));
 #endif
 

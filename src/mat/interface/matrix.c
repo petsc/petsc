@@ -1036,7 +1036,7 @@ PetscErrorCode MatSetUp(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -1045,7 +1045,7 @@ PetscErrorCode MatSetUp(Mat A)
 
    This flag cannot be stored in the matrix because the original matrix in MatView() may assemble a new matrix which is passed into MatViewFromOptions()
 */
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
 static PetscInt insidematview = 0;
 #endif
 
@@ -1070,7 +1070,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   if (insidematview) PetscFunctionReturn(PETSC_SUCCESS);
 #endif
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -1165,7 +1165,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(PETSC_SUCCESS);
 
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   insidematview++;
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
@@ -1177,7 +1177,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   if (isascii) {
     if (!mat->preallocated) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been preallocated yet\n"));
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
       insidematview--;
 #endif
       PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
@@ -1185,7 +1185,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
     }
     if (!mat->assembled) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been assembled yet\n"));
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
       insidematview--;
 #endif
       PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
@@ -1245,7 +1245,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
       }
     }
   } else if (issaws) {
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
     PetscMPIInt rank;
 
     PetscCall(PetscObjectName((PetscObject)mat));
@@ -1272,13 +1272,13 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   insidematview--;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #include <../src/sys/totalview/tv_data_display.h>
 PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 {
@@ -1586,7 +1586,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
       for (i = 0; i < m; i++) {
         for (j = 0; j < n; j++) {
           if (mat->erroriffailure && PetscIsInfOrNanScalar(v[i * n + j]))
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
             SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g+i%g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)PetscRealPart(v[i * n + j]), (double)PetscImaginaryPart(v[i * n + j]), idxm[i], idxn[j]);
 #else
             SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)v[i * n + j], idxm[i], idxn[j]);
@@ -2818,25 +2818,23 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
   MatCheckPreallocated(mat, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MultHermitianTranspose, mat, x, y, 0));
-#if defined(PETSC_USE_COMPLEX)
-  if (mat->ops->multhermitiantranspose || (mat->hermitian == PETSC_BOOL3_TRUE && mat->ops->mult)) {
-    PetscCall(VecLockReadPush(x));
-    if (mat->ops->multhermitiantranspose) PetscUseTypeMethod(mat, multhermitiantranspose, x, y);
-    else PetscUseTypeMethod(mat, mult, x, y);
-    PetscCall(VecLockReadPop(x));
-  } else {
-    Vec w;
-    PetscCall(VecDuplicate(x, &w));
-    PetscCall(VecCopy(x, w));
-    PetscCall(VecConjugate(w));
-    PetscCall(MatMultTranspose(mat, w, y));
-    PetscCall(VecDestroy(&w));
-    PetscCall(VecConjugate(y));
-  }
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
-#else
-  PetscCall(MatMultTranspose(mat, x, y));
-#endif
+  if (PetscDefined(USE_COMPLEX)) {
+    if (mat->ops->multhermitiantranspose || (mat->hermitian == PETSC_BOOL3_TRUE && mat->ops->mult)) {
+      PetscCall(VecLockReadPush(x));
+      if (mat->ops->multhermitiantranspose) PetscUseTypeMethod(mat, multhermitiantranspose, x, y);
+      else PetscUseTypeMethod(mat, mult, x, y);
+      PetscCall(VecLockReadPop(x));
+    } else {
+      Vec w;
+      PetscCall(VecDuplicate(x, &w));
+      PetscCall(VecCopy(x, w));
+      PetscCall(VecConjugate(w));
+      PetscCall(MatMultTranspose(mat, w, y));
+      PetscCall(VecDestroy(&w));
+      PetscCall(VecConjugate(y));
+    }
+    PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  } else PetscCall(MatMultTranspose(mat, x, y));
   PetscCall(PetscLogEventEnd(MAT_MultHermitianTranspose, mat, x, y, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -6506,7 +6504,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
   case MAT_SUBSET_OFF_PROC_ENTRIES:
     mat->assembly_subset = flg;
     if (!mat->assembly_subset) { /* See the same logic in VecAssembly wrt VEC_SUBSET_OFF_PROC_ENTRIES */
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
       PetscCall(MatStashScatterDestroy_BTS(&mat->stash));
 #endif
       mat->stash.first_assembly_done = PETSC_FALSE;
@@ -6520,7 +6518,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
       mat->spd                    = PETSC_BOOL3_TRUE;
       mat->symmetric              = PETSC_BOOL3_TRUE;
       mat->structurally_symmetric = PETSC_BOOL3_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       mat->hermitian = PETSC_BOOL3_TRUE;
 #endif
     } else {
@@ -6530,14 +6528,14 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
   case MAT_SYMMETRIC:
     mat->symmetric = PetscBoolToBool3(flg);
     if (flg) mat->structurally_symmetric = PETSC_BOOL3_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     mat->hermitian = PetscBoolToBool3(flg);
 #endif
     break;
   case MAT_HERMITIAN:
     mat->hermitian = PetscBoolToBool3(flg);
     if (flg) mat->structurally_symmetric = PETSC_BOOL3_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     mat->symmetric = PetscBoolToBool3(flg);
 #endif
     break;
@@ -7701,7 +7699,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
     (*submat)[i]->factortype = MAT_FACTOR_NONE; /* in case in place factorization was previously done on submatrix */
     PetscCall(ISEqualUnsorted(irow[i], icol[i], &eq));
     if (eq) PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i]));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
     if (mat->boundtocpu && mat->bindingpropagates) {
       PetscCall(MatBindToCPU((*submat)[i], PETSC_TRUE));
       PetscCall(MatSetBindingPropagates((*submat)[i], PETSC_TRUE));
@@ -10061,7 +10059,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
       PetscCheck(mat->cmap->n >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "PetscLayout for columns not yet setup");
       PetscCall(VecCreateWithLayout_Private(mat->cmap, right));
       PetscCall(VecSetType(*right, mat->defaultvectype));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
         PetscCall(VecSetBindingPropagates(*right, PETSC_TRUE));
         PetscCall(VecBindToCPU(*right, PETSC_TRUE));
@@ -10072,7 +10070,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
       PetscCheck(mat->rmap->n >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "PetscLayout for rows not yet setup");
       PetscCall(VecCreateWithLayout_Private(mat->rmap, left));
       PetscCall(VecSetType(*left, mat->defaultvectype));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
         PetscCall(VecSetBindingPropagates(*left, PETSC_TRUE));
         PetscCall(VecBindToCPU(*left, PETSC_TRUE));
@@ -10405,7 +10403,7 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
     if (isdense) {
       PetscCall(MatSeqDenseInvertFactors_Private(S));
     } else if (isdensecuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       PetscCall(MatSeqDenseCUDAInvertFactors_Internal(S));
 #endif
     }
@@ -10959,7 +10957,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   } else {
     PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm, matseq[0], PETSC_DECIDE, reuse, matredundant));
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   if (matseq[0]->boundtocpu && matseq[0]->bindingpropagates) {
     PetscCall(MatBindToCPU(*matredundant, PETSC_TRUE));
     PetscCall(MatSetBindingPropagates(*matredundant, PETSC_TRUE));
@@ -11645,7 +11643,7 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, PetscErrorCodeFn *f)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(mat, op, 2);
   if (op == MATOP_VIEW && !mat->ops->viewnative && f != (PetscErrorCodeFn *)mat->ops->view) mat->ops->viewnative = mat->ops->view;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (op == MATOP_MULT_HERMITIAN_TRANSPOSE) op = MATOP_MULT_TRANSPOSE;
   else if (op == MATOP_MULT_HERMITIAN_TRANS_ADD) op = MATOP_MULT_TRANSPOSE_ADD;
   else if (op == MATOP_HERMITIAN_TRANSPOSE) op = MATOP_TRANSPOSE;
@@ -11690,7 +11688,7 @@ PetscErrorCode MatGetOperation(Mat mat, MatOperation op, PetscErrorCodeFn **f)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscAssertPointer(f, 3);
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (op == MATOP_MULT_HERMITIAN_TRANSPOSE) op = MATOP_MULT_TRANSPOSE;
   else if (op == MATOP_MULT_HERMITIAN_TRANS_ADD) op = MATOP_MULT_TRANSPOSE_ADD;
   else if (op == MATOP_HERMITIAN_TRANSPOSE) op = MATOP_TRANSPOSE;
@@ -11723,7 +11721,7 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscAssertPointer(has, 3);
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (op == MATOP_MULT_HERMITIAN_TRANSPOSE) op = MATOP_MULT_TRANSPOSE;
   else if (op == MATOP_MULT_HERMITIAN_TRANS_ADD) op = MATOP_MULT_TRANSPOSE_ADD;
   else if (op == MATOP_HERMITIAN_TRANSPOSE) op = MATOP_TRANSPOSE;

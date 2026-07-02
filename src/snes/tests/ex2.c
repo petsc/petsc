@@ -325,7 +325,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetArrayRead(fieldVals, &ivals));
   for (p = 0; p < interpolator->n; ++p) {
     for (c = 0; c < Nc; ++c) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       PetscReal vcoordsReal[3];
 
       for (PetscInt i = 0; i < spaceDim; i++) vcoordsReal[i] = PetscRealPart(vcoords[p * spaceDim + i]);

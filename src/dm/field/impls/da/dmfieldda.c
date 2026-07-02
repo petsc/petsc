@@ -42,7 +42,7 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
       for (j = 0; j < nc; j++) {
         PetscScalar val = dafield->cornerVals[nc * i + j];
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g ", (double)val));
 #else
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g+i%g ", (double)PetscRealPart(val), (double)PetscImaginaryPart(val)));
@@ -215,7 +215,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   PetscInt         cStart, cEnd;
   PetscInt         nq, nc;
   const PetscReal *q;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscScalar *qs;
 #else
   const PetscScalar *qs;
@@ -243,7 +243,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   cellsPer[2] = info.gzm;
   /* TODO: probably take components into account */
   PetscCall(PetscQuadratureGetData(points, NULL, NULL, &nq, &q, NULL));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(DMGetWorkArray(dm, nq * dim, MPIU_SCALAR, &qs));
   for (i = 0; i < nq * dim; i++) qs[i] = q[i];
 #else
@@ -293,7 +293,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   }
   if (!isStride) PetscCall(ISRestoreIndices(cellIS, &cells));
   PetscCall(DMRestoreWorkArray(dm, (1 << dim) * nc, MPIU_SCALAR, &cellCoeffs));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(DMRestoreWorkArray(dm, nq * dim, MPIU_SCALAR, &qs));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

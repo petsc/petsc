@@ -2,7 +2,7 @@
       Code for manipulating files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   #include <windows.h>
 #endif
 
@@ -21,7 +21,7 @@
 
 .seealso: `PetscGetHostName()`, `PetscGetProgramName()`
 @*/
-#if defined(PETSC_HAVE_GET_USER_NAME)
+#if PetscDefined(HAVE_GET_USER_NAME)
 PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 {
   PetscFunctionBegin;

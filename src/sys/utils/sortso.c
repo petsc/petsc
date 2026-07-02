@@ -24,7 +24,7 @@ static PetscInt MIN_GALLOP_GLOBAL = MIN_GALLOP_CONST_GLOBAL;
 typedef int (*CompFunc)(const void *, const void *, void *);
 
 /* Mostly to force clang uses the builtins, but can't hurt to have gcc compilers also do the same */
-#if !defined(PETSC_USE_DEBUG) && defined(__GNUC__)
+#if !PetscDefined(USE_DEBUG) && defined(__GNUC__)
 static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size)
 {
   __builtin_memcpy(t, b, size);

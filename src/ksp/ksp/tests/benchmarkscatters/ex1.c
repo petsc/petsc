@@ -100,7 +100,7 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", PETSC_MPICC_SHOW));
   PetscCall(PetscOptionsView(NULL, viewer));
-#if defined(PETSC_HAVE_HWLOC)
+#if PetscDefined(HAVE_HWLOC)
   PetscCall(PetscProcessPlacementView(viewer));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n"));

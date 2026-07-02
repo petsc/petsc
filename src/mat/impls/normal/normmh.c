@@ -107,12 +107,12 @@ static PetscErrorCode MatDestroy_NormalHermitian(Mat N)
   PetscCall(VecDestroy(&Na->w));
   PetscCall(PetscFree(Na));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalHermitianGetMat_C", NULL));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMat_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_hypre_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
@@ -241,7 +241,7 @@ static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 static PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
   PetscFunctionBegin;
@@ -308,7 +308,7 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_NormalHermitian));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT, (PetscErrorCodeFn *)MatMult_NormalHermitian));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (PetscErrorCodeFn *)MatMult_NormalHermitian));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMult_NormalHermitian));
 #endif
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (PetscErrorCodeFn *)MatDuplicate_NormalHermitian));
@@ -319,12 +319,12 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   (*N)->ops->permute           = MatPermute_NormalHermitian;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatNormalHermitianGetMat_C", MatNormalHermitianGetMat_NormalHermitian));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatNormalGetMat_C", MatNormalHermitianGetMat_NormalHermitian));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_seqaij_C", MatConvert_NormalHermitian_AIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_mpiaij_C", MatConvert_NormalHermitian_AIJ));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_hypre_C", MatConvert_NormalHermitian_HYPRE));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
@@ -333,7 +333,7 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   PetscCall(MatSetOption(*N, MAT_HERMITIAN, PETSC_TRUE));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));

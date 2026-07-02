@@ -55,7 +55,7 @@ PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 
 static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "GLTR is not available for complex systems");
 #else
   KSPCG_GLTR   *cg = (KSPCG_GLTR *)ksp->data;

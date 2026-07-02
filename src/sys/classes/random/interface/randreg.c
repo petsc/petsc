@@ -110,20 +110,20 @@ PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_RAND)
+#if PetscDefined(HAVE_RAND)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom);
 #endif
-#if defined(PETSC_HAVE_DRAND48)
+#if PetscDefined(HAVE_DRAND48)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom);
 #endif
-#if defined(PETSC_HAVE_SPRNG)
+#if PetscDefined(HAVE_SPRNG)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 #endif
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom);
-#if defined(PETSC_HAVE_RANDOM123)
+#if PetscDefined(HAVE_RANDOM123)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom);
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 #endif
 
@@ -141,20 +141,20 @@ PetscErrorCode PetscRandomRegisterAll(void)
   PetscFunctionBegin;
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
-#if defined(PETSC_HAVE_RAND)
+#if PetscDefined(HAVE_RAND)
   PetscCall(PetscRandomRegister(PETSCRAND, PetscRandomCreate_Rand));
 #endif
-#if defined(PETSC_HAVE_DRAND48)
+#if PetscDefined(HAVE_DRAND48)
   PetscCall(PetscRandomRegister(PETSCRAND48, PetscRandomCreate_Rand48));
 #endif
-#if defined(PETSC_HAVE_SPRNG)
+#if PetscDefined(HAVE_SPRNG)
   PetscCall(PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng));
 #endif
   PetscCall(PetscRandomRegister(PETSCRANDER48, PetscRandomCreate_Rander48));
-#if defined(PETSC_HAVE_RANDOM123)
+#if PetscDefined(HAVE_RANDOM123)
   PetscCall(PetscRandomRegister(PETSCRANDOM123, PetscRandomCreate_Random123));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscRandomRegister(PETSCCURAND, PetscRandomCreate_CURAND));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

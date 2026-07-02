@@ -10,7 +10,7 @@
   do { \
     PetscErrorCode ierr = A; \
     if (ierr) return ierr; \
-  } while (0);
+  } while (0)
 
 typedef struct _n_PetscFPT *PetscFPT;
 struct _n_PetscFPT {

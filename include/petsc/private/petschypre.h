@@ -25,7 +25,7 @@ static_assert(std::is_same<HYPRE_BigInt, int>::value, "");
   #endif
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCallHYPRE(HYPRE_Int);
 #else
   #if PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0) /* HYPRE_DescribeError() added in 2.0.0 */

@@ -733,16 +733,16 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseReplaceArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_scalapack_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIDenseSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaij_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijcusparse_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijcusparse_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensecuda_C", NULL));
@@ -762,7 +762,7 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAReplaceArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDASetPreallocation_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijhipsparse_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensehip_C", NULL));
@@ -1215,7 +1215,7 @@ static PetscErrorCode MatSetRandom_MPIDense(Mat x, PetscRandom rctx)
 
   PetscFunctionBegin;
   PetscCall(MatSetRandom(d->A, rctx));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   x->offloadmask = d->A->offloadmask;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1391,19 +1391,19 @@ static PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar 
     PetscCall(MatCreate(PETSC_COMM_SELF, &a->A));
     PetscCall(MatSetSizes(a->A, mat->rmap->n, mat->cmap->N, mat->rmap->n, mat->cmap->N));
   }
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscBool iscuda;
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIDENSECUDA, &iscuda));
   if (iscuda) mtype = MATSEQDENSECUDA;
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscBool iship;
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIDENSEHIP, &iship));
   if (iship) mtype = MATSEQDENSEHIP;
 #endif
   PetscCall(MatSetType(a->A, mtype));
   PetscCall(MatSeqDenseSetPreallocation(a->A, data));
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   mat->offloadmask = a->A->offloadmask;
 #endif
   mat->preallocated = PETSC_TRUE;
@@ -1446,7 +1446,7 @@ static PetscErrorCode MatConvert_MPIDense_MPIAIJ(Mat A, MatType newtype, MatReus
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
@@ -1698,7 +1698,7 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
 
   a->cmat->preallocated = PETSC_TRUE;
   a->cmat->assembled    = PETSC_TRUE;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   a->cmat->offloadmask = c->A->offloadmask;
 #endif
   a->matinuse = cbegin + 1;
@@ -1719,7 +1719,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A, Mat *v)
   c           = (Mat_MPIDense *)a->cmat->data;
   PetscCall(MatDenseRestoreSubMatrix(a->A, &c->A));
   *v = NULL;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   A->offloadmask = a->A->offloadmask;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1777,23 +1777,23 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreSubMatrix_C", MatDenseRestoreSubMatrix_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpidense_C", MatConvert_MPIAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpiaij_C", MatConvert_MPIDense_MPIAIJ));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_elemental_C", MatConvert_MPIDense_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_scalapack_C", MatConvert_Dense_ScaLAPACK));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensecuda_C", MatConvert_MPIDense_MPIDenseCUDA));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIDenseSetPreallocation_C", MatMPIDenseSetPreallocation_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaij_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaij_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijcusparse_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijcusparse_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensehip_C", MatConvert_MPIDense_MPIDenseHIP));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijhipsparse_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
@@ -1881,7 +1881,7 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscUseMethod(mat, "MatDensePlaceArray_C", (Mat, const PetscScalar *), (mat, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   mat->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1938,7 +1938,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscUseMethod(mat, "MatDenseReplaceArray_C", (Mat, const PetscScalar *), (mat, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   mat->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2021,7 +2021,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A, MatDuplicateOption cpvalues, 
 static PetscErrorCode MatLoad_MPIDense(Mat newMat, PetscViewer viewer)
 {
   PetscBool isbinary;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
 
@@ -2031,12 +2031,12 @@ static PetscErrorCode MatLoad_MPIDense(Mat newMat, PetscViewer viewer)
   /* force binary viewer to load .info file if it has not yet done so */
   PetscCall(PetscViewerSetUp(viewer));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
   if (isbinary) {
     PetscCall(MatLoad_Dense_Binary(newMat, viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(MatLoad_Dense_HDF5(newMat, viewer));
 #endif
@@ -2202,10 +2202,10 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
 
   /* create matrix product C */
   PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSEHIP, ""));
 #endif
   if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)A)->type_name));

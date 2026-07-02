@@ -2,13 +2,13 @@
 #include <petscsys.h>                    /*I "petscsys.h" I*/
 #include <petsc/private/petscimpl.h>
 #include <petscconfiginfo.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 #include "err.h"
 #include <petsc/private/logimpl.h> // PETSC_TLS
 
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   #include <petsc/private/deviceimpl.h>
 #endif
 
@@ -82,7 +82,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 */
 static void PetscErrorPrintfHilight(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
+#if PetscDefined(HAVE_UNISTD_H) && PetscDefined(USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR, "\033[1;31m");
   }
@@ -91,7 +91,7 @@ static void PetscErrorPrintfHilight(void)
 
 static void PetscErrorPrintfNormal(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
+#if PetscDefined(HAVE_UNISTD_H) && PetscDefined(USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR, "\033[0;39m\033[0;49m");
   }

@@ -2,12 +2,12 @@
 #include <petscdm.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmcreatesuperdm_                       DMCREATESUPERDM
   #define dmcreatefielddecompositiongetname_     DMCREATEFIELDDECOMPOSITIONGETNAME
   #define dmcreatefielddecompositiongetisdm_     DMCREATEFIELDDECOMPOSITIONGETISDM
   #define dmcreatefielddecompositionrestoreisdm_ DMCREATEFIELDDECOMPOSITIONRESTOREISDM
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmcreatesuperdm_                       dmreatesuperdm
   #define dmcreatefielddecompositiongetname_     dmcreatefielddecompositiongetname
   #define dmcreatefielddecompositiongetisdm_     dmcreatefielddecompositiongetisdm

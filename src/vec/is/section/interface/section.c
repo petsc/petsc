@@ -2624,19 +2624,19 @@ static inline PetscErrorCode PrintArrayElement(void *array, PetscDataType data_t
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((float *)array)[index]));
     break;
   }
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   case PETSC___FLOAT128: {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscReal *)array)[index]));
     break;
   }
 #endif
-#if defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FP16)
   case PETSC___FP16: {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscReal *)array)[index]));
     break;
   }
 #endif
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   case PETSC_COMPLEX: {
     PetscComplex v = ((PetscComplex *)array)[index];
     if (PetscImaginaryPartComplex(v) > 0.0) {

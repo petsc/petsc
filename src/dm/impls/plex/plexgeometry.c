@@ -219,7 +219,7 @@ static PetscErrorCode DMPlexGetPlaneSimplexIntersection_Coords_Internal(DM dm, P
   dp = DMPlex_DotRealD_Internal(cdim, normal, p);
   for (PetscInt v = 0; v < dim + 1; ++v) {
     // d[v] is positive, zero, or negative if vertex i is above, on, or below the plane
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscReal c[4];
     for (PetscInt i = 0; i < cdim; ++i) c[i] = PetscRealPart(coords[v * cdim + i]);
     d[v] = DMPlex_DotRealD_Internal(cdim, normal, c);

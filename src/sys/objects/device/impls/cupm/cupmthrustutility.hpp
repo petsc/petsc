@@ -41,7 +41,7 @@ namespace cupm
   #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(__VA_ARGS__)
 #endif
 
-#if !defined(PETSC_THRUST_HAS_ASYNC)
+#if !PetscDefined(THRUST_HAS_ASYNC)
   #define PETSC_THRUST_HAS_ASYNC 0
 #endif
 

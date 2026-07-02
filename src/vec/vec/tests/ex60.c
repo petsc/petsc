@@ -23,19 +23,19 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectTypeCompare((PetscObject)x, VECSEQHIP, &iship));
   PetscCall(VecGetBlockSize(x, &bs));
   if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF, bs, n, NULL, &x1));
     PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF, bs, n, NULL, &x2));
     PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF, bs, n, NULL, &x3));
 #endif
   } else if (iskokkos) {
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
     PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF, bs, n, NULL, &x1));
     PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF, bs, n, NULL, &x2));
     PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF, bs, n, NULL, &x3));
 #endif
   } else if (iship) {
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
     PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF, bs, n, NULL, &x1));
     PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF, bs, n, NULL, &x2));
     PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF, bs, n, NULL, &x3));

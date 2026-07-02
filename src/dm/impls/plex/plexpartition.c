@@ -1304,7 +1304,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     for (n = 0; n < numNeighbors; ++n) {
       PetscCall(PetscSectionGetDof(rootSection, neighbors[n], &dof));
       PetscCall(PetscSectionGetOffset(rootSection, neighbors[n], &off));
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
       if (dof > PETSC_MPI_INT_MAX) {
         locOverflow = PETSC_TRUE;
         break;
@@ -1459,7 +1459,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sort
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   #include <parmetis.h>
 #endif
 
@@ -1605,7 +1605,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
 /* The function below is used by DMPlexRebalanceSharedPoints which errors
  * when PETSc is built without ParMETIS. To avoid -Wunused-function, we take
  * this out in that case. */
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
 static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
 {
   PetscInt   *distribution, min, max, sum;
@@ -1658,7 +1658,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 @*/
 PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel, PetscBool *success)
 {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   PetscSF            sf;
   PetscInt           ierr, i, j, idx, jdx;
   PetscInt           eBegin, eEnd, nroots, nleafs, pStart, pEnd;

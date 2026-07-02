@@ -379,7 +379,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
   PetscFunctionBegin;
   PetscCheck(mengine, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   PetscCall(PetscInfo(0, "Putting MATLAB array %s\n", name));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   mat = mxCreateDoubleMatrix(m, n, mxREAL);
 #else
   mat = mxCreateDoubleMatrix(m, n, mxCOMPLEX);

@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscsnes.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define sneslinesearchshellsetapply_ SNESLINESEARCHSHELLSETAPPLY
   #define sneslinesearchshellgetapply_ SNESLINESEARCHSHELLGETAPPLY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define sneslinesearchshellsetapply_ sneslinesearchshellsetapply
   #define sneslinesearchshellgetapply_ sneslinesearchshellgetapply
 #endif

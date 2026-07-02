@@ -3,9 +3,9 @@
 #include <petsc/private/bagimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscbagregisterstring_ PETSCBAGREGISTERSTRING
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscbagregisterstring_ petscbagregisterstring
 #endif
 

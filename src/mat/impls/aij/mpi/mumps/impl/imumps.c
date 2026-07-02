@@ -11,14 +11,14 @@
 #define MUMPS_MANUALS "(see users manual https://mumps-solver.org/index.php?page=doc \"Error and warning diagnostics\")"
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
   #include <cmumps_c.h>
   #include <zmumps_c.h>
   #include <smumps_c.h>
   #include <dmumps_c.h>
 #else
-  #if defined(PETSC_USE_COMPLEX)
-    #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_COMPLEX)
+    #if PetscDefined(USE_REAL_SINGLE)
       #include <cmumps_c.h>
       #define MUMPS_c     cmumps_c
       #define MumpsScalar CMUMPS_COMPLEX
@@ -28,7 +28,7 @@ EXTERN_C_BEGIN
       #define MumpsScalar ZMUMPS_COMPLEX
     #endif
   #else
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #include <smumps_c.h>
       #define MUMPS_c     smumps_c
       #define MumpsScalar SMUMPS_REAL
@@ -39,14 +39,14 @@ EXTERN_C_BEGIN
     #endif
   #endif
 #endif
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define MUMPS_STRUC_C CMUMPS_STRUC_C
   #else
     #define MUMPS_STRUC_C ZMUMPS_STRUC_C
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define MUMPS_STRUC_C SMUMPS_STRUC_C
   #else
     #define MUMPS_STRUC_C DMUMPS_STRUC_C
@@ -85,9 +85,7 @@ typedef MUMPS_INT PetscMUMPSInt;
 static inline PetscErrorCode PetscMUMPSIntCast(PetscCount a, PetscMUMPSInt *b)
 {
   PetscFunctionBegin;
-#if PetscDefined(USE_64BIT_INDICES)
-  PetscAssert(a <= PETSC_MUMPS_INT_MAX && a >= PETSC_MUMPS_INT_MIN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "PetscInt too long for PetscMUMPSInt");
-#endif
+  PetscAssert(!PetscDefined(USE_64BIT_INDICES) || (a <= PETSC_MUMPS_INT_MAX && a >= PETSC_MUMPS_INT_MIN), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "PetscInt too long for PetscMUMPSInt");
   *b = (PetscMUMPSInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -200,8 +198,8 @@ static inline PetscErrorCode MatMumpsAllocateInternalID(XMUMPS_STRUC_C *outer, P
 {
   PetscFunctionBegin;
   outer->precision = precision;
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
-  #if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
+  #if PetscDefined(USE_COMPLEX)
   if (precision == PETSC_PRECISION_SINGLE) AllocateInternalID(CMUMPS_STRUC_C, outer);
   else AllocateInternalID(ZMUMPS_STRUC_C, outer);
   #else
@@ -229,10 +227,10 @@ static inline PetscErrorCode MatMumpsFreeInternalID(XMUMPS_STRUC_C *outer)
 {
   PetscFunctionBegin;
   if (outer->internal_id) { // sometimes, the inner is never created before we destroy the outer
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
     const PetscPrecision mumps_precision = outer->precision;
     if (mumps_precision != PETSC_SCALAR_PRECISION) { // Free internal buffers if we used mixed precision
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       if (mumps_precision == PETSC_PRECISION_SINGLE) FreeInternalIDFields(CMUMPS_STRUC_C, outer);
       else FreeInternalIDFields(ZMUMPS_STRUC_C, outer);
   #else
@@ -273,10 +271,10 @@ static inline PetscErrorCode MatMumpsFreeInternalID(XMUMPS_STRUC_C *outer)
 static PetscErrorCode MatMumpsMakeMumpsScalarArray(PetscBool convert, PetscCount n, const PetscScalar *pa, PetscPrecision precision, PetscCount *m, void **ma)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
   const PetscPrecision mumps_precision = precision;
   PetscCheck(precision == PETSC_PRECISION_SINGLE || precision == PETSC_PRECISION_DOUBLE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported precicison (%d). Must be single or double", (int)precision);
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
   if (mumps_precision != PETSC_SCALAR_PRECISION) {
     if (mumps_precision == PETSC_PRECISION_SINGLE) {
       if (*m < n) {
@@ -348,9 +346,9 @@ static PetscErrorCode MatMumpsMakeMumpsScalarArray(PetscBool convert, PetscCount
 static PetscErrorCode MatMumpsCastMumpsScalarArray(PetscCount n, PetscPrecision mumps_precision, const void *ma, PetscScalar *pa)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
   if (mumps_precision != PETSC_SCALAR_PRECISION) {
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     if (mumps_precision == PETSC_PRECISION_SINGLE) {
       PetscReal         *a = (PetscReal *)pa;
       const SMUMPS_REAL *b = (const SMUMPS_REAL *)ma;
@@ -382,9 +380,9 @@ static PetscErrorCode MatMumpsCastMumpsScalarArray(PetscCount n, PetscPrecision 
 static PetscErrorCode MatMumpsCastPetscScalarArray(PetscCount n, const PetscScalar *pa, PetscPrecision mumps_precision, const void *ma)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
   if (mumps_precision != PETSC_SCALAR_PRECISION) {
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     if (mumps_precision == PETSC_PRECISION_SINGLE) {
       CMUMPS_COMPLEX *b = (CMUMPS_COMPLEX *)ma;
       for (PetscCount i = 0; i < n; i++) {
@@ -466,8 +464,8 @@ static inline MPI_Datatype MPIU_MUMPSREAL(const XMUMPS_STRUC_C *id)
 static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
-  #if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_MUMPS_MIXED_PRECISION)
+  #if PetscDefined(USE_COMPLEX)
   if (outer->precision == PETSC_PRECISION_SINGLE) {
     CMUMPS_STRUC_C *inner = (CMUMPS_STRUC_C *)outer->internal_id;
     PreMumpsCall(inner, outer, CMUMPS_COMPLEX);
@@ -507,7 +505,7 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
 #define INFO(I)  info[(I) - 1]
 
 // Get a value from a MumpsScalar array, which is the <F> field in the struct of MUMPS_STRUC_C. The value is convertible to PetscScalar. Note no minus 1 on I!
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define ID_FIELD_GET(ID, F, I) ((ID).precision == PETSC_PRECISION_SINGLE ? ((CMUMPS_COMPLEX *)(ID).F)[I].r + PETSC_i * ((CMUMPS_COMPLEX *)(ID).F)[I].i : ((ZMUMPS_COMPLEX *)(ID).F)[I].r + PETSC_i * ((ZMUMPS_COMPLEX *)(ID).F)[I].i)
 #else
   #define ID_FIELD_GET(ID, F, I) ((ID).precision == PETSC_PRECISION_SINGLE ? ((float *)(ID).F)[I] : ((double *)(ID).F)[I])
@@ -526,7 +524,7 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
   } while (0)
 
 /* if using PETSc OpenMP support, we only call MUMPS on master ranks. Before/after the call, we change/restore CPUs the master ranks can run on */
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if PetscDefined(HAVE_OPENMP_SUPPORT)
   #define PetscMUMPS_c(mumps) \
     do { \
       if (mumps->use_petsc_omp_support) { \
@@ -581,7 +579,7 @@ struct Mat_MUMPS {
   PetscMUMPSInt  ICNTL20;            /* use centralized (0) or distributed (10) dense RHS */
   PetscMUMPSInt  ICNTL26;
   PetscMUMPSInt  lrhs_loc, nloc_rhs, *irhs_loc;
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if PetscDefined(HAVE_OPENMP_SUPPORT)
   PetscInt    *rhs_nrow, max_nrhs;
   PetscMPIInt *rhs_recvcounts, *rhs_disps;
   PetscScalar *rhs_loc, *rhs_recvbuf;
@@ -619,7 +617,7 @@ static PetscErrorCode PetscMUMPSIntCSRCast(PETSC_UNUSED Mat_MUMPS *mumps, PetscI
   PetscInt nnz = ia[nrow] - 1; /* mumps uses 1-based indices. Uses PetscInt instead of PetscCount since mumps only uses PetscMUMPSInt for rhs */
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   {
     if (nrow + 1 > mumps->cur_ilen) { /* realloc ia_alloc/ja_alloc to fit ia/ja */
       PetscCall(PetscFree(mumps->ia_alloc));
@@ -707,14 +705,14 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
 
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, mumps->id.size_schur, mumps->id.nrhs, mumps->redrhs, &B));
   PetscCall(MatSetType(B, ((PetscObject)S)->type_name));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA)
   PetscCall(MatBindToCPU(B, S->boundtocpu));
 #endif
   switch (schurstatus) {
   case MAT_FACTOR_SCHUR_FACTORED:
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, mumps->id.size_schur, mumps->id.nrhs, mumps->redrhs, &X));
     PetscCall(MatSetType(X, ((PetscObject)S)->type_name));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA)
     PetscCall(MatBindToCPU(X, S->boundtocpu));
 #endif
     if (!mumps->id.ICNTL(9)) { /* transpose solve */
@@ -732,7 +730,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     }
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, mumps->id.size_schur, mumps->id.nrhs, mumps->schur_sol, &X));
     PetscCall(MatSetType(X, ((PetscObject)S)->type_name));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA)
     PetscCall(MatBindToCPU(X, S->boundtocpu));
 #endif
     PetscCall(MatProductCreateWithMat(S, B, NULL, X));
@@ -920,15 +918,13 @@ static PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A, PetscInt shif
   PetscScalar    *val;
   Mat_SeqSBAIJ   *aa  = (Mat_SeqSBAIJ *)A->data;
   const PetscInt  bs2 = aa->bs2, mbs = aa->mbs;
-#if defined(PETSC_USE_COMPLEX)
-  PetscBool isset, hermitian;
-#endif
+  PetscBool       isset, hermitian;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
-  PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
-#endif
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
+    PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  }
   ai = aa->i;
   aj = aa->j;
   PetscCall(MatGetBlockSize(A, &bs));
@@ -996,15 +992,13 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A, PetscInt shift,
   PetscMUMPSInt     *row, *col;
   Mat_SeqAIJ        *aa = (Mat_SeqAIJ *)A->data;
   PetscBool          diagDense;
-#if defined(PETSC_USE_COMPLEX)
-  PetscBool hermitian, isset;
-#endif
+  PetscBool          hermitian, isset;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
-  PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
-#endif
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
+    PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  }
   PetscCall(MatSeqAIJGetArrayRead(A, &av));
   ai = aa->i;
   aj = aa->j;
@@ -1107,15 +1101,13 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A, PetscInt shif
   Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)mat->A->data;
   Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
   const PetscInt     bs2 = aa->bs2, mbs = aa->mbs;
-#if defined(PETSC_USE_COMPLEX)
-  PetscBool hermitian, isset;
-#endif
+  PetscBool          hermitian, isset;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
-  PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
-#endif
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
+    PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  }
   PetscCall(MatGetBlockSize(A, &bs));
   rstart = A->rmap->rstart;
   ai     = aa->i;
@@ -1354,15 +1346,13 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A, PetscInt shift,
   Mat                Ad, Ao;
   Mat_SeqAIJ        *aa;
   Mat_SeqAIJ        *bb;
-#if defined(PETSC_USE_COMPLEX)
-  PetscBool hermitian, isset;
-#endif
+  PetscBool          hermitian, isset;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
-  PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
-#endif
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(MatIsHermitianKnown(A, &isset, &hermitian));
+    PetscCheck(!isset || !hermitian, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  }
   PetscCall(MatMPIAIJGetSeqAIJ(A, &Ad, &Ao, &garray));
   PetscCall(MatSeqAIJGetArrayRead(Ad, &av));
   PetscCall(MatSeqAIJGetArrayRead(Ao, &bv));
@@ -1819,7 +1809,7 @@ static PetscErrorCode MatDestroy_MUMPS(Mat F)
     }
   }
   PetscCall(MatMumpsFreeInternalID(&mumps->id));
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if PetscDefined(HAVE_OPENMP_SUPPORT)
   if (mumps->use_petsc_omp_support) {
     PetscCall(PetscOmpCtrlDestroy(&mumps->omp_ctrl));
     PetscCall(PetscFree2(mumps->rhs_loc, mumps->rhs_recvbuf));
@@ -1874,7 +1864,7 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A, PetscInt nrhs, const Petsc
     }
     PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, m * nrhs, array, mumps->id.precision, &mumps->id.rhs_loc_len, &mumps->id.rhs_loc));
   } else {
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if PetscDefined(HAVE_OPENMP_SUPPORT)
     const PetscInt *ranges;
     PetscMPIInt     j, k, sendcount, *petsc_ranks, *omp_ranks;
     MPI_Group       petsc_group, omp_group;
@@ -2377,7 +2367,7 @@ static PetscErrorCode MatMatTransposeSolve_MUMPS(Mat A, Mat Bt, Mat X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 /*
   input:
    F:        numeric factor
@@ -2572,7 +2562,7 @@ static PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, PETSC_UNUSED const Ma
   F->assembled = PETSC_TRUE;
 
   if (F->schur) { /* reset Schur status to unfactored */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     F->schur->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
     PetscScalar *array;
@@ -2649,7 +2639,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)F)->prefix, "-mat_mumps_use_omp_threads", &nthreads, NULL));
     if (mumps->use_petsc_omp_support) {
       PetscCheck(!schur, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot use -%smat_mumps_use_omp_threads with the Schur complement feature", ((PetscObject)F)->prefix ? ((PetscObject)F)->prefix : "");
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if PetscDefined(HAVE_OPENMP_SUPPORT)
       PetscCall(PetscOmpCtrlCreate(mumps->petsc_comm, nthreads, &mumps->omp_ctrl));
       PetscCall(PetscOmpCtrlGetOmpComms(mumps->omp_ctrl, &mumps->omp_comm, &mumps->mumps_comm, &mumps->is_omp_master));
 #else
@@ -3102,7 +3092,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F, Mat A, PETSC_UNUSED
   F->ops->matsolve              = MatMatSolve_MUMPS;
   F->ops->mattransposesolve     = MatMatTransposeSolve_MUMPS;
   F->ops->matsolvetranspose     = MatMatSolveTranspose_MUMPS;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   F->ops->getinertia = NULL;
 #else
   F->ops->getinertia = MatGetInertia_SBAIJMUMPS;

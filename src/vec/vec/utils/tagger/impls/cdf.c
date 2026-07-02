@@ -3,7 +3,7 @@
 
 const char *const VecTaggerCDFMethods[VECTAGGER_CDF_NUM_METHODS] = {"gather", "iterative"};
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 typedef VecTaggerBox VecTaggerBoxReal;
 #else
 typedef struct {
@@ -42,7 +42,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger, Vec vec
   Vec               vComp;
   PetscInt          n, m;
   PetscInt          i;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal *cReal, *cImag;
 #endif
 
@@ -50,7 +50,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger, Vec vec
   PetscCall(VecGetLocalSize(vec, &n));
   m = n / bs;
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &vComp));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscMalloc2(m, &cReal, m, &cImag));
 #endif
   for (i = 0; i < bs; i++) {
@@ -66,7 +66,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger, Vec vec
     PetscCall(ISDestroy(&isStride));
 
     PetscCall(VecGetArray(vComp, &cArray));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     PetscCall(PetscSortReal(m, cArray));
     PetscCall(VecTaggerComputeBox_CDF_SortedArray(cArray, m, &smpl->box[i], &boxes[i]));
 #else
@@ -94,7 +94,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger, Vec vec
 #endif
     PetscCall(VecRestoreArray(vComp, &cArray));
   }
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscFree2(cReal, cImag));
 #endif
   PetscCall(VecDestroy(&vComp));
@@ -273,7 +273,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec 
   VecTagger_Simple *smpl = &cdf->smpl;
   Vec               vComp;
   PetscInt          i, N, M, n, m, rstart;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal *cReal, *cImag;
 #endif
   MPI_Comm     comm;
@@ -289,7 +289,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec 
   PetscCall(VecCreateMPI(comm, m, M, &vComp));
   PetscCall(VecSetUp(vComp));
   PetscCall(VecGetOwnershipRange(vComp, &rstart, NULL));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscMalloc2(m, &cReal, m, &cImag));
 #endif
   PetscCallMPI(MPI_Type_contiguous(5, MPIU_REAL, &statType));
@@ -308,7 +308,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec 
     PetscCall(ISDestroy(&isStride));
 
     PetscCall(VecGetArray(vComp, &cArray));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     PetscCall(PetscSortReal(m, cArray));
     PetscCall(VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger, statType, statReduce, cArray, m, &smpl->box[i], &boxes[i]));
 #else
@@ -337,7 +337,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec 
   }
   PetscCallMPI(MPI_Op_free(&statReduce));
   PetscCallMPI(MPI_Type_free(&statType));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscFree2(cReal, cImag));
 #endif
   PetscCall(VecDestroy(&vComp));

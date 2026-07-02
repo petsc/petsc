@@ -131,7 +131,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   SNESLineSearch       linesearch;
   SNESConvergedReason  reason;
   PC                   pc;
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   PetscReal gnorm;
 #endif
 
@@ -224,7 +224,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 
     if (PetscLogPrintInfo) PetscCall(SNESNEWTONLSCheckResidual_Private(snes, snes->jacobian, F, Y));
 
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
     gnorm = fnorm;
 #endif
     /* Compute a (scaled) negative update in the line search routine:

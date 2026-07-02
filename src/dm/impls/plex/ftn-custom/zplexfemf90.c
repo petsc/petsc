@@ -2,14 +2,14 @@
 #include <petscdmplex.h>
 #include <petscds.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmplexgetcellfields_       DMPLEXGETCELLFIELDS
   #define dmplexrestorecellfields_   DMPLEXRESTORECELLFIELDS
   #define dmplexgetfacefields_       DMPLEXGETFACEFIELDS
   #define dmplexrestorefacefields_   DMPLEXRESTOREFACEFIELDS
   #define dmplexgetfacegeometry_     DMPLEXGETFACEGEOMETRY
   #define dmplexrestorefacegeometry_ DMPLEXRESTOREFACEGEOMETRY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmplexgetcellfields_       dmplexgetcellfields
   #define dmplexrestorecellfields_   dmplexrestorecellfields
   #define dmplexgetfacefields_       dmplexgetfacefields

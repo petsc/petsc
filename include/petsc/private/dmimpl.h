@@ -419,7 +419,7 @@ PETSC_INTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM,
 
 */
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5_Internal(DM, const char[], PetscInt, PetscScalar *, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM, const char[], PetscInt *, PetscViewer);
 #endif
@@ -427,8 +427,7 @@ PETSC_EXTERN PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM, const char[], 
 static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBeginHot;
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt dof;
 
     *start = *end = 0; /* Silence overzealous compiler warning */
@@ -436,44 +435,36 @@ static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, Pet
     PetscCall(PetscSectionGetOffset(dm->localSection, point, start));
     PetscCall(PetscSectionGetDof(dm->localSection, point, &dof));
     *end = *start + dof;
-  }
-#else
-  {
+  } else {
     const PetscSection s = dm->localSection;
     *start               = s->atlasOff[point - s->pStart];
     *end                 = *start + s->atlasDof[point - s->pStart];
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt dof;
     *start = *end = 0; /* Silence overzealous compiler warning */
     PetscCheck(dm->localSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a local section, see DMSetLocalSection()");
     PetscCall(PetscSectionGetFieldOffset(dm->localSection, point, field, start));
     PetscCall(PetscSectionGetFieldDof(dm->localSection, point, field, &dof));
     *end = *start + dof;
-  }
-#else
-  {
+  } else {
     const PetscSection s = dm->localSection->field[field];
     *start               = s->atlasOff[point - s->pStart];
     *end                 = *start + s->atlasDof[point - s->pStart];
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt dof, cdof;
     *start = *end = 0; /* Silence overzealous compiler warning */
     PetscCheck(dm->localSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a local section, see DMSetLocalSection()");
@@ -482,24 +473,20 @@ static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, Pe
     PetscCall(PetscSectionGetDof(dm->globalSection, point, &dof));
     PetscCall(PetscSectionGetConstraintDof(dm->globalSection, point, &cdof));
     *end = *start + dof - cdof + (dof < 0 ? 1 : 0);
-  }
-#else
-  {
+  } else {
     const PetscSection s    = dm->globalSection;
     const PetscInt     dof  = s->atlasDof[point - s->pStart];
     const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
     *start                  = s->atlasOff[point - s->pStart];
     *end                    = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt loff, lfoff, fdof, fcdof, ffcdof, f;
     *start = *end = 0; /* Silence overzealous compiler warning */
     PetscCheck(dm->localSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a local section, see DMSetLocalSection()");
@@ -515,9 +502,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
       *start = *start < 0 ? *start + ffcdof : *start - ffcdof;
     }
     *end = *start < 0 ? *start - (fdof - fcdof) : *start + fdof - fcdof;
-  }
-#else
-  {
+  } else {
     const PetscSection s      = dm->localSection;
     const PetscSection fs     = dm->localSection->field[field];
     const PetscSection gs     = dm->globalSection;
@@ -535,7 +520,6 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
     *start = goff + (goff < 0 ? loff - lfoff + ffcdof : lfoff - loff - ffcdof);
     *end   = *start < 0 ? *start - (fdof - fcdof) : *start + fdof - fcdof;
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

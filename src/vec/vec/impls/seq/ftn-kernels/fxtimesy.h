@@ -1,10 +1,10 @@
 #pragma once
 
 #include <petscsys.h>
-#if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_KERNEL_MAXPY)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranxtimesy_ FORTRANXTIMESY
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define fortranxtimesy_ fortranxtimesy
   #endif
 PETSC_EXTERN void fortranxtimesy_(const void *, const void *, void *, const PetscInt *);

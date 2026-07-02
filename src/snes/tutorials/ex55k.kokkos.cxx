@@ -1,6 +1,6 @@
-#include <petscconf.h>
+#include <petscmacros.h>
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   #include <Kokkos_Core.hpp>
   #include <petsc_kokkos.hpp>
   #include <petscdmda_kokkos.hpp>

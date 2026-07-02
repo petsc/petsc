@@ -122,7 +122,7 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
 PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
   PetscMPIInt        rank;
   PetscExodusIIInt   CPU_word_size = sizeof(PetscReal), IO_word_size = 0, exoid = -1;
   PetscExodusIIFloat version;

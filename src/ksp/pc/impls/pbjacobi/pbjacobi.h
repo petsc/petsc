@@ -12,11 +12,11 @@ typedef struct {
   void            *spptr;   /* opaque pointer to a device data structure */
 } PC_PBJacobi;
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC, Mat);
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC, Mat);
 #endif
 

@@ -7,10 +7,10 @@ and from Fortran to C\n\n";
   Ugly stuff to insure the function names match between Fortran
   and C. This is out of our PETSc hands to cleanup.
 */
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define ex7f_ EX7F
   #define ex7c_ EX7C
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define ex7f_ ex7f
   #define ex7c_ ex7c
 #endif

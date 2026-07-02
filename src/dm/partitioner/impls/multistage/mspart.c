@@ -184,7 +184,7 @@ static PetscErrorCode PetscPartitionerMultistage_CreateStages(MPI_Comm comm, con
         PetscCallMPI(MPI_Comm_dup(comm, &ncomm));
       }
     } else {
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
+#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
       PetscCallMPI(MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, rank, MPI_INFO_NULL, &ncomm));
 #else
       /* if users do not specify the node size and MPI_Comm_split_type is not available, defaults to same comm */
@@ -382,32 +382,32 @@ PetscErrorCode PetscPartitionerMultistageSetStages(PetscPartitioner part, PetscI
     if (l) { /* let MPI complain/hang if the user did not specify the groups properly */
       PetscCallMPI(MPI_Comm_create(comm, lgroup[l], &lcomm));
     } else { /* in debug mode, we check that the initial group must be consistently (collectively) specified on comm */
-#if defined(PETSC_USE_DEBUG)
-      MPI_Group    group, igroup = lgroup[0];
-      PetscMPIInt *ranks, *granks;
-      PetscMPIInt  b[2], b2[2], csize, gsize;
+      if (PetscDefined(USE_DEBUG)) {
+        MPI_Group    group, igroup = lgroup[0];
+        PetscMPIInt *ranks, *granks;
+        PetscMPIInt  b[2], b2[2], csize, gsize;
 
-      PetscCallMPI(MPI_Group_size(igroup, &gsize));
-      b[0] = -gsize;
-      b[1] = +gsize;
-      PetscCallMPI(MPIU_Allreduce(b, b2, 2, MPI_INT, MPI_MAX, comm));
-      PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
-      PetscCallMPI(MPI_Comm_group(comm, &group));
-      PetscCallMPI(MPI_Group_size(group, &csize));
-      PetscCall(PetscMalloc2(gsize, &ranks, (csize * gsize), &granks));
-      for (PetscMPIInt i = 0; i < gsize; i++) granks[i] = i;
-      PetscCallMPI(MPI_Group_translate_ranks(igroup, gsize, granks, group, ranks));
-      PetscCallMPI(MPI_Group_free(&group));
-      PetscCallMPI(MPI_Allgather(ranks, gsize, MPI_INT, granks, gsize, MPI_INT, comm));
-      for (PetscMPIInt i = 0; i < gsize; i++) {
-        PetscMPIInt chkr = granks[i];
-        for (PetscMPIInt j = 0; j < csize; j++) {
-          PetscMPIInt shft = j * gsize + i;
-          PetscCheck(chkr == granks[shft], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
+        PetscCallMPI(MPI_Group_size(igroup, &gsize));
+        b[0] = -gsize;
+        b[1] = +gsize;
+        PetscCallMPI(MPIU_Allreduce(b, b2, 2, MPI_INT, MPI_MAX, comm));
+        PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
+        PetscCallMPI(MPI_Comm_group(comm, &group));
+        PetscCallMPI(MPI_Group_size(group, &csize));
+        PetscCall(PetscMalloc2(gsize, &ranks, (csize * gsize), &granks));
+        for (PetscMPIInt i = 0; i < gsize; i++) granks[i] = i;
+        PetscCallMPI(MPI_Group_translate_ranks(igroup, gsize, granks, group, ranks));
+        PetscCallMPI(MPI_Group_free(&group));
+        PetscCallMPI(MPI_Allgather(ranks, gsize, MPI_INT, granks, gsize, MPI_INT, comm));
+        for (PetscMPIInt i = 0; i < gsize; i++) {
+          PetscMPIInt chkr = granks[i];
+          for (PetscMPIInt j = 0; j < csize; j++) {
+            PetscMPIInt shft = j * gsize + i;
+            PetscCheck(chkr == granks[shft], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
+          }
         }
+        PetscCall(PetscFree2(ranks, granks));
       }
-      PetscCall(PetscFree2(ranks, granks));
-#endif
       lcomm = comm;
     }
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)part, &prefix));

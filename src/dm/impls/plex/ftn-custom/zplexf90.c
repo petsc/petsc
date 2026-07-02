@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmplex.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmplexgetcone_                  DMPLEXGETCONE
   #define dmplexrestorecone_              DMPLEXRESTORECONE
   #define dmplexgetconeorientation_       DMPLEXGETCONEORIENTATION
@@ -22,7 +22,7 @@
   #define dmplexgetmeet_                  DMPLEXGETMEET
   #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
   #define dmplexrestoremeet_              DMPLEXRESTOREMEET
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmplexgetcone_                  dmplexgetcone
   #define dmplexrestorecone_              dmplexrestorecone
   #define dmplexgetconeorientation_       dmplexgetconeorientation

@@ -70,7 +70,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscBool            powell, periodic, restart;
   PetscScalar          DolddotD, DolddotDold;
   SNESConvergedReason  reason;
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   PetscReal gnorm;
 #endif
 
@@ -174,7 +174,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     /* line search for lambda */
     ynorm = 1;
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
     gnorm = fnorm;
 #endif
     PetscCall(VecCopy(D, Dold));

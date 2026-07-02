@@ -355,7 +355,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
     PetscCall(PetscBLASIntCast(Nc, &M));
     PetscCall(PetscBLASIntCast(ncols, &N));
     if (debug) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       PetscScalar *tmp;
 
       PetscCall(DMGetWorkArray(dmc, Nc, MPIU_SCALAR, (void *)&tmp));
@@ -371,14 +371,14 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
       PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS rhs", Nc, 1, b));
 #endif
     }
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, workreal, &info));
 #else
     PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
 #endif
     if (debug) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %" PetscBLASInt_FMT " rcond %g\n", irank, (double)rcond));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       {
         PetscScalar *tmp;
 

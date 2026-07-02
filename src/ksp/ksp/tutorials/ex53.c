@@ -75,7 +75,7 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCLU));
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   if (size > 1) PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
 #endif
   PetscCall(KSPSetFromOptions(ksp));

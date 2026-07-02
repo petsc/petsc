@@ -24,7 +24,7 @@ static PetscErrorCode PFView_Constant(void *value, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Constant = %g\n", *(double *)value));
 #else
     PetscCall(PetscViewerASCIIPrintf(viewer, "Constant = %g + %gi\n", (double)PetscRealPart(*(PetscScalar *)value), (double)PetscImaginaryPart(*(PetscScalar *)value)));

@@ -1,8 +1,8 @@
 /*
   Implements the Kokkos kernel
 */
-#include <petscconf.h>
-#if defined(PETSC_HAVE_CUDA_CLANG)
+#include <petscmacros.h>
+#if PetscDefined(HAVE_CUDA_CLANG)
   #include <petsclandau.h>
   #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
 
@@ -836,7 +836,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         }
       } // scope with 'grid'
     };
-  #if defined(PETSC_HAVE_HIP)
+  #if PetscDefined(HAVE_HIP)
     const int lbound2 = 1;
   #else
     const int lbound2 = 2;

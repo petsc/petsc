@@ -623,7 +623,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
   PetscInt         msz, **ptr = NULL, *req_size = NULL, *ctr = NULL, *tmp = NULL, tcol;
   PetscInt       **rbuf3 = NULL, **sbuf_aj, **rbuf2 = NULL, max1, max2;
   PetscInt       **lens, is_no, ncols, *cols, mat_i, *mat_j, tmp2, jmax;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI *cmap, cmap_i = NULL, *rmap, rmap_i;
 #else
   PetscInt **cmap, *cmap_i = NULL, **rmap, *rmap_i;
@@ -974,7 +974,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
     }
 
     /* create col map: global col of C -> local col of submatrices */
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     for (PetscInt i = 0; i < ismax; i++) {
       if (!allcolumns[i]) {
         PetscCall(PetscHMapICreateWithSize(ncol[i], cmap + i));
@@ -1018,7 +1018,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         proc = row2proc_i[j];
         if (proc == rank) {
           /* Get indices from matA and then from matB */
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
           PetscInt tt;
 #endif
           row    = row - rstart;
@@ -1028,7 +1028,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
           cworkB = PetscSafePointerPlusOffset(b_j, b_i[row]);
 
           if (!allcolumns[i]) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             for (PetscInt k = 0; k < nzA; k++) {
               PetscCall(PetscHMapIGetWithDefault(cmap_i, cstart + cworkA[k] + 1, 0, &tt));
               if (tt) lens_i[j]++;
@@ -1056,7 +1056,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
     /* Create row map: global row of C -> local row of submatrices */
     for (PetscInt i = 0; i < ismax; i++) {
       if (!allrows[i]) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapICreateWithSize(nrow[i], rmap + i));
         irow_i = irow[i];
         jmax   = nrow[i];
@@ -1102,7 +1102,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             if (allrows[is_no]) {
               row = sbuf1_i[ct1];
             } else {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
               PetscCall(PetscHMapIGetWithDefault(rmap_i, sbuf1_i[ct1] + 1, 0, &row));
               row--;
               PetscCheck(row >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row not found in table");
@@ -1113,7 +1113,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             max2 = rbuf2_i[ct1];
             for (PetscInt l = 0; l < max2; l++, ct2++) {
               if (!allcolumns[is_no]) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
                 PetscCall(PetscHMapIGetWithDefault(cmap_i, rbuf3_i[ct2] + 1, 0, &tcol));
 #else
                 tcol = cmap_i[rbuf3_i[ct2]];
@@ -1313,7 +1313,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         if (allrows[i]) {
           row = row + rstart;
         } else {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
           PetscCall(PetscHMapIGetWithDefault(rmap_i, row + rstart + 1, 0, &row));
           row--;
 
@@ -1333,7 +1333,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
 
           for (l = 0; l < nzB; l++) {
             if ((ctmp = bmap[cworkB[l]]) < cstart) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
               PetscCall(PetscHMapIGetWithDefault(cmap_i, ctmp + 1, 0, &tcol));
               if (tcol) {
 #else
@@ -1348,7 +1348,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
           }
           imark = l;
           for (PetscInt l = 0; l < nzA; l++) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(cmap_i, cstart + cworkA[l] + 1, 0, &tcol));
             if (tcol) {
 #else
@@ -1363,7 +1363,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             }
           }
           for (l = imark; l < nzB; l++) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(cmap_i, bmap[cworkB[l]] + 1, 0, &tcol));
             if (tcol) {
 #else
@@ -1436,7 +1436,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         if (allrows[is_no]) {
           row = sbuf1_i[ct1];
         } else {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
           PetscCall(PetscHMapIGetWithDefault(rmap_i, row + 1, 0, &row));
           row--;
           PetscCheck(row >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row not found in table");
@@ -1451,7 +1451,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         max2  = rbuf2_i[ct1];
         if (!allcolumns[is_no]) {
           for (PetscInt l = 0; l < max2; l++, ct2++) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(cmap_i, rbuf3_i[ct2] + 1, 0, &tcol));
 #else
             tcol = cmap_i[rbuf3_i[ct2]];

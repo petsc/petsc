@@ -1359,7 +1359,7 @@ static PetscErrorCode DMMoabView_VTK(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
 static PetscErrorCode DMMoabView_HDF5(DM dm, PetscViewer v)
 {
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1379,7 +1379,7 @@ static PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
   if (isascii) {
     PetscCall(DMMoabView_Ascii(dm, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ));
     PetscCall(DMMoabView_HDF5(dm, viewer));
     PetscCall(PetscViewerPopFormat(viewer));

@@ -17,13 +17,13 @@
 #define PETSC_PASTE3(a, b, c)  PETSC_PASTE3_(a, b, c)
 
 #if !defined(PETSC_BLASLAPACK_SUFFIX)
-  #if defined(PETSC_BLASLAPACK_UNDERSCORE)
+  #if PetscDefined(BLASLAPACK_UNDERSCORE)
     #define PETSC_BLASLAPACK_SUFFIX_ _
   #else
     #define PETSC_BLASLAPACK_SUFFIX_
   #endif
 #else
-  #if defined(PETSC_BLASLAPACK_UNDERSCORE)
+  #if PetscDefined(BLASLAPACK_UNDERSCORE)
     #define PETSC_BLASLAPACK_SUFFIX_ PETSC_PASTE2(PETSC_BLASLAPACK_SUFFIX, _)
   #else
     #define PETSC_BLASLAPACK_SUFFIX_ PETSC_BLASLAPACK_SUFFIX
@@ -31,15 +31,15 @@
 #endif
 
 /* complex/real and single/double/quad/half precision prefixes: */
-#if !defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_BLASLAPACK_CAPS)
-    #if defined(PETSC_USE_REAL_SINGLE)
+#if !PetscDefined(USE_COMPLEX)
+  #if PetscDefined(BLASLAPACK_CAPS)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define PETSC_BLASLAPACK_PREFIX_        S
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX C
-    #elif defined(PETSC_USE_REAL_DOUBLE)
+    #elif PetscDefined(USE_REAL_DOUBLE)
       #define PETSC_BLASLAPACK_PREFIX_        D
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX Z
-    #elif defined(PETSC_USE_REAL___FLOAT128)
+    #elif PetscDefined(USE_REAL___FLOAT128)
       #define PETSC_BLASLAPACK_PREFIX_        Q
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX W
     #else
@@ -47,13 +47,13 @@
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX K
     #endif
   #else
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define PETSC_BLASLAPACK_PREFIX_        s
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX c
-    #elif defined(PETSC_USE_REAL_DOUBLE)
+    #elif PetscDefined(USE_REAL_DOUBLE)
       #define PETSC_BLASLAPACK_PREFIX_        d
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX z
-    #elif defined(PETSC_USE_REAL___FLOAT128)
+    #elif PetscDefined(USE_REAL___FLOAT128)
       #define PETSC_BLASLAPACK_PREFIX_        q
       #define PETSC_BLASLAPACK_PREFIX_COMPLEX w
     #else
@@ -64,16 +64,16 @@
   #define PETSC_BLASLAPACK_RPREFIX_    PETSC_BLASLAPACK_PREFIX_
   #define PETSC_BLASLAPACK_PREFIX_REAL PETSC_BLASLAPACK_PREFIX_
 #else
-  #if defined(PETSC_BLASLAPACK_CAPS)
-    #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(BLASLAPACK_CAPS)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define PETSC_BLASLAPACK_PREFIX_     C
       #define PETSC_BLASLAPACK_PREFIX_REAL S
       #define PETSC_BLASLAPACK_RPREFIX_    SC
-    #elif defined(PETSC_USE_REAL_DOUBLE)
+    #elif PetscDefined(USE_REAL_DOUBLE)
       #define PETSC_BLASLAPACK_PREFIX_     Z
       #define PETSC_BLASLAPACK_PREFIX_REAL D
       #define PETSC_BLASLAPACK_RPREFIX_    DZ
-    #elif defined(PETSC_USE_REAL___FLOAT128)
+    #elif PetscDefined(USE_REAL___FLOAT128)
       #define PETSC_BLASLAPACK_PREFIX_     W
       #define PETSC_BLASLAPACK_PREFIX_REAL Q
       #define PETSC_BLASLAPACK_RPREFIX_    QW
@@ -83,15 +83,15 @@
       #define PETSC_BLASLAPACK_RPREFIX_    HK
     #endif
   #else
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define PETSC_BLASLAPACK_PREFIX_     c
       #define PETSC_BLASLAPACK_PREFIX_REAL s
       #define PETSC_BLASLAPACK_RPREFIX_    sc
-    #elif defined(PETSC_USE_REAL_DOUBLE)
+    #elif PetscDefined(USE_REAL_DOUBLE)
       #define PETSC_BLASLAPACK_PREFIX_     z
       #define PETSC_BLASLAPACK_PREFIX_REAL d
       #define PETSC_BLASLAPACK_RPREFIX_    dz
-    #elif defined(PETSC_USE_REAL___FLOAT128)
+    #elif PetscDefined(USE_REAL___FLOAT128)
       #define PETSC_BLASLAPACK_PREFIX_     w
       #define PETSC_BLASLAPACK_PREFIX_REAL q
       #define PETSC_BLASLAPACK_RPREFIX_    qw
@@ -106,7 +106,7 @@
 
 /* define macros PETSCBLAS to mangle BLAS/LAPACK subroutine names, and
    PETSCBLASR for functions returning real values */
-#if defined(PETSC_BLASLAPACK_CAPS)
+#if PetscDefined(BLASLAPACK_CAPS)
   /*MC
     PETSCBLAS - Mangle a BLAS or LAPACK subroutine name to its `PetscScalar`-precision flavor with the configured Fortran name-mangling suffix
 
@@ -213,17 +213,17 @@ M*/
 #define BLASasum_        PETSCBLASR(asum, ASUM)
 #define LAPACKpttrf_     PETSCBLAS(pttrf, PTTRF) /* factorization of a spd tridiagonal matrix */
 #define LAPACKpttrs_     PETSCBLAS(pttrs, PTTRS) /* solve a spd tridiagonal matrix system */
-#if !defined(PETSC_MISSING_LAPACK_STEIN)
+#if !PetscDefined(MISSING_LAPACK_STEIN)
   #define LAPACKstein_ PETSCBLAS(stein, STEIN) /* eigenvectors of real symm tridiagonal matrix */
 #endif
 #define LAPACKgesv_ PETSCBLAS(gesv, GESV)
-#if !defined(PETSC_MISSING_LAPACK_GELSS)
+#if !PetscDefined(MISSING_LAPACK_GELSS)
   #define LAPACKgelss_ PETSCBLAS(gelss, GELSS)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_GERFS)
+#if !PetscDefined(MISSING_LAPACK_GERFS)
   #define LAPACKgerfs_ PETSCBLAS(gerfs, GERFS)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_TGSEN)
+#if !PetscDefined(MISSING_LAPACK_TGSEN)
   #define LAPACKtgsen_ PETSCBLAS(tgsen, TGSEN)
 #endif
 /* character-string arguments: */
@@ -233,7 +233,7 @@ M*/
 #define LAPACKpotrs_ PETSCBLAS(potrs, POTRS)
 #define LAPACKsytrf_ PETSCBLAS(sytrf, SYTRF)
 #define LAPACKsytrs_ PETSCBLAS(sytrs, SYTRS)
-#if !defined(PETSC_MISSING_LAPACK_SYTRI)
+#if !PetscDefined(MISSING_LAPACK_SYTRI)
   #define LAPACKsytri_ PETSCBLAS(sytri, SYTRI)
 #endif
 #define BLASgemv_     PETSCBLAS(gemv, GEMV)
@@ -249,39 +249,39 @@ M*/
 #define LAPACKgesvd_  PETSCBLAS(gesvd, GESVD)
 #define LAPACKgeev_   PETSCBLAS(geev, GEEV)
 #define LAPACKgels_   PETSCBLAS(gels, GELS)
-#if !defined(PETSC_MISSING_LAPACK_STEGR)
+#if !PetscDefined(MISSING_LAPACK_STEGR)
   #define LAPACKstegr_ PETSCBLAS(stegr, STEGR) /* eigenvalues and eigenvectors of symm tridiagonal */
 #endif
-#if !defined(PETSC_MISSING_LAPACK_STEQR)
+#if !PetscDefined(MISSING_LAPACK_STEQR)
   #define LAPACKsteqr_     PETSCBLAS(steqr, STEQR) /* eigenvalues and eigenvectors of symm tridiagonal */
   #define LAPACKREALsteqr_ PETSCBLASREAL(steqr, STEQR)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_STEV)
+#if !PetscDefined(MISSING_LAPACK_STEV)
   #define LAPACKstev_     PETSCBLAS(stev, STEV) /* eigenvalues and eigenvectors of symm tridiagonal */
   #define LAPACKREALstev_ PETSCBLASREAL(stev, STEV)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_HSEQR)
+#if !PetscDefined(MISSING_LAPACK_HSEQR)
   #define LAPACKhseqr_ PETSCBLAS(hseqr, HSEQR)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_GGES)
+#if !PetscDefined(MISSING_LAPACK_GGES)
   #define LAPACKgges_ PETSCBLAS(gges, GGES)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_TRSEN)
+#if !PetscDefined(MISSING_LAPACK_TRSEN)
   #define LAPACKtrsen_ PETSCBLAS(trsen, TRSEN)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_HGEQZ)
+#if !PetscDefined(MISSING_LAPACK_HGEQZ)
   #define LAPACKhgeqz_ PETSCBLAS(hgeqz, HGEQZ)
 #endif
-#if !defined(PETSC_MISSING_LAPACK_TRTRS)
+#if !PetscDefined(MISSING_LAPACK_TRTRS)
   #define LAPACKtrtrs_ PETSCBLAS(trtrs, TRTRS)
 #endif
 
 /* Subroutine names that differ for real/complex data: */
-#if !defined(PETSC_USE_COMPLEX)
-  #if !defined(PETSC_MISSING_LAPACK_ORGQR)
+#if !PetscDefined(USE_COMPLEX)
+  #if !PetscDefined(MISSING_LAPACK_ORGQR)
     #define LAPACKorgqr_ PETSCBLAS(orgqr, ORGQR)
   #endif
-  #if !defined(PETSC_MISSING_LAPACK_ORMQR)
+  #if !PetscDefined(MISSING_LAPACK_ORMQR)
     #define LAPACKormqr_ PETSCBLAS(ormqr, ORMQR)
   #endif
   #define BLASdot_  PETSCBLAS(dot, DOT)
@@ -293,7 +293,7 @@ M*/
   #define LAPACKsygvx_ PETSCBLAS(sygvx, SYGVX)
 
   /* stebz does not exist for complex data */
-  #if !defined(PETSC_MISSING_LAPACK_STEBZ)
+  #if !PetscDefined(MISSING_LAPACK_STEBZ)
     #define LAPACKstebz_ PETSCBLAS(stebz, STEBZ) /* eigenvalues of symm tridiagonal matrix */
   #endif
   #define LAPACKgerc_ PETSCBLAS(ger, GER)
@@ -303,10 +303,10 @@ M*/
   #define LAPACKhetrs_ PETSCBLAS(hetrs, HETRS)
   #define LAPACKhetri_ PETSCBLAS(hetri, HETRI)
   #define LAPACKheev_  PETSCBLAS(heev, HEEV)
-  #if !defined(PETSC_MISSING_LAPACK_ORGQR)
+  #if !PetscDefined(MISSING_LAPACK_ORGQR)
     #define LAPACKorgqr_ PETSCBLAS(ungqr, UNGQR)
   #endif
-  #if !defined(PETSC_MISSING_LAPACK_ORMQR)
+  #if !PetscDefined(MISSING_LAPACK_ORMQR)
     #define LAPACKormqr_ PETSCBLAS(unmqr, UNMQR)
   #endif
 /* note: dot and dotu are handled separately for complex data */

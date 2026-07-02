@@ -779,7 +779,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     if (isvtk) {
       PetscCall(VecView_Plex_Local_VTK(locv, viewer));
     } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
       PetscCall(VecView_Plex_Local_HDF5_Internal(locv, viewer));
 #else
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -793,7 +793,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       PetscCall(PetscViewerGLVisSetSnapId(viewer, step));
       PetscCall(VecView_GLVis(locv, viewer));
     } else if (iscgns) {
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
       PetscCall(VecView_Plex_Local_CGNS(locv, viewer));
 #else
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CGNS not supported in this build.\nPlease reconfigure using --download-cgns");
@@ -844,13 +844,13 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     PetscCall(PetscObjectCompose((PetscObject)locv, "__Vec_bc_zero__", NULL));
     PetscCall(DMRestoreLocalVector(dm, &locv));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(VecView_Plex_HDF5_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
   } else if (isexodusii) {
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
     PetscCall(VecView_PlexExodusII_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "ExodusII not supported in this build.\nPlease reconfigure using --download-exodusii");
@@ -900,7 +900,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
   } else v = originalv;
 
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(VecView_Plex_HDF5_Native_Internal(v, viewer));
 #else
     SETERRQ(comm, PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -956,19 +956,19 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWEREXODUSII, &isexodusii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(VecLoad_Plex_HDF5_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
   } else if (isexodusii) {
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
     PetscCall(VecLoad_PlexExodusII_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "ExodusII not supported in this build.\nPlease reconfigure using --download-exodusii");
 #endif
   } else if (iscgns) {
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
     PetscCall(VecLoad_Plex_CGNS_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CGNS not supported in this build.\nPlease reconfigure using --download-cgns");
@@ -992,7 +992,7 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
     if (dm->useNatural) {
       if (dm->sfNatural) {
         if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
           Vec         v;
           const char *vecname;
 
@@ -1647,7 +1647,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
+#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
     PetscCallMPI(MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, rank, MPI_INFO_NULL, &ncomm));
 #endif
     if (ncomm != MPI_COMM_NULL) {
@@ -1723,7 +1723,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     lm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
     PetscCallMPI(MPIU_Allreduce(lm, gm, 3, MPIU_INT64, MPI_SUM, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, ", empty %" PetscInt64_FMT ")\n", gm[2]));
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
+#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt64_FMT " (on node %.3f)\n", gm[0] / 2, gm[0] ? ((double)gm[1]) / ((double)gm[0]) : 1.));
 #else
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt64_FMT " (on node %.3f)\n", gm[0] / 2, 0.0));
@@ -2168,7 +2168,7 @@ static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
   #include <exodusII.h>
 #endif
 
@@ -2194,7 +2194,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_GLVIS) PetscCall(DMPlexView_GLVis(dm, viewer));
     else PetscCall(DMPlexView_Ascii(dm, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexView_HDF5_Internal(dm, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2209,7 +2209,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     PetscCall(DMDestroy(&hdm));
   } else if (isglvis) {
     PetscCall(DMPlexView_GLVis(dm, viewer));
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
   } else if (isexodus) {
     /*
       ExodusII requires that all sets be part of exactly one cell set.
@@ -2228,7 +2228,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     }
     PetscCall(DMView_PlexExodusII(dm, viewer));
 #endif
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
   } else if (iscgns) {
     PetscCall(DMView_PlexCGNS(dm, viewer));
 #endif
@@ -2281,7 +2281,7 @@ PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_TopologyView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     IS                globalPointNumbering;
     PetscViewerFormat format;
 
@@ -2321,7 +2321,7 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_CoordinatesView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -2358,7 +2358,7 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_LabelsView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     IS                globalPointNumbering;
     PetscViewerFormat format;
 
@@ -2406,7 +2406,7 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_SectionView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexSectionView_HDF5_Internal(dm, viewer, sectiondm));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2483,7 +2483,7 @@ PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, V
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_GlobalVectorView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexGlobalVectorView_HDF5_Internal(dm, viewer, sectiondm, vec));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2559,7 +2559,7 @@ PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Ve
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_LocalVectorView, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexLocalVectorView_HDF5_Internal(dm, viewer, sectiondm, vec));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2578,7 +2578,7 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewerFormat format;
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ) {
@@ -2622,7 +2622,7 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLo
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_TopologyLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -2662,7 +2662,7 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_CoordinatesLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -2705,7 +2705,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_LabelsLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -2783,7 +2783,7 @@ PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, PeOp DM sectiondm, P
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_SectionLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexSectionLoad_HDF5_Internal(dm, viewer, sectiondm, globalToLocalPointSF, globalDofSF, localDofSF));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2859,7 +2859,7 @@ PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, P
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_GlobalVectorLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexVecLoad_HDF5_Internal(dm, viewer, sectiondm, sf, vec));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -2935,7 +2935,7 @@ PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, Pe
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_LocalVectorLoad, viewer, 0, 0, 0));
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(DMPlexVecLoad_HDF5_Internal(dm, viewer, sectiondm, sf, vec));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -8114,7 +8114,7 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
   for (PetscInt i = 0; i < numRIndices; i++) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "[%d]", rank));
     for (PetscInt j = 0; j < numCIndices; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(viewer, " (%g,%g)", (double)PetscRealPart(values[i * numCIndices + j]), (double)PetscImaginaryPart(values[i * numCIndices + j])));
 #else
       PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)values[i * numCIndices + j]));

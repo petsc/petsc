@@ -7,7 +7,7 @@
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
 
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
   #include <exodusII.h>
 #endif
 
@@ -279,7 +279,7 @@ PETSC_INTERN PetscErrorCode DMPlexGetFieldTypes_Internal(DM, PetscSection, Petsc
 PETSC_INTERN PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
 PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject, PetscViewer);
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local_HDF5(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_HDF5(Vec, PetscViewer);
@@ -308,7 +308,7 @@ PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 #endif
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec, PetscViewer);
 #endif
 
@@ -334,7 +334,7 @@ PETSC_INTERN PetscErrorCode DMComputeL2GradientDiff_Plex(DM, PetscReal, PetscErr
 PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
 PETSC_INTERN PetscErrorCode DMView_PlexExodusII(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_PlexExodusII_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_PlexExodusII_Internal(Vec, PetscViewer);

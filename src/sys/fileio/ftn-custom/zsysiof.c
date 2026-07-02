@@ -1,6 +1,6 @@
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscbinaryreadint_         PETSCBINARYREADINT
   #define petscbinaryreadreal_        PETSCBINARYREADREAL
   #define petscbinaryreadcomplex_     PETSCBINARYREADCOMPLEX
@@ -19,7 +19,7 @@
   #define petscbinarywriteint1_       PETSCBINARYWRITEINT1
   #define petscbinarywritereal1_      PETSCBINARYWRITEREAL1
   #define petscbinarywritecomplex1_   PETSCBINARYWRITECOMPLEX1
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscbinaryreadint_         petscbinaryreadint
   #define petscbinaryreadreal_        petscbinaryreadreal
   #define petscbinaryreadcomplex_     petscbinaryreadcomplex

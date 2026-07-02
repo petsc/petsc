@@ -16,7 +16,7 @@ static PetscErrorCode PetscRandomSeed_Sprng(PetscRandom r)
 static PetscErrorCode PetscRandomGetValue_Sprng(PetscRandom r, PetscScalar *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if (r->iset) {
     *val = PetscRealPart(r->width) * sprng() + PetscRealPart(r->low) + (PetscImaginaryPart(r->width) * sprng() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
@@ -32,7 +32,7 @@ static PetscErrorCode PetscRandomGetValue_Sprng(PetscRandom r, PetscScalar *val)
 static PetscErrorCode PetscRandomGetValueReal_Sprng(PetscRandom r, PetscReal *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if (r->iset) *val = PetscRealPart(r->width) * sprng() + PetscRealPart(r->low);
   else *val = sprng();
 #else

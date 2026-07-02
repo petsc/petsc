@@ -172,7 +172,7 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
   Physics_SW *sw = (Physics_SW *)phys->data;
   PetscReal   cL, cR, speed;
   PetscReal   nn[DIM];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   const SWNode *uL = (const SWNode *)xL, *uR = (const SWNode *)xR;
 #else
   SWNodeUnion   uLreal, uRreal;
@@ -184,7 +184,7 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
   PetscReal      zero = 0.;
   PetscErrorCode ierr;
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   uLreal.swnode.h = 0;
   uRreal.swnode.h = 0;
   for (i = 0; i < 1 + dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);
@@ -272,7 +272,7 @@ static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp
   Physics_SW *sw = (Physics_SW *)phys->data;
   PetscReal   aL, aR;
   PetscReal   nn[DIM];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   const SWNode *uL = (const SWNode *)xL, *uR = (const SWNode *)xR;
 #else
   SWNodeUnion   uLreal, uRreal;
@@ -284,7 +284,7 @@ static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp
   PetscReal      zero = 0.;
   PetscErrorCode ierr;
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   uLreal.swnode.h = 0;
   uRreal.swnode.h = 0;
   for (i = 0; i < 1 + dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);

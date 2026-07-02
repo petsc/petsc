@@ -251,11 +251,11 @@ int main(int argc, char **argv)
     PetscCall(TSAdaptHistorySetTrajectory(adapt, tj, PETSC_FALSE));
     PetscCall(TSAdaptHistoryGetStep(adapt, 0, &t0, &dt));
     /* this example fails with single (or smaller) precision */
-#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
-    PetscCall(TSAdaptSetType(adapt, TSADAPTBASIC));
-    PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
-    PetscCall(TSSetFromOptions(ts));
-#endif
+    if (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL___FP16)) {
+      PetscCall(TSAdaptSetType(adapt, TSADAPTBASIC));
+      PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
+      PetscCall(TSSetFromOptions(ts));
+    }
     PetscCall(TSSetTime(ts, t0));
     PetscCall(TSSetTimeStep(ts, dt));
     PetscCall(TSResetTrajectory(ts));

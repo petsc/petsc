@@ -4,7 +4,7 @@ static char FILENAME[] = "ex24.c";
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
 
-#if defined(PETSC_HAVE_PTSCOTCH)
+#if PetscDefined(HAVE_PTSCOTCH)
 EXTERN_C_BEGIN
   #include <ptscotch.h>
 EXTERN_C_END
@@ -46,7 +46,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode ScotchResetRandomSeed()
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_PTSCOTCH)
+#if PetscDefined(HAVE_PTSCOTCH)
   SCOTCH_randomReset();
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

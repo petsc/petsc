@@ -454,7 +454,7 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is, P
           PetscBool    in;
 
           box = boxes[l];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
           in = (PetscBool)((box.min <= val) && (val <= box.max));
 #else
           in = (PetscBool)((PetscRealPart(box.min) <= PetscRealPart(val)) && (PetscImaginaryPart(box.min) <= PetscImaginaryPart(val)) && (PetscRealPart(val) <= PetscRealPart(box.max)) && (PetscImaginaryPart(val) <= PetscImaginaryPart(box.max)));

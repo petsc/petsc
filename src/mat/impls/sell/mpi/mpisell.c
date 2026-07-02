@@ -49,7 +49,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
 
   PetscFunctionBegin;
   PetscCheck(sell->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPISELL Matrix was assembled but is missing garray");
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(n, &sell->colmap));
   for (i = 0; i < n; i++) PetscCall(PetscHMapISet(sell->colmap, sell->garray[i] + 1, i + 1));
 #else
@@ -192,7 +192,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
           if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
         } else if (in[j] < 0) {
@@ -201,7 +201,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           if (mat->was_assembled) {
             if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(sell->colmap, in[j] + 1, 0, &col));
             col--;
 #else
@@ -225,7 +225,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
             }
           } else col = in[j];
           MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], cp2, vp2, lastcol2, low2, high2); /* set one value */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
           if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) B->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
         }
@@ -265,7 +265,7 @@ static PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
         PetscCall(MatGetValues(sell->A, 1, &row, 1, &col, v + i * n + j));
       } else {
         if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapIGetWithDefault(sell->colmap, idxn[j] + 1, 0, &col));
         col--;
 #else
@@ -314,7 +314,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
   }
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU) sell->A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->A, mode));
@@ -333,7 +333,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISELL(mat));
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU && sell->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) sell->B->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->B, mode));
@@ -347,7 +347,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCallMPI(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   mat->offloadmask = PETSC_OFFLOAD_BOTH;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -513,7 +513,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(VecDestroy(&sell->diag));
   PetscCall(MatDestroy(&sell->A));
   PetscCall(MatDestroy(&sell->B));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&sell->colmap));
 #else
   PetscCall(PetscFree(sell->colmap));
@@ -531,7 +531,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatIsTranspose_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISELLSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpisellcuda_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
@@ -1037,7 +1037,7 @@ static PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalue
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
 
   if (oldmat->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
@@ -1813,7 +1813,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat, MatType, MatReuse, Mat *);
 #endif
 
@@ -1863,7 +1863,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsTranspose_C", MatIsTranspose_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpiaij_C", MatConvert_MPISELL_MPIAIJ));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpisellcuda_C", MatConvert_MPISELL_MPISELLCUDA));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPISELL));

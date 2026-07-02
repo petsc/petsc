@@ -2,7 +2,7 @@
 #include <petscsys.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscpusherrorhandler_           PETSCPUSHERRORHANDLER
   #define petsctracebackerrorhandler_      PETSCTRACEBACKERRORHANDLER
   #define petscaborterrorhandler_          PETSCABORTERRORHANDLER
@@ -12,7 +12,7 @@
   #define petscerror_                      PETSCERROR
   #define petscerrorf_                     PETSCERRORF
   #define petscerrormpi_                   PETSCERRORMPI
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscpusherrorhandler_           petscpusherrorhandler
   #define petsctracebackerrorhandler_      petsctracebackerrorhandler
   #define petscaborterrorhandler_          petscaborterrorhandler
@@ -69,7 +69,7 @@ PETSC_EXTERN void petscerror_(MPI_Fint *comm, PetscErrorCode *number, PetscError
   FREECHAR(message, t1);
 }
 
-#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
+#if PetscDefined(HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
 PETSC_EXTERN void petscerrorf_(PetscErrorCode *err, int *line, char *file, PETSC_FORTRAN_CHARLEN_T len)
 {
   char          *tfile;

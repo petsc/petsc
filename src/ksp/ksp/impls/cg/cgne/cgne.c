@@ -112,7 +112,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
       ksp->reason = KSP_CONVERGED_ATOL;
       PetscCall(PetscInfo(ksp, "converged due to beta = 0\n"));
       break;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     } else if (beta < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       PetscCall(PetscInfo(ksp, "diverging due to indefinite preconditioner\n"));

@@ -9,7 +9,7 @@ static char help[] = "Tests inclusion of petscsystypes.h.\n\n";
 static_assert(PetscDefined(DEFINED_TEST), "PetscDefined() expanded its argument before prepending PETSC_");
 static_assert(PetscIfPetscDefined(DEFINED_TEST, 1, 0), "PetscIfPetscDefined() expanded its argument before prepending PETSC_");
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
 template <class Type>
 PetscErrorCode TestComplexOperators(Type x, PetscBool check, double &ans)
 {
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   /* numeric types */
   PetscScalar svalue;
   PetscReal   rvalue;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscComplex cvalue;
 #endif
 
@@ -102,11 +102,11 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   svalue = 0.0;
   rvalue = 0.0;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   cvalue = 0.0;
 #endif
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   double ans = 0.0;
 
   // PetscComplex .op. integer
@@ -126,13 +126,13 @@ int main(int argc, char **argv)
 
   // PetscComplex .op. floating point
   PetscCall(TestComplexOperators((PetscReal)0.5, PETSC_FALSE, ans)); // get an answer again
-  #if defined(PETSC_HAVE_REAL___FP16)
+  #if PetscDefined(HAVE_REAL___FP16)
   PetscCall(TestComplexOperators((__fp16)0.5, PETSC_TRUE, ans));
   #endif
   PetscCall(TestComplexOperators((float)0.5, PETSC_TRUE, ans));
   PetscCall(TestComplexOperators((double)0.5, PETSC_TRUE, ans));
   PetscCall(TestComplexOperators((long double)0.5, PETSC_TRUE, ans));
-  #if defined(PETSC_HAVE_REAL___FLOAT128)
+  #if PetscDefined(HAVE_REAL___FLOAT128)
   PetscCall(TestComplexOperators((__float128)0.5, PETSC_TRUE, ans));
   #endif
 
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 
   (void)svalue;
   (void)rvalue;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   (void)cvalue;
 #endif
   (void)i64;

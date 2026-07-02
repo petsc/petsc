@@ -91,11 +91,11 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   PetscScalar       *acols = aijcrl->acols;
   PetscScalar       *y;
   const PetscScalar *x;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
+#if !PetscDefined(USE_FORTRAN_KERNEL_MULTCRL)
   PetscInt i, j, ii;
 #endif
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aa)
 #endif
 
@@ -111,7 +111,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
+#if PetscDefined(USE_FORTRAN_KERNEL_MULTCRL)
   fortranmultcrl_(&m, &rmax, x, y, icols, acols);
 #else
 
@@ -119,12 +119,12 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   for (j = 0; j < m; j++) y[j] = acols[j] * x[icols[j]];
 
   /* other columns */
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
+  #if PetscDefined(HAVE_CRAY_VECTOR)
     #pragma _CRI preferstream
   #endif
   for (i = 1; i < rmax; i++) {
     ii = i * m;
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
+  #if PetscDefined(HAVE_CRAY_VECTOR)
     #pragma _CRI prefervector
   #endif
     for (j = 0; j < m; j++) y[j] = y[j] + acols[ii + j] * x[icols[ii + j]];

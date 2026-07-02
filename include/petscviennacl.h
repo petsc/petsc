@@ -4,15 +4,15 @@
 
 /* MANSEC = Vec */
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   #define VIENNACL_WITH_CUDA
 #endif
 
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
   #define VIENNACL_WITH_OPENCL
 #endif
 
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
   #define VIENNACL_WITH_OPENMP
 #endif
 

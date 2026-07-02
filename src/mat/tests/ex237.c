@@ -9,7 +9,7 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
 
 #include <petsc.h>
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
   #include <mkl.h>
   #define PetscCallMKLSparse(func, args) \
     do { \
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
       char        *tmp = NULL;
       PetscInt    *ia_ptr, *ja_ptr, k;
       PetscScalar *a_ptr;
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
       struct matrix_descr descr;
       sparse_matrix_t     spr;
       descr.type = SPARSE_MATRIX_TYPE_GENERAL;
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
               for (k = 0; k < Ai[An]; ++k) ja_ptr[k] = Aj[k] + 1; /* Fortran indexing to maximize cases covered by _mm routines */
               PetscCall(MatSeqSBAIJGetArray(A, &a_ptr));
               PetscCallMKLSparse(mkl_sparse_d_create_bsr, (&spr, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, An, An, bs[j], ia_ptr, ia_ptr + 1, ja_ptr, a_ptr));
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
               descr.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
               descr.mode = SPARSE_FILL_MODE_UPPER;
               descr.diag = SPARSE_DIAG_NON_UNIT;

@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-cuda", &cuda, NULL));
   PetscCheck(lda >= n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "lda %" PetscInt_FMT " < n %" PetscInt_FMT, lda, n);
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (cuda) PetscCall(MatCreateSeqDenseCUDA(PETSC_COMM_SELF, lda, n, NULL, &A));
   else
 #endif

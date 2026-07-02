@@ -101,7 +101,7 @@ PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   if (isascii) {
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
     const char *fname;
 
     PetscCall(PetscFPTFind(kdm->ops->ifunction, &fname));

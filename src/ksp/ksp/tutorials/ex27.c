@@ -18,7 +18,7 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b, PetscViewer fd, PetscBool *
   PetscFunctionBeginUser;
   PetscCall(PetscObjectTypeCompare((PetscObject)fd, PETSCVIEWERHDF5, &hdf5));
   if (hdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(PetscViewerHDF5HasObject(fd, (PetscObject)b, has));
     if (*has) PetscCall(VecLoad(b, fd));
 #else
@@ -113,7 +113,7 @@ int main(int argc, char **args)
      reading from this file.
   */
   if (hdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
     PetscCall(PetscViewerPushFormat(fd, PETSC_VIEWER_HDF5_MAT));
 #else
@@ -189,7 +189,7 @@ int main(int argc, char **args)
     if (file_x0[0]) {
       PetscCall(PetscViewerDestroy(&fd));
       if (hdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
         PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, file_x0, FILE_MODE_READ, &fd));
 #endif
       } else {
@@ -320,7 +320,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetPC(subksp[1], &pc));
       PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
       if (flg) {
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
         Mat aux, S, **array;
         IS  is;
 

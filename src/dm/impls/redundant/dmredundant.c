@@ -106,7 +106,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode im
       source = MPI_IN_PLACE;
       if (imode == ADD_VALUES)
         for (i = 0; i < red->N; i++) buffer[i] = gv[i] + lv[i];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       if (imode == MAX_VALUES)
         for (i = 0; i < red->N; i++) buffer[i] = PetscMax(gv[i], lv[i]);
 #endif

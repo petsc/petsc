@@ -53,7 +53,7 @@ static PetscErrorCode PetscDrawImageSave_PPM(const char filename[], unsigned cha
 /*
    Code to write images in PNG format
 */
-#if defined(PETSC_HAVE_LIBPNG)
+#if PetscDefined(HAVE_LIBPNG)
 
   #include <png.h>
 
@@ -117,7 +117,7 @@ static PetscErrorCode PetscDrawImageSave_PNG(const char filename[], unsigned cha
 /*
    Code to write images in GIF format
 */
-#if defined(PETSC_HAVE_GIFLIB)
+#if PetscDefined(HAVE_GIFLIB)
 
   #include <gif_lib.h>
 
@@ -222,11 +222,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[], PetscInt
 /*
    Code to write images in JPEG format
 */
-#if defined(PETSC_HAVE_LIBJPEG)
+#if PetscDefined(HAVE_LIBJPEG)
 
   #include <jpeglib.h>
 
-  #if defined(PETSC_HAVE_SETJMP_H)
+  #if PetscDefined(HAVE_SETJMP_H)
     #include <setjmp.h>
 static jmp_buf petsc_jpeg_jumpbuf;
 static void    petsc_jpeg_error_longjmp(j_common_ptr cinfo)
@@ -264,7 +264,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveJPG(const char filename[], unsigne
   PetscCall(PetscFOpen(PETSC_COMM_SELF, filename, "wb", &fp));
 
   cinfo.err = jpeg_std_error(&jerr);
-  #if defined(PETSC_HAVE_SETJMP_H)
+  #if PetscDefined(HAVE_SETJMP_H)
   jerr.error_exit = petsc_jpeg_error_longjmp;
   if (setjmp(petsc_jpeg_jumpbuf)) {
     char message[JMSG_LENGTH_MAX];
@@ -305,13 +305,13 @@ static struct {
   const char *extension;
   PetscErrorCode (*SaveImage)(const char[], unsigned char[][3], unsigned int, unsigned int, const unsigned char[]);
 } PetscDrawImageSaveTable[] = {
-#if defined(PETSC_HAVE_LIBPNG)
+#if PetscDefined(HAVE_LIBPNG)
   {".png", PetscDrawImageSave_PNG},
 #endif
-#if defined(PETSC_HAVE_GIFLIB)
+#if PetscDefined(HAVE_GIFLIB)
   {".gif", PetscDrawImageSave_GIF},
 #endif
-#if defined(PETSC_HAVE_LIBJPEG)
+#if PetscDefined(HAVE_LIBJPEG)
   {".jpg", PetscDrawImageSave_JPG},
 #endif
   {".ppm", PetscDrawImageSave_PPM}
@@ -388,7 +388,7 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
   PetscCall(PetscSNPrintf(output, sizeof(output), "%s%s", basename, mvext));
 
   /* use GIFLIB to generate an intermediate GIF animation */
-#if defined(PETSC_HAVE_GIFLIB)
+#if PetscDefined(HAVE_GIFLIB)
   if (gifinput) {
     char gifmovie[PETSC_MAX_PATH_LEN];
     PetscCall(PetscSNPrintf(gifmovie, sizeof(gifmovie), "%s/%s_movie.gif", basename, basename));
@@ -398,7 +398,7 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
 #endif
 
   /* use FFmpeg to generate a movie */
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   {
     FILE *fd;
     char  options[64] = "-loglevel error -y", extraopts[32] = "", framerate[24] = "";

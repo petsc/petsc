@@ -46,13 +46,13 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_solver_type", &ipack, NULL));
   switch (ipack) {
   case 1:
-#if defined(PETSC_HAVE_SUPERLU)
+#if PetscDefined(HAVE_SUPERLU)
     if (rank == 0) printf(" SUPERLU LU:\n");
     PetscCall(MatGetFactor(A, MATSOLVERSUPERLU, MAT_FACTOR_LU, &F));
     break;
 #endif
   case 2:
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
     if (rank == 0) printf(" MUMPS LU:\n");
     PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F));
     {

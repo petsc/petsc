@@ -12,14 +12,14 @@
      SuperLU include files
 */
 EXTERN_C_BEGIN
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #include <slu_cdefs.h>
   #else
     #include <slu_zdefs.h>
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #include <slu_sdefs.h>
   #else
     #include <slu_ddefs.h>
@@ -120,8 +120,8 @@ static PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
   }
   PetscCall(VecGetArray(x, &xarray));
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
   ((DNformat *)lu->B.Store)->nzval = (singlecomplex *)barray;
   ((DNformat *)lu->X.Store)->nzval = (singlecomplex *)xarray;
   #else
@@ -135,28 +135,28 @@ static PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
 
   lu->options.Fact = FACTORED; /* Indicate the factored form of A is supplied. */
   if (A->factortype == MAT_FACTOR_LU) {
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:cgssvx", cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #else
     PetscCallExternalVoid("SuperLU:zgssvx", zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:sgssvx", sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #else
     PetscCallExternalVoid("SuperLU:dgssvx", dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #endif
 #endif
   } else if (A->factortype == MAT_FACTOR_ILU) {
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:cgsisx", cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #else
     PetscCallExternalVoid("SuperLU:zgsisx", zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:sgsisx", sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
   #else
     PetscCallExternalVoid("SuperLU:dgsisx", dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &info));
@@ -256,14 +256,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
   } else {
     aa = (Mat_SeqAIJ *)A->data;
   }
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
   PetscCallExternalVoid("SuperLU:cCreate_CompCol_Matrix", cCreate_CompCol_Matrix(&lu->A, A->cmap->n, A->rmap->n, aa->nz, (singlecomplex *)aa->a, aa->j, aa->i, SLU_NC, SLU_C, SLU_GE));
   #else
   PetscCallExternalVoid("SuperLU:zCreate_CompCol_Matrix", zCreate_CompCol_Matrix(&lu->A, A->cmap->n, A->rmap->n, aa->nz, (doublecomplex *)aa->a, aa->j, aa->i, SLU_NC, SLU_Z, SLU_GE));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
   PetscCallExternalVoid("SuperLU:sCreate_CompCol_Matrix", sCreate_CompCol_Matrix(&lu->A, A->cmap->n, A->rmap->n, aa->nz, aa->a, aa->j, aa->i, SLU_NC, SLU_S, SLU_GE));
   #else
   PetscCallExternalVoid("SuperLU:dCreate_CompCol_Matrix", dCreate_CompCol_Matrix(&lu->A, A->cmap->n, A->rmap->n, aa->nz, aa->a, aa->j, aa->i, SLU_NC, SLU_D, SLU_GE));
@@ -273,14 +273,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
   /* Numerical factorization */
   lu->B.ncol = 0; /* Indicate not to solve the system */
   if (F->factortype == MAT_FACTOR_LU) {
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:cgssvx", cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #else
     PetscCallExternalVoid("SuperLU:zgssvx", zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:sgssvx", sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #else
     PetscCallExternalVoid("SuperLU:dgssvx", dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
@@ -288,14 +288,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
 #endif
   } else if (F->factortype == MAT_FACTOR_ILU) {
     /* Compute the incomplete factorization, condition number and pivot growth */
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:cgsisx", cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #else
     PetscCallExternalVoid("SuperLU:zgsisx", zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     PetscCallExternalVoid("SuperLU:sgsisx", sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
   #else
     PetscCallExternalVoid("SuperLU:dgsisx", dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
@@ -592,8 +592,8 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Ma
   PetscCall(PetscMalloc1(m, &lu->C));
 
   /* create rhs and solution x without allocate space for .Store */
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
   PetscCallExternalVoid("SuperLU:cCreate_Dense_Matrix(", cCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
   PetscCallExternalVoid("SuperLU:cCreate_Dense_Matrix(", cCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
   #else
@@ -601,7 +601,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Ma
   PetscCallExternalVoid("SuperLU:zCreate_Dense_Matrix", zCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE));
   #endif
 #else
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
   PetscCallExternalVoid("SuperLU:sCreate_Dense_Matrix", sCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
   PetscCallExternalVoid("SuperLU:sCreate_Dense_Matrix", sCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
   #else

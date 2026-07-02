@@ -37,9 +37,9 @@ PETSC_INTERN PetscMPIInt Petsc_Viewer_Stdout_keyval;
 PETSC_INTERN PetscMPIInt Petsc_Viewer_Stderr_keyval;
 PETSC_INTERN PetscMPIInt Petsc_Viewer_Binary_keyval;
 PETSC_INTERN PetscMPIInt Petsc_Viewer_Draw_keyval;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 PETSC_INTERN PetscMPIInt Petsc_Viewer_HDF5_keyval;
 #endif
-#if defined(PETSC_USE_SOCKETVIEWER)
+#if PetscDefined(USE_SOCKETVIEWER)
 PETSC_INTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
 #endif

@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/taoimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define taosetobjective_                    TAOSETOBJECTIVE
   #define taosetgradient_                     TAOSETGRADIENT
   #define taosetobjectiveandgradient_         TAOSETOBJECTIVEANDGRADIENT
@@ -21,7 +21,7 @@
   #define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
   #define taosetconvergencetest_              TAOSETCONVERGENCETEST
   #define taosetupdate_                       TAOSETUPDATE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define taosetobjective_                    taosetobjective
   #define taosetgradient_                     taosetgradient
   #define taosetobjectiveandgradient_         taosetobjectiveandgradient
@@ -64,7 +64,7 @@ static struct {
   PetscFortranCallbackId coneq;
   PetscFortranCallbackId nfuncs;
   PetscFortranCallbackId update;
-#if defined(PETSC_HAVE_F90_2PTR_ARG)
+#if PetscDefined(HAVE_F90_2PTR_ARG)
   PetscFortranCallbackId function_pgiptr;
 #endif
 } _cb;

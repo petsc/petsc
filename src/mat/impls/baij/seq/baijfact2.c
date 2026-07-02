@@ -210,7 +210,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *i
   if (both_identity) {
     switch (bs) {
     case 9:
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
       C->ops->solve = MatSolve_SeqBAIJ_9_NaturalOrdering;
 #else
       C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
@@ -465,7 +465,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscCall(PetscFreeSpaceDestroy(free_space_lvl));
   PetscCall(PetscFree2(bj_ptr, bjlvl_ptr));
 
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   {
     PetscReal af = ((PetscReal)(bdiag[0] + 1)) / ((PetscReal)ai[n]);
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)f, (double)af));

@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcasmgetsubksp_           PCASMGETSUBKSP
   #define pcasmrestoresubksp_       PCASMRESTORESUBKSP
   #define pcasmgetlocalsubmatrices_ PCASMGETLOCALSUBMATRICES
@@ -9,7 +9,7 @@
   #define pcasmcreatesubdomains_    PCASMCREATESUBDOMAINS
   #define pcasmdestroysubdomains_   PCASMDESTROYSUBDOMAINS
   #define pcasmcreatesubdomains2d_  PCASMCREATESUBDOMAINS2D
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcasmgetsubksp_           pcasmgetsubksp
   #define pcasmrestoresubksp_       pcasmrestoresubksp
   #define pcasmgetlocalsubmatrices_ pcasmgetlocalsubmatrices

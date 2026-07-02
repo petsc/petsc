@@ -27,8 +27,7 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
     PetscCall(PetscRealloc(tsh->c * sizeof(*tsh->hist_id), &tsh->hist_id));
   }
   tsh->sorted = (PetscBool)(tsh->sorted && (tsh->n ? (PetscBool)(time >= tsh->hist[tsh->n - 1]) : PETSC_TRUE));
-#if defined(PETSC_USE_DEBUG)
-  if (tsh->n) { /* id should be unique */
+  if (PetscDefined(USE_DEBUG) && tsh->n) { /* id should be unique */
     PetscInt loc, *ids;
 
     PetscCall(PetscMalloc1(tsh->n, &ids));
@@ -38,7 +37,6 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
     PetscCall(PetscFree(ids));
     PetscCheck(loc < 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "History id should be unique");
   }
-#endif
   tsh->hist[tsh->n]    = time;
   tsh->hist_id[tsh->n] = id;
   tsh->n += 1;

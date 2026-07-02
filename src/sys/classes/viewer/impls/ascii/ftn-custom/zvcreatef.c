@@ -1,13 +1,13 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsc_viewer_stdout_ PETSC_VIEWER_STDOUT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petsc_viewer_stdout_ petsc_viewer_stdout
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if PetscDefined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
   #define petsc_viewer_stdout_ petsc_viewer_stdout__
 #endif
 

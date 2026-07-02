@@ -73,7 +73,7 @@ struct EigenWorkspace {
   PetscScalar *all_v;
   PetscReal   *all_lambda;
   PetscScalar *all_work;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal *all_rwork;
 #endif
   PetscBLASInt lwork;
@@ -105,7 +105,7 @@ struct EigenWorkspace {
 
   EigenWorkspace() : max_chunk_size(0), m(0), max_nnz(0), all_v(nullptr), all_lambda(nullptr), all_work(nullptr)
   {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     all_rwork = nullptr;
 #endif
 #if defined(KOKKOS_ENABLE_CUDA)
@@ -155,7 +155,7 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
   PetscScalar *all_work   = work->all_work;
   PetscBLASInt lwork      = work->lwork;
   PetscBLASInt n_blas     = work->n_blas;
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
   PetscReal *all_rwork = work->all_rwork;
   #endif
 
@@ -171,7 +171,7 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
       PetscScalar *v_ptr      = all_v + i * n_size * n_size;
       PetscReal   *lambda_ptr = all_lambda + i * n_size;
       PetscScalar *work_ptr   = all_work + i * lwork;
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       PetscReal *rwork_ptr = all_rwork + i * (3 * n_size - 2);
   #endif
 
@@ -181,7 +181,7 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
       }
 
     /* Compute eigendecomposition: T = V * Lambda * V^T */
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       LAPACKsyev_("V", "U", &n, v_ptr, &lda, lambda_ptr, work_ptr, &lw, rwork_ptr, &info);
   #else
       LAPACKsyev_("V", "U", &n, v_ptr, &lda, lambda_ptr, work_ptr, &lw, &info);
@@ -225,7 +225,7 @@ static PetscErrorCode BatchedEigenSolve_Host(LETKFView3D T_batch, LETKFView2D La
 static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D Lambda_batch, LETKFView3D V_batch, PetscInt n_batch, PetscInt n_size, cusolverDnHandle_t cusolverH, EigenWorkspace *work)
 {
   PetscFunctionBegin;
-    #if defined(PETSC_USE_COMPLEX)
+    #if PetscDefined(USE_COMPLEX)
   /* cuSOLVER's *syevjBatched is real-only (Ssyevj/Dsyevj); under complex the call would type-error.
      The dispatcher gates the Kokkos path off when PETSC_USE_COMPLEX is set, so this is unreachable
      in practice; SETERRQ here as defense-in-depth in case that gate ever changes. */
@@ -249,7 +249,7 @@ static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D 
   Kokkos::fence();
 
       /* Solve batched eigendecomposition */
-      #if defined(PETSC_USE_REAL_SINGLE)
+      #if PetscDefined(USE_REAL_SINGLE)
   cusolver_status = cusolverDnSsyevjBatched(cusolverH, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, n_size, d_A_contig, n_size, d_W_contig, d_work, lwork, d_info, syevj_params, n_batch);
       #else
   cusolver_status = cusolverDnDsyevjBatched(cusolverH, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, n_size, d_A_contig, n_size, d_W_contig, d_work, lwork, d_info, syevj_params, n_batch);
@@ -279,7 +279,7 @@ static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D 
 static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D Lambda_batch, LETKFView3D V_batch, PetscInt n_batch, PetscInt n_size, rocblas_handle rocblasH, EigenWorkspace *work)
 {
   PetscFunctionBegin;
-    #if defined(PETSC_USE_COMPLEX)
+    #if PetscDefined(USE_COMPLEX)
   /* Bail out before any kernel launch: the workspace setup leaves d_A_contig/d_W_contig/d_work/d_info
      as nullptr in complex mode (rocsolver_*syevd has no complex variant we wrap), so the
      ReorganizeForRocSOLVER parallel_for below would do a null device write before this error fired. */
@@ -308,7 +308,7 @@ static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D 
     int           *info_ptr = d_info + i;
     rocblas_status hip_status;
 
-      #if defined(PETSC_USE_REAL_SINGLE)
+      #if PetscDefined(USE_REAL_SINGLE)
     hip_status = rocsolver_ssyevd(rocblasH, rocblas_evect_original, rocblas_fill_upper, n_size, A_ptr, n_size, W_ptr, d_work, info_ptr);
       #else
     hip_status = rocsolver_dsyevd(rocblasH, rocblas_evect_original, rocblas_fill_upper, n_size, A_ptr, n_size, W_ptr, d_work, info_ptr);
@@ -338,7 +338,7 @@ static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D 
 static PetscErrorCode BatchedEigenSolve_Device(LETKFView3D T_batch, LETKFView2D Lambda_batch, LETKFView3D V_batch, PetscInt n_batch, PetscInt n_size, sycl::queue *q, EigenWorkspace *work)
 {
   PetscFunctionBegin;
-    #if defined(PETSC_USE_COMPLEX)
+    #if PetscDefined(USE_COMPLEX)
   /* oneMKL's syevd USM overload targets real symmetric matrices; the complex analogue is heevd.
      The dispatcher gates the Kokkos path off when PETSC_USE_COMPLEX is set, so this is unreachable
      in practice; SETERRQ here as defense-in-depth in case that gate ever changes. */
@@ -573,7 +573,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFDestroyLocalization_Kokkos(PetscDA_LETKF
     }
   #endif
 #else
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     PetscCall(PetscFree4(work->all_v, work->all_lambda, work->all_work, work->all_rwork));
   #else
     PetscCall(PetscFree3(work->all_v, work->all_lambda, work->all_work));
@@ -879,7 +879,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
 #endif
 
 #if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL)
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     if (eigen_work->all_v) PetscCall(PetscFree4(eigen_work->all_v, eigen_work->all_lambda, eigen_work->all_work, eigen_work->all_rwork));
   #else
     if (eigen_work->all_v) PetscCall(PetscFree3(eigen_work->all_v, eigen_work->all_lambda, eigen_work->all_work));
@@ -929,7 +929,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
       PetscScalar *d_A = eigen_work->T_batch.data();
       PetscScalar *d_W = eigen_work->Lambda_batch.data();
       int          lwork;
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       cusolver_status = cusolverDnSsyevjBatched_bufferSize(device_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, m, d_A, m, d_W, &lwork, eigen_work->syevj_params, chunk_size);
     #else
       cusolver_status = cusolverDnDsyevjBatched_bufferSize(device_handle, CUSOLVER_EIG_MODE_VECTOR, CUBLAS_FILL_MODE_UPPER, m, d_A, m, d_W, &lwork, eigen_work->syevj_params, chunk_size);
@@ -947,7 +947,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
     {
         /* rocsolver_*syevd takes a single n-element off-diagonal scratch buffer (the E array).
          The batch loop is sequential, so one shared buffer is sufficient. */
-    #if defined(PETSC_USE_COMPLEX)
+    #if PetscDefined(USE_COMPLEX)
       int lwork = 0; /* Complex not supported on device */
     #else
       PetscCheck(m <= INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Ensemble size m=%" PetscInt_FMT " exceeds INT_MAX for rocsolver lwork", m);
@@ -992,7 +992,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
       PetscBLASInt lwork_query = -1;
       PetscScalar  work_query;
       PetscBLASInt info;
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       PetscReal rwork_query;
       LAPACKsyev_("V", "U", &n_blas, &work_query, &n_blas, &rwork_query, &work_query, &lwork_query, &rwork_query, &info);
   #else
@@ -1002,7 +1002,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFLocalAnalysis_Kokkos(PetscDA da, PetscDA
       eigen_work->lwork = (PetscBLASInt)PetscRealPart(work_query);
 
       /* Allocate workspace */
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       PetscCall(PetscMalloc4(chunk_size * m * m, &eigen_work->all_v, chunk_size * m, &eigen_work->all_lambda, chunk_size * eigen_work->lwork, &eigen_work->all_work, chunk_size * (3 * m - 2), &eigen_work->all_rwork));
   #else
       PetscCall(PetscMalloc3(chunk_size * m * m, &eigen_work->all_v, chunk_size * m, &eigen_work->all_lambda, chunk_size * eigen_work->lwork, &eigen_work->all_work));

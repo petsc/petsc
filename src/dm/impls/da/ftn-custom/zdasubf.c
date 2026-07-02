@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmda.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmdagetprocessorsubset_  DMDAGETPROCESSORSUBSET
   #define dmdagetprocessorsubsets_ DMDAGETPROCESSORSUBSETS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmdagetprocessorsubset_  dmdagetprocessorsubset
   #define dmdagetprocessorsubsets_ dmdagetprocessorsubsets
 #endif

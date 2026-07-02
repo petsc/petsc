@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmswarm.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmswarmgetfield_     DMSWARMGETFIELD
   #define dmswarmrestorefield_ DMSWARMRESTOREFIELD
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmswarmgetfield_     dmswarmgetfield
   #define dmswarmrestorefield_ dmswarmrestorefield
 #endif

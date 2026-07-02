@@ -17,7 +17,7 @@ static PetscErrorCode PetscDALETKFUseKokkosBackend(PetscDA da, PetscBool *use_ko
 {
   PetscFunctionBegin;
   *use_kokkos = PETSC_FALSE;
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   if (da->R) PetscCall(PetscObjectTypeCompareAny((PetscObject)da->R, use_kokkos, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -139,7 +139,7 @@ static PetscErrorCode PetscDADestroy_LETKF(PetscDA da)
   PetscCall(MatDestroy(&impl->w_ones));
   PetscCall(MatDestroy(&impl->Q));
   PetscCall(PetscDALETKFClearCoordinates(impl));
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   PetscCall(PetscDALETKFDestroyLocalization_Kokkos(impl));
 #endif
   PetscCall(PetscDALETKFDestroyObsScatter(impl));
@@ -463,7 +463,7 @@ static PetscErrorCode PetscDALETKFGlobalAnalysis(PetscDA da, PetscDA_LETKF *impl
   sqrt_m_minus_1 = PetscSqrtReal((PetscReal)(m - 1));
   scale          = 1.0 / sqrt_m_minus_1;
   PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   if (use_kokkos) {
     PetscCall(PetscDALETKFGlobalAnalysis_Kokkos(da, impl, m, X, observation));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -734,7 +734,7 @@ static PetscErrorCode PetscDAEnsembleAnalysis_LETKF(PetscDA da, Vec observation,
     }
 
     PetscCall(MatGetLocalSize(impl->Q, &n_local, NULL));
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
     if (use_kokkos) PetscCall(PetscDALETKFLocalAnalysis_Kokkos(da, impl, m, n_local, X, impl->obs_work, impl->Z_work, impl->y_mean_work, impl->r_inv_sqrt_work));
     else PetscCall(PetscDALETKFLocalAnalysis(da, impl, m, n_local, X, impl->obs_work, impl->Z_work, impl->y_mean_work, impl->r_inv_sqrt_work));
 #else
@@ -761,7 +761,7 @@ static PetscErrorCode PetscDALETKFResetLocalization_LETKF(PetscDA da)
 
   PetscFunctionBegin;
   PetscCheck(impl, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "PetscDA not properly initialized for LETKF");
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   /* Drop only the Q device mirrors; the persistent cusolver/rocblas/SYCL handle and the
      eigensolver workspace are reused across Q rebuilds. */
   if (impl->Q) PetscCall(PetscDALETKFDestroyQDeviceMirrors_Kokkos(impl));
@@ -918,7 +918,7 @@ static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, PetscInt max_nnz_l
   PetscValidHeaderSpecific(scatter_H, MAT_CLASSID, 5);
   PetscCall(PetscDALETKFUseKokkosBackend(da, &use_kokkos));
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   /* Drop only the Q device mirrors; the eigensolver workspace and solver handle persist. */
   if (impl->Q) PetscCall(PetscDALETKFDestroyQDeviceMirrors_Kokkos(impl));
 #endif
@@ -938,7 +938,7 @@ static PetscErrorCode PetscDALETKFInstallQ(PetscDA da, Mat Q, PetscInt max_nnz_l
   impl->n_nnz_local = n_nnz_local;
 
   PetscCall(PetscDALETKFSetupObsScatter(impl, scatter_H));
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   /* Gate the device-mirror setup on the analysis-time backend: a Kokkos-capable build with a
      non-Kokkos da->R runs the CPU per-vertex path, which never reads Q_device_*. Skipping the
      setup avoids a redundant MatGetRow walk over every local row of Q and the three device-resident

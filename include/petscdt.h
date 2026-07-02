@@ -174,7 +174,7 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToBary(PetscInt, PetscInt, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode PetscDTGradedOrderToIndex(PetscInt, const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt, PetscInt, PetscInt[]);
 
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   #define PETSC_FACTORIAL_MAX 20
   #define PETSC_BINOMIAL_MAX  61
 #else

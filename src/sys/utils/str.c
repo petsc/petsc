@@ -4,7 +4,7 @@
   they are broken or have the wrong prototypes.
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#if defined(PETSC_HAVE_STRINGS_H)
+#if PetscDefined(HAVE_STRINGS_H)
   #include <strings.h> /* strcasecmp */
 #endif
 
@@ -287,9 +287,9 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
   PetscAssertPointer(t, 3);
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
-#if defined(PETSC_HAVE_STRCASECMP)
+#if PetscDefined(HAVE_STRCASECMP)
   else c = strcasecmp(a, b);
-#elif defined(PETSC_HAVE_STRICMP)
+#elif PetscDefined(HAVE_STRICMP)
   else c = stricmp(a, b);
 #else
   else {

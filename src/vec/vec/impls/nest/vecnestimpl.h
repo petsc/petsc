@@ -9,7 +9,7 @@ typedef struct {
   PetscBool setup_called;
 } Vec_Nest;
 
-#if !defined(PETSC_CLANG_STATIC_ANALYZER)
+#if !PetscDefined(CLANG_STATIC_ANALYZER)
   #define VecNestCheckCompatible2(x, xarg, y, yarg) \
     do { \
       PetscValidHeaderSpecific(x, VEC_CLASSID, xarg); \

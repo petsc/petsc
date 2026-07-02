@@ -425,7 +425,7 @@ typedef enum {
 } MatStructure;
 PETSC_EXTERN const char *const MatStructures[];
 
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode MatDiagonalRestoreInverseDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatConstantDiagonalGetConstant(Mat, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatGetCurrentMemType(Mat, PetscMemType *);
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatHYPRESetPreallocation(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 #endif
 
@@ -2791,7 +2791,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSELLHIP(MPI_Comm, PetscInt, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode MatCreateSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
@@ -2801,13 +2801,13 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJKokkos(MPI_Comm, PetscInt, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJKokkos(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 #endif
 
-#if defined(PETSC_HAVE_FFTW)
+#if PetscDefined(HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat, Vec *, Vec *, Vec *);
 #endif
 
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_EXTERN PetscErrorCode MatCreateScaLAPACK(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKSetBlockSizes(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKGetBlockSizes(Mat, PetscInt *, PetscInt *);

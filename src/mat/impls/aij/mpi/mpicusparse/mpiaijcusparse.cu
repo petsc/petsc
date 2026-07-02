@@ -198,7 +198,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType, Mat
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCUSPARSESetFormat_C", MatCUSPARSESetFormat_MPIAIJCUSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_MPIAIJCUSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", MatSetValuesCOO_MPIAIJCUSPARSE));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpiaijcusparse_hypre_C", MatConvert_AIJ_HYPRE));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscviewerstringopen_          PETSCVIEWERSTRINGOPEN
   #define petscviewerstringsetstring_     PETSCVIEWERSTRINGSETSTRING
   #define petscviewerstringgetstringread_ PETSCVIEWERSTRINGGETSTRINGREAD
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscviewerstringopen_          petscviewerstringopen
   #define petscviewerstringsetstring_     petscviewerstringsetstring
   #define petscviewerstringgetstringread_ petscviewerstringgetstringread

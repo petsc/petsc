@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdraw.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscdrawzoom_ PETSCDRAWZOOM
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscdrawzoom_ petscdrawzoom
 #endif
 

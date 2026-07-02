@@ -6,7 +6,7 @@
 #include <../src/vec/vec/impls/dvecimpl.h> /*I "petscvec.h" I*/
 #include <petscblaslapack.h>
 
-#if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SNRM2_RETURNS_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_REAL_SINGLE) && PetscDefined(BLASLAPACK_SNRM2_RETURNS_DOUBLE) && !PetscDefined(USE_COMPLEX)
 static PetscErrorCode VecXDot_Seq_Private(Vec xin, Vec yin, PetscScalar *z, double (*const BLASfn)(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *))
 #else
 static PetscErrorCode VecXDot_Seq_Private(Vec xin, Vec yin, PetscScalar *z, PetscScalar (*const BLASfn)(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *))

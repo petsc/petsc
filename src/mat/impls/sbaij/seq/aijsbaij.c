@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
   const PetscInt *adiag;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCheck(A->symmetric == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
 #else
   PetscCheck(A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Matrix must be either symmetric or Hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");

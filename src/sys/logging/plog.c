@@ -17,7 +17,7 @@
 #include <petscdevice.h>
 #include <petsc/private/deviceimpl.h>
 
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
 
 PetscInt           petsc_log_gid = -1; /* Global threadId counter */
 PETSC_TLS PetscInt petsc_log_tid = -1; /* Local threadId */
@@ -121,10 +121,10 @@ PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
 
 #undef PETSC_LOG_HANDLERS_HOT_BLANK
 
-#if defined(PETSC_USE_LOG)
+#if PetscDefined(USE_LOG)
   #include <../src/sys/logging/handler/impls/default/logdefault.h>
 
-  #if defined(PETSC_HAVE_THREADSAFETY)
+  #if PetscDefined(HAVE_THREADSAFETY)
 /*@
   PetscAddLogDouble - Atomically add a `PetscLogDouble` value to both a global counter and its per-thread counterpart
 
@@ -630,7 +630,7 @@ PetscErrorCode PetscLogLegacyCallbacksBegin(PetscErrorCode (*PetscLogPLB)(PetscL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #if defined(PETSC_HAVE_MPE)
+  #if PetscDefined(HAVE_MPE)
     #include <mpe.h>
 static PetscBool PetscBeganMPE = PETSC_FALSE;
   #endif
@@ -657,7 +657,7 @@ static PetscBool PetscBeganMPE = PETSC_FALSE;
 PetscErrorCode PetscLogMPEBegin(void)
 {
   PetscFunctionBegin;
-  #if defined(PETSC_HAVE_MPE)
+  #if PetscDefined(HAVE_MPE)
   /* Do MPE initialization */
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
     PetscCall(PetscInfo(0, "Initializing MPE.\n"));
@@ -674,7 +674,7 @@ PetscErrorCode PetscLogMPEBegin(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  #if PetscDefined(HAVE_TAU_PERFSTUBS)
     #include <../src/sys/perfstubs/timer.h>
   #endif
 
@@ -693,7 +693,7 @@ PetscErrorCode PetscLogMPEBegin(void)
 PetscErrorCode PetscLogPerfstubsBegin(void)
 {
   PetscFunctionBegin;
-  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  #if PetscDefined(HAVE_TAU_PERFSTUBS)
   PetscCall(PetscLogTypeBegin(PETSCLOGHANDLERPERFSTUBS));
   #else
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "PETSc was configured without perfstubs support, reconfigure with --with-tau-perfstubs");
@@ -1981,7 +1981,7 @@ PetscErrorCode PetscLogDump(const char sname[])
 PetscErrorCode PetscLogMPEDump(const char sname[])
 {
   PetscFunctionBegin;
-  #if defined(PETSC_HAVE_MPE)
+  #if PetscDefined(HAVE_MPE)
   if (PetscBeganMPE) {
     char name[PETSC_MAX_PATH_LEN];
 
@@ -2613,7 +2613,7 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
     }
     PetscCall(PetscLogStateStageRegister(petsc_log_state, "Main Stage", &stage));
     PetscCall(PetscSpinlockCreate(&PetscLogSpinLock));
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
     petsc_log_tid = 0;
     petsc_log_gid = 0;
 #endif
@@ -2714,7 +2714,7 @@ PetscErrorCode PetscClassIdRegister(const char name[], PetscClassId *oclass)
 {
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_CLASSID;
-#if defined(PETSC_USE_LOG)
+#if PetscDefined(USE_LOG)
   {
     PetscLogState state;
     PetscLogClass logclass;

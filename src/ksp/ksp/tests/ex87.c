@@ -42,7 +42,7 @@ int main(int argc, char **argv)
                Compute the blocks R and C, and the Nest H
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   a = PetscCMPLX(-0.1, 0.2);
   b = PetscCMPLX(1.0, 0.5);
   d = PetscCMPLX(2.0, 0.2);

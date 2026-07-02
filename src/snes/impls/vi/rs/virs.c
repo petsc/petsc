@@ -633,7 +633,7 @@ PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   #include <engine.h>
   #include <mex.h>
 typedef struct {

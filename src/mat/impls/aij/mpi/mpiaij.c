@@ -23,7 +23,7 @@ static PetscErrorCode MatReset_MPIAIJ(Mat mat)
   PetscCall(VecDestroy(&aij->diag));
   PetscCall(MatDestroy(&aij->A));
   PetscCall(MatDestroy(&aij->B));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&aij->colmap));
 #else
   PetscCall(PetscFree(aij->colmap));
@@ -72,23 +72,23 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpibaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpisbaij_C", NULL));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijcusparse_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijhipsparse_C", NULL));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijkokkos_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpidense_C", NULL));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_scalapack_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_hypre_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_transpose_mpiaij_mpiaij_C", NULL));
 #endif
@@ -98,7 +98,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIAIJSetUseScalableIncreaseOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijperm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijsell_C", NULL));
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijmkl_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijcrl_C", NULL));
@@ -175,7 +175,7 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A, PetscBool flg)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP) || PetscDefined(HAVE_VIENNACL)
   A->boundtocpu = flg;
 #endif
   if (a->A) PetscCall(MatBindToCPU(a->A, flg));
@@ -387,7 +387,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
   PetscCheck(!n || aij->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPIAIJ Matrix was assembled but is missing garray");
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(n, &aij->colmap));
   for (i = 0; i < n; i++) PetscCall(PetscHMapISet(aij->colmap, aij->garray[i] + 1, i + 1));
 #else
@@ -581,7 +581,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           if (mat->was_assembled) {
             if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(aij->colmap, in[j] + 1, 0, &col)); /* map global col ids to local ones */
             col--;
 #else
@@ -740,7 +740,7 @@ static PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt id
         PetscCall(MatGetValues(aij->A, 1, &row, 1, &col, v + i * n + j));
       } else {
         if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapIGetWithDefault(aij->colmap, idxn[j] + 1, 0, &col));
         col--;
 #else
@@ -799,7 +799,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU) aij->A->offloadmask = PETSC_OFFLOAD_CPU;
   /* We call MatBindToCPU() on aij->A and aij->B here, because if MatBindToCPU_MPIAIJ() is called before assembly, it cannot bind these. */
   if (mat->boundtocpu) {
@@ -824,7 +824,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPIAIJ(mat));
   PetscCall(MatSetOption(aij->B, MAT_USE_INODES, PETSC_FALSE));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU && aij->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) aij->B->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(aij->B, mode));
@@ -841,7 +841,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
     PetscObjectState state = aij->A->nonzerostate + aij->B->nonzerostate;
     PetscCallMPI(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   mat->offloadmask = PETSC_OFFLOAD_BOTH;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2909,7 +2909,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
@@ -3005,7 +3005,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
   else {
     mat->preallocated = matin->preallocated;
     if (oldmat->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
       PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
       PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
@@ -3049,7 +3049,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (isbinary) {
     PetscCall(MatLoad_MPIAIJ_Binary(newMat, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(MatLoad_AIJ_HDF5(newMat, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)newMat), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -6026,27 +6026,27 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJMKL(Mat, MatType, MatReuse, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJHIPSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat, MatType, MatReuse, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat, MatType, MatReuse, Mat *);
@@ -6413,7 +6413,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscFunctionBegin;
   PetscCall(PetscFree(mpiaij->garray));
   PetscCall(VecDestroy(&mpiaij->lvec));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&mpiaij->colmap));
 #else
   PetscCall(PetscFree(mpiaij->colmap));
@@ -6896,31 +6896,31 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPIAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijperm_C", MatConvert_MPIAIJ_MPIAIJPERM));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijsell_C", MatConvert_MPIAIJ_MPIAIJSELL));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijcusparse_C", MatConvert_MPIAIJ_MPIAIJCUSPARSE));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijhipsparse_C", MatConvert_MPIAIJ_MPIAIJHIPSPARSE));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijkokkos_C", MatConvert_MPIAIJ_MPIAIJKokkos));
 #endif
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijmkl_C", MatConvert_MPIAIJ_MPIAIJMKL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijcrl_C", MatConvert_MPIAIJ_MPIAIJCRL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpibaij_C", MatConvert_MPIAIJ_MPIBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpisbaij_C", MatConvert_MPIAIJ_MPISBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpidense_C", MatConvert_MPIAIJ_MPIDense));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_elemental_C", MatConvert_MPIAIJ_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_scalapack_C", MatConvert_AIJ_ScaLAPACK));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_is_C", MatConvert_XAIJ_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpisell_C", MatConvert_MPIAIJ_MPISELL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_hypre_C", MatConvert_AIJ_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_transpose_mpiaij_mpiaij_C", MatProductSetFromOptions_Transpose_AIJ_AIJ));
 #endif
@@ -7664,7 +7664,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
 PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
 {
   Mat_Product *product = mat->product;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscBool match  = PETSC_FALSE;
   PetscBool usecpu = PETSC_FALSE;
 #else
@@ -7673,7 +7673,7 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (!product->A->boundtocpu && !product->B->boundtocpu) PetscCall(PetscObjectTypeCompare((PetscObject)product->B, ((PetscObject)product->A)->type_name, &match));
   if (match) { /* we can always fallback to the CPU if requested */
     switch (product->type) {
@@ -8118,9 +8118,9 @@ PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat A, PetscMemType *mem
     return; \
   } while (0)
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matsetvaluesmpiaij_ matsetvaluesmpiaij
 #else
 #endif
@@ -8194,7 +8194,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
           } else {
             if (mat->was_assembled) {
               if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
               PetscCall(PetscHMapIGetWithDefault(aij->colmap, in[j] + 1, 0, &col));
               col--;
 #else

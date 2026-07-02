@@ -1,4 +1,6 @@
-#if !defined(PETSC_SKIP_COMPLEX)
+#include <petscmacros.h>
+
+#if !PetscDefined(SKIP_COMPLEX)
   #define PETSC_SKIP_COMPLEX
 #endif
 
@@ -20,12 +22,12 @@
 
 .seealso: `PetscIsInfReal()`, `PetscIsNanReal()`
 @*/
-#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FLOAT128) || PetscDefined(USE_REAL___FP16)
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return PETSC_TRUE;
 }
-#elif defined(PETSC_HAVE_ISNORMAL)
+#elif PetscDefined(HAVE_ISNORMAL)
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return isnormal(a) ? PETSC_TRUE : PETSC_FALSE;
@@ -37,7 +39,7 @@ PetscBool PetscIsNormalReal(PetscReal a)
 }
 #endif
 
-#if defined(PETSC_HAVE_NO_FINITE_MATH_ONLY)
+#if PetscDefined(HAVE_NO_FINITE_MATH_ONLY)
   #define PETSC_FORCE_NO_FINITE_MATH_ONLY __attribute__((optimize("no-finite-math-only")))
 #else
   #define PETSC_FORCE_NO_FINITE_MATH_ONLY
@@ -58,21 +60,21 @@ PetscBool PetscIsNormalReal(PetscReal a)
 
 .seealso: `PetscIsNormalReal()`, `PetscIsNanReal()`
 @*/
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
 PetscBool PetscIsInfReal(PetscReal a)
 {
   return isinfq(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE_ISINF)
+#elif PetscDefined(HAVE_ISINF)
 PETSC_FORCE_NO_FINITE_MATH_ONLY PetscBool PetscIsInfReal(PetscReal a)
 {
   return isinf(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE__FINITE)
-  #if defined(PETSC_HAVE_FLOAT_H)
+#elif PetscDefined(HAVE__FINITE)
+  #if PetscDefined(HAVE_FLOAT_H)
     #include <float.h> /* Microsoft Windows defines _finite() in float.h */
   #endif
-  #if defined(PETSC_HAVE_IEEEFP_H)
+  #if PetscDefined(HAVE_IEEEFP_H)
     #include <ieeefp.h> /* Solaris prototypes these here */
   #endif
 PetscBool PetscIsInfReal(PetscReal a)
@@ -102,21 +104,21 @@ PetscBool PetscIsInfReal(PetscReal a)
 
 .seealso: `PetscIsNormalReal()`, `PetscIsInfReal()`
 @*/
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
 PetscBool PetscIsNanReal(PetscReal a)
 {
   return isnanq(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE_ISNAN)
+#elif PetscDefined(HAVE_ISNAN)
 PETSC_FORCE_NO_FINITE_MATH_ONLY PetscBool PetscIsNanReal(PetscReal a)
 {
   return isnan(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE__ISNAN)
-  #if defined(PETSC_HAVE_FLOAT_H)
+#elif PetscDefined(HAVE__ISNAN)
+  #if PetscDefined(HAVE_FLOAT_H)
     #include <float.h> /* Microsoft Windows defines _isnan() in float.h */
   #endif
-  #if defined(PETSC_HAVE_IEEEFP_H)
+  #if PetscDefined(HAVE_IEEEFP_H)
     #include <ieeefp.h> /* Solaris prototypes these here */
   #endif
 PetscBool PetscIsNanReal(PetscReal a)

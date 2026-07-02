@@ -54,7 +54,7 @@ int main(int argc, char **args)
   PetscRandom   rand;
   PetscBool     flg, symm, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE, testMatSolveTranspose = PETSC_TRUE, match = PETSC_FALSE;
   PetscBool     chol = PETSC_FALSE, view = PETSC_FALSE, matsolvexx = PETSC_FALSE, test_inertia;
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   PetscBool test_mumps_opts = PETSC_FALSE;
 #endif
   PetscViewer fd;                       /* viewer */
@@ -213,7 +213,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolve", &testMatMatSolve, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolvetranspose", &testMatMatSolveTranspose, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matsolvetranspose", &testMatSolveTranspose, NULL));
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mumps_opts", &test_mumps_opts, NULL));
 #endif
 
@@ -230,7 +230,7 @@ int main(int argc, char **args)
   if (flg) PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm)); // TODO FIXME: MatConvert_Nest_AIJ() does not support chained MatCreate[Hermitian]Transpose()
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type", pack, sizeof(pack), NULL));
-#if defined(PETSC_HAVE_SUPERLU)
+#if PetscDefined(HAVE_SUPERLU)
   PetscCall(PetscStrcmp(MATSOLVERSUPERLU, pack, &match));
   if (match) {
     PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
@@ -241,7 +241,7 @@ int main(int argc, char **args)
     goto skipoptions;
   }
 #endif
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
   PetscCall(PetscStrcmp(MATSOLVERSUPERLU_DIST, pack, &match));
   if (match) {
     PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
@@ -259,7 +259,7 @@ int main(int argc, char **args)
     goto skipoptions;
   }
 #endif
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   PetscCall(PetscStrcmp(MATSOLVERMUMPS, pack, &match));
   if (match) {
     if (chol) {
@@ -286,7 +286,7 @@ int main(int argc, char **args)
     goto skipoptions;
   }
 #endif
-#if defined(PETSC_HAVE_MKL_PARDISO)
+#if PetscDefined(HAVE_MKL_PARDISO)
   PetscCall(PetscStrcmp(MATSOLVERMKL_PARDISO, pack, &match));
   if (match) {
     if (chol) {
@@ -300,7 +300,7 @@ int main(int argc, char **args)
     goto skipoptions;
   }
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscStrcmp(MATSOLVERCUSPARSE, pack, &match));
   if (match) {
     if (chol) {
@@ -356,12 +356,12 @@ skipoptions:
       view = PETSC_FALSE;
     }
 
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
     if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
       PetscInt     M;
       PetscScalar *diag;
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       PetscInt nneg, nzero, npos;
   #endif
 
@@ -370,7 +370,7 @@ skipoptions:
       PetscCall(MatSuperluDistGetDiagU(F, diag));
       PetscCall(PetscFree(diag));
 
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       /* Test MatGetInertia() */
       if (test_inertia) { /* A is symmetric */
         PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
@@ -380,7 +380,7 @@ skipoptions:
     }
 #endif
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
     /* mumps interface allows repeated call of MatCholeskyFactorSymbolic(), while the succession calls do nothing */
     if (ipack == 2) {
       if (chol) {

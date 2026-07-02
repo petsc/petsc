@@ -236,7 +236,7 @@ PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype, MatReuse reuse, Mat 
     PetscCall(PetscObjectComposeFunction((PetscObject)M, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_CF));
     PetscCall(PetscFree(M->defaultvectype));
     PetscCall(PetscStrallocpy(A->defaultvectype, &M->defaultvectype));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     PetscCall(MatBindToCPU(M, A->boundtocpu));
 #endif
     *B = M;

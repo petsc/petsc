@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscviewerasciiprintf_             PETSCVIEWERASCIIPRINTF
   #define petscviewerasciisynchronizedprintf_ PETSCVIEWERASCIISYNCHRONIZEDPRINTF
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscviewerasciiprintf_             petscviewerasciiprintf
   #define petscviewerasciisynchronizedprintf_ petscviewerasciisynchronizedprintf
 #endif

@@ -266,18 +266,18 @@ int main(int argc, char **argv)
     PetscCall(TSAdaptHistorySetTrajectory(adapt, tj, PETSC_FALSE));
     PetscCall(TSAdaptHistoryGetStep(adapt, 0, &t0, &dt));
     /* this example fails with single (or smaller) precision */
-#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
-    /*
-       In the first TSSolve() the final time 'tf' is the event location found after a few event handler iterations.
-       If 'tf' is set as the max time for the second run, the TS solver may approach this point by
-       slightly different steps, resulting in a slightly different solution and fvalue[] at 'tf',
-       so that the event may not be triggered at 'tf' anymore. Fix: apply safety factor 1.05
-    */
-    PetscCall(TSSetMaxTime(ts, tf * 1.05));
-    PetscCall(TSAdaptSetType(adapt, TSADAPTBASIC));
-    PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
-    PetscCall(TSSetFromOptions(ts));
-#endif
+    if (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL___FP16)) {
+      /*
+         In the first TSSolve() the final time 'tf' is the event location found after a few event handler iterations.
+         If 'tf' is set as the max time for the second run, the TS solver may approach this point by
+         slightly different steps, resulting in a slightly different solution and fvalue[] at 'tf',
+         so that the event may not be triggered at 'tf' anymore. Fix: apply safety factor 1.05
+      */
+      PetscCall(TSSetMaxTime(ts, tf * 1.05));
+      PetscCall(TSAdaptSetType(adapt, TSADAPTBASIC));
+      PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
+      PetscCall(TSSetFromOptions(ts));
+    }
     PetscCall(TSSetTime(ts, t0));
     PetscCall(TSSetTimeStep(ts, dt));
     PetscCall(TSResetTrajectory(ts));

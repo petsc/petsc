@@ -13,7 +13,7 @@
 #include <_hypre_parcsr_ls.h>
 #include <petscmathypre.h>
 
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   #include <petsc/private/deviceimpl.h>
 #endif
 
@@ -283,7 +283,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   if (pc->flag == DIFFERENT_NONZERO_PATTERN) PetscCall(MatDestroy(&jac->hpmat));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATHYPRE, &ishypre));
   if (!ishypre) {
-#if defined(PETSC_HAVE_HYPRE_DEVICE) && PETSC_PKG_HYPRE_VERSION_LE(2, 30, 0)
+#if PetscDefined(HAVE_HYPRE_DEVICE) && PETSC_PKG_HYPRE_VERSION_LE(2, 30, 0)
     /* Temporary fix since we do not support MAT_REUSE_MATRIX with HYPRE device */
     PetscBool iscuda, iship, iskokkos;
 
@@ -2325,7 +2325,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPRESetPoissonMatrix_C", PCHYPRESetPoissonMatrix_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGalerkinSetMatProductAlgorithm_C", PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGalerkinGetMatProductAlgorithm_C", PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   #if defined(HYPRE_USING_HIP)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
   #endif

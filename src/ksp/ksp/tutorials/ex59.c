@@ -1027,7 +1027,7 @@ int main(int argc, char **args)
   /* create KSP/PC for FETIDP */
   if (testfetidp) PetscCall(ComputeKSPFETIDP(dd, KSPwithBDDC, &KSPwithFETIDP));
   /* create random exact solution */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(VecSet(exact_solution, 1.0 + PETSC_i));
 #else
   PetscCall(VecSetRandom(exact_solution, NULL));

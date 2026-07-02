@@ -60,7 +60,7 @@ int main(int argc, char **args)
   PetscCall(MatSetFromOptions(C));
   PetscCall(MatMPIAIJSetPreallocation(C, 9, NULL, 9, NULL));
   PetscCall(MatSeqAIJSetPreallocation(C, 9, NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatHYPRESetPreallocation(C, 9, NULL, 9, NULL));
 #endif
 

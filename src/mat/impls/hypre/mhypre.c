@@ -264,7 +264,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscCallHYPRE(HYPRE_IJMatrixGetObjectType(mhA->ij, &type));
   PetscCheck(type == HYPRE_PARCSR, comm, PETSC_ERR_SUP, "Only HYPRE_PARCSR is supported");
   PetscCallHYPRE(HYPRE_IJMatrixGetObject(mhA->ij, (void **)&hA));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_DEVICE == hypre_IJMatrixMemoryLocation(mhA->ij)) {
     /* Support by copying back on the host and copy to GPU
        Kind of inefficient, but this is the best we can do now */
@@ -419,13 +419,13 @@ static PetscErrorCode MatHYPRE_CreateCOOMat(Mat mat)
   PetscCall(PetscLayoutSetUp(mat->cmap));
   PetscCall(MatGetLayouts(mat, &rmap, &cmap));
 
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   if (!mat->boundtocpu) { /* mat will be on device, so will cooMat */
   #if defined(HYPRE_USING_HIP)
     matType = MATAIJHIPSPARSE;
   #elif defined(HYPRE_USING_CUDA)
     matType = MATAIJCUSPARSE;
-  #elif defined(HYPRE_USING_SYCL) && defined(PETSC_HAVE_KOKKOS_KERNELS)
+  #elif defined(HYPRE_USING_SYCL) && PetscDefined(HAVE_KOKKOS_KERNELS)
     matType = MATAIJKOKKOS;
   #else
     SETERRQ(comm, PETSC_ERR_SUP, "No HYPRE device available. Suggest re-installing with Kokkos Kernels");
@@ -558,7 +558,7 @@ static PetscErrorCode hypreCSRMatrixGetCOO_Private(hypre_CSRMatrix *A, PetscCoun
   HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   mem = hypre_CSRMatrixMemoryLocation(A);
   if (mem != HYPRE_MEMORY_HOST) {
     PetscCount nnz = hypre_CSRMatrixNumNonzeros(A);
@@ -584,7 +584,7 @@ static PetscErrorCode MatSetValuesCOOFromCSRMatrix_Private(Mat A, hypre_CSRMatri
   HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   mem = hypre_CSRMatrixMemoryLocation(H);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &iscpu));
 #endif
@@ -635,7 +635,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
       PetscCall(MatConvert(A, newtype, MAT_INPLACE_MATRIX, &A));
       PetscCall(MatConvert(A, MATHYPRE, MAT_INPLACE_MATRIX, &A));
     }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     (*B)->boundtocpu = boundtocpu;
 #endif
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -702,7 +702,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   }
 
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   (*B)->boundtocpu = boundtocpu;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -724,7 +724,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     PetscCheck(ismpiaij || isseqaij, comm, PETSC_ERR_SUP, "Only MATMPIAIJ or MATSEQAIJ base types are supported");
   }
   PetscCall(MatHYPREGetParCSR(A, &parcsr));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_DEVICE == hypre_ParCSRMatrixMemoryLocation(parcsr)) {
     PetscBool isaij;
 
@@ -801,7 +801,7 @@ static PetscErrorCode PetscHypreIntCastArray_Device(PetscInt n, const PetscInt *
   PetscCall(PetscHypreIntCastArray_CUDA(n, a, b));
 #elif defined(HYPRE_USING_HIP)
   PetscCall(PetscHypreIntCastArray_HIP(n, a, b));
-#elif defined(PETSC_HAVE_KOKKOS)
+#elif PetscDefined(HAVE_KOKKOS)
   PetscCall(PetscHypreIntCastArray_Kokkos(n, a, b));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for PetscHypreIntCastArray_Device on a hypre matrix");
@@ -816,7 +816,7 @@ static PetscErrorCode MatHypreDeviceMalloc_Private(size_t size, void **ptr)
   PetscCall(MatHypreDeviceMalloc_CUDA(size, ptr));
 #elif defined(HYPRE_USING_HIP)
   PetscCall(MatHypreDeviceMalloc_HIP(size, ptr));
-#elif defined(PETSC_HAVE_KOKKOS)
+#elif PetscDefined(HAVE_KOKKOS)
   PetscCall(MatHypreDeviceMalloc_Kokkos(size, ptr));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MatHypreDeviceMalloc_Private on a hypre matrix");
@@ -831,7 +831,7 @@ static PetscErrorCode MatHypreDeviceFree_Private(void *ptr)
   PetscCall(MatHypreDeviceFree_CUDA(ptr));
 #elif defined(HYPRE_USING_HIP)
   PetscCall(MatHypreDeviceFree_HIP(ptr));
-#elif defined(PETSC_HAVE_KOKKOS)
+#elif PetscDefined(HAVE_KOKKOS)
   PetscCall(MatHypreDeviceFree_Kokkos(ptr));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MatHypreDeviceFree_Private on a hypre matrix");
@@ -852,7 +852,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   const PetscInt     *pdi = NULL, *pdj = NULL, *poi = NULL, *poj = NULL;
   PetscBool           ishost;
   PetscInt            dN, oN;
-#if defined(PETSC_HAVE_DEVICE) && defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_DEVICE) && PetscDefined(HAVE_HYPRE_DEVICE)
   PetscBool boundtocpu = A->boundtocpu;
 #else
   PetscBool boundtocpu = PETSC_TRUE;
@@ -966,7 +966,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     hypre_CSRMatrixNumNonzeros(hoffd) = (HYPRE_Int)offd->nz;
     hypre_CSRMatrixSetDataOwner(hoffd, 0);
   }
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   PetscCallHYPRE(hypre_ParCSRMatrixInitialize_v2(tA, !boundtocpu ? HYPRE_MEMORY_DEVICE : HYPRE_MEMORY_HOST));
 #else
   #if PETSC_PKG_HYPRE_VERSION_LT(2, 18, 0)
@@ -992,7 +992,7 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
 {
   hypre_CSRMatrix *hdiag, *hoffd;
   PetscBool        ishost, ismpiaij, sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
-#if defined(PETSC_HAVE_DEVICE) && defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_DEVICE) && PetscDefined(HAVE_HYPRE_DEVICE)
   PetscBool boundtocpu = A->boundtocpu;
 #else
   PetscBool boundtocpu = PETSC_TRUE;
@@ -1056,7 +1056,7 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
   R_owns_row_starts = hypre_ParCSRMatrixOwnsRowStarts(hR);
 #endif
   /* can be replaced by version test later */
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   PetscStackPushExternal("hypre_ParCSRMatrixRAP");
   *hRAP = hypre_ParCSRMatrixRAP(hR, hA, hP);
   PetscStackPop;
@@ -1165,7 +1165,7 @@ static PetscErrorCode MatHYPRE_ParCSR_MatMatMult(hypre_ParCSRMatrix *hA, hypre_P
 {
   PetscFunctionBegin;
   /* can be replaced by version test later */
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   PetscStackPushExternal("hypre_ParCSRMatMat");
   *hAB = hypre_ParCSRMatMat(hA, hB);
 #else
@@ -1458,7 +1458,7 @@ static PetscErrorCode MatSetUp_HYPRE(Mat A)
 }
 
 //TODO FIX hypre_CSRMatrixMatvecOutOfPlace
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
 static PetscErrorCode MatBindToCPU_HYPRE(Mat A, PetscBool bind)
 {
   Mat_HYPRE           *hA   = (Mat_HYPRE *)A->data;
@@ -1545,7 +1545,7 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   }
   if (!hA->x) PetscCall(VecHYPRE_IJVectorCreate(A->cmap, &hA->x));
   if (!hA->b) PetscCall(VecHYPRE_IJVectorCreate(A->rmap, &hA->b));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   PetscCall(MatBindToCPU_HYPRE(A, A->boundtocpu));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1607,7 +1607,7 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-#if 0 //defined(PETSC_HAVE_HYPRE_DEVICE)
+#if 0 //PetscDefined(HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_HOST != hypre_IJMatrixMemoryLocation(hA->ij)) {
     hypre_ParCSRMatrix *parcsr;
 
@@ -2041,13 +2041,13 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
   i = hypre_CSRMatrixI(hA);
   j = hypre_CSRMatrixJ(hA);
   a = hypre_CSRMatrixData(hA);
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_DEVICE == hypre_CSRMatrixMemoryLocation(hA)) {
   #if defined(HYPRE_USING_CUDA)
     PetscCall(MatZeroRows_CUDA(N, rows, i, j, a, diag));
   #elif defined(HYPRE_USING_HIP)
     PetscCall(MatZeroRows_HIP(N, rows, i, j, a, diag));
-  #elif defined(PETSC_HAVE_KOKKOS)
+  #elif PetscDefined(HAVE_KOKKOS)
     PetscCall(MatZeroRows_Kokkos(N, rows, i, j, a, diag));
   #else
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MatZeroRows on a hypre matrix in this memory location");
@@ -2083,7 +2083,7 @@ static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[]
   /* get locally owned rows */
   PetscCall(MatZeroRowsMapLocal_Private(A, N, rows, &len, &lrows));
 
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   if (HYPRE_MEMORY_DEVICE == hypre_CSRMatrixMemoryLocation(hypre_ParCSRMatrixDiag(parcsr))) {
     Mat_HYPRE *hA = (Mat_HYPRE *)A->data;
     PetscInt   m;
@@ -2331,7 +2331,7 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
   dmat = hypre_ParCSRMatrixDiag(parcsr);
   if (dmat) {
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
     HYPRE_MemoryLocation mem = hypre_CSRMatrixMemoryLocation(dmat);
 #else
     HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
@@ -2351,7 +2351,7 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
 static PetscErrorCode MatAXPY_HYPRE(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   {
     Mat                 B;
     hypre_ParCSRMatrix *x, *y, *z;
@@ -2513,7 +2513,7 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 {
   Mat_HYPRE *hB;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   HYPRE_MemoryLocation memory_location;
 #endif
 
@@ -2551,7 +2551,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->axpy                  = MatAXPY_HYPRE;
   B->ops->productsetfromoptions = MatProductSetFromOptions_HYPRE;
   B->ops->getcurrentmemtype     = MatGetCurrentMemType_HYPRE;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   B->ops->bindtocpu = MatBindToCPU_HYPRE;
   /* Get hypre's default memory location. Users can control this using the corresponding HYPRE_SetMemoryLocation API */
   PetscCallHYPRE(HYPRE_GetMemoryLocation(&memory_location));
@@ -2571,7 +2571,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatHYPREGetParCSR_C", MatHYPREGetParCSR_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetValuesCOO_C", MatSetValuesCOO_HYPRE));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   #if defined(HYPRE_USING_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaijhipsparse_hypre_C", MatProductSetFromOptions_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijhipsparse_hypre_C", MatProductSetFromOptions_HYPRE));

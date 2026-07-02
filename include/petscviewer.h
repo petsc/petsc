@@ -56,7 +56,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer, PetscIn
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetFlowControl(PetscViewer, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer, PetscBool *);
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer, MPI_File *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer, MPI_Offset *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer, MPI_Offset);
@@ -523,7 +523,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer, int, int, con
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer, int, int, PetscScalar *, const char *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer, const char *, void *);
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
 PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject, PetscViewer);
 #endif
 

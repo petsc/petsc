@@ -585,11 +585,8 @@ static PetscErrorCode MatView_KAIJ(Mat A, PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Entries of S are "));
       for (i = 0; i < (a->p * a->q); i++) {
-#if defined(PETSC_USE_COMPLEX)
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e ", (double)PetscRealPart(a->S[i]), (double)PetscImaginaryPart(a->S[i])));
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e ", (double)PetscRealPart(a->S[i])));
-#endif
+        if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e ", (double)PetscRealPart(a->S[i]), (double)PetscImaginaryPart(a->S[i])));
+        else PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e ", (double)PetscRealPart(a->S[i])));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
@@ -602,11 +599,8 @@ static PetscErrorCode MatView_KAIJ(Mat A, PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Entries of T are "));
       for (i = 0; i < (a->p * a->q); i++) {
-#if defined(PETSC_USE_COMPLEX)
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e ", (double)PetscRealPart(a->T[i]), (double)PetscImaginaryPart(a->T[i])));
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e ", (double)PetscRealPart(a->T[i])));
-#endif
+        if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e ", (double)PetscRealPart(a->T[i]), (double)PetscImaginaryPart(a->T[i])));
+        else PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e ", (double)PetscRealPart(a->T[i])));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }

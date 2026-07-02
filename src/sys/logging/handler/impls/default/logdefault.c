@@ -45,7 +45,7 @@ static PetscErrorCode PetscEventPerfInfoTic_Internal(PetscEventPerfInfo *eventIn
   eventInfo->numMessages -= petsc_irecv_ct_th + petsc_isend_ct_th + petsc_recv_ct_th + petsc_send_ct_th;
   eventInfo->messageLength -= petsc_irecv_len_th + petsc_isend_len_th + petsc_recv_len_th + petsc_send_len_th;
   eventInfo->numReductions -= petsc_allreduce_ct_th + petsc_gather_ct_th + petsc_scatter_ct_th;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   eventInfo->CpuToGpuCount -= petsc_ctog_ct_th;
   eventInfo->GpuToCpuCount -= petsc_gtoc_ct_th;
   eventInfo->CpuToGpuSize -= petsc_ctog_sz_th;
@@ -96,7 +96,7 @@ static PetscErrorCode PetscEventPerfInfoToc_Internal(PetscEventPerfInfo *eventIn
   eventInfo->numMessages += petsc_irecv_ct_th + petsc_isend_ct_th + petsc_recv_ct_th + petsc_send_ct_th;
   eventInfo->messageLength += petsc_irecv_len_th + petsc_isend_len_th + petsc_recv_len + petsc_send_len_th;
   eventInfo->numReductions += petsc_allreduce_ct_th + petsc_gather_ct_th + petsc_scatter_ct_th;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   eventInfo->CpuToGpuCount += petsc_ctog_ct_th;
   eventInfo->GpuToCpuCount += petsc_gtoc_ct_th;
   eventInfo->CpuToGpuSize += petsc_ctog_sz_th;
@@ -145,7 +145,7 @@ static PetscErrorCode PetscEventPerfInfoAdd_Internal(const PetscEventPerfInfo *e
   outInfo->numMessages += eventInfo->numMessages;
   outInfo->messageLength += eventInfo->messageLength;
   outInfo->numReductions += eventInfo->numReductions;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   outInfo->CpuToGpuCount += eventInfo->CpuToGpuCount;
   outInfo->GpuToCpuCount += eventInfo->GpuToCpuCount;
   outInfo->CpuToGpuSize += eventInfo->CpuToGpuSize;
@@ -1205,7 +1205,7 @@ static PetscErrorCode PetscLogViewWarnDebugging(PetscViewer viewer)
 
 static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscMPIInt size;
   PetscBool   deviceInitialized = PETSC_FALSE;
 
@@ -1241,7 +1241,7 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(PetscViewer viewer)
 
 static PetscErrorCode PetscLogViewWarnGpuTime(PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
+#if PetscDefined(HAVE_DEVICE) && !PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)
 
   PetscFunctionBegin;
   if (!PetscLogGpuTimeFlag || petsc_gflops == 0) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1277,7 +1277,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscLogDouble          fracStageTime, fracStageFlops, fracStageMess, fracStageMessLen, fracStageRed;
   PetscLogDouble          min, max, tot, ratio, avg, x, y;
   PetscLogDouble          minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratC, totm, totml, totr, mal, malmax, emalmax;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscLogEvent  KSP_Solve, SNES_Solve, TS_Step, TAO_Solve; /* These need to be fixed to be some events registered with certain objects */
   PetscLogDouble cct, gct, csz, gsz, gmaxt, gflops, gflopr, fracgflops, gjoules, geff;
 #endif
@@ -1290,7 +1290,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscLogEvent event;
   char          version[256];
   MPI_Comm      comm;
-#if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
+#if PetscDefined(HAVE_DEVICE) && !PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)
   PetscInt64 nas = 0x7FF0000000000002;
 #endif
   PetscLogGlobalNames global_stages, global_events;
@@ -1322,7 +1322,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscGetDate(date, sizeof(date)));
   PetscCall(PetscGetVersion(version, sizeof(version)));
 
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   const char *cupm = PetscDefined(HAVE_CUDA) ? "CUDA" : "HIP";
   if (PetscDeviceCUPMRuntimeArch)
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s and %s architecture %d, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", cupm, PetscDeviceCUPMRuntimeArch, username, date));
@@ -1330,7 +1330,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 #endif
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", username, date));
 
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "Using %s\n", version));
@@ -1522,7 +1522,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     PetscCall(PetscViewerASCIIPrintf(viewer, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 1e-6 * (sum of flop on GPU over all processes)/(max GPU time over all processes)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 1e-6 * (total size of CPU to GPU copies per processor)\n"));
@@ -1537,27 +1537,27 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   /* Report events */
   PetscCall(PetscViewerASCIIPrintf(viewer, "Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
   if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "  Malloc EMalloc MMalloc RMI"));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
   if (PetscLogGpuEnergyFlag || PetscLogGpuEnergyMeterFlag) PetscCall(PetscViewerASCIIPrintf(viewer, "    GPU      GPU"));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
   if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, " Mbytes Mbytes Mbytes Mbytes"));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, " Mflop/s Count   Size   Count   Size  %%F"));
   if (PetscLogGpuEnergyFlag || PetscLogGpuEnergyMeterFlag) PetscCall(PetscViewerASCIIPrintf(viewer, "   Joule   Mflop/J"));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------"));
   if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "-----------------------------"));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------------"));
   if (PetscLogGpuEnergyFlag || PetscLogGpuEnergyMeterFlag) PetscCall(PetscViewerASCIIPrintf(viewer, "-------------------"));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
 
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   /* this indirect way of accessing these values is needed when PETSc is build with multiple libraries since the symbols are not in libpetscsys */
   PetscCall(PetscLogStateGetEventFromName(state, "TaoSolve", &TAO_Solve));
   PetscCall(PetscLogStateGetEventFromName(state, "TSStep", &TS_Step));
@@ -1620,7 +1620,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           PetscCallMPI(MPIU_Allreduce(&event_info->mallocIncrease, &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
           PetscCallMPI(MPIU_Allreduce(&event_info->mallocIncreaseEvent, &emalmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
         PetscCallMPI(MPIU_Allreduce(&event_info->CpuToGpuCount, &cct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         PetscCallMPI(MPIU_Allreduce(&event_info->GpuToCpuCount, &gct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         PetscCallMPI(MPIU_Allreduce(&event_info->CpuToGpuSize, &csz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
@@ -1634,7 +1634,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           mint = 0;
         }
         PetscCheck(minf >= 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Minimum flop %g over all processes for %s is negative! Not possible!", minf, event_name);
-#if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
+#if PetscDefined(HAVE_DEVICE) && !PetscDefined(HAVE_KOKKOS_WITHOUT_GPU)
         /* Put NaN into the time for all events that may not be time accurately since they may happen asynchronously on the GPU */
         if (!PetscLogGpuTimeFlag && petsc_gflops > 0) {
           memcpy(&gmaxt, &nas, sizeof(PetscLogDouble));
@@ -1692,7 +1692,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
             }
           }
           if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
           if (totf != 0.0) fracgflops = gflops / totf;
           else fracgflops = 0.0;
           if (gmaxt != 0.0) gflopr = gflops / gmaxt;
@@ -1717,7 +1717,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   /* Memory usage and object creation */
   PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------"));
   if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "-----------------------------"));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------------"));
   if (PetscLogGpuEnergyFlag || PetscLogGpuEnergyMeterFlag) PetscCall(PetscViewerASCIIPrintf(viewer, "-------------------"));
 #endif

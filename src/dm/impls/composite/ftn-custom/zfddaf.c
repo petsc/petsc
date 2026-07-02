@@ -1,7 +1,7 @@
 #include <petscdmcomposite.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmcompositegetentries1_          DMCOMPOSITEGETENTRIES1
   #define dmcompositegetentries2_          DMCOMPOSITEGETENTRIES2
   #define dmcompositegetentries3_          DMCOMPOSITEGETENTRIES3
@@ -16,7 +16,7 @@
   #define dmcompositerestoreglobaliss_     DMCOMPOSITERESTOREGLOBALISS
   #define dmcompositegetlocaliss_          DMCOMPOSITEGETLOCALISS
   #define dmcompositerestorelocaliss_      DMCOMPOSITERESTORELOCALISS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmcompositegetentries1_          dmcompositegetentries1
   #define dmcompositegetentries2_          dmcompositegetentries2
   #define dmcompositegetentries3_          dmcompositegetentries3

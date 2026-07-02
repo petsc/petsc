@@ -200,7 +200,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
     }
   }
   PetscCall(VecRestoreArrayRead(v, &x));
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   *nrm = max;
   if (idex) *idex = id;
 #else
@@ -275,7 +275,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
     }
   }
   PetscCall(VecRestoreArrayRead(v, &x));
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   *nrm = min;
   if (idex) *idex = id;
 #else
@@ -718,7 +718,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
       }
       jj += bss[j];
     }
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for (j = 0; j < nv; j++) {
       for (k = 0; k < bss[j]; k++) {
@@ -808,7 +808,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
       }
       jj += bss[j];
     }
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for (j = 0; j < nv; j++) {
       for (k = 0; k < bss[j]; k++) {
@@ -1007,7 +1007,7 @@ PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode 
     for (i = 0; i < n; i++) y[i] = x[bs * i];
   } else if (addv == ADD_VALUES) {
     for (i = 0; i < n; i++) y[i] += x[bs * i];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for (i = 0; i < n; i++) y[i] = PetscMax(y[i], x[bs * i]);
 #endif
@@ -1039,7 +1039,7 @@ PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode
     for (i = 0; i < n; i++) x[bs * i] = y[i];
   } else if (addv == ADD_VALUES) {
     for (i = 0; i < n; i++) x[bs * i] += y[i];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for (i = 0; i < n; i++) x[bs * i] = PetscMax(y[i], x[bs * i]);
 #endif
@@ -1095,7 +1095,7 @@ PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscIn
         for (j = 0; j < bss; j++) y[bss * i + idxs[j]] += x[bs * i + idxv[j]];
       }
     }
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     if (!idxs) {
       for (i = 0; i < n; i++) {
@@ -1161,7 +1161,7 @@ PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscI
         for (j = 0; j < bss; j++) x[bs * i + idxv[j]] += y[bss * i + idxs[j]];
       }
     }
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     if (!idxs) {
       for (i = 0; i < n; i++) {
@@ -1427,7 +1427,7 @@ PetscErrorCode VecImaginaryPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Function));
 #else
   PetscCall(VecZeroEntries(v));
@@ -1460,7 +1460,7 @@ PetscErrorCode VecRealPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Function));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

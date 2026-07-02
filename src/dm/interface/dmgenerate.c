@@ -5,25 +5,25 @@ PETSC_EXTERN PetscErrorCode DMIsForest(DM, PetscBool *);
 DMGeneratorFunctionList DMGenerateList              = NULL;
 PetscBool               DMGenerateRegisterAllCalled = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_TRIANGLE)
+#if PetscDefined(HAVE_TRIANGLE)
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM, PetscReal *, DM *);
 #endif
-#if defined(PETSC_HAVE_TETGEN)
+#if PetscDefined(HAVE_TETGEN)
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM, double *, DM *);
 #endif
-#if defined(PETSC_HAVE_CTETGEN)
+#if PetscDefined(HAVE_CTETGEN)
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double *, DM *);
 #endif
-#if defined(PETSC_HAVE_PRAGMATIC)
+#if PetscDefined(HAVE_PRAGMATIC)
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
-#if defined(PETSC_HAVE_MMG)
+#if PetscDefined(HAVE_MMG)
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
-#if defined(PETSC_HAVE_PARMMG)
+#if PetscDefined(HAVE_PARMMG)
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DMLabel, DM *);
 #endif
 PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM *);
@@ -43,22 +43,22 @@ PetscErrorCode DMGenerateRegisterAll(void)
   PetscFunctionBegin;
   if (DMGenerateRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   DMGenerateRegisterAllCalled = PETSC_TRUE;
-#if defined(PETSC_HAVE_TRIANGLE)
+#if PetscDefined(HAVE_TRIANGLE)
   PetscCall(DMGenerateRegister("triangle", DMPlexGenerate_Triangle, DMPlexRefine_Triangle, NULL, 1));
 #endif
-#if defined(PETSC_HAVE_CTETGEN)
+#if PetscDefined(HAVE_CTETGEN)
   PetscCall(DMGenerateRegister("ctetgen", DMPlexGenerate_CTetgen, DMPlexRefine_CTetgen, NULL, 2));
 #endif
-#if defined(PETSC_HAVE_TETGEN)
+#if PetscDefined(HAVE_TETGEN)
   PetscCall(DMGenerateRegister("tetgen", DMPlexGenerate_Tetgen, DMPlexRefine_Tetgen, NULL, 2));
 #endif
-#if defined(PETSC_HAVE_PRAGMATIC)
+#if PetscDefined(HAVE_PRAGMATIC)
   PetscCall(DMGenerateRegister("pragmatic", NULL, NULL, DMAdaptMetric_Pragmatic_Plex, -1));
 #endif
-#if defined(PETSC_HAVE_MMG)
+#if PetscDefined(HAVE_MMG)
   PetscCall(DMGenerateRegister("mmg", NULL, NULL, DMAdaptMetric_Mmg_Plex, -1));
 #endif
-#if defined(PETSC_HAVE_PARMMG)
+#if PetscDefined(HAVE_PARMMG)
   PetscCall(DMGenerateRegister("parmmg", NULL, NULL, DMAdaptMetric_ParMmg_Plex, -1));
 #endif
   PetscCall(DMGenerateRegister("cellrefiner", NULL, NULL, DMPlexTransformAdaptLabel, -1));

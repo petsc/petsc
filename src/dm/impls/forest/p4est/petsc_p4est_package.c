@@ -16,7 +16,7 @@ static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno
 }
 
 /* p4est tries to abort: if possible, use setjmp to enable at least a little unwinding */
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
+#if PetscDefined(HAVE_SETJMP_H) && PetscDefined(USE_DEBUG)
   #include <setjmp.h>
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
 PETSC_INTERN void                 PetscScAbort_longjmp(void)
@@ -78,7 +78,7 @@ PetscErrorCode PetscP4estInitialize(void)
   if (sc_package_id == -1) {
     int       log_threshold_shifted = psc_log_threshold + 1;
     PetscBool set;
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
     sc_MPI_Comm comm_world = sc_MPI_COMM_WORLD;
 #else
     MPI_Comm comm_world = PETSC_COMM_WORLD;

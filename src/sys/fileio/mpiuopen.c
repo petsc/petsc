@@ -105,12 +105,12 @@ static char PetscPOpenMachine[128] = "";
 @*/
 PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 {
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscMPIInt rank;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     char buf[1024];
@@ -155,7 +155,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 @*/
 PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char program[], const char mode[], FILE **fp)
 {
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscMPIInt rank;
   size_t      i, len, cnt;
   char        commandt[PETSC_MAX_PATH_LEN], command[PETSC_MAX_PATH_LEN];
@@ -163,7 +163,7 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (PetscPOpenMachine[0] || (machine && machine[0])) {
     PetscCall(PetscStrncpy(command, "ssh ", sizeof(command)));

@@ -276,22 +276,22 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PetscCall(MatHasOperation(pc->pmat, MATOP_GET_BLOCK_DIAGONAL, &flg));
   if (flg) PetscUseTypeMethod(pc->pmat, getblockdiagonal, &diagPB); // diagPB's reference count is increased upon return
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscBool isCuda;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
   if (!isCuda && diagPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagPB, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscBool isKok;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
   if (!isKok && diagPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagPB, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (isCuda) PetscCall(PCSetUp_PBJacobi_CUDA(pc, diagPB));
   else
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
     if (isKok)
     PetscCall(PCSetUp_PBJacobi_Kokkos(pc, diagPB));
   else

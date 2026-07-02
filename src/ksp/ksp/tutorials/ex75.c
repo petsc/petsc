@@ -7,7 +7,7 @@ int main(int argc, char **args)
   Vec x, b; /* computed solution and RHS */
   Mat A;    /* linear system matrix */
   KSP ksp;  /* linear solver context */
-#if defined(PETSC_HAVE_HPDDM)
+#if PetscDefined(HAVE_HPDDM)
   Mat U; /* deflation space */
 #endif
   PetscInt    i, j, nmat = 10;
@@ -38,7 +38,7 @@ int main(int argc, char **args)
     PetscCall(KSPSetFromOptions(ksp));
     PetscCall(KSPSolve(ksp, b, x));
     PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPHPDDM, &flg));
-#if defined(PETSC_HAVE_HPDDM)
+#if PetscDefined(HAVE_HPDDM)
     if (flg && reset) {
       PetscCall(KSPHPDDMGetDeflationMat(ksp, &U));
       PetscCall(KSPReset(ksp));

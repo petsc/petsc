@@ -15,7 +15,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscInt       *owners = sbaij->rangebs, *ec_owner, k;
   const PetscInt *sowners;
   PetscScalar    *ptr;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL; /* one-based gid to lid table */
   PetscHashIter tpos;
   PetscInt      gid, lid;
@@ -25,7 +25,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(mbs, &gid1_lid1));
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {
@@ -187,11 +187,11 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   PetscInt      k, bs = A->rmap->bs, bs2 = baij->bs2, *rvals, *nz, m = A->rmap->n;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
+#if PetscDefined(USE_REAL_MAT_SINGLE)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
+#if PetscDefined(USE_REAL_MAT_SINGLE)
   PetscCall(PetscMalloc1(A->rmap->bs, &atmp));
 #endif
   /* free stuff related to matrix-vec multiply */
@@ -205,7 +205,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   PetscCall(VecDestroy(&baij->slvec1b));
 
   if (baij->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
     PetscCall(PetscFree(baij->colmap));
@@ -241,7 +241,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
     for (j = Bbaij->i[i]; j < Bbaij->i[i + 1]; j++) {
       col = garray[Bbaij->j[j]] * bs;
       for (k = 0; k < bs; k++) {
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
+#if PetscDefined(USE_REAL_MAT_SINGLE)
         for (PetscInt l = 0; l < bs; l++) atmp[l] = a[j * bs2 + l];
 #else
         atmp = a + j * bs2 + k * bs;
@@ -251,7 +251,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
       }
     }
   }
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
+#if PetscDefined(USE_REAL_MAT_SINGLE)
   PetscCall(PetscFree(atmp));
 #endif
   PetscCall(PetscFree(baij->garray));

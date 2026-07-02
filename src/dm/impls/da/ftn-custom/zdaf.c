@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/dmdaimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmdagetownershipranges_     DMDAGETOWNERSHIPRANGES
   #define dmdarestoreownershipranges_ DMDARESTOREOWNERSHIPRANGES
   #define dmdagetneighbors_           DMDAGETNEIGHBORS
   #define dmdarestoreneighbors_       DMDARESTORENEIGHBORS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmdagetownershipranges_     dmdagetownershipranges
   #define dmdarestoreownershipranges_ dmdarestoreownershipranges
   #define dmdagetneighbors_           dmdagetneighbors

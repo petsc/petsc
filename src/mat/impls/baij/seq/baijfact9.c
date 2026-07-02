@@ -44,14 +44,13 @@ PetscErrorCode MatILUFactorNumeric_SeqBAIJ_5_inplace(Mat C, Mat A, const MatFact
     nz    = bi[i + 1] - bi[i];
     ajtmp = bj + bi[i];
     for (j = 0; j < nz; j++) {
-#if defined(PETSC_USE_MEMZERO)
-      PetscCall(PetscArrayzero(rtmp + 25 * ajtmp[j], 25));
-#else
-      x    = rtmp + 25 * ajtmp[j];
-      x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
-      x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
-      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = 0.0;
-#endif
+      if (PetscDefined(USE_MEMZERO)) PetscCall(PetscArrayzero(rtmp + 25 * ajtmp[j], 25));
+      else {
+        x    = rtmp + 25 * ajtmp[j];
+        x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
+        x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
+        x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = 0.0;
+      }
     }
     /* load in initial (unfactored row) */
     idx      = r[i];
@@ -59,36 +58,35 @@ PetscErrorCode MatILUFactorNumeric_SeqBAIJ_5_inplace(Mat C, Mat A, const MatFact
     ajtmpold = aj + ai[idx];
     v        = aa + 25 * ai[idx];
     for (j = 0; j < nz; j++) {
-#if defined(PETSC_USE_MEMCPY)
-      PetscCall(PetscArraycpy(rtmp + 25 * ic[ajtmpold[j]], v, 25));
-#else
-      x     = rtmp + 25 * ic[ajtmpold[j]];
-      x[0]  = v[0];
-      x[1]  = v[1];
-      x[2]  = v[2];
-      x[3]  = v[3];
-      x[4]  = v[4];
-      x[5]  = v[5];
-      x[6]  = v[6];
-      x[7]  = v[7];
-      x[8]  = v[8];
-      x[9]  = v[9];
-      x[10] = v[10];
-      x[11] = v[11];
-      x[12] = v[12];
-      x[13] = v[13];
-      x[14] = v[14];
-      x[15] = v[15];
-      x[16] = v[16];
-      x[17] = v[17];
-      x[18] = v[18];
-      x[19] = v[19];
-      x[20] = v[20];
-      x[21] = v[21];
-      x[22] = v[22];
-      x[23] = v[23];
-      x[24] = v[24];
-#endif
+      if (PetscDefined(USE_MEMCPY)) PetscCall(PetscArraycpy(rtmp + 25 * ic[ajtmpold[j]], v, 25));
+      else {
+        x     = rtmp + 25 * ic[ajtmpold[j]];
+        x[0]  = v[0];
+        x[1]  = v[1];
+        x[2]  = v[2];
+        x[3]  = v[3];
+        x[4]  = v[4];
+        x[5]  = v[5];
+        x[6]  = v[6];
+        x[7]  = v[7];
+        x[8]  = v[8];
+        x[9]  = v[9];
+        x[10] = v[10];
+        x[11] = v[11];
+        x[12] = v[12];
+        x[13] = v[13];
+        x[14] = v[14];
+        x[15] = v[15];
+        x[16] = v[16];
+        x[17] = v[17];
+        x[18] = v[18];
+        x[19] = v[19];
+        x[20] = v[20];
+        x[21] = v[21];
+        x[22] = v[22];
+        x[23] = v[23];
+        x[24] = v[24];
+      }
       v += 25;
     }
     row = *ajtmp++;
@@ -247,36 +245,35 @@ PetscErrorCode MatILUFactorNumeric_SeqBAIJ_5_inplace(Mat C, Mat A, const MatFact
     pj = bj + bi[i];
     nz = bi[i + 1] - bi[i];
     for (j = 0; j < nz; j++) {
-#if defined(PETSC_USE_MEMCPY)
-      PetscCall(PetscArraycpy(pv, rtmp + 25 * pj[j], 25));
-#else
-      x      = rtmp + 25 * pj[j];
-      pv[0]  = x[0];
-      pv[1]  = x[1];
-      pv[2]  = x[2];
-      pv[3]  = x[3];
-      pv[4]  = x[4];
-      pv[5]  = x[5];
-      pv[6]  = x[6];
-      pv[7]  = x[7];
-      pv[8]  = x[8];
-      pv[9]  = x[9];
-      pv[10] = x[10];
-      pv[11] = x[11];
-      pv[12] = x[12];
-      pv[13] = x[13];
-      pv[14] = x[14];
-      pv[15] = x[15];
-      pv[16] = x[16];
-      pv[17] = x[17];
-      pv[18] = x[18];
-      pv[19] = x[19];
-      pv[20] = x[20];
-      pv[21] = x[21];
-      pv[22] = x[22];
-      pv[23] = x[23];
-      pv[24] = x[24];
-#endif
+      if (PetscDefined(USE_MEMCPY)) PetscCall(PetscArraycpy(pv, rtmp + 25 * pj[j], 25));
+      else {
+        x      = rtmp + 25 * pj[j];
+        pv[0]  = x[0];
+        pv[1]  = x[1];
+        pv[2]  = x[2];
+        pv[3]  = x[3];
+        pv[4]  = x[4];
+        pv[5]  = x[5];
+        pv[6]  = x[6];
+        pv[7]  = x[7];
+        pv[8]  = x[8];
+        pv[9]  = x[9];
+        pv[10] = x[10];
+        pv[11] = x[11];
+        pv[12] = x[12];
+        pv[13] = x[13];
+        pv[14] = x[14];
+        pv[15] = x[15];
+        pv[16] = x[16];
+        pv[17] = x[17];
+        pv[18] = x[18];
+        pv[19] = x[19];
+        pv[20] = x[20];
+        pv[21] = x[21];
+        pv[22] = x[22];
+        pv[23] = x[23];
+        pv[24] = x[24];
+      }
       pv += 25;
     }
     /* invert diagonal block */
@@ -774,7 +771,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B, Mat A, const 
 /*
    Version for when blocks are 9 by 9
  */
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   #include <immintrin.h>
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
 {

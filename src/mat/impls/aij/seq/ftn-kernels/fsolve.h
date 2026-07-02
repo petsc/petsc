@@ -1,10 +1,10 @@
 #pragma once
 
 #include <petscsys.h>
-#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortransolveaij_ FORTRANSOLVEAIJ
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define fortransolveaij_ fortransolveaij
   #endif
 

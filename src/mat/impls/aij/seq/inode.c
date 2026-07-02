@@ -3,7 +3,7 @@
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include <../src/mat/impls/aij/seq/aij.h>
-#if defined(PETSC_HAVE_XMMINTRIN_H)
+#if PetscDefined(HAVE_XMMINTRIN_H)
   #include <xmmintrin.h>
 #endif
 
@@ -375,7 +375,7 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
     PetscScalar      sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
     const PetscInt  *idx;
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *v1, *v2, *v3, *v4, *v5)
 #endif
     row = ns[i];

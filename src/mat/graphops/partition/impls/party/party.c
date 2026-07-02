@@ -1,6 +1,6 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 
@@ -33,7 +33,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   int                    n, *edge_p, *edge, *vertex_w, p, *part_party, cutsize, redl, rec;
   const char            *redm, *redo;
   char                  *mesg_log;
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   int fd_stdout, fd_pipe[2], count;
 #endif
 
@@ -83,7 +83,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   PetscCall(PetscMalloc1(mat->rmap->N, &part_party));
 
   /* redirect output to buffer */
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   fd_stdout = dup(1);
   PetscCheck(!pipe(fd_pipe), PETSC_COMM_SELF, PETSC_ERR_SYS, "Could not open pipe");
   close(1);
@@ -98,7 +98,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   party_lib_times_output(1);
   part_info(n, vertex_w, edge_p, edge, NULL, p, part_party, 1);
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   PetscCall(PetscFFlush(stdout));
   count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
   if (count < 0) count = 0;

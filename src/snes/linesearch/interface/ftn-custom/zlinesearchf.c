@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscsnes.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define sneslinesearchsetprecheck_  SNESLINESEARCHSETPRECHECK
   #define sneslinesearchgetprecheck_  SNESLINESEARCHGETPRECHECK
   #define sneslinesearchsetpostcheck_ SNESLINESEARCHSETPOSTCHECK
   #define sneslinesearchgetpostcheck_ SNESLINESEARCHGETPOSTCHECK
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define sneslinesearchsetprecheck_  sneslinesearchsetprecheck
   #define sneslinesearchgetprecheck_  sneslinesearchgetprecheck
   #define sneslinesearchsetpostcheck_ sneslinesearchsetpostcheck

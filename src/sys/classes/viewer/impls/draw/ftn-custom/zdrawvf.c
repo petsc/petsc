@@ -2,15 +2,15 @@
 #include <petscdraw.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsc_viewer_draw_         PETSC_VIEWER_DRAW
   #define petscviewermonitorlgsetup_ PETSCVIEWERMONITORLGSETUP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petsc_viewer_draw_         petsc_viewer_draw
   #define petscviewermonitorlgsetup_ petscviewermonitorlgsetup
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if PetscDefined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
   #define petsc_viewer_draw_ petsc_viewer_draw__
 #endif
 

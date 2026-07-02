@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
   Mat A, Aself;
   Vec b, bself;
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   PetscInt testarg = 1234;
 #endif
   int          numClasses;

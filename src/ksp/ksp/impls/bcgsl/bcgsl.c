@@ -166,7 +166,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
 
       AY0c[0] = -1;
       if (bcgsl->pinv) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, bcgsl->realwork, &info));
 #else
         PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &bell, &bell, &MZa[1 + ldMZ], &ldMZ, bcgsl->s, bcgsl->u, &bell, bcgsl->v, &bell, bcgsl->work, &bcgsl->lwork, &info));

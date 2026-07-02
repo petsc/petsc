@@ -1,6 +1,6 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   #include <parmetis.h>
 #endif
 
@@ -77,7 +77,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
 
 static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *)part->data;
   MPI_Comm                   comm;
   PetscInt                   nvtxs = numVertices;     /* The number of vertices in full graph */

@@ -36,7 +36,7 @@ static void MyExit(void)
 .    addr - ??
 
 */
-#if defined(PETSC_HAVE_4ARG_SIGNAL_HANDLER)
+#if PetscDefined(HAVE_4ARG_SIGNAL_HANDLER)
 static void PetscSignalHandler_Private(int sig, int code, struct sigcontext *scp, char *addr)
 #else
 static void PetscSignalHandler_Private(int sig)
@@ -74,64 +74,64 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 
   if (sig == SIGSEGV) PetscSignalSegvCheckPointerOrMpi();
   SIGNAME[0] = "Unknown signal";
-#if !defined(PETSC_MISSING_SIGABRT)
+#if !PetscDefined(MISSING_SIGABRT)
   SIGNAME[SIGABRT] = "Abort";
 #endif
-#if !defined(PETSC_MISSING_SIGALRM)
+#if !PetscDefined(MISSING_SIGALRM)
   SIGNAME[SIGALRM] = "Alarm";
 #endif
-#if !defined(PETSC_MISSING_SIGBUS)
+#if !PetscDefined(MISSING_SIGBUS)
   SIGNAME[SIGBUS] = "BUS: Bus Error, possibly illegal memory access";
 #endif
-#if !defined(PETSC_MISSING_SIGCHLD)
+#if !PetscDefined(MISSING_SIGCHLD)
   SIGNAME[SIGCHLD] = "CHLD";
 #endif
-#if !defined(PETSC_MISSING_SIGCONT)
+#if !PetscDefined(MISSING_SIGCONT)
   SIGNAME[SIGCONT] = "CONT";
 #endif
-#if !defined(PETSC_MISSING_SIGFPE)
+#if !PetscDefined(MISSING_SIGFPE)
   SIGNAME[SIGFPE] = "FPE: Floating Point Exception,probably divide by zero";
 #endif
-#if !defined(PETSC_MISSING_SIGHUP)
+#if !PetscDefined(MISSING_SIGHUP)
   SIGNAME[SIGHUP] = "Hang up: Some other process (or the batch system) has told this process to end";
 #endif
-#if !defined(PETSC_MISSING_SIGILL)
+#if !PetscDefined(MISSING_SIGILL)
   SIGNAME[SIGILL] = "Illegal instruction: Likely due to memory corruption";
 #endif
-#if !defined(PETSC_MISSING_SIGINT)
+#if !PetscDefined(MISSING_SIGINT)
   SIGNAME[SIGINT] = "Interrupt";
 #endif
-#if !defined(PETSC_MISSING_SIGKILL)
+#if !PetscDefined(MISSING_SIGKILL)
   SIGNAME[SIGKILL] = "Kill: Some other process (or the batch system) has told this process to end";
 #endif
-#if !defined(PETSC_MISSING_SIGPIPE)
+#if !PetscDefined(MISSING_SIGPIPE)
   SIGNAME[SIGPIPE] = "Broken Pipe: Likely while reading or writing to a socket";
 #endif
-#if !defined(PETSC_MISSING_SIGQUIT)
+#if !PetscDefined(MISSING_SIGQUIT)
   SIGNAME[SIGQUIT] = "Quit: Some other process (or the batch system) has told this process to end";
 #endif
-#if !defined(PETSC_MISSING_SIGSEGV)
+#if !PetscDefined(MISSING_SIGSEGV)
   SIGNAME[SIGSEGV] = "SEGV: Segmentation Violation, probably memory access out of range";
 #endif
-#if !defined(PETSC_MISSING_SIGSYS)
+#if !PetscDefined(MISSING_SIGSYS)
   SIGNAME[SIGSYS] = "SYS";
 #endif
-#if !defined(PETSC_MISSING_SIGTERM)
+#if !PetscDefined(MISSING_SIGTERM)
   SIGNAME[SIGTERM] = "Terminate: Some process (or the batch system) has told this process to end";
 #endif
-#if !defined(PETSC_MISSING_SIGTRAP)
+#if !PetscDefined(MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
 #endif
-#if !defined(PETSC_MISSING_SIGTSTP)
+#if !PetscDefined(MISSING_SIGTSTP)
   SIGNAME[SIGTSTP] = "TSTP";
 #endif
-#if !defined(PETSC_MISSING_SIGURG)
+#if !PetscDefined(MISSING_SIGURG)
   SIGNAME[SIGURG] = "URG";
 #endif
-#if !defined(PETSC_MISSING_SIGUSR1)
+#if !PetscDefined(MISSING_SIGUSR1)
   SIGNAME[SIGUSR1] = "User 1";
 #endif
-#if !defined(PETSC_MISSING_SIGUSR2)
+#if !PetscDefined(MISSING_SIGUSR2)
   SIGNAME[SIGUSR2] = "User 2";
 #endif
 
@@ -143,19 +143,17 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 
   (void)(*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
   (void)(*PetscErrorPrintf)("or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/\n");
-#if defined(PETSC_HAVE_CUDA)
-  (void)(*PetscErrorPrintf)("or try https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html on NVIDIA CUDA systems to find memory corruption errors\n");
-#endif
-#if PetscDefined(USE_DEBUG)
-  #if !PetscDefined(HAVE_THREADSAFETY)
-  (void)(*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
-  (void)PetscStackView(PETSC_STDOUT);
-  #endif
-#else
-  (void)(*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
-  (void)(*PetscErrorPrintf)("to get more information on the crash.\n");
-#endif
-#if !defined(PETSC_MISSING_SIGBUS)
+  if (PetscDefined(HAVE_CUDA)) (void)(*PetscErrorPrintf)("or try https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html on NVIDIA CUDA systems to find memory corruption errors\n");
+  if (PetscDefined(USE_DEBUG)) {
+    if (!PetscDefined(HAVE_THREADSAFETY)) {
+      (void)(*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
+      (void)PetscStackView(PETSC_STDOUT);
+    }
+  } else {
+    (void)(*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
+    (void)(*PetscErrorPrintf)("to get more information on the crash.\n");
+  }
+#if !PetscDefined(MISSING_SIGBUS)
   if (sig == SIGSEGV || sig == SIGBUS) {
 #else
   if (sig == SIGSEGV) {
@@ -204,19 +202,19 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), Pe
   }
   if (!SignalSet && routine) {
     /* Do not catch ABRT, CHLD, KILL */
-#if !defined(PETSC_MISSING_SIGALRM)
+#if !PetscDefined(MISSING_SIGALRM)
     /* signal(SIGALRM, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
-#if !defined(PETSC_MISSING_SIGBUS)
+#if !PetscDefined(MISSING_SIGBUS)
     signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGCONT)
+#if !PetscDefined(MISSING_SIGCONT)
     /*signal(SIGCONT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);*/
 #endif
-#if !defined(PETSC_MISSING_SIGFPE)
+#if !PetscDefined(MISSING_SIGFPE)
     signal(SIGFPE, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGHUP) && defined(PETSC_HAVE_STRUCT_SIGACTION)
+#if !PetscDefined(MISSING_SIGHUP) && PetscDefined(HAVE_STRUCT_SIGACTION)
     {
       struct sigaction action;
       sigaction(SIGHUP, NULL, &action);
@@ -227,97 +225,97 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), Pe
       }
     }
 #endif
-#if !defined(PETSC_MISSING_SIGILL)
+#if !PetscDefined(MISSING_SIGILL)
     signal(SIGILL, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGINT)
+#if !PetscDefined(MISSING_SIGINT)
     /* signal(SIGINT, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
-#if !defined(PETSC_MISSING_SIGPIPE)
+#if !PetscDefined(MISSING_SIGPIPE)
     signal(SIGPIPE, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGQUIT)
+#if !PetscDefined(MISSING_SIGQUIT)
     signal(SIGQUIT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGSEGV)
+#if !PetscDefined(MISSING_SIGSEGV)
     signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGSYS)
+#if !PetscDefined(MISSING_SIGSYS)
     signal(SIGSYS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGTERM)
-  #if !defined(PETSC_HAVE_OPENMPI)
+#if !PetscDefined(MISSING_SIGTERM)
+  #if !PetscDefined(HAVE_OPENMPI)
     /* Open MPI may use SIGTERM to close down all its ranks; we don't want to generate many confusing PETSc error messages in that case */
     signal(SIGTERM, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
   #endif
 #endif
-#if !defined(PETSC_MISSING_SIGTRAP)
+#if !PetscDefined(MISSING_SIGTRAP)
     signal(SIGTRAP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGTSTP)
+#if !PetscDefined(MISSING_SIGTSTP)
     /* signal(SIGTSTP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
-#if !defined(PETSC_MISSING_SIGURG)
+#if !PetscDefined(MISSING_SIGURG)
     signal(SIGURG, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGUSR1)
+#if !PetscDefined(MISSING_SIGUSR1)
     /* signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
-#if !defined(PETSC_MISSING_SIGUSR2)
+#if !PetscDefined(MISSING_SIGUSR2)
     /* signal(SIGUSR2, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
     SignalSet = PETSC_TRUE;
   }
   if (!routine) {
-#if !defined(PETSC_MISSING_SIGALRM)
+#if !PetscDefined(MISSING_SIGALRM)
     /* signal(SIGALRM, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGBUS)
+#if !PetscDefined(MISSING_SIGBUS)
     signal(SIGBUS, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGCONT)
+#if !PetscDefined(MISSING_SIGCONT)
     /* signal(SIGCONT, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGFPE)
+#if !PetscDefined(MISSING_SIGFPE)
     signal(SIGFPE, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGHUP)
+#if !PetscDefined(MISSING_SIGHUP)
     signal(SIGHUP, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGILL)
+#if !PetscDefined(MISSING_SIGILL)
     signal(SIGILL, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGINT)
+#if !PetscDefined(MISSING_SIGINT)
     /* signal(SIGINT,  SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGPIPE)
+#if !PetscDefined(MISSING_SIGPIPE)
     signal(SIGPIPE, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGQUIT)
+#if !PetscDefined(MISSING_SIGQUIT)
     signal(SIGQUIT, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGSEGV)
+#if !PetscDefined(MISSING_SIGSEGV)
     signal(SIGSEGV, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGSYS)
+#if !PetscDefined(MISSING_SIGSYS)
     signal(SIGSYS, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTERM)
+#if !PetscDefined(MISSING_SIGTERM)
     signal(SIGTERM, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTRAP)
+#if !PetscDefined(MISSING_SIGTRAP)
     signal(SIGTRAP, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTSTP)
+#if !PetscDefined(MISSING_SIGTSTP)
     /* signal(SIGTSTP, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGURG)
+#if !PetscDefined(MISSING_SIGURG)
     signal(SIGURG, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGUSR1)
+#if !PetscDefined(MISSING_SIGUSR1)
     /* signal(SIGUSR1, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGUSR2)
+#if !PetscDefined(MISSING_SIGUSR2)
     /* signal(SIGUSR2, SIG_DFL); */
 #endif
     SignalSet = PETSC_FALSE;
@@ -361,55 +359,55 @@ PetscErrorCode PetscPopSignalHandler(void)
   sh  = sh->previous;
   PetscCall(PetscFree(tmp));
   if (!sh || !sh->handler) {
-#if !defined(PETSC_MISSING_SIGALRM)
+#if !PetscDefined(MISSING_SIGALRM)
     /* signal(SIGALRM, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGBUS)
+#if !PetscDefined(MISSING_SIGBUS)
     signal(SIGBUS, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGCONT)
+#if !PetscDefined(MISSING_SIGCONT)
     /* signal(SIGCONT, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGFPE)
+#if !PetscDefined(MISSING_SIGFPE)
     signal(SIGFPE, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGHUP)
+#if !PetscDefined(MISSING_SIGHUP)
     signal(SIGHUP, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGILL)
+#if !PetscDefined(MISSING_SIGILL)
     signal(SIGILL, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGINT)
+#if !PetscDefined(MISSING_SIGINT)
     /* signal(SIGINT,  SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGPIPE)
+#if !PetscDefined(MISSING_SIGPIPE)
     signal(SIGPIPE, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGQUIT)
+#if !PetscDefined(MISSING_SIGQUIT)
     signal(SIGQUIT, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGSEGV)
+#if !PetscDefined(MISSING_SIGSEGV)
     signal(SIGSEGV, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGSYS)
+#if !PetscDefined(MISSING_SIGSYS)
     signal(SIGSYS, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTERM)
+#if !PetscDefined(MISSING_SIGTERM)
     signal(SIGTERM, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTRAP)
+#if !PetscDefined(MISSING_SIGTRAP)
     signal(SIGTRAP, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGTSTP)
+#if !PetscDefined(MISSING_SIGTSTP)
     /* signal(SIGTSTP, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGURG)
+#if !PetscDefined(MISSING_SIGURG)
     signal(SIGURG, SIG_DFL);
 #endif
-#if !defined(PETSC_MISSING_SIGUSR1)
+#if !PetscDefined(MISSING_SIGUSR1)
     /* signal(SIGUSR1, SIG_DFL); */
 #endif
-#if !defined(PETSC_MISSING_SIGUSR2)
+#if !PetscDefined(MISSING_SIGUSR2)
     /* signal(SIGUSR2, SIG_DFL); */
 #endif
     SignalSet = PETSC_FALSE;

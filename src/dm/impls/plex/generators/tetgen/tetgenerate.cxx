@@ -5,7 +5,7 @@
   #include <egads_lite.h>
 #endif
 
-#if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
+#if PetscDefined(HAVE_TETGEN_TETLIBRARY_NEEDED)
   #define TETLIBRARY
 #endif
 #if defined(__clang__)

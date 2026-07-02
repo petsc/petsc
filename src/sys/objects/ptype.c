@@ -26,10 +26,10 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
   PetscFunctionBegin;
   if (ptype == PETSC_INT) *mtype = MPIU_INT;
   else if (ptype == PETSC_DOUBLE) *mtype = MPI_DOUBLE;
-#if defined(PETSC_HAVE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(HAVE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
   else if (ptype == PETSC_COMPLEX) *mtype = MPI_C_COMPLEX;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
   else if (ptype == PETSC_COMPLEX) *mtype = MPIU___COMPLEX128;
   #else
   else if (ptype == PETSC_COMPLEX) *mtype = MPI_C_DOUBLE_COMPLEX;
@@ -45,9 +45,9 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
   else if (ptype == PETSC_FLOAT) *mtype = MPI_FLOAT;
   else if (ptype == PETSC_CHAR) *mtype = MPI_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128) *mtype = MPIU___FLOAT128;
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   else if (ptype == PETSC___FP16) *mtype = MPIU___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown PETSc datatype");
@@ -73,17 +73,15 @@ PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType
 {
   PetscFunctionBegin;
   if (mtype == MPIU_INT) *ptype = PETSC_INT;
-#if defined(PETSC_USE_64BIT_INDICES)
-  else if (mtype == MPI_INT) *ptype = PETSC_ENUM;
-#endif
+  else if (PetscDefined(USE_64BIT_INDICES) && mtype == MPI_INT) *ptype = PETSC_ENUM;
   else if (mtype == MPIU_INT64) *ptype = PETSC_INT64;
   else if (mtype == MPIU_COUNT) *ptype = PETSC_COUNT;
   else if (mtype == MPIU_INT32) *ptype = PETSC_INT32;
   else if (mtype == MPI_DOUBLE) *ptype = PETSC_DOUBLE;
-#if defined(PETSC_HAVE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(HAVE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
   else if (mtype == MPI_C_COMPLEX) *ptype = PETSC_COMPLEX;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
   else if (mtype == MPIU___COMPLEX128) *ptype = PETSC_COMPLEX;
   #else
   else if (mtype == MPI_C_DOUBLE_COMPLEX) *ptype = PETSC_COMPLEX;
@@ -93,9 +91,9 @@ PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType
   else if (mtype == MPI_SHORT) *ptype = PETSC_SHORT;
   else if (mtype == MPI_FLOAT) *ptype = PETSC_FLOAT;
   else if (mtype == MPI_CHAR) *ptype = PETSC_CHAR;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   else if (mtype == MPIU___FLOAT128) *ptype = PETSC___FLOAT128;
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   else if (mtype == MPIU___FP16) *ptype = PETSC___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled MPI datatype");
@@ -105,7 +103,7 @@ PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType
 typedef enum {
   PETSC_INT_SIZE    = sizeof(PetscInt),
   PETSC_DOUBLE_SIZE = sizeof(double),
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PETSC_COMPLEX_SIZE = sizeof(PetscComplex),
 #else
   PETSC_COMPLEX_SIZE = 2 * sizeof(PetscReal),
@@ -120,10 +118,10 @@ typedef enum {
   PETSC_INT32_SIZE       = sizeof(PetscInt32),
   PETSC_BIT_LOGICAL_SIZE = sizeof(char),
   PETSC_COUNT_SIZE       = sizeof(PetscCount)
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
     ,
   PETSC___FLOAT128_SIZE = sizeof(__float128)
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
     ,
   PETSC___FP16_SIZE = sizeof(__fp16)
 #endif
@@ -161,9 +159,9 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
   else if (ptype == PETSC_INT32) *size = PETSC_INT32_SIZE;
   else if (ptype == PETSC_COUNT) *size = PETSC_COUNT_SIZE;
   else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128) *size = PETSC___FLOAT128_SIZE;
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   else if (ptype == PETSC___FP16) *size = PETSC___FP16_SIZE;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown PETSc datatype");

@@ -19,12 +19,12 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
+#if PetscDefined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
   {
     static PetscScalar w[2000]; /* very BAD need to fix */
     fortransolvebaij4_(&n, x, ai, aj, diag, aa, b, w);
   }
-#elif defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
+#elif PetscDefined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
   fortransolvebaij4unroll_(&n, x, ai, aj, diag, aa, b);
 #else
   {

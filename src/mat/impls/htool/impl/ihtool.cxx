@@ -565,14 +565,14 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
       PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
       PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->block_diagonal_hmatrix ? a->block_diagonal_hmatrix->get_symmetry() : 'N'));
       if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
 #else
         PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)scale));
 #endif
       }
       if (PetscAbsScalar(shift) > PETSC_MACHINE_EPSILON) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(shift), (double)PetscImaginaryPart(shift)));
 #else
         PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)shift));

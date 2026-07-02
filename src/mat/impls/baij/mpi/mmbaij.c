@@ -12,7 +12,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   PetscInt     bs = mat->rmap->bs, *stmp;
   IS           from, to;
   Vec          gvec;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL;
   PetscHashIter tpos;
   PetscInt      gid, lid;
@@ -21,7 +21,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   /* use a table - Mark Adams */
   PetscCall(PetscHMapICreateWithSize(B->mbs, &gid1_lid1));
   for (i = 0; i < B->mbs; i++) {
@@ -139,7 +139,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   PetscCall(VecDestroy(&baij->lvec));
   PetscCall(VecScatterDestroy(&baij->Mvctx));
   if (baij->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
     PetscCall(PetscFree(baij->colmap));

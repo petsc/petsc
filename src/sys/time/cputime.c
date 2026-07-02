@@ -7,17 +7,17 @@
 #include <petsctime.h> /*I "petsctime.h" I*/
 #include <ctype.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_TIME_H)
+#if PetscDefined(HAVE_TIME_H)
   #include <time.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
 
-#if defined(PETSC_HAVE_SYS_TIMES_H)
+#if PetscDefined(HAVE_SYS_TIMES_H)
 
   #include <sys/times.h>
 PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
@@ -30,7 +30,7 @@ PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_CLOCK)
+#elif PetscDefined(HAVE_CLOCK)
 
   #include <time.h>
 

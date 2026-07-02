@@ -104,7 +104,7 @@
 
 /* --- Helper macro for error checking --- */
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #define PetscHashAssert(expr) PetscCheck(expr, PETSC_COMM_SELF, PETSC_ERR_LIB, "[khash] Assertion: `%s' failed.", PetscStringize(expr))
 #else
   #define PetscHashAssert(expr) ((void)(expr))
@@ -219,7 +219,7 @@ static inline PetscHash_t PetscHash_UInt64(PetscHash64_t key)
 
 static inline PetscHash_t PetscHashInt(PetscInt key)
 {
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   return PetscHash_UInt64((PetscHash64_t)key);
 #else
   return PetscHash_UInt32((PetscHash32_t)key);
@@ -228,7 +228,7 @@ static inline PetscHash_t PetscHashInt(PetscInt key)
 
 static inline PetscHash_t PetscHashInt64(PetscInt64 key)
 {
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   return PetscHash_UInt64((PetscHash64_t)key);
 #else
   return PetscHash_UInt32((PetscHash32_t)key);

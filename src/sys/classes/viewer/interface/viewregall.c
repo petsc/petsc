@@ -38,31 +38,31 @@ PetscErrorCode PetscViewerRegisterAll(void)
   PetscCall(PetscViewerRegister(PETSCVIEWERBINARY, PetscViewerCreate_Binary));
   PetscCall(PetscViewerRegister(PETSCVIEWERSTRING, PetscViewerCreate_String));
   PetscCall(PetscViewerRegister(PETSCVIEWERDRAW, PetscViewerCreate_Draw));
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   PetscCall(PetscViewerRegister(PETSCVIEWERSOCKET, PetscViewerCreate_Socket));
 #endif
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   PetscCall(PetscViewerRegister(PETSCVIEWERMATHEMATICA, PetscViewerCreate_Mathematica));
 #endif
   PetscCall(PetscViewerRegister(PETSCVIEWERVU, PetscViewerCreate_VU));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscViewerRegister(PETSCVIEWERHDF5, PetscViewerCreate_HDF5));
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscViewerRegister(PETSCVIEWERMATLAB, PetscViewerCreate_Matlab));
 #endif
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscViewerRegister(PETSCVIEWERSAWS, PetscViewerCreate_SAWs));
 #endif
   PetscCall(PetscViewerRegister(PETSCVIEWERVTK, PetscViewerCreate_VTK));
   PetscCall(PetscViewerRegister(PETSCVIEWERGLVIS, PetscViewerCreate_GLVis));
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscCall(PetscViewerRegister(PETSCVIEWERADIOS, PetscViewerCreate_ADIOS));
 #endif
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
   PetscCall(PetscViewerRegister(PETSCVIEWEREXODUSII, PetscViewerCreate_ExodusII));
 #endif
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
   PetscCall(PetscViewerRegister(PETSCVIEWERCGNS, PetscViewerCreate_CGNS));
 #endif
   PetscCall(PetscViewerRegister(PETSCVIEWERPYVISTA, PetscViewerCreate_PyVista));

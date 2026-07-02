@@ -1,6 +1,6 @@
 #include <petscsys.h> /*I  "petscviewer.h"  I*/
 
-#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
+#if PetscDefined(NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but do not
    ensure that the following definitions are made */
 typedef unsigned char  u_char;
@@ -12,46 +12,46 @@ typedef unsigned long  u_long;
 
 #include <errno.h>
 #include <ctype.h>
-#if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
+#if PetscDefined(HAVE_MACHINE_ENDIAN_H)
   #include <machine/endian.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SOCKET_H)
+#if PetscDefined(HAVE_SYS_SOCKET_H)
   #include <sys/socket.h>
 #endif
-#if defined(PETSC_HAVE_SYS_WAIT_H)
+#if PetscDefined(HAVE_SYS_WAIT_H)
   #include <sys/wait.h>
 #endif
-#if defined(PETSC_HAVE_NETINET_IN_H)
+#if PetscDefined(HAVE_NETINET_IN_H)
   #include <netinet/in.h>
 #endif
-#if defined(PETSC_HAVE_NETDB_H)
+#if PetscDefined(HAVE_NETDB_H)
   #include <netdb.h>
 #endif
-#if defined(PETSC_HAVE_FCNTL_H)
+#if PetscDefined(HAVE_FCNTL_H)
   #include <fcntl.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
-#if defined(PETSC_HAVE_WINSOCK2_H)
+#if PetscDefined(HAVE_WINSOCK2_H)
   #include <Winsock2.h>
 #endif
 #include <sys/stat.h>
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
-#if defined(PETSC_NEED_CLOSE_PROTO)
+#if PetscDefined(NEED_CLOSE_PROTO)
 PETSC_EXTERN int close(int);
 #endif
-#if defined(PETSC_NEED_SOCKET_PROTO)
+#if PetscDefined(NEED_SOCKET_PROTO)
 PETSC_EXTERN int socket(int, int, int);
 #endif
-#if defined(PETSC_NEED_SLEEP_PROTO)
+#if PetscDefined(NEED_SLEEP_PROTO)
 PETSC_EXTERN int sleep(unsigned);
 #endif
-#if defined(PETSC_NEED_CONNECT_PROTO)
+#if PetscDefined(NEED_CONNECT_PROTO)
 PETSC_EXTERN int connect(int, struct sockaddr *, int);
 #endif
 
@@ -63,7 +63,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
   if (vmatlab->port) {
     int ierr;
 
-#if defined(PETSC_HAVE_CLOSESOCKET)
+#if PetscDefined(HAVE_CLOSESOCKET)
     ierr = closesocket(vmatlab->port);
 #else
     ierr = close(vmatlab->port);
@@ -120,7 +120,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SYS, "system error");
     }
     if (connect(s, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-#if defined(PETSC_HAVE_WSAGETLASTERROR)
+#if PetscDefined(HAVE_WSAGETLASTERROR)
       ierr = WSAGetLastError();
       if (ierr == WSAEADDRINUSE) (*PetscErrorPrintf)("SEND: address is in use\n");
       else if (ierr == WSAEALREADY) (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
@@ -156,7 +156,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
       }
 #endif
       flg = PETSC_TRUE;
-#if defined(PETSC_HAVE_CLOSESOCKET)
+#if PetscDefined(HAVE_CLOSESOCKET)
       closesocket(s);
 #else
       close(s);
@@ -199,7 +199,7 @@ static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   sa.sin_port   = htons((u_short)portnum);
 
   PetscCheck((s = socket(AF_INET, SOCK_STREAM, 0)) >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Error running socket() command");
-#if defined(PETSC_HAVE_SO_REUSEADDR)
+#if PetscDefined(HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
     int ret    = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
@@ -208,7 +208,7 @@ static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
 #endif
 
   while (bind(s, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-#if defined(PETSC_HAVE_WSAGETLASTERROR)
+#if PetscDefined(HAVE_WSAGETLASTERROR)
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
 #else
@@ -239,7 +239,7 @@ static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
 static PetscErrorCode PetscSocketListen(int listenport, int *t)
 {
   struct sockaddr_in isa;
-#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
+#if PetscDefined(HAVE_ACCEPT_SIZE_T)
   size_t i;
 #else
   int i;

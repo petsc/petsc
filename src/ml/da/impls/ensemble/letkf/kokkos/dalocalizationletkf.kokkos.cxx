@@ -44,7 +44,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   DevScalar1D                                               values_dev;
   HostInt1D                                                 row_counts_host, row_offsets_host, col_indices_host;
   HostScalar1D                                              values_host;
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   DevInt1D  actual_counts_dev;
   HostInt1D actual_counts_host;
 #endif
@@ -132,7 +132,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
   PetscCallCXX(col_indices_dev = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, MemSpace>("col_indices", total_nnz));
   PetscCallCXX(values_dev = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, MemSpace>("values", total_nnz));
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   /* Mirror the CPU backend's PetscAssert(pos == row_counts[i]): record the actual Pass-2 write
      count per row in a device View and verify on host that it matches Pass 1. Allocated only in
      debug builds; release builds skip both the View and the per-row write. */
@@ -155,13 +155,13 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat_Kokkos(PetscDALETK
           pos++;
         }
       }
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
       actual_counts_dev(i) = pos;
 #endif
     });
   Kokkos::fence();
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   PetscCallCXX(actual_counts_host = Kokkos::View<PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace>("actual_counts_host", n_vert_local));
   PetscCallCXX(Kokkos::deep_copy(actual_counts_host, actual_counts_dev));
   for (PetscInt i = 0; i < n_vert_local; ++i)

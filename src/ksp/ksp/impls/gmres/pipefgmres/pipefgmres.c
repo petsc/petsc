@@ -486,18 +486,12 @@ static PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", pipefgmres->max_k));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance=%g\n", (double)pipefgmres->haptol));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g\n", (double)pipefgmres->shift));
-#endif
+    if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
+    else PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g\n", (double)PetscRealPart(pipefgmres->shift)));
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "restart %" PetscInt_FMT, pipefgmres->max_k));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
-#else
-    PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g\n", (double)pipefgmres->shift));
-#endif
+    if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
+    else PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g\n", (double)PetscRealPart(pipefgmres->shift)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

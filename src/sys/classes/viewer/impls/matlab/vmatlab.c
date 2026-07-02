@@ -36,7 +36,7 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const 
   ml = (PetscViewer_Matlab *)mfile->data;
   if (!ml->rank) {
     PetscCall(PetscInfo(mfile, "Putting MATLAB array %s\n", name));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     mat = mxCreateDoubleMatrix(m, n, mxREAL);
 #else
     mat = mxCreateDoubleMatrix(m, n, mxCOMPLEX);

@@ -15,13 +15,13 @@ static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel v
 #include <petscvec.h>
 #include <petscdevice.h>
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>
   #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
-#elif defined(PETSC_HAVE_HIP)
+#elif PetscDefined(HAVE_HIP)
   #include <petscdevice_hip.h>
   #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
-#elif defined(PETSC_HAVE_KOKKOS)
+#elif PetscDefined(HAVE_KOKKOS)
   #include <Kokkos_Core.hpp>
   #define SyncDevice() Kokkos::fence()
 #else

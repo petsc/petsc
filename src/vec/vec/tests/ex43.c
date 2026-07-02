@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test with %" PetscInt_FMT " random vectors of length %" PetscInt_FMT "\n", k, n));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(PetscRandomSetFromOptions(rctx));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscRandomSetInterval(rctx, -1. + 4. * PETSC_i, 1. + 5. * PETSC_i));
 #else
   PetscCall(PetscRandomSetInterval(rctx, -1., 1.));

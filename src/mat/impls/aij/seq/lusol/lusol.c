@@ -4,13 +4,13 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#if PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define LU1FAC lu1fac_
   #define LU6SOL lu6sol_
   #define M1PAGE m1page_
   #define M5SETX m5setx_
   #define M6RDEL m6rdel_
-#elif !defined(PETSC_HAVE_FORTRAN_CAPS)
+#elif !PetscDefined(HAVE_FORTRAN_CAPS)
   #define LU1FAC lu1fac
   #define LU6SOL lu6sol
   #define M1PAGE m1page

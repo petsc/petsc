@@ -488,7 +488,7 @@ static void PackInit_IntegerType(PetscSFLink link)
   link->da_FetchAndAddLocal = FetchAndOpLocal<Type, AtomicFetchAdd<Type>, BS, EQ>;
 }
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
 template <typename Type, PetscInt BS, PetscInt EQ>
 static void PackInit_ComplexType(PetscSFLink link)
 {
@@ -639,7 +639,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 {
   PetscInt  nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
   PetscBool is2Int, is2PetscInt;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscInt nPetscComplex = 0;
 #endif
 
@@ -652,7 +652,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_INT, &nInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_INT, &nPetscInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_REAL, &nPetscReal));
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_COMPLEX, &nPetscComplex));
 #endif
   PetscCall(MPIPetsc_Type_compare(unit, MPI_2INT, &is2Int));
@@ -663,7 +663,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
   } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
     PackInit_PairType<Kokkos::pair<PetscInt, PetscInt>>(link);
   } else if (nPetscReal) {
-#if !defined(PETSC_HAVE_DEVICE) /* Skip the unimportant stuff to speed up SF device compilation time */
+#if !PetscDefined(HAVE_DEVICE) /* Skip the unimportant stuff to speed up SF device compilation time */
     if (nPetscReal == 8) PackInit_RealType<PetscReal, 8, 1>(link);
     else if (nPetscReal % 8 == 0) PackInit_RealType<PetscReal, 8, 0>(link);
     else if (nPetscReal == 4) PackInit_RealType<PetscReal, 4, 1>(link);
@@ -675,7 +675,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 #endif
       PackInit_RealType<PetscReal, 1, 0>(link);
   } else if (nPetscInt && sizeof(PetscInt) == sizeof(llint)) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nPetscInt == 8) PackInit_IntegerType<llint, 8, 1>(link);
     else if (nPetscInt % 8 == 0) PackInit_IntegerType<llint, 8, 0>(link);
     else if (nPetscInt == 4) PackInit_IntegerType<llint, 4, 1>(link);
@@ -687,7 +687,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 #endif
       PackInit_IntegerType<llint, 1, 0>(link);
   } else if (nInt) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nInt == 8) PackInit_IntegerType<int, 8, 1>(link);
     else if (nInt % 8 == 0) PackInit_IntegerType<int, 8, 0>(link);
     else if (nInt == 4) PackInit_IntegerType<int, 4, 1>(link);
@@ -699,7 +699,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 #endif
       PackInit_IntegerType<int, 1, 0>(link);
   } else if (nSignedChar) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nSignedChar == 8) PackInit_IntegerType<char, 8, 1>(link);
     else if (nSignedChar % 8 == 0) PackInit_IntegerType<char, 8, 0>(link);
     else if (nSignedChar == 4) PackInit_IntegerType<char, 4, 1>(link);
@@ -711,7 +711,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 #endif
       PackInit_IntegerType<char, 1, 0>(link);
   } else if (nUnsignedChar) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nUnsignedChar == 8) PackInit_IntegerType<unsigned char, 8, 1>(link);
     else if (nUnsignedChar % 8 == 0) PackInit_IntegerType<unsigned char, 8, 0>(link);
     else if (nUnsignedChar == 4) PackInit_IntegerType<unsigned char, 4, 1>(link);
@@ -722,9 +722,9 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
     else if (nUnsignedChar % 1 == 0)
 #endif
       PackInit_IntegerType<unsigned char, 1, 0>(link);
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   } else if (nPetscComplex) {
-  #if !defined(PETSC_HAVE_DEVICE)
+  #if !PetscDefined(HAVE_DEVICE)
     if (nPetscComplex == 8) PackInit_ComplexType<Kokkos::complex<PetscReal>, 8, 1>(link);
     else if (nPetscComplex % 8 == 0) PackInit_ComplexType<Kokkos::complex<PetscReal>, 8, 0>(link);
     else if (nPetscComplex == 4) PackInit_ComplexType<Kokkos::complex<PetscReal>, 4, 1>(link);
@@ -741,7 +741,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 
     PetscCall(PetscSFGetDatatypeSize_Internal(PETSC_COMM_SELF, unit, &nbyte));
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
       if (nbyte == 4) PackInit_DumbType<char, 4, 1>(link);
       else if (nbyte % 4 == 0) PackInit_DumbType<char, 4, 0>(link);
       else if (nbyte == 2) PackInit_DumbType<char, 2, 1>(link);
@@ -752,7 +752,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
         PackInit_DumbType<char, 1, 0>(link);
     } else {
       PetscCall(PetscIntCast(nbyte / sizeof(int), &nInt));
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
       if (nInt == 8) PackInit_DumbType<int, 8, 1>(link);
       else if (nInt % 8 == 0) PackInit_DumbType<int, 8, 0>(link);
       else if (nInt == 4) PackInit_DumbType<int, 4, 1>(link);

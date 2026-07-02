@@ -230,7 +230,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < Np) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }
@@ -342,7 +342,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < Np) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }
@@ -447,7 +447,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < cgeom->numPoints) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dE, dE, fegeom.invJ));
 #endif
       }
@@ -564,7 +564,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
       if (debug > 1) {
         if ((fgeom->isAffine && q == 0) || !fgeom->isAffine) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
           PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
           PetscCall(DMPrintCellVector(e, "n", dim, fegeom.n));
 #endif
@@ -697,7 +697,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dE, fegeom.invJ));
 #endif
       }
@@ -1168,7 +1168,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, Pet
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }

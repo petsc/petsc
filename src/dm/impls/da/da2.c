@@ -6,7 +6,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
   PetscMPIInt rank;
   PetscBool   isascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 
@@ -17,7 +17,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   if (isascii) {
@@ -132,7 +132,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
     PetscCall(DMView_DA_GLVis(da, viewer));
   } else if (isbinary) {
     PetscCall(DMView_DA_Binary(da, viewer));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif
@@ -211,7 +211,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   PetscFunctionBegin;
   PetscCheck(stencil_type != DMDA_STENCIL_BOX || (bx != DM_BOUNDARY_MIRROR && by != DM_BOUNDARY_MIRROR), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Mirror boundary and box stencil");
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
-#if !defined(PETSC_USE_64BIT_INDICES)
+#if !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(((PetscInt64)M) * ((PetscInt64)N) * ((PetscInt64)dof) <= (PetscInt64)PETSC_MPI_INT_MAX, comm, PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " (dof) is too large for 32-bit indices", M, N, dof);
 #endif
   PetscCall(PetscMPIIntCast(dd->m, &m));

@@ -126,7 +126,7 @@ PetscErrorCode PetscSetDisplay(void)
 
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
-#if defined(PETSC_HAVE_X)
+#if PetscDefined(HAVE_X)
   flag = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-x_virtual", &flag, NULL));
   if (flag) {

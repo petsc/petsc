@@ -544,7 +544,7 @@ M*/
           `CHKERRMPI()`, `PetscCallBack()`, `PetscCallAbort()`, `PetscCallVoid()`, `PetscCallNull()`
 M*/
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCall(PetscErrorCode);
 void PetscCallBack(const char *, PetscErrorCode);
 void PetscCallVoid(PetscErrorCode);
@@ -761,7 +761,7 @@ M*/
 
 .seealso: `PetscCallMPI()`, `PetscCallAbort()`, `SETERRABORT()`
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCallMPI(PetscMPIInt);
 void PetscCallMPIAbort(MPI_Comm, PetscMPIInt);
 void PetscCallMPINull(PetscMPIInt);
@@ -873,7 +873,7 @@ M*/
 .seealso: `SETERRABORT()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`,
           `SETERRQ()`, `CHKMEMQ`, `PetscCallMPI()`, `PetscCallCXXAbort()`
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCallAbort(MPI_Comm, PetscErrorCode);
 void PetscCallContinue(PetscErrorCode);
 #else
@@ -949,7 +949,7 @@ PETSC_EXTERN PetscBool petscwaitonerrorflg;
 PETSC_EXTERN PetscBool petscindebugger;
 PETSC_EXTERN PetscBool petscabortmpifinalize;
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PETSCABORTWITHERR_Private(MPI_Comm, PetscErrorCode);
 #else
   #define PETSCABORTWITHIERR_Private(comm, ierr) \
@@ -999,7 +999,7 @@ void PETSCABORTWITHERR_Private(MPI_Comm, PetscErrorCode);
 .seealso: `PetscError()`, `PetscCall()`, `SETERRABORT()`, `PetscCheckAbort()`, `PetscCallMPIAbort()`, `PetscCall()`, `PetscCallMPI()`,
           `PetscCallAbort()`, `MPI_Abort()`, `PetscErrorCode`
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PETSCABORT(MPI_Comm, PetscErrorCode);
 #else
   #define PETSCABORT(comm, ...) \
@@ -1266,7 +1266,7 @@ M*/
 
 .seealso: `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscMallocValidate()`
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
   #define CHKMEMQ
   #define CHKMEMA
 #else
@@ -1414,11 +1414,11 @@ typedef struct {
   int         hotdepth;
   PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */
 } PetscStack;
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PETSC_EXTERN PetscStack petscstack;
 #endif
 
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
   #include <petsc/private/petscfptimpl.h>
   /*
    Registers the current function into the global function pointer to function name table
@@ -1438,7 +1438,7 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscRegister__FUNCT__()
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER) || defined(__clang_analyzer__)
+#if PetscDefined(CLANG_STATIC_ANALYZER) || defined(__clang_analyzer__)
   #define PetscStackPushNoCheck(funct, petsc_routine, hot)
   #define PetscStackUpdateLine
   #define PetscStackPushExternal(funct)
@@ -1456,7 +1456,7 @@ PETSC_EXTERN PetscStack petscstack;
     (void)func__; \
     (void)line__
   #define PetscStackPop_Private(stack__, func__) (void)func__
-#elif defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#elif PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
     do { \
@@ -1906,7 +1906,7 @@ M*/
   #define PetscStackPush(f)         CHKMEMQ
 #endif /* PETSC_USE_DEBUG */
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
   #define PetscCallExternalVoid(...)
 template <typename F, typename... Args>
 void PetscCallExternal(F, Args...);

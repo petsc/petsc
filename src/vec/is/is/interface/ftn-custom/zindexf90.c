@@ -1,12 +1,12 @@
 #include <petscis.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsclayoutgetranges_     PETSCLAYOUTGETRANGES
   #define petsclayoutrestoreranges_ PETSCLAYOUTRESTORERANGES
   #define isgetindices_             ISGETINDICES
   #define isrestoreindices_         ISRESTOREINDICES
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petsclayoutgetranges_     petsclayoutgetranges
   #define petsclayoutrestoreranges_ petsclayoutrestoreranges
   #define isgetindices_             isgetindices

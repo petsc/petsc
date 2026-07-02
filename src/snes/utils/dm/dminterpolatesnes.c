@@ -220,7 +220,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscCall(PetscMalloc3(N,&foundCells,N,&foundProcs,N,&globalProcs));
   /* foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]); */
 #else
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
   PetscCall(PetscMalloc1(N * ctx->dim, &globalPointsScalar));
   for (i = 0; i < N * ctx->dim; i++) globalPointsScalar[i] = globalPoints[i];
   #else

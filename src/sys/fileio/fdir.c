@@ -1,16 +1,16 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for lstat() */
 #include <petscsys.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_DIRECT_H)
+#if PetscDefined(HAVE_DIRECT_H)
   #include <direct.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
-#if defined(PETSC_HAVE_STDINT_H)
+#if PetscDefined(HAVE_STDINT_H)
   #include <stdint.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H) /* for mkdtemp */
+#if PetscDefined(HAVE_UNISTD_H) /* for mkdtemp */
   #include <unistd.h>
 #endif
 
@@ -48,7 +48,7 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscFunctionBegin;
   PetscCall(PetscTestDirectory(dir, 'w', &flg));
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
-#if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
+#if PetscDefined(HAVE__MKDIR) && PetscDefined(HAVE_DIRECT_H)
   err = _mkdir(dir);
 #else
   err = mkdir(dir, S_IRWXU | S_IRGRP | S_IXGRP);
@@ -70,7 +70,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 PetscErrorCode PetscMkdtemp(char dir[])
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_IO_H) && defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
+#if PetscDefined(HAVE_WINDOWS_H) && PetscDefined(HAVE_IO_H) && PetscDefined(HAVE__MKDIR) && PetscDefined(HAVE_DIRECT_H)
   {
     int      err = 1;
     char     name[PETSC_MAX_PATH_LEN];
@@ -110,13 +110,13 @@ PetscErrorCode PetscMkdtemp(char dir[])
 
 .seealso: `PetscMkdir()`, `PetscTestDirectory()`
 @*/
-#if defined(PETSC_HAVE_DIRECT_H)
+#if PetscDefined(HAVE_DIRECT_H)
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct _finddata_t data;
   char               loc[PETSC_MAX_PATH_LEN];
   PetscBool          flg1, flg2;
-  #if defined(PETSC_HAVE_STDINT_H)
+  #if PetscDefined(HAVE_STDINT_H)
   intptr_t handle;
   #else
   long handle;

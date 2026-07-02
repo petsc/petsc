@@ -11,7 +11,7 @@ static PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)
 static PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if (r->iset) *val = PetscRealPart(r->width) * RAND_WRAP + PetscRealPart(r->low) + (PetscImaginaryPart(r->width) * RAND_WRAP + PetscImaginaryPart(r->low)) * PETSC_i;
   else *val = RAND_WRAP + RAND_WRAP * PETSC_i;
 #else
@@ -24,7 +24,7 @@ static PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val)
 static PetscErrorCode PetscRandomGetValueReal_Rand(PetscRandom r, PetscReal *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if (r->iset) *val = PetscRealPart(r->width) * RAND_WRAP + PetscRealPart(r->low);
   else *val = RAND_WRAP;
 #else

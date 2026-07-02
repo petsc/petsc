@@ -49,7 +49,7 @@ size_t PetscIntAddressToFortran(const PetscInt *base, const PetscInt *addr)
   size_t tmp3 = (size_t)addr;
   size_t itmp2;
 
-#if !defined(PETSC_HAVE_CRAY90_POINTER)
+#if !PetscDefined(HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1) / sizeof(PetscInt);
     itmp2 = (size_t)tmp2;
@@ -99,7 +99,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj, PetscInt align, Pets
   PetscInt shift;
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_CRAY90_POINTER)
+#if !PetscDefined(HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) { /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1) / sizeof(PetscScalar);
     itmp2 = (size_t)tmp2;
@@ -205,10 +205,10 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj, PetscScalar *base,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscisinfornanscalar_ PETSCISINFORNANSCALAR
   #define petscisinfornanreal_   PETSCISINFORNANREAL
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscisinfornanscalar_ petscisinfornanscalar
   #define petscisinfornanreal_   petscisinfornanreal
 #endif

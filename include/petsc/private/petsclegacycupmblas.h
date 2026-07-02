@@ -2,10 +2,10 @@
 
 #include <petscdevice_cupm.h>
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   /* complex single */
-  #if defined(PETSC_USE_COMPLEX)
-    #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_COMPLEX)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define cublasXaxpy(a, b, c, d, e, f, g)                      cublasCaxpy((a), (b), (cuComplex *)(c), (cuComplex *)(d), (e), (cuComplex *)(f), (g))
       #define cublasXscal(a, b, c, d, e)                            cublasCscal((a), (b), (cuComplex *)(c), (cuComplex *)(d), (e))
       #define cublasXdotu(a, b, c, d, e, f, g)                      cublasCdotu((a), (b), (cuComplex *)(c), (d), (cuComplex *)(e), (f), (cuComplex *)(g))
@@ -36,7 +36,7 @@
 
     #endif
   #else /* real single */
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define cublasXaxpy               cublasSaxpy
       #define cublasXscal               cublasSscal
       #define cublasXdotu               cublasSdot
@@ -65,8 +65,8 @@
     #endif
   #endif
 
-  #if defined(PETSC_USE_COMPLEX)
-    #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_COMPLEX)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnCpotrf((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (g), (h))
       #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnCpotrf_bufferSize((a), (b), (c), (cuComplex *)(d), (e), (f))
       #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnCpotrs((a), (b), (c), (d), (cuComplex *)(e), (f), (cuComplex *)(g), (h), (i))
@@ -100,7 +100,7 @@
       #define cublasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 cublasZtrsm((a), (b), (c), (d), (e), (f), (g), (cuDoubleComplex *)(h), (cuDoubleComplex *)(i), (j), (cuDoubleComplex *)(k), (l))
     #endif
   #else /* real single */
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnSpotrf((a), (b), (c), (d), (e), (f), (g), (h))
       #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnSpotrf_bufferSize((a), (b), (c), (d), (e), (f))
       #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnSpotrs((a), (b), (c), (d), (e), (f), (g), (h), (i))
@@ -136,9 +136,9 @@
   #endif
 #endif // PETSC_HAVE_CUDA
 
-#if defined(PETSC_HAVE_HIP)
-  #if defined(PETSC_USE_COMPLEX)
-    #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(HAVE_HIP)
+  #if PetscDefined(USE_COMPLEX)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)                        hipsolverCpotrf((a), (b), (c), (hipComplex *)(d), (e), (hipComplex *)(f), (g), (h))
       #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   hipsolverCpotrf_bufferSize((a), (b), (c), (hipComplex *)(d), (e), (f))
       #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k)               hipsolverCpotrs((a), (b), (c), (d), (hipComplex *)(e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (j), (k))
@@ -172,7 +172,7 @@
       #define hipblasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 hipblasZtrsm((a), (b), (c), (d), (e), (f), (g), (hipDoubleComplex *)(h), (hipDoubleComplex *)(i), (j), (hipDoubleComplex *)(k), (l))
     #endif
   #else /* real single */
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)                        hipsolverSpotrf((a), (b), (c), (float *)(d), (e), (float *)(f), (g), (h))
       #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   hipsolverSpotrf_bufferSize((a), (b), (c), (float *)(d), (e), (f))
       #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k)               hipsolverSpotrs((a), (b), (c), (d), (float *)(e), (f), (float *)(g), (h), (float *)(i), (j), (k))
@@ -208,7 +208,7 @@
   #endif
 
   /* complex single */
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     #if defined(HIPBLAS_V2)
 typedef hipDoubleComplex PetscHipblasDoubleComplex;
 typedef hipFloatComplex  PetscHipblasFloatComplex;
@@ -217,7 +217,7 @@ typedef hipblasComplex       PetscHipblasFloatComplex;
 typedef hipblasDoubleComplex PetscHipblasDoubleComplex;
     #endif
 
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define hipblasXaxpy(a, b, c, d, e, f, g) hipblasCaxpy((a), (b), (PetscHipblasFloatComplex *)(c), (PetscHipblasFloatComplex *)(d), (e), (PetscHipblasFloatComplex *)(f), (g))
       #define hipblasXscal(a, b, c, d, e)       hipblasCscal((a), (b), (PetscHipblasFloatComplex *)(c), (PetscHipblasFloatComplex *)(d), (e))
       #define hipblasXdotu(a, b, c, d, e, f, g) hipblasCdotu((a), (b), (PetscHipblasFloatComplex *)(c), (d), (PetscHipblasFloatComplex *)(e), (f), (PetscHipblasFloatComplex *)(g))
@@ -249,7 +249,7 @@ typedef hipblasDoubleComplex PetscHipblasDoubleComplex;
         hipblasZgeam((a), (b), (c), (d), (e), (PetscHipblasDoubleComplex *)(f), (PetscHipblasDoubleComplex *)(g), (h), (PetscHipblasDoubleComplex *)(i), (PetscHipblasDoubleComplex *)(j), (k), (PetscHipblasDoubleComplex *)(l), (m))
     #endif
   #else /* real single */
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
       #define hipblasXaxpy  hipblasSaxpy
       #define hipblasXscal  hipblasSscal
       #define hipblasXdotu  hipblasSdot

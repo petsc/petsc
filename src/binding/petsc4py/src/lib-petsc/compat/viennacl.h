@@ -1,7 +1,7 @@
 #if !defined(PETSC4PY_COMPAT_VIENNACL_H)
 #define PETSC4PY_COMPAT_VIENNACL_H
 
-#if !defined(PETSC_HAVE_VIENNACL)
+#if !PetscDefined(HAVE_VIENNACL)
 
 #define PetscViennaCLError do { \
     PetscFunctionBegin; \

@@ -1,11 +1,11 @@
 #include <petscsys.h>
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #undef MPI_SUCCESS
 #endif
-#if defined(PETSC_HAVE_P4EST)
+#if PetscDefined(HAVE_P4EST)
   #include <p4est_to_p8est.h>
 #endif
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #define MPI_SUCCESS 0
 #endif
 

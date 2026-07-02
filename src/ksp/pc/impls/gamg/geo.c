@@ -4,7 +4,7 @@
 
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
 
-#if defined(PETSC_HAVE_TRIANGLE)
+#if PetscDefined(HAVE_TRIANGLE)
   #if !defined(ANSI_DECLARATORS)
     #define ANSI_DECLARATORS
   #endif
@@ -125,7 +125,7 @@ static PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems PetscOptionsO
 */
 static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride, PetscReal coords[], PetscInt nselected_1, const PetscInt clid_lid_1[], const PetscCoarsenData *agg_lists_1, const PetscInt crsGID[], PetscInt bs, Mat a_Prol, PetscReal *a_worst_best)
 {
-#if defined(PETSC_HAVE_TRIANGLE)
+#if PetscDefined(HAVE_TRIANGLE)
   PetscInt             jj, tid, tt, idx, nselected_2;
   struct triangulateio in, mid;
   const PetscInt      *selected_idx_2;

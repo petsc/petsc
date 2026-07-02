@@ -312,11 +312,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   PetscReal hmin;
   TSEvent   event;
   PetscBool flg;
-#if defined(PETSC_USE_REAL_SINGLE)
-  PetscReal tol = 1e-4;
-#else
-  PetscReal tol = 1e-6;
-#endif
+  PetscReal tol = PetscDefined(USE_REAL_SINGLE) ? 1e-4 : 1e-6;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);

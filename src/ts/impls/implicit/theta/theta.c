@@ -1137,7 +1137,7 @@ static PetscErrorCode TSThetaSetEndpoint_Theta(TS ts, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
 static PetscErrorCode TSComputeLinearStability_Theta(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
 {
   PetscComplex z  = xr + xi * PETSC_i, f;
@@ -1240,7 +1240,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   ts->ops->linearstability = TSComputeLinearStability_Theta;
 #endif
   ts->ops->getstages       = TSGetStages_Theta;

@@ -2,10 +2,10 @@
 #include <petsc/private/tsimpl.h> /*I   "petscts.h"   I*/
 #include <../src/ts/impls/explicit/rk/rk.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define tsrkgettableau_     TSRKGETTABLEAU
   #define tsrkrestoretableau_ TSRKRESTORETABLEAU
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define tsrkgettableau_     tsrkgettableau
   #define tsrkrestoretableau_ tsrkrestoretableau
 #endif

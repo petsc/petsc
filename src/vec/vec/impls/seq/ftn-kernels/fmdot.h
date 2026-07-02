@@ -1,13 +1,13 @@
 #pragma once
 
 #include <petscsys.h>
-#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_KERNEL_MDOT)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranmdot4_ FORTRANMDOT4
     #define fortranmdot3_ FORTRANMDOT3
     #define fortranmdot2_ FORTRANMDOT2
     #define fortranmdot1_ FORTRANMDOT1
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define fortranmdot4_ fortranmdot4
     #define fortranmdot3_ fortranmdot3
     #define fortranmdot2_ fortranmdot2

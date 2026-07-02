@@ -118,7 +118,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[])
 
             index = dof * (i + j * M + k * M * N) + d;
             v     = PetscAbsScalar(test_value - buffer[index]);
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
             if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
               PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "(%" PetscInt_FMT ")])\n", (double)PetscRealPart(test_value), (double)PetscImaginaryPart(test_value), i, j, k, d));
               dataverified = PETSC_FALSE;
@@ -224,7 +224,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-usempiio", &usempiio, NULL));
   if (!usempiio) PetscCall(TestDMDAVec(PETSC_FALSE));
   else {
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
     PetscCall(TestDMDAVec(PETSC_TRUE));
 #else
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Executing TestDMDAVec(PETSC_TRUE) requires a working MPI-2 implementation\n"));

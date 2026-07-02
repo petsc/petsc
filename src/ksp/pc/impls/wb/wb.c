@@ -26,7 +26,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   MatFactorInfo          info;
   PetscScalar           *xsurf, *xint;
   const PetscScalar     *rxint;
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   PetscScalar tmp;
 #endif
   PetscHMapI ht = NULL;
@@ -118,7 +118,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   xsurf[cnt++ + 25 * Nsurf] = 1;
 
   /* interpolations only sum to 1 when using direct solver */
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   for (i = 0; i < Nsurf; i++) {
     tmp = 0.0;
     for (j = 0; j < 26; j++) tmp += xsurf[i + j * Nsurf];
@@ -214,7 +214,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   }
   PetscCall(MatDestroy(&Xint_tmp));
 
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   PetscCall(MatDenseGetArrayRead(Xint, &rxint));
   for (i = 0; i < Nint; i++) {
     tmp = 0.0;
@@ -331,7 +331,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree2(IIint, IIsurf));
 
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   {
     Vec          x, y;
     PetscScalar *yy;
@@ -374,7 +374,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   MatFactorInfo          info;
   PetscScalar           *xsurf, *xint;
   const PetscScalar     *rxint;
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   PetscScalar tmp;
 #endif
   PetscHMapI ht;
@@ -437,7 +437,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
     for (i = 1; i < m - istart - 1; i++) xsurf[cnt++ + 5 * Nsurf] = 1;
   }
 
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   for (i = 0; i < Nsurf; i++) {
     tmp = 0.0;
     for (j = 0; j < 6; j++) tmp += xsurf[i + j * Nsurf];
@@ -536,7 +536,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   }
   PetscCall(MatDestroy(&Xint_tmp));
 
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   PetscCall(MatDenseGetArrayRead(Xint, &rxint));
   for (i = 0; i < Nint; i++) {
     tmp = 0.0;
@@ -620,7 +620,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree2(IIint, IIsurf));
 
-#if defined(PETSC_USE_DEBUG_foo)
+#if PetscDefined(USE_DEBUG_foo)
   {
     Vec          x, y;
     PetscScalar *yy;

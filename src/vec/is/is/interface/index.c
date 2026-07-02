@@ -136,7 +136,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   }
 
   /* cumulative of number of indexes and size of subset without holes */
-#if defined(PETSC_HAVE_MPI_EXSCAN)
+#if PetscDefined(HAVE_MPI_EXSCAN)
   start = 0;
   PetscCallMPI(MPI_Exscan(&nlocals, &start, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)subset)));
 #else

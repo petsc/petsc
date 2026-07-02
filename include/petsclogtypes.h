@@ -37,7 +37,7 @@ typedef struct {
   PetscLogDouble mallocIncrease;      /* How much the maximum malloced space has increased in this event */
   PetscLogDouble mallocSpace;         /* How much the space was malloced and kept during this event */
   PetscLogDouble mallocIncreaseEvent; /* Maximum of the high water mark with in event minus memory available at the end of the event */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscLogDouble CpuToGpuCount; /* The total number of CPU to GPU copies */
   PetscLogDouble GpuToCpuCount; /* The total number of GPU to CPU copies */
   PetscLogDouble CpuToGpuSize;  /* The total size of CPU to GPU copies */

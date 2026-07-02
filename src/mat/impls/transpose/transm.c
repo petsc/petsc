@@ -675,7 +675,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatSetBlockSizes(*N, A->cmap->bs, A->rmap->bs));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));

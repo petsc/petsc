@@ -38,7 +38,7 @@ typedef struct {
   PetscSegBuffer     segrecvint;
   PetscSegBuffer     segrecvscalar;
   PetscSegBuffer     segrecvframe;
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   PetscBool use_nvshmem; /* Try to use NVSHMEM in communication of, for example, VecNorm */
 #endif
 

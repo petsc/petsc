@@ -589,7 +589,7 @@ PetscErrorCode DMSnapToGeomModel_EGADS(DM dm, PetscInt p, PetscInt dE, const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
 PetscErrorCode DMPlexGeomPrintModel_Internal(ego model, PetscBool islite)
 {
   /* PETSc Variables */
@@ -2328,7 +2328,7 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
 PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm) PeNS
 {
   // please don't fucking write code like this with #ifdef all of the place!
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   /* EGADS Variables */
   ego    model, geom, body, face, edge, vertex;
   ego   *bodies;
@@ -2346,7 +2346,7 @@ PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm) PeNS
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
   if (!modelObj) {
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
@@ -2422,7 +2422,7 @@ PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
 // This replaces the model in-place
 PetscErrorCode ConvertGeomModelToAllBSplines(PetscBool islite, ego *model) PeNS
 {
@@ -2558,7 +2558,7 @@ PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM
   PetscBool   printModel = PETSC_FALSE, tessModel = PETSC_FALSE, newModel = PETSC_FALSE;
   PetscBool   shapeOpt = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   ego context = NULL, model = NULL;
 #endif
 
@@ -2569,7 +2569,7 @@ PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_geom_new_model", &newModel, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_geom_shape_opt", &shapeOpt, NULL));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   if (rank == 0) {
     /* EGADSlite files cannot be used for Shape Optimization Work. It lacks the ability to make new geometry. */
     /* Must use EGADS, STEP, IGES or BRep files to perform this work.                                         */
@@ -2594,7 +2594,7 @@ PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM
 #endif
 }
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
 /*@C
   DMPlex_Surface_Grad - Exposes the Geometry's Control Points and Weights and Calculates the Mesh Topology Boundary Nodes Gradient
                         with respect the associated geometry's Control Points and Weights.
@@ -3143,7 +3143,7 @@ static PetscErrorCode DestroyHashMap(PetscCtxRt p)
 @*/
 PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 {
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   /* PETSc Variables */
   PetscContainer modelObj;
   PetscHMapI     faceCntrlPtRow_Start = NULL, faceCPWeightsRow_Start = NULL;
@@ -3159,7 +3159,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
 
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
   if (!modelObj) {
@@ -4344,7 +4344,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 @*/
 PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], PetscScalar newW[], PetscBool autoInflate, PetscBool saveGeom, const char *stpName) PeNS
 {
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   /* EGADS/EGADSlite variables */
   ego context, model, geom, *bodies, *lobjs, *fobjs;
   int oclass, mtype, *senses, *lsenses;
@@ -4356,7 +4356,7 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
   PetscBool      islite = PETSC_FALSE;
 #endif
 
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   PetscFunctionBegin;
   // Look to see if DM has a Container with either an EGADS or EGADSlite Model
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
@@ -4729,7 +4729,7 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
 @*/
 PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 {
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   /* EGADS Variables */
   ego    model, geom, body, face, edge;
   ego   *bodies;
@@ -4747,7 +4747,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
   if (!modelObj) {
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
@@ -4903,7 +4903,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 @*/
 PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm) PeNS
 {
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   /* EGADS Variables */
   ego    model, geom, body, face, edge, vertex;
   ego   *bodies;
@@ -4923,7 +4923,7 @@ PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm) PeNS
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EGADS)
+#if PetscDefined(HAVE_EGADS)
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
   if (!modelObj) {
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));

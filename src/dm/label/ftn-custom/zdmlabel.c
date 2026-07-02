@@ -2,9 +2,9 @@
 #include <petscdmlabel.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsectionsymlabelsetstratum_ PETSCSECTIONSYMLABELSETSTRATUM
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsectionsymlabelsetstratum_ petscsectionsymlabelsetstratum
 #endif
 

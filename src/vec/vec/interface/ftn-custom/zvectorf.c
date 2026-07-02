@@ -2,10 +2,10 @@
 #include <petscvec.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define vecgetownershipranges_     VECGETOWNERSHIPRANGES
   #define vecrestoreownershipranges_ VECRESTOREOWNERSHIPRANGES
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define vecgetownershipranges_     vecgetownershipranges
   #define vecrestoreownershipranges_ vecrestoreownershipranges
 #endif

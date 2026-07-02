@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matshellsetoperation_ MATSHELLSETOPERATION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matshellsetoperation_ matshellsetoperation
 #endif
 

@@ -100,7 +100,7 @@ int main(int argc, char **args)
   }
   PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_TRUE));
 
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
   /* Test Cholesky factorization */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-test_choleskyfactor", &flg));
   if (flg) {

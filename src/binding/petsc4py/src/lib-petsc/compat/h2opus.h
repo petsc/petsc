@@ -1,7 +1,7 @@
 #if !defined(PETSC4PY_COMPAT_H2OPUS_H)
 #define PETSC4PY_COMPAT_H2OPUS_H
 
-#if !defined(PETSC_HAVE_H2OPUS)
+#if !PetscDefined(HAVE_H2OPUS)
 
 #define PetscMatH2OPUSError do { \
     PetscFunctionBegin; \

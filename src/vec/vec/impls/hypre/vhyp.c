@@ -15,7 +15,7 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map, VecHYPRE_IJVector *ij)
   PetscCall(PetscLayoutSetUp(map));
   PetscCallHYPRE(HYPRE_IJVectorCreate(map->comm, map->rstart, map->rend - 1, &nij->ij));
   PetscCallHYPRE(HYPRE_IJVectorSetObjectType(nij->ij, HYPRE_PARCSR));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   {
     HYPRE_MemoryLocation memloc;
     PetscCall(PetscHYPREInitialize());
@@ -45,7 +45,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
   const PetscScalar *array;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   {
     HYPRE_MemoryLocation memloc;
     PetscCall(PetscHYPREInitialize());
@@ -88,7 +88,7 @@ static PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hm
   MPI_Comm     comm;
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_HYPRE_DEVICE)
+#if !PetscDefined(HAVE_HYPRE_DEVICE)
   hmem = HYPRE_MEMORY_HOST; /* this is just a convenience because HYPRE_MEMORY_HOST and HYPRE_MEMORY_DEVICE are the same in this case */
 #endif
   *ptr = NULL;

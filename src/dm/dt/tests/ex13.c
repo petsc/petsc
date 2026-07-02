@@ -79,7 +79,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
   PetscCall(PetscMalloc1(Nbpt * Nbpt, &Mcopy));
   // Print the condition numbers (useful for testing out different bases internally in PetscDTPTrimmedEvalJet())
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (cond) {
     PetscReal   *S;
     PetscScalar *work;

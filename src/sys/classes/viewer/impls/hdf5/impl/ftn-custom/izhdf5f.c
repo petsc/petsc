@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewerhdf5.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscviewerhdf5opengroup_ PETSCVIEWERHDF5OPENGROUP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscviewerhdf5opengroup_ petscviewerhdf5opengroup
 #endif
 

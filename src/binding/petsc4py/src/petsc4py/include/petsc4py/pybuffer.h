@@ -4,29 +4,29 @@
 #include <Python.h>
 #include <petscsystypes.h>
 
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
 # define _PyPetsc_FMT_PETSC_INT     "q"
 #else
 # define _PyPetsc_FMT_PETSC_INT     "i"
 #endif
 
-#if   defined(PETSC_USE_REAL_SINGLE)
+#if   PetscDefined(USE_REAL_SINGLE)
 # define _PyPetsc_FMT_PETSC_REAL    "f"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zf"
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
 # define _PyPetsc_FMT_PETSC_REAL    "d"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zd"
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+#elif PetscDefined(USE_REAL_LONG_DOUBLE)
 # define _PyPetsc_FMT_PETSC_REAL    "g"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
 # define _PyPetsc_FMT_PETSC_REAL    "g"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
 #else
 # error "unsupported real precision"
 #endif
 
-#if   defined(PETSC_USE_COMPLEX)
+#if   PetscDefined(USE_COMPLEX)
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_COMPLEX
 #else
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL

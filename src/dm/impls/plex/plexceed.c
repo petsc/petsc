@@ -269,7 +269,7 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_LIBCEED)
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscdmplexceed.h>
 
 // Consumes the input petsc_indices and provides the output ceed_indices; no-copy when the sizes match.
@@ -278,7 +278,7 @@ static PetscErrorCode PetscIntArrayIntoCeedInt_Private(PetscInt length, PetscInt
   PetscFunctionBegin;
   if (length) PetscAssertPointer(petsc_indices, 3);
   PetscAssertPointer(ceed_indices, 4);
-  #if defined(PETSC_USE_64BIT_INDICES)
+  #if PetscDefined(USE_64BIT_INDICES)
   PetscCheck(max_bound <= PETSC_INT32_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "%s %" PetscInt_FMT " does not fit in int32_t", max_bound_name, max_bound);
   {
     CeedInt *ceed_ind;

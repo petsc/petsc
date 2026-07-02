@@ -73,7 +73,7 @@ int main(int argc, char **argv)
       PetscCall(PetscObjectSetName((PetscObject)y, "y_subcomm_0")); /* Give a name to view y clearly */
       PetscCall(VecGetLocalSize(y, &n));
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDAGetArray(y, &yvalue));
 #endif
       } else {
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
         Note this is a collective call. All processes have to call it and supply consistent N.
       */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD, 1, n, N, yvalue, &yg));
 #endif
       } else {
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
         VecGetArray must be paired with VecRestoreArray.
       */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDARestoreArray(y, &yvalue));
 #endif
       } else {
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     } else {
       /* Ranks outside of subcomm0 do not supply values to yg */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD, 1, 0 /*n*/, N, NULL, &yg));
 #endif
       } else {
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
       /* Create a vector xg on parentcomm, which shares memory with x */
       PetscCall(VecGetLocalSize(x, &n));
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDAGetArrayRead(x, &xvalue));
         PetscCall(VecCreateMPICUDAWithArray(parentcomm, 1, n, N, xvalue, &xg));
 #endif
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 
       /* Ranks in subcomm 0 have nothing on yg, so they simply have n=0, array=NULL */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCreateMPICUDAWithArray(parentcomm, 1, 0 /*n*/, N, NULL /*array*/, &yg));
 #endif
       } else {
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
 
       /* After the VecScatter is done, xg is idle so we can safely return xvalue to x */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDARestoreArrayRead(x, &xvalue));
 #endif
       } else {
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
 
       /* Ranks in subcomm1 have nothing on xg, so they simply have n=0, array=NULL.*/
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCreateMPICUDAWithArray(parentcomm, 1 /*bs*/, 0 /*n*/, N, NULL /*array*/, &xg));
 #endif
       } else {
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
       PetscCall(PetscObjectSetName((PetscObject)y, "y_subcomm_1")); /* Give a name to view y clearly */
       PetscCall(VecGetLocalSize(y, &n));
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDAGetArray(y, &yvalue));
 #endif
       } else {
@@ -298,7 +298,7 @@ int main(int argc, char **argv)
         creating xg and yg in subcomm1.
       */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCreateMPICUDAWithArray(parentcomm, 1 /*bs*/, n, N, yvalue, &yg));
 #endif
       } else {
@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 
       /* After the VecScatter is done, values in yg are available. y is our interest, so we return yvalue to y */
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         PetscCall(VecCUDARestoreArray(y, &yvalue));
 #endif
       } else {
@@ -377,7 +377,7 @@ int main(int argc, char **argv)
        0, 3, 6 etc from PETSC_COMM_WORLD. So subcomm0's pieces are interleaved with pieces from other subcomms in yg.
     */
     if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       PetscCall(VecCUDAGetArray(y, &yvalue));
       PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, yvalue, &yg));
 #endif
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
 
     /* Restory yvalue so that processes in subcomm can use y from now on. */
     if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       PetscCall(VecCUDARestoreArray(y, &yvalue));
 #endif
     } else {

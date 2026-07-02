@@ -713,7 +713,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
   PetscAssertPointer(V, 3);
   PetscValidType(v, 1);
   PetscUseTypeMethod(v, duplicatevecs, m, V);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   if (v->boundtocpu && v->bindingpropagates) {
     for (PetscInt i = 0; i < m; i++) {
       /* Since ops->duplicatevecs might itself propagate the value of boundtocpu,
@@ -900,7 +900,7 @@ PetscErrorCode VecView(Vec vec, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #include <../src/sys/totalview/tv_data_display.h>
 PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 {
@@ -1871,12 +1871,12 @@ PetscErrorCode VecCopyAsync_Private(Vec x, Vec y, PetscDeviceContext dctx)
   VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(y, 2));
 
-#if !defined(PETSC_USE_MIXED_PRECISION)
+#if !PetscDefined(USE_MIXED_PRECISION)
   for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
 #endif
 
   PetscCall(PetscLogEventBegin(VEC_Copy, x, y, 0, 0));
-#if defined(PETSC_USE_MIXED_PRECISION)
+#if PetscDefined(USE_MIXED_PRECISION)
   extern PetscErrorCode VecGetArray(Vec, double **);
   extern PetscErrorCode VecRestoreArray(Vec, double **);
   extern PetscErrorCode VecGetArray(Vec, float **);
@@ -1911,7 +1911,7 @@ PetscErrorCode VecCopyAsync_Private(Vec x, Vec y, PetscDeviceContext dctx)
 #endif
 
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
-#if !defined(PETSC_USE_MIXED_PRECISION)
+#if !PetscDefined(USE_MIXED_PRECISION)
   for (PetscInt i = 0; i < 4; i++) {
     if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)y, NormIds[i], norms[i]));
   }
@@ -2084,7 +2084,7 @@ PetscErrorCode VecStashView(Vec v, PetscViewer viewer)
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Element %" PetscInt_FMT " ", rank, s->idx[i]));
     for (PetscInt j = 0; j < s->bs; j++) {
       val = s->array[i * s->bs + j];
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "(%18.16e %18.16e) ", (double)PetscRealPart(val), (double)PetscImaginaryPart(val)));
 #else
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%18.16e ", (double)val));
@@ -2100,7 +2100,7 @@ PetscErrorCode VecStashView(Vec v, PetscViewer viewer)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Vector stash size %" PetscInt_FMT "\n", rank, s->n));
   for (i = 0; i < s->n; i++) {
     val = s->array[i];
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Element %" PetscInt_FMT " (%18.16e %18.16e) ", rank, s->idx[i], (double)PetscRealPart(val), (double)PetscImaginaryPart(val)));
 #else
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Element %" PetscInt_FMT " %18.16e\n", rank, s->idx[i], (double)val));
@@ -2319,7 +2319,7 @@ PetscErrorCode VecBindToCPU(Vec v, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(v, flg, 2);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (v->boundtocpu == flg) PetscFunctionReturn(PETSC_SUCCESS);
   v->boundtocpu = flg;
   PetscTryTypeMethod(v, bindtocpu, flg);
@@ -2347,7 +2347,7 @@ PetscErrorCode VecBoundToCPU(Vec v, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(flg, 2);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   *flg = v->boundtocpu;
 #else
   *flg = PETSC_TRUE;
@@ -2378,7 +2378,7 @@ PetscErrorCode VecSetBindingPropagates(Vec v, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   v->bindingpropagates = flg;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2402,7 +2402,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(flg, 2);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   *flg = v->bindingpropagates;
 #else
   *flg = PETSC_FALSE;
@@ -2489,7 +2489,7 @@ PetscErrorCode VecGetOffloadMask(Vec v, PetscOffloadMask *mask)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_HAVE_VIENNACL)
+#if !PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to get a Vec's cl_context");

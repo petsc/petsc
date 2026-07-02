@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%% Eigenvalue(s)  %g ", (double)tetar[i]));
     if (tetai[i]) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%+gi", (double)tetai[i]));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  %g ", (double)tetar[i]));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%+gi", (double)-tetai[i]));
 #endif
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%% Eigenvector\n"));
     PetscCall(VecView(S[i], PETSC_VIEWER_STDOUT_WORLD));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     if (tetai[i]) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%% Imaginary part of Eigenvector\n"));
       PetscCall(VecView(S[i + 1], PETSC_VIEWER_STDOUT_WORLD));

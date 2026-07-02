@@ -47,7 +47,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
     }
   }
   try {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     gpustruct = NULL;
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for complex arithmetic in SAVIENNACL preconditioner");
 #else
@@ -95,7 +95,7 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y)
   PetscCall(VecViennaCLGetArrayRead(x, &xarray));
   PetscCall(VecViennaCLGetArrayWrite(y, &yarray));
   try {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     *yarray = *xarray;
     sac->SAVIENNACL->apply(*yarray);
 #endif

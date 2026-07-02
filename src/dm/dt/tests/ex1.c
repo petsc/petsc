@@ -68,7 +68,7 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
         PetscReal norm, norm2diff;
 
         I_exact = PetscPowReal(2.0, alpha + beta + 1.) / (2. * i + alpha + beta + 1.);
-#if defined(PETSC_HAVE_LGAMMA)
+#if PetscDefined(HAVE_LGAMMA)
         I_exact *= PetscExpReal(PetscLGamma(i + alpha + 1.) + PetscLGamma(i + beta + 1.) - (PetscLGamma(i + alpha + beta + 1.) + PetscLGamma(i + 1.)));
 #else
         {
@@ -169,11 +169,8 @@ int main(int argc, char **argv)
     minpoints = 1;
     PetscCall(PetscOptionsInt("-minpoints", "minimum points for thorough Gauss-Jacobi quadrature tests", "", minpoints, &minpoints, NULL));
     maxpoints = 30;
-#if defined(PETSC_USE_REAL_SINGLE)
-    maxpoints = 5;
-#elif defined(PETSC_USE_REAL___FLOAT128)
-    maxpoints = 20; /* just to make test faster */
-#endif
+    if (PetscDefined(USE_REAL_SINGLE)) maxpoints = 5;
+    else if (PetscDefined(USE_REAL___FLOAT128)) maxpoints = 20; /* just to make test faster */
     PetscCall(PetscOptionsInt("-maxpoints", "maximum points for thorough Gauss-Jacobi quadrature tests", "", maxpoints, &maxpoints, NULL));
   }
   PetscOptionsEnd();
@@ -203,7 +200,7 @@ int main(int argc, char **argv)
     for (PetscInt i = minpoints; i <= maxpoints; i++) {
       PetscReal a1, b1, a2, b2;
 
-#if defined(PETSC_HAVE_LGAMMA)
+#if PetscDefined(HAVE_LGAMMA)
       a1 = -0.6;
       b1 = 1.1;
       a2 = 2.2;

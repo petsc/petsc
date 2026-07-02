@@ -939,7 +939,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     }
 
     if (param->output_to_file) {
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       Mat file \"%s\"\n", param->filename));
 #else
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       PETSc binary file \"%s\"\n", param->filename));
@@ -1058,7 +1058,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     PetscCall(VecAssemblyEnd(pars));
 
     /* create viewer */
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
     PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));
 #else
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));
@@ -1213,7 +1213,7 @@ static inline PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
   PetscScalar z;
   if (plate == PLATE_LID) z = (j - 0.5) * user->grid->dz;
   else z = (j - 0.5) * user->grid->dz * param->cb; /* PLATE_SLAB */
-#if defined(PETSC_HAVE_ERF)
+#if PetscDefined(HAVE_ERF)
   return (PetscReal)(erf((double)PetscRealPart(z * param->L / 2.0 / param->skt)));
 #else
   (*PetscErrorPrintf)("erf() not available on this machine\n");
@@ -1272,11 +1272,11 @@ PetscErrorCode InteractiveHandler(int signum, PetscCtx ctx)
 
   if (signum == SIGILL) {
     param->toggle_kspmon = PETSC_TRUE;
-#if !defined(PETSC_MISSING_SIGCONT)
+#if !PetscDefined(MISSING_SIGCONT)
   } else if (signum == SIGCONT) {
     param->interrupted = PETSC_TRUE;
 #endif
-#if !defined(PETSC_MISSING_SIGURG)
+#if !PetscDefined(MISSING_SIGURG)
   } else if (signum == SIGURG) {
     param->stop_solve = PETSC_TRUE;
 #endif

@@ -60,7 +60,7 @@ PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping lgmap,
     PetscCall(MatSetSizes(*P, msize, cols ? lac : lar, PETSC_DECIDE, PETSC_DECIDE));
     PetscCall(MatSeqAIJSetPreallocation(*P, 1, NULL));
     PetscCall(MatMPIAIJSetPreallocation(*P, 1, NULL, 1, NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
     PetscCall(MatHYPRESetPreallocation(*P, 1, NULL, 1, NULL));
 #endif
     PetscCall(MatGetOwnershipRange(*P, &rst, NULL));

@@ -63,7 +63,7 @@ PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s box=[", name));
     for (PetscInt i = 0; i < bs; i++) {
       if (i) PetscCall(PetscViewerASCIIPrintf(viewer, "; "));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(viewer, "%g,%g", (double)smpl->box[i].min, (double)smpl->box[i].max));
 #else
       // If the imaginary parts coincide, this is intended to be a real interval

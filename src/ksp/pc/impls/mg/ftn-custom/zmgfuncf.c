@@ -2,10 +2,10 @@
 #include <petscpc.h>
 #include <petsc/private/pcmgimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcmgsetresidual_     PCMGSETRESIDUAL
   #define pcmgresidualdefault_ PCMGRESIDUALDEFAULT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcmgsetresidual_     pcmgsetresidual
   #define pcmgresidualdefault_ pcmgresidualdefault
 #endif

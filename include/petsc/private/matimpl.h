@@ -249,7 +249,7 @@ PETSC_INTERN PetscErrorCode MatShellSetContextDestroy_Immutable(Mat, PetscCtxDes
 PETSC_INTERN PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat, Vec, InsertMode);
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
@@ -284,7 +284,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 /* CreateGraph is common to AIJ seq and mpi */
 PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 template <typename Tm>
 extern void MatCheckPreallocated(Tm, int);
 template <typename Tm>
@@ -295,7 +295,7 @@ extern void MatCheckProduct(Tm, int);
       if (!(A)->preallocated) PetscCall(MatSetUp(A)); \
     } while (0)
 
-  #if defined(PETSC_USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
     #define MatCheckProduct(A, arg) \
       do { \
         PetscCheck((A)->product, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Argument %d \"%s\" is not a matrix obtained from MatProductCreate()", (arg), #A); \
@@ -398,7 +398,7 @@ struct _MatStash {
   InsertMode     *insertmode; /* Pointer to check mat->insertmode and set upon message arrival in case no local values have been set. */
 };
 
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
 PETSC_INTERN PetscErrorCode MatStashScatterDestroy_BTS(MatStash *);
 #endif
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm, PetscInt, MatStash *);
@@ -490,7 +490,7 @@ struct _p_Mat {
   PetscBool        structure_only;
   PetscBool        sortedfull;      /* full, sorted rows are inserted */
   PetscBool        force_diagonals; /* set by MAT_FORCE_DIAGONAL_ENTRIES */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscOffloadMask offloadmask; /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool        boundtocpu;
   PetscBool        bindingpropagates;
@@ -1302,7 +1302,7 @@ static inline PetscErrorCode PetscIncompleteLLClean(PetscInt idx_start, PetscInt
 */
 #define PetscIncompleteLLDestroy(lnk, bt) ((PetscErrorCode)(PetscFree(lnk) || PetscBTDestroy(&(bt))))
 
-#if !defined(PETSC_CLANG_STATIC_ANALYZER)
+#if !PetscDefined(CLANG_STATIC_ANALYZER)
   #define MatCheckSameLocalSize(A, ar1, B, ar2) \
     do { \
       PetscCheckSameComm(A, ar1, B, ar2); \
@@ -1821,7 +1821,7 @@ PETSC_EXTERN PetscLogEvent MAT_H2Opus_LR;
 PETSC_EXTERN PetscLogEvent MAT_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_HIPCopyToGPU;
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
   #define MatGetDiagonalMarkers(SeqXXX, bs)
 #else
   /*

@@ -14,7 +14,7 @@
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateSeqWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateSeq()`
 M*/
 
-#if defined(PETSC_USE_MIXED_PRECISION)
+#if PetscDefined(USE_MIXED_PRECISION)
 extern PetscErrorCode VecCreate_Seq_Private(Vec, const float *);
 extern PetscErrorCode VecCreate_Seq_Private(Vec, const double *);
 #endif
@@ -29,7 +29,7 @@ PetscErrorCode VecCreate_Seq(Vec V)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
-#if !defined(PETSC_USE_MIXED_PRECISION)
+#if !PetscDefined(USE_MIXED_PRECISION)
   PetscCall(PetscShmgetAllocateArray(n, sizeof(PetscScalar), (void **)&array));
   PetscCall(PetscArrayzero(array, n));
   PetscCall(VecCreate_Seq_Private(V, array));

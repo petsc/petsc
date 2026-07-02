@@ -8,7 +8,7 @@
 /* Landau collision operator */
 
 /* relativistic terms */
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   #define SPEED_OF_LIGHT 2.99792458e8F
   #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
 #else
@@ -18,7 +18,7 @@
 
 #include "land_tensors.h"
 
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
   #include <omp.h>
 #endif
 
@@ -29,7 +29,7 @@ static PetscErrorCode LandauGPUMapsDestroy(PetscCtxRt ptr)
   PetscFunctionBegin;
   // free device data
   if (maps[0].deviceType != LANDAU_CPU) {
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
     if (maps[0].deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
 #endif
   }
@@ -64,11 +64,8 @@ static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x
   for (PetscInt i = 0; i < dim; ++i) u2 += x[i] * x[i];
   /* gamma - 1 = g_eps, for conditioning and we only take derivatives */
   xx = u2 / c02;
-#if defined(PETSC_USE_DEBUG)
-  u[0] = PetscSqrtReal(1. + xx);
-#else
-  u[0] = xx / (PetscSqrtReal(1. + xx) + 1.) - 1.; // better conditioned. -1 might help condition and only used for derivative
-#endif
+  if (PetscDefined(USE_DEBUG)) u[0] = PetscSqrtReal(1. + xx);
+  else u[0] = xx / (PetscSqrtReal(1. + xx) + 1.) - 1.; // better conditioned. -1 might help condition and only used for derivative
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -190,7 +187,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
 
   /* do it */
   if (ctx->deviceType == LANDAU_KOKKOS) {
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
     PetscCall(LandauKokkosJacobian(ctx->plex, Nq, Nb, ctx->batch_sz, ctx->num_grids, numCells, Eq_m, cellClosure, xdata, &ctx->SData_d, shift, ctx->events, ctx->mat_offset, ctx->species_offset, subJ, JacP));
 #else
     SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "kokkos");
@@ -223,7 +220,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     // prep COO
     PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
     if (shift == 0.0) {                                        /* compute dynamic data f and df and init data for Jacobian */
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
       double starttime, endtime;
       starttime = MPI_Wtime();
 #endif
@@ -294,7 +291,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
         } // grid
       } // grid*batch
       PetscCall(PetscLogEventEnd(ctx->events[8], 0, 0, 0, 0));
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
       endtime = MPI_Wtime();
       if (ctx->stage) ctx->times[LANDAU_F_DF] += (endtime - starttime);
 #endif
@@ -304,7 +301,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       const PetscInt b_Nelem      = elem_offset[num_grids];
       const PetscInt glb_elem_idx = tid % b_Nelem, b_id = tid / b_Nelem;
       PetscInt       grid = 0;
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
       double starttime, endtime;
       starttime = MPI_Wtime();
 #endif
@@ -457,7 +454,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
         } else {
           PetscCall(PetscLogEventEnd(ctx->events[16], 0, 0, 0, 0));
         }
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
         endtime = MPI_Wtime();
         if (ctx->stage) ctx->times[LANDAU_KERNEL] += (endtime - starttime);
 #endif
@@ -872,7 +869,7 @@ static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, Pet
 }
 
 // adapt a level once. Forest in/out
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
 static const char *s_refine_names[] = {"RE", "Z1", "Origin", "Z2", "Uniform"};
 #endif
 static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, PetscInt grid, LandauCtx *ctx, DM *newForest)
@@ -1109,7 +1106,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->SData_d.coo_elem_fullNb        = NULL;
   ctx->SData_d.coo_size               = 0;
   PetscOptionsBegin(ctx->comm, prefix, "Options for Fokker-Plank-Landau collision operator", "none");
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
   ctx->deviceType = LANDAU_KOKKOS;
   PetscCall(PetscStrncpy(ctx->filename, "kokkos", sizeof(ctx->filename)));
 #else
@@ -1683,7 +1680,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], con
           maps[grid].c_maps[ej][q].gid   = pointMaps[ej][q].gid;
         }
       }
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
       if (ctx->deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, grid)); // implies Kokkos does
 #endif
       if (plex_batch) {
@@ -1890,7 +1887,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], con
     if (ctx->use_energy_tensor_trick) PetscCall(PetscFEDestroy(&fe));
     /* cache static data */
     if (ctx->deviceType == LANDAU_KOKKOS) {
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
       PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, Nb, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
       /* free */
       PetscCall(PetscFree4(ww, xx, yy, invJ_a));
@@ -2208,7 +2205,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscBool flg;
     if (ctx->deviceType == LANDAU_KOKKOS) {
       PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->J, &flg, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
       PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
 #else
       PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "must configure with '--download-kokkos-kernels' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
@@ -2346,7 +2343,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
   PetscCall(VecDestroy(&ctx->work_vec));
   PetscCall(VecScatterDestroy(&ctx->plex_batch));
   if (ctx->deviceType == LANDAU_KOKKOS) {
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
     PetscCall(LandauKokkosStaticDataClear(&ctx->SData_d));
 #else
     SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "kokkos");
@@ -2411,14 +2408,11 @@ static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[
   for (PetscInt s = 0; s < Nf; s++) {
     PetscReal tmp1 = 0.;
     for (PetscInt i = 0; i < dim; ++i) tmp1 += x[i] * x[i];
-#if defined(PETSC_USE_DEBUG)
-    u[s] = PetscSqrtReal(1. + tmp1 / c02); //  u[0] = PetscSqrtReal(1. + xx);
-#else
-    {
+    if (PetscDefined(USE_DEBUG)) u[s] = PetscSqrtReal(1. + tmp1 / c02); //  u[0] = PetscSqrtReal(1. + xx);
+    else {
       PetscReal xx = tmp1 / c02;
       u[s]         = xx / (PetscSqrtReal(1. + xx) + 1.); // better conditioned = xx/(PetscSqrtReal(1. + xx) + 1.)
     }
-#endif
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2744,7 +2738,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   LandauCtx *ctx = (LandauCtx *)actx;
   PetscInt   dim;
   DM         pack;
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   double starttime, endtime;
 #endif
   PetscObjectState state;
@@ -2756,7 +2750,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   if (ctx->stage) PetscCall(PetscLogStagePush(ctx->stage));
   PetscCall(PetscLogEventBegin(ctx->events[11], 0, 0, 0, 0));
   PetscCall(PetscLogEventBegin(ctx->events[0], 0, 0, 0, 0));
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
   PetscCall(DMGetDimension(pack, &dim));
@@ -2774,7 +2768,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscCall(MatMult(ctx->J, X, F)); /* C*f */
   /* add time term */
   if (X_t) PetscCall(MatMultAdd(ctx->M, X_t, F, F));
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   if (ctx->stage) {
     endtime = MPI_Wtime();
     ctx->times[LANDAU_OPERATOR] += (endtime - starttime);
@@ -2815,7 +2809,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   LandauCtx *ctx = NULL;
   PetscInt   dim;
   DM         pack;
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   double starttime, endtime;
 #endif
   PetscObjectState state;
@@ -2830,7 +2824,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   if (ctx->stage) PetscCall(PetscLogStagePush(ctx->stage));
   PetscCall(PetscLogEventBegin(ctx->events[11], 0, 0, 0, 0));
   PetscCall(PetscLogEventBegin(ctx->events[9], 0, 0, 0, 0));
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
   PetscCheck(shift != 0.0, ctx->comm, PETSC_ERR_PLIB, "zero shift");
@@ -2841,7 +2835,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   } else { /* add mass */
     PetscCall(MatAXPY(Pmat, shift, ctx->M, SAME_NONZERO_PATTERN));
   }
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   if (ctx->stage) {
     endtime = MPI_Wtime();
     ctx->times[LANDAU_OPERATOR] += (endtime - starttime);

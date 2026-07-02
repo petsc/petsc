@@ -1,24 +1,24 @@
 #include <petscsys.h>
 #include <errno.h>
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
   #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
 
-#if defined(PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
+#if PetscDefined(HAVE__ACCESS) || PetscDefined(HAVE_ACCESS)
 
   #include <errno.h>
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg)
@@ -30,7 +30,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
-  #if defined(PETSC_HAVE_ACCESS)
+  #if PetscDefined(HAVE_ACCESS)
   if (!access(fname, m)) {
     PetscCall(PetscInfo(NULL, "System call access() succeeded on file %s\n", fname));
     *flg = PETSC_TRUE;
@@ -55,13 +55,13 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   int    rbit = S_IROTH;
   int    wbit = S_IWOTH;
   int    ebit = S_IXOTH;
-  #if !defined(PETSC_MISSING_GETGROUPS)
+  #if !PetscDefined(MISSING_GETGROUPS)
   int err;
   #endif
 
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
-  #if !defined(PETSC_MISSING_GETGROUPS)
+  #if !PetscDefined(MISSING_GETGROUPS)
   numGroups = getgroups(0, gid);
   PetscCheck(numGroups >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to count supplementary group IDs due to \"%s\"", strerror(errno));
   PetscCall(PetscMalloc1(numGroups + 1, &gid));
@@ -74,7 +74,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   gid[0] = getegid();
 
   /* Get supplementary group IDs */
-  #if !defined(PETSC_MISSING_GETGROUPS)
+  #if !PetscDefined(MISSING_GETGROUPS)
   err = getgroups(numGroups, gid + 1);
   PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to obtain supplementary group IDs due to \"%s\"", strerror(errno));
   #endif
@@ -118,7 +118,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscFunctionBegin;
   *fileMode = 0;
   *exists   = PETSC_FALSE;
-#if defined(PETSC_HAVE_STAT_NO_CONST)
+#if PetscDefined(HAVE_STAT_NO_CONST)
   ierr = stat((char *)fname, &statbuf);
 #else
   ierr = stat(fname, &statbuf);
@@ -246,7 +246,7 @@ PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(program, "ls ", sizeof(program)));
   PetscCall(PetscStrlcat(program, dirname, sizeof(program)));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscCall(PetscPOpen(comm, NULL, program, "r", &fp));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Cannot run external programs on this machine");
@@ -259,7 +259,7 @@ PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t
     f = fgets(found + len, (int)(tlen - len), fp);
   }
   if (*flg) PetscCall(PetscInfo(NULL, "ls on %s gives \n%s\n", dirname, found));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscCall(PetscPClose(comm, fp));
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Cannot run external programs on this machine");

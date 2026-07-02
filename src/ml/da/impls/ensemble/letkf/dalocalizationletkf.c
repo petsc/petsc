@@ -473,7 +473,7 @@ PETSC_INTERN PetscErrorCode PetscDALETKFCreateLocalizationMat(PetscDALETKFLocali
   PetscCheck(type == PETSCDA_LETKF_LOC_GASPARI_COHN || type == PETSCDA_LETKF_LOC_GAUSSIAN || type == PETSCDA_LETKF_LOC_BOXCAR, comm, PETSC_ERR_ARG_WRONG, "Built-in kernel required, got localization type %d", (int)type);
   PetscCheck(radius > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Localization radius must be positive, got %g", (double)radius);
   /* xyz[] contiguity and dim>=1 are enforced by PetscDALETKFComputeObsCoords() inside the backends. */
-#if defined(PETSC_HAVE_KOKKOS_KERNELS) && !defined(PETSC_USE_COMPLEX)
+#if PetscDefined(HAVE_KOKKOS_KERNELS) && !PetscDefined(USE_COMPLEX)
   if (use_kokkos) {
     PetscCall(PetscDALETKFCreateLocalizationMat_Kokkos(type, radius, xyz, bd, H, Q, max_nnz_local, n_nnz_local));
     PetscFunctionReturn(PETSC_SUCCESS);

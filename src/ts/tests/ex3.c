@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   /* get the command line options if there are any and set them */
   PetscCall(TSSetFromOptions(ts));
 
-#if defined(PETSC_HAVE_SUNDIALS2)
+#if PetscDefined(HAVE_SUNDIALS2)
   {
     TSType    type;
     PetscBool sundialstype = PETSC_FALSE;

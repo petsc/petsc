@@ -9,8 +9,8 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#if defined(PETSC_USE_64BIT_INDICES)
-  #if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_64BIT_INDICES)
+  #if PetscDefined(USE_COMPLEX)
     #define umfpack_UMF_free_symbolic umfpack_zl_free_symbolic
     #define umfpack_UMF_free_numeric  umfpack_zl_free_numeric
     /* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
@@ -41,7 +41,7 @@
   #endif
 
 #else
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     #define umfpack_UMF_free_symbolic   umfpack_zi_free_symbolic
     #define umfpack_UMF_free_numeric    umfpack_zi_free_numeric
     #define umfpack_UMF_wsolve          umfpack_zi_wsolve
@@ -130,7 +130,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A, Vec b, Vec x, int uflag)
 
   PetscCall(VecGetArrayRead(b, &ba));
   PetscCall(VecGetArray(x, &xa));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag, ai, aj, (PetscReal *)av, NULL, (PetscReal *)xa, NULL, (PetscReal *)ba, NULL, lu->Numeric, lu->Control, lu->Info, lu->Wi, lu->W);
 #else
   status = umfpack_UMF_wsolve(uflag, ai, aj, av, xa, ba, lu->Numeric, lu->Control, lu->Info, lu->Wi, lu->W);
@@ -175,7 +175,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   /* numeric factorization of A' */
 
   if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) umfpack_UMF_free_numeric(&lu->Numeric);
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   status = umfpack_UMF_numeric(ai, aj, (double *)av, NULL, lu->Symbolic, &lu->Numeric, lu->Control, lu->Info);
 #else
   status = umfpack_UMF_numeric(ai, aj, av, lu->Symbolic, &lu->Numeric, lu->Control, lu->Info);
@@ -204,7 +204,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
   Mat_UMFPACK *lu = (Mat_UMFPACK *)F->data;
   PetscInt     i, *ai = a->i, *aj = a->j, m = A->rmap->n, n = A->cmap->n, idx;
   int          status;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscScalar *av = a->a;
 #endif
   const PetscInt *ra;
@@ -283,13 +283,13 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
 
   /* symbolic factorization of A' */
   if (r) { /* use PETSc row ordering */
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     status = umfpack_UMF_qsymbolic(n, m, ai, aj, av, lu->perm_c, &lu->Symbolic, lu->Control, lu->Info);
 #else
     status = umfpack_UMF_qsymbolic(n, m, ai, aj, NULL, NULL, lu->perm_c, &lu->Symbolic, lu->Control, lu->Info);
 #endif
   } else { /* use Umfpack col ordering */
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     status = umfpack_UMF_symbolic(n, m, ai, aj, av, &lu->Symbolic, lu->Control, lu->Info);
 #else
     status = umfpack_UMF_symbolic(n, m, ai, aj, NULL, NULL, &lu->Symbolic, lu->Control, lu->Info);

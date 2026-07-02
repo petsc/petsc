@@ -34,11 +34,11 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   hdf5->horizontal = PETSC_TRUE;
 
   PetscCheck(((PetscObject)mat)->name, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #error "HDF5 output with 128 bit floats not supported."
-#elif defined(PETSC_USE_REAL___FP16)
+#elif PetscDefined(USE_REAL___FP16)
   #error "HDF5 output with 16 bit floats not supported."
 #else
   scalartype = H5T_NATIVE_DOUBLE;

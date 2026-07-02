@@ -19,7 +19,7 @@ static char help[] = "Simple Advection-diffusion equation solved using FVM in DM
 #include <petscts.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
   #undef I
   #include <cgnslib.h>
 #endif

@@ -1,30 +1,30 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for getpagesize() with c89 */
 #include <petscsys.h>                    /*I "petscsys.h" I*/
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
   #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
 #include <time.h>
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
 
-#if defined(PETSC_HAVE_SYS_RESOURCE_H)
+#if PetscDefined(HAVE_SYS_RESOURCE_H)
   #include <sys/resource.h>
 #endif
-#if defined(PETSC_HAVE_SYS_PROCFS_H)
+#if PetscDefined(HAVE_SYS_PROCFS_H)
   /* #include <sys/int_types.h> Required if using gcc on solaris 2.6 */
   #include <sys/procfs.h>
 #endif
-#if defined(PETSC_HAVE_FCNTL_H)
+#if PetscDefined(HAVE_FCNTL_H)
   #include <fcntl.h>
 #endif
 
@@ -57,24 +57,24 @@
 @*/
 PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
-#if defined(PETSC_USE_PROCFS_FOR_SIZE)
+#if PetscDefined(USE_PROCFS_FOR_SIZE)
   FILE      *file;
   int        fd;
   char       proc[PETSC_MAX_PATH_LEN];
   prpsinfo_t prusage;
-#elif defined(PETSC_USE_SBREAK_FOR_SIZE)
+#elif PetscDefined(USE_SBREAK_FOR_SIZE)
   long *ii = sbreak(0);
   int   fd = ii - (long *)0;
-#elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
+#elif PetscDefined(USE_PROC_FOR_SIZE) && PetscDefined(HAVE_GETPAGESIZE)
   FILE *file;
   char  proc[PETSC_MAX_PATH_LEN];
   int   mm, rss, err;
-#elif defined(PETSC_HAVE_GETRUSAGE)
+#elif PetscDefined(HAVE_GETRUSAGE)
   static struct rusage temp;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_PROCFS_FOR_SIZE)
+#if PetscDefined(USE_PROCFS_FOR_SIZE)
 
   PetscCall(PetscSNPrintf(proc, PETSC_STATIC_ARRAY_LENGTH(proc), "/proc/%d", getpid()));
   PetscCheck((fd = open(proc, O_RDONLY)) != -1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to access system file %s to get memory usage data", file);
@@ -82,11 +82,11 @@ PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   *mem = (PetscLogDouble)prusage.pr_byrssize;
   close(fd);
 
-#elif defined(PETSC_USE_SBREAK_FOR_SIZE)
+#elif PetscDefined(USE_SBREAK_FOR_SIZE)
 
   *mem = (PetscLogDouble)(8 * fd - 4294967296); /* 2^32 - upper bits */
 
-#elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
+#elif PetscDefined(USE_PROC_FOR_SIZE) && PetscDefined(HAVE_GETPAGESIZE)
   PetscCall(PetscSNPrintf(proc, PETSC_STATIC_ARRAY_LENGTH(proc), "/proc/%d/statm", getpid()));
   PetscCheck(file = fopen(proc, "r"), PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to access system file %s to get memory usage data", proc);
   PetscCheck(fscanf(file, "%d %d", &mm, &rss) == 2, PETSC_COMM_SELF, PETSC_ERR_SYS, "Failed to read two integers (mm and rss) from %s", proc);
@@ -94,11 +94,11 @@ PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   err  = fclose(file);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
 
-#elif defined(PETSC_HAVE_GETRUSAGE)
+#elif PetscDefined(HAVE_GETRUSAGE)
   getrusage(RUSAGE_SELF, &temp);
-  #if defined(PETSC_USE_KBYTES_FOR_SIZE)
+  #if PetscDefined(USE_KBYTES_FOR_SIZE)
   *mem = 1024.0 * ((PetscLogDouble)temp.ru_maxrss);
-  #elif defined(PETSC_USE_PAGES_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
+  #elif PetscDefined(USE_PAGES_FOR_SIZE) && PetscDefined(HAVE_GETPAGESIZE)
   *mem = ((PetscLogDouble)getpagesize()) * ((PetscLogDouble)temp.ru_maxrss);
   #else
   *mem = temp.ru_maxrss;

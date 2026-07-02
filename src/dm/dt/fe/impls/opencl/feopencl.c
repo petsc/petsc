@@ -2,7 +2,7 @@
 #include <petsc/private/loghandlerimpl.h>
 #include <../src/sys/logging/handler/impls/default/logdefault.h>
 
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
 
 static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {

@@ -1,6 +1,6 @@
 #include <petsc/private/pcbjkokkosimpl.h>
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS_BATCH)
+#if PetscDefined(HAVE_KOKKOS_KERNELS_BATCH)
   #include <fstream>
 
   #include "Kokkos_Timer.hpp"
@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode PCApply_BJKOKKOSKERNELS(PC pc, const PetscScalar *gl
   PetscCheck(jac->const_block_size, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Kokkos (GMRES) solver requires constant block size (but can be made to work with species ordering or N_team==1)");
   PetscCheck(Nsolves % Nsolves_team == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Nsolves.mod(Nsolves_team) != 0: Nsolves = %d, Nsolves_team = %d", Nsolves, Nsolves_team);
   PetscCheck(((int)info.nz_used) % Nsolves == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "info.nz_used.mod(Nsolves) != 0: info.nz_used = %g, Nsolves = %d", info.nz_used, Nsolves);
-  #if defined(PETSC_HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
   nvtxRangePushA("gmres-kk");
   #endif
   Kokkos::View<PetscScalar **, layout, exec_space, Kokkos::MemoryTraits<Kokkos::Unmanaged>> inv_diag((PetscScalar *)glb_idiag, Nsolves, Nloc); // in correct order
@@ -326,7 +326,7 @@ PETSC_INTERN PetscErrorCode PCApply_BJKOKKOSKERNELS(PC pc, const PetscScalar *gl
       PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve %s in %d iteration, batch %" PetscInt_FMT ", specie %" PetscInt_FMT "\n", handle.is_converged_host(mbid) ? "converged" : "diverged", jac->max_nits, mbid % batch_sz, mbid / batch_sz));
     else PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve %s in %d iteration, block %" PetscInt_FMT "\n", handle.is_converged_host(mbid) ? "converged" : "diverged", jac->max_nits, mbid));
   }
-  #if defined(PETSC_HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
   nvtxRangePop();
   #endif
 

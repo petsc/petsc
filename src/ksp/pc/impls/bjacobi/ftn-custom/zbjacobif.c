@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcbjacobigetsubksp_     PCBJACOBIGETSUBKSP
   #define pcbjacobirestoresubksp_ PCBJACOBIRESTORESUBKSP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcbjacobigetsubksp_     pcbjacobigetsubksp
   #define pcbjacobirestoresubksp_ pcbjacobirestoresubksp
 #endif

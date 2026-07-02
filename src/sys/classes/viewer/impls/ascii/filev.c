@@ -21,7 +21,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
       FILE *fp;
       PetscCall(PetscStrncpy(par, "gzip ", sizeof(par)));
       PetscCall(PetscStrlcat(par, vascii->filename, sizeof(par)));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, par, "r", &fp));
       PetscCheck(!fgets(buf, 1024, fp), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from compression command %s %s", par, buf);
       PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
@@ -424,14 +424,14 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_FORTRAN_BINDINGS)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
 
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define petscviewerasciiopenwithfileunit_  PETSCVIEWERASCIIOPENWITHFILEUNIT
     #define petscviewerasciisetfileunit_       PETSCVIEWERASCIISETFILEUNIT
     #define petscviewerasciistdoutsetfileunit_ PETSCVIEWERASCIISTDOUTSETFILEUNIT
     #define petscfortranprinttofileunit_       PETSCFORTRANPRINTTOFILEUNIT
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define petscviewerasciiopenwithfileunit_  petscviewerasciiopenwithfileunit
     #define petscviewerasciisetfileunit_       petscviewerasciisetfileunit
     #define petscviewerasciistdoutsetfileunit_ petscviewerasciistdoutsetfileunit
@@ -486,7 +486,7 @@ static int PETSC_VIEWER_ASCII_STDOUT_fileunit = 0;
 M*/
 PETSC_EXTERN void petscviewerasciistdoutsetfileunit_(int *unit, PetscErrorCode *ierr)
 {
-  #if defined(PETSC_USE_FORTRAN_BINDINGS)
+  #if PetscDefined(USE_FORTRAN_BINDINGS)
   PETSC_VIEWER_ASCII_STDOUT_fileunit = *unit;
   #endif
 }
@@ -644,7 +644,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));
   PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, &iflg));
   if (!iflg) { /* PetscViewer not yet created */
-#if defined(PETSC_USE_FORTRAN_BINDINGS)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
     PetscCallMPI(MPI_Bcast(&PETSC_VIEWER_ASCII_STDOUT_fileunit, 1, MPI_INT, 0, comm));
     if (PETSC_VIEWER_ASCII_STDOUT_fileunit) {
       PetscErrorCode ierr;
@@ -668,7 +668,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   }
   PetscCall(PetscCommDestroy(&ncomm));
   PetscCall(PetscSpinlockUnlock(&PetscViewerASCIISpinLockStdout));
-#if defined(PETSC_USE_FORTRAN_BINDINGS)
+#if PetscDefined(USE_FORTRAN_BINDINGS)
   ((PetscViewer_ASCII *)(*viewer)->data)->fileunit = PETSC_VIEWER_ASCII_STDOUT_fileunit;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1233,7 +1233,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer, void *data, PetscInt num
     else if (dtype == PETSC_COUNT) ret = fscanf(fd, "%" PetscCount_FMT, &(((PetscCount *)data)[i]));
     else if (dtype == PETSC_FLOAT) ret = fscanf(fd, "%f", &(((float *)data)[i]));
     else if (dtype == PETSC_DOUBLE) ret = fscanf(fd, "%lg", &(((double *)data)[i]));
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
     else if (dtype == PETSC___FLOAT128) {
       double tmp;
       ret                     = fscanf(fd, "%lg", &tmp);

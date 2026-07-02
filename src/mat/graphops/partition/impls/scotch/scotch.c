@@ -2,7 +2,7 @@
 
 EXTERN_C_BEGIN
 #include <ptscotch.h>
-#if defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+#if PetscDefined(HAVE_SCOTCH_PARMETIS_V3_NODEND)
 /* we define the prototype instead of include SCOTCH's parmetis.h */
 void SCOTCH_ParMETIS_V3_NodeND(const SCOTCH_Num *const, SCOTCH_Num *const, SCOTCH_Num *const, const SCOTCH_Num *const, const SCOTCH_Num *const, SCOTCH_Num *const, SCOTCH_Num *const, MPI_Comm *);
 #endif
@@ -293,7 +293,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
   PetscCall(PetscMalloc1(mat->rmap->n + 1, &locals));
 
   if (useND) {
-#if defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+#if PetscDefined(HAVE_SCOTCH_PARMETIS_V3_NODEND)
     PetscInt   *sizes, *seps, log2size, subd, *level, base = 0;
     PetscMPIInt size;
 

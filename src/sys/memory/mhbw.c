@@ -1,6 +1,6 @@
 #include <petscsys.h> /*I   "petscsys.h"   I*/
 
-#if defined(PETSC_HAVE_MEMKIND)
+#if PetscDefined(HAVE_MEMKIND)
   #include <hbwmalloc.h>
 #endif
 
@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t, int, const char[], const c
 */
 static PetscErrorCode PetscHBWMalloc(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
 {
-#if !defined(PETSC_HAVE_MEMKIND)
+#if !PetscDefined(HAVE_MEMKIND)
   return PetscMallocAlign(a, clear, lineno, function, filename, result);
 #else
   if (!a) {
@@ -48,7 +48,7 @@ static PetscErrorCode PetscHBWMalloc(size_t a, PetscBool clear, int lineno, cons
 
 static PetscErrorCode PetscHBWFree(void *aa, int lineno, const char function[], const char filename[])
 {
-#if !defined(PETSC_HAVE_MEMKIND)
+#if !PetscDefined(HAVE_MEMKIND)
   return PetscFreeAlign(aa, lineno, function, filename);
 #else
   hbw_free(aa);
@@ -58,7 +58,7 @@ static PetscErrorCode PetscHBWFree(void *aa, int lineno, const char function[], 
 
 static PetscErrorCode PetscHBWRealloc(size_t a, int lineno, const char function[], const char filename[], void **result)
 {
-#if !defined(PETSC_HAVE_MEMKIND)
+#if !PetscDefined(HAVE_MEMKIND)
   return PetscReallocAlign(a, lineno, function, filename, result);
 #else
   if (!a) {

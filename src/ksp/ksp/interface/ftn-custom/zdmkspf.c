@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/kspimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmkspsetcomputerhs_          DMKSPSETCOMPUTERHS
   #define dmkspsetcomputeinitialguess_ DMKSPSETCOMPUTEINITIALGUESS
   #define dmkspsetcomputeoperators_    DMKSPSETCOMPUTEOPERATORS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmkspsetcomputerhs_          dmkspsetcomputerhs
   #define dmkspsetcomputeinitialguess_ dmkspsetcomputeinitialguess
   #define dmkspsetcomputeoperators_    dmkspsetcomputeoperators

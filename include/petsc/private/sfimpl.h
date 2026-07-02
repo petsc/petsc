@@ -111,7 +111,7 @@ struct _p_PetscSF {
   PetscSFBackend backend; /* The device backend (if any) SF will use */
   void          *data;    /* Pointer to implementation */
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   PetscBool use_nvshmem;                 /* TRY to use nvshmem on cuda devices with this SF when possible */
   PetscBool use_nvshmem_get;             /* If true, use nvshmem_get based protocol, otherwise, use nvshmem_put based protocol */
   PetscBool checked_nvshmem_eligibility; /* Have we checked eligibility of using NVSHMEM on this sf? */
@@ -129,7 +129,7 @@ struct _p_PetscSF {
   PetscMPIInt *ranks_d;       /* Copy of the remote part of (root) ranks[] on device */
   PetscInt    *roffset_d;     /* Copy of the remote part of roffset[] on device */
 #endif
-#if defined(PETSC_HAVE_MPIX_STREAM)
+#if PetscDefined(HAVE_MPIX_STREAM)
   MPIX_Stream mpi_stream;
   MPI_Comm    stream_comm; /* gpu stream aware MPI communicator */
 #endif
@@ -150,7 +150,7 @@ PETSC_INTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datat
 PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype, MPIU_Count *, MPIU_Count *, MPIU_Count *, MPIU_Count *, PetscMPIInt *);
 PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype, MPIU_Count, MPIU_Count, MPIU_Count, MPIU_Count, int *, MPI_Aint *, MPIU_Count *, MPI_Datatype *);
 
-#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES)
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Ibcast(a, b, c, d, e, req)
   #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, c, d, e, f, g, req)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
@@ -181,15 +181,15 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(Ve
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscSFMalloc_CUDA(PetscMemType, size_t, void **);
 PETSC_INTERN PetscErrorCode PetscSFFree_CUDA(PetscMemType, void *);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType, size_t, void **);
 PETSC_INTERN PetscErrorCode PetscSFFree_HIP(PetscMemType, void *);
 #endif
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType, size_t, void **);
 PETSC_INTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType, void *);
 #endif
@@ -197,7 +197,7 @@ PETSC_INTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType, void *);
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
  */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_KOKKOS) || PetscDefined(HAVE_HIP)
   #define PetscSFMalloc(sf, mtype, sz, ptr) ((*(sf)->ops->Malloc)(mtype, sz, ptr))
   /* Free memory and set ptr to NULL when succeeded */
   #define PetscSFFree(sf, mtype, ptr) ((PetscErrorCode)((ptr) && ((*(sf)->ops->Free)(mtype, ptr) || ((ptr) = NULL, PETSC_SUCCESS))))

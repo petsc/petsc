@@ -231,7 +231,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     PetscCall(PetscBLASIntCast(s, &n));
     PetscCall(PetscBLASIntCast(ss, &ldb));
     rcond = 1e-12;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&m, &n, &m, H, &m, bmat, &ldb, sing, &rcond, &rank, workscalar, &lwork, workreal, &info));
 #else
     PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&m, &n, &m, H, &m, bmat, &ldb, sing, &rcond, &rank, workscalar, &lwork, &info));

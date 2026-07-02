@@ -6,21 +6,21 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define _H_COMPLEX
 #endif
 
 #include <pastix.h>
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define SPM_FLTTYPE SpmComplex32
   #else
     #define SPM_FLTTYPE SpmComplex64
   #endif
 #else /* PETSC_USE_COMPLEX */
 
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define SPM_FLTTYPE SpmFloat
   #else
     #define SPM_FLTTYPE SpmDouble

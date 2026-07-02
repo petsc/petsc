@@ -15,7 +15,7 @@ EXTERN_C_END
 typedef struct {
   PetscInt   ndim_fftw;
   ptrdiff_t *dim_fftw;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   fftw_iodim64 *iodims;
 #else
   fftw_iodim *iodims;
@@ -35,8 +35,8 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   const PetscScalar *x_array;
   PetscScalar       *y_array;
   Vec                xx;
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_64BIT_INDICES)
   fftw_iodim64 *iodims;
   #else
   fftw_iodim *iodims;
@@ -56,30 +56,30 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   if (!fftw->p_forward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_1d(dim[0], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_FORWARD, fftw->p_flag);
 #else
       fftw->p_forward = fftw_plan_dft_r2c_1d(dim[0], (double *)x_array, (fftw_complex *)y_array, fftw->p_flag);
 #endif
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_2d(dim[0], dim[1], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_FORWARD, fftw->p_flag);
 #else
       fftw->p_forward = fftw_plan_dft_r2c_2d(dim[0], dim[1], (double *)x_array, (fftw_complex *)y_array, fftw->p_flag);
 #endif
       break;
     case 3:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_FORWARD, fftw->p_flag);
 #else
       fftw->p_forward = fftw_plan_dft_r2c_3d(dim[0], dim[1], dim[2], (double *)x_array, (fftw_complex *)y_array, fftw->p_flag);
 #endif
       break;
     default:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       iodims = fftw->iodims;
-  #if defined(PETSC_USE_64BIT_INDICES)
+  #if PetscDefined(USE_64BIT_INDICES)
       if (ndim) {
         iodims[ndim - 1].n  = (ptrdiff_t)dim[ndim - 1];
         iodims[ndim - 1].is = iodims[ndim - 1].os = 1;
@@ -118,7 +118,7 @@ static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   }
 
   if (fftw->finarray != x_array || fftw->foutarray != y_array) { /* use existing plan on new arrays */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     fftw_execute_dft(fftw->p_forward, (fftw_complex *)x_array, (fftw_complex *)y_array);
 #else
     fftw_execute_dft_r2c(fftw->p_forward, (double *)x_array, (fftw_complex *)y_array);
@@ -139,8 +139,8 @@ static PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
   PetscScalar       *y_array;
   PetscInt           ndim = fft->ndim, *dim = fft->dim;
   Vec                xx;
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_64BIT_INDICES)
   fftw_iodim64 *iodims = fftw->iodims;
   #else
   fftw_iodim *iodims = fftw->iodims;
@@ -159,29 +159,29 @@ static PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
   if (!fftw->p_backward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_1d(dim[0], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_BACKWARD, fftw->p_flag);
 #else
       fftw->p_backward = fftw_plan_dft_c2r_1d(dim[0], (fftw_complex *)x_array, (double *)y_array, fftw->p_flag);
 #endif
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_2d(dim[0], dim[1], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_BACKWARD, fftw->p_flag);
 #else
       fftw->p_backward = fftw_plan_dft_c2r_2d(dim[0], dim[1], (fftw_complex *)x_array, (double *)y_array, fftw->p_flag);
 #endif
       break;
     case 3:
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_BACKWARD, fftw->p_flag);
 #else
       fftw->p_backward = fftw_plan_dft_c2r_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (double *)y_array, fftw->p_flag);
 #endif
       break;
     default:
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_64BIT_INDICES)
       fftw->p_backward = fftw_plan_guru64_dft((int)ndim, (fftw_iodim64 *)iodims, 0, NULL, (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_BACKWARD, fftw->p_flag);
   #else
       fftw->p_backward = fftw_plan_guru_dft((int)ndim, iodims, 0, NULL, (fftw_complex *)x_array, (fftw_complex *)y_array, FFTW_BACKWARD, fftw->p_flag);
@@ -202,7 +202,7 @@ static PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
     }
   }
   if (fftw->binarray != x_array || fftw->boutarray != y_array) { /* use existing plan on new arrays */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     fftw_execute_dft(fftw->p_backward, (fftw_complex *)x_array, (fftw_complex *)y_array);
 #else
     fftw_execute_dft_c2r(fftw->p_backward, (fftw_complex *)x_array, (double *)y_array);
@@ -239,28 +239,28 @@ static PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
   if (!fftw->p_forward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_mpi_plan_dft_1d(dim[0], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_FORWARD, fftw->p_flag);
   #else
       SETERRQ(comm, PETSC_ERR_SUP, "not support for real numbers yet");
   #endif
       break;
     case 2:
-  #if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft, for real transforms call fftw_mpi_plan_dft_r2c */
+  #if PetscDefined(USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft, for real transforms call fftw_mpi_plan_dft_r2c */
       fftw->p_forward = fftw_mpi_plan_dft_2d(dim[0], dim[1], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_FORWARD, fftw->p_flag);
   #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c_2d(dim[0], dim[1], (double *)x_array, (fftw_complex *)y_array, comm, FFTW_ESTIMATE);
   #endif
       break;
     case 3:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_mpi_plan_dft_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_FORWARD, fftw->p_flag);
   #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c_3d(dim[0], dim[1], dim[2], (double *)x_array, (fftw_complex *)y_array, comm, FFTW_ESTIMATE);
   #endif
       break;
     default:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_forward = fftw_mpi_plan_dft(fftw->ndim_fftw, fftw->dim_fftw, (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_FORWARD, fftw->p_flag);
   #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c(fftw->ndim_fftw, fftw->dim_fftw, (double *)x_array, (fftw_complex *)y_array, comm, FFTW_ESTIMATE);
@@ -310,28 +310,28 @@ static PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
   if (!fftw->p_backward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_mpi_plan_dft_1d(dim[0], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_BACKWARD, fftw->p_flag);
   #else
       SETERRQ(comm, PETSC_ERR_SUP, "not support for real numbers yet");
   #endif
       break;
     case 2:
-  #if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft with flag FFTW_BACKWARD, for real transforms call fftw_mpi_plan_dft_c2r */
+  #if PetscDefined(USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft with flag FFTW_BACKWARD, for real transforms call fftw_mpi_plan_dft_c2r */
       fftw->p_backward = fftw_mpi_plan_dft_2d(dim[0], dim[1], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_BACKWARD, fftw->p_flag);
   #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r_2d(dim[0], dim[1], (fftw_complex *)x_array, (double *)y_array, comm, FFTW_ESTIMATE);
   #endif
       break;
     case 3:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_mpi_plan_dft_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_BACKWARD, fftw->p_flag);
   #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r_3d(dim[0], dim[1], dim[2], (fftw_complex *)x_array, (double *)y_array, comm, FFTW_ESTIMATE);
   #endif
       break;
     default:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw->p_backward = fftw_mpi_plan_dft(fftw->ndim_fftw, fftw->dim_fftw, (fftw_complex *)x_array, (fftw_complex *)y_array, comm, FFTW_BACKWARD, fftw->p_flag);
   #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r(fftw->ndim_fftw, fftw->dim_fftw, (fftw_complex *)x_array, (double *)y_array, comm, FFTW_ESTIMATE);
@@ -487,7 +487,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (size == 1) { /* sequential case */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     if (fin) PetscCall(VecCreateSeq(PETSC_COMM_SELF, fft->N, fin));
     if (fout) PetscCall(VecCreateSeq(PETSC_COMM_SELF, fft->N, fout));
     if (bout) PetscCall(VecCreateSeq(PETSC_COMM_SELF, fft->N, bout));
@@ -505,7 +505,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
     fftw_complex *data_fout;
     ptrdiff_t     local_1_start;
     PetscInt      n1, N1;
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
     fftw_complex *data_fin, *data_bout;
   #else
     double   *data_finr, *data_boutr;
@@ -514,7 +514,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
 
     switch (ndim) {
     case 1:
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       SETERRQ(comm, PETSC_ERR_SUP, "FFTW does not allow parallel real 1D transform");
   #else
       alloc_local = fftw_mpi_local_size_1d(dim[0], comm, FFTW_FORWARD, FFTW_ESTIMATE, &local_n0, &local_0_start, &local_n1, &local_1_start);
@@ -549,7 +549,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
       break;
   #endif
     case 2:
-  #if !defined(PETSC_USE_COMPLEX) /* Note that N1 is no more the product of individual dimensions */
+  #if !PetscDefined(USE_COMPLEX) /* Note that N1 is no more the product of individual dimensions */
       alloc_local = fftw_mpi_local_size_2d_transposed(dim[0], dim[1] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
       PetscCall(PetscIntCast(2 * dim[0] * (dim[1] / 2 + 1), &N1));
       PetscCall(PetscIntCast(2 * local_n0 * (dim[1] / 2 + 1), &n1));
@@ -601,7 +601,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
   #endif
       break;
     case 3:
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       alloc_local = fftw_mpi_local_size_3d_transposed(dim[0], dim[1], dim[2] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
       PetscCall(PetscIntCast(2 * dim[0] * dim[1] * (dim[2] / 2 + 1), &N1));
       PetscCall(PetscIntCast(2 * local_n0 * dim[1] * (dim[2] / 2 + 1), &n1));
@@ -652,7 +652,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
   #endif
       break;
     default:
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       temp                                  = (fftw->dim_fftw)[fftw->ndim_fftw - 1];
       (fftw->dim_fftw)[fftw->ndim_fftw - 1] = temp / 2 + 1;
       alloc_local                           = fftw_mpi_local_size_transposed(fftw->ndim_fftw, fftw->dim_fftw, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
@@ -778,7 +778,7 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
     ptrdiff_t local_n0, local_0_start;
     ptrdiff_t local_n1, local_1_start;
     IS        list2;
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
     PetscInt  i, j, k, partial_dim;
     PetscInt *indx1, *indx2, tempindx, tempindx1;
     PetscInt  NM;
@@ -789,7 +789,7 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 
     switch (ndim) {
     case 1:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_1d(dim[0], comm, FFTW_FORWARD, FFTW_ESTIMATE, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
       PetscCall(PetscIntCast(local_n0, &n1));
@@ -808,7 +808,7 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
   #endif
       break;
     case 2:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_2d(dim[0], dim[1], comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * dim[1], &n1));
@@ -859,7 +859,7 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
       break;
 
     case 3:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_3d(dim[0], dim[1], dim[2], comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * dim[1] * dim[2], &n1));
@@ -910,7 +910,7 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
       break;
 
     default:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size(fftw->ndim_fftw, fftw->dim_fftw, comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * (fftw->partial_dim), &n1));
@@ -1025,7 +1025,7 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
     ptrdiff_t local_n0, local_0_start;
     ptrdiff_t local_n1, local_1_start;
     IS        list2;
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
     PetscInt  i, j, k, partial_dim;
     PetscInt *indx1, *indx2, tempindx, tempindx1;
     PetscInt  NM;
@@ -1036,7 +1036,7 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
     PetscInt n1;
     switch (ndim) {
     case 1:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_1d(dim[0], comm, FFTW_BACKWARD, FFTW_ESTIMATE, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
       PetscCall(PetscIntCast(local_n1, &n1));
@@ -1055,7 +1055,7 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   #endif
       break;
     case 2:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_2d(dim[0], dim[1], comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * dim[1], &n1));
@@ -1103,7 +1103,7 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   #endif
       break;
     case 3:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_3d(dim[0], dim[1], dim[2], comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * dim[1] * dim[2], &n1));
@@ -1153,7 +1153,7 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   #endif
       break;
     default:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size(fftw->ndim_fftw, fftw->dim_fftw, comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * (fftw->partial_dim), &n1));
@@ -1230,7 +1230,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   PetscInt    p_flag, partial_dim = 1, ctr;
   PetscMPIInt size, rank;
   ptrdiff_t  *pdim;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscInt tot_dim;
 #endif
 
@@ -1244,20 +1244,20 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 #endif
   pdim    = (ptrdiff_t *)calloc(ndim, sizeof(ptrdiff_t));
   pdim[0] = dim[0];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   tot_dim = 2 * dim[0];
 #endif
   for (ctr = 1; ctr < ndim; ctr++) {
     partial_dim *= dim[ctr];
     pdim[ctr] = dim[ctr];
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     if (ctr == ndim - 1) tot_dim *= (dim[ctr] / 2 + 1);
     else tot_dim *= dim[ctr];
 #endif
   }
 
   if (size == 1) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(MatSetSizes(A, fft->N, fft->N, fft->N, fft->N));
     fft->n = fft->N;
 #else
@@ -1267,7 +1267,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 #if !PetscDefined(HAVE_MPIUNI)
   } else {
     ptrdiff_t local_n0, local_0_start, local_n1, local_1_start;
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
     ptrdiff_t temp;
     PetscInt  N1;
   #else
@@ -1276,7 +1276,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
     switch (ndim) {
     case 1:
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
       SETERRQ(comm, PETSC_ERR_SUP, "FFTW does not support parallel 1D real transform");
   #else
       fftw_mpi_local_size_1d(dim[0], comm, FFTW_FORWARD, FFTW_ESTIMATE, &local_n0, &local_0_start, &local_n1, &local_1_start);
@@ -1286,7 +1286,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   #endif
       break;
     case 2:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_2d(dim[0], dim[1], comm, &local_n0, &local_0_start);
       fft->n = (PetscInt)local_n0 * dim[1];
       PetscCall(MatSetSizes(A, fft->n, fft->n, fft->N, fft->N));
@@ -1298,7 +1298,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   #endif
       break;
     case 3:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size_3d(dim[0], dim[1], dim[2], comm, &local_n0, &local_0_start);
 
       fft->n = (PetscInt)local_n0 * dim[1] * dim[2];
@@ -1311,7 +1311,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   #endif
       break;
     default:
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
       fftw_mpi_local_size(ndim, pdim, comm, &local_n0, &local_0_start);
 
       PetscCall(PetscIntCast(local_n0 * partial_dim, &fft->n));
@@ -1344,7 +1344,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
   PetscCall(PetscMalloc1(ndim, &fftw->dim_fftw));
   if (size == 1) {
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
     fftw->iodims = (fftw_iodim64 *)malloc(sizeof(fftw_iodim64) * ndim);
 #else
     fftw->iodims = (fftw_iodim *)malloc(sizeof(fftw_iodim) * ndim);

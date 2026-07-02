@@ -7,7 +7,7 @@
  For NVIDIA GPUs each slice should be padded to the boundary of 16 elements for best performance.
  The optimal memory alignment in device memory is 128 bytes, 64 bytes, 32 bytes for double precision, single precision and half precision.
 */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   #define DEVICE_MEM_ALIGN 16
 #endif
 

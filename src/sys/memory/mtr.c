@@ -3,7 +3,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 #include <petscviewer.h>
-#if defined(PETSC_HAVE_MALLOC_H)
+#if PetscDefined(HAVE_MALLOC_H)
   #include <malloc.h>
 #endif
 
@@ -25,7 +25,7 @@ typedef struct _trSPACE {
   const char *filename;
   const char *functionname;
   PetscInt    specialcookie;
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   PetscStack stack;
 #endif
   struct _trSPACE *next, *prev;
@@ -198,17 +198,17 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
     }
   }
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where PetscTrMallocDefault() was called, not the PetscFunctionBegin; */
   head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
   head->stack.currentsize--;
-  #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
+  #if PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
     size_t     n = a / sizeof(PetscReal);
     PetscReal *s = (PetscReal *)inew;
       /* from https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html */
-    #if defined(PETSC_USE_REAL_SINGLE)
+    #if PetscDefined(USE_REAL_SINGLE)
     int nas = 0x7F800002;
     #else
     PetscInt64 nas = 0x7FF0000000000002;
@@ -403,7 +403,7 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
     }
   }
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
   head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
@@ -636,7 +636,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 @*/
 PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 {
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   TRSPACE *head;
 
   PetscFunctionBegin;
@@ -703,7 +703,7 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 
     PetscCall(PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib));
     if (!isLib) {
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
       fprintf(fp, "[%2d] %.0f bytes\n", rank, (PetscLogDouble)(TRrequestedSize ? head->rsize : head->size));
       PetscCall(PetscStackPrint(&head->stack, fp));
 #else

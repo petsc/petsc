@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matcreatenest_     MATCREATENEST
   #define matnestsetsubmats_ MATNESTSETSUBMATS
   #define matnestgetsubmats_ MATNESTGETSUBMATS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matcreatenest_     matcreatenest
   #define matnestsetsubmats_ matnestsetsubmats
   #define matnestgetsubmats_ matnestgetsubmats

@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcgasmdestroysubdomains_  PCGASMDESTROYSUBDOMAINS
   #define pcgasmgetsubksp_          PCGASMGETSUBKSP
   #define pcgasmrestoresubksp_      PCGASMRESTORESUBKSP
   #define pcgasmcreatesubdomains2d_ PCGASMCREATESUBDOMAINS2D
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcgasmdestroysubdomains_  pcgasmdestroysubdomains
   #define pcgasmgetsubksp_          pcgasmgetsubksp
   #define pcgasmrestoresubksp_      pcgasmrestoresubksp

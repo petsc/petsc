@@ -269,7 +269,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   in.numberofcorners = 3;
   PetscCall(PetscCIntCast(cEnd - cStart, &in.numberoftriangles));
 
-#if !defined(PETSC_USE_REAL_DOUBLE)
+#if !PetscDefined(USE_REAL_DOUBLE)
   PetscCall(PetscMalloc1(cEnd - cStart, &maxVolumes));
   for (c = 0; c < cEnd - cStart; ++c) maxVolumes[c] = (double)inmaxVolumes[c];
 #else
@@ -357,7 +357,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   PetscCall(DMPlexCopyHoles(*dm, boundary));
 #endif
   PetscCall(FiniOutput_Triangle(&out));
-#if !defined(PETSC_USE_REAL_DOUBLE)
+#if !PetscDefined(USE_REAL_DOUBLE)
   PetscCall(PetscFree(maxVolumes));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -71,13 +71,13 @@ const char **TaoConvergedReasons           = TaoConvergedReasons_Shifted - TAO_D
 @*/
 PetscErrorCode TaoRegisterAll(void)
 {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 #endif
 
   PetscFunctionBegin;
   if (TaoRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TaoRegisterAllCalled = PETSC_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(TaoRegister(TAOLMVM, TaoCreate_LMVM));
   PetscCall(TaoRegister(TAONLS, TaoCreate_NLS));
   PetscCall(TaoRegister(TAONTR, TaoCreate_NTR));

@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/taoimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define taobrgnsetregularizerobjectiveandgradientroutine_ TAOBRGNSETREGULARIZEROBJECTIVEANDGRADIENTROUTINE
   #define taobrgnsetregularizerhessianroutine_              TAOBRGNSETREGULARIZERHESSIANROUTINE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define taobrgnsetregularizerobjectiveandgradientroutine_ taobrgnsetregularizerobjectiveandgradientroutine
   #define taobrgnsetregularizerhessianroutine_              taobrgnsetregularizerhessianroutine
 #endif

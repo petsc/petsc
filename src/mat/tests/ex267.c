@@ -10,7 +10,7 @@ PetscErrorCode TestMatrix(const char *test, Mat A, PetscInt nrhs, PetscBool inpl
   PetscInt  n, i;
   PetscReal norm, tol = 1000 * PETSC_MACHINE_EPSILON;
   PetscBool ht;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscScalar v1 = PetscCMPLX(1.0, -0.1), v2 = PetscCMPLX(-1.0, 0.1);
 #else
   PetscScalar v1 = 1.0, v2 = -1.0;
@@ -120,7 +120,7 @@ int main(int argc, char **args)
   Mat         A, At, Aht;
   PetscInt    i, n = 8, nrhs = 2;
   PetscBool   aij, inplace = PETSC_FALSE;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscScalar a = PetscCMPLX(-1.0, 0.5);
 #else
   PetscScalar a = -1.0;
@@ -164,11 +164,7 @@ int main(int argc, char **args)
   PetscCall(MatSetValue(A, 0, 1, -5.0, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-#if defined(PETSC_USE_COMPLEX)
-  PetscCall(MatSetOption(A, MAT_HERMITIAN, PETSC_FALSE));
-#else
-  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_FALSE));
-#endif
+  PetscCall(MatSetOption(A, PetscDefined(USE_COMPLEX) ? MAT_HERMITIAN : MAT_SYMMETRIC, PETSC_FALSE));
 
   PetscCall(TestMatrix("LU T nonsym", At, nrhs, inplace, PETSC_FALSE));
   PetscCall(TestMatrix("LU HT nonsym", Aht, nrhs, inplace, PETSC_FALSE));

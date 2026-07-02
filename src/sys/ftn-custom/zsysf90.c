@@ -1,8 +1,8 @@
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscintarray1ddestroyf90_ PETSCINTARRAY1DDESTROYF90
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscintarray1ddestroyf90_ petscintarray1ddestroyf90
 #endif
 

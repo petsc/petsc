@@ -1,5 +1,5 @@
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
   #include <pwd.h>
 #endif
 
@@ -38,7 +38,7 @@ PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
     fullpath[flen - 1] = 0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   if (path[1] == ':') {
     PetscCall(PetscStrncpy(fullpath, path, flen));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -59,7 +59,7 @@ PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
       PetscCall(PetscGetHomeDirectory(tmppath, PETSC_MAX_PATH_LEN));
       rest = fullpath + 2;
     } else {
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
       struct passwd *pwde;
       char          *p, *name;
 

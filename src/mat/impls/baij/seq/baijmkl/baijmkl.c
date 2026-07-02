@@ -7,7 +7,7 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/baij/seq/baijmkl/baijmkl.h> /*I   "petscmat.h"   I*/
-#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
+#if PetscDefined(HAVE_MKL_INTEL_ILP64)
   #define MKL_ILP64
 #endif
 #include <mkl_spblas.h>

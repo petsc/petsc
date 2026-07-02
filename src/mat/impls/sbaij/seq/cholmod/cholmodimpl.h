@@ -2,13 +2,13 @@
 
 #include <petscsys.h>
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define CHOLMOD_SCALAR_TYPE CHOLMOD_COMPLEX
 #else
   #define CHOLMOD_SCALAR_TYPE CHOLMOD_REAL
 #endif
 
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   #define CHOLMOD_INT_TYPE  CHOLMOD_LONG
   #define cholmod_X_start   cholmod_l_start
   #define cholmod_X_analyze cholmod_l_analyze

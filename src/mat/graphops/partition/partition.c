@@ -256,17 +256,12 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual)
   char      type[256];
   PetscBool found;
   PetscErrorCode (*fn)(Mat, PetscInt, Mat *);
-  MatMeshToCellGraphType def;
+  MatMeshToCellGraphType def = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
-#if defined(PETSC_HAVE_PARMETIS)
-  def = MATMESHTOCELLGRAPHPARMETIS;
-#elif defined(PETSC_HAVE_METIS)
-  def = MATMESHTOCELLGRAPHMETIS;
-#else
-  def = NULL;
-#endif
+  if (PetscDefined(HAVE_PARMETIS)) def = MATMESHTOCELLGRAPHPARMETIS;
+  else if (PetscDefined(HAVE_METIS)) def = MATMESHTOCELLGRAPHMETIS;
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_mesh_to_cell_graph_type", type, sizeof(type), &found));
   if (!found) {
     PetscCheck(def, PetscObjectComm((PetscObject)mesh), PETSC_ERR_SUP, "No MatMeshToCellGraph implementations registered. Configure with METIS or ParMETIS");
@@ -844,13 +839,13 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
   PetscFunctionBegin;
   PetscObjectOptionsBegin((PetscObject)part);
   if (!((PetscObject)part)->type_name) {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
     def = MATPARTITIONINGPARMETIS;
-#elif defined(PETSC_HAVE_CHACO)
+#elif PetscDefined(HAVE_CHACO)
     def = MATPARTITIONINGCHACO;
-#elif defined(PETSC_HAVE_PARTY)
+#elif PetscDefined(HAVE_PARTY)
     def = MATPARTITIONINGPARTY;
-#elif defined(PETSC_HAVE_PTSCOTCH)
+#elif PetscDefined(HAVE_PTSCOTCH)
     def = MATPARTITIONINGPTSCOTCH;
 #else
     def = MATPARTITIONINGCURRENT;

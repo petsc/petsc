@@ -3,7 +3,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #include <petscts.h>
 #include <petscdmda.h>
 
-#if defined(PETSC_HAVE_TCHEM)
+#if PetscDefined(HAVE_TCHEM)
   #if defined(MAX)
     #undef MAX
   #endif

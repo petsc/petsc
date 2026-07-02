@@ -5,7 +5,7 @@
 /* MANSEC = Sys */
 /* SUBMANSEC = Viewer */
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   #include <hdf5.h>
   #if !defined(H5_VERSION_GE)
     /* H5_VERSION_GE was introduced in HDF5 1.8.7, we support >= 1.8.0 */
@@ -50,7 +50,7 @@ static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
 {
   PetscFunctionBegin;
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot convert negative size");
-  #if defined(PETSC_USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
+  #if PetscDefined(USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
   PetscCheck(a >= PETSC_HDF5_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array too long for HDF5");
   #endif
   *b = (hsize_t)(a);
@@ -59,7 +59,7 @@ static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
 PETSC_EXTERN PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType, hid_t *);
 PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t, PetscDataType *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
-#endif /* defined(PETSC_HAVE_HDF5) */
+#endif /* PetscDefined(HAVE_HDF5) */
 
 /*@
   PetscViewerHDF5PathIsRelative - Determine whether an HDF5 path string is relative (does not begin with `/`).

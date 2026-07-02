@@ -548,12 +548,10 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   if (!def->WtA) {
     if (def->Wt) PetscCall(MatMatMult(def->Wt, Amat, MAT_INITIAL_MATRIX, PETSC_CURRENT, &def->WtA));
     else {
-#if defined(PETSC_USE_COMPLEX)
-      PetscCall(MatHermitianTranspose(def->W, MAT_INITIAL_MATRIX, &def->Wt));
-      PetscCall(MatMatMult(def->Wt, Amat, MAT_INITIAL_MATRIX, PETSC_CURRENT, &def->WtA));
-#else
-      PetscCall(MatTransposeMatMult(def->W, Amat, MAT_INITIAL_MATRIX, PETSC_CURRENT, &def->WtA));
-#endif
+      if (PetscDefined(USE_COMPLEX)) {
+        PetscCall(MatHermitianTranspose(def->W, MAT_INITIAL_MATRIX, &def->Wt));
+        PetscCall(MatMatMult(def->Wt, Amat, MAT_INITIAL_MATRIX, PETSC_CURRENT, &def->WtA));
+      } else PetscCall(MatTransposeMatMult(def->W, Amat, MAT_INITIAL_MATRIX, PETSC_CURRENT, &def->WtA));
     }
   }
   /* setup coarse problem */
@@ -626,11 +624,11 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       if (innerksp) {
         PetscCall(KSPGetPC(innerksp, &pcinner));
         PetscCall(PCSetType(pcinner, PCLU));
-#if defined(PETSC_HAVE_SUPERLU)
+#if PetscDefined(HAVE_SUPERLU)
         PetscCall(MatGetFactorAvailable(def->WtAW, MATSOLVERSUPERLU, MAT_FACTOR_LU, &match));
         if (match) PetscCall(PCFactorSetMatSolverType(pcinner, MATSOLVERSUPERLU));
 #endif
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
         PetscCall(MatGetFactorAvailable(def->WtAW, MATSOLVERSUPERLU_DIST, MAT_FACTOR_LU, &match));
         if (match) PetscCall(PCFactorSetMatSolverType(pcinner, MATSOLVERSUPERLU_DIST));
 #endif

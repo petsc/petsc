@@ -54,7 +54,7 @@ PetscErrorCode PCInitializePackage(void)
   /* Initialize subpackages */
   PetscCall(PCGAMGInitializePackage());
   PetscCall(PCBDDCInitializePackage());
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
   PetscCall(PCHPDDMInitializePackage());
 #endif
   /* Register Classes */
@@ -204,7 +204,7 @@ PetscErrorCode KSPInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if PetscDefined(HAVE_DYNAMIC_LIBRARIES)
 
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

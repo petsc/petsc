@@ -1,14 +1,14 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/taoimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define taoadmmsetmisfitobjectiveandgradientroutine_      TAOADMMSETMISFITOBJECTIVEANDGRADIENTROUTINE
   #define taoadmmsetmisfithessianroutine_                   TAOADMMSETMISFITHESSIANROUTINE
   #define taoadmmsetmisfitconstraintjacobian_               TAOADMMSETMISFITCONSTRAINTJACOBIAN
   #define taoadmmsetregularizerobjectiveandgradientroutine_ TAOADMMSETREGULARIZEROBJECTIVEANDGRADIENTROUTINE
   #define taoadmmsetregularizerhessianroutine_              TAOADMMSETREGULARIZERHESSIANROUTINE
   #define taoadmmsetregularizerconstraintjacobian_          TAOADMMSETREGULARIZERCONSTRAINTJACOBIAN
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define taoadmmsetmisfitobjectiveandgradientroutine_      taoadmmsetmisfitobjectiveandgradientroutine
   #define taoadmmsetmisfithessianroutine_                   taoadmmsetmisfithessianroutine
   #define taoadmmsetmisfitconstraintjacobian_               taoadmmsetmisfitconstraintjacobian

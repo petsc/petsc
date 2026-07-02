@@ -319,7 +319,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_LOG)
+#if PetscDefined(USE_LOG)
 /*@C
   PetscObjectsDump - Prints all the currently existing objects.
 

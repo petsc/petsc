@@ -73,7 +73,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMSetType(*dm, DMPLEX));
   } else {
     /* TODO Eliminate this in favor of DMLoad() in new code */
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     const PetscInt vertices_per_cell = 3;
     PetscViewer    viewer;
     Vec            coordinates;

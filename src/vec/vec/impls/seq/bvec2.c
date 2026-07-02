@@ -83,7 +83,7 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win, Vec xin, Vec yin)
   } else if (ww == yy) {
     for (i = 0; i < n; i++) ww[i] *= xx[i];
   } else {
-#if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+#if PetscDefined(USE_FORTRAN_KERNEL_XTIMESY)
     fortranxtimesy_(xx, yy, ww, &n);
 #else
     for (i = 0; i < n; i++) ww[i] = xx[i] * yy[i];
@@ -248,26 +248,19 @@ static PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
     PetscCall(PetscObjectGetName((PetscObject)xin, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s = [\n", name));
     for (i = 0; i < n; i++) {
-#if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(xv[i]) > 0.0) {
+      if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(xv[i]) > 0.0) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e + %18.16ei\n", (double)PetscRealPart(xv[i]), (double)PetscImaginaryPart(xv[i])));
-      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+      } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(xv[i]) < 0.0) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e - %18.16ei\n", (double)PetscRealPart(xv[i]), -(double)PetscImaginaryPart(xv[i])));
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e\n", (double)PetscRealPart(xv[i])));
       }
-#else
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e\n", (double)xv[i]));
-#endif
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "];\n"));
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     for (i = 0; i < n; i++) {
-#if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e\n", (double)PetscRealPart(xv[i]), (double)PetscImaginaryPart(xv[i])));
-#else
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e\n", (double)xv[i]));
-#endif
+      if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e %18.16e\n", (double)PetscRealPart(xv[i]), (double)PetscImaginaryPart(xv[i])));
+      else PetscCall(PetscViewerASCIIPrintf(viewer, "%18.16e\n", (double)PetscRealPart(xv[i])));
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     PetscInt bs;
@@ -279,7 +272,7 @@ static PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "%7" PetscInt_FMT "   ", i + 1));
       for (PetscInt b = 0; b < bs; b++) {
         if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "% 12.5E", (double)xv[i * bs + b]));
 #endif
       }
@@ -321,17 +314,13 @@ static PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
   } else {
     for (i = 0; i < n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": ", i));
-#if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(xv[i]) > 0.0) {
+      if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(xv[i]) > 0.0) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g + %g i\n", (double)PetscRealPart(xv[i]), (double)PetscImaginaryPart(xv[i])));
-      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+      } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(xv[i]) < 0.0) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g - %g i\n", (double)PetscRealPart(xv[i]), -(double)PetscImaginaryPart(xv[i])));
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%g\n", (double)PetscRealPart(xv[i])));
       }
-#else
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%g\n", (double)xv[i]));
-#endif
     }
   }
   PetscCall(PetscViewerFlush(viewer));
@@ -406,7 +395,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin, PetscViewer viewer)
   return VecView_Binary(xin, viewer);
 }
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   #include <petscmatlab.h>
   #include <mat.h> /* MATLAB include file */
 PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
@@ -427,17 +416,17 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
 PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 {
   PetscBool isdraw, isascii, issocket, isbinary;
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   PetscBool ismathematica;
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
   PetscBool isglvis;
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscBool isadios;
 #endif
 
@@ -446,17 +435,17 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATHEMATICA, &ismathematica));
 #endif
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
 #endif
 
@@ -466,19 +455,19 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
     PetscCall(VecView_Seq_ASCII(xin, viewer));
   } else if (isbinary) {
     PetscCall(VecView_Seq_Binary(xin, viewer));
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   } else if (ismathematica) {
     PetscCall(PetscViewerMathematicaPutVector(viewer, xin));
 #endif
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(VecView_MPI_HDF5(xin, viewer)); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   } else if (isadios) {
     PetscCall(VecView_MPI_ADIOS(xin, viewer)); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(VecView_Seq_Matlab(xin, viewer));
 #endif
@@ -664,7 +653,7 @@ static PetscErrorCode VecDuplicate_Seq_Private(Vec w, Vec v)
 
   // Vec ops are not necessarily fully set by VecSetType(), e.g., see DMCreateGlobalVector_DA, so we copy w's to v
   v->ops[0] = w->ops[0];
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   v->boundtocpu        = w->boundtocpu;
   v->bindingpropagates = w->bindingpropagates;
 #endif
@@ -862,7 +851,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
 
   PetscCall(PetscLayoutSetUp(v->map));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQ));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", VecMatlabEnginePut_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEngineGet_C", VecMatlabEngineGet_Default));
 #endif

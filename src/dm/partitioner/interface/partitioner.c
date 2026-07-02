@@ -140,11 +140,11 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
   if (size == 1) {
     *defaultType = PETSCPARTITIONERSIMPLE;
   } else {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
     *defaultType = PETSCPARTITIONERPARMETIS;
-#elif defined(PETSC_HAVE_PTSCOTCH)
+#elif PetscDefined(HAVE_PTSCOTCH)
     *defaultType = PETSCPARTITIONERPTSCOTCH;
-#elif defined(PETSC_HAVE_CHACO)
+#elif PetscDefined(HAVE_CHACO)
     *defaultType = PETSCPARTITIONERCHACO;
 #else
     *defaultType = PETSCPARTITIONERSIMPLE;
