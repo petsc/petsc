@@ -88,7 +88,7 @@ M*/
 M*/
 #define PetscCallLAPACKInfo(name, routine) \
   do { \
-    PetscBLASInt info; \
+    PetscBLASInt info = -1000; \
     PetscCallBLAS(name, routine); \
     PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LAPACK routine %s %" PetscBLASInt_FMT "-th argument had an illegal value", name, -info); \
     PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine %s failed with INFO = %" PetscBLASInt_FMT ". Search at https://www.netlib.org/lapack/explore-html/index.html to decode the error code.", name, info); \
