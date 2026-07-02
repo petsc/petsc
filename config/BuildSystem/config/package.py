@@ -1987,6 +1987,8 @@ class CMakePackage(Package):
       pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
+    if self.versionToTuple(self.cmake.foundversion) >= (3,17):
+      args.append('--debug-find')
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+self.libDir+'"')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
