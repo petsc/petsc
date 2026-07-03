@@ -11,6 +11,7 @@ PC Object: (beta_) 2 MPI processes
           package used to perform factorization: mumps
           total: nonzeros=4, allocated nonzeros=4
             MUMPS run parameters:
+              precision:                           DOUBLE
               Use -beta_ksp_view ::ascii_info_detail to display information for all processes
               RINFOG(1) (global estimated flops for the elimination after analysis): 0.
               RINFOG(2) (global estimated flops for the assembly after factorization): 0.
@@ -60,6 +61,7 @@ PC Object: (beta_) 2 MPI processes
           package used to perform factorization: mumps
           total: nonzeros=4, allocated nonzeros=4
             MUMPS run parameters:
+              precision:                           DOUBLE
               Use -beta_ksp_view ::ascii_info_detail to display information for all processes
               RINFOG(1) (global estimated flops for the elimination after analysis): 0.
               RINFOG(2) (global estimated flops for the assembly after factorization): 0.
