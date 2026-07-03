@@ -1365,6 +1365,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        MatADot_Default,
                                        /*144*/ MatANorm_Default,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar *data)

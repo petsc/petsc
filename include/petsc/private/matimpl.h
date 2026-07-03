@@ -211,6 +211,7 @@ struct _MatOps {
   PetscErrorCode (*anorm)(Mat, Vec, PetscReal *); /* induced vector norm */
   PetscErrorCode (*adot_local)(Mat, Vec, Vec, PetscScalar *);
   PetscErrorCode (*anorm_local)(Mat, Vec, PetscReal *);
+  PetscErrorCode (*getordering)(Mat, MatOrderingType, IS *, IS *);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

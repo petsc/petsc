@@ -2148,7 +2148,8 @@ typedef enum {
   MATOP_ADOT                      = 143,
   MATOP_ANORM                     = 144,
   MATOP_ADOT_LOCAL                = 145,
-  MATOP_ANORM_LOCAL               = 146
+  MATOP_ANORM_LOCAL               = 146,
+  MATOP_GET_ORDERING              = 147
 } MatOperation;
 
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, PetscErrorCodeFn *);
