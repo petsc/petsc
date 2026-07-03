@@ -1483,6 +1483,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_ScaLAPACK,
                                        MatADot_Default,
                                        /*144*/ MatANorm_Default,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat, MatStash *stash, PetscInt *owners)

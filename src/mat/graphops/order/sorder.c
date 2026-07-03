@@ -148,9 +148,7 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 @*/
 PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cperm)
 {
-  PetscInt mmat, nmat, mis;
-  PetscErrorCode (*r)(Mat, MatOrderingType, IS *, IS *);
-  PetscBool flg, ismpiaij;
+  PetscBool flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -167,37 +165,6 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
-  PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIAIJ, &ismpiaij));
-  if (ismpiaij) { /* Reorder using diagonal block */
-    Mat             Ad, Ao;
-    const PetscInt *colmap;
-    IS              lrowperm, lcolperm;
-    PetscInt        i, rstart, rend, *idx;
-    const PetscInt *lidx;
-
-    PetscCall(MatMPIAIJGetSeqAIJ(mat, &Ad, &Ao, &colmap));
-    PetscCall(MatGetOrdering(Ad, type, &lrowperm, &lcolperm));
-    PetscCall(MatGetOwnershipRange(mat, &rstart, &rend));
-    /* Remap row index set to global space */
-    PetscCall(ISGetIndices(lrowperm, &lidx));
-    PetscCall(PetscMalloc1(rend - rstart, &idx));
-    for (i = 0; i + rstart < rend; i++) idx[i] = rstart + lidx[i];
-    PetscCall(ISRestoreIndices(lrowperm, &lidx));
-    PetscCall(ISDestroy(&lrowperm));
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), rend - rstart, idx, PETSC_OWN_POINTER, rperm));
-    PetscCall(ISSetPermutation(*rperm));
-    /* Remap column index set to global space */
-    PetscCall(ISGetIndices(lcolperm, &lidx));
-    PetscCall(PetscMalloc1(rend - rstart, &idx));
-    for (i = 0; i + rstart < rend; i++) idx[i] = rstart + lidx[i];
-    PetscCall(ISRestoreIndices(lcolperm, &lidx));
-    PetscCall(ISDestroy(&lcolperm));
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), rend - rstart, idx, PETSC_OWN_POINTER, cperm));
-    PetscCall(ISSetPermutation(*cperm));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
   if (!mat->rmap->N) { /* matrix has zero rows */
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, cperm));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, rperm));
@@ -206,29 +173,34 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(MatGetLocalSize(mat, &mmat, &nmat));
-  PetscCheck(mmat == nmat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, mmat, nmat);
+  if (!mat->ops->getordering) {
+    PetscInt mmat, nmat, mis;
+    PetscErrorCode (*r)(Mat, MatOrderingType, IS *, IS *);
 
-  PetscCall(MatOrderingRegisterAll());
-  PetscCall(PetscFunctionListFind(MatOrderingList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown or unregistered type: %s", type);
+    PetscCall(MatGetLocalSize(mat, &mmat, &nmat));
+    PetscCheck(mmat == nmat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT, mmat, nmat);
 
-  PetscCall(PetscLogEventBegin(MAT_GetOrdering, mat, 0, 0, 0));
-  PetscCall((*r)(mat, type, rperm, cperm));
-  PetscCall(ISSetPermutation(*rperm));
-  PetscCall(ISSetPermutation(*cperm));
-  /* Adjust for inode (reduced matrix ordering) only if row permutation is smaller the matrix size */
-  PetscCall(ISGetLocalSize(*rperm, &mis));
-  if (mmat > mis) PetscCall(MatInodeAdjustForInodes(mat, rperm, cperm));
-  PetscCall(PetscLogEventEnd(MAT_GetOrdering, mat, 0, 0, 0));
+    PetscCall(MatOrderingRegisterAll());
+    PetscCall(PetscFunctionListFind(MatOrderingList, type, &r));
+    PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown or unregistered type: %s", type);
 
-  PetscCall(PetscOptionsHasName(((PetscObject)mat)->options, ((PetscObject)mat)->prefix, "-mat_view_ordering", &flg));
-  if (flg) {
-    Mat tmat;
-    PetscCall(MatPermute(mat, *rperm, *cperm, &tmat));
-    PetscCall(MatViewFromOptions(tmat, (PetscObject)mat, "-mat_view_ordering"));
-    PetscCall(MatDestroy(&tmat));
-  }
+    PetscCall(PetscLogEventBegin(MAT_GetOrdering, mat, 0, 0, 0));
+    PetscCall((*r)(mat, type, rperm, cperm));
+    PetscCall(ISSetPermutation(*rperm));
+    PetscCall(ISSetPermutation(*cperm));
+    /* Adjust for inode (reduced matrix ordering) only if row permutation is smaller the matrix size */
+    PetscCall(ISGetLocalSize(*rperm, &mis));
+    if (mmat > mis) PetscCall(MatInodeAdjustForInodes(mat, rperm, cperm));
+    PetscCall(PetscLogEventEnd(MAT_GetOrdering, mat, 0, 0, 0));
+
+    PetscCall(PetscOptionsHasName(((PetscObject)mat)->options, ((PetscObject)mat)->prefix, "-mat_view_ordering", &flg));
+    if (flg) {
+      Mat tmat;
+      PetscCall(MatPermute(mat, *rperm, *cperm, &tmat));
+      PetscCall(MatViewFromOptions(tmat, (PetscObject)mat, "-mat_view_ordering"));
+      PetscCall(MatDestroy(&tmat));
+    }
+  } else PetscUseTypeMethod(mat, getordering, type, rperm, cperm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

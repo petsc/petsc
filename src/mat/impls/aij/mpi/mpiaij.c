@@ -2697,6 +2697,35 @@ static PetscErrorCode MatEliminateZeros_MPIAIJ(Mat A, PetscBool keep)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetOrdering_MPIAIJ(Mat A, MatOrderingType type, IS *rperm, IS *cperm)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ *)A->data;
+  IS              lrowperm, lcolperm;
+  PetscInt        i, rstart, rend, *idx;
+  const PetscInt *lidx;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetOrdering(a->A, type, &lrowperm, &lcolperm));
+  PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
+  /* Remap row index set to global space */
+  PetscCall(ISGetIndices(lrowperm, &lidx));
+  PetscCall(PetscMalloc1(rend - rstart, &idx));
+  for (i = 0; i + rstart < rend; i++) idx[i] = rstart + lidx[i];
+  PetscCall(ISRestoreIndices(lrowperm, &lidx));
+  PetscCall(ISDestroy(&lrowperm));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), rend - rstart, idx, PETSC_OWN_POINTER, rperm));
+  PetscCall(ISSetPermutation(*rperm));
+  /* Remap column index set to global space */
+  PetscCall(ISGetIndices(lcolperm, &lidx));
+  PetscCall(PetscMalloc1(rend - rstart, &idx));
+  for (i = 0; i + rstart < rend; i++) idx[i] = rstart + lidx[i];
+  PetscCall(ISRestoreIndices(lcolperm, &lidx));
+  PetscCall(ISDestroy(&lcolperm));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), rend - rstart, idx, PETSC_OWN_POINTER, cperm));
+  PetscCall(ISSetPermutation(*cperm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRow_MPIAIJ,
                                        MatRestoreRow_MPIAIJ,
@@ -2843,7 +2872,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatADot_Default,
                                        /*144*/ MatANorm_Default,
                                        NULL,
-                                       NULL};
+                                       NULL,
+                                       MatGetOrdering_MPIAIJ};
 
 static PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
 {

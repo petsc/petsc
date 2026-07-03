@@ -1330,6 +1330,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        MatADot_Default,
                                        /*144*/ MatANorm_Default,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat)
