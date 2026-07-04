@@ -461,8 +461,10 @@ PetscErrorCode VecPointwiseDivideAsync_Private(Vec w, Vec x, Vec y, PetscDeviceC
 
   Level: advanced
 
-  Note:
+  Notes:
   Any subset of the `x`, `y`, and `w` may be the same vector.
+
+  If a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one. If instead `x[i]` is not zero, then `w[i]` is zero.
 
 .seealso: [](ch_vectors), `Vec`, `VecPointwiseMult()`, `VecPointwiseMax()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`, `VecMaxPointwiseDivide()`
 @*/

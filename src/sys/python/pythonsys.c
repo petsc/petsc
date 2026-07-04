@@ -88,13 +88,16 @@ static int (*Py_IsInitialized)(void);
 static void (*Py_InitializeEx)(int);
 static void (*Py_Finalize)(void);
 
+static void (*Py_SetProgramName)(const wchar_t *);
+static wchar_t *(*Py_DecodeLocale)(const char *, size_t *);
+
+static void (*Py_IncRef)(PyObject *);
+static void (*Py_DecRef)(PyObject *);
+
 static void (*PySys_SetArgv)(int, void *);
 static PyObject *(*PySys_GetObject)(const char *);
 static PyObject *(*PyObject_CallMethod)(PyObject *, const char *, const char *, ...);
 static PyObject *(*PyImport_ImportModule)(const char *);
-
-static void (*Py_IncRef)(PyObject *);
-static void (*Py_DecRef)(PyObject *);
 
 static void (*PyErr_Clear)(void);
 static PyObject *(*PyErr_Occurred)(void);
@@ -102,6 +105,8 @@ static void (*PyErr_Fetch)(PyObject **, PyObject **, PyObject **);
 static void (*PyErr_NormalizeException)(PyObject **, PyObject **, PyObject **);
 static void (*PyErr_Display)(PyObject *, PyObject *, PyObject *);
 static void (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
+
+static void (*PyMem_RawFree)(void *);
 
 #define PetscDLPyLibOpen(libname)      PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, libname)
 #define PetscDLPyLibSym(symbol, value) PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, symbol, (void **)value)
@@ -120,6 +125,9 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   PetscCall(PetscDLPyLibSym("Py_GetVersion", &Py_GetVersion));
   PetscCall(PetscDLPyLibSym("Py_IsInitialized", &Py_IsInitialized));
   PetscCall(PetscDLPyLibSym("Py_InitializeEx", &Py_InitializeEx));
+  PetscCall(PetscDLPyLibSym("Py_SetProgramName", &Py_SetProgramName));
+  PetscCall(PetscDLPyLibSym("Py_DecodeLocale", &Py_DecodeLocale));
+  PetscCall(PetscDLPyLibSym("PyMem_RawFree", &PyMem_RawFree));
   PetscCall(PetscDLPyLibSym("Py_Finalize", &Py_Finalize));
   PetscCall(PetscDLPyLibSym("PySys_GetObject", &PySys_GetObject));
   PetscCall(PetscDLPyLibSym("PySys_SetArgv", &PySys_SetArgv));
@@ -205,6 +213,12 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
     const char      *py_version;
     PyObject        *sys_path;
     char             path[PETSC_MAX_PATH_LEN] = {0};
+    wchar_t         *wPetscPythonExe          = NULL;
+
+    /* add program name to ease find the petsc4py module with virtual environments */
+    PetscCallExternalVoid("Py_DecodeLocale", wPetscPythonExe = Py_DecodeLocale(PetscPythonExe, NULL));
+    PetscCallExternalVoid("Py_SetProgramName", Py_SetProgramName(wPetscPythonExe));
+    PetscCallExternalVoid("PyMem_RawFree", PyMem_RawFree(wPetscPythonExe));
 
     /* initialize Python. Py_InitializeEx() prints an error and EXITS the program if it is not successful! */
     PetscCall(PetscInfo(NULL, "Calling Py_InitializeEx(0)\n"));
@@ -223,6 +237,7 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
       wchar_t *argv[1] = {NULL};
       PySys_SetArgv(argc, argv);
     }
+
     /* add PETSC_LIB_DIR in front of 'sys.path' */
     sys_path = PySys_GetObject("path");
     if (sys_path) {

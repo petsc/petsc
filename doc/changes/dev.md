@@ -50,6 +50,8 @@
 
 ## Vec
 
+- Add `VecSetStdBasis()` API to set a vector to the i-th standard basis vector
+- Change the behavior of `VecPointwiseDivide()` implementing w = x / y: if a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one (before it was set to zero).
 
 ## PetscSection
 
@@ -62,6 +64,7 @@
 - Add `MATPRODUCT_PtAP` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL`
 - Add `MatSeqAIJGetKokkosView()`, `MatSeqAIJRestoreKokkosView()`, `MatSeqAIJGetKokkosViewWrite()` and `MatSeqAIJRestoreKokkosViewWrite()` to the public API
 - Change `MatSeqAIJCUSPARSEGetIJ()`, `MatSeqAIJCUSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetIJ()` and `MatSeqAIJHIPSPARSERestoreIJ()` to return `PetscInt` indices instead of `int`
+- Add `MatNormApproximate()` to compute matrix norms approximately
 
 ## MatCoarsen
 

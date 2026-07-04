@@ -100,6 +100,8 @@ public:
   static PetscErrorCode LogAsync(Vec, PetscDeviceContext) noexcept;
   static PetscErrorCode WAXPY(Vec, PetscScalar, Vec, Vec) noexcept;
   static PetscErrorCode WAXPYAsync(Vec, PetscScalar, Vec, Vec, PetscDeviceContext) noexcept;
+  static PetscErrorCode SetStdBasis(Vec, PetscInt) noexcept;
+  static PetscErrorCode SetStdBasisAsync(Vec, PetscInt, PetscDeviceContext) noexcept;
   static PetscErrorCode MAXPY(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
   static PetscErrorCode MAXPYAsync(Vec, PetscInt, const PetscScalar[], Vec *, PetscDeviceContext) noexcept;
   static PetscErrorCode Dot(Vec, Vec, PetscScalar *) noexcept;

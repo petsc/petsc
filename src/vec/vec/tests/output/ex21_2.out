@@ -1,10 +1,22 @@
+STD 3
 Vec Object: 2 MPI processes
 Process [0]
 0.
-1.
-1.
+0.
+0.
 Process [1]
 1.
+0.
+0.
+Vector for min/max
+Vec Object: 2 MPI processes
+Process [0]
+0.
+-1.
 2.
-Maximum value 2. index 4 (no index 2.)
-Minimum value 0. index 0 (no index 0.)
+Process [1]
+2.
+0.
+-1.
+Maximum value 2. index 2 (no index 2.)
+Minimum value -1. index 1 (no index -1.)

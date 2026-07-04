@@ -1045,6 +1045,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
   VecSetOp_CUPM(sum, nullptr, VecSeq_T::Sum);
   VecSetOp_CUPM(errorwnorm, nullptr, D::ErrorWnorm);
   VecSetOp_CUPM(duplicatevecs, VecDuplicateVecs_Default, VecDuplicateVecs_Default);
+  VecSetOp_CUPM(setstdbasis, nullptr, VecSeq_T::SetStdBasis);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

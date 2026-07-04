@@ -2454,6 +2454,24 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR(VecShift(self.vec, sval))
 
+    def setStdBasis(self, i: int) -> None:
+        """Set the vector to the i-th standard basis vector.
+
+        Collective.
+
+        Parameters
+        ----------
+        i
+            The entry of the vector to be set to one.
+
+        See Also
+        --------
+        petsc.VecSetStdBasis
+
+        """
+        cdef PetscInt ii = asInt(i)
+        CHKERR(VecSetStdBasis(self.vec, ii))
+
     def swap(self, Vec vec) -> None:
         """Swap the content of two vectors.
 

@@ -81,6 +81,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::ClearAsyncFunctions(Vec v) noexcept
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(SqrtAbs), nullptr));
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(Swap), nullptr));
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(WAXPY), nullptr));
+  PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(SetStdBasis), nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -111,6 +112,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::InitializeAsyncFunctions(Vec v) noexcept
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(SqrtAbs), VecSeq_CUPM<T>::SqrtAbsAsync));
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(Swap), VecSeq_CUPM<T>::SwapAsync));
   PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(WAXPY), VecSeq_CUPM<T>::WAXPYAsync));
+  PetscCall(PetscObjectComposeFunction(PetscObjectCast(v), VecAsyncFnName(SetStdBasis), VecSeq_CUPM<T>::SetStdBasisAsync));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -534,7 +536,7 @@ namespace detail
 {
 
 struct divides {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return rhs == PetscScalar{0.0} ? rhs : lhs / rhs; }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &lhs, const PetscScalar &rhs) const noexcept { return rhs == PetscScalar{0.0} ? (lhs == PetscScalar{0.0} ? PetscScalar{1.0} : rhs) : lhs / rhs; }
 };
 
 } // namespace detail
@@ -890,6 +892,60 @@ inline PetscErrorCode VecSeq_CUPM<T>::WAXPY(Vec win, PetscScalar alpha, Vec xin,
 {
   PetscFunctionBegin;
   PetscCall(WAXPYAsync(win, alpha, xin, yin, nullptr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
+struct stdbasis_functor {
+  PetscInt _i;
+
+  stdbasis_functor(PetscInt i) : _i(i) { }
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s, const PetscScalar &i) const noexcept { return i == _i ? 1.0 : 0.0; }
+};
+} // namespace detail
+
+// v->ops->setstdbasis
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::SetStdBasisAsync(Vec s, PetscInt i, PetscDeviceContext dctx) noexcept
+{
+  cupmStream_t stream;
+
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscCall(GetHandlesFrom_(dctx, &stream));
+  {
+    const auto nl   = s->map->n;
+    const auto st   = s->map->rstart;
+    auto       nit  = thrust::make_counting_iterator(PetscInt{st});
+    const auto sptr = thrust::device_pointer_cast(DeviceArrayWrite(dctx, s).data());
+    PetscCall(PetscLogGpuTimeBegin());
+    // clang-format off
+    PetscCallThrust(
+      THRUST_CALL(
+        thrust::transform,
+        stream,
+        sptr,
+        sptr + nl,
+        nit,
+        sptr,
+        detail::stdbasis_functor(i)
+      )
+    );
+    // clang-format on
+    PetscCall(PetscLogGpuFlops(nl));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// v->ops->setstdbasis
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::SetStdBasis(Vec s, PetscInt i) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(SetStdBasisAsync(s, i, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

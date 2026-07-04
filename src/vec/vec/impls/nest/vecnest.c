@@ -819,6 +819,7 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->restorelocalvectorread  = VecRestoreLocalVectorRead_Nest;
   ops->setrandom               = VecSetRandom_Nest;
   ops->errorwnorm              = VecErrorWeightedNorms_Nest;
+  ops->setstdbasis             = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

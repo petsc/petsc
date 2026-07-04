@@ -1931,7 +1931,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A, Vec ll, Vec rr)
 PetscErrorCode MatNorm_SeqDense(Mat A, NormType type, PetscReal *nrm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
-  PetscScalar  *v, *vv;
+  PetscScalar  *v, *vv, *work, *av = NULL;
   PetscReal     sum = 0.0;
   PetscInt      lda, m = A->rmap->n, i, j;
 
@@ -1986,7 +1986,49 @@ PetscErrorCode MatNorm_SeqDense(Mat A, NormType type, PetscReal *nrm)
       if (sum > *nrm) *nrm = sum;
     }
     PetscCall(PetscLogFlops(1.0 * A->cmap->n * A->rmap->n));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No two norm");
+  } else if (type == NORM_2) {
+    PetscReal   *s;
+    PetscBLASInt bm, bn, blda, min, lwork;
+
+    PetscCall(PetscBLASIntCast(A->rmap->n, &bm));
+    PetscCall(PetscBLASIntCast(A->cmap->n, &bn));
+    PetscCall(PetscBLASIntCast(PetscMax(A->rmap->n, 1), &blda));
+    min = PetscMin(bm, bn);
+    if (!min) {
+      *nrm = 0.0;
+      PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&vv));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    PetscCall(PetscMalloc2(A->rmap->n * A->cmap->n, &av, min, &s));
+    for (j = 0; j < A->cmap->n; j++) PetscCall(PetscArraycpy(av + j * A->rmap->n, vv + j * lda, A->rmap->n));
+
+    lwork = -1;
+    {
+      PetscScalar workquery;
+#if defined(PETSC_USE_COMPLEX)
+      PetscReal *rwork;
+
+      PetscCall(PetscMalloc1(5 * min, &rwork));
+      PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+      PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bm, &bn, av, &blda, s, NULL, &bm, NULL, &min, &workquery, &lwork, rwork, &info));
+      lwork = (PetscBLASInt)PetscRealPart(workquery);
+      PetscCall(PetscMalloc1(lwork, &work));
+      PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bm, &bn, av, &blda, s, NULL, &bm, NULL, &min, work, &lwork, rwork, &info));
+      PetscCall(PetscFPTrapPop());
+      PetscCall(PetscFree(rwork));
+#else
+      PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+      PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bm, &bn, av, &blda, s, NULL, &bm, NULL, &min, &workquery, &lwork, &info));
+      lwork = (PetscBLASInt)PetscRealPart(workquery);
+      PetscCall(PetscMalloc1(lwork, &work));
+      PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bm, &bn, av, &blda, s, NULL, &bm, NULL, &min, work, &lwork, &info));
+      PetscCall(PetscFPTrapPop());
+#endif
+    }
+    *nrm = s[0];
+    PetscCall(PetscFree(work));
+    PetscCall(PetscFree2(av, s));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported norm type %s", NormTypes[type]);
   PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&vv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

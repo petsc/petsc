@@ -17,8 +17,6 @@
 
 /* math2opusutils */
 PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat, PetscSF, PetscSF *);
-PETSC_INTERN PetscErrorCode VecSetDelta(Vec, PetscInt);
-PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat, NormType, PetscInt, PetscReal *);
 
   #define MatH2OpusGetThrustPointer(v) thrust::raw_pointer_cast((v).data())
 
@@ -288,7 +286,7 @@ PETSC_EXTERN PetscErrorCode MatNorm_H2OPUS(Mat A, NormType normtype, PetscReal *
   } else {
     PetscCall(PetscOptionsGetInt(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_approximate_norm_samples", &nmax, NULL));
   }
-  PetscCall(MatApproximateNorm_Private(A, normtype, nmax, n));
+  PetscCall(MatNormApproximate(A, normtype, nmax, n));
   if (a) PetscCall(MatH2OpusSetNativeMult(A, mult));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -908,7 +906,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
 
       PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_h2opus_hara_verbose", &a->hara_verbose, NULL));
       verbose = a->hara_verbose;
-      PetscCall(MatApproximateNorm_Private(a->sampler->GetSamplingMat(), NORM_2, a->norm_max_samples, &Anorm));
+      PetscCall(MatNormApproximate(a->sampler->GetSamplingMat(), NORM_2, a->norm_max_samples, &Anorm));
       if (a->hara_verbose) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Sampling uses max rank %d, tol %g (%g*%g), %s samples %d\n", a->max_rank, a->rtol * Anorm, a->rtol, Anorm, boundtocpu ? "CPU" : "GPU", a->bs));
       if (a->sf && !a->nativemult) a->sampler->SetIndexMap(a->hmatrix->u_basis_tree.index_map.size(), a->hmatrix->u_basis_tree.index_map.data());
       a->sampler->SetStream(handle->getMainStream());
