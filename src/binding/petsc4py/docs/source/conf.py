@@ -89,6 +89,7 @@ nitpicky = True
 nitpick_ignore = [
     ('envvar', 'NUMPY_INCLUDE'),
     ('py:class', 'ndarray'),  # FIXME
+    ('py:class', 'numpy._typing._array_like.NDArray'),  # FIXME
     ('py:class', 'typing_extensions.Self'),
 ]
 nitpick_ignore_regex = [
@@ -118,6 +119,8 @@ if Version(sphinx_version) >= Version(
     '7.4'
 ):  # https://github.com/sphinx-doc/sphinx/issues/12589
     suppress_warnings.append('autosummary.import_cycle')
+if Version(sphinx_version) >= Version('9.0'):
+    suppress_warnings.append('app.add_directive')
 
 # Links depends on the actual branch -> release or main
 www = f'https://gitlab.com/petsc/petsc/-/tree/{get_doc_branch()}'
