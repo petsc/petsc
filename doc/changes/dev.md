@@ -125,6 +125,7 @@
 ## DM
 
 - Change `DMLabelPropagatePush()` to take a reduce operator
+- Add `DMKSPSetCreateOperators()` to let the `DM` provide a pair of application specific `Mat` objects to inner `KSP` solvers.
 
 ## DMSwarm
 
