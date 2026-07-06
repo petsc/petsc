@@ -160,6 +160,9 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
 PetscFunctionList MatPartitioningList              = NULL;
 PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
+PetscFunctionList MatMeshToCellGraphList              = NULL;
+PetscBool         MatMeshToCellGraphRegisterAllCalled = PETSC_FALSE;
+
 /*@C
   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
@@ -186,6 +189,92 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatPartitioningList, sname, function));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMeshToCellGraphRegister - Registers a mesh-to-cell-graph conversion routine.
+
+  Not Collective, No Fortran Support
+
+  Input Parameters:
++ sname    - name of the converter (for example `MATMESHTOCELLGRAPHMETIS` or `MATMESHTOCELLGRAPHPARMETIS`)
+- function - function pointer that performs the conversion
+
+  Level: developer
+
+  Example Usage:
+.vb
+   MatMeshToCellGraphRegister("metis", MatMeshToCellGraph_Metis);
+.ve
+
+  Then, the converter can be selected at runtime via the option `-mat_mesh_to_cell_graph_type metis`
+
+.seealso: [](ch_matrices), `Mat`, `MatMeshToCellGraph()`, `MatMeshToCellGraphType`, `MatMeshToCellGraphRegisterAll()`
+@*/
+PetscErrorCode MatMeshToCellGraphRegister(const char sname[], PetscErrorCode (*function)(Mat, PetscInt, Mat *))
+{
+  PetscFunctionBegin;
+  PetscCall(MatInitializePackage());
+  PetscCall(PetscFunctionListAdd(&MatMeshToCellGraphList, sname, function));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatMeshToCellGraph - Convert a mesh to a cell graph.
+
+  Collective
+
+  Input Parameters:
++ mesh         - the graph that represents the coupling of the vertices of the mesh
+- ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
+                 quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
+
+  Output Parameter:
+. dual - the dual graph
+
+  Options Database Key:
+. -mat_mesh_to_cell_graph_type (parmetis|metis) - the conversion package to use; default is ParMETIS if available, otherwise METIS
+
+  Level: advanced
+
+  Notes:
+  Converts a `Mat` that represents coupling of vertices of a mesh to a `Mat` that represents the graph of the coupling
+  between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning` object. Use this to
+  partition cells of a mesh.
+
+  Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
+  tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
+  mix tetrahedrals and hexahedrals.
+  The columns of each row of the `Mat` mesh are the global vertex numbers of the vertices of that row's cell.
+  The number of rows in mesh is number of cells, the number of columns is the number of vertices.
+
+.seealso: `MatCreateMPIAdj()`, `MatPartitioningCreate()`, `MatMeshToCellGraphRegister()`
+@*/
+PetscErrorCode MatMeshToCellGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual)
+{
+  char      type[256];
+  PetscBool found;
+  PetscErrorCode (*fn)(Mat, PetscInt, Mat *);
+  MatMeshToCellGraphType def;
+
+  PetscFunctionBegin;
+  PetscCall(MatInitializePackage());
+#if defined(PETSC_HAVE_PARMETIS)
+  def = MATMESHTOCELLGRAPHPARMETIS;
+#elif defined(PETSC_HAVE_METIS)
+  def = MATMESHTOCELLGRAPHMETIS;
+#else
+  def = NULL;
+#endif
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_mesh_to_cell_graph_type", type, sizeof(type), &found));
+  if (!found) {
+    PetscCheck(def, PetscObjectComm((PetscObject)mesh), PETSC_ERR_SUP, "No MatMeshToCellGraph implementations registered. Configure with METIS or ParMETIS");
+    PetscCall(PetscStrncpy(type, def, sizeof(type)));
+  }
+  PetscCall(PetscFunctionListFind(MatMeshToCellGraphList, type, &fn));
+  PetscCheck(fn, PetscObjectComm((PetscObject)mesh), PETSC_ERR_SUP, "MatMeshToCellGraph type \"%s\" is not available. Configure PETSc with the appropriate package (e.g., --download-metis or --download-parmetis)", type);
+  PetscCall((*fn)(mesh, ncommonnodes, dual));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

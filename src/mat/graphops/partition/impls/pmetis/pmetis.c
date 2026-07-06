@@ -396,38 +396,10 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  MatMeshToCellGraph - Convert a mesh to a cell graph.
-
-  Collective
-
-  Input Parameters:
-+ mesh         - the graph that represents the coupling of the vertices of the mesh
-- ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
-                     quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
-
-  Output Parameter:
-. dual - the dual graph
-
-  Level: advanced
-
-  Notes:
-  Uses the ParMETIS package to convert a `Mat` that represents coupling of vertices of a mesh
-  to a `Mat` the represents the graph of the coupling between cells (the "dual" graph) and is
-  suitable for partitioning with the `MatPartitioning` object. Use this to partition cells of a
-  mesh.
-
-  Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
-
-  Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
-  tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
-  mix  tetrahedrals and hexahedrals
-  The columns of each row of the `Mat` mesh are the global vertex numbers of the vertices of that row's cell.
-  The number of rows in mesh is number of cells, the number of columns is the number of vertices.
-
-.seealso: `MatCreateMPIAdj()`, `MatPartitioningCreate()`
-@*/
-PetscErrorCode MatMeshToCellGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual)
+/*
+   Uses the ParMETIS package to convert a mesh to a cell graph via ParMETIS_V3_Mesh2Dual()
+*/
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Parmetis(Mat mesh, PetscInt ncommonnodes, Mat *dual)
 {
   PetscInt   *newxadj, *newadjncy;
   PetscInt    numflag = 0;
