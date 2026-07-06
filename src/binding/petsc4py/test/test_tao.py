@@ -3,7 +3,7 @@
 from math import sqrt
 from petsc4py import PETSc
 import unittest
-import numpy
+import numpy as np
 
 
 # --------------------------------------------------------------------
@@ -232,7 +232,7 @@ class BaseTestTAO:
         tao.setTolerances(gatol=1.0e-4)
 
         H = PETSc.Mat()
-        if lmvm_setup == 'dense' or lmvm_setup == 'ksp':
+        if lmvm_setup in {'dense', 'ksp'}:
             H.createDense((2, 2), comm=tao.getComm())
             H[0, 0] = 2
             H[0, 1] = 0
@@ -247,7 +247,7 @@ class BaseTestTAO:
             H.createDiagonal(H_vec)
             H.assemble()
 
-        if lmvm_setup == 'dense' or lmvm_setup == 'diagonal':
+        if lmvm_setup in {'dense', 'diagonal'}:
             tao.getLMVMMat().setLMVMJ0(H)
         elif lmvm_setup == 'ksp':
             lmvm_ksp = PETSc.KSP().create(tao.getComm())
@@ -262,7 +262,7 @@ class BaseTestTAO:
         self.assertAlmostEqual(x[0], 2.0, places=4)
         self.assertAlmostEqual(x[1], 2.0, places=4)
 
-        if lmvm_setup == 'dense' or lmvm_setup == 'diagonal':
+        if lmvm_setup in {'dense', 'diagonal'}:
             self.assertTrue(tao.getLMVMMat().getLMVMJ0().equal(H))
         elif lmvm_setup == 'ksp':
             self.assertTrue(
@@ -293,7 +293,7 @@ class TestTAOWorld(BaseTestTAO, unittest.TestCase):
 # --------------------------------------------------------------------
 
 
-if numpy.iscomplexobj(PETSc.ScalarType()):
+if np.iscomplexobj(PETSc.ScalarType()):
     del BaseTestTAO
     del TestTAOSelf
     del TestTAOWorld

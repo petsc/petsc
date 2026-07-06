@@ -51,10 +51,7 @@ class VDP:
         f.assemble()
 
     def evalJacobian(self, ts, t, u, A, B):
-        if not self.mf_:
-            J = A
-        else:
-            J = self.Jex_
+        J = A if not self.mf_ else self.Jex_
         mu = self.mu_
         J[0, 0] = 0
         J[0, 1] = 1.0
@@ -69,10 +66,7 @@ class VDP:
             B.assemble()
 
     def evalJacobianP(self, ts, t, u, C):
-        if not self.mf_:
-            Jp = C
-        else:
-            Jp = self.JexP_
+        Jp = C if not self.mf_ else self.JexP_
         if not self.imex_:
             Jp[0, 0] = 0
             Jp[1, 0] = (1.0 - u[0] * u[0]) * u[1] - u[0]
@@ -88,10 +82,7 @@ class VDP:
         f.assemble()
 
     def evalIJacobian(self, ts, t, u, udot, shift, A, B):
-        if not self.mf_:
-            J = A
-        else:
-            J = self.Jim_
+        J = A if not self.mf_ else self.Jim_
         mu = self.mu_
         if self.imex_:
             J[0, 0] = shift
@@ -106,10 +97,7 @@ class VDP:
             B.assemble()
 
     def evalIJacobianP(self, ts, t, u, udot, shift, C):
-        if not self.mf_:
-            Jp = C
-        else:
-            Jp = self.JimP_
+        Jp = C if not self.mf_ else self.JimP_
         Jp[0, 0] = 0
         Jp[1, 0] = u[0] - (1.0 - u[0] * u[0]) * u[1]
         Jp.assemble()
@@ -229,17 +217,16 @@ if imexform_:
     ts.setRHSFunction(ode.evalFunction, f)
     ts.setRHSJacobian(ode.evalJacobian, Jex)
     ts.setRHSJacobianP(ode.evalJacobianP, JexP)
+elif implicitform_:
+    ts.setType(ts.Type.CN)
+    ts.setIFunction(ode.evalIFunction, f)
+    ts.setIJacobian(ode.evalIJacobian, Jim)
+    ts.setIJacobianP(ode.evalIJacobianP, JimP)
 else:
-    if implicitform_:
-        ts.setType(ts.Type.CN)
-        ts.setIFunction(ode.evalIFunction, f)
-        ts.setIJacobian(ode.evalIJacobian, Jim)
-        ts.setIJacobianP(ode.evalIJacobianP, JimP)
-    else:
-        ts.setType(ts.Type.RK)
-        ts.setRHSFunction(ode.evalFunction, f)
-        ts.setRHSJacobian(ode.evalJacobian, Jex)
-        ts.setRHSJacobianP(ode.evalJacobianP, JexP)
+    ts.setType(ts.Type.RK)
+    ts.setRHSFunction(ode.evalFunction, f)
+    ts.setRHSJacobian(ode.evalJacobian, Jex)
+    ts.setRHSJacobianP(ode.evalJacobianP, JexP)
 
 ts.setSaveTrajectory()
 ts.setTime(0.0)
@@ -274,7 +261,7 @@ adj_p[1].view()
 
 
 def compute_derp(du, dp):
-    print(
+    PETSc.Sys.Print(
         du[1] * (-10.0 / (81.0 * mu_ * mu_) + 2.0 * 292.0 / (2187.0 * mu_ * mu_ * mu_))
         + dp[0]
     )

@@ -20,6 +20,7 @@ class TAOPythonProtocol:
 
         Note:
             Do not override if you want to rely on the default solve routine, using step, preStep and postStep.
+
         """
         ...
 

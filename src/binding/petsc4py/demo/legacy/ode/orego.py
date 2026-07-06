@@ -94,7 +94,7 @@ pc.setType(pc.Type.LU)  # Use a direct solve
 ts.setFromOptions()  # Apply run-time options, e.g. -ts_adapt_monitor -ts_type arkimex -snes_converged_reason
 ode.evalSolution(0.0, x)
 ts.solve(x)
-print(
+PETSc.Sys.Print(
     'steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d'
     % (
         ts.getStepNumber(),
@@ -115,7 +115,7 @@ if OptDB.getBool('plot_history', True):
     xx = np.asarray([v[2] for v in history])
 
     rc('text', usetex=True)
-    pylab.suptitle('Oregonator: TS \\texttt{%s}' % ts.getType())
+    pylab.suptitle(f'Oregonator: TS \\texttt{{{ts.getType()}}}')
     pylab.subplot(2, 2, 1)
     pylab.subplots_adjust(wspace=0.3)
     pylab.semilogy(

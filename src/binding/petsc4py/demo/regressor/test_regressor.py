@@ -23,7 +23,7 @@ rows_ix = [0, 1, 2, 3, 4]
 cols_ix = [0, 1]
 
 X = PETSc.Mat().create(comm=comm)
-X.setSizes((5,2))
+X.setSizes((5, 2))
 X.setFromOptions()
 X.setUp()
 
@@ -31,9 +31,9 @@ y = PETSc.Vec().create(comm=comm)
 y.setSizes(5)
 y.setFromOptions()
 
-if not rank :
-    X.setValues(rows_ix,cols_ix,X_array,addv=True)
-    y.setValues(rows_ix,y_array,addv=False)
+if not rank:
+    X.setValues(rows_ix, cols_ix, X_array, addv=True)
+    y.setValues(rows_ix, y_array, addv=False)
 
 X.assemblyBegin(X.AssemblyType.FINAL)
 X.assemblyEnd(X.AssemblyType.FINAL)
@@ -44,9 +44,6 @@ y_predicted = y.duplicate()
 
 regressor = PETSc.Regressor().create(comm=comm)
 regressor.setType(PETSc.Regressor.Type.LINEAR)
-regressor.fit(X,y)
-regressor.predict(X,y_predicted)
+regressor.fit(X, y)
+regressor.predict(X, y_predicted)
 y_predicted.view()
-
-
-

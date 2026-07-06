@@ -2,10 +2,11 @@
 
 from petsc4py import PETSc
 import unittest
-import numpy
+import numpy as np
 
 
 # --------------------------------------------------------------------
+
 
 class BaseTestTAOTerm:
     COMM = None
@@ -55,6 +56,7 @@ class BaseTestTAOTerm:
         taoterm.setType(PETSc.TAOTerm.Type.L1)
         taoterm.destroy()
 
+
 # --------------------------------------------------------------------
 
 
@@ -69,7 +71,7 @@ class TestTAOTermWorld(BaseTestTAOTerm, unittest.TestCase):
 # --------------------------------------------------------------------
 
 
-if numpy.iscomplexobj(PETSc.ScalarType()):
+if np.iscomplexobj(PETSc.ScalarType()):
     del BaseTestTAOTerm
     del TestTAOTermSelf
     del TestTAOTermWorld

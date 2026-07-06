@@ -1,4 +1,6 @@
-import sys,petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
 import numpy as np
@@ -14,29 +16,29 @@ def sensor(x, y):
 
     (mapped to have domain [0,1]² in this case).
     """
-    xy = (2*x - 1)*(2*y - 1)
-    ret = np.sin(50*xy)
-    if np.abs(xy) > 2*np.pi/50:
+    xy = (2 * x - 1) * (2 * y - 1)
+    ret = np.sin(50 * xy)
+    if np.abs(xy) > 2 * np.pi / 50:
         ret *= 0.01
     return ret
 
 
 # Set metric parameters
-h_min = 1.0e-10             # Minimum tolerated metric magnitude ~ cell size
-h_max = 1.0e-01             # Maximum tolerated metric magnitude ~ cell size
-a_max = 1.0e+05             # Maximum tolerated anisotropy
+h_min = 1.0e-10  # Minimum tolerated metric magnitude ~ cell size
+h_max = 1.0e-01  # Maximum tolerated metric magnitude ~ cell size
+a_max = 1.0e05  # Maximum tolerated anisotropy
 targetComplexity = 10000.0  # Analogous to number of vertices in adapted mesh
-p = 1.0                     # Lᵖ normalization order
+p = 1.0  # Lᵖ normalization order
 
 # Create a uniform mesh
 OptDB = PETSc.Options()
 dim = OptDB.getInt('dim', 2)
 numEdges = 10
 simplex = True
-plex = PETSc.DMPlex().createBoxMesh([numEdges]*dim, simplex=simplex)
+plex = PETSc.DMPlex().createBoxMesh([numEdges] * dim, simplex=simplex)
 plex.distribute()
 plex.view()
-viewer = PETSc.Viewer().createVTK("anisotropic_mesh_0.vtk", "w")
+viewer = PETSc.Viewer().createVTK('anisotropic_mesh_0.vtk', 'w')
 viewer(plex)
 
 # Do four mesh adaptation iterations
@@ -56,10 +58,10 @@ for i in range(1, 5):
     for v in range(vStart, vEnd):
         off = csec.getOffset(v)
         x = pcoords[off]
-        y = pcoords[off+1]
-        pf[off//dim] = sensor(x, y)
-    f.setName("Sensor")
-    viewer = PETSc.Viewer().createVTK(f"sensor_{i}.vtk", "w")
+        y = pcoords[off + 1]
+        pf[off // dim] = sensor(x, y)
+    f.setName('Sensor')
+    viewer = PETSc.Viewer().createVTK(f'sensor_{i}.vtk', 'w')
     viewer(f)
 
     # Recover the gradient of the sensor function
@@ -69,16 +71,16 @@ for i in range(1, 5):
     dmGrad.createDS()
     g = dmGrad.createLocalVector()
     plex.computeGradientClementInterpolant(f, g)
-    g.setName("Gradient")
-    viewer = PETSc.Viewer().createVTK(f"gradient_{i}.vtk", "w")
+    g.setName('Gradient')
+    viewer = PETSc.Viewer().createVTK(f'gradient_{i}.vtk', 'w')
     viewer(g)
 
     # Recover the Hessian of the sensor function
     dmHess = plex.clone()
     H = dmHess.metricCreate()
     dmGrad.computeGradientClementInterpolant(g, H)
-    H.setName("Hessian")
-    viewer = PETSc.Viewer().createVTK(f"hessian_{i}.vtk", "w")
+    H.setName('Hessian')
+    viewer = PETSc.Viewer().createVTK(f'hessian_{i}.vtk', 'w')
     viewer(H)
 
     # Obtain a metric by Lᵖ normalization
@@ -90,8 +92,8 @@ for i in range(1, 5):
     metric = dmHess.metricCreate()
     det = dmHess.metricDeterminantCreate()
     dmHess.metricNormalize(H, metric, det)
-    metric.setName("Metric")
-    viewer = PETSc.Viewer().createVTK(f"metric_{i}.vtk", "w")
+    metric.setName('Metric')
+    viewer = PETSc.Viewer().createVTK(f'metric_{i}.vtk', 'w')
     viewer(metric)
 
     # Call adapt routine - boundary label None by default
@@ -100,5 +102,5 @@ for i in range(1, 5):
     plex.view()
 
     # Write to VTK file
-    viewer = PETSc.Viewer().createVTK(f"anisotropic_mesh_{i}.vtk", "w")
+    viewer = PETSc.Viewer().createVTK(f'anisotropic_mesh_{i}.vtk', 'w')
     viewer(plex)

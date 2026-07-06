@@ -5,11 +5,10 @@
 from __future__ import annotations  # novermin
 from typing import (  # novermin
     Any,
-    Callable,
-    Sequence,
     Literal,
     TypeAlias,
 )
+from collections.abc import Callable, Sequence
 from numpy.typing import (
     NDArray,
 )
@@ -313,7 +312,9 @@ MatNullFunction = Callable[[NullSpace, Vec], None]
 
 # --- MatHtool ---
 
-MatHtoolKernelFunction = Callable[[int, int, int, ArrayInt, ArrayInt, ArrayScalar, Any], None]
+MatHtoolKernelFunction = Callable[
+    [int, int, int, ArrayInt, ArrayInt, ArrayScalar, Any], None
+]
 """`PETSc.Mat` `Mat.Type.HTOOL` kernel callback.
 
 Callable with signature ``kernel(sdim, M, N, rows, cols, v, ctx)``:

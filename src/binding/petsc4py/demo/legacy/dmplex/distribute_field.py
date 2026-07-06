@@ -1,30 +1,35 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Dec 25 17:03:18 2015
 
 @author: ale
 """
 
-import sys,petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
 import numpy as np
 
 dim = 2
 if not PETSc.COMM_WORLD.rank:
-    coords = np.asarray([[0.0, 0.0],
-                         [0.5, 0.0],
-                         [1.0, 0.0],
-                         [0.0, 0.5],
-                         [0.5, 0.5],
-                         [1.0, 0.5],
-                         [0.0, 1.0],
-                         [0.5, 1.0],
-                         [1.0, 1.0]], dtype=PETSc.RealType)
-    cells = np.asarray([[0,1,4,3],
-                        [1,2,5,4],
-                        [3,4,7,6],
-                        [4,5,8,7]], dtype=PETSc.IntType)
+    coords = np.asarray(
+        [
+            [0.0, 0.0],
+            [0.5, 0.0],
+            [1.0, 0.0],
+            [0.0, 0.5],
+            [0.5, 0.5],
+            [1.0, 0.5],
+            [0.0, 1.0],
+            [0.5, 1.0],
+            [1.0, 1.0],
+        ],
+        dtype=PETSc.RealType,
+    )
+    cells = np.asarray(
+        [[0, 1, 4, 3], [1, 2, 5, 4], [3, 4, 7, 6], [4, 5, 8, 7]], dtype=PETSc.IntType
+    )
 else:
     coords = np.zeros((0, 2), dtype=PETSc.RealType)
     cells = np.zeros((0, 4), dtype=PETSc.IntType)
@@ -33,7 +38,6 @@ plex = PETSc.DMPlex().createFromCellList(dim, cells, coords, comm=PETSc.COMM_WOR
 
 pStart, pEnd = plex.getChart()
 plex.view()
-print("pStart, pEnd: ", pStart, pEnd)
 
 # Create section with 1 field with 1 DoF per vertex, edge and cell
 numComp = 1
@@ -56,7 +60,7 @@ plex.setSection(origSect)
 origVec = plex.createGlobalVec()
 origVec.view()
 
-origVec.setValues(list(range(pStart, pEnd)),list(range(pStart,pEnd)))
+origVec.setValues(list(range(pStart, pEnd)), list(range(pStart, pEnd)))
 origVec.assemblyBegin()
 origVec.assemblyEnd()
 
@@ -74,4 +78,3 @@ else:
 
 newSect.view()
 newVec.view()
-

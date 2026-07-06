@@ -52,7 +52,7 @@ except AttributeError:
     DotGraph_to_html = dotgraph.DotGraph.to_html
     DotGraph_run_dot = dotgraph.DotGraph._run_dot
 
-    def to_html(self, image_file, image_url, center=True):
+    def to_html(self, image_file, image_url, center=True):  # noqa: ARG001
         if image_file[-4:] == '.gif':
             image_file = image_file[:-4] + '.png'
         if image_url[-4:] == '.gif':
@@ -77,16 +77,12 @@ except AttributeError:
 _SIGNATURE_RE = re.compile(
     # Class name (for builtin methods)
     r'^\s*((?P<class>\w+)\.)?'
-    +
     # The function name
     r'(?P<func>\w+)'
-    +
     # The parameters
     r'\(((?P<self>(?:self|cls|mcs)),?)?(?P<params>.*)\)'
-    +
     # The return value (optional)
     r'(\s*(->)\s*(?P<return>\S.*?))?'
-    +
     # The end marker
     r'\s*(\n|\s+(--|<=+>)\s+|$|\.\s+|\.\n)'
 )

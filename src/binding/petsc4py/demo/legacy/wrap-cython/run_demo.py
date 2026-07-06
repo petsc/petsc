@@ -1,8 +1,10 @@
-import sys, petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
-import Bratu3D as Bratu3D
+import Bratu3D
 
 OptDB = PETSc.Options()
 
@@ -11,15 +13,13 @@ lambda_ = OptDB.getReal('lambda', 6.0)
 do_plot = OptDB.getBool('plot', False)
 
 da = PETSc.DMDA().create([N, N, N], stencil_width=1)
-#app = App(da, lambda_)
+# app = App(da, lambda_)
 
 snes = PETSc.SNES().create()
 F = da.createGlobalVec()
-snes.setFunction(Bratu3D.formFunction, F,
-                 args=(da, lambda_))
+snes.setFunction(Bratu3D.formFunction, F, args=(da, lambda_))
 J = da.createMat()
-snes.setJacobian(Bratu3D.formJacobian, J,
-                 args=(da, lambda_))
+snes.setJacobian(Bratu3D.formJacobian, J, args=(da, lambda_))
 
 snes.setFromOptions()
 
@@ -38,10 +38,11 @@ def plot(da, U):
     if rank == 0:
         solution = U0[...].reshape(da.sizes, order='f').copy()
         try:
-            from matplotlib import pyplot
-            pyplot.contourf(solution[:, :, N//2])
-            pyplot.axis('equal')
-            pyplot.show()
+            from matplotlib import pyplot as plt
+
+            plt.contourf(solution[:, :, N // 2])
+            plt.axis('equal')
+            plt.show()
         except:
             pass
     PETSc.COMM_WORLD.barrier()
@@ -49,7 +50,8 @@ def plot(da, U):
     U0.destroy()
 
 
-if do_plot: plot(da, U)
+if do_plot:
+    plot(da, U)
 
 
 U.destroy()

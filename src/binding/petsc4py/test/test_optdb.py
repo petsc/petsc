@@ -71,8 +71,8 @@ class TestOptions(unittest.TestCase):
             'o1': '"a b c"',
             'o2': '"x y z"',
         }
-        for k in dct:
-            self.opts[k] = dct[k]
+        for k, v in dct.items():
+            self.opts[k] = v
         allopts = self.opts.getAll()
         for k in dct:
             self.assertEqual(allopts[k], dct[k][1:-1])
@@ -102,7 +102,7 @@ class TestOptions(unittest.TestCase):
                     self.opts.getScalarArray,
                 )
             )
-        toval = (lambda x: x, lambda x: np.array(x).tolist(), lambda x: np.array(x))
+        toval = (lambda x: x, lambda x: np.array(x).tolist(), np.array)
         sv = 1
         av = (1, 0, 1)
         defv = 0

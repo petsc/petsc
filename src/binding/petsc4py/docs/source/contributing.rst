@@ -21,7 +21,7 @@ For Python code, run::
 
 Python code can be auto-formatted using::
 
-  $ make ruff-lint RUFF_OPTS='format' -C src/binding/petsc4py
+  $ make ruff-format -C src/binding/petsc4py
 
 New contributions to petsc4py must be tested.
 Tests are located in the :file:`src/binding/petsc4py/test` folder.

@@ -39,16 +39,17 @@ class BaseTestPC:
         self.pc = None
         PETSc.garbage_cleanup()
 
+
 class TestFIELDSPLITPC(BaseTestPC, unittest.TestCase):
     PC_TYPE = PETSc.PC.Type.FIELDSPLIT
 
     def testISoperations(self):
-        test_index = [0,1,2]
+        test_index = [0, 1, 2]
         pc = self.pc
         is_u = PETSc.IS().createGeneral(test_index, comm=PETSc.COMM_SELF)
-        pc.setFieldSplitIS(("u", is_u))
+        pc.setFieldSplitIS(('u', is_u))
 
-        self.assertTrue((pc.getFieldSplitSubIS("u").getIndices() == test_index).all())
+        self.assertTrue((pc.getFieldSplitSubIS('u').getIndices() == test_index).all())
         is_u = None
 
 
@@ -61,12 +62,15 @@ class TestASMPC(BaseTestPC, unittest.TestCase):
 
     def checkLocalSubdomains(self, pc, indices, local_indices=None):
         # Set the subdomains on pc and check that they are returned unchanged.
-        is_sub = [PETSc.IS().createGeneral(idx, comm=PETSc.COMM_SELF)
-                  for idx in indices]
+        is_sub = [
+            PETSc.IS().createGeneral(idx, comm=PETSc.COMM_SELF) for idx in indices
+        ]
         is_local = None
         if local_indices is not None:
-            is_local = [PETSc.IS().createGeneral(idx, comm=PETSc.COMM_SELF)
-                        for idx in local_indices]
+            is_local = [
+                PETSc.IS().createGeneral(idx, comm=PETSc.COMM_SELF)
+                for idx in local_indices
+            ]
         pc.setASMLocalSubdomains(len(is_sub), is_sub, is_local)
 
         got_nsd, got_sub, got_local = pc.getASMLocalSubdomains()
@@ -92,9 +96,9 @@ class TestASMPC(BaseTestPC, unittest.TestCase):
         self.checkLocalSubdomains(self.pc, [[0, 1, 2], [3, 4, 5]])
 
     def testLocalSubdomainsWithLocalPart(self):
-        self.checkLocalSubdomains(self.pc,
-                                  [[0, 1, 2, 3], [2, 3, 4, 5]],
-                                  [[0, 1], [4, 5]])
+        self.checkLocalSubdomains(
+            self.pc, [[0, 1, 2, 3], [2, 3, 4, 5]], [[0, 1], [4, 5]]
+        )
 
     def testLocalSubdomainsParallel(self):
         # The index sets are in the global numbering of the vector, so give

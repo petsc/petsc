@@ -1,6 +1,6 @@
 from petsc4py import PETSc
 import unittest
-import numpy
+import numpy as np
 from sys import getrefcount
 # --------------------------------------------------------------------
 
@@ -161,7 +161,8 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         else:
-            raise RuntimeError(f'Product {producttype} not implemented')
+            msg = f'Product {producttype} not implemented'
+            raise RuntimeError(msg)
         product.zeroEntries()
 
     def productNumeric(self, mat, product, producttype, A, B, C):
@@ -230,7 +231,8 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
         else:
-            raise RuntimeError(f'Product {producttype} not implemented')
+            msg = f'Product {producttype} not implemented'
+            raise RuntimeError(msg)
 
 
 class Diagonal(Matrix):
@@ -280,7 +282,8 @@ class Diagonal(Matrix):
         elif im == PETSc.InsertMode.ADD_VALUES:
             self.D.axpy(1, vd)
         else:
-            raise ValueError('wrong InsertMode %d' % im)
+            msg = f'wrong InsertMode {im}'
+            raise ValueError(msg)
 
     def diagonalScale(self, mat, vl, vr):
         if vl:
@@ -347,43 +350,43 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(setupcalled + 1, ctx.setupcalled)
 
     def testZeroEntries(self):
-        f = lambda: self.A.zeroEntries()
-        self.assertRaises(Exception, f)
+        f = self.A.zeroEntries
+        self.assertRaises(PETSc.Error, f)
 
     def testMult(self):
         x, y = self.A.createVecs()
         f = lambda: self.A.mult(x, y)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testMultTranspose(self):
         x, y = self.A.createVecs()
         f = lambda: self.A.multTranspose(x, y)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testGetDiagonal(self):
         d = self.A.createVecLeft()
         f = lambda: self.A.getDiagonal(d)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testSetDiagonal(self):
         d = self.A.createVecLeft()
         f = lambda: self.A.setDiagonal(d)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testDiagonalScale(self):
         x, y = self.A.createVecs()
         f = lambda: self.A.diagonalScale(x, y)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testDuplicate(self):
         f1 = lambda: self.A.duplicate(True)
         f2 = lambda: self.A.duplicate(False)
-        self.assertRaises(Exception, f1)
-        self.assertRaises(Exception, f2)
+        self.assertRaises(PETSc.Error, f1)
+        self.assertRaises(PETSc.Error, f2)
 
     def testSetVecType(self):
         self.A.setVecType('mpi')
-        self.assertTrue('mpi' == self.A.getVecType())
+        self.assertTrue(self.A.getVecType() == 'mpi')
 
     def testH2Opus(self):
         if not PETSc.Sys.hasExternalPackage('h2opus'):
@@ -404,7 +407,7 @@ class TestMatrix(unittest.TestCase):
         h.destroy()
 
         # with coordinates
-        coords = numpy.linspace(
+        coords = np.linspace(
             (1, 2, 3), (10, 20, 30), self.A.getSize()[0], dtype=PETSc.RealType
         )
         h.createH2OpusFromMat(self.A, coords, leafsize=2)
@@ -456,7 +459,7 @@ class TestScaledIdentity(TestMatrix):
         self.assertTrue(y.equal(s * x))
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, False)
         f = lambda: self.A.multTranspose(x, y)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testMultTransposeNewMeth(self):
         s = self._getCtx().s
@@ -585,7 +588,7 @@ class TestDiagonal(TestMatrix):
         self.assertTrue(y.equal(self._getCtx().D))
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, False)
         f = lambda: self.A.multTranspose(x, y)
-        self.assertRaises(Exception, f)
+        self.assertRaises(PETSc.Error, f)
 
     def testMultTransposeNewMeth(self):
         x, y = self.A.createVecs()
@@ -627,13 +630,13 @@ class TestDiagonal(TestMatrix):
         AT = PETSc.Mat().createTranspose(A)
         x, y = A.createVecs()
         xt, yt = AT.createVecs()
-        #
+
         y.setRandom()
         A.multTranspose(y, x)
         y.copy(xt)
         AT.mult(xt, yt)
         self.assertTrue(yt.equal(x))
-        #
+
         x.setRandom()
         A.mult(x, y)
         x.copy(yt)

@@ -2,8 +2,7 @@
 # Contact: dalcinl@gmail.com
 
 
-"""
-Command line access to the PETSc Options Database.
+"""Command line access to the PETSc Options Database.
 
 This module provides command line access to PETSc Options
 Database. It outputs a listing of the many PETSc options
@@ -16,6 +15,7 @@ Usage::
 
 
 def help(args=None):  # noqa: A001
+    """Print help for various PETSc objects."""
     import shlex
     import sys
 

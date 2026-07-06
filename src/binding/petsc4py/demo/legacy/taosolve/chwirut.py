@@ -1,11 +1,13 @@
-import sys, petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 
 import numpy as np
 from petsc4py import PETSc
 
-class Chwirut(object):
 
+class Chwirut:
     """
     Finds the nonlinear least-squares solution to the model
     y = exp(-b1*x)/(b2+b3*x)  +  e
@@ -20,7 +22,7 @@ class Chwirut(object):
         x = np.random.rand(NOBSERVATIONS)
         e = np.random.rand(NOBSERVATIONS)
 
-        y = np.exp(-BETA[0]*x)/(BETA[1] + BETA[2]*x) + e
+        y = np.exp(-BETA[0] * x) / (BETA[1] + BETA[2] * x) + e
 
         self.NOBSERVATIONS = NOBSERVATIONS
         self.NPARAMETERS = NPARAMETERS
@@ -42,7 +44,7 @@ class Chwirut(object):
     def formResidual(self, tao, X, F):
         x, y = self.x, self.y
         b1, b2, b3 = X.array
-        F.array = y - np.exp(-b1*x)/(b2 + b3*x)
+        F.array = y - np.exp(-b1 * x) / (b2 + b3 * x)
 
     def plotSolution(self, X):
         try:
@@ -52,10 +54,11 @@ class Chwirut(object):
         b1, b2, b3 = X.array
         x, y = self.x, self.y
         u = np.linspace(x.min(), x.max(), 100)
-        v = np.exp(-b1*u)/(b2+b3*u)
+        v = np.exp(-b1 * u) / (b2 + b3 * u)
         pylab.plot(x, y, 'ro')
         pylab.plot(u, v, 'b-')
         pylab.show()
+
 
 OptDB = PETSc.Options()
 
@@ -74,7 +77,8 @@ user.formInitialGuess(x)
 tao.solve(x)
 
 plot = OptDB.getBool('plot', False)
-if plot: user.plotSolution(x)
+if plot:
+    user.plotSolution(x)
 
 x.destroy()
 f.destroy()

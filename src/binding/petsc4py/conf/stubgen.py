@@ -100,8 +100,10 @@ incompatible_overrides = [
     'DMSwarm.getField',
     'DMSwarm.setType',
     'ViewerHDF5.create',
-    'SF.compose'
+    'SF.compose',
 ]
+
+
 def visit_method(method, clas_name=None):
     sig = signature(method)
     stub = f'def {sig}: ...'
@@ -209,9 +211,8 @@ def visit_class(cls, outer=None, done=None):
         if name in cls.__dict__:
             done.add(name)
 
-    if '__hash__' in cls.__dict__:
-        if cls.__hash__ is None:
-            done.add('__hash__')
+    if '__hash__' in cls.__dict__ and cls.__hash__ is None:
+        done.add('__hash__')
 
     dct = cls.__dict__
     keys = list(dct.keys())
@@ -225,10 +226,9 @@ def visit_class(cls, outer=None, done=None):
                 continue
             if name in done:
                 continue
-            if dunder(name):
-                if name not in special and name not in override:
-                    done.add(name)
-                    continue
+            if dunder(name) and name not in special and name not in override:
+                done.add(name)
+                continue
             yield name
 
     for name in members(keys):
@@ -285,7 +285,8 @@ def visit_class(cls, outer=None, done=None):
 
     leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f'leftovers: {leftovers}')
+        msg = f'leftovers: {leftovers}'
+        raise RuntimeError(msg)
 
     if len(lines) == start:
         lines.add = '...'
@@ -379,7 +380,8 @@ def visit_module(module, done=None):
 
     leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f'leftovers: {leftovers}')
+        msg = f'leftovers: {leftovers}'
+        raise RuntimeError(msg)
     return lines
 
 
@@ -541,7 +543,7 @@ TYPING = """
 """
 
 
-def visit_petsc4py_PETSc(done=None):
+def visit_petsc4py_PETSc():
     from petsc4py import PETSc as module
 
     lines = Lines()

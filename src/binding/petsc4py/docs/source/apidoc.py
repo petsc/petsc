@@ -123,7 +123,9 @@ def docstring(obj, fail=True):
         lines = docbody.split('\n')
         for i, line in enumerate(lines):
             if len(line) > 79:
-                logger.warning(f'Line {i} for documentation of {obj} exceeds 79 char limit.')
+                logger.warning(
+                    f'Line {i} for documentation of {obj} exceeds 79 char limit.'
+                )
         if not cl:
             init = (
                 'Collective.',
@@ -143,15 +145,9 @@ def docstring(obj, fail=True):
         section = '\n'
         linkbody = f':sources:`{linktxt} {link} <{linkloc}>`'
         linkbody = f'{section}\n{linkbody}'
-        if docbody:
-            docbody = f'{docbody}\n\n{linkbody}'
-        else:
-            docbody = linkbody
+        docbody = f'{docbody}\n\n{linkbody}' if docbody else linkbody
 
-    if docbody:
-        doc = f'"""{summary}\n\n{docbody}\n\n"""'
-    else:
-        doc = f'"""{summary}"""'
+    doc = f'"""{summary}\n\n{docbody}\n\n"""' if docbody else f'"""{summary}"""'
     return textwrap.indent(doc, Lines.INDENT)
 
 
@@ -283,10 +279,9 @@ def visit_class(cls, outer=None, done=None):
                 continue
             if name in done:
                 continue
-            if dunder(name):
-                if name not in special and name not in override:
-                    done.add(name)
-                    continue
+            if dunder(name) and name not in special and name not in override:
+                done.add(name)
+                continue
             yield name
 
     for name in members(keys):
@@ -341,7 +336,8 @@ def visit_class(cls, outer=None, done=None):
 
     leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f'leftovers: {leftovers}')
+        msg = f'leftovers: {leftovers}'
+        raise RuntimeError(msg)
 
     lines.level -= 1
     return lines
@@ -446,7 +442,8 @@ def visit_module(module, done=None):
 
     leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f'leftovers: {leftovers}')
+        msg = f'leftovers: {leftovers}'
+        raise RuntimeError(msg)
     return lines
 
 
@@ -531,7 +528,7 @@ from .typing import *
 """
 
 
-def visit_petsc4py_PETSc(done=None):
+def visit_petsc4py_PETSc():
     from petsc4py import PETSc
 
     lines = Lines()
@@ -573,7 +570,8 @@ _sys_modules = {}
 def replace_module(module):
     name = module.__name__
     if name in _sys_modules:
-        raise RuntimeError(f'{name} in modules')
+        msg = f'{name} in modules'
+        raise RuntimeError(msg)
     _sys_modules[name] = sys.modules[name]
     sys.modules[name] = module
     return _sys_modules[name]
@@ -582,7 +580,8 @@ def replace_module(module):
 def restore_module(module):
     name = module.__name__
     if name not in _sys_modules:
-        raise RuntimeError(f'{name} not in modules')
+        msg = f'{name} not in modules'
+        raise RuntimeError(msg)
     sys.modules[name] = _sys_modules[name]
     del _sys_modules[name]
 
@@ -593,7 +592,7 @@ def annotate(dest, source):
     except AttributeError:
         pass
     if isinstance(dest, type):
-        for name in dest.__dict__.keys():
+        for name in dest.__dict__:
             if hasattr(source, name):
                 obj = getattr(dest, name)
                 annotate(obj, getattr(source, name))

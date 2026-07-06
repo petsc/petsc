@@ -1,7 +1,8 @@
 import unittest
 
 from petsc4py import PETSc
-import numpy
+import numpy as np
+import copy
 
 # --------------------------------------------------------------------
 
@@ -68,7 +69,7 @@ class BaseTestObject:
         self.assertEqual(self.obj.getOptionsPrefix(), prefix2 + prefix1)
         self.obj.setOptionsPrefix(None)
         self.assertEqual(self.obj.getOptionsPrefix(), None)
-        if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+        if not self.obj.getType() or str(self.obj.getType()) != 'da':
             self.obj.setFromOptions()
 
         def opts_handler(obj):
@@ -82,23 +83,23 @@ class BaseTestObject:
         for _ in range(2):
             self.obj.setAttr('opts_handler_called', 0)
             self.obj.setOptionsHandler(opts_handler)
-            if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+            if not self.obj.getType() or str(self.obj.getType()) != 'da':
                 self.obj.setFromOptions()
                 missing = [
-                           'AO',
-                           'DMLabel',
-                           'PetscDualSpace',
-                           'IS',
-                           'ISLocalToGlobalMapping',
-                           'MatPartitioning',
-                           'MatNullSpace',
-                           'PetscRandom',
-                           'PetscViewer',
-                          ]
+                    'AO',
+                    'DMLabel',
+                    'PetscDualSpace',
+                    'IS',
+                    'ISLocalToGlobalMapping',
+                    'MatPartitioning',
+                    'MatNullSpace',
+                    'PetscRandom',
+                    'PetscViewer',
+                ]
                 if self.obj.klass not in missing:
                     self.assertTrue(self.obj.getAttr('opts_handler_called') == 1)
 
-        if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+        if not self.obj.getType() or str(self.obj.getType()) != 'da':
             self.obj.setAttr('opts_handler_called', 0)
             self.obj.setOptionsHandler(None)
             self.obj.setFromOptions()
@@ -145,8 +146,6 @@ class BaseTestObject:
         self.assertFalse(self.obj.fortran)
 
     def testComposeQuery(self):
-        import copy
-
         try:
             myobj = copy.deepcopy(self.obj)
         except NotImplementedError:
@@ -170,8 +169,6 @@ class BaseTestObject:
         self.assertEqual(self.obj.getRefCount(), self.obj.refcount)
 
     def testShallowCopy(self):
-        import copy
-
         rc = self.obj.getRefCount()
         obj = copy.copy(self.obj)
         self.assertTrue(obj is not self.obj)
@@ -182,8 +179,6 @@ class BaseTestObject:
         self.assertEqual(self.obj.getRefCount(), rc)
 
     def testDeepCopy(self):
-        import copy
-
         rc = self.obj.getRefCount()
         try:
             obj = copy.deepcopy(self.obj)
@@ -349,7 +344,7 @@ class TestObjectDualSpace(BaseTestObject, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-if numpy.iscomplexobj(PETSc.ScalarType()):
+if np.iscomplexobj(PETSc.ScalarType()):
     del TestObjectTAO
 
 if __name__ == '__main__':

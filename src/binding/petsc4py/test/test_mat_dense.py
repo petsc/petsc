@@ -26,7 +26,7 @@ class BaseTestMatAnyDense:
         COMM = self.COMM
         GM, GN = self.GRID
         BS = self.BSIZE  # or 1
-        #
+
         self.A = PETSc.Mat().create(comm=COMM)
         bs = BS or 1
         m, N = GM, GN
@@ -87,10 +87,10 @@ class BaseTestMatAnyDense:
         self.assertTrue(self.A.equal(X))
         X.destroy()
         M, N = self.A.getSize()
-        rst = min(1,M)
-        cst = min(2,N)
-        ren = min(3,M)
-        cen = min(5,N)
+        rst = min(1, M)
+        cst = min(2, N)
+        ren = min(3, M)
+        cen = min(5, N)
         B = self.A.getDenseSubMatrix(rst, ren, cst, cen)
         self.assertTrue(B.getSize(), (ren - rst, cen - cst))
         self.A.restoreDenseSubMatrix(B)
@@ -111,18 +111,18 @@ class BaseTestMatAnyDense:
             x.copy(c)
             self.A.restoreDenseColumnVec(i, V=c)
             self.assertFalse(c)
-            c = self.A.getDenseColumnVec(i,'r')
+            c = self.A.getDenseColumnVec(i, 'r')
             self.assertTrue(x.equal(c))
-            self.A.restoreDenseColumnVec(i,'r', c)
+            self.A.restoreDenseColumnVec(i, 'r', c)
             self.assertFalse(c)
-            c = self.A.getDenseColumnVec(i,'w')
+            c = self.A.getDenseColumnVec(i, 'w')
             c.set(0)
-            self.A.restoreDenseColumnVec(i,'w', c)
+            self.A.restoreDenseColumnVec(i, 'w', c)
             self.assertFalse(c)
             if i > 0:
-                c = self.A.getDenseColumnVec(i-1, mode='r')
+                c = self.A.getDenseColumnVec(i - 1, mode='r')
                 self.assertEqual(c.norm(), 0)
-                self.A.restoreDenseColumnVec(i-1, V=c, mode='r')
+                self.A.restoreDenseColumnVec(i - 1, V=c, mode='r')
                 self.assertFalse(c)
         x.destroy()
 
@@ -134,19 +134,19 @@ class BaseTestMatAnyDense:
         AT = PETSc.Mat().createTranspose(A)
         x, y = A.createVecs()
         xt, yt = AT.createVecs()
-        #
+
         y.setRandom()
         A.multTranspose(y, x)
         y.copy(xt)
         AT.mult(xt, yt)
         self.assertTrue(yt.equal(x))
-        #
+
         x.setRandom()
         A.mult(x, y)
         x.copy(yt)
         AT.multTranspose(yt, xt)
         self.assertTrue(xt.equal(y))
-        #
+
         underlyingA = AT.getTransposeMat()
         self.assertTrue(underlyingA.equal(A))
 
@@ -190,10 +190,7 @@ class BaseTestMatAnyDense:
         GM, GN = self.GRID
         BS = self.BSIZE or 1
         rows, cols, vals = mkdata(COMM, GM, GN, BS)
-        if not self.BSIZE:
-            setvalues = self.A.setValues
-        else:
-            setvalues = self.A.setValuesBlocked
+        setvalues = self.A.setValues if not self.BSIZE else self.A.setValuesBlocked
         setvalues(rows, cols, vals)
         return rows, cols, vals
 

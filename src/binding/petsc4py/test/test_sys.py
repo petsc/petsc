@@ -27,7 +27,7 @@ class TestVersion(unittest.TestCase):
             ),
         )
         self.assertTrue(isinstance(info['release'], bool))
-        v, date = PETSc.Sys.getVersion(date=True)
+        _v, date = PETSc.Sys.getVersion(date=True)
         self.assertEqual(date, info['date'])
 
     def testGetSetDefaultComm(self):

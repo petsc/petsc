@@ -2,13 +2,15 @@
 
 from petsc4py import PETSc
 import unittest
-import numpy
+import numpy as np
 
 
 # --------------------------------------------------------------------
 
+
 class HalfL2SquaredObjective:
-    """f(x) = 0.5 * ||x - p||^2"""
+    """f(x) = 0.5 * ||x - p||^2."""
+
     def __init__(self, p):
         self.p = p
 
@@ -20,7 +22,8 @@ class HalfL2SquaredObjective:
 
 
 class HalfL2SquaredGradient:
-    """g(x) = x - p"""
+    """g(x) = x - p."""
+
     def __init__(self, p):
         self.p = p
 
@@ -30,6 +33,7 @@ class HalfL2SquaredGradient:
 
 
 # --------------------------------------------------------------------
+
 
 class BaseTestTAOWithTAOTerm:
     COMM = None
@@ -68,12 +72,12 @@ class BaseTestTAOWithTAOTerm:
         term1 = PETSc.TAOTerm().create(comm=self.COMM)
         term1.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
         term1.setSolutionTemplate(x)
-        tao.addTerm("term1_", scale1, term1, p)
+        tao.addTerm('term1_', scale1, term1, p)
 
         term2 = PETSc.TAOTerm().create(comm=self.COMM)
         term2.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
         term2.setSolutionTemplate(x)
-        tao.addTerm("term2_", scale2, term2, p)
+        tao.addTerm('term2_', scale2, term2, p)
 
         tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.LMVM)
@@ -128,12 +132,12 @@ class BaseTestTAOWithTAOTerm:
         term1 = PETSc.TAOTerm().create(comm=self.COMM)
         term1.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
         term1.setSolutionTemplate(x_split)
-        tao_split.addTerm("split1_", scale1, term1, p)
+        tao_split.addTerm('split1_', scale1, term1, p)
 
         term2 = PETSc.TAOTerm().create(comm=self.COMM)
         term2.setType(PETSc.TAOTerm.Type.HALFL2SQUARED)
         term2.setSolutionTemplate(x_split)
-        tao_split.addTerm("split2_", scale2, term2, p)
+        tao_split.addTerm('split2_', scale2, term2, p)
         tao_split.setSolution(x_split)
         tao_split.setType(PETSc.TAO.Type.LMVM)
         tao_split.setTolerances(gatol=1.0e-8)
@@ -167,7 +171,7 @@ class TestTAOWithTAOTermWorld(BaseTestTAOWithTAOTerm, unittest.TestCase):
 # --------------------------------------------------------------------
 
 
-if numpy.iscomplexobj(PETSc.ScalarType()):
+if np.iscomplexobj(PETSc.ScalarType()):
     del BaseTestTAOWithTAOTerm
     del TestTAOWithTAOTermSelf
     del TestTAOWithTAOTermWorld

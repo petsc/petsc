@@ -1,6 +1,7 @@
 from petsc4py import PETSc
 import unittest
 import random
+import numpy as np
 
 # --------------------------------------------------------------------
 
@@ -70,8 +71,8 @@ class BaseTestIS:
         del iset
 
     def testRenumber(self):
-        (n1, is1) = self.iset.renumber()
-        (n2, is2) = self.iset.renumber(self.iset)
+        (_n1, is1) = self.iset.renumber()
+        (_n2, is2) = self.iset.renumber(self.iset)
         del is1
         del is2
 
@@ -89,10 +90,8 @@ class BaseTestIS:
             self.assertTrue(hasattr(self.iset, prop))
 
     def testArray(self):
-        import numpy
-
         refs = self.iset.getRefCount()
-        arr1 = numpy.asarray(self.iset)
+        arr1 = np.asarray(self.iset)
         self.assertEqual(self.iset.getRefCount(), refs + 1)
         arr2 = self.iset.array
         self.assertEqual(self.iset.getRefCount(), refs + 2)

@@ -1,4 +1,6 @@
-import sys,petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
 import numpy as np
@@ -6,7 +8,7 @@ import numpy as np
 OptDB = PETSc.Options()
 
 dim = OptDB.getInt('dim', 2)
-plex = PETSc.DMPlex().createBoxMesh([4]*dim, simplex=True)
+plex = PETSc.DMPlex().createBoxMesh([4] * dim, simplex=True)
 plex.distribute()
 plex.view()
 

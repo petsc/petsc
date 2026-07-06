@@ -1,7 +1,7 @@
 import unittest
 from petsc4py import PETSc
 from sys import getrefcount
-import numpy
+import numpy as np
 
 
 # --------------------------------------------------------------------
@@ -98,7 +98,7 @@ class TestTaoPython(unittest.TestCase):
         def _update(tao, it, cnt):
             cnt += 1
 
-        cnt_up = numpy.array(0)
+        cnt_up = np.array(0)
         tao.setUpdate(_update, (cnt_up,))
         tao.setSolution(x)
 
@@ -172,7 +172,7 @@ class MyGradientDescent:
             search_direction.scale(-1)
 
             # x = x + .2 search_direction
-            f, s, reason = self._ls.apply(x, gradient, search_direction)
+            f, _s, reason = self._ls.apply(x, gradient, search_direction)
 
             tao.monitor(f=f, res=gradient.norm())
 
@@ -232,7 +232,7 @@ class TestTaoPythonOptimiser(unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-if numpy.iscomplexobj(PETSc.ScalarType()):
+if np.iscomplexobj(PETSc.ScalarType()):
     del TestTaoPython
     del TestTaoPythonOptimiser
 

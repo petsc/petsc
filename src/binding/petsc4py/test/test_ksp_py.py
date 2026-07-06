@@ -42,10 +42,10 @@ class MyKSP:
 
 class MyRichardson(MyKSP):
     def solve(self, ksp, b, x):
-        A, B = ksp.getOperators()
+        A, _B = ksp.getOperators()
         P = ksp.getPC()
         r, z = self.work
-        #
+
         A.mult(x, r)
         r.aypx(-1, b)
         P.apply(r, z)
@@ -65,10 +65,10 @@ class MyCG(MyKSP):
         self.work += [d, q]
 
     def solve(self, ksp, b, x):
-        A, B = ksp.getOperators()
+        A, _B = ksp.getOperators()
         # P = ksp.getPC()
-        r, z, d, q = self.work
-        #
+        r, _z, d, q = self.work
+
         A.mult(x, r)
         r.aypx(-1, b)
         r.copy(d)

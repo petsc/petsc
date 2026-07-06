@@ -6,7 +6,7 @@ petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
 from mpi4py import MPI
-import numpy
+import numpy as np
 
 
 class Heat:
@@ -21,8 +21,7 @@ class Heat:
         if comm.rank == 0:
             self.start = 0
         gindices = (
-            numpy.arange(self.start - 1, self.start + self.n + 1, dtype=PETSc.IntType)
-            % N
+            np.arange(self.start - 1, self.start + self.n + 1, dtype=PETSc.IntType) % N
         )  # periodic
         self.mat = PETSc.Mat().create(comm=comm)
         size = (self.n, self.N)  # local and global sizes
@@ -49,24 +48,24 @@ class Heat:
         self.history = []
 
         if False:  # Print some diagnostics
-            print(
+            PETSc.Sys.Print(
                 '[%d] local size %d, global size %d, starting offset %d'
                 % (comm.rank, self.n, self.N, self.start)
             )
-            self.gvec.setArray(numpy.arange(self.start, self.start + self.n))
+            self.gvec.setArray(np.arange(self.start, self.start + self.n))
             self.gvec.view()
             self.g2l.scatter(self.gvec, self.lvec, PETSc.InsertMode.INSERT)
             for rank in range(comm.size):
                 if rank == comm.rank:
-                    print('Contents of local Vec on rank %d' % rank)
+                    PETSc.Sys.Print('Contents of local Vec on rank %d' % rank)
                     self.lvec.view()
                 comm.barrier()
 
     def evalSolution(self, t, x):
         if t != 0.0:
             raise ValueError('Only for t=0')
-        coord = numpy.arange(self.start, self.start + self.n) / self.N
-        x.setArray((numpy.abs(coord - 0.5) < 0.1) * 1.0)
+        coord = np.arange(self.start, self.start + self.n) / self.N
+        x.setArray((np.abs(coord - 0.5) < 0.1) * 1.0)
 
     def evalFunction(self, ts, t, x, xdot, f):
         self.g2l.scatter(x, self.lvec, PETSc.InsertMode.INSERT)  # lvec is a work vector
@@ -89,7 +88,7 @@ class Heat:
 
     def monitor(self, ts, i, t, x):
         if self.history:
-            lasti, lastt, lastx = self.history[-1]
+            lasti, lastt, _lastx = self.history[-1]
             if i < lasti + 4 or t < lastt + 1e-4:
                 return
         self.tozero.scatter(x, self.zvec, PETSc.InsertMode.INSERT)
@@ -103,8 +102,8 @@ class Heat:
             return
         rcParams.update({'text.usetex': True, 'figure.figsize': (10, 6)})
         # rc('figure', figsize=(600,400))
-        pylab.title('Heat: TS \\texttt{%s}' % ts.getType())
-        x = numpy.arange(self.N) / self.N
+        pylab.title(f'Heat: TS \\texttt{{{ts.getType()}}}')
+        x = np.arange(self.N) / self.N
         for i, t, u in self.history:
             pylab.plot(x, u, label='step=%d t=%8.2g' % (i, t))
         pylab.xlabel('$x$')
@@ -155,7 +154,7 @@ ts.setFromOptions()  # Apply run-time options, e.g. -ts_adapt_monitor -ts_type a
 ode.evalSolution(0.0, x)
 ts.solve(x)
 if ode.comm.rank == 0:
-    print(
+    PETSc.Sys.Print(
         'steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d'
         % (
             ts.getStepNumber(),
