@@ -3127,6 +3127,7 @@ static PetscErrorCode MatView_MUMPS(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "MUMPS run parameters:\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  precision:                           %s\n", PetscPrecisionTypes[mumps->id.precision]));
       if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  SYM (matrix type):                   %d\n", mumps->id.sym));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  PAR (host participation):            %d\n", mumps->id.par));

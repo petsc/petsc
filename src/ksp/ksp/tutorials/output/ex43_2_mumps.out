@@ -38,6 +38,7 @@ PC Object: (stokes_) 1 MPI process
             rows=882, cols=882
             package used to perform factorization: mumps
               MUMPS run parameters:
+                precision:                           DOUBLE
                 Use -stokes_fieldsplit_u_ksp_view ::ascii_info_detail to display information for all processes
                 INFOG(7) (ordering option effectively used after analysis): 1
     linear system matrix, followed by the matrix used to construct the preconditioner:
