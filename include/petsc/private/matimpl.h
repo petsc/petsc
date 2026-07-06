@@ -9,11 +9,13 @@ PETSC_EXTERN PetscBool      MatSeqAIJRegisterAllCalled;
 PETSC_EXTERN PetscBool      MatOrderingRegisterAllCalled;
 PETSC_EXTERN PetscBool      MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscBool      MatPartitioningRegisterAllCalled;
+PETSC_EXTERN PetscBool      MatMeshToCellGraphRegisterAllCalled;
 PETSC_EXTERN PetscBool      MatCoarsenRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraphRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 

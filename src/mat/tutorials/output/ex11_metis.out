@@ -1,0 +1,13 @@
+Mat Object: 1 MPI process
+  type: mpiadj
+row 0: 1 
+row 1: 0  3 
+row 2: 3 
+row 3: 1  2 
+IS Object: 1 MPI process
+  type: stride
+Number of indices in (stride) set 4
+0 0
+1 0
+2 0
+3 0

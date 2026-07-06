@@ -16,6 +16,13 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 #endif
 
+#if defined(PETSC_HAVE_PARMETIS)
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Parmetis(Mat, PetscInt, Mat *);
+#endif
+#if defined(PETSC_HAVE_METIS)
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Metis(Mat, PetscInt, Mat *);
+#endif
+
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix partitioning routines in PETSc.
 
@@ -46,6 +53,30 @@ PetscErrorCode MatPartitioningRegisterAll(void)
 #endif
 #if defined(PETSC_HAVE_PTSCOTCH)
   PetscCall(MatPartitioningRegister(MATPARTITIONINGPTSCOTCH, MatPartitioningCreate_PTScotch));
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatMeshToCellGraphRegisterAll - Registers all of the mesh-to-cell-graph conversion routines in PETSc.
+
+  Not Collective
+
+  Level: developer
+
+.seealso: `MatMeshToCellGraph()`, `MatMeshToCellGraphRegister()`, `MatMeshToCellGraphType`
+@*/
+PetscErrorCode MatMeshToCellGraphRegisterAll(void)
+{
+  PetscFunctionBegin;
+  if (MatMeshToCellGraphRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  MatMeshToCellGraphRegisterAllCalled = PETSC_TRUE;
+
+#if defined(PETSC_HAVE_PARMETIS)
+  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHPARMETIS, MatMeshToCellGraph_Parmetis));
+#endif
+#if defined(PETSC_HAVE_METIS)
+  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHMETIS, MatMeshToCellGraph_Metis));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

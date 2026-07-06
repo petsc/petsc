@@ -42,6 +42,7 @@ PetscErrorCode MatFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&MatOrderingList));
   PetscCall(PetscFunctionListDestroy(&MatColoringList));
   PetscCall(PetscFunctionListDestroy(&MatPartitioningList));
+  PetscCall(PetscFunctionListDestroy(&MatMeshToCellGraphList));
   PetscCall(PetscFunctionListDestroy(&MatCoarsenList));
   MatRootNameList                  = NULL;
   MatPackageInitialized            = PETSC_FALSE;
@@ -170,6 +171,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatOrderingRegisterAll());
   PetscCall(MatColoringRegisterAll());
   PetscCall(MatPartitioningRegisterAll());
+  PetscCall(MatMeshToCellGraphRegisterAll());
   PetscCall(MatCoarsenRegisterAll());
   PetscCall(MatSeqAIJRegisterAll());
   /* Register Events */
