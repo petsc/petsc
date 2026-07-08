@@ -1485,7 +1485,7 @@ static inline PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max, 
 
   PetscFunctionBegin;
   PetscCall(PetscIntMultError(2, nlnk_max + 2, &lsize));
-  PetscCall(PetscRealloc(lsize * sizeof(PetscInt), lnk));
+  PetscCall(PetscRealloc((size_t)lsize * sizeof(PetscInt), lnk));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
