@@ -1,0 +1,40 @@
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 13
+  Number of 1-cells per rank: 38
+  Number of 2-cells per rank: 41
+  Number of 3-cells per rank: 15
+Labels:
+  celltype: 4 strata with value/size (0 (13), 1 (38), 3 (41), 6 (15))
+  depth: 4 strata with value/size (0 (13), 1 (38), 2 (41), 3 (15))
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 36
+  Number of 1-cells per rank: 150
+  Number of 2-cells per rank: 201
+  Number of 3-cells per rank: 86
+Labels:
+  celltype: 4 strata with value/size (0 (36), 1 (150), 3 (201), 6 (86))
+  depth: 4 strata with value/size (0 (36), 1 (150), 2 (201), 3 (86))
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 87
+  Number of 1-cells per rank: 439
+  Number of 2-cells per rank: 654
+  Number of 3-cells per rank: 301
+Labels:
+  celltype: 4 strata with value/size (0 (87), 1 (439), 3 (654), 6 (301))
+  depth: 4 strata with value/size (0 (87), 1 (439), 2 (654), 3 (301))
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 183
+  Number of 1-cells per rank: 1028
+  Number of 2-cells per rank: 1614
+  Number of 3-cells per rank: 768
+Labels:
+  celltype: 4 strata with value/size (0 (183), 1 (1028), 3 (1614), 6 (768))
+  depth: 4 strata with value/size (0 (183), 1 (1028), 2 (1614), 3 (768))
