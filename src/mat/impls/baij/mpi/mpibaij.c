@@ -31,6 +31,7 @@ static PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatStoreValues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatRetrieveValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIBAIJSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIBAIJSetPreallocationCSR_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
@@ -2845,6 +2846,15 @@ M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat, MatType, MatReuse, Mat *);
 
+static PetscErrorCode MatGetMultPetscSF_MPIBAIJ(Mat A, PetscSF *sf)
+{
+  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
+
+  PetscFunctionBegin;
+  *sf = a->Mvctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 {
   Mat_MPIBAIJ *b;
@@ -2908,6 +2918,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPIBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetHashTableFactor_C", MatSetHashTableFactor_MPIBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_is_C", MatConvert_XAIJ_IS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatGetMultPetscSF_C", MatGetMultPetscSF_MPIBAIJ));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIBAIJ));
 
   PetscOptionsBegin(PetscObjectComm((PetscObject)B), NULL, "Options for loading MPIBAIJ matrix 1", "Mat");

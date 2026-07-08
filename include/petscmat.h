@@ -574,6 +574,7 @@ PETSC_EXTERN PetscErrorCode MatConjugate(Mat);
 PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
 PETSC_EXTERN PetscErrorCode MatImaginaryPart(Mat);
 PETSC_EXTERN PetscErrorCode MatGetDiagonalBlock(Mat, Mat *);
+PETSC_EXTERN PetscErrorCode MatGetMultPetscSF(Mat, PetscSF *);
 PETSC_EXTERN PetscErrorCode MatGetTrace(Mat, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat, PetscInt, const PetscInt *, PetscScalar *);

@@ -45,6 +45,7 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatStoreValues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatRetrieveValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocationCSR_C", NULL));
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -2202,6 +2203,15 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
 .seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MATBAIJ`, `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
 M*/
 
+static PetscErrorCode MatGetMultPetscSF_MPISBAIJ(Mat A, PetscSF *sf)
+{
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
+
+  PetscFunctionBegin;
+  *sf = a->Mvctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 {
   Mat_MPISBAIJ *b;
@@ -2277,6 +2287,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_mpiaij_C", MatConvert_MPISBAIJ_Basic));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_mpibaij_C", MatConvert_MPISBAIJ_Basic));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatGetMultPetscSF_C", MatGetMultPetscSF_MPISBAIJ));
 
   B->symmetric                   = PETSC_BOOL3_TRUE;
   B->structurally_symmetric      = PETSC_BOOL3_TRUE;

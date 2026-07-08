@@ -2,7 +2,6 @@
 #include <petscsf.h>
 
 typedef struct {
-  PetscSF    sf;
   PetscReal *dwts, *owts;
   PetscInt  *dmask, *omask, *cmask;
   PetscBool  local;
@@ -34,8 +33,7 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
   Mat_MPIAIJ     *aij;
   Mat_SeqAIJ     *daij, *oaij;
   PetscInt       *di, *oi, *dj, *oj;
-  PetscSF         sf = jp->sf;
-  PetscLayout     layout;
+  PetscSF         sf = NULL;
   PetscInt        dn, on;
   PetscInt        i, j, l;
   PetscReal      *dwts = jp->dwts, *owts = jp->owts;
@@ -62,12 +60,7 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
     oi   = oaij->i;
     oj   = oaij->j;
     PetscCall(MatGetSize(oG, &dn, &on));
-    if (!sf) {
-      PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mc), &sf));
-      PetscCall(MatGetLayouts(G, &layout, NULL));
-      PetscCall(PetscSFSetGraphLayout(sf, layout, on, NULL, PETSC_COPY_VALUES, aij->garray));
-      jp->sf = sf;
-    }
+    PetscCall(MatGetMultPetscSF(G, &sf));
   } else {
     dG = G;
     PetscCall(MatGetSize(dG, NULL, &dn));
@@ -272,8 +265,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
   Mat_MPIAIJ     *aij;
   Mat_SeqAIJ     *daij, *oaij;
   PetscInt       *di, *oi, *dj, *oj;
-  PetscSF         sf = jp->sf;
-  PetscLayout     layout;
+  PetscSF         sf = NULL;
   PetscInt        maskrounds, maskbase, maskradix;
   PetscInt        dn, on;
   PetscInt        i, j, l, k;
@@ -304,12 +296,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
     oi   = oaij->i;
     oj   = oaij->j;
     PetscCall(MatGetSize(oG, &dn, &on));
-    if (!sf) {
-      PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mc), &sf));
-      PetscCall(MatGetLayouts(G, &layout, NULL));
-      PetscCall(PetscSFSetGraphLayout(sf, layout, on, NULL, PETSC_COPY_VALUES, aij->garray));
-      jp->sf = sf;
-    }
+    PetscCall(MatGetMultPetscSF(G, &sf));
   } else {
     dG = G;
     PetscCall(MatGetSize(dG, NULL, &dn));
@@ -460,7 +447,6 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
   PetscCall(PetscFree(lperm));
   PetscCall(PetscFree(maxweights));
   PetscCall(PetscFree(mincolor));
-  PetscCall(PetscSFDestroy(&jp->sf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -486,7 +472,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&jp));
-  jp->sf                  = NULL;
   jp->dmask               = NULL;
   jp->omask               = NULL;
   jp->cmask               = NULL;

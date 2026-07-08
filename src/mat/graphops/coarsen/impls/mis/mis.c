@@ -32,7 +32,6 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   const PetscInt   *perm_ix;
   const PetscInt    nloc = Gmat->rmap->n;
   PetscCoarsenData *agg_lists;
-  PetscLayout       layout;
   PetscSF           sf;
   IS                info_is;
 
@@ -60,9 +59,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     for (kk = 0, gid = my0; kk < nloc; kk++, gid++) lid_gid[kk] = gid;
     PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
     PetscCall(PetscMalloc2(num_fine_ghosts, &cpcol_gid, num_fine_ghosts, &cpcol_state));
-    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)Gmat), &sf));
-    PetscCall(MatGetLayouts(Gmat, &layout, NULL));
-    PetscCall(PetscSFSetGraphLayout(sf, layout, num_fine_ghosts, NULL, PETSC_COPY_VALUES, mpimat->garray));
+    PetscCall(MatGetMultPetscSF(Gmat, &sf));
     PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
     for (kk = 0; kk < num_fine_ghosts; kk++) cpcol_state[kk] = MIS_NOT_DONE;
@@ -229,10 +226,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     }
     PetscCall(PetscFree2(cpcol_sel_gid, icpcol_gid));
   }
-  if (isMPI) {
-    PetscCall(PetscSFDestroy(&sf));
-    PetscCall(PetscFree2(cpcol_gid, cpcol_state));
-  }
+  if (isMPI) PetscCall(PetscFree2(cpcol_gid, cpcol_state));
   PetscCall(PetscFree4(lid_gid, lid_cprowID, lid_removed, lid_state));
   if (strict_aggs) {
     // check sizes -- all vertices must get in graph

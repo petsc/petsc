@@ -188,7 +188,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, PetscCoar
   PC_GAMG           *gamg = (PC_GAMG *)mg->innerctx;
   PetscBool          iscoarse, isMPIAIJ, isSEQAIJ;
   PetscInt           fn, cn, fs, fe, cs, ce, i, j, ncols, col, row_f, row_c, cmax = 0, idx, noff;
-  PetscInt          *lcid, *gcid, *lsparse, *gsparse, *colmap, *pcols;
+  PetscInt          *lcid, *gcid, *lsparse, *gsparse, *pcols;
   const PetscInt    *rcol;
   PetscReal         *Amax_pos, *Amax_neg;
   PetscScalar        g_pos, g_neg, a_pos, a_neg, diag, invdiag, alpha, beta, pij;
@@ -197,7 +197,6 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, PetscCoar
   Mat                lA, gA = NULL;
   MatType            mtype;
   Vec                C, lvec;
-  PetscLayout        clayout;
   PetscSF            sf;
   Mat_MPIAIJ        *mpiaij;
 
@@ -213,10 +212,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, PetscCoar
     gA     = mpiaij->B;
     lvec   = mpiaij->lvec;
     PetscCall(VecGetSize(lvec, &noff));
-    colmap = mpiaij->garray;
-    PetscCall(MatGetLayouts(A, NULL, &clayout));
-    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &sf));
-    PetscCall(PetscSFSetGraphLayout(sf, clayout, noff, NULL, PETSC_COPY_VALUES, colmap));
+    PetscCall(MatGetMultPetscSF(A, &sf));
     PetscCall(PetscMalloc1(noff, &gcid));
   } else {
     lA = A;
@@ -431,10 +427,7 @@ static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, PetscCoar
   PetscCall(PetscFree5(lsparse, gsparse, lcid, Amax_pos, Amax_neg));
 
   PetscCall(PetscFree2(pcols, pvals));
-  if (gA) {
-    PetscCall(PetscSFDestroy(&sf));
-    PetscCall(PetscFree(gcid));
-  }
+  if (gA) PetscCall(PetscFree(gcid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -27,7 +27,6 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   PetscInt       *lcolors, *ocolors;
   PetscReal      *owts = NULL;
   PetscSF         sf;
-  PetscLayout     layout;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(m, &n_global, NULL));
@@ -78,9 +77,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   for (i = 0; i < masksize; i++) mask[i] = -1;
   if (mo) {
     /* transfer neighbor weights */
-    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m), &sf));
-    PetscCall(MatGetLayouts(m, &layout, NULL));
-    PetscCall(PetscSFSetGraphLayout(sf, layout, no, NULL, PETSC_COPY_VALUES, aij->garray));
+    PetscCall(MatGetMultPetscSF(m, &sf));
     PetscCall(PetscSFBcastBegin(sf, MPIU_REAL, wts, owts, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, MPIU_REAL, wts, owts, MPI_REPLACE));
   }
@@ -160,10 +157,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   for (i = 0; i < n; i++) colors[i] = (ISColoringValue)lcolors[i];
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree(lcolors));
-  if (mo) {
-    PetscCall(PetscFree2(ocolors, owts));
-    PetscCall(PetscSFDestroy(&sf));
-  }
+  if (mo) PetscCall(PetscFree2(ocolors, owts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -183,7 +177,6 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   PetscReal       *owts, *colorweights;
   PetscInt        *oconf, *conf;
   PetscSF          sf;
-  PetscLayout      layout;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(m, &n_global, NULL));
@@ -238,9 +231,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   no = 0;
   if (mo) {
     PetscCall(VecGetLocalSize(aij->lvec, &no));
-    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m), &sf));
-    PetscCall(MatGetLayouts(m, &layout, NULL));
-    PetscCall(PetscSFSetGraphLayout(sf, layout, no, NULL, PETSC_COPY_VALUES, aij->garray));
+    PetscCall(MatGetMultPetscSF(m, &sf));
   }
   PetscCall(MatColoringGetMaxColors(mc, &maxcolors));
   masksize = n;
@@ -471,10 +462,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
     }
     PetscCallMPI(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
   }
-  if (mo) {
-    PetscCall(PetscSFDestroy(&sf));
-    PetscCall(PetscFree3(owts, oconf, ocolors));
-  }
+  if (mo) PetscCall(PetscFree3(owts, oconf, ocolors));
   for (i = 0; i < n; i++) PetscCall(ISColoringValueCast(dcolors[i], colors + i));
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));

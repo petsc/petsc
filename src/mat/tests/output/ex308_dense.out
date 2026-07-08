@@ -1,0 +1,1 @@
+MatGetMultPetscSF() OK (PetscSF valid, allgather sees all columns: yes)
