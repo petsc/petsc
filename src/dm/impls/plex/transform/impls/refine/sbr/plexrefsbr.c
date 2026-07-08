@@ -12,6 +12,77 @@ const char SBRCitation[] = "@article{PlazaCarey2000,\n"
                            "  doi     = {10.1016/S0168-9274(99)00022-7},\n"
                            "  year    = {2000}\n}\n";
 
+/*
+  Tetrahedron combinatorics, in the canonical local numbering used throughout this file (matching
+  the convention documented in DMPlexTransformCellRefine_Regular() for DM_POLYTOPE_TETRAHEDRON):
+
+    e0 = (v0,v1), e1 = (v1,v2), e2 = (v2,v0), e3 = (v0,v3), e4 = (v1,v3), e5 = (v2,v3)
+    f0 = (v0,v1,v2), f1 = (v0,v3,v1), f2 = (v0,v2,v3), f3 = (v2,v1,v3)
+
+  tetEdgeVert[e]    - the 2 vertices of edge e, in its canonical direction
+  tetFaceVert[f]    - the 3 vertices of face f, in its canonical order
+  tetFaceEdge[f]    - the edges of face f, at local indices 0,1,2 (i.e. (v_0,v_1),(v_1,v_2),(v_2,v_0) of that face)
+  tetEdgeFaceLoc[e] - a (face, local edge index) path that reaches edge e in its canonical direction
+  tetVertPath[v]    - a (face, local edge index, local vertex index) path that reaches vertex v
+  tetOppFace[x]     - the 3 local vertex positions (not values) of the face opposite position x, i.e. f[3-x]
+*/
+static const PetscInt tetEdgeVert[6][2] = {
+  {0, 1},
+  {1, 2},
+  {2, 0},
+  {0, 3},
+  {1, 3},
+  {2, 3}
+};
+static const PetscInt tetFaceVert[4][3] = {
+  {0, 1, 2},
+  {0, 3, 1},
+  {0, 2, 3},
+  {2, 1, 3}
+};
+static const PetscInt tetFaceEdge[4][3] = {
+  {0, 1, 2},
+  {3, 4, 0},
+  {2, 5, 3},
+  {1, 4, 5}
+};
+static const PetscInt tetEdgeFaceLoc[6][2] = {
+  {0, 0},
+  {0, 1},
+  {0, 2},
+  {1, 0},
+  {3, 1},
+  {2, 1}
+};
+static const PetscInt tetVertPath[4][3] = {
+  {0, 0, 0},
+  {0, 0, 1},
+  {0, 2, 0},
+  {1, 0, 1}
+};
+static const PetscInt tetOppFace[4][3] = {
+  {2, 1, 3},
+  {0, 2, 3},
+  {0, 3, 1},
+  {0, 1, 2}
+};
+
+/* Find the tetrahedron edge index (0-5) connecting the two given (unordered) vertices */
+static PetscInt SBREdgeIndexFromVerts_Private(PetscInt v0, PetscInt v1)
+{
+  for (PetscInt k = 0; k < 6; ++k) {
+    if ((tetEdgeVert[k][0] == v0 && tetEdgeVert[k][1] == v1) || (tetEdgeVert[k][0] == v1 && tetEdgeVert[k][1] == v0)) return k;
+  }
+  return -1;
+}
+
+/* Read off the 3 vertices of the tetrahedron face opposite local position missingPos (0-3), from a
+   general 4-tuple T (which may hold original vertices 0-3 and/or edge-midpoint markers >= 4) */
+static void SBRTetFaceOpposite_Private(const PetscInt T[4], PetscInt missingPos, PetscInt tri[3])
+{
+  for (PetscInt i = 0; i < 3; ++i) tri[i] = T[tetOppFace[missingPos][i]];
+}
+
 static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, PetscReal *len)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
@@ -56,17 +127,16 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
 */
 static PetscErrorCode SBRGetTetEdges_Private(DM dm, PetscInt tet, PetscInt edges[6])
 {
-  const PetscInt       *fcone, *forient;
-  static const PetscInt fIdx[6] = {0, 0, 0, 1, 3, 2};
-  static const PetscInt lIdx[6] = {0, 1, 2, 0, 1, 1};
+  const PetscInt *fcone, *forient;
 
   PetscFunctionBeginHot;
   PetscCall(DMPlexGetCone(dm, tet, &fcone));
   PetscCall(DMPlexGetConeOrientation(dm, tet, &forient));
   for (PetscInt k = 0; k < 6; ++k) {
-    const PetscInt  face = fcone[fIdx[k]];
-    const PetscInt *arr  = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, forient[fIdx[k]]);
-    const PetscInt  li   = arr[lIdx[k] * 2];
+    const PetscInt  floc = tetEdgeFaceLoc[k][0];
+    const PetscInt  face = fcone[floc];
+    const PetscInt *arr  = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, forient[floc]);
+    const PetscInt  li   = arr[tetEdgeFaceLoc[k][1] * 2];
     const PetscInt *econe;
 
     PetscCall(DMPlexGetCone(dm, face, &econe));
@@ -596,6 +666,157 @@ static PetscErrorCode SBRGetTriangleSplitDouble(PetscInt o, PetscInt *Nt, DMPoly
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Append one cone entry {ft, fn, acp[0..fn-1], r} plus its matching ornt entry o */
+static void SBRAppendCone_Private(PetscInt cone[], PetscInt *coff, PetscInt ornt[], PetscInt *ooff, DMPolytopeType ft, PetscInt fn, const PetscInt acp[], PetscInt r, PetscInt o)
+{
+  cone[(*coff)++] = (PetscInt)ft;
+  cone[(*coff)++] = fn;
+  for (PetscInt i = 0; i < fn; ++i) cone[(*coff)++] = acp[i];
+  cone[(*coff)++] = r;
+  ornt[(*ooff)++] = o;
+}
+
+/*
+  Bisect a tetrahedron by a single marked edge e (the only marked edge, which by the closure
+  invariant is necessarily the tetrahedron's own longest edge). This produces 2 sub-tetrahedra
+  separated by 1 new interior triangle, itself bounded by 2 new diagonal segments running from the
+  new edge midpoint to the tetrahedron's other 2 vertices, e.g. for e = e0 = (v0,v1), with m the
+  midpoint and c,d the other two vertices:
+
+    child1 = (v0, m, c, d)     child2 = (m, v1, c, d)     interior face = (m, c, d)
+
+  The 2 faces of the tetrahedron containing e are each classified RT_TRIANGLE_SPLIT_k on their own
+  (e is their own longest edge too, since it is the longest of the whole tetrahedron), and split
+  into 2 replicas by the existing 2D logic; the 2 faces not containing e pass through unsplit. This
+  routine references those replicas using the same formula empirically verified against
+  SBRGetTriangleSplitSingle(): for a face with marked local edge (tail,head) and opposite vertex
+  opp, replica 0 = (opp,tail,mid), replica 1 = (mid,head,opp).
+
+  Vertex-slot values 0-3 denote the tetrahedron's own original vertices; the value 4+e denotes the
+  midpoint of edge e (only e's own midpoint, called m below, ever appears here since only one edge
+  is marked). Orientations are computed with DMPolytopeGetVertexOrientation() rather than derived
+  by hand, so this routine does not depend on guessing PETSc's arrangement sign conventions.
+
+  Known limitation: DMPlexTransformGetSubcellOrientation_SBR()'s RT_TRIANGLE_SPLIT_k case only
+  adjusts the referenced replica for a reflected relative orientation (so < 0), not the full
+  arrangement group, so referencing one of the tetrahedron's 2 split side-faces here is only
+  correct when that face's orientation as seen by the tetrahedron is 0 -- true for every face of a
+  freshly-created reference cell, but not guaranteed in a general mesh. This is a pre-existing gap
+  in the 2D code (the same reason the sbr_triangle_* tests in ex11.c restrict -ornts), not something
+  introduced here; fixing it is future work, tracked alongside the recursive generator needed for
+  na = 2..5 (multiple marked edges) in plan-sbr-refine.md.
+*/
+static PetscErrorCode SBRGetTetSplitSingleEdge_Private(PetscInt e, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  static DMPolytopeType tetT[] = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_TETRAHEDRON};
+  static PetscInt       tetS[] = {2, 1, 2};
+  static PetscInt       tetC[96];
+  static PetscInt       tetO[16];
+  const PetscInt        a = tetEdgeVert[e][0], b = tetEdgeVert[e][1];
+  const PetscInt        m = 4 + e;
+  PetscInt              c = -1, d = -1, n = 0;
+  PetscInt              child1[4], child2[4], triCanon[3];
+  PetscInt              coff = 0, ooff = 0;
+
+  PetscFunctionBeginHot;
+  for (PetscInt x = 0; x < 4; ++x)
+    if (x != a && x != b) {
+      if (n == 0) c = x;
+      else d = x;
+      n++;
+    }
+  for (PetscInt x = 0; x < 4; ++x) {
+    child1[x] = (x == b) ? m : x;
+    child2[x] = (x == a) ? m : x;
+  }
+
+  /* new SEGMENT replica 0: (m, c) and replica 1: (m, d) */
+  for (PetscInt r = 0; r < 2; ++r) {
+    const PetscInt other = r == 0 ? c : d;
+
+    SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_POINT, 2, tetEdgeFaceLoc[e], 0, 0);
+    SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_POINT, 3, tetVertPath[other], 0, 0);
+  }
+
+  /* new TRIANGLE replica 0: the interior face, canonical order = child2's own face opposite b */
+  SBRTetFaceOpposite_Private(child2, b, triCanon);
+  for (PetscInt k = 0; k < 3; ++k) {
+    const PetscInt v0 = triCanon[k], v1 = triCanon[(k + 1) % 3];
+    PetscInt       o;
+
+    if (v0 == m || v1 == m) {
+      const PetscInt other     = v0 == m ? v1 : v0;
+      const PetscInt segIdx    = other == c ? 0 : 1;
+      const PetscInt canon2[2] = {m, other}, desired2[2] = {v0, v1};
+
+      PetscCall(DMPolytopeGetVertexOrientation(DM_POLYTOPE_SEGMENT, canon2, desired2, &o));
+      SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_SEGMENT, 0, NULL, segIdx, o);
+    } else {
+      const PetscInt edgeIdx   = SBREdgeIndexFromVerts_Private(v0, v1);
+      const PetscInt canon2[2] = {tetEdgeVert[edgeIdx][0], tetEdgeVert[edgeIdx][1]}, desired2[2] = {v0, v1};
+
+      PetscCall(DMPolytopeGetVertexOrientation(DM_POLYTOPE_SEGMENT, canon2, desired2, &o));
+      SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_SEGMENT, 2, tetEdgeFaceLoc[edgeIdx], 0, o);
+    }
+  }
+
+  /* the 2 sub-tetrahedra, near a (child1) and near b (child2) */
+  for (PetscInt r = 0; r < 2; ++r) {
+    const PetscInt *child = r == 0 ? child1 : child2;
+    const PetscInt  near = r == 0 ? a : b, far = r == 0 ? b : a;
+
+    for (PetscInt f = 0; f < 4; ++f) {
+      /* DMPlexGetRawFaces_Internal()'s face f is missing closure position 3-f, not f */
+      const PetscInt mp = 3 - f;
+      PetscInt       face3[3], o;
+
+      SBRTetFaceOpposite_Private(child, mp, face3);
+      if (mp == near) {
+        /* the interior face shared with the other child */
+        PetscCall(DMPolytopeGetVertexOrientation(DM_POLYTOPE_TRIANGLE, triCanon, face3, &o));
+        SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_TRIANGLE, 0, NULL, 0, o);
+      } else if (mp == far) {
+        /* the whole original face opposite 'far', unmarked since it does not contain e */
+        const PetscInt faceIdx = 3 - far, acp[1] = {faceIdx};
+
+        PetscCall(DMPolytopeGetVertexOrientation(DM_POLYTOPE_TRIANGLE, tetFaceVert[faceIdx], face3, &o));
+        SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_TRIANGLE, 1, acp, 0, o);
+      } else {
+        /* a single-split replica of the original face opposite 'mp', which does contain e */
+        const PetscInt faceIdx = 3 - mp, acp[1] = {faceIdx};
+        PetscInt       localE = -1;
+
+        for (PetscInt i = 0; i < 3; ++i)
+          if (tetFaceEdge[faceIdx][i] == e) localE = i;
+        {
+          const PetscInt tail = tetFaceVert[faceIdx][localE], head = tetFaceVert[faceIdx][(localE + 1) % 3], opp = tetFaceVert[faceIdx][(localE + 2) % 3];
+          const PetscInt replicaIdx = near == tail ? 0 : 1;
+          PetscInt       canon3[3];
+
+          if (replicaIdx == 0) {
+            canon3[0] = opp;
+            canon3[1] = tail;
+            canon3[2] = m;
+          } else {
+            canon3[0] = m;
+            canon3[1] = head;
+            canon3[2] = opp;
+          }
+          PetscCall(DMPolytopeGetVertexOrientation(DM_POLYTOPE_TRIANGLE, canon3, face3, &o));
+          SBRAppendCone_Private(tetC, &coff, tetO, &ooff, DM_POLYTOPE_TRIANGLE, 1, acp, replicaIdx, o);
+        }
+      }
+    }
+  }
+
+  *Nt     = 3;
+  *target = tetT;
+  *size   = tetS;
+  *cone   = tetC;
+  *ornt   = tetO;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
   DMLabel  trType = tr->trType;
@@ -664,10 +885,24 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
     } else if (val == RT_TET) {
       PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
     } else {
-      /* Partial tetrahedron splits (RT_TET_SPLIT_BASE + edge mask) are not yet implemented; see
-         plan-sbr-refine.md for the recursive bisection generator (SBRBisectTet3D) that will produce
-         the cone/orientation data for these cases. */
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Partial 3D SBR refinement of a tetrahedron (edge mask %" PetscInt_FMT ") is not yet implemented", val - RT_TET_SPLIT_BASE);
+      const PetscInt mask  = val - RT_TET_SPLIT_BASE;
+      PetscInt       nbits = 0, e = -1;
+
+      for (PetscInt k = 0; k < 6; ++k)
+        if (mask & (1 << k)) {
+          nbits++;
+          e = k;
+        }
+      if (nbits == 1) {
+        /* Exactly one marked edge, necessarily the tetrahedron's own longest */
+        PetscCall(SBRGetTetSplitSingleEdge_Private(e, Nt, target, size, cone, ornt));
+      } else {
+        /* Splits with 2-5 marked edges are not yet implemented; see plan-sbr-refine.md for the
+           recursive bisection generator that will produce the cone/orientation data for these
+           cases, extending SBRGetTetSplitSingleEdge_Private() to recurse when a leaf still has
+           marked edges left after one bisection. */
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Partial 3D SBR refinement of a tetrahedron with %" PetscInt_FMT " marked edges (mask %" PetscInt_FMT ") is not yet implemented", nbits, mask);
+      }
     }
     break;
   default:
