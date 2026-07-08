@@ -220,6 +220,54 @@ static PetscErrorCode SBRGetTetMaxEdge_Private(DMPlexTransform tr, PetscInt tet,
 }
 
 /*
+  Mark the longest edge of a face-level cell (a triangle of a 3D mesh, or a maximal cell of a 2D
+  mesh), and the longest edge of every unprocessed cell above it. This is idempotent, so it is
+  safe to process a face again when it was marked both locally and on another process.
+*/
+static PetscErrorCode SBRSplitFace_Private(DMPlexTransform tr, DMPlexPointQueue queue, PetscInt cell)
+{
+  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
+  DM                dm;
+  const PetscInt   *cone, *tsupport;
+  PetscInt          coneSize, tsupportSize, c, eval, maxedge;
+  PetscBool         prec;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMPlexGetCone(dm, cell, &cone));
+  PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
+  maxedge = cone[0];
+  for (c = 1; c < coneSize; ++c) {
+    PetscCall(SBREdgePrecedes_Private(tr, cone[c], maxedge, &prec));
+    if (prec) maxedge = cone[c];
+  }
+  PetscCall(DMLabelGetValue(sbr->splitPoints, maxedge, &eval));
+  if (eval != 1) {
+    PetscCall(DMLabelSetValue(sbr->splitPoints, maxedge, 1));
+    PetscCall(DMPlexPointQueueEnqueue(queue, maxedge));
+  }
+  PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
+  /* Propagate to the tetrahedra above this face, if any (empty in a 2D mesh) */
+  PetscCall(DMPlexGetSupport(dm, cell, &tsupport));
+  PetscCall(DMPlexGetSupportSize(dm, cell, &tsupportSize));
+  for (PetscInt ts = 0; ts < tsupportSize; ++ts) {
+    const PetscInt tet = tsupport[ts];
+    PetscInt       tval, tmaxedge = -1, teval;
+
+    PetscCall(DMLabelGetValue(sbr->splitPoints, tet, &tval));
+    if (tval == 3) continue;
+    PetscCall(SBRGetTetMaxEdge_Private(tr, tet, &tmaxedge));
+    PetscCall(DMLabelGetValue(sbr->splitPoints, tmaxedge, &teval));
+    if (teval != 1) {
+      PetscCall(DMLabelSetValue(sbr->splitPoints, tmaxedge, 1));
+      PetscCall(DMPlexPointQueueEnqueue(queue, tmaxedge));
+    }
+    PetscCall(DMLabelSetValue(sbr->splitPoints, tet, 3));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
   Mark local edges that should be split, ensuring conformity of the mesh skeleton.
 
   This implements the closure step of Plaza & Carey, Section 3.1, generalized from 2D to 3D:
@@ -227,63 +275,42 @@ static PetscErrorCode SBRGetTetMaxEdge_Private(DMPlexTransform tr, PetscInt tet,
   marked (as in the original 2D algorithm), and every tetrahedron touching such a face has its
   own longest edge marked in turn (the "2.1/2.2" steps of the paper's 3D outline). In a 2D mesh,
   the tetrahedron support of a face is empty and this reduces exactly to the original algorithm.
+
+  The queue also receives the points marked on other processes from the label propagation. A
+  face-level cell arriving this way is processed directly: the process that marked it has no
+  access to the cells above it on this process, so the local closure must be completed here.
+  Points of any other depth are ignored: vertices are never marked, and a cell arriving through
+  an overlapped point SF already had its closure ensured by its owner, whose edge marks arrive
+  through the same propagation.
 */
 static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
   DM                dm;
+  PetscInt          eStart, eEnd, fStart, fEnd;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 2, &fStart, &fEnd));
   while (!DMPlexPointQueueEmpty(queue)) {
-    PetscInt        p = -1;
-    const PetscInt *support;
-    PetscInt        supportSize;
+    PetscInt p = -1;
 
     PetscCall(DMPlexPointQueueDequeue(queue, &p));
-    PetscCall(DMPlexGetSupport(dm, p, &support));
-    PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
-    for (PetscInt s = 0; s < supportSize; ++s) {
-      const PetscInt  cell = support[s];
-      const PetscInt *cone;
-      const PetscInt *tsupport;
-      PetscInt        coneSize, tsupportSize, c;
-      PetscInt        cval, eval, maxedge;
-      PetscBool       prec;
+    if (p >= eStart && p < eEnd) {
+      const PetscInt *support;
+      PetscInt        supportSize;
 
-      PetscCall(DMLabelGetValue(sbr->splitPoints, cell, &cval));
-      if (cval == 2) continue;
-      PetscCall(DMPlexGetCone(dm, cell, &cone));
-      PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
-      maxedge = cone[0];
-      for (c = 1; c < coneSize; ++c) {
-        PetscCall(SBREdgePrecedes_Private(tr, cone[c], maxedge, &prec));
-        if (prec) maxedge = cone[c];
-      }
-      PetscCall(DMLabelGetValue(sbr->splitPoints, maxedge, &eval));
-      if (eval != 1) {
-        PetscCall(DMLabelSetValue(sbr->splitPoints, maxedge, 1));
-        PetscCall(DMPlexPointQueueEnqueue(queue, maxedge));
-      }
-      PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
-      /* Propagate to the tetrahedra above this face, if any (empty in a 2D mesh) */
-      PetscCall(DMPlexGetSupport(dm, cell, &tsupport));
-      PetscCall(DMPlexGetSupportSize(dm, cell, &tsupportSize));
-      for (PetscInt ts = 0; ts < tsupportSize; ++ts) {
-        const PetscInt tet = tsupport[ts];
-        PetscInt       tval, tmaxedge = -1, teval;
+      PetscCall(DMPlexGetSupport(dm, p, &support));
+      PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
+      for (PetscInt s = 0; s < supportSize; ++s) {
+        PetscInt cval;
 
-        PetscCall(DMLabelGetValue(sbr->splitPoints, tet, &tval));
-        if (tval == 3) continue;
-        PetscCall(SBRGetTetMaxEdge_Private(tr, tet, &tmaxedge));
-        PetscCall(DMLabelGetValue(sbr->splitPoints, tmaxedge, &teval));
-        if (teval != 1) {
-          PetscCall(DMLabelSetValue(sbr->splitPoints, tmaxedge, 1));
-          PetscCall(DMPlexPointQueueEnqueue(queue, tmaxedge));
-        }
-        PetscCall(DMLabelSetValue(sbr->splitPoints, tet, 3));
+        PetscCall(DMLabelGetValue(sbr->splitPoints, support[s], &cval));
+        if (cval == 2) continue;
+        PetscCall(SBRSplitFace_Private(tr, queue, support[s]));
       }
-    }
+    } else if (p >= fStart && p < fEnd) PetscCall(SBRSplitFace_Private(tr, queue, p));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

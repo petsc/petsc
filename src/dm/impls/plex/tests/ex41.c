@@ -150,4 +150,11 @@ int main(int argc, char **argv)
       suffix: 4
       args: -dm_plex_shape doublet -dm_plex_dim 3 -dm_plex_simplex 1 -refcell 0 -adapt_iter 4 -adapt_dm_view
 
+    # One tetrahedron per process, exercising the conformity closure across the shared face
+    test:
+      suffix: 5
+      nsize: 2
+      args: -dm_plex_shape doublet -dm_plex_dim 3 -dm_plex_simplex 1 -refcell 0,-1 -adapt_iter 2 \
+            -petscpartitioner_type simple -dm_distribute -dm_view -adapt_dm_view
+
 TEST*/
