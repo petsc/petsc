@@ -45,8 +45,67 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Mark local edges that should be split */
-/* TODO This will not work in 3D */
+/*
+  Get the 6 edges of a tetrahedron, in the canonical local order used throughout this file:
+  e0 = (v0,v1), e1 = (v1,v2), e2 = (v2,v0), e3 = (v0,v3), e4 = (v1,v3), e5 = (v2,v3), where
+  v0..v3 are the tetrahedron's vertices in the order given by its own transitive closure. This
+  matches the convention documented in DMPlexTransformCellRefine_Regular() for DM_POLYTOPE_TETRAHEDRON.
+  The faces of the tetrahedron, in DMPlexGetCone() order, are f0 = (v0,v1,v2), f1 = (v0,v3,v1),
+  f2 = (v0,v2,v3), f3 = (v2,v1,v3), so each e_k below is read off face fIdx[k] at local edge index
+  lIdx[k], reoriented for that face's actual orientation as seen from the tetrahedron.
+*/
+static PetscErrorCode SBRGetTetEdges_Private(DM dm, PetscInt tet, PetscInt edges[6])
+{
+  const PetscInt       *fcone, *forient;
+  static const PetscInt fIdx[6] = {0, 0, 0, 1, 3, 2};
+  static const PetscInt lIdx[6] = {0, 1, 2, 0, 1, 1};
+
+  PetscFunctionBeginHot;
+  PetscCall(DMPlexGetCone(dm, tet, &fcone));
+  PetscCall(DMPlexGetConeOrientation(dm, tet, &forient));
+  for (PetscInt k = 0; k < 6; ++k) {
+    const PetscInt  face = fcone[fIdx[k]];
+    const PetscInt *arr  = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, forient[fIdx[k]]);
+    const PetscInt  li   = arr[lIdx[k] * 2];
+    const PetscInt *econe;
+
+    PetscCall(DMPlexGetCone(dm, face, &econe));
+    edges[k] = econe[li];
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Find the longest of the 6 edges of a tetrahedron */
+static PetscErrorCode SBRGetTetMaxEdge_Private(DMPlexTransform tr, PetscInt tet, PetscInt *maxedge)
+{
+  DM        dm;
+  PetscInt  edges[6];
+  PetscReal maxlen, len;
+
+  PetscFunctionBeginHot;
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(SBRGetTetEdges_Private(dm, tet, edges));
+  PetscCall(SBRGetEdgeLen_Private(tr, edges[0], &maxlen));
+  *maxedge = edges[0];
+  for (PetscInt k = 1; k < 6; ++k) {
+    PetscCall(SBRGetEdgeLen_Private(tr, edges[k], &len));
+    if (len > maxlen) {
+      maxlen   = len;
+      *maxedge = edges[k];
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  Mark local edges that should be split, ensuring conformity of the mesh skeleton.
+
+  This implements the closure step of Plaza & Carey, Section 3.1, generalized from 2D to 3D:
+  whenever an edge is marked, every non-conforming face containing it has its own longest edge
+  marked (as in the original 2D algorithm), and every tetrahedron touching such a face has its
+  own longest edge marked in turn (the "2.1/2.2" steps of the paper's 3D outline). In a 2D mesh,
+  the tetrahedron support of a face is empty and this reduces exactly to the original algorithm.
+*/
 static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
@@ -65,7 +124,8 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
     for (PetscInt s = 0; s < supportSize; ++s) {
       const PetscInt  cell = support[s];
       const PetscInt *cone;
-      PetscInt        coneSize, c;
+      const PetscInt *tsupport;
+      PetscInt        coneSize, tsupportSize, c;
       PetscInt        cval, eval, maxedge;
       PetscReal       len, maxlen;
 
@@ -88,6 +148,23 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
         PetscCall(DMPlexPointQueueEnqueue(queue, maxedge));
       }
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
+      /* Propagate to the tetrahedra above this face, if any (empty in a 2D mesh) */
+      PetscCall(DMPlexGetSupport(dm, cell, &tsupport));
+      PetscCall(DMPlexGetSupportSize(dm, cell, &tsupportSize));
+      for (PetscInt ts = 0; ts < tsupportSize; ++ts) {
+        const PetscInt tet = tsupport[ts];
+        PetscInt       tval, tmaxedge = -1, teval;
+
+        PetscCall(DMLabelGetValue(sbr->splitPoints, tet, &tval));
+        if (tval == 3) continue;
+        PetscCall(SBRGetTetMaxEdge_Private(tr, tet, &tmaxedge));
+        PetscCall(DMLabelGetValue(sbr->splitPoints, tmaxedge, &teval));
+        if (teval != 1) {
+          PetscCall(DMLabelSetValue(sbr->splitPoints, tmaxedge, 1));
+          PetscCall(DMPlexPointQueueEnqueue(queue, tmaxedge));
+        }
+        PetscCall(DMLabelSetValue(sbr->splitPoints, tet, 3));
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -120,6 +197,13 @@ static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_U
     triangle split edge 0:    11
     triangle split edge 1:    12
     triangle split edge 2:    13
+    tetrahedron unsplit:      14
+    tetrahedron split all edges: 15
+    tetrahedron split, edges (e0,...,e5) marked by bit mask: 16 + mask, mask in [1, 62]
+
+  For a tetrahedron, edges e0..e5 are numbered as documented at SBRGetTetEdges_Private(). The mask
+  values 0 and 63 are handled by RT_TET and RT_TET_SPLIT respectively, rather than as RT_TET_SPLIT_BASE
+  offsets, since they need no reference to which particular edges are marked.
 */
 typedef enum {
   RT_VERTEX,
@@ -135,7 +219,10 @@ typedef enum {
   RT_TRIANGLE_SPLIT_02,
   RT_TRIANGLE_SPLIT_0,
   RT_TRIANGLE_SPLIT_1,
-  RT_TRIANGLE_SPLIT_2
+  RT_TRIANGLE_SPLIT_2,
+  RT_TET,
+  RT_TET_SPLIT,
+  RT_TET_SPLIT_BASE
 } RefinementType;
 
 static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
@@ -183,7 +270,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
 
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, depth));
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-      for (PetscInt cl = 0; cl < Ncl; cl += 2) {
+      for (PetscInt cl = 0; cl < 2 * Ncl; cl += 2) {
         const PetscInt edge = closure[cl];
 
         if (edge >= eStart && edge < eEnd) {
@@ -260,6 +347,23 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " does not fit any refinement type (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", p, vals[0], vals[1], vals[2]);
       } else PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE));
       break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
+      if (val == 3) {
+        PetscInt edges[6], mask = 0;
+
+        PetscCall(SBRGetTetEdges_Private(dm, p, edges));
+        for (PetscInt k = 0; k < 6; ++k) {
+          PetscInt eval;
+
+          PetscCall(DMLabelGetValue(sbr->splitPoints, edges[k], &eval));
+          if (eval == 1) mask |= 1 << k;
+        }
+        if (mask == 63) PetscCall(DMLabelSetValue(trType, p, RT_TET_SPLIT));
+        else if (mask == 0) PetscCall(DMLabelSetValue(trType, p, RT_TET));
+        else PetscCall(DMLabelSetValue(trType, p, RT_TET_SPLIT_BASE + mask));
+      } else PetscCall(DMLabelSetValue(trType, p, RT_TET));
+      break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
@@ -310,6 +414,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform t
     break;
   case RT_EDGE_SPLIT:
   case RT_TRIANGLE_SPLIT:
+  case RT_TET_SPLIT:
     PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew));
     break;
   default:
@@ -505,7 +610,6 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
   case DM_POLYTOPE_QUADRILATERAL:
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
-  case DM_POLYTOPE_TETRAHEDRON:
   case DM_POLYTOPE_HEXAHEDRON:
   case DM_POLYTOPE_TRI_PRISM:
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
@@ -551,6 +655,19 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
       break;
     default:
       PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    }
+    break;
+  case DM_POLYTOPE_TETRAHEDRON:
+    if (val == RT_TET_SPLIT) {
+      /* All 6 edges are marked: this is exactly the regular 1-to-8 refinement */
+      PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    } else if (val == RT_TET) {
+      PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    } else {
+      /* Partial tetrahedron splits (RT_TET_SPLIT_BASE + edge mask) are not yet implemented; see
+         plan-sbr-refine.md for the recursive bisection generator (SBRBisectTet3D) that will produce
+         the cone/orientation data for these cases. */
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Partial 3D SBR refinement of a tetrahedron (edge mask %" PetscInt_FMT ") is not yet implemented", val - RT_TET_SPLIT_BASE);
     }
     break;
   default:

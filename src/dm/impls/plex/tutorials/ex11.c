@@ -607,6 +607,12 @@ int main(int argc, char **argv)
       args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -dm_plex_transform_sbr_ref_cell 4,5 -init_ornt 2 -ornts 0 \
             -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 1.0
 
+    # This selects the whole tetrahedron, so all 6 edges are split and the result matches regular refinement
+    test:
+      suffix: sbr_tetrahedron_0
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
   testset:
     args: -dm_plex_transform_type refine_boundary_layer -dm_plex_transform_bl_splits 2 -ref_arrangements -dm_plex_check_all
 
