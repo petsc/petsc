@@ -174,6 +174,13 @@
      - X
      -
    * -
+     - Reduction-based (AIR, nonsymmetric)
+     - ``PCAIR``
+     - ``MATAIJ``
+     - `PFLARE <https://github.com/PFLAREProject/PFLARE>`__
+     - X
+     -
+   * -
      - Multi-group MG
      - ``PCHMG``
      - ``MATAIJ``
@@ -248,6 +255,13 @@
      - ``PCHYPRE``, ``PCSPAI``
      - ``MATAIJ``
      - `Parasails/hypre <https://hypre.readthedocs.io/en/latest/solvers-parasails.html>`__, `SPAI <https://epubs.siam.org/doi/abs/10.1137/S1064827595294691?journalCode=sjoce3>`__
+     - X
+     -
+   * -
+     - Approximate inverse (polynomial or sparse methods)
+     - ``PCPFLAREINV``
+     - ``MATAIJ``
+     - `PFLARE <https://github.com/PFLAREProject/PFLARE>`__
      - X
      -
    * - Substructuring

@@ -102,6 +102,7 @@ GTAGS
 CMakeLists.txt
 petsc-doc-env
 doc/manualpages
+doc/packages-docs
 src/binding/petsc4py/.eggs
 src/binding/petsc4py/petsc4py.egg-info
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h

@@ -454,7 +454,7 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
    `MatSetBlockSize()` must be called on the linear system matrix to set the number of components of the PDE.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCHYPRE`, `PCHMG`, `PCGetCoarseOperators()`, `PCGetInterpolations()`,
-          `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetInnerPCType()`, `PCGAMG`
+          `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetInnerPCType()`, `PCGAMG`, `PCAIR`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)
 {

@@ -14,6 +14,7 @@
 
 ## Configure/Build
 
+- Add `providesDocs` and `docsDirs` package attributes so that an external package's sources can be cloned and scanned to generate PETSc manual pages when the documentation is built
 
 ## Sys
 
@@ -73,6 +74,7 @@
 ## PC
 
 - Add `PCGAMGSetProlongatorFilter()` and `PCGAMGGetProlongatorFilter()` to set/get the threshold for filtering small entries from the prolongator in `PCGAMG`
+- Add `PCAIR` and `PCPFLAREINV` manual pages, generated from the PFLARE sources when the documentation is built
 
 ## KSP
 

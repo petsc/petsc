@@ -95,13 +95,18 @@ def printsingleindex(outfilename, alphabet_dict):
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
-def modifylevel(filename,secname,edit_branch):
+def modifylevel(filename,secname,edit_branch,petsc_dir):
       global numberErrors
       with open(filename, "r") as fd:
           buf = fd.read()
 
       re_name = re.compile(r'\*\*Location:\*\*(.*)')  # As defined in myst.def
       m = re_name.search(buf)
+      # A page whose source file is not in the PETSc tree (for example generated from an external
+      # package's cloned sources via providesDocs) has a Location relative to the clone, so its
+      # source and Edit-on-GitLab links would resolve into petsc/petsc where the file does not
+      # exist. Only emit those links when the source file is actually present in the repository.
+      source_in_repo = False
       if m:
         loc_html = m.group(1)
         if loc_html:
@@ -109,7 +114,9 @@ def modifylevel(filename,secname,edit_branch):
           loc = re.match(pattern, loc_html)
           if loc:
               source_path = loc.group(1)
-              buf += "\n\n---\n[Edit on GitLab](https://gitlab.com/petsc/petsc/-/edit/%s/%s)\n\n" % (edit_branch, source_path)
+              source_in_repo = os.path.isfile(os.path.join(petsc_dir, source_path))
+              if source_in_repo:
+                buf += "\n\n---\n[Edit on GitLab](https://gitlab.com/petsc/petsc/-/edit/%s/%s)\n\n" % (edit_branch, source_path)
           else:
               print("Warning. Could not find source path in %s" % filename)
       else:
@@ -127,8 +134,12 @@ def modifylevel(filename,secname,edit_branch):
 
       # Reformat level and location
       tmpbuf = re_level.sub('',buf)
-      re_loc = re.compile(r'(\*\*Location:\*\*)')
-      tmpbuf = re_loc.sub('\n## Level\n' + level + '\n\n## Location\n',tmpbuf)
+      if source_in_repo:
+            re_loc = re.compile(r'(\*\*Location:\*\*)')
+            tmpbuf = re_loc.sub('\n## Level\n' + level + '\n\n## Location\n',tmpbuf)
+      else:
+            # drop the whole Location line since its source link points outside the PETSc repo
+            tmpbuf = re.sub(r'\*\*Location:\*\*.*', '\n## Level\n' + level + '\n', tmpbuf)
 
       # Modify .c#,.h#,.cu#,.cxx# to .c.html#,.h.html#,.cu.html#,.cxx.html#
       tmpbuf = re.sub('.c#', '.c.html#', tmpbuf)
@@ -147,7 +158,7 @@ def modifylevel(filename,secname,edit_branch):
 
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
-def createtable(dirname,levels,secname,editbranch):
+def createtable(dirname,levels,secname,editbranch,petsc_dir):
       global numberErrors
       listdir =  os.listdir(dirname)
       mdfiles = [os.path.join(dirname,f) for f in listdir if f.endswith('.md') and not f == 'index.md']
@@ -159,7 +170,7 @@ def createtable(dirname,levels,secname,editbranch):
       for level in levels: table.append([])
 
       for filename in mdfiles:
-            level = modifylevel(filename,secname,editbranch)
+            level = modifylevel(filename,secname,editbranch,petsc_dir)
             if level.lower() in levels:
                   table[levels.index(level.lower())].append(filename)
             else:
@@ -243,7 +254,7 @@ def main(PETSC_DIR, build_dir):
             outfilename  = dirname + '/index.md'
             dname,secname  = posixpath.split(dirname)
             headfilename = PETSC_DIR + '/' + HEADERDIR + '/' + secname
-            table        = createtable(dirname,levels,secname,edit_branch)
+            table        = createtable(dirname,levels,secname,edit_branch,PETSC_DIR)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
             printindex(outfilename,headfilename,levels,titles,table)

@@ -4,10 +4,12 @@ class Configure(config.package.Package):
     def __init__(self, framework):
         config.package.Package.__init__(self, framework)
         self.version                = '1.26.0'
-        self.gitcommit              = '93d69ce4ee3c3d7f94136c02eeb7300515fd8e47' # main branch as of 2026-03-26
+        self.gitcommit              = '1faebf6106d65bdda021043db663652788534793' # main branch as of 2026-07-12
         self.download               = ['git://https://github.com/PFLAREProject/PFLARE','https://github.com/PFLAREProject/PFLARE/archive/'+self.gitcommit+'.tar.gz']
         self.functions              = ['PCRegister_PFLARE']
         self.includes               = ['pflare.h']
+        self.providesDocs           = 1                 # docs pipeline should clone + scan this package's sources for manual pages
+        self.docsDirs               = ['src','include'] # subdirs that contain the manual pages - /*MC*/, /*@ @*/, /*E*/ blocks
         self.liblist                = [['libpflare.a']]
         self.complex                = 0
         self.precisions             = ['double']
@@ -26,8 +28,8 @@ class Configure(config.package.Package):
         self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
         self.petsc4py        = framework.require('config.packages.petsc4py',self)
         self.cython          = framework.require('config.packages.Cython',self)
-        self.deps            = [self.mpi,self.blasLapack,self.parmetis]
-        self.odeps           = [self.kokkos,self.kokkoskernels,self.petsc4py,self.cython]
+        self.deps            = [self.blasLapack]
+        self.odeps           = [self.mpi,self.parmetis,self.kokkos,self.kokkoskernels,self.petsc4py,self.cython]
         return
 
     def Install(self):
@@ -41,14 +43,8 @@ class Configure(config.package.Package):
         if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
             barg = ' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=""'
             prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-            # We also have to add the original PETSc source dirs to C includes before the build
-            # No PETSC_ARCH in the source directory as we are in a prefix build
-            barg = barg + ' CFLAGS="-I${PETSC_DIR}/include ${CFLAGS}"'
-            barg = barg + ' CPPFLAGS="-I${PETSC_DIR}/include ${CPPFLAGS}"'
-            barg = barg + ' CXXFLAGS="-I${PETSC_DIR}/include ${CXXFLAGS}"'
         else:
             barg = 'PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH}'
-            checkarg = barg
             prefix = os.path.join(self.petscdir.dir,self.arch)
         barg = barg + ' PREFIX=' + prefix
         checkarg = barg
