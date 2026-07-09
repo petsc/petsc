@@ -1099,7 +1099,8 @@ PetscErrorCode PCSetUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Matrix must be set first");
+  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing A matrix");
+  PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing P matrix");
 
   if (pc->setupcalled && pc->reusepreconditioner) {
     PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since reuse preconditioner is set\n"));

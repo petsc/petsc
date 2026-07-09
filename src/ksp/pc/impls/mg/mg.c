@@ -932,8 +932,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
+  PetscCall(PCGetUseAmat(pc, &use_amat));
   if (!opsset) {
-    PetscCall(PCGetUseAmat(pc, &use_amat));
     if (use_amat) {
       PetscCall(PetscInfo(pc, "Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
       PetscCall(KSPSetOperators(mglevels[n - 1]->smoothd, pc->mat, pc->pmat));
@@ -1039,6 +1039,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
     if (mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_BOTH) doB = PETSC_TRUE;
     if (mg->galerkin == PC_MG_GALERKIN_MAT || (mg->galerkin == PC_MG_GALERKIN_BOTH && dA != dB)) doA = PETSC_TRUE;
+    PetscCheck(!doA || use_amat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "PC_MG_GALERKIN_MAT and PCSetUseAmat(pc, PETSC_FALSE) are incompatible options");
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (PetscInt i = n - 2; i > -1; i--) {
       PetscCheck(mglevels[i + 1]->restrct || mglevels[i + 1]->interpolate, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must provide interpolation or restriction for each MG level except level 0");
@@ -1069,6 +1070,39 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
       dA = A;
       dB = B;
+    }
+  } else {           /* PC_MG_GALERKIN_NONE */
+    if (!use_amat) { /* force KSP(P, P) at all levels */
+      for (PetscInt i = n - 1; i > -1; i--) {
+        Mat       B;
+        PetscBool Bopset;
+        KSP       smoothd = mglevels[i]->smoothd;
+
+        PetscCall(KSPGetOperatorsSet(smoothd, NULL, &Bopset));
+        /* This is a chicken-and-egg problem when DMKSP has a create operator callback.
+           It would be called at KSPSetUp stage, but then it is too late to handle the amat = False case */
+        if (!Bopset && (smoothd->dmActive & KSP_DMACTIVE_OPERATOR) && smoothd->dm) {
+          DMKSP kdm;
+
+          PetscCall(DMGetDMKSP(smoothd->dm, &kdm));
+          if (kdm->ops->createoperators) {
+            Mat A;
+
+            A = B = NULL;
+            PetscCallBack("KSP callback create operators", (*kdm->ops->createoperators)(smoothd, &A, &B, kdm->createoperatorsctx));
+            PetscCheck(A, PetscObjectComm((PetscObject)smoothd), PETSC_ERR_ARG_WRONGSTATE, "Missing A operator from DMKSPSetCreateOperators() callback");
+            if (!B) B = A;
+            if (B == A) PetscCall(PetscObjectReference((PetscObject)B));
+            PetscCall(KSPSetOperators(smoothd, B, B));
+            PetscCall(MatDestroy(&A));
+            PetscCall(MatDestroy(&B));
+          }
+        } else {
+          PetscCheck(Bopset, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing Pmat level %" PetscInt_FMT, i);
+          PetscCall(KSPGetOperators(smoothd, NULL, &B));
+          PetscCall(KSPSetOperators(smoothd, B, B));
+        }
+      }
     }
   }
 
