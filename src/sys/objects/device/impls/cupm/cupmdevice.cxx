@@ -230,7 +230,7 @@ PETSC_NODISCARD static PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES() noe
   case DeviceType::CUDA:
     return "CUDA_VISIBLE_DEVICES";
   case DeviceType::HIP:
-    return "HIP_VISIBLE_DEVICES";
+    return "ROCR_VISIBLE_DEVICES";
   }
   PetscUnreachable();
   return "PETSC_ERROR_PLIB";
