@@ -478,8 +478,11 @@ class Configure(script.Script):
   def preprocess(self, codeStr, timeout = 600.0):
     def report(command, status, output, error):
       if error or status:
-        self.logError('preprocessor', status, output, error, logErrorFlag = True)
-        self.logWrite('Source:\n'+self.getCode(codeStr))
+        lines = output.splitlines()
+        if len(lines) >= 12:
+          lines = lines[:5]+['<omitted '+str(len(lines) - 10)+' lines>']+lines[-5:]
+        shortOutput = '\n'.join(lines)+'\n' if lines else ''
+        self.logError('preprocessor', status, shortOutput, error, logErrorFlag = True)
 
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
@@ -488,7 +491,7 @@ class Configure(script.Script):
     f = open(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, logOutputflg = False, lineLimit = 100000)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, logOutputflg = False)
     if self.cleanup:
       for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
         if os.path.isfile(filename): os.remove(filename)
