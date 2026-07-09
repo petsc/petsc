@@ -41,14 +41,8 @@ static PetscErrorCode ComputeOperators(KSP ksp, Mat A, Mat P, void *ctx)
   AppCtx *user = (AppCtx *)ctx;
 
   PetscFunctionBeginUser;
-  if (!user->same_operator) {
-    PetscCheck(A != P, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected distinct Amat and Pmat");
-    PetscCall(AssembleDiagonal(A, 2.0));
-    PetscCall(AssembleDiagonal(P, 3.0));
-  } else {
-    PetscCheck(A == P, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected Pmat-only operator");
-    PetscCall(AssembleDiagonal(P, 3.0));
-  }
+  PetscCall(AssembleDiagonal(P, 3.0));
+  if (A != P) PetscCall(AssembleDiagonal(A, 2.0));
   user->ncompute++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -59,8 +53,9 @@ int main(int argc, char **argv)
   DM        dm;
   KSP       ksp, cksp;
   PC        pc;
-  Mat       A, P, cA, cP;
-  PetscBool user_finest = PETSC_TRUE;
+  Mat       A, P;
+  PetscBool user_finest = PETSC_TRUE, expected_same_operator, use_amat;
+  PetscInt  nl, expected_ncreate, expected_ncompute;
 
   PetscFunctionBeginUser;
   user.same_operator = PETSC_FALSE;
@@ -71,7 +66,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-user_finest", &user_finest, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-same_operator", &user.same_operator, NULL));
 
-  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 9, 1, 1, NULL, &dm));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
 
@@ -84,7 +79,6 @@ int main(int argc, char **argv)
   PetscCall(KSPSetType(ksp, KSPPREONLY));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCMG));
-  PetscCall(PCMGSetLevels(pc, 2, NULL));
   if (user_finest) {
     PetscCall(DMCreateMatrix(dm, &A));
     PetscCall(AssembleDiagonal(A, 2.0));
@@ -98,16 +92,29 @@ int main(int argc, char **argv)
     if (!user.same_operator) PetscCall(MatDestroy(&P));
   }
   PetscCall(KSPSetFromOptions(ksp));
-
   PetscCall(KSPSetUp(ksp));
-  PetscCheck(user.ncreate == (user_finest ? 1 : 2), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected PCMG to create at least one rediscretized level operator");
-  PetscCheck(user.ncompute == (user_finest ? 1 : 2), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected PCMG to compute at least one rediscretized level operator");
+  PetscCall(KSPViewFromOptions(ksp, NULL, "-ksp_view"));
 
+  PetscCall(PCMGGetLevels(pc, &nl));
+  PetscCall(PCGetUseAmat(pc, &use_amat));
+  expected_ncreate       = user_finest ? nl - 1 : nl;
+  expected_ncompute      = user_finest ? nl - 1 : nl;
+  expected_same_operator = (PetscBool)(!use_amat || user.same_operator);
+  PetscCheck(user.ncreate == expected_ncreate, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected PCMG to create %" PetscInt_FMT " operators: found %" PetscInt_FMT, expected_ncreate, user.ncreate);
+  PetscCheck(user.ncompute == expected_ncompute, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected PCMG to compute %" PetscInt_FMT " operators: found %" PetscInt_FMT, expected_ncompute, user.ncompute);
+
+  for (PetscInt l = nl - 1; l > 0; l--) {
+    KSP sksp;
+
+    PetscCall(PCMGGetSmootherDown(pc, l, &sksp));
+    PetscCall(KSPGetOperators(sksp, &A, &P));
+    if (!expected_same_operator) PetscCheck(A != P, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Smooth KSP operators were not distinct");
+    else PetscCheck(A == P, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Smooth KSP operators were not Pmat-only");
+  }
   PetscCall(PCMGGetCoarseSolve(pc, &cksp));
-  PetscCall(KSPGetOperators(cksp, &cA, &cP));
-  if (!user.same_operator) PetscCheck(cA != cP, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Coarse KSP operators were not distinct");
-  else PetscCheck(cA == cP, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Coarse KSP operators were not Pmat-only");
-
+  PetscCall(KSPGetOperators(cksp, &A, &P));
+  if (!expected_same_operator) PetscCheck(A != P, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Coarse KSP operators were not distinct");
+  else PetscCheck(A == P, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Coarse KSP operators were not Pmat-only");
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
@@ -117,7 +124,7 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-      args: -pc_mg_galerkin none -user_finest {{0 1}} -same_operator {{0 1}}
+      args: -pc_mg_galerkin none -user_finest {{0 1}} -same_operator {{0 1}} -da_refine {{0 1 2}} -pc_use_amat {{0 1}}
       output_file: output/empty.out
 
 TEST*/
