@@ -1254,6 +1254,11 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         self.version = ''
         return
       self.versioninclude = self.includes[0]
+    if not self.versionname:
+      self.log.write('For '+self.package+' no version macro name is set, skipping version check\n')
+      if self.requiresversion:
+        raise RuntimeError('Configure must be able to determine the version information for '+self.name+', but '+self.PACKAGE+' sets no versionname')
+      return
     self.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     flagsArg = self.getPreprocessorFlagsArg()
     oldFlags = getattr(self.compilers, flagsArg)
@@ -1262,7 +1267,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     else:
       extraFlags = ''
     setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.dinclude))
-    self.compilers.saveLog()
 
     # Multiple headers are tried in order
     if not isinstance(self.versioninclude,list):
@@ -1270,7 +1274,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     else:
       headerList = self.versioninclude
 
+    output = None
     for header in headerList:
+      self.compilers.saveLog()
       try:
         # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
         # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
