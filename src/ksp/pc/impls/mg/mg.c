@@ -1996,7 +1996,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   mg->Nc                 = -1;
   mg->eigenvalue         = -1;
 
-  pc->useAmat = PETSC_TRUE;
+  PetscObjectParameterSetDefault(pc, useAmat, PETSC_TRUE);
 
   pc->ops->apply             = PCApply_MG;
   pc->ops->applytranspose    = PCApplyTranspose_MG;

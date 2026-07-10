@@ -45,6 +45,7 @@ PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm, PC *);
 PETSC_EXTERN PetscErrorCode PCSetType(PC, PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC, PCType *);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
+PETSC_EXTERN PetscErrorCode PCParametersInitialize(PC);
 
 PETSC_EXTERN PetscErrorCode PCSetKSPNestLevel(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGetKSPNestLevel(PC, PetscInt *);
