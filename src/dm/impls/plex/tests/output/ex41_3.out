@@ -1,0 +1,21 @@
+DM Object: doublet 1 MPI process
+  type: plex
+doublet in 3 dimensions:
+  Number of 0-cells per rank: 5
+  Number of 1-cells per rank: 9
+  Number of 2-cells per rank: 7
+  Number of 3-cells per rank: 2
+Labels:
+  celltype: 4 strata with value/size (0 (5), 1 (9), 3 (7), 6 (2))
+  depth: 4 strata with value/size (0 (5), 1 (9), 2 (7), 3 (2))
+SBR: validated 1956 conforming configurations covering 51 subdivision classes (1 3 9 17 15 6 for 1-6 bisected edges)
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 13
+  Number of 1-cells per rank: 38
+  Number of 2-cells per rank: 41
+  Number of 3-cells per rank: 15
+Labels:
+  celltype: 4 strata with value/size (0 (13), 1 (38), 3 (41), 6 (15))
+  depth: 4 strata with value/size (0 (13), 1 (38), 2 (41), 3 (15))

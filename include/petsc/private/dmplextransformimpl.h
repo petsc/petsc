@@ -122,9 +122,18 @@ typedef struct {
 } DMPlexRefine_Alfeld;
 
 typedef struct {
-  DMLabel      splitPoints; /* List of edges to be bisected (1) and cells to be divided (2) */
+  DMLabel      splitPoints; /* List of edges to be bisected (1), triangles to be divided (2), and tetrahedra to be divided (3) */
   PetscSection secEdgeLen;  /* Section for edge length field */
   PetscReal   *edgeLen;     /* Storage for edge length field */
+  /* Cache of generated tetrahedron subdivisions, keyed by the encoded bisection order */
+  PetscInt         Ncache;      /* Number of cached tetrahedron subdivisions */
+  PetscInt         maxCache;    /* Capacity of the cache */
+  PetscInt        *cacheCode;   /* [Ncache] Encoded bisection order */
+  PetscInt        *cacheNt;     /* [Ncache] Number of target types */
+  DMPolytopeType **cacheTarget; /* [Ncache] Target types */
+  PetscInt       **cacheSize;   /* [Ncache] Number of targets of each type */
+  PetscInt       **cacheCone;   /* [Ncache] Cone specifications */
+  PetscInt       **cacheOrnt;   /* [Ncache] Cone orientations */
 } DMPlexRefine_SBR;
 
 typedef struct {

@@ -607,6 +607,57 @@ int main(int argc, char **argv)
       args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -dm_plex_transform_sbr_ref_cell 4,5 -init_ornt 2 -ornts 0 \
             -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 1.0
 
+    # The tetrahedron tests are restricted to the identity orientation because the subcell check
+    # compares refined point numbers across two independently classified transforms, which only
+    # correspond when the reorientation preserves every refinement type; conformity of the
+    # subdivisions on general meshes is instead verified by the adaptive tests of ex41.
+    # This selects the whole tetrahedron, so all 6 edges are split and bisected successively,
+    # giving the 8-subtetrahedra partition of the paper (not the regular 1-to-8 refinement)
+    test:
+      suffix: sbr_tetrahedron_0
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 0 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits edge 10 (the reference tetrahedron's first edge in the bisection order) alone,
+    # giving a single-edge bisection into 2 sub-tetrahedra
+    test:
+      suffix: sbr_tetrahedron_1
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 10 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits edge 13, and conformity also forces edge 10, giving 2 bisections into 3 sub-tetrahedra
+    test:
+      suffix: sbr_tetrahedron_2
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 13 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits edges 13 and 14, and conformity also forces edge 10, fully splitting the face
+    # they span, which is subdivided as a fan compatible with the 3 bisections into 4 sub-tetrahedra
+    test:
+      suffix: sbr_tetrahedron_3
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 13,14 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits the short edge 9, and conformity also forces edges 10 and 13, giving 3 bisections
+    # with no fully split face
+    test:
+      suffix: sbr_tetrahedron_4
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 9 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits the short edge 12, and conformity also forces edges 10, 13, and 14, giving 4 bisections
+    test:
+      suffix: sbr_tetrahedron_5
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 12 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
+    # This splits the short edges 9 and 11, and conformity also forces edges 10, 13, and 14,
+    # giving 5 bisections
+    test:
+      suffix: sbr_tetrahedron_6
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_transform_sbr_ref_cell 9,11 -ornts 0 \
+            -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+
   testset:
     args: -dm_plex_transform_type refine_boundary_layer -dm_plex_transform_bl_splits 2 -ref_arrangements -dm_plex_check_all
 
