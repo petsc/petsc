@@ -130,8 +130,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SNES(Tao tao)
   tao->uses_gradient         = PETSC_TRUE;
   tao->uses_hessian_matrices = PETSC_TRUE;
 
-  PetscCall(TaoParametersInitialize(tao));
-
   PetscCall(PetscNew(&taosnes));
   tao->data = (void *)taosnes;
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)tao), &taosnes->snes));

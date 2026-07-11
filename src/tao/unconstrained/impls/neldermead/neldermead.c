@@ -246,7 +246,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   tao->ops->destroy        = TaoDestroy_NM;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 

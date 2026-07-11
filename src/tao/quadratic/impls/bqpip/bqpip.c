@@ -522,8 +522,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   TAO_BQPIP *qp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNew(&qp));
-
   tao->ops->setup            = TaoSetup_BQPIP;
   tao->ops->solve            = TaoSolve_BQPIP;
   tao->ops->view             = TaoView_BQPIP;
@@ -534,15 +532,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->uses_hessian_matrices = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 100);
   PetscObjectParameterSetDefault(tao, max_funcs, 500);
   PetscObjectParameterSetDefault(tao, catol, PetscDefined(USE_REAL_SINGLE) ? 1e-6 : 1e-12);
 
   /* Initialize pointers and variables */
-  qp->n = 0;
-  qp->m = 0;
-
+  PetscCall(PetscNew(&qp));
   qp->predcorr = 1;
   tao->data    = (void *)qp;
 

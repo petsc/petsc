@@ -347,7 +347,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   tao->uses_gradient       = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 
@@ -367,33 +366,27 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)cg->B, (PetscObject)tao, 1));
   PetscCall(MatSetType(cg->B, MATLMVMDIAGBROYDEN));
 
-  cg->pc = NULL;
-
-  cg->dk_eta           = 0.5;
-  cg->hz_eta           = 0.4;
-  cg->dynamic_restart  = PETSC_FALSE;
-  cg->unscaled_restart = PETSC_FALSE;
-  cg->no_scaling       = PETSC_FALSE;
-  cg->delta_min        = 1e-7;
-  cg->delta_max        = 100;
-  cg->theta            = 1.0;
-  cg->hz_theta         = 1.0;
-  cg->dfp_scale        = 1.0;
-  cg->bfgs_scale       = 1.0;
-  cg->zeta             = 0.1;
-  cg->min_quad         = 6;
-  cg->min_restart_num  = 6; /* As in CG_DESCENT and KD2015*/
-  cg->xi               = 1.0;
-  cg->neg_xi           = PETSC_TRUE;
-  cg->spaced_restart   = PETSC_FALSE;
-  cg->tol_quad         = 1e-8;
-  cg->as_step          = 0.001;
-  cg->as_tol           = 0.001;
-  cg->eps_23           = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0 / 3.0); /* Just a little tighter*/
-  cg->as_type          = CG_AS_BERTSEKAS;
-  cg->cg_type          = TAO_BNCG_SSML_BFGS;
-  cg->alpha            = 1.0;
-  cg->diag_scaling     = PETSC_TRUE;
+  cg->dk_eta          = 0.5;
+  cg->hz_eta          = 0.4;
+  cg->delta_min       = 1e-7;
+  cg->delta_max       = 100;
+  cg->theta           = 1.0;
+  cg->hz_theta        = 1.0;
+  cg->dfp_scale       = 1.0;
+  cg->bfgs_scale      = 1.0;
+  cg->zeta            = 0.1;
+  cg->min_quad        = 6;
+  cg->min_restart_num = 6; /* As in CG_DESCENT and KD2015*/
+  cg->xi              = 1.0;
+  cg->neg_xi          = PETSC_TRUE;
+  cg->tol_quad        = 1e-8;
+  cg->as_step         = 0.001;
+  cg->as_tol          = 0.001;
+  cg->eps_23          = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0 / 3.0); /* Just a little tighter*/
+  cg->as_type         = CG_AS_BERTSEKAS;
+  cg->cg_type         = TAO_BNCG_SSML_BFGS;
+  cg->alpha           = 1.0;
+  cg->diag_scaling    = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -2811,6 +2811,7 @@ cdef PetscErrorCode TaoPythonSetType_PYTHON(PetscTAO tao, const char *name) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"TaoPythonSetType_PYTHON")
     if name == NULL: return FunctionEnd() # XXX
+    CHKERR(TaoParametersInitialize(tao))
     cdef object ctx = createcontext(name)
     TaoPythonSetContext(tao, <void*>ctx)
     PyTao(tao).setname(name)
@@ -2833,7 +2834,6 @@ cdef PetscErrorCode TaoCreate_Python(
     ops.setup          = TaoSetUp_Python
     ops.setfromoptions = TaoSetFromOptions_Python
     #
-    CHKERR(TaoParametersInitialize(tao))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
             <PetscVoidFunction>TaoPythonSetType_PYTHON))
