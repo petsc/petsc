@@ -1166,7 +1166,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->ops->setfromoptions = SNESSetFromOptions_NEWTONTR;
   snes->ops->view           = SNESView_NEWTONTR;
 
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, stol, 0.0);
 
   snes->usesksp = PETSC_TRUE;

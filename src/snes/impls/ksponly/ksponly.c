@@ -100,19 +100,14 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
   SNES_KSPONLY *ksponly;
 
   PetscFunctionBegin;
-  snes->ops->setup          = SNESSetUp_KSPONLY;
-  snes->ops->solve          = SNESSolve_KSPONLY;
-  snes->ops->destroy        = SNESDestroy_KSPONLY;
-  snes->ops->setfromoptions = NULL;
-  snes->ops->view           = NULL;
-  snes->ops->reset          = NULL;
+  snes->ops->setup   = SNESSetUp_KSPONLY;
+  snes->ops->solve   = SNESSolve_KSPONLY;
+  snes->ops->destroy = SNESDestroy_KSPONLY;
 
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
-
-  PetscCall(SNESParametersInitialize(snes));
 
   PetscCall(PetscNew(&ksponly));
   snes->data = (void *)ksponly;

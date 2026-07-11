@@ -212,27 +212,23 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNew(&ngmres));
-  snes->data    = (void *)ngmres;
-  ngmres->msize = 30;
-
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 30000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
   if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE));
 
-  ngmres->additive_linesearch = NULL;
-  ngmres->approxfunc          = PETSC_FALSE;
-  ngmres->restart_type        = SNES_NGMRES_RESTART_NONE;
-  ngmres->restart_it          = 2;
-  ngmres->restart_periodic    = 30;
-  ngmres->gammaA              = 2.0;
-  ngmres->gammaC              = 2.0;
-  ngmres->deltaB              = 0.9;
-  ngmres->epsilonB            = 0.1;
+  PetscCall(PetscNew(&ngmres));
+  snes->data = (void *)ngmres;
 
-  ngmres->andersonBeta = 1.0;
+  ngmres->msize            = 30;
+  ngmres->restart_type     = SNES_NGMRES_RESTART_NONE;
+  ngmres->restart_it       = 2;
+  ngmres->restart_periodic = 30;
+  ngmres->gammaA           = 2.0;
+  ngmres->gammaC           = 2.0;
+  ngmres->deltaB           = 0.9;
+  ngmres->epsilonB         = 0.1;
+  ngmres->andersonBeta     = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

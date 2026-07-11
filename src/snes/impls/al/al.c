@@ -690,7 +690,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONAL(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;
 
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 30000);
   PetscObjectParameterSetDefault(snes, max_its, 50);
 

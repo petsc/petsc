@@ -856,14 +856,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(SNESParametersInitialize(snes));
-
   PetscCall(PetscNew(&mb));
-  snes->data    = (void *)mb;
-  mb->defined   = PETSC_FALSE;
-  mb->numBlocks = 0;
-  mb->bs        = -1;
-  mb->type      = PC_COMPOSITE_MULTIPLICATIVE;
+  snes->data = (void *)mb;
+  mb->bs     = -1;
+  mb->type   = PC_COMPOSITE_MULTIPLICATIVE;
 
   /* We attach functions so that they can be called on another PC without crashing the program */
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMultiblockSetFields_C", SNESMultiblockSetFields_Default));

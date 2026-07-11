@@ -389,15 +389,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 30000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
   PetscObjectParameterSetDefault(snes, stol, 1e-20);
 
   PetscCall(PetscNew(&neP));
-  snes->data   = (void *)neP;
-  neP->monitor = NULL;
-  neP->type    = SNES_NCG_PRP;
+  snes->data = (void *)neP;
+  neP->type  = SNES_NCG_PRP;
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNCGSetType_C", SNESNCGSetType_NCG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

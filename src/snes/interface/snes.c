@@ -1789,18 +1789,24 @@ PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
 }
 
 /*@
-  SNESParametersInitialize - Sets all the parameters in `snes` to their default value (when `SNESCreate()` was called) if they
-  currently contain default values
+  SNESParametersInitialize - Sets the base defaults for parameters in `snes`, updating a parameter's current value when it matches its previously recorded default.
 
-  Collective
+  Logically collective
 
   Input Parameter:
 . snes - the `SNES` object
 
   Level: developer
 
-  Developer Note:
-  This is called by all the `SNESCreate_XXX()` routines.
+  Notes:
+
+  The base defaults are the non-type-specific values established when the `SNES` is created. A `SNESType` constructor may subsequently replace them with type-specific defaults.
+
+  Developer Notes:
+
+  `SNESCreate()` calls this routine to establish the base defaults. `SNESSetType()` calls it before constructing a new `SNESType`, so the recorded defaults associated with the previous type are replaced before the new type installs its own defaults.
+
+  Default tracking is based on value equality, not on whether a setter was called. Consequently, an explicitly assigned value that equals the recorded default may be updated when the type changes.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESDestroy()`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`,
           `PetscObjectParameterSetDefault()`
@@ -5036,9 +5042,11 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
   /* It may happen the user has customized the line search before calling SNESSetType */
   if (((PetscObject)snes)->type_name) PetscCall(SNESLineSearchDestroy(&snes->linesearch));
 
+  /* Reinitialize default parameters */
+  PetscCall(SNESParametersInitialize(snes));
+
   /* Call the SNESCreate_XXX routine for this particular Nonlinear solver */
   snes->setupcalled = PETSC_FALSE;
-
   PetscCall(PetscObjectChangeTypeName((PetscObject)snes, type));
   PetscCall((*r)(snes));
   PetscFunctionReturn(PETSC_SUCCESS);

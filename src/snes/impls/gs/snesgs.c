@@ -329,7 +329,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
   snes->usesnpc                     = PETSC_FALSE;
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 10000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
 

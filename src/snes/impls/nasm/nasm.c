@@ -834,21 +834,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   PetscCall(PetscNew(&nasm));
   snes->data = (void *)nasm;
 
-  nasm->n             = PETSC_DECIDE;
-  nasm->subsnes       = NULL;
-  nasm->x             = NULL;
-  nasm->xl            = NULL;
-  nasm->y             = NULL;
-  nasm->b             = NULL;
-  nasm->oscatter      = NULL;
-  nasm->oscatter_copy = NULL;
-  nasm->iscatter      = NULL;
-  nasm->gscatter      = NULL;
-  nasm->damping       = 1.;
-
-  nasm->type          = PC_ASM_BASIC;
-  nasm->finaljacobian = PETSC_FALSE;
-  nasm->weight_set    = PETSC_FALSE;
+  nasm->n       = PETSC_DECIDE;
+  nasm->damping = 1.;
+  nasm->type    = PC_ASM_BASIC;
 
   snes->ops->destroy        = SNESDestroy_NASM;
   snes->ops->setup          = SNESSetUp_NASM;
@@ -862,12 +850,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  nasm->fjtype              = 0;
-  nasm->xinit               = NULL;
-  nasm->eventrestrictinterp = 0;
-  nasm->eventsubsolve       = 0;
-
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 10000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
 
