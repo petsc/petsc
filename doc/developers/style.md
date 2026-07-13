@@ -597,12 +597,11 @@ Even with the use of `clang-format` there are still many decisions about code fo
 
 ## Formatted Comments
 
-PETSc uses formatted comments and the Sowing packages {cite}`gropp1993sowing` {cite}`gropp1993sowing2`
-to generate documentation (manual pages) and the Fortran interfaces. Documentation
-for Sowing and the formatting may be found at
-<http://wgropp.cs.illinois.edu/projects/software/sowing/>; in particular,
-see the documentation for `doctext`. Currently, doctext produces Markdown files ending in `.md`, which
-Sphinx later processes.
+PETSc uses formatted comments to generate documentation (manual pages) and the Fortran interfaces.
+The documentation is created using the Sowing package{cite}`gropp1993sowing2`, documentation
+for Sowing and the formatting may be found at <http://wgropp.cs.illinois.edu/projects/software/sowing/>;
+in particular, see the documentation for `doctext`. Currently, doctext produces Markdown files ending in `.md`,
+which Sphinx later processes.
 
 - `/*@`
   a formatted comment of a function that will be used for documentation and a Fortran interface.
@@ -645,8 +644,8 @@ preceded by and followed by a blank line. For source code, this information is f
 
 Each function, typedef, class, macro, enum, and so on in the public API
 must include the following data, correctly formatted (see codes
-section) to generate complete manual pages and (possibly) Fortran interfaces with
-Sowing. All entries below should be separated by blank lines. Except
+section) to generate complete manual pages and (possibly) Fortran interfaces.
+All entries below should be separated by blank lines. Except
 where noted, add a newline after the section headings.
 
 01. The item’s name, followed by a dash and brief (one-sentence)
