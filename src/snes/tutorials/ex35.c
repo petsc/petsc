@@ -356,4 +356,29 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X)
       suffix: 10
       args: -snes_monitor -ksp_type gmres -ksp_monitor -pc_type none -snes_type newtontrdc -snes_trdc_use_cauchy false
 
+   test:
+      suffix: 11
+      requires: !single
+      args: -da_refine 2 -snes_monitor -snes_type fas -snes_fas_type multiplicative -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-5 -snes_converged_reason
+
+   test:
+      suffix: 11_linesearch
+      requires: !single
+      args: -da_refine 2 -snes_monitor -snes_type fas -snes_fas_type multiplicative -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-5 -snes_fas_use_coarse_correction_linesearch -fas_coarse_correction_snes_linesearch_type secant -snes_converged_reason
+
+   test:
+      suffix: 11_linesearch_max_it
+      requires: !single
+      args: -da_refine 2 -snes_monitor -snes_type fas -snes_fas_type multiplicative -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-5 -snes_fas_use_coarse_correction_linesearch -fas_coarse_correction_snes_linesearch_type secant -snes_converged_reason -snes_view -fas_coarse_correction_snes_linesearch_max_it 5
+
+   test:
+      suffix: 11_linesearch_damping
+      requires: !single
+      args: -da_refine 2 -snes_monitor -snes_type fas -snes_fas_type multiplicative -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-5 -snes_fas_use_coarse_correction_linesearch -fas_coarse_correction_snes_linesearch_type none -fas_coarse_correction_snes_linesearch_damping .5 -snes_converged_reason -snes_view
+
+   test:
+      suffix: 11_linesearch_perlevel
+      requires: !single
+      args: -da_refine 2 -snes_monitor -snes_type fas -snes_fas_type multiplicative -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-5 -snes_fas_use_coarse_correction_linesearch -fas_coarse_correction_snes_linesearch_type secant -fas_coarse_correction_1_snes_linesearch_type none -snes_converged_reason -snes_view
+
 TEST*/

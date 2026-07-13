@@ -87,7 +87,7 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
   for (i = 1; i < maxits + 1; i++) {
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
     if (snes->reason) break;
-    SNESCheckLineSearchFailure(snes);
+    SNESCheckLineSearchFailure(snes, snes->linesearch);
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;

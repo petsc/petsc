@@ -180,7 +180,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     PetscCall(VecCopy(D, Dold));
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
     if (snes->reason) break;
-    SNESCheckLineSearchFailure(snes);
+    SNESCheckLineSearchFailure(snes, snes->linesearch);
     PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsreason));
 
     PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm));
