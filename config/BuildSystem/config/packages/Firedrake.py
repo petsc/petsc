@@ -21,7 +21,7 @@ class Configure(config.package.PythonPackage):
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.petsc4py        = framework.require('config.packages.petsc4py',self)
     self.slepc4py        = framework.require('config.packages.slepc4py',self)
-    self.fftw            = framework.require('config.packages.fftw',self)
+    self.fftw            = framework.require('config.packages.FFTW',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.hdf5            = framework.require('config.packages.HDF5',self)
     self.metis           = framework.require('config.packages.METIS',self)
