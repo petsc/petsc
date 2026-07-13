@@ -575,7 +575,7 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer)
    Note:
    Implementation will accept host or device pointers, but good performance will require that the `KSP` is also GPU accelerated so that data is not frequently transferred between host and device.
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: [](ch_ksp), `PCGAMG`, `PCHYPRE`, `PCAIR`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)

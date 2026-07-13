@@ -25,6 +25,20 @@ contributions, adding new implementations for solver components:
 - [Add a new KSP type](https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c)
 - [Add a new subclass of a matrix type (implementation inheritance)](https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c)
 
+## Contributing functionality from an external package
+
+In addition to contributing code directly to the PETSc repository, developers may choose to layer (portions of)
+their software that lives in its own repository on top of the PETSc API, for example providing their own `PCType`.
+An example of this is [PFLARE](https://github.com/PFLAREProject/PFLARE), which is obtained with `--download-pflare`
+and registers the `PCAIR` and `PCPFLAREINV` preconditioners.
+
+Such a package can also contribute its own PETSc manual pages, generated from the docstrings in its own sources.
+A package opts in by setting `self.providesDocs = 1` and `self.docsDirs` (the subdirectories that contain the
+documented sources, for example `['src', 'include']`) in its `config/BuildSystem/config/packages/<package>.py`.
+When the documentation is built, the sources of each such package are cloned at their pinned `self.gitcommit` and
+scanned for the usual PETSc docstring blocks (`/*@ @*/`, `/*MC M*/`, `/*E E*/`), producing manual pages alongside
+the PETSc ones. See `config/BuildSystem/config/packages/PFLARE.py` for a prototypical example.
+
 (sec_git)=
 
 (sec_setup_git)=

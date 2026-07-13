@@ -116,6 +116,7 @@ class Package(config.base.Configure):
     self.installedpetsc         = 0  # configure actually compiled and installed PETSc
     self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
+    self.providesDocs           = 0  # docs pipeline should clone this package's sources and scan them for manual pages
 
     self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
     self.testoptions            = '' # Any PETSc options that should be used when this package is installed and the test harness is run

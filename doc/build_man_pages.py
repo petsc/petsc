@@ -6,6 +6,9 @@ import re
 import subprocess
 import pathlib
 
+# directories skipped when walking source trees for manual pages
+_SKIP_DIRS = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'config', 'lib', '.git', 'share', 'systems']
+
 def findlmansec(file):
     mansec = None
     submansec = None
@@ -69,7 +72,7 @@ def processkhash(T, t, KeyType, ValType, text):
   import re
   return re.sub('<ValType>',ValType,re.sub('<KeyType>',KeyType,re.sub('<t>',t,re.sub('<T>',T,text))))
 
-def main(petsc_dir, build_dir, doctext):
+def main(petsc_dir, build_dir, doctext, extra_roots=None):
   # generate source code for manual pages for PETSc khash functions
   text = ''
   for f in ['hashset.txt', 'hashmap.txt']:
@@ -91,8 +94,16 @@ def main(petsc_dir, build_dir, doctext):
     pass
   numberErrors = 0
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
-    dirnames[:] = [d for d in dirnames if d not in ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems'] and not d.startswith('arch')]
+    dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith('arch')]
     numberErrors = numberErrors + processdir(petsc_dir,build_dir,dirpath,doctext)
+
+  # generate the .md files for the manual pages from the sources of cloned providesDocs packages
+  # (e.g. PFLARE); each entry is (repo_root, docs_dir) and repo_root is passed as petsc_dir so the
+  # per-directory SUBMANSEC lookup and the source-location paths resolve inside the clone
+  for base, walk_root in (extra_roots or []):
+    for dirpath, dirnames, filenames in os.walk(walk_root,topdown=True):
+      dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith('arch')]
+      numberErrors = numberErrors + processdir(base,build_dir,dirpath,doctext)
   if numberErrors:
     raise RuntimeError('Stopping document build since errors were detected in generating manual pages')
 

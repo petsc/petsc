@@ -27,6 +27,7 @@ information on the intended use-cases for each software.
 - [MeTis](https://github.com/KarypisLab/METIS) and [ParMeTiS](https://github.com/KarypisLab/PARMETIS) serial/parallel graph partitioners.
 - [Party](https://www.researchgate.net/publication/2736581_PARTY_-_A_software_library_for_graph_partitioning) A graph partitioning package.
 - [PaStiX](https://gforge.inria.fr/projects/pastix/) A parallel LU and Cholesky solver package.
+- [PFLARE](https://github.com/PFLAREProject/PFLARE) Reduction-based algebraic multigrid (AIR) and approximate-inverse preconditioners for nonsymmetric systems (`PCAIR`, `PCPFLAREINV`).
 - [PTScotch](http://www.labri.fr/perso/pelegrin/scotch/) A graph partitioning package.
 - [SPAI](https://link.springer.com/referenceworkentry/10.1007%2F978-0-387-09766-4_144) Parallel sparse approximate inverse preconditioning.
 - [SPRNG](http://www.sprng.org/) The Scalable Parallel Random Number Generators Library.
