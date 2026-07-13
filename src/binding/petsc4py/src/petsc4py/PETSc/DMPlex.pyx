@@ -965,6 +965,27 @@ cdef class DMPlex(DM):
         """
         CHKERR(DMPlexStratify(self.dm))
 
+    def orientPoint(self, p: int, o: int) -> None:
+        """Act with the given orientation on this mesh point.
+
+        Not collective.
+
+        Parameters
+        ----------
+        p
+            The mesh point.
+        o
+            The orientation.
+
+        See Also
+        --------
+        DM, DMPlex, DM.create, petsc.DMPlexOrientPoint
+
+        """
+        cdef PetscInt cp = asInt(p)
+        cdef PetscInt co = asInt(o)
+        CHKERR(DMPlexOrientPoint(self.dm, cp, co))
+
     def orient(self) -> None:
         """Give a consistent orientation to the input mesh.
 
@@ -976,6 +997,23 @@ cdef class DMPlex(DM):
 
         """
         CHKERR(DMPlexOrient(self.dm))
+
+    def orientLabel(self, DMLabel label) -> None:
+        """Give a consistent orientation to the hypersurface marked by a label.
+
+        Collective.
+
+        Parameters
+        ----------
+        label
+            The label marking the hypersurface.
+
+        See Also
+        --------
+        DM, DMPlex, DM.create, petsc.DMPlexOrientLabel
+
+        """
+        CHKERR(DMPlexOrientLabel(self.dm, label.dmlabel))
 
     def getCellNumbering(self) -> IS:
         """Return a global cell numbering for all cells on this process.
