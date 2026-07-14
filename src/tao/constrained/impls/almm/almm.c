@@ -466,7 +466,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   tao->ops->solve          = TaoSolve_ALMM;
   tao->uses_gradient       = PETSC_TRUE;
 
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, gatol, 1.e-5);
   PetscObjectParameterSetDefault(tao, grtol, 0.0);
   PetscObjectParameterSetDefault(tao, gttol, 0.0);

@@ -471,20 +471,37 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
   PetscCall(PCInitializePackage());
 
   PetscCall(PetscHeaderCreate(pc, PC_CLASSID, "PC", "Preconditioner", "PC", comm, PCDestroy, PCView));
-  pc->mat                  = NULL;
-  pc->pmat                 = NULL;
-  pc->setupcalled          = PETSC_FALSE;
-  pc->setfromoptionscalled = 0;
-  pc->data                 = NULL;
-  pc->diagonalscale        = PETSC_FALSE;
-  pc->diagonalscaleleft    = NULL;
-  pc->diagonalscaleright   = NULL;
-
-  pc->modifysubmatrices  = NULL;
-  pc->modifysubmatricesP = NULL;
-
+  PetscCall(PCParametersInitialize(pc));
   *newpc = pc;
   PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCParametersInitialize - Sets the base defaults for parameters in `pc`, updating a parameter's current value when it matches its previously recorded default.
+
+  Logically collective
+
+  Input Parameter:
+. pc - the `PC` object
+
+  Level: developer
+
+  Notes:
+
+  The base defaults are the non-type-specific values established when the `PC` is created. A `PCType` constructor may subsequently replace them with type-specific defaults.
+
+  Developer Notes:
+
+  `PCCreate()` calls this routine to establish the base defaults. `PCSetType()` calls it before constructing a new `PCType`, so the recorded defaults associated with the previous type are replaced before the new type installs its own defaults.
+
+  Default tracking is based on value equality, not on whether a setter was called. Consequently, an explicitly assigned value that equals the recorded default may be updated when the type changes.
+
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCDestroy()`, `PetscObjectParameterSetDefault()`
+@*/
+PetscErrorCode PCParametersInitialize(PC pc)
+{
+  PetscObjectParameterSetDefault(pc, useAmat, PETSC_FALSE);
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -1082,7 +1099,8 @@ PetscErrorCode PCSetUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Matrix must be set first");
+  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing A matrix");
+  PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing P matrix");
 
   if (pc->setupcalled && pc->reusepreconditioner) {
     PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since reuse preconditioner is set\n"));

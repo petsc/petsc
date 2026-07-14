@@ -549,7 +549,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   tao->uses_hessian_matrices = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 50);
   PetscObjectParameterSetDefault(tao, trust0, 100.0);
   tao->data = (void *)tr;

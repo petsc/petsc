@@ -334,7 +334,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   MatNullSpace   nullsp;
   PCFailedReason pcreason;
   PC             pc;
-  PetscBool      pcmpi;
+  PetscBool      pcmpi, Aopset, Bopset;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -353,27 +353,31 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
   PetscCall(KSPSetUpNorms_Private(ksp, PETSC_TRUE, &ksp->normtype, &ksp->pc_side));
 
+  PetscCall(KSPGetOperatorsSet(ksp, &Aopset, &Bopset));
+  PetscCheck(Aopset == Bopset, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Operators set inconsistency: Amat %d, Pmat %d", (int)Aopset, (int)Bopset);
   if ((ksp->dmActive & KSP_DMACTIVE_OPERATOR) && !ksp->setupstage) {
-    DMKSP kdm;
-
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) PetscCall(DMCreateGlobalVector(ksp->dm, &ksp->vec_rhs));
     if (!ksp->vec_sol) PetscCall(DMCreateGlobalVector(ksp->dm, &ksp->vec_sol));
 
-    PetscCall(DMGetDMKSP(ksp->dm, &kdm));
-    if (kdm->ops->createoperators) {
-      A = B = NULL;
-      PetscCallBack("KSP callback create operators", (*kdm->ops->createoperators)(ksp, &A, &B, kdm->createoperatorsctx));
-      PetscCheck(A, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Missing A operator from DMKSPSetCreateOperators() callback");
-      if (!B) B = A;
-      if (B == A) PetscCall(PetscObjectReference((PetscObject)B));
-      PetscCall(KSPSetOperators(ksp, A, B));
-      PetscCall(MatDestroy(&A));
-      PetscCall(MatDestroy(&B));
-    } else {
-      PetscCall(DMCreateMatrix(ksp->dm, &A));
-      PetscCall(KSPSetOperators(ksp, A, A));
-      PetscCall(MatDestroy(&A));
+    if (!Aopset) {
+      DMKSP kdm;
+
+      PetscCall(DMGetDMKSP(ksp->dm, &kdm));
+      if (kdm->ops->createoperators) {
+        A = B = NULL;
+        PetscCallBack("KSP callback create operators", (*kdm->ops->createoperators)(ksp, &A, &B, kdm->createoperatorsctx));
+        PetscCheck(A, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Missing A operator from DMKSPSetCreateOperators() callback");
+        if (!B) B = A;
+        if (B == A) PetscCall(PetscObjectReference((PetscObject)B));
+        PetscCall(KSPSetOperators(ksp, A, B));
+        PetscCall(MatDestroy(&A));
+        PetscCall(MatDestroy(&B));
+      } else {
+        PetscCall(DMCreateMatrix(ksp->dm, &A));
+        PetscCall(KSPSetOperators(ksp, A, A));
+        PetscCall(MatDestroy(&A));
+      }
     }
   }
 

@@ -756,8 +756,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->solve          = TaoSolve_BRGN;
   tao->uses_gradient       = PETSC_TRUE;
 
-  PetscCall(TaoParametersInitialize(tao));
-
   tao->data                  = gn;
   gn->reg_type               = TAOBRGN_REGULARIZATION_L2PROX;
   gn->lambda                 = 1e-4;

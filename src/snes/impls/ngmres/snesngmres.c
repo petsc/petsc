@@ -505,31 +505,24 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNew(&ngmres));
-  snes->data    = (void *)ngmres;
-  ngmres->msize = 30;
-
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 30000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
-
-  ngmres->candidate = PETSC_FALSE;
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
   if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHNONE));
 
-  ngmres->additive_linesearch = NULL;
-  ngmres->approxfunc          = PETSC_FALSE;
-  ngmres->restart_it          = 2;
-  ngmres->restart_periodic    = 30;
-  ngmres->gammaA              = 2.0;
-  ngmres->gammaC              = 2.0;
-  ngmres->deltaB              = 0.9;
-  ngmres->epsilonB            = 0.1;
-  ngmres->restart_fm_rise     = PETSC_FALSE;
+  PetscCall(PetscNew(&ngmres));
+  snes->data = (void *)ngmres;
 
-  ngmres->restart_type = SNES_NGMRES_RESTART_DIFFERENCE;
-  ngmres->select_type  = SNES_NGMRES_SELECT_DIFFERENCE;
+  ngmres->msize            = 30;
+  ngmres->restart_it       = 2;
+  ngmres->restart_periodic = 30;
+  ngmres->gammaA           = 2.0;
+  ngmres->gammaC           = 2.0;
+  ngmres->deltaB           = 0.9;
+  ngmres->epsilonB         = 0.1;
+  ngmres->restart_type     = SNES_NGMRES_RESTART_DIFFERENCE;
+  ngmres->select_type      = SNES_NGMRES_SELECT_DIFFERENCE;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetSelectType_C", SNESNGMRESSetSelectType_NGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetRestartType_C", SNESNGMRESSetRestartType_NGMRES));

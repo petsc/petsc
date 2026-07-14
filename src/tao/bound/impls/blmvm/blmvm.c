@@ -230,12 +230,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(PetscNew(&blmP));
-  blmP->H0      = NULL;
-  blmP->recycle = PETSC_FALSE;
-  tao->data     = (void *)blmP;
+  tao->data = (void *)blmP;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 

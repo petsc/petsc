@@ -523,7 +523,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(SNESParametersInitialize(snes));
   PetscObjectParameterSetDefault(snes, max_funcs, 30000);
   PetscObjectParameterSetDefault(snes, max_its, 10000);
 
@@ -531,8 +530,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   snes->data       = (void *)qn;
   qn->m            = 10;
   qn->scaling      = 1.0;
-  qn->monitor      = NULL;
-  qn->monflg       = PETSC_FALSE;
   qn->powell_gamma = 0.9999;
   qn->scale_type   = SNES_QN_SCALE_DEFAULT;
   qn->restart_type = SNES_QN_RESTART_DEFAULT;

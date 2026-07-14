@@ -308,16 +308,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
   tao->uses_gradient       = PETSC_TRUE;
 
   PetscCall(PetscNew(&lmP));
-  lmP->D      = NULL;
-  lmP->M      = NULL;
-  lmP->GV     = NULL;
-  lmP->Xold   = NULL;
-  lmP->Gold   = NULL;
   lmP->lambda = 1.0;
 
   tao->data = (void *)lmP;
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 

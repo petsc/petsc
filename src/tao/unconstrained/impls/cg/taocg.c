@@ -288,7 +288,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   tao->uses_gradient       = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 

@@ -1057,15 +1057,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   tao->data = (void *)ipmP;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 200);
   PetscObjectParameterSetDefault(tao, max_funcs, 500);
 
-  ipmP->dec        = 10000; /* line search criteria */
-  ipmP->taumin     = 0.995;
-  ipmP->monitorkkt = PETSC_FALSE;
-  ipmP->pushs      = 100;
-  ipmP->pushnu     = 100;
+  ipmP->dec    = 10000; /* line search criteria */
+  ipmP->taumin = 0.995;
+  ipmP->pushs  = 100;
+  ipmP->pushnu = 100;
   PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));

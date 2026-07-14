@@ -72,21 +72,26 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
 }
 
 /*@
-  TaoParametersInitialize - Sets all the parameters in `tao` to their default value (when `TaoCreate()` was called) if they
-  currently contain default values. Default values are the parameter values when the object's type is set.
+  TaoParametersInitialize - Sets the base defaults for parameters in `tao`, updating a parameter's current value when it matches its previously recorded default.
 
-  Collective
+  Logically collective
 
   Input Parameter:
 . tao - the `Tao` object
 
   Level: developer
 
-  Developer Note:
-  This is called by all the `TaoCreate_XXX()` routines.
+  Notes:
 
-.seealso: [](ch_snes), `Tao`, `TaoSolve()`, `TaoDestroy()`,
-          `PetscObjectParameterSetDefault()`
+  The base defaults are the non-type-specific values established when the `Tao` is created. A `TaoType` constructor may subsequently replace them with type-specific defaults.
+
+  Developer Notes:
+
+  `TaoCreate()` calls this routine to establish the base defaults. `TaoSetType()` calls it before constructing a new `TaoType`, so the recorded defaults associated with the previous type are replaced before the new type installs its own defaults.
+
+  Default tracking is based on value equality, not on whether a setter was called. Consequently, an explicitly assigned value that equals the recorded default may be updated when the type changes.
+
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoDestroy()`, `PetscObjectParameterSetDefault()`
 @*/
 PetscErrorCode TaoParametersInitialize(Tao tao)
 {
@@ -131,10 +136,10 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   PetscCall(TaoLineSearchInitializePackage());
 
   PetscCall(PetscHeaderCreate(tao, TAO_CLASSID, "Tao", "Optimization solver", "Tao", comm, TaoDestroy, TaoView));
-  tao->ops->convergencetest = TaoDefaultConvergenceTest;
-
+  PetscCall(TaoParametersInitialize(tao));
   tao->hist_reset = PETSC_TRUE;
-  tao->term_set   = PETSC_FALSE;
+
+  tao->ops->convergencetest = TaoDefaultConvergenceTest;
 
   PetscCall(TaoTermCreateCallbacks(tao, &tao->callbacks));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tao->callbacks, "callbacks_"));
@@ -2321,6 +2326,8 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   tao->setupcalled           = PETSC_FALSE;
   tao->uses_gradient         = PETSC_FALSE;
   tao->uses_hessian_matrices = PETSC_FALSE;
+
+  PetscCall(TaoParametersInitialize(tao));
 
   PetscCall((*create_xxx)(tao));
   PetscCall(PetscObjectChangeTypeName((PetscObject)tao, type));

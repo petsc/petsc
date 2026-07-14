@@ -1464,7 +1464,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
   pdipm->solve_symmetric_kkt = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 200);
   PetscObjectParameterSetDefault(tao, max_funcs, 500);
 

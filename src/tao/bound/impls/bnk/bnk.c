@@ -1251,7 +1251,6 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   tao->uses_hessian_matrices = PETSC_TRUE;
 
   /*  Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 50);
   PetscObjectParameterSetDefault(tao, trust0, 100.0);
 

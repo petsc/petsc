@@ -688,8 +688,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
   tao->ops->view           = TaoView_ADMM;
   tao->ops->solve          = TaoSolve_ADMM;
 
-  PetscCall(TaoParametersInitialize(tao));
-
   tao->data           = (void *)am;
   am->l1epsilon       = 1e-6;
   am->lambda          = 1e-4;

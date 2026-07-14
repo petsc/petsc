@@ -2088,6 +2088,7 @@ cdef PetscErrorCode SNESPythonSetType_PYTHON(PetscSNES snes, const char *name) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"SNESPythonSetType_PYTHON")
     if name == NULL: return FunctionEnd() # XXX
+    CHKERR(SNESParametersInitialize(snes))
     cdef object ctx = createcontext(name)
     SNESPythonSetContext(snes, <void*>ctx)
     PySNES(snes).setname(name)
@@ -2112,7 +2113,6 @@ cdef PetscErrorCode SNESCreate_Python(
     ops.view           = SNESView_Python
     ops.solve          = SNESSolve_Python
     #
-    CHKERR(SNESParametersInitialize(snes))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
             <PetscVoidFunction>SNESPythonSetType_PYTHON))
@@ -2811,6 +2811,7 @@ cdef PetscErrorCode TaoPythonSetType_PYTHON(PetscTAO tao, const char *name) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"TaoPythonSetType_PYTHON")
     if name == NULL: return FunctionEnd() # XXX
+    CHKERR(TaoParametersInitialize(tao))
     cdef object ctx = createcontext(name)
     TaoPythonSetContext(tao, <void*>ctx)
     PyTao(tao).setname(name)
@@ -2833,7 +2834,6 @@ cdef PetscErrorCode TaoCreate_Python(
     ops.setup          = TaoSetUp_Python
     ops.setfromoptions = TaoSetFromOptions_Python
     #
-    CHKERR(TaoParametersInitialize(tao))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
             <PetscVoidFunction>TaoPythonSetType_PYTHON))

@@ -15,6 +15,22 @@ class BaseTestPC:
         self.ksp = ksp
         self.pc = pc
 
+    def testAmatDef(self):
+        pc_type = self.PC_TYPE
+        for test_pc_type in ['mg']:
+            pc = PETSc.PC().create()
+            new_pc_type = 'none' if pc_type == test_pc_type else test_pc_type
+            amat = []
+            pc.setType(pc_type)
+            amat.append(pc.getUseAmat())
+            pc.setType(new_pc_type)
+            amat.append(pc.getUseAmat())
+            pc.setType(pc_type)
+            amat.append(pc.getUseAmat())
+            self.assertTrue(amat[0] == amat[2])
+            self.assertFalse(amat[0] == amat[1])
+            pc.destroy()
+
     def tearDown(self):
         self.ksp = None
         self.pc = None
@@ -31,6 +47,10 @@ class TestFIELDSPLITPC(BaseTestPC, unittest.TestCase):
 
         self.assertTrue((pc.getFieldSplitSubIS("u").getIndices() == test_index).all())
         is_u = None
+
+
+class TestMG(BaseTestPC, unittest.TestCase):
+    PC_TYPE = PETSc.PC.Type.MG
 
 
 if __name__ == '__main__':

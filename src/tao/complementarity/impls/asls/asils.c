@@ -288,21 +288,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
   tao->subset_type         = TAO_SUBSET_SUBVEC;
   asls->delta              = 1e-10;
   asls->rho                = 2.1;
-  asls->fixed              = NULL;
-  asls->free               = NULL;
-  asls->J_sub              = NULL;
-  asls->Jpre_sub           = NULL;
-  asls->w                  = NULL;
-  asls->r1                 = NULL;
-  asls->r2                 = NULL;
-  asls->r3                 = NULL;
-  asls->t1                 = NULL;
-  asls->t2                 = NULL;
-  asls->dxfree             = NULL;
-
-  asls->identifier = 1e-5;
-
-  PetscCall(TaoParametersInitialize(tao));
+  asls->identifier         = 1e-5;
 
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));

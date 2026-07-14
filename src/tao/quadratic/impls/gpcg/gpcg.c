@@ -298,28 +298,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   tao->data = (void *)gpcg;
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 500);
   PetscObjectParameterSetDefault(tao, max_funcs, 100000);
   PetscObjectParameterSetDefault(tao, gatol, PetscDefined(USE_REAL_SINGLE) ? 1e-6 : 1e-12);
   PetscObjectParameterSetDefault(tao, grtol, PetscDefined(USE_REAL_SINGLE) ? 1e-6 : 1e-12);
 
   /* Initialize pointers and variables */
-  gpcg->n        = 0;
-  gpcg->maxgpits = 8;
-  gpcg->pg_ftol  = 0.1;
-
-  gpcg->gp_iterates  = 0; /* Cumulative number */
-  gpcg->total_gp_its = 0;
-
-  /* Initialize pointers and variables */
-  gpcg->n_bind      = 0;
-  gpcg->n_free      = 0;
-  gpcg->n_upper     = 0;
-  gpcg->n_lower     = 0;
+  gpcg->maxgpits    = 8;
+  gpcg->pg_ftol     = 0.1;
   gpcg->subset_type = TAO_SUBSET_MASK;
-  gpcg->Hsub        = NULL;
-  gpcg->Hsub_pre    = NULL;
 
   PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));

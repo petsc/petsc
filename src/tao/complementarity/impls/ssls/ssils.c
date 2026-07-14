@@ -134,7 +134,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
 
   /* Override default settings (unless already changed) */
-  PetscCall(TaoParametersInitialize(tao));
   PetscObjectParameterSetDefault(tao, max_it, 2000);
   PetscObjectParameterSetDefault(tao, max_funcs, 4000);
   PetscObjectParameterSetDefault(tao, gttol, 0);
