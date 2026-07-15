@@ -4,6 +4,7 @@ import os
 import sys
 import optparse
 import unittest
+import time
 
 __unittest = True
 
@@ -110,6 +111,15 @@ def getoptionparser():
         default=True,
         help='Do not use PETSc memory debugging',
     )
+    parser.add_option(
+        '-t',
+        '--timings',
+        type='int',
+        dest='timings',
+        default=0,
+        help='report the TIMINGS slowest tests',
+    )
+
     return parser
 
 
@@ -275,11 +285,47 @@ def load_tests(options, args):
     return testsuite
 
 
+class PETScTestResult(unittest.TextTestResult):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timings = []
+        self.names = []
+
+    def startTest(self, test):
+        self._tic = time.perf_counter()
+        super().startTest(test)
+
+    def addSuccess(self, test):
+        elapsed = time.perf_counter() - self._tic
+        self.timings.append(elapsed)
+        self.names.append(self.getDescription(test))
+        super().addSuccess(test)
+
+    def getTimings(self):
+        return self.names, self.timings
+
+
 def run_tests(options, testsuite, runner=None):
     if runner is None:
-        runner = unittest.TextTestRunner(verbosity=options.verbose)
+        resultclass = (
+            PETScTestResult if options.timings > 0 else unittest.TextTestResult
+        )
+        runner = unittest.TextTestRunner(
+            verbosity=options.verbose, resultclass=resultclass
+        )
         runner.failfast = options.failfast
     result = runner.run(testsuite)
+    if hasattr(result, 'getTimings') and options.timings > 0:
+        from petsc4py.PETSc import Sys
+        import numpy as np
+
+        Sys.Print(f'\n{options.timings} slowest tests\n')
+        names, timings = result.getTimings()
+        sorti = np.argsort(timings)[::-1]
+        for i in range(min(options.timings, len(sorti))):
+            n = names[sorti[i]]
+            t = timings[sorti[i]]
+            Sys.Print(n, t)
     return result.wasSuccessful()
 
 
