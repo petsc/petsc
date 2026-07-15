@@ -112,8 +112,7 @@ $ cd petsc
 ```
 
 :::{note}
-If git is not available - or if pre-generated Fortran stubs are required (i.e avoid download and
-install of sowing package - that also requires a C++ compiler) one can download a release tarball.
+If Git is not available, one can download a release tarball.
 See {ref}`download documentation <doc_download>` for additional details.
 :::
 
