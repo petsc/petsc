@@ -87,6 +87,20 @@
        parameter (MPI_MIN=3)
        MPIUNI_FInt MPI_REPLACE
        parameter (MPI_REPLACE=4)
+       MPIUNI_FInt MPI_PROD
+       parameter (MPI_PROD=5)
+       MPIUNI_FInt MPI_LAND
+       parameter (MPI_LAND=6)
+       MPIUNI_FInt MPI_BAND
+       parameter (MPI_BAND=7)
+       MPIUNI_FInt MPI_LOR
+       parameter (MPI_LOR=8)
+       MPIUNI_FInt MPI_BOR
+       parameter (MPI_BOR=9)
+       MPIUNI_FInt MPI_LXOR
+       parameter (MPI_LXOR=10)
+       MPIUNI_FInt MPI_BXOR
+       parameter (MPI_BXOR=11)
        MPIUNI_FInt MPI_MAXLOC
        parameter (MPI_MAXLOC=12)
        MPIUNI_FInt MPI_MINLOC
