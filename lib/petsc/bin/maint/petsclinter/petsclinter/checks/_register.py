@@ -144,7 +144,7 @@ def __register_all_classids() -> None:
     "_p_ISLocalToGlobalMapping *" : "IS_LTOGM_CLASSID",
     "_p_KSP *"                    : "KSP_CLASSID",
     "_p_KSPGuess *"               : "KSPGUESS_CLASSID",
-    "_p_LineSearch *"             : "SNESLINESEARCH_CLASSID",
+    "_p_SNESLineSearch *"         : "SNESLINESEARCH_CLASSID",
     "_p_Mat *"                    : "MAT_CLASSID",
     "_p_MatCoarsen *"             : "MAT_COARSEN_CLASSID",
     "_p_MatColoring *"            : "MAT_COLORING_CLASSID",
