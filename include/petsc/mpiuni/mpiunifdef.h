@@ -50,6 +50,9 @@
 #define MPI_Wait                  PETSC_MPI_WAIT
 #define MPI_Comm_group            PETSC_MPI_COMM_GROUP
 #define MPI_Exscan                PETSC_MPI_EXSCAN
+#define MPI_Op_create             PETSC_MPI_OP_CREATE
+#define MPI_Iallreduce            PETSC_MPI_IALLREDUCE
+#define MPI_Ibcast                PETSC_MPI_IBCAST
 
 #define MPI_INIT                  PETSC_MPI_INIT
 #define MPI_FINALIZE              PETSC_MPI_FINALIZE
@@ -96,6 +99,9 @@
 #define MPI_WAIT                  PETSC_MPI_WAIT
 #define MPI_COMM_GROUP            PETSC_MPI_COMM_GROUP
 #define MPI_EXSCAN                PETSC_MPI_EXSCAN
+#define MPI_OP_CREATE             PETSC_MPI_OP_CREATE
+#define MPI_IALLREDUCE            PETSC_MPI_IALLREDUCE
+#define MPI_IBCAST                PETSC_MPI_IBCAST
 
 #define mpi_init                  PETSC_MPI_INIT
 #define mpi_finalize              PETSC_MPI_FINALIZE
@@ -142,5 +148,8 @@
 #define mpi_wait                  PETSC_MPI_WAIT
 #define mpi_comm_group            PETSC_MPI_COMM_GROUP
 #define mpi_exscan                PETSC_MPI_EXSCAN
+#define mpi_op_create             PETSC_MPI_OP_CREATE
+#define mpi_iallreduce            PETSC_MPI_IALLREDUCE
+#define mpi_ibcast                PETSC_MPI_IBCAST
 
 #endif

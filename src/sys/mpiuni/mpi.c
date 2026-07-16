@@ -498,6 +498,9 @@ int MPI_Win_allocate_shared(size_t sz, size_t asz, MPI_Info info, MPI_Comm comm,
   #define petsc_mpi_wait_               PETSC_MPI_WAIT
   #define petsc_mpi_comm_group_         PETSC_MPI_COMM_GROUP
   #define petsc_mpi_exscan_             PETSC_MPI_EXSCAN
+  #define petsc_mpi_op_create_          PETSC_MPI_OP_CREATE
+  #define petsc_mpi_iallreduce_         PETSC_MPI_IALLREDUCE
+  #define petsc_mpi_ibcast_             PETSC_MPI_IBCAST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define mpiunisetmoduleblock_         mpiunisetmoduleblock
   #define mpiunisetfortranbasepointers_ mpiunisetfortranbasepointers
@@ -546,6 +549,9 @@ int MPI_Win_allocate_shared(size_t sz, size_t asz, MPI_Info info, MPI_Comm comm,
   #define petsc_mpi_wait_               petsc_mpi_wait
   #define petsc_mpi_comm_group_         petsc_mpi_comm_group
   #define petsc_mpi_exscan_             petsc_mpi_exscan
+  #define petsc_mpi_op_create_          petsc_mpi_op_create
+  #define petsc_mpi_iallreduce_         petsc_mpi_iallreduce
+  #define petsc_mpi_ibcast_             petsc_mpi_ibcast
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -594,6 +600,9 @@ int MPI_Win_allocate_shared(size_t sz, size_t asz, MPI_Info info, MPI_Comm comm,
   #define petsc_mpi_wait_               petsc_mpi_wait__
   #define petsc_mpi_comm_group_         petsc_mpi_comm_group__
   #define petsc_mpi_exscan_             petsc_mpi_exscan__
+  #define petsc_mpi_op_create_          petsc_mpi_op_create__
+  #define petsc_mpi_iallreduce_         petsc_mpi_iallreduce__
+  #define petsc_mpi_ibcast_             petsc_mpi_ibcast__
 #endif
 
 /* Do not build fortran interface if MPI namespace collision is to be avoided */
@@ -840,6 +849,24 @@ PETSC_EXTERN void petsc_mpi_comm_group_(int *comm, int *group, int *ierr)
 PETSC_EXTERN void petsc_mpi_exscan_(void *sendbuf, void *recvbuf, int *count, int *datatype, int *op, int *comm, int *ierr)
 {
   *ierr = MPI_SUCCESS;
+}
+
+PETSC_EXTERN void petsc_mpi_op_create_(MPI_User_function *function, int *commute, int *op, int *ierr)
+{
+  *op   = MPI_OP_NULL;
+  *ierr = MPI_SUCCESS;
+}
+
+PETSC_EXTERN void petsc_mpi_iallreduce_(void *sendbuf, void *recvbuf, int *count, int *datatype, int *op, int *comm, int *request, int *ierr)
+{
+  *request = MPI_REQUEST_NULL;
+  *ierr    = MPI_Allreduce(sendbuf, recvbuf, *count, *datatype, *op, *comm);
+}
+
+PETSC_EXTERN void petsc_mpi_ibcast_(void *buffer, int *count, int *datatype, int *root, int *comm, int *request, int *ierr)
+{
+  *request = MPI_REQUEST_NULL;
+  *ierr    = MPI_SUCCESS;
 }
 
 #endif /* PETSC_USE_FORTRAN_BINDINGS */

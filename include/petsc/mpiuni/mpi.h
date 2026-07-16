@@ -490,6 +490,7 @@ typedef int MPI_Fint;
   #define MPI_Pack_size(incount, datatype, comm, size)                                       (MPIUNI_ARG(incount), MPIUNI_ARG(datatype), MPIUNI_ARG(comm), MPIUNI_ARG(size), MPIUni_Abort(MPI_COMM_WORLD, 0))
   #define MPI_Barrier(comm)                                                                  (MPIUNI_ARG(comm), MPI_SUCCESS)
   #define MPI_Bcast(buffer, count, datatype, root, comm)                                     (MPIUNI_ARG(buffer), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPI_SUCCESS)
+  #define MPI_Ibcast(buffer, count, datatype, root, comm, request)                           (MPIUNI_ARG(buffer), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPI_SUCCESS)
   #define MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(root), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
   #define MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
     (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
