@@ -89,6 +89,7 @@ public:
     switch (attr) {
     case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK:
       *static_cast<std::size_t *>(value) = syclDevice_.get_info<sycl::info::device::local_mem_size>();
+      break;
     case PETSC_DEVICE_ATTR_MAX:
       break;
     }
