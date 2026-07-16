@@ -8,7 +8,7 @@ namespace Petsc
 namespace device
 {
 
-namespace sycl
+namespace sypm
 {
 
 namespace impl
@@ -161,7 +161,7 @@ public:
 
 } // namespace impl
 
-} // namespace sycl
+} // namespace sypm
 
 } // namespace device
 
@@ -169,7 +169,7 @@ public:
 
 PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx)
 {
-  using namespace Petsc::device::sycl::impl;
+  using namespace Petsc::device::sypm::impl;
 
   static const DeviceContext syclctx;
 

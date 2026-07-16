@@ -12,7 +12,7 @@ namespace Petsc
 namespace device
 {
 
-namespace sycl
+namespace sypm
 {
 
 // definition for static
@@ -219,7 +219,7 @@ PetscErrorCode Device::get_attribute_(PetscInt id, PetscDeviceAttribute attr, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-} // namespace sycl
+} // namespace sypm
 
 } // namespace device
 

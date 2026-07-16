@@ -10,7 +10,7 @@ namespace Petsc
 namespace device
 {
 
-namespace sycl
+namespace sypm // SYcl Programming Model
 {
 
 #define PETSC_SYCL_DEVICE_HOST -1 // Note -1 is also used by PETSC_DECIDE, so user needs to pass -2 to explicitly select the host
@@ -47,7 +47,7 @@ private:
   static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
 };
 
-} // namespace sycl
+} // namespace sypm
 
 } // namespace device
 
