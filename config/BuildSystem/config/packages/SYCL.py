@@ -94,6 +94,7 @@ class Configure(config.package.Package):
           compFlags = ' -fsycl-targets=spir64_gen'
           ldFlags = '-Xsycl-target-backend "-device '+ devArg + '"' # If it's used at compile time, icpx will warn: argument unused during compilation: '-Xsycl-target-backend -device 12.60.7'
           self.targets = 'spir64_gen'
+          self.addDefine('SYCL_DEVICE', devArg)
         else:
           raise RuntimeError('SYCL arch is not supported: ' + self.syclArch)
       self.setCompilers.insertPreprocessorFlag('-fsycl') # -fsycl is needed for preprocess, compile and link
