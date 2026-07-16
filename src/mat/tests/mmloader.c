@@ -67,9 +67,9 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   if (!(symmetric && !aijonly))
     for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ia[j], 1, &ja[j], &val[j], INSERT_VALUES));
 
-  /* Add values to upper triangular part for some cases */
-  if (symmetric && !aijonly) {
-    /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
+  /* Add values to the upper triangular part for symmetric matrices */
+  if (symmetric) {
+    /* MatrixMarket stores a symmetric matrix in its lower triangular part, so insert its transpose. For SBAIJ this fills the stored upper triangle; for AIJ (-aij_only) it completes the full symmetric matrix. */
     for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ja[j], 1, &ia[j], &val[j], INSERT_VALUES));
   }
   if (skew) {
