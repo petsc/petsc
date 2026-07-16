@@ -17,13 +17,13 @@ namespace impl
 class DeviceContext {
 public:
   struct PetscDeviceContext_SYCL {
-    ::sycl::event event;
-    ::sycl::event begin; // timer-only
-    ::sycl::event end;   // timer-only
+    sycl::event event;
+    sycl::event begin; // timer-only
+    sycl::event end;   // timer-only
 #if PetscDefined(USE_DEBUG)
     PetscBool timerInUse{};
 #endif
-    ::sycl::queue queue;
+    sycl::queue queue;
 
     std::chrono::time_point<std::chrono::steady_clock> timeBegin{};
   };
@@ -76,9 +76,9 @@ public:
 #endif
     PetscCall(PetscDeviceContextGetDevice(dctx, &dev));
     PetscCall(PetscDeviceGetDeviceId(dev, &id));
-    const ::sycl::device &syclDevice = (id == PETSC_SYCL_DEVICE_HOST) ? ::sycl::device(::sycl::cpu_selector_v) : ::sycl::device::get_devices(::sycl::info::device_type::gpu)[id];
+    const sycl::device &syclDevice = (id == PETSC_SYCL_DEVICE_HOST) ? sycl::device(sycl::cpu_selector_v) : sycl::device::get_devices(sycl::info::device_type::gpu)[id];
 
-    static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = ::sycl::queue(syclDevice, ::sycl::property::queue::in_order());
+    static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = sycl::queue(syclDevice, sycl::property::queue::in_order());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -105,7 +105,7 @@ public:
   static PetscErrorCode getStreamHandle(PetscDeviceContext dctx, void **handle) noexcept
   {
     PetscFunctionBegin;
-    *reinterpret_cast<::sycl::queue **>(handle) = &(static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue);
+    *reinterpret_cast<sycl::queue **>(handle) = &(static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue);
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
