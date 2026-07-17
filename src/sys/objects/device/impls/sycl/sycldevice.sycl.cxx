@@ -12,7 +12,7 @@ namespace Petsc
 namespace device
 {
 
-namespace sycl
+namespace sypm
 {
 
 // definition for static
@@ -25,19 +25,19 @@ static std::jmp_buf MPISyclAwareJumpBuffer;
 static bool         MPISyclAwareJumpBufferSet;
 
 // Follow get_sycl_devices() at https://github.com/kokkos/kokkos/blob/develop/core/src/SYCL/Kokkos_SYCL.cpp
-static std::vector<::sycl::device> get_level_zero_gpus()
+static std::vector<sycl::device> get_level_zero_gpus()
 {
-  std::vector<::sycl::device> devices = ::sycl::device::get_devices(::sycl::info::device_type::gpu);
-  ::sycl::backend             backend = ::sycl::backend::ext_oneapi_level_zero;
-  devices.erase(std::remove_if(devices.begin(), devices.end(), [backend](const ::sycl::device &d) { return d.get_backend() != backend; }), devices.end());
+  std::vector<sycl::device> devices = sycl::device::get_devices(sycl::info::device_type::gpu);
+  sycl::backend             backend = sycl::backend::ext_oneapi_level_zero;
+  devices.erase(std::remove_if(devices.begin(), devices.end(), [backend](const sycl::device &d) { return d.get_backend() != backend; }), devices.end());
   return devices;
 }
 
 // internal "impls" class for SyclDevice. Each instance represents a single sycl device
 class PETSC_NODISCARD Device::DeviceInternal {
-  const int            id_; // -1 for the host device; 0 and up for gpu devices
-  bool                 devInitialized_;
-  const ::sycl::device syclDevice_;
+  const int          id_; // -1 for the host device; 0 and up for gpu devices
+  bool               devInitialized_;
+  const sycl::device syclDevice_;
 
 public:
   // default constructor
@@ -75,7 +75,7 @@ public:
 
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-      PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] device : %s; vendor: %s\n", rank, syclDevice_.get_info<::sycl::info::device::name>().c_str(), syclDevice_.get_info<::sycl::info::device::vendor>().c_str()));
+      PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] device : %s; vendor: %s\n", rank, syclDevice_.get_info<sycl::info::device::name>().c_str(), syclDevice_.get_info<sycl::info::device::vendor>().c_str()));
       PetscCall(PetscViewerFlush(sviewer));
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     }
@@ -88,7 +88,8 @@ public:
     PetscCheck(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d not initialized", id());
     switch (attr) {
     case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK:
-      *static_cast<std::size_t *>(value) = syclDevice_.get_info<::sycl::info::device::local_mem_size>();
+      *static_cast<std::size_t *>(value) = syclDevice_.get_info<sycl::info::device::local_mem_size>();
+      break;
     case PETSC_DEVICE_ATTR_MAX:
       break;
     }
@@ -96,10 +97,10 @@ public:
   }
 
 private:
-  static ::sycl::device chooseSYCLDevice_(int id)
+  static sycl::device chooseSYCLDevice_(int id)
   {
     if (id == PETSC_SYCL_DEVICE_HOST) {
-      return ::sycl::device(::sycl::cpu_selector_v);
+      return sycl::device(sycl::cpu_selector_v);
     } else {
       return get_level_zero_gpus()[id];
     }
@@ -118,8 +119,8 @@ private:
     };
 
     PetscFunctionBegin;
-    auto Q = ::sycl::queue(syclDevice_);
-    dbuf   = ::sycl::malloc_device<int>(bufSize, Q);
+    auto Q = sycl::queue(syclDevice_);
+    dbuf   = sycl::malloc_device<int>(bufSize, Q);
     Q.memcpy(dbuf, hbuf, sizeof(int) * bufSize).wait();
     PetscCallAbort(PETSC_COMM_SELF, PetscPushSignalHandler(SyclSignalHandler, nullptr));
     MPISyclAwareJumpBufferSet = true;
@@ -130,7 +131,7 @@ private:
     } else if (!MPI_Allreduce(dbuf, dbuf + 1, 1, MPI_INT, MPI_SUM, PETSC_COMM_SELF)) awareness = true;
     MPISyclAwareJumpBufferSet = false;
     PetscCallAbort(PETSC_COMM_SELF, PetscPopSignalHandler());
-    ::sycl::free(dbuf, Q);
+    sycl::free(dbuf, Q);
     PetscFunctionReturn(awareness);
   }
 };
@@ -219,7 +220,7 @@ PetscErrorCode Device::get_attribute_(PetscInt id, PetscDeviceAttribute attr, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-} // namespace sycl
+} // namespace sypm
 
 } // namespace device
 
