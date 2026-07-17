@@ -21,8 +21,16 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
   if (mm_is_skew(matcode)) skew = PETSC_TRUE;
 
-  /* Find out size of sparse matrix .... */
-  PetscCheck(mm_read_mtx_crd_size(file, &M, &N, &nz) == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Size of sparse matrix is wrong.");
+  /* Find out size of sparse matrix .... mmio.h declares these as plain int, so
+     read into int temporaries: PetscInt* != int* under 64-bit indices. */
+  {
+    int Mi, Ni, nzi;
+
+    PetscCheck(mm_read_mtx_crd_size(file, &Mi, &Ni, &nzi) == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Size of sparse matrix is wrong.");
+    M  = Mi;
+    N  = Ni;
+    nz = nzi;
+  }
 
   /* Reserve memory for matrices */
   PetscCall(PetscMalloc4(nz, &ia, nz, &ja, nz, &val, M, &rownz));
@@ -32,10 +40,12 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
   /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
   for (i = 0; i < nz; i++) {
-    ninput = fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]);
+    int row, col; /* %d reads int; ia[]/ja[] are PetscInt (long) under 64-bit indices */
+
+    ninput = fscanf(file, "%d %d %lg\n", &row, &col, &val[i]);
     PetscCheck(ninput >= 3, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Badly formatted input file");
-    ia[i]--;
-    ja[i]--;                              /* adjust from 1-based to 0-based */
+    ia[i] = row - 1;
+    ja[i] = col - 1;                      /* adjust from 1-based to 0-based */
     if ((symmetric && aijonly) || skew) { /* transpose */
       rownz[ia[i]]++;
       if (ja[i] != ia[i]) rownz[ja[i]]++;
@@ -67,11 +77,9 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   if (!(symmetric && !aijonly))
     for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ia[j], 1, &ja[j], &val[j], INSERT_VALUES));
 
-  /* Add values to the upper triangular part for symmetric matrices */
-  if (symmetric) {
-    /* MatrixMarket stores a symmetric matrix in its lower triangular part, so insert its transpose. For SBAIJ this fills the stored upper triangle; for AIJ (-aij_only) it completes the full symmetric matrix. */
+  /* Add values to the upper triangular part for symmetric matrices. MatrixMarket stores a symmetric matrix in its lower triangular part, so insert its transpose. For SBAIJ this fills the stored upper triangle; for AIJ (-aij_only) it completes the full symmetric matrix. */
+  if (symmetric)
     for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ja[j], 1, &ia[j], &val[j], INSERT_VALUES));
-  }
   if (skew) {
     for (j = 0; j < nz; j++) {
       val[j] = -val[j];
