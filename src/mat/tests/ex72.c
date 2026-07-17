@@ -58,9 +58,16 @@ int main(int argc, char **argv)
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
   if (mm_is_skew(matcode)) skew = PETSC_TRUE;
   PetscCallExternal(mm_write_banner, stdout, matcode);
-  PetscCallExternal(mm_read_mtx_crd_size, file, &M, &N, &nz);
+  {
+    int Mi, Ni, nzi; /* mmio.h declares these as plain int; PetscInt* != int* under 64-bit indices */
+
+    PetscCallExternal(mm_read_mtx_crd_size, file, &Mi, &Ni, &nzi);
+    M  = Mi;
+    N  = Ni;
+    nz = nzi;
+  }
   PetscCall(PetscFClose(PETSC_COMM_SELF, file));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "M: %d, N: %d, nnz: %d\n", M, N, nz));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "M: %" PetscInt_FMT ", N: %" PetscInt_FMT ", nnz: %" PetscInt_FMT "\n", M, N, nz));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Reading matrix completes.\n"));
   if (permute) {
     Mat Aperm;
@@ -81,7 +88,7 @@ int main(int argc, char **argv)
     /* -aij_only expands a symmetric MM matrix to the full matrix; A does not carry the symmetric flag, so MatIsSymmetric() forms its transpose and compares, confirming both triangles were stored rather than only the lower one */
     PetscCall(MatIsSymmetric(A, 0.0, &flag));
     PetscCheck(flag, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Symmetric MM matrix was not read as a full symmetric AIJ Mat");
-  } else PetscCheck(info.nz_used == (!skew ? nz : 2 * nz), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Different number of nonzeros in MM matrix and PETSc Mat, %d != %g", nz, (double)info.nz_used);
+  } else PetscCheck(info.nz_used == (!skew ? nz : 2 * nz), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Different number of nonzeros in MM matrix and PETSc Mat, %" PetscInt_FMT " != %g", nz, (double)info.nz_used);
   PetscCall(MatDestroy(&A));
   PetscCall(ISDestroy(&rowperm));
   PetscCall(ISDestroy(&colperm));
@@ -92,7 +99,7 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
+      requires: !complex double
       depends: mmloader.c mmio.c
 
    test:
