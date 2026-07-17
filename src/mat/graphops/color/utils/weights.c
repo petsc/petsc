@@ -32,6 +32,22 @@ static PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatColoringGetDegrees - Compute the number of vertices reachable in the graph within a given distance for each locally owned row.
+
+  Collective
+
+  Input Parameters:
++ G        - the graph matrix
+- distance - the distance (in graph edges) used to define the neighborhood
+
+  Output Parameter:
+. degrees - array (of local size) of neighborhood sizes for each row
+
+  Level: developer
+
+.seealso: `MatColoring`, `MatColoringCreateWeights()`, `MatColoringSetWeights()`
+@*/
 PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees)
 {
   PetscInt        j, i, s, e, n, ln, lm, degree, bidx, idx, dist;
@@ -306,6 +322,26 @@ static PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatColoringCreateWeights - Create per-row weights and, optionally, a decreasing-order permutation of them
+  for a `MatColoring`, using the weight scheme set on the `MatColoring`.
+
+  Collective
+
+  Input Parameter:
+. mc - the `MatColoring`
+
+  Output Parameters:
++ weights - the array of per-row weights, or `NULL` if not needed
+- lperm   - the permutation that sorts `weights` in decreasing order, or `NULL` if not needed
+
+  Level: developer
+
+  Note:
+  Both output arrays are allocated by this routine and must be freed by the caller with `PetscFree()`.
+
+.seealso: `MatColoring`, `MatColoringWeightType`, `MatColoringSetWeights()`, `MatColoringGetDegrees()`
+@*/
 PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, PetscInt **lperm)
 {
   PetscInt   i, s, e, n;
@@ -345,6 +381,23 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatColoringSetWeights - Provide user weights (and optionally a permutation ordering) for a `MatColoring`.
+
+  Collective
+
+  Input Parameters:
++ mc      - the `MatColoring`
+. weights - array of per-row weights, or `NULL` to clear any previously set weights
+- lperm   - the permutation sorting `weights` in decreasing order, or `NULL` to have it computed
+
+  Level: developer
+
+  Note:
+  The arrays are copied into the `MatColoring`; the caller retains ownership of `weights` and `lperm`.
+
+.seealso: `MatColoring`, `MatColoringCreateWeights()`, `MatColoringGetDegrees()`
+@*/
 PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscInt *lperm)
 {
   PetscInt i, s, e, n;

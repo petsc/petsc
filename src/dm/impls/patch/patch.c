@@ -184,6 +184,21 @@ typedef enum {
   PATCH_COMM_TYPE_SELF  = 1
 } PatchCommType;
 
+/*@
+  DMPatchSolve - Iterate over all patches of a `DMPATCH`, zooming the coarse `DM` onto each patch and scattering data between the coarse and zoomed representations
+
+  Collective
+
+  Input Parameter:
+. dm - the `DMPATCH`
+
+  Level: developer
+
+  Note:
+  This code is a work in progress and is not currently used by other parts of PETSc. It implements the outer loop of the FAS/multigrid-like patch solver sketched at the top of the source file.
+
+.seealso: `DMPATCH`, `DMPatchZoom()`, `DMPatchGetCoarse()`, `DMPatchGetPatchSize()`, `DMPatchGetCommSize()`
+@*/
 PetscErrorCode DMPatchSolve(DM dm)
 {
   MPI_Comm    comm, commz;
@@ -393,6 +408,21 @@ PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fie
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
 }
 
+/*@
+  DMPatchGetCoarse - Get the coarse `DM` associated with a `DMPATCH`
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMPATCH`
+
+  Output Parameter:
+. dmCoarse - the coarse `DM`
+
+  Level: intermediate
+
+.seealso: `DMPATCH`, `DMPatchCreate()`, `DMPatchZoom()`
+@*/
 PetscErrorCode DMPatchGetCoarse(DM dm, DM *dmCoarse)
 {
   DM_Patch *mesh = (DM_Patch *)dm->data;
@@ -403,6 +433,21 @@ PetscErrorCode DMPatchGetCoarse(DM dm, DM *dmCoarse)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPatchGetPatchSize - Get the size of a single patch of a `DMPATCH`, in grid cells
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMPATCH`
+
+  Output Parameter:
+. patchSize - a `MatStencil` whose `i`, `j`, `k`, `c` fields hold the patch extent in each dimension
+
+  Level: intermediate
+
+.seealso: `DMPATCH`, `DMPatchSetPatchSize()`, `DMPatchGetCommSize()`, `MatStencil`
+@*/
 PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
 {
   DM_Patch *mesh = (DM_Patch *)dm->data;
@@ -414,6 +459,19 @@ PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPatchSetPatchSize - Set the size of a single patch of a `DMPATCH`, in grid cells
+
+  Logically Collective
+
+  Input Parameters:
++ dm        - the `DMPATCH`
+- patchSize - a `MatStencil` whose `i`, `j`, `k`, `c` fields hold the patch extent in each dimension
+
+  Level: intermediate
+
+.seealso: `DMPATCH`, `DMPatchGetPatchSize()`, `DMPatchSetCommSize()`, `MatStencil`
+@*/
 PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
 {
   DM_Patch *mesh = (DM_Patch *)dm->data;
@@ -424,6 +482,21 @@ PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPatchGetCommSize - Get the process grid used for each patch of a `DMPATCH`
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMPATCH`
+
+  Output Parameter:
+. commSize - a `MatStencil` whose `i`, `j`, `k` fields hold the number of processes used per patch in each dimension
+
+  Level: intermediate
+
+.seealso: `DMPATCH`, `DMPatchSetCommSize()`, `DMPatchGetPatchSize()`, `MatStencil`
+@*/
 PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
 {
   DM_Patch *mesh = (DM_Patch *)dm->data;
@@ -435,6 +508,19 @@ PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPatchSetCommSize - Set the process grid used for each patch of a `DMPATCH`
+
+  Logically Collective
+
+  Input Parameters:
++ dm       - the `DMPATCH`
+- commSize - a `MatStencil` whose `i`, `j`, `k` fields hold the number of processes to use per patch in each dimension
+
+  Level: intermediate
+
+.seealso: `DMPATCH`, `DMPatchGetCommSize()`, `DMPatchSetPatchSize()`, `MatStencil`
+@*/
 PetscErrorCode DMPatchSetCommSize(DM dm, MatStencil commSize)
 {
   DM_Patch *mesh = (DM_Patch *)dm->data;

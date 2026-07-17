@@ -140,9 +140,8 @@ The argument `ctx` is an optional user-defined context, which can
 store any private, application-specific data required by the function
 evaluation routine; `NULL` should be used if such information is not
 needed. In C and C++, a user-defined context is merely a structure in
-which various objects can be stashed; in Fortran a user context can be
-an integer array that contains both parameters and pointers to PETSc
-objects.
+which various objects can be stashed; in Fortran an application context can be
+a PETSc object or a derived type.
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html">SNES Tutorial ex5</a>
 and
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html">SNES Tutorial ex5f90</a>

@@ -31,7 +31,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . ts - the `TS` context obtained from `TSCreate()`
 
   Options Database Keys:
-+ -ts_type type                                                      - EULER, BEULER, SUNDIALS, PSEUDO, CN, RK, THETA, ALPHA, GLLE,  SSP, GLEE, BSYMP, IRK, see `TSType`
++ -ts_type type                                                      - see `TSType`
 . -ts_save_trajectory                                                - checkpoint the solution at each time-step
 . -ts_max_time time                                                  - maximum time to compute to
 . -ts_time_span t0,...,tf                                            - sets the time span, solutions are computed and stored for each indicated time, init_time and max_time are set
@@ -53,7 +53,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_fd_color                                                       - Use finite differences with coloring to compute IJacobian
 . -ts_monitor                                                        - print information at each timestep
 . -ts_monitor_cancel                                                 - Cancel all monitors
-. -ts_monitor_wall_clock_time                                        - Monitor wall-clock time, KSP iterations, and SNES iterations per step
+. -ts_monitor_wall_clock_time                                        - Monitor wall-clock time, `KSP` iterations, and `SNES` iterations per step
 . -ts_monitor_lg_solution                                            - Monitor solution graphically
 . -ts_monitor_lg_error                                               - Monitor error graphically
 . -ts_monitor_error                                                  - Monitors norm of error
@@ -2030,7 +2030,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
   Input Parameters:
 + ts  - the `TS` context obtained from `TSCreate()`
-- ctx - user context
+- ctx - application context
 
   Level: intermediate
 
@@ -2059,7 +2059,7 @@ PetscErrorCode TSSetApplicationContext(TS ts, PetscCtx ctx)
 . ts - the `TS` context obtained from `TSCreate()`
 
   Output Parameter:
-. ctx - a pointer to the user context
+. ctx - a pointer to the application context
 
   Level: intermediate
 
@@ -4559,7 +4559,7 @@ PetscErrorCode TSGetDM(TS ts, DM *dm)
   Input Parameters:
 + snes - nonlinear solver
 . U    - the current state at which to evaluate the residual
-- ctx  - user context, must be a `TS`
+- ctx  - application context, must be a `TS`
 
   Output Parameter:
 . F - the nonlinear residual
@@ -4594,7 +4594,7 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, PetscCtx ctx)
   Input Parameters:
 + snes - nonlinear solver
 . U    - the current state at which to evaluate the residual
-- ctx  - user context, must be a `TS`
+- ctx  - application context, must be a `TS`
 
   Output Parameters:
 + A - the Jacobian
@@ -5548,7 +5548,7 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
 . U     - state vector
 . Udot  - time derivative of state vector
 . shift - shift to apply, see note below
-- ctx   - an optional user context
+- ctx   - an optional application context
 
   Output Parameters:
 + J - Jacobian matrix (not altered in this routine)

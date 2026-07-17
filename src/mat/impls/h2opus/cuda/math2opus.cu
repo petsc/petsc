@@ -230,6 +230,23 @@ static PetscErrorCode MatDestroy_H2OPUS(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatH2OpusSetNativeMult - Enable or disable the native H2Opus matrix-vector multiplication path for a `MATH2OPUS`.
+
+  Logically Collective
+
+  Input Parameters:
++ A  - the `MATH2OPUS` matrix
+- nm - `PETSC_TRUE` to enable the native H2Opus multiply layout, `PETSC_FALSE` to use the PETSc layout
+
+  Level: advanced
+
+  Note:
+  Switching this flag swaps the row and column `PetscLayout`s of `A` with those needed by H2Opus so that
+  vectors created by `MatCreateVecs()` are compatible with the currently selected multiplication path.
+
+.seealso: `Mat`, `MATH2OPUS`, `MatH2OpusGetNativeMult()`
+@*/
 PetscErrorCode MatH2OpusSetNativeMult(Mat A, PetscBool nm)
 {
   Mat_H2OPUS *a = (Mat_H2OPUS *)A->data;
@@ -256,6 +273,21 @@ PetscErrorCode MatH2OpusSetNativeMult(Mat A, PetscBool nm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatH2OpusGetNativeMult - Query whether the native H2Opus matrix-vector multiplication path is enabled for a `MATH2OPUS`.
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATH2OPUS` matrix
+
+  Output Parameter:
+. nm - `PETSC_TRUE` if the native H2Opus multiply is enabled, `PETSC_FALSE` otherwise
+
+  Level: advanced
+
+.seealso: `Mat`, `MATH2OPUS`, `MatH2OpusSetNativeMult()`
+@*/
 PetscErrorCode MatH2OpusGetNativeMult(Mat A, PetscBool *nm)
 {
   Mat_H2OPUS *a = (Mat_H2OPUS *)A->data;

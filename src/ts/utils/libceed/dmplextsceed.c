@@ -4,6 +4,25 @@
 #include <petscds.h>
 #include <petscfv.h>
 
+/*@C
+  DMPlexTSComputeRHSFunctionFVMCEED - Assemble the right-hand-side vector of a finite-volume `TS` step using the libCEED operator attached to a `DMPLEX`
+
+  Collective
+
+  Input Parameters:
++ dm   - the `DMPLEX` for which libCEED operators have been created by `DMCeedCreate()`
+. time - the current time
+. locX - local solution vector including ghost values
+. F    - the global right-hand-side vector to assemble
+- ctx  - application context (unused)
+
+  Level: developer
+
+  Note:
+  This is normally installed as the `TS` RHS function callback via `DMTSSetRHSFunctionLocal()` when using libCEED for the finite-volume evaluation.
+
+.seealso: [](ch_ts), `TS`, `DMPLEX`, `DMCeedCreate()`, `DMPlexSNESComputeResidualCEED()`, `DMTSSetRHSFunctionLocal()`
+@*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM dm, PetscReal time, Vec locX, Vec F, PetscCtx ctx)
 {
   PetscFV    fv;

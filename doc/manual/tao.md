@@ -721,7 +721,7 @@ With this structure in mind, users can gradually control each term, with the fol
 
 A user-defined `TaoTerm` can be defined from function callbacks using the
 `TAOTERMSHELL` type.  This interface is very similar to `TAOSHELL`:
-there is a single user context that is set with `TaoTermShellSetContext()` and obtained with `TaoTermShellGetContext()`,
+there is a single application context that is set with `TaoTermShellSetContext()` and obtained with `TaoTermShellGetContext()`,
 and the evaluation routines are set by passing function callbacks with the same signature as routines they implement
 (see for example `TaoTermShellSetObjectiveAndGradient()`).
 As an example,

@@ -236,10 +236,18 @@ PetscErrorCode DMSetVI(DM dm, IS inactive)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     DMDestroyVI - Frees the DM_SNESVI object contained in the DM
-         - also resets the function pointers in the DM for createinterpolation() etc to use the original DM
-*/
+/*@
+  DMDestroyVI - Frees the `DM_SNESVI` object contained in the `DM` and resets any function pointers the reduced-space `SNESVI` code composed onto it
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DM` from which the VI context should be removed (may be `NULL`)
+
+  Level: developer
+
+.seealso: `DM`, `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `PetscObjectCompose()`
+@*/
 PetscErrorCode DMDestroyVI(DM dm)
 {
   PetscFunctionBegin;

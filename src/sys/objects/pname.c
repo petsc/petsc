@@ -125,6 +125,23 @@ PetscErrorCode PetscObjectName(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscObjectChangeTypeName - Changes the type name stored on a `PetscObject`
+
+  Logically collective
+
+  Input Parameters:
++ obj       - the `PetscObject`
+- type_name - the new type name
+
+  Level: developer
+
+  Note:
+  Also clears any Fortran subtype callbacks previously registered on the object so they cannot be accidentally invoked
+  after the type change. This routine is normally called from within a `XXXSetType()` implementation.
+
+.seealso: `PetscObject`, `PetscObjectGetType()`, `PetscObjectSetName()`
+@*/
 PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[])
 {
   PetscFunctionBegin;

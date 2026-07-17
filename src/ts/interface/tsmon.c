@@ -498,7 +498,34 @@ PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Creates a TSMonitorSPCtx for use with DMSwarm particle visualizations */
+/*@C
+  TSMonitorSPCtxCreate - Creates a `TSMonitorSPCtx` scatter-plot monitor context for use with `DMSWARM` particle visualizations
+
+  Collective
+
+  Input Parameters:
++ comm         - the MPI communicator to use
+. host         - the X display to open, or `NULL` for the local machine
+. label        - the title to put in the title bar
+. x            - the x screen coordinates of the upper left coordinate of the window
+. y            - the y screen coordinates of the upper left coordinate of the window
+. m            - the screen width in pixels
+. n            - the screen height in pixels
+. howoften     - if positive then determines the frequency of the plotting, if -1 then only at the final time
+. retain       - the number of old points to retain in the plot, or 0 to clear, or -1 to retain all
+. phase        - `PETSC_TRUE` to plot in phase space rather than coordinate space
+- multispecies - `PETSC_TRUE` to color particles by species
+
+  Output Parameter:
+. ctx - the newly created scatter plot monitor context
+
+  Level: intermediate
+
+  Note:
+  Pass this context and `TSMonitorSPCtxDestroy()` to `TSMonitorSet()` with `TSMonitorSPSwarmSolution()` to display particles during the integration.
+
+.seealso: [](ch_ts), `TS`, `DMSWARM`, `TSMonitorSet()`, `TSMonitorSPSwarmSolution()`, `TSMonitorSPCtxDestroy()`
+@*/
 PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt retain, PetscBool phase, PetscBool multispecies, TSMonitorSPCtx *ctx)
 {
   PetscDraw draw;
@@ -516,7 +543,18 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate */
+/*@C
+  TSMonitorSPCtxDestroy - Destroys a `TSMonitorSPCtx` that was created with `TSMonitorSPCtxCreate()`
+
+  Not Collective
+
+  Input Parameter:
+. ctx - the scatter plot monitor context
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorSPCtxCreate()`, `TSMonitorSPSwarmSolution()`
+@*/
 PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 {
   PetscFunctionBegin;
@@ -525,7 +563,34 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Creates a TSMonitorHGCtx for use with DMSwarm particle visualizations */
+/*@C
+  TSMonitorHGCtxCreate - Creates a `TSMonitorHGCtx` histogram monitor context for use with `DMSWARM` particle visualizations
+
+  Collective
+
+  Input Parameters:
++ comm     - the MPI communicator to use
+. host     - the X display to open, or `NULL` for the local machine
+. label    - the title to put in the title bar
+. x        - the x screen coordinates of the upper left coordinate of the window
+. y        - the y screen coordinates of the upper left coordinate of the window
+. m        - the screen width in pixels
+. n        - the screen height in pixels
+. howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
+. Ns       - the number of species to histogram
+. Nb       - the number of histogram bins
+- velocity - `PETSC_TRUE` to plot histograms in velocity space, `PETSC_FALSE` for coordinate space
+
+  Output Parameter:
+. ctx - the newly created histogram monitor context
+
+  Level: intermediate
+
+  Note:
+  Pass this context and `TSMonitorHGCtxDestroy()` to `TSMonitorSet()` with `TSMonitorHGSwarmSolution()` to display particle histograms during integration.
+
+.seealso: [](ch_ts), `TS`, `DMSWARM`, `TSMonitorSet()`, `TSMonitorHGSwarmSolution()`, `TSMonitorHGCtxDestroy()`
+@*/
 PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt Ns, PetscInt Nb, PetscBool velocity, TSMonitorHGCtx *ctx)
 {
   PetscDraw draw;
@@ -549,7 +614,18 @@ PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Destroys a TSMonitorHGCtx that was created with TSMonitorHGCtxCreate */
+/*@C
+  TSMonitorHGCtxDestroy - Destroys a `TSMonitorHGCtx` that was created with `TSMonitorHGCtxCreate()`
+
+  Not Collective
+
+  Input Parameter:
+. ctx - the histogram monitor context
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorHGCtxCreate()`, `TSMonitorHGSwarmSolution()`
+@*/
 PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 {
   PetscInt s;
@@ -1657,6 +1733,25 @@ PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorLGSNESIterations - Monitors the number of nonlinear (`SNES`) iterations used per time step in a line-graph plot
+
+  Collective
+
+  Input Parameters:
++ ts     - the `TS` context
+. n      - iteration number (a negative value indicates an interpolated solution and is ignored)
+. ptime  - current time
+. v      - current solution
+- monctx - the `TSMonitorLGCtx` object that contains all the options for the monitoring, created with `TSMonitorLGCtxCreate()`
+
+  Level: intermediate
+
+  Note:
+  This is not called directly by users; pass this function to `TSMonitorSet()` along with the context created by `TSMonitorLGCtxCreate()` and `TSMonitorLGCtxDestroy()`.
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorLGCtxCreate()`, `TSMonitorLGKSPIterations()`
+@*/
 PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, PetscCtx monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
@@ -1683,6 +1778,25 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorLGKSPIterations - Monitors the number of linear (`KSP`) iterations used per time step in a line-graph plot
+
+  Collective
+
+  Input Parameters:
++ ts     - the `TS` context
+. n      - iteration number (a negative value indicates an interpolated solution and is ignored)
+. ptime  - current time
+. v      - current solution
+- monctx - the `TSMonitorLGCtx` object that contains all the options for the monitoring, created with `TSMonitorLGCtxCreate()`
+
+  Level: intermediate
+
+  Note:
+  This is not called directly by users; pass this function to `TSMonitorSet()` along with the context created by `TSMonitorLGCtxCreate()` and `TSMonitorLGCtxDestroy()`.
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorLGCtxCreate()`, `TSMonitorLGSNESIterations()`
+@*/
 PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec v, PetscCtx monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;

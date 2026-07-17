@@ -248,6 +248,33 @@ PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  CharacteristicSetVelocityInterpolation - Sets the routine used to interpolate the velocity field at points along a characteristic
+
+  Not Collective
+
+  Input Parameters:
++ c             - the `Characteristic` context
+. da            - the `DM` describing the layout of the velocity vectors
+. v             - the current velocity vector
+. vOld          - the previous-time-step velocity vector
+. numComponents - the number of velocity components to interpolate
+. components    - the indices of the velocity components in `v` and `vOld`
+. interp        - the interpolation routine, called with the global vector
+- ctx           - context passed to the interpolation routine
+
+  Calling sequence of `interp`:
++ v             - the velocity `Vec` from which to interpolate
+. interpIndices - the coordinates at which to interpolate
+. numComponents - the number of components to interpolate
+. components    - the indices of the components in `v`
+. values        - the interpolated values, one per component per point
+- ctx           - the application context
+
+  Level: developer
+
+.seealso: [](ch_ts), `Characteristic`, `CharacteristicSetVelocityInterpolationLocal()`, `CharacteristicSetFieldInterpolation()`
+@*/
 PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec v, PetscReal interpIndices[], PetscInt numComponents, PetscInt components[], PetscScalar values[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
@@ -261,6 +288,33 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  CharacteristicSetVelocityInterpolationLocal - Sets the routine used to interpolate the velocity field along a characteristic using a locally-accessible array
+
+  Not Collective
+
+  Input Parameters:
++ c             - the `Characteristic` context
+. da            - the `DM` describing the layout of the velocity vectors
+. v             - the current velocity vector
+. vOld          - the previous-time-step velocity vector
+. numComponents - the number of velocity components to interpolate
+. components    - the indices of the velocity components in `v` and `vOld`
+. interp        - the interpolation routine, called with a local array pointer rather than a `Vec`
+- ctx           - context passed to the interpolation routine
+
+  Calling sequence of `interp`:
++ array         - the locally-accessible array of the velocity vector obtained from the `DM`
+. interpIndices - the coordinates at which to interpolate
+. numComponents - the number of components to interpolate
+. components    - the indices of the components in the array
+. values        - the interpolated values, one per component per point
+- ctx           - the application context
+
+  Level: developer
+
+.seealso: [](ch_ts), `Characteristic`, `CharacteristicSetVelocityInterpolation()`, `CharacteristicSetFieldInterpolationLocal()`
+@*/
 PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *array, PetscReal interpIndices[], PetscInt numComponents, PetscInt components[], PetscScalar values[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
@@ -274,6 +328,32 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  CharacteristicSetFieldInterpolation - Sets the routine used to interpolate the field being advected at the foot of a characteristic
+
+  Not Collective
+
+  Input Parameters:
++ c             - the `Characteristic` context
+. da            - the `DM` describing the layout of the field vector
+. v             - the field vector to be advected
+. numComponents - the number of field components to interpolate
+. components    - the indices of the field components in `v`
+. interp        - the interpolation routine, called with the global vector
+- ctx           - context passed to the interpolation routine
+
+  Calling sequence of `interp`:
++ v             - the field `Vec` from which to interpolate
+. interpIndices - the coordinates at which to interpolate
+. numComponents - the number of components to interpolate
+. components    - the indices of the components in `v`
+. values        - the interpolated values, one per component per point
+- ctx           - the application context
+
+  Level: developer
+
+.seealso: [](ch_ts), `Characteristic`, `CharacteristicSetFieldInterpolationLocal()`, `CharacteristicSetVelocityInterpolation()`
+@*/
 PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec v, PetscReal interpIndices[], PetscInt numComponents, PetscInt components[], PetscScalar values[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;
@@ -289,6 +369,32 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  CharacteristicSetFieldInterpolationLocal - Sets the routine used to interpolate the field being advected at the foot of a characteristic using a locally-accessible array
+
+  Not Collective
+
+  Input Parameters:
++ c             - the `Characteristic` context
+. da            - the `DM` describing the layout of the field vector
+. v             - the field vector to be advected
+. numComponents - the number of field components to interpolate
+. components    - the indices of the field components in `v`
+. interp        - the interpolation routine, called with a local array pointer rather than a `Vec`
+- ctx           - context passed to the interpolation routine
+
+  Calling sequence of `interp`:
++ array         - the locally-accessible array of the field vector obtained from the `DM`
+. interpIndices - the coordinates at which to interpolate
+. numComponents - the number of components to interpolate
+. components    - the indices of the components in the array
+. values        - the interpolated values, one per component per point
+- ctx           - the application context
+
+  Level: developer
+
+.seealso: [](ch_ts), `Characteristic`, `CharacteristicSetFieldInterpolation()`, `CharacteristicSetVelocityInterpolationLocal()`
+@*/
 PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *array, PetscReal interpIndices[], PetscInt numComponents, PetscInt components[], PetscScalar values[], PetscCtx ctx), PetscCtx ctx)
 {
   PetscFunctionBegin;

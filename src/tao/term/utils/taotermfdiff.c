@@ -248,6 +248,29 @@ PetscErrorCode TaoTermCreateHessianMFFD(TaoTerm term, Mat *mffd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TaoTermComputeHessianMFFD - Update a matrix-free finite-difference `MATMFFD` Hessian created by
+  `TaoTermCreateHessianMFFD()` to represent the Hessian of a `TaoTerm` at a given point and parameters.
+
+  Collective
+
+  Input Parameters:
++ term   - the `TaoTerm`
+. x      - the point at which the Hessian is to be applied
+- params - the current parameter vector for `term`, or `NULL`
+
+  Output Parameters:
++ H - the `MATMFFD` Hessian, reinitialized if needed and updated to base point `x`
+- B - the preconditioning matrix (unused; retained for API symmetry), or `NULL`
+
+  Level: advanced
+
+  Note:
+  If `H` has not yet been initialized for this `TaoTerm`, this routine initializes it via
+  `TaoTermInitializeHessianMFFD()`; passing a shell matrix from a different `TaoTerm` is an error.
+
+.seealso: `TaoTerm`, `TaoTermCreateHessianMFFD()`, `TaoTermComputeHessian()`, `MATMFFD`
+@*/
 PetscErrorCode TaoTermComputeHessianMFFD(TaoTerm term, Vec x, Vec params, Mat H, Mat B)
 {
   PetscContainer         container;

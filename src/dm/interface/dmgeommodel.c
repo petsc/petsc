@@ -106,6 +106,15 @@ PetscErrorCode DMGeomModelRegister(const char sname[], PetscErrorCode (*fnc)(DM,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMGeomModelRegisterDestroy - Frees the list of `DM` geometry models that were registered by `DMGeomModelRegister()` or `DMGeomModelRegisterAll()`.
+
+  Not Collective
+
+  Level: advanced
+
+.seealso: `DM`, `DMGeomModelRegister()`, `DMGeomModelRegisterAll()`
+@*/
 PetscErrorCode DMGeomModelRegisterDestroy(void)
 {
   PetscFunctionBegin;

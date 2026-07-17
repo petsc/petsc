@@ -2114,6 +2114,28 @@ PetscErrorCode VecStashView(Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscOptionsGetVec - Gets a `Vec` from the options database as an array of real values
+
+  Collective
+
+  Input Parameters:
++ options - the options database, or `NULL` for the default global one
+. prefix  - an option prefix, or `NULL`
+- key     - the option name (must include the leading `-`)
+
+  Output Parameters:
++ v   - the vector to fill in on option match; unchanged if the option is not found
+- set - `PETSC_TRUE` if the option was found (may be `NULL`)
+
+  Level: intermediate
+
+  Note:
+  The option value is read as an array of `PetscReal` of length equal to the global size of `v`; each MPI process
+  copies the entries corresponding to its local ownership range into `v`.
+
+.seealso: `Vec`, `PetscOptionsGetRealArray()`, `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `VecView()`
+@*/
 PetscErrorCode PetscOptionsGetVec(PetscOptions options, const char prefix[], const char key[], Vec v, PetscBool *set)
 {
   PetscInt     i, N, rstart, rend;

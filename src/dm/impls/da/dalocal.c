@@ -140,6 +140,24 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMDAGetNumVertices - Return the number of local vertices (including ghost vertices) of a `DMDA` in each dimension and in total.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMDA`
+
+  Output Parameters:
++ numVerticesX - number of vertices in the x direction, or `NULL` if not needed
+. numVerticesY - number of vertices in the y direction (`1` if `dim < 2`), or `NULL` if not needed
+. numVerticesZ - number of vertices in the z direction (`1` if `dim < 3`), or `NULL` if not needed
+- numVertices  - total number of vertices, or `NULL` if not needed
+
+  Level: developer
+
+.seealso: `DM`, `DMDA`, `DMDAGetNumCells()`, `DMDAGetNumFaces()`
+@*/
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
 {
   DM_DA         *da  = (DM_DA *)dm->data;
@@ -170,6 +188,26 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMDAGetNumFaces - Return the number of local mesh faces of each orientation (including ghost faces) for a `DMDA`.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMDA`
+
+  Output Parameters:
++ numXFacesX - number of X-normal faces along the x direction, or `NULL` if not needed
+. numXFaces  - total number of X-normal faces, or `NULL` if not needed
+. numYFacesY - number of Y-normal faces along the y direction, or `NULL` if not needed
+. numYFaces  - total number of Y-normal faces (`0` for 1D), or `NULL` if not needed
+. numZFacesZ - number of Z-normal faces along the z direction, or `NULL` if not needed
+- numZFaces  - total number of Z-normal faces (`0` for 1D/2D), or `NULL` if not needed
+
+  Level: developer
+
+.seealso: `DM`, `DMDA`, `DMDAGetNumVertices()`, `DMDAGetNumCells()`
+@*/
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
 {
   DM_DA         *da  = (DM_DA *)dm->data;

@@ -866,6 +866,21 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatLMVMGetHistorySize - Get the number of past iterates stored for the construction of the limited-memory quasi-Newton update
+
+  Not Collective
+
+  Input Parameter:
+. B - A `MATLMVM` matrix
+
+  Output Parameter:
+. hist_size - number of past iterates stored
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetHistorySize()`, `MatLMVMGetUpdateCount()`
+@*/
 PetscErrorCode MatLMVMGetHistorySize(Mat B, PetscInt *hist_size)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;

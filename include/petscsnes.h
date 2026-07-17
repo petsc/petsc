@@ -179,9 +179,9 @@ PETSC_EXTERN PetscErrorCode SNESNewtonTRSetNormType(SNES, NormType);
     SNESNewtonTRQNType - type of quasi-Newton model to use
 
    Values:
-+  `SNES_TR_QN_NONE` - do not use a quasi-Newton model
-.  `SNES_TR_QN_SAME` - use the same quasi-Newton model for matrix and preconditioner
--  `SNES_TR_QN_DIFFERENT` - use different quasi-Newton models for matrix and preconditioner
++  `SNES_TR_QN_NONE`      - do not use a quasi-Newton model
+.  `SNES_TR_QN_SAME`      - use the same quasi-Newton model for matrix and the generation of the preconditioner
+-  `SNES_TR_QN_DIFFERENT` - use different quasi-Newton models for matrix and the generation of the preconditioner
 
    Level: intermediate
 

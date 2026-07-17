@@ -3755,6 +3755,27 @@ PetscErrorCode VecLockGet(Vec x, PetscInt *state)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  VecLockGetLocation - Return the source code location where a `Vec` was most recently read-locked
+
+  Not Collective
+
+  Input Parameter:
+. x - the vector
+
+  Output Parameters:
++ file - the source file name of the most recent `VecLockReadPush()`, or `NULL` if none is active
+. func - the function name of the most recent `VecLockReadPush()`, or `NULL` if none is active
+- line - the source line number of the most recent `VecLockReadPush()`, or 0 if none is active
+
+  Level: developer
+
+  Note:
+  Only produces meaningful output when PETSc is built with `PETSC_USE_DEBUG` and without threadsafety; otherwise `NULL`
+  and 0 are returned. Intended to help debug read-lock violations reported by `VecGetArray()` and similar routines.
+
+.seealso: `Vec`, `VecLockGet()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecGetArray()`
+@*/
 PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[], int *line)
 {
   PetscFunctionBegin;

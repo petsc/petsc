@@ -370,6 +370,31 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPatchSetDiscretisationInfo - Provide the per-subspace discretisation information required by a `SNESPATCH` to build patch problems
+
+  Logically Collective
+
+  Input Parameters:
++ snes            - the `SNESPATCH` solver
+. nsubspaces      - the number of discretisation subspaces (e.g. fields)
+. dms             - array of length `nsubspaces` of `DM`s, one per subspace
+. bs              - array of length `nsubspaces` giving the block size of each subspace
+. nodesPerCell    - array of length `nsubspaces` giving the number of nodes per cell for each subspace
+. cellNodeMap     - array of length `nsubspaces`; entry `i` is a cell-to-node map for subspace `i`
+. subspaceOffsets - array of length `nsubspaces + 1` giving the starting global dof offset of each subspace
+. numGhostBcs     - number of ghost (off-process) boundary-condition dofs
+. ghostBcNodes    - array of length `numGhostBcs` of the ghost boundary-condition dof indices
+. numGlobalBcs    - number of global boundary-condition dofs
+- globalBcNodes   - array of length `numGlobalBcs` of the global boundary-condition dof indices
+
+  Level: advanced
+
+  Note:
+  A `DM` must already be attached to `snes` (via `SNESSetDM()`) before calling this routine. Internally, the information is forwarded to the underlying `PCPATCH` via `PCPatchSetDiscretisationInfo()`.
+
+.seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetDiscretisationInfo()`, `SNESPatchSetComputeOperator()`, `SNESPatchSetComputeFunction()`
+@*/
 PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt nodesPerCell[], const PetscInt **cellNodeMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcNodes[], PetscInt numGlobalBcs, const PetscInt globalBcNodes[])
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
@@ -383,6 +408,31 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPatchSetComputeOperator - Set the callback used to assemble the per-patch Jacobian for a `SNESPATCH` solver
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNESPATCH` solver
+. func - callback that assembles the patch Jacobian; forwarded to the underlying `PCPATCH` via `PCPatchSetComputeOperator()`
+- ctx  - optional application context passed to `func`
+
+  Calling sequence of `func`:
++ pc               - the `PC` associated with the `SNESPATCH` solver
+. point            - the point
+. x                - the input solution (not used in linear problems)
+. mat              - the patch matrix
+. cellIS           - an array of the cell numbers
+. n                - the size of `dofsArray`
+. dofsArray        - the dofmap for the dofs to be solved for
+. dofsArrayWithAll - the dofmap for all dofs on the patch
+- ctx              - the application context
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetComputeOperator()`, `SNESPatchSetComputeFunction()`
+@*/
 PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
@@ -392,6 +442,31 @@ PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPatchSetComputeFunction - Set the callback used to compute the per-patch nonlinear residual for a `SNESPATCH` solver
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNESPATCH` solver
+. func - callback that computes the patch residual; forwarded to the underlying `PCPATCH` via `PCPatchSetComputeFunction()`
+- ctx  - optional application context passed to `func`
+
+  Calling sequence of `func`:
++ pc               - the `PC` associated with the `SNESPATCH` solver
+. point            - the point
+. x                - the input solution (not used in linear problems)
+. f                - the patch residual vector
+. cellIS           - an array of the cell numbers
+. n                - the size of `dofsArray`
+. dofsArray        - the dofmap for the dofs to be solved for
+. dofsArrayWithAll - the dofmap for all dofs on the patch
+- ctx              - the application context
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetComputeFunction()`, `SNESPatchSetComputeOperator()`
+@*/
 PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
@@ -401,6 +476,28 @@ PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPatchSetConstructType - Set the way patches are constructed for a `SNESPATCH` solver
+
+  Logically Collective
+
+  Input Parameters:
++ snes  - the `SNESPATCH` solver
+. ctype - the `PCPatchConstructType` selecting the patch construction strategy
+. func  - user callback that builds the patches, used only when `ctype` is `PC_PATCH_USER` or `PC_PATCH_PYTHON`; may be `NULL` otherwise
+- ctx   - optional application context passed to `func`
+
+  Calling sequence of `func`:
++ pc                - the `PC` associated with the `SNESPATCH` solver
+. npatch            - number of patches
+. patches           - the `IS` that define each patch
+. patchIterationSet - how the patches are iterated over
+- ctx               - optional application context
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetConstructType()`, `PCPatchConstructType`
+@*/
 PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, PetscErrorCode (*func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
@@ -410,6 +507,19 @@ PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESPatchSetCellNumbering - Set the `PetscSection` that provides a numbering of the cells used to define patches in a `SNESPATCH` solver
+
+  Logically Collective
+
+  Input Parameters:
++ snes          - the `SNESPATCH` solver
+- cellNumbering - the `PetscSection` giving the cell numbering; forwarded to the underlying `PCPATCH` via `PCPatchSetCellNumbering()`
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetCellNumbering()`, `PetscSection`
+@*/
 PetscErrorCode SNESPatchSetCellNumbering(SNES snes, PetscSection cellNumbering)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;

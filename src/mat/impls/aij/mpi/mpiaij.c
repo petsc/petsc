@@ -4642,6 +4642,20 @@ static PetscErrorCode MatMergeSeqsToMPIDestroy(PetscCtxRt data)
 #include <../src/mat/utils/freespace.h>
 #include <petscbt.h>
 
+/*@
+  MatCreateMPIAIJSumSeqAIJNumeric - Fill the numerical values of an `MATMPIAIJ` matrix previously created by
+  `MatCreateMPIAIJSumSeqAIJSymbolic()` by summing the local `MATSEQAIJ` contributions from each process.
+
+  Collective
+
+  Input Parameters:
++ seqmat - the local `MATSEQAIJ` contribution from this process
+- mpimat - the target `MATMPIAIJ` matrix created by `MatCreateMPIAIJSumSeqAIJSymbolic()`
+
+  Level: developer
+
+.seealso: `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJSumSeqAIJSymbolic()`, `MatCreateMPIAIJSumSeqAIJ()`
+@*/
 PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
 {
   MPI_Comm           comm;
@@ -4761,6 +4775,28 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatCreateMPIAIJSumSeqAIJSymbolic - Create the symbolic (nonzero-pattern) portion of an `MATMPIAIJ` matrix
+  obtained by summing local `MATSEQAIJ` contributions from each process.
+
+  Collective
+
+  Input Parameters:
++ comm   - the communicator
+. seqmat - the local `MATSEQAIJ` contribution from this process
+. m      - the number of local rows for the resulting `MATMPIAIJ` matrix, or `PETSC_DECIDE`
+- n      - the number of local columns for the resulting `MATMPIAIJ` matrix, or `PETSC_DECIDE`
+
+  Output Parameter:
+. mpimat - the newly created `MATMPIAIJ` matrix
+
+  Level: developer
+
+  Note:
+  The numerical values are filled in by a subsequent call to `MatCreateMPIAIJSumSeqAIJNumeric()`.
+
+.seealso: `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJSumSeqAIJNumeric()`, `MatCreateMPIAIJSumSeqAIJ()`
+@*/
 PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, PetscInt m, PetscInt n, Mat *mpimat)
 {
   Mat                B_mpi;

@@ -64,6 +64,28 @@ PETSC_INTERN PetscErrorCode TaoTestGradient_Internal(Tao tao, Vec x, Vec g1, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TaoTestGradient - Compare the user-supplied gradient with a finite-difference approximation, when requested via
+  the options database, and print the difference.
+
+  Collective
+
+  Input Parameters:
++ tao - the `Tao` context
+. x   - the point at which to evaluate the gradient
+- g1  - the user-supplied gradient at `x`
+
+  Options Database Keys:
++ -tao_test_gradient      - enable the comparison
+- -tao_test_gradient_view - display the user-supplied gradient, the finite-difference gradient, and their difference
+
+  Level: intermediate
+
+  Note:
+  If `-tao_test_gradient` is not set, this routine returns immediately without performing any work.
+
+.seealso: [](ch_tao), `Tao`, `TaoTestHessian()`, `TaoComputeGradient()`
+@*/
 PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
 {
   PetscBool         complete_print = PETSC_FALSE, test = PETSC_FALSE;

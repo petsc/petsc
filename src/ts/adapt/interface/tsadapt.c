@@ -169,6 +169,19 @@ PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSAdaptSetOptionsPrefix - Sets the prefix used for searching for `TSAdapt` options in the options database
+
+  Logically Collective
+
+  Input Parameters:
++ adapt  - the `TSAdapt` context, most likely obtained with `TSGetAdapt()`
+- prefix - the prefix to prepend to all option names
+
+  Level: advanced
+
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSGetAdapt()`, `TSSetOptionsPrefix()`
+@*/
 PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
 {
   PetscFunctionBegin;
@@ -308,6 +321,18 @@ PetscErrorCode TSAdaptReset(TSAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSAdaptDestroy - Destroys a `TSAdapt` context
+
+  Collective
+
+  Input Parameter:
+. adapt - the `TSAdapt` context obtained from `TSGetAdapt()` or `TSAdaptCreate()`
+
+  Level: intermediate
+
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSAdaptCreate()`, `TSGetAdapt()`
+@*/
 PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
 {
   PetscFunctionBegin;

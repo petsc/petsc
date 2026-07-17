@@ -1385,7 +1385,29 @@ PetscErrorCode DMPlexInsertBounds(DM dm, PetscBool lower, PetscReal time, Vec lo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// Handle non-essential (e.g. outflow) boundary values
+/*@
+  DMPlexInsertBoundaryValuesFVM - Reconstruct cell gradients and insert non-essential (e.g. outflow) boundary values
+  into a local finite-volume solution vector.
+
+  Collective
+
+  Input Parameters:
++ dm   - the `DMPLEX`
+. fv   - the `PetscFV` discretization
+. locX - the local solution vector; updated with non-essential boundary values
+- time - the current time
+
+  Output Parameter:
+. locGradient - if non-`NULL`, the local vector holding the reconstructed cell gradients
+
+  Level: developer
+
+  Note:
+  The caller receives ownership of `*locGradient` via `DMGetLocalVector()` and must return it with
+  `DMRestoreLocalVector()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscFV`, `DMPlexInsertBoundaryValues()`, `DMPlexReconstructGradientsFVM()`
+@*/
 PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscFV fv, Vec locX, PetscReal time, Vec *locGradient)
 {
   DM  dmGrad;
@@ -3166,6 +3188,26 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexComputeMassMatrixNested - Form the local portion of the mass matrix from a coarse `DM` to a nested fine `DM`.
+
+  Collective
+
+  Input Parameters:
++ dmc - the coarse mesh
+. dmf - the fine mesh
+- ctx - the application context
+
+  Output Parameter:
+. mass - the mass matrix
+
+  Level: developer
+
+  Note:
+  This routine is not implemented and currently raises `PETSC_ERR_SUP`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeMassMatrixGeneral()`, `DMPlexComputeInterpolatorNested()`
+@*/
 PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, PetscCtx ctx)
 {
   SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "Laziness");
@@ -6421,6 +6463,31 @@ end: {
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexComputeJacobianByKeyGeneral - Assemble the Jacobian and its preconditioning matrix over a cell range
+  described by a `PetscFormKey` for a general (possibly non-square, non-nested) pair of row/column `DM`s.
+
+  Collective
+
+  Input Parameters:
++ dmr      - the row `DMPLEX`
+. dmc      - the column `DMPLEX`
+. key      - the `PetscFormKey` selecting the label, value, part, and field for assembly
+. cellIS   - the `IS` listing cells to process, or `NULL`
+. t        - the current time
+. X_tShift - the time-derivative shift used to combine dynamic and static Jacobian contributions
+. locX     - the local solution vector
+. locX_t   - the local time-derivative vector, or `NULL`
+- ctx      - the application context (unused; kept for API symmetry)
+
+  Output Parameters:
++ Jac  - the assembled Jacobian matrix
+- JacP - the assembled matrix from which the preconditioner is constructed
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscFormKey`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeInterpolatorGeneral()`
+@*/
 PetscErrorCode DMPlexComputeJacobianByKeyGeneral(DM dmr, DM dmc, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, PetscCtx ctx)
 {
   DM_Plex        *mesh     = (DM_Plex *)dmr->data;

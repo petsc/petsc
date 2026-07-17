@@ -59,6 +59,24 @@ static inline PetscInt MinChild(PetscHeap h, PetscInt loc)
   return chld;
 }
 
+/*@
+  PetscHeapCreate - Creates a `PetscHeap` object, a simple min-heap for `(id, value)` pairs.
+
+  Not Collective
+
+  Input Parameter:
+. maxsize - the maximum number of items the heap can hold at once
+
+  Output Parameter:
+. heap - the newly created `PetscHeap` object
+
+  Level: developer
+
+  Note:
+  The heap is ordered by `value`; items with equal values may be returned in any order.
+
+.seealso: `PetscHeap`, `PetscHeapAdd()`, `PetscHeapPop()`, `PetscHeapPeek()`, `PetscHeapStash()`, `PetscHeapUnstash()`, `PetscHeapView()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap)
 {
   PetscHeap h;
@@ -76,6 +94,20 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapAdd - Insert an item into a `PetscHeap`.
+
+  Not Collective
+
+  Input Parameters:
++ h   - the `PetscHeap`
+. id  - the item identifier
+- val - the value used for heap ordering
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapPop()`, `PetscHeapPeek()`, `PetscHeapStash()`, `PetscHeapUnstash()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
 {
   PetscInt loc, par;
@@ -95,6 +127,22 @@ PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapPop - Remove and return the minimum item from a `PetscHeap`.
+
+  Not Collective
+
+  Input Parameter:
+. h - the `PetscHeap`
+
+  Output Parameters:
++ id  - identifier of the popped item, or `-1` if the heap is empty
+- val - value of the popped item, or `PETSC_INT_MIN` if the heap is empty
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapPeek()`, `PetscHeapStash()`, `PetscHeapUnstash()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
 {
   PetscInt loc, chld;
@@ -124,6 +172,22 @@ PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapPeek - Return the minimum item of a `PetscHeap` without removing it.
+
+  Not Collective
+
+  Input Parameter:
+. h - the `PetscHeap`
+
+  Output Parameters:
++ id  - identifier of the minimum item, or `-1` if the heap is empty
+- val - value of the minimum item, or `PETSC_INT_MIN` if the heap is empty
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapPop()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val)
 {
   PetscFunctionBegin;
@@ -138,6 +202,24 @@ PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapStash - Set aside an item in a `PetscHeap` for later insertion via `PetscHeapUnstash()`.
+
+  Not Collective
+
+  Input Parameters:
++ h   - the `PetscHeap`
+. id  - the item identifier
+- val - the value used for heap ordering
+
+  Level: developer
+
+  Note:
+  Stashed items are held in the trailing portion of the heap's storage and do not participate in
+  heap ordering until `PetscHeapUnstash()` reinserts them.
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapUnstash()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val)
 {
   PetscInt loc;
@@ -149,6 +231,18 @@ PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapUnstash - Reinsert all items previously stashed with `PetscHeapStash()` into the heap.
+
+  Not Collective
+
+  Input Parameter:
+. h - the `PetscHeap`
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapStash()`, `PetscHeapDestroy()`
+@*/
 PetscErrorCode PetscHeapUnstash(PetscHeap h)
 {
   PetscFunctionBegin;
@@ -160,6 +254,18 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapDestroy - Destroys a `PetscHeap` created with `PetscHeapCreate()`.
+
+  Not Collective
+
+  Input Parameter:
+. heap - the `PetscHeap` to destroy; set to `NULL` on return
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`
+@*/
 PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
 {
   PetscFunctionBegin;
@@ -168,6 +274,19 @@ PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHeapView - View the contents of a `PetscHeap`, including any stashed items.
+
+  Not Collective
+
+  Input Parameters:
++ h      - the `PetscHeap`
+- viewer - a `PetscViewer`, or `NULL` to use `PETSC_VIEWER_STDOUT_SELF`
+
+  Level: developer
+
+.seealso: `PetscHeap`, `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapPop()`
+@*/
 PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer)
 {
   PetscBool isascii;

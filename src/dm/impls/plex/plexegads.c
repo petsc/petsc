@@ -5621,6 +5621,25 @@ PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexRestoreGeomBodyMassProperties - Release the arrays returned by `DMPlexGetGeomBodyMassProperties()`
+
+  Not Collective
+
+  Input Parameters:
++ dm               - The `DMPLEX` with an attached CAD geometry
+. body             - The `PetscGeom` body previously queried
+. volume           - The volume value (unused, retained for API symmetry)
+. surfArea         - The surface area value (unused, retained for API symmetry)
+. centerOfGravity  - Center-of-gravity array to free
+. COGsize          - The size of `centerOfGravity` (unused, retained for API symmetry)
+. inertiaMatrixCOG - Inertia-matrix-at-COG array to free
+- IMCOGsize        - The size of `inertiaMatrixCOG` (unused, retained for API symmetry)
+
+  Level: intermediate
+
+.seealso: `DMPlexGetGeomBodyMassProperties()`, `DMPlexGetGeomModelBodies()`
+@*/
 PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize) PeNS
 {
   PetscFunctionBegin;
@@ -5727,6 +5746,26 @@ PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexRestoreGeomCntrlPntAndWeightData - Release the arrays returned by `DMPlexGetGeomCntrlPntAndWeightData()`
+
+  Not Collective
+
+  Input Parameters:
++ dm                - The `DMPLEX` with an attached CAD geometry
+. cpHashTable       - Control-point hash table (unused, retained for API symmetry)
+. cpCoordDataLength - Length of `cpCoordData` (unused, retained for API symmetry)
+. cpCoordData       - Control-point coordinate array to release
+. maxNumEquiv       - Maximum number of equivalent control points (unused, retained for API symmetry)
+. cpEquiv           - Control-point equivalency matrix (unused, retained for API symmetry)
+. wHashTable        - Weight hash table (unused, retained for API symmetry)
+. wDataLength       - Length of `wData` (unused, retained for API symmetry)
+- wData             - Weight array to release
+
+  Level: intermediate
+
+.seealso: `DMPlexGetGeomCntrlPntAndWeightData()`, `DMPlexGeomDataAndGrads()`
+@*/
 PetscErrorCode DMPlexRestoreGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable, PetscInt *cpCoordDataLength, PetscScalar **cpCoordData, PetscInt *maxNumEquiv, Mat *cpEquiv, PetscHMapI *wHashTable, PetscInt *wDataLength, PetscScalar **wData)
 {
   Vec cntrlPtCoordsVec, cntrlPtWeightsVec;
@@ -5813,6 +5852,26 @@ PetscErrorCode DMPlexGetGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexRestoreGeomGradData - Release the arrays returned by `DMPlexGetGeomGradData()`
+
+  Not Collective
+
+  Input Parameters:
++ dm                  - The `DMPLEX` with an attached CAD geometry
+. cpSurfGradHashTable - Surface-gradient hash table (unused, retained for API symmetry)
+. cpSurfGrad          - Surface-gradient matrix (unused, retained for API symmetry)
+. cpArraySize         - Length of the control-point gradient arrays (unused, retained for API symmetry)
+. gradSACP            - Surface-area gradient with respect to control points, to release
+. gradVolCP           - Volume gradient with respect to control points, to release
+. wArraySize          - Length of the control-point-weight gradient arrays (unused, retained for API symmetry)
+. gradSAW             - Surface-area gradient with respect to weights, to release
+- gradVolW            - Volume gradient with respect to weights, to release
+
+  Level: intermediate
+
+.seealso: `DMPlexGetGeomGradData()`, `DMPlexGeomDataAndGrads()`
+@*/
 PetscErrorCode DMPlexRestoreGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable, Mat *cpSurfGrad, PetscInt *cpArraySize, PetscScalar **gradSACP, PetscScalar **gradVolCP, PetscInt *wArraySize, PetscScalar **gradSAW, PetscScalar **gradVolW)
 {
   Vec gradSACPVec, gradVolCPVec, gradSAWVec, gradVolWVec;

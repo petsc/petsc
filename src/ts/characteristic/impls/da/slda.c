@@ -84,10 +84,25 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   Checks for periodicity of a DM and Maps points outside of a domain back onto the domain
-   using appropriate periodicity. At the moment assumes only a 2-D DMDA.
- */
+/*@
+  DMDAMapCoordsToPeriodicDomain - Maps a `(x, y)` coordinate pair that lies outside a 2D `DMDA` domain back into the domain along any periodic boundaries
+
+  Not Collective
+
+  Input Parameter:
+. da - the 2D `DMDA` context
+
+  Input/Output Parameters:
++ x - the x coordinate; wrapped in place if the x boundary is periodic
+- y - the y coordinate; wrapped in place if the y boundary is periodic
+
+  Level: developer
+
+  Note:
+  Coordinates along non-periodic boundaries are left unchanged. This helper is used internally by the method-of-characteristics solver on structured grids.
+
+.seealso: [](ch_ts), `Characteristic`, `DMDA`, `CharacteristicSolve()`
+@*/
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
   DMBoundaryType bx, by;
