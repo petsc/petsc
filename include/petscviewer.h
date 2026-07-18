@@ -380,7 +380,21 @@ typedef enum {
   PETSC_VTK_CELL_FIELD,
   PETSC_VTK_CELL_VECTOR_FIELD
 } PetscViewerVTKFieldType;
-PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer, PetscObject, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject);
+
+/*S
+  PetscViewerVTKWriteFn - A prototype of the function argument `PetscViewerVTKAddField()` that writes to the VTK file
+
+  Calling Sequence:
++ obj    - the `PetscObject` to write
+- viewer - the `PetscViewer` of `PetscViewerType` `PETSCVIEWERVTK` to write to
+
+  Level: advanced
+
+.seealso: `PetscViewer`, `PetscViewerType`, `PETSCVIEWERVTK`, `PetscViewerVTKAddField()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscViewerVTKWriteFn(PetscObject obj, PetscViewer viewer);
+
+PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer, PetscObject, PetscViewerVTKWriteFn *, PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscViewerVTKGetDM(PetscViewer, PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscViewerVTKOpen(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 
