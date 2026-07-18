@@ -63,6 +63,7 @@
 ## Mat
 
 - Add `MATPRODUCT_PtAP` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL`
+- Add `MATPRODUCT_AB` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL` with any matrix type
 - Add `MatSeqAIJGetKokkosView()`, `MatSeqAIJRestoreKokkosView()`, `MatSeqAIJGetKokkosViewWrite()` and `MatSeqAIJRestoreKokkosViewWrite()` to the public API
 - Change `MatSeqAIJCUSPARSEGetIJ()`, `MatSeqAIJCUSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetIJ()` and `MatSeqAIJHIPSPARSERestoreIJ()` to return `PetscInt` indices instead of `int`
 - Add `MatNormApproximate()` to compute matrix norms approximately
