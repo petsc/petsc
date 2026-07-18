@@ -3370,44 +3370,6 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  PetscOptionsDeprecated_Private - mark an option as deprecated, optionally replacing it with `newname`
-
-  Prints a deprecation warning, unless an option is supplied to suppress.
-
-  Logically Collective
-
-  Input Parameters:
-+ PetscOptionsObject - string to prepend to name or `NULL`
-. oldname            - the old, deprecated option
-. newname            - the new option, or `NULL` if option is purely removed
-. version            - a string describing the version of first deprecation, e.g. "3.9"
-- info               - additional information string, or `NULL`.
-
-  Options Database Key:
-. -options_suppress_deprecated_warnings - do not print deprecation warnings
-
-  Level: developer
-
-  Notes:
-  If `newname` is provided then the options database will automatically check the database for `oldname`.
-
-  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
-  new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
-  See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
-
-  Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
-  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or
-  `PetscObjectOptionsBegin()` prints the information
-  If newname is provided, the old option is replaced. Otherwise, it remains
-  in the options database.
-  If an option is not replaced, the info argument should be used to advise the user
-  on how to proceed.
-  There is a limit on the length of the warning printed, so very long strings
-  provided as info may be truncated.
-
-.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
-@*/
 PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems PetscOptionsObject, const char oldname[], const char newname[], const char version[], const char info[])
 {
   PetscBool         found, quiet;
