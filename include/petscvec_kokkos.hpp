@@ -22,8 +22,8 @@
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
-   PetscErrorCode VecGetKokkosView  (Vec v,Kokkos::View<const PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode VecGetKokkosView  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
+   PetscErrorCode VecGetKokkosView(Vec v, Kokkos::View<const PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode VecGetKokkosView(Vec v, Kokkos::View<PetscScalar *, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -59,8 +59,8 @@ PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *)
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
-   PetscErrorCode VecRestoreKokkosView  (Vec v,Kokkos::View<const PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode VecRestoreKokkosView  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
+   PetscErrorCode VecRestoreKokkosView(Vec v, Kokkos::View<const PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode VecRestoreKokkosView(Vec v, Kokkos::View<PetscScalar *, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -90,7 +90,7 @@ PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
-   PetscErrorCode VecGetKokkosViewWrite  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
+   PetscErrorCode VecGetKokkosViewWrite(Vec v, Kokkos::View<PetscScalar *, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -122,7 +122,7 @@ PetscErrorCode VecGetKokkosViewWrite(Vec, Kokkos::View<PetscScalar *, MemorySpac
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
-   PetscErrorCode VecRestoreKokkosViewWrite  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
+   PetscErrorCode VecRestoreKokkosViewWrite(Vec v, Kokkos::View<PetscScalar *, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 

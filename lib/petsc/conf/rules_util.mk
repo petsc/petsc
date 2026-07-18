@@ -192,7 +192,9 @@ checkbadSource:
 	-@git ls-files *.cpp >> checkbadSource.out;true
 	-@echo "----- Fortran: use of dble -----------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n "dble(" -- ${GITFSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 49` ;\
+	-@echo "----- Missing space after comma in Synopsis ------------------------" >> checkbadSource.out
+	-@git ls-files -z ${GITCFSRC} | xargs -0 awk 'FNR==1 { insyn=0; p1="" } { if ($$0 ~ /^[ \t]*#include[ \t]*<[^>]+>/ && p1 ~ /^[ \t]*Synopsis:/) insyn=1; else if (insyn && $$0 ~ /^[ \t]*$$/) insyn=0; else if (insyn && ($$0 ~ /,[^ ]/ || $$0 ~ /,  +/)) print FILENAME ":" FNR " " $$0; p1=$$0 }' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 50` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

@@ -1496,7 +1496,7 @@ PETSC_EXTERN PetscStack petscstack;
 
    Synopsis:
    #include <petscsys.h>
-   void PetscStackPushNoCheck(char *funct,int petsc_routine,PetscBool hot);
+   void PetscStackPushNoCheck(char *funct, int petsc_routine, PetscBool hot);
 
    Not Collective
 

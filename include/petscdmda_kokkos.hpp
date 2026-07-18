@@ -15,15 +15,15 @@
 
    Synopsis:
    #include <petscdmda_kokkos.hpp>
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -80,7 +80,7 @@
     For example, to initialize a grid,
 
 .vb
-    typedef Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace> PetscScalarKokkosOffsetView3D;
+    typedef Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, MemorySpace> PetscScalarKokkosOffsetView3D;
 
     PetscScalarKokkosOffsetView3D kv;
     DMDAVecGetKokkosOffsetViewWrite(da,v,&kv); // v is a global vector and we assume dof is 1
@@ -100,7 +100,7 @@
       PetscScalar omega,temperature;
     } Node;
 
-    using NodeKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const Node***,Kokkos::LayoutRight,MemorySpace>;
+    using NodeKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const Node ***, Kokkos::LayoutRight, MemorySpace>;
     DMDAVecGetKokkosOffsetViewWrite(da,v,&tv);
     NodeKokkosOffsetView3D kv(reinterpret_cast<Node*>(tv.data()),{tv.begin(0)/dof,tv.begin(1)/dof,tv.begin(2)/dof}, {tv.end(0)/dof,tv.end(1)/dof,tv.end(2)/dof});
 
@@ -143,15 +143,15 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental::Of
 
    Synopsis:
    #include <petscdmda_kokkos.hpp>
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar *, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -195,15 +195,15 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental
 
    Synopsis:
    #include <petscdmda_kokkos.hpp>
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 
@@ -262,7 +262,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental
 
     For example, to initialize a grid,
 .vb
-    typedef Kokkos::Experimental::OffsetView<const PetscScalar****,Kokkos::LayoutRight,MemorySpace> PetscScalarKokkosOffsetView4D;
+    typedef Kokkos::Experimental::OffsetView<const PetscScalar ****, Kokkos::LayoutRight, MemorySpace> PetscScalarKokkosOffsetView4D;
 
     PetscScalarKokkosOffsetView4D kv;
     DMDAVecGetKokkosOffsetViewDOFWrite(da,v,&kv); // v is a global vector
@@ -307,15 +307,15 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM, Vec, Kokkos::Experimental:
 
    Synopsis:
    #include <petscdmda_kokkos.hpp>
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<const PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
-   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da,Vec v,Kokkos::Experimental::OffsetView<PetscScalar****,Kokkos::LayoutRight,MemorySpace>* kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<const PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
+   PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM da, Vec v, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *kv);
 
    Logically Collective, No Fortran Support
 

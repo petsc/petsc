@@ -462,7 +462,7 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc(size_t m,void **result)
+   PetscErrorCode PetscMalloc(size_t m, void **result)
 
    Not Collective
 
@@ -495,7 +495,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscRealloc(size_t m,void **result)
+   PetscErrorCode PetscRealloc(size_t m, void **result)
 
    Not Collective
 
@@ -540,7 +540,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc(size_t m,void **result)
+   PetscErrorCode PetscCalloc(size_t m, void **result)
 
    Not Collective
 
@@ -571,7 +571,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc1(size_t m1,type **r1)
+   PetscErrorCode PetscMalloc1(size_t m1, type **r1)
 
    Not Collective
 
@@ -626,7 +626,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc1(size_t m1,type **r1)
+   PetscErrorCode PetscCalloc1(size_t m1, type **r1)
 
    Not Collective
 
@@ -650,7 +650,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc2(size_t m1,type **r1,size_t m2,type **r2)
+   PetscErrorCode PetscMalloc2(size_t m1, type **r1, size_t m2, type **r2)
 
    Not Collective
 
@@ -673,7 +673,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc2(size_t m1,type **r1,size_t m2,type **r2)
+   PetscErrorCode PetscCalloc2(size_t m1, type **r1, size_t m2, type **r2)
 
    Not Collective
 
@@ -696,7 +696,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
+   PetscErrorCode PetscMalloc3(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3)
 
    Not Collective
 
@@ -722,7 +722,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
+   PetscErrorCode PetscCalloc3(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3)
 
    Not Collective
 
@@ -748,7 +748,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
+   PetscErrorCode PetscMalloc4(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4)
 
    Not Collective
 
@@ -776,7 +776,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
+   PetscErrorCode PetscCalloc4(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4)
 
    Not Collective
 
@@ -804,7 +804,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
+   PetscErrorCode PetscMalloc5(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5)
 
    Not Collective
 
@@ -834,7 +834,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
+   PetscErrorCode PetscCalloc5(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5)
 
    Not Collective
 
@@ -864,7 +864,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
+   PetscErrorCode PetscMalloc6(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5, size_t m6, type **r6)
 
    Not Collective
 
@@ -896,7 +896,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
+   PetscErrorCode PetscCalloc6(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5, size_t m6, type **r6)
 
    Not Collective
 
@@ -928,7 +928,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscMalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
+   PetscErrorCode PetscMalloc7(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5, size_t m6, type **r6, size_t m7, type **r7)
 
    Not Collective
 
@@ -962,7 +962,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscCalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
+   PetscErrorCode PetscCalloc7(size_t m1, type **r1, size_t m2, type **r2, size_t m3, type **r3, size_t m4, type **r4, size_t m5, type **r5, size_t m6, type **r6, size_t m7, type **r7)
 
    Not Collective
 
@@ -1064,7 +1064,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree2(void *memory1,void *memory2)
+   PetscErrorCode PetscFree2(void *memory1, void *memory2)
 
    Not Collective
 
@@ -1088,7 +1088,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
+   PetscErrorCode PetscFree3(void *memory1, void *memory2, void *memory3)
 
    Not Collective
 
@@ -1113,7 +1113,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree4(void *m1,void *m2,void *m3,void *m4)
+   PetscErrorCode PetscFree4(void *m1, void *m2, void *m3, void *m4)
 
    Not Collective
 
@@ -1139,7 +1139,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree5(void *m1,void *m2,void *m3,void *m4,void *m5)
+   PetscErrorCode PetscFree5(void *m1, void *m2, void *m3, void *m4, void *m5)
 
    Not Collective
 
@@ -1166,7 +1166,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree6(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6)
+   PetscErrorCode PetscFree6(void *m1, void *m2, void *m3, void *m4, void *m5, void *m6)
 
    Not Collective
 
@@ -1194,7 +1194,7 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-   PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
+   PetscErrorCode PetscFree7(void *m1, void *m2, void *m3, void *m4, void *m5, void *m6, void *m7)
 
    Not Collective
 
@@ -1817,8 +1817,8 @@ M*/
    PetscHelpPrintf - Prints help messages.
 
    Synopsis:
-    #include <petscsys.h>
-     PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
+   #include <petscsys.h>
+   PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[], args);
 
    Not Collective, only applies on MPI rank 0; No Fortran Support
 
@@ -1928,7 +1928,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
 
    Synopsis:
     #include <petscsys.h>
-    void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
+    void PetscPrefetchBlock(const anytype *a, size_t n, int rw, int t)
 
    Not Collective
 
@@ -1947,8 +1947,8 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
    equivalent locality hints, but the following macros are always defined to their closest analogue.
 +  `PETSC_PREFETCH_HINT_NTA` - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
 .  `PETSC_PREFETCH_HINT_T0`  - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
-.  `PETSC_PREFETCH_HINT_T1`  - Fetch to level 2 and higher (not L1).
--  `PETSC_PREFETCH_HINT_T2`  - Fetch to high-level cache only.  (On many systems, T0 and T1 are equivalent.)
+.  `PETSC_PREFETCH_HINT_T1`  - Fetch to level 2 and higher (not L1). On many systems, `PETSC_PREFETCH_HINT_T0` and `PETSC_PREFETCH_HINT_T1` are equivalent.
+-  `PETSC_PREFETCH_HINT_T2`  - Fetch to high-level cache only.
 
    This function does nothing on architectures that do not support prefetch and never errors (even if passed an invalid
    address).
@@ -3037,7 +3037,7 @@ static inline unsigned int PetscStrHash(const char *str)
 
   Synopsis:
   #include <petscsys.h>
-  PetscMPIInt MPIU_Allreduce(void *indata,void *outdata,PetscCount count,MPI_Datatype dtype, MPI_Op op, MPI_Comm comm);
+  PetscMPIInt MPIU_Allreduce(void *indata, void *outdata, PetscCount count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm);
 
   Collective
 
