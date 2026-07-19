@@ -902,7 +902,7 @@ struct stdbasis_functor {
 
   stdbasis_functor(PetscInt i) : _i(i) { }
 
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s, const PetscScalar &i) const noexcept { return i == _i ? 1.0 : 0.0; }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &, const PetscScalar &i) const noexcept { return i == _i ? 1.0 : 0.0; }
 };
 } // namespace detail
 
