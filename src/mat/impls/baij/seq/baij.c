@@ -3471,8 +3471,6 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar *array[])
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqBAIJ()`
 M*/
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType, MatReuse, Mat *);
-
 PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
 {
   PetscMPIInt  size;

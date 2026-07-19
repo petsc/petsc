@@ -23,8 +23,6 @@ typedef struct _p_PetscBench *PetscBench;
 J*/
 typedef const char *PetscBenchType;
 
-PETSC_EXTERN PetscClassId PetscBench_CLASSID;
-
 PETSC_EXTERN PetscErrorCode PetscBenchInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode PetscBenchCreate(MPI_Comm, PetscBench *);

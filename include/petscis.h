@@ -206,7 +206,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateIS(IS, ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF, PetscInt, ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping, PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingLoad(ISLocalToGlobalMapping, PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping, PetscObject, const char[]);

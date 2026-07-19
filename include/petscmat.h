@@ -2244,7 +2244,6 @@ PETSC_EXTERN PetscErrorCode MatNullSpaceGetVecs(MatNullSpace, PetscBool *, Petsc
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreateRigidBody(Vec, MatNullSpace *);
 
 PETSC_EXTERN PetscErrorCode MatReorderingSeqSBAIJ(Mat, IS);
-PETSC_EXTERN PetscErrorCode MatMPISBAIJSetHashTableFactor(Mat, PetscReal);
 PETSC_EXTERN PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode MatCreateMAIJ(Mat, PetscInt, Mat *);
@@ -2713,7 +2712,6 @@ PETSC_EXTERN PetscErrorCode MatDenseCUDAReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatDenseCUDASetPreallocation(Mat, PetscScalar *);
 
-PETSC_EXTERN PetscErrorCode MatCreateSeqSELLCUDA(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSELLCUDA(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 
@@ -2787,7 +2785,6 @@ PETSC_EXTERN PetscErrorCode MatDenseHIPPlaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatDenseHIPSetPreallocation(Mat, PetscScalar *);
-PETSC_EXTERN PetscErrorCode MatCreateSeqSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 

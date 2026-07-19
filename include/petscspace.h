@@ -58,7 +58,6 @@ PETSC_EXTERN PetscErrorCode    PetscSpaceViewFromOptions(PetscSpace, PetscObject
 
 PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char[], PetscErrorCode (*)(PetscSpace));
-PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetNumComponents(PetscSpace, PetscInt);

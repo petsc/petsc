@@ -83,11 +83,7 @@ PetscErrorCode DMGenerateRegisterAll(void)
    DMGenerateRegister("my_generator", MyGeneratorCreate, MyGeneratorRefiner, MyGeneratorAdaptor, dim);
 .ve
 
-  Then, your generator can be chosen with the procedural interface via
-.vb
-  DMGenerate(dm, "my_generator",...)
-.ve
-  or at runtime via the option
+  Then, your generator can be chosen at runtime via the option
 .vb
   -dm_generator my_generator
 .ve

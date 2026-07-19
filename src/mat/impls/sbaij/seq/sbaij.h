@@ -154,6 +154,5 @@ PETSC_INTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat, PetscInt, const PetscInt[
 PETSC_INTERN PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 PETSC_INTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
-PETSC_INTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat, IS, PetscScalar *, Vec, Vec);
 
 PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqSBAIJ(Mat, PetscBool);

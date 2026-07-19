@@ -113,7 +113,6 @@ PETSC_EXTERN PetscErrorCode    PetscDSViewFromOptions(PetscDS, PetscObject, cons
 
 PETSC_EXTERN PetscErrorCode PetscDSView(PetscDS, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDSRegister(const char[], PetscErrorCode (*)(PetscDS));
-PETSC_EXTERN PetscErrorCode PetscDSRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetHeightSubspace(PetscDS, PetscInt, PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSGetSpatialDimension(PetscDS, PetscInt *);

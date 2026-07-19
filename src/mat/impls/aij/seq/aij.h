@@ -363,14 +363,12 @@ PETSC_INTERN PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat, MatFDColo
 PETSC_INTERN PetscErrorCode MatLoad_AIJ_HDF5(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ_Binary(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ(Mat, PetscViewer);
-PETSC_INTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 
 #if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ(Mat);
 
-PETSC_INTERN PetscErrorCode MatProductSymbolic_SeqAIJ_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_RARt_SeqAIJ_SeqAIJ(Mat);
 

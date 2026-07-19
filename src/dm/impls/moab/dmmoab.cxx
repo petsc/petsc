@@ -21,9 +21,7 @@ M*/
 
 /* External function declarations here */
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Moab(DM, DM, Mat *, Vec *);
-PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Moab(DM);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Moab(DM, Mat *);
-PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_Moab(DM, DM *);
 PETSC_INTERN PetscErrorCode DMRefine_Moab(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsen_Moab(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMRefineHierarchy_Moab(DM, PetscInt, DM[]);

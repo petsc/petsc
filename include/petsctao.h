@@ -452,7 +452,6 @@ PETSC_EXTERN PetscErrorCode TaoAddLineSearchCounts(Tao);
 PETSC_EXTERN PetscErrorCode TaoDefaultConvergenceTest(Tao, PetscCtx);
 PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, PetscCtx), PetscCtx);
 
-PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal);
 /*S
   TaoMonitorDrawCtx - Context object for the `Tao` graphical monitor routines that draw convergence information on a `PetscDraw`

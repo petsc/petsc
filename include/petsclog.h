@@ -76,7 +76,6 @@ PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscLogStateCreate(PetscLogState *);
 PETSC_EXTERN PetscErrorCode PetscLogStateDestroy(PetscLogState *);
-PETSC_EXTERN PetscErrorCode PetscLogStateGetRegistry(PetscLogState, PetscLogRegistry *);
 
 PETSC_EXTERN PetscErrorCode PetscLogStateClassRegister(PetscLogState, const char[], PetscClassId, PetscLogStage *);
 PETSC_EXTERN PetscErrorCode PetscLogStateClassSetActive(PetscLogState, PetscLogStage, PetscClassId, PetscBool);

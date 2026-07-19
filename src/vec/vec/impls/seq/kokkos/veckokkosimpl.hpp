@@ -146,9 +146,7 @@ PETSC_INTERN PetscErrorCode VecConjugate_SeqKokkos(Vec xin);
 PETSC_INTERN PetscErrorCode VecNorm_SeqKokkos(Vec, NormType, PetscReal *);
 PETSC_INTERN PetscErrorCode VecErrorWeightedNorms_SeqKokkos(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
 PETSC_INTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
-PETSC_INTERN PetscErrorCode VecCreate_SeqKokkos_Private(Vec, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
-PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos_Private(Vec, PetscBool, PetscInt, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_Kokkos(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos(Vec, PetscRandom);
@@ -157,9 +155,6 @@ PETSC_INTERN PetscErrorCode VecGetLocalVectorRead_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVectorRead_SeqKokkos(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec, PetscScalar **);
-PETSC_INTERN PetscErrorCode VecCopy_SeqKokkos_Private(Vec, Vec);
-PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos_Private(Vec, PetscRandom);
-PETSC_INTERN PetscErrorCode VecResetArray_SeqKokkos_Private(Vec);
 PETSC_INTERN PetscErrorCode VecMin_SeqKokkos(Vec, PetscInt *, PetscReal *);
 PETSC_INTERN PetscErrorCode VecMax_SeqKokkos(Vec, PetscInt *, PetscReal *);
 PETSC_INTERN PetscErrorCode VecSum_SeqKokkos(Vec, PetscScalar *);
@@ -173,7 +168,6 @@ PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec, PetscScala
 PETSC_INTERN PetscErrorCode VecGetSubVector_Kokkos_Private(Vec, PetscBool, IS, Vec *);
 PETSC_INTERN PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec, IS, Vec *);
 
-PETSC_INTERN PetscErrorCode VecDuplicateVecs_Kokkos_GEMV(Vec, PetscInt, Vec **);
 PETSC_INTERN PetscErrorCode VecMDot_SeqKokkos_GEMV(Vec, PetscInt, const Vec *, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecMTDot_SeqKokkos_GEMV(Vec, PetscInt, const Vec *, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec, PetscInt, const PetscScalar *, Vec *);

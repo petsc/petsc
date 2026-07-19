@@ -380,7 +380,7 @@ static PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *l
 
   Level: advanced
 
-.seealso: `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaGetVector()`
+.seealso: `PetscViewerMathematicaSetName()`
 @*/
 PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 {

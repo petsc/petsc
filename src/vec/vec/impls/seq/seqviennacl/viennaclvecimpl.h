@@ -52,9 +52,6 @@ PETSC_INTERN PetscErrorCode VecRestoreArray_SeqViennaCL(Vec, PetscScalar **);
 
 PETSC_INTERN PetscErrorCode VecCreate_MPIViennaCL_Private(Vec, PetscBool, PetscInt, const ViennaCLVector *);
 
-PETSC_INTERN PetscErrorCode VecViennaCLCopyToGPU_Public(Vec);
-PETSC_INTERN PetscErrorCode VecViennaCLAllocateCheck_Public(Vec);
-
 struct Vec_ViennaCL {
   viennacl::vector<PetscScalar> *GPUarray;           // this always holds the GPU data
   viennacl::vector<PetscScalar> *GPUarray_allocated; // if the array was allocated by PETSc this is its pointer

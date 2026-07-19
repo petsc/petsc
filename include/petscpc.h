@@ -38,7 +38,6 @@ PETSC_EXTERN const char *const        PCMGGalerkinTypes[];
 PETSC_EXTERN const char *const        PCMGCoarseSpaceTypes[];
 PETSC_EXTERN const char *const        PCExoticTypes[];
 PETSC_EXTERN const char *const        PCPatchConstructTypes[];
-PETSC_EXTERN const char *const        PCDeflationTypes[];
 PETSC_EXTERN const char *const *const PCFailedReasons;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm, PC *);
@@ -394,7 +393,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC, IS *);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC, IS *);
-PETSC_EXTERN PetscErrorCode PCBDDCSetInterfaceExtType(PC, PCBDDCInterfaceExtType);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundaries(PC, IS *);

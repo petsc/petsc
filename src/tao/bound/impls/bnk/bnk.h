@@ -236,7 +236,6 @@ PETSC_INTERN PetscErrorCode TaoSolve_BNLS(Tao);
 PETSC_INTERN PetscErrorCode TaoSolve_BNTR(Tao);
 PETSC_INTERN PetscErrorCode TaoSolve_BNTL(Tao);
 
-PETSC_INTERN PetscErrorCode TaoBNKPreconBFGS(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool *);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);

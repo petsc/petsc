@@ -167,5 +167,5 @@ PetscErrorCode MatCreateSELLHIP(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt 
 
   Level: beginner
 
-.seealso: `MatCreateSELLHIP()`, `MATSEQSELLHIP`, `MatCreateSeqSELLHIP()`, `MatHIPFormatOperation()`
+.seealso: `MatCreateSELLHIP()`, `MATSEQSELLHIP`, `MatHIPFormatOperation()`
 M*/

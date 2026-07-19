@@ -36,7 +36,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
   `PetscSpaceRegister()` may be called multiple times to add several user-defined types of `PetscSpace`.  The creation function is called
   when the type is set to 'name'.
 
-.seealso: `PetscSpace`, `PetscSpaceRegisterAll()`, `PetscSpaceRegisterDestroy()`
+.seealso: `PetscSpace`, `PetscSpaceRegisterAll()`
 @*/
 PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace))
 {

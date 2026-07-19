@@ -34,7 +34,7 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
   Note:
   `PetscDSRegister()` may be called multiple times to add several user-defined `PetscDSs`
 
-.seealso: `PetscDSType`, `PetscDS`, `PetscDSRegisterAll()`, `PetscDSRegisterDestroy()`
+.seealso: `PetscDSType`, `PetscDS`, `PetscDSRegisterAll()`
 @*/
 PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(PetscDS))
 {

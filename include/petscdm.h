@@ -57,7 +57,6 @@ PETSC_EXTERN PetscErrorCode          DMClone(DM, DM *);
 PETSC_EXTERN PetscErrorCode          DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode          DMGetType(DM, DMType *);
 PETSC_EXTERN PetscErrorCode          DMRegister(const char[], PetscErrorCode (*)(DM));
-PETSC_EXTERN PetscErrorCode          DMRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode DMView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLoad(DM, PetscViewer);
@@ -115,7 +114,6 @@ PETSC_EXTERN PetscErrorCode DMExtrude(DM, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM, PetscObject, const char[]);
 
-PETSC_EXTERN PetscErrorCode DMGenerate(DM, const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMGenerateRegister(const char[], PetscErrorCode (*)(DM, PetscBool, DM *), PetscErrorCode (*)(DM, PetscReal *, DM *), PetscErrorCode (*)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt);
 PETSC_EXTERN PetscErrorCode DMGenerateRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMGenerateRegisterDestroy(void);

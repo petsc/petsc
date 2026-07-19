@@ -416,9 +416,6 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
 PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 {
   PetscBool isdraw, isascii, issocket, isbinary;
-#if PetscDefined(HAVE_MATHEMATICA)
-  PetscBool ismathematica;
-#endif
 #if PetscDefined(HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
@@ -435,9 +432,6 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if PetscDefined(HAVE_MATHEMATICA)
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATHEMATICA, &ismathematica));
-#endif
 #if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
@@ -455,10 +449,6 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
     PetscCall(VecView_Seq_ASCII(xin, viewer));
   } else if (isbinary) {
     PetscCall(VecView_Seq_Binary(xin, viewer));
-#if PetscDefined(HAVE_MATHEMATICA)
-  } else if (ismathematica) {
-    PetscCall(PetscViewerMathematicaPutVector(viewer, xin));
-#endif
 #if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(VecView_MPI_HDF5(xin, viewer)); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/

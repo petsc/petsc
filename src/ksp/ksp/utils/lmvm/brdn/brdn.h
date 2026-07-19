@@ -41,7 +41,5 @@ PETSC_INTERN PetscErrorCode BroydenKernelHermitianTranspose_CompactDense(Mat, Ma
 PETSC_INTERN PetscErrorCode BroydenKernelHermitianTranspose_Dense(Mat, MatLMVMMode, Vec, Vec);
 PETSC_INTERN PetscErrorCode BadBroydenKernel_Recursive(Mat, MatLMVMMode, Vec, Vec);
 PETSC_INTERN PetscErrorCode BadBroydenKernel_CompactDense(Mat, MatLMVMMode, Vec, Vec);
-PETSC_INTERN PetscErrorCode BadBroydenKernel_Dense(Mat, MatLMVMMode, Vec, Vec);
 PETSC_INTERN PetscErrorCode BadBroydenKernelHermitianTranspose_Recursive(Mat, MatLMVMMode, Vec, Vec);
 PETSC_INTERN PetscErrorCode BadBroydenKernelHermitianTranspose_CompactDense(Mat, MatLMVMMode, Vec, Vec);
-PETSC_INTERN PetscErrorCode BadBroydenKernelHermitianTranspose_Dense(Mat, MatLMVMMode, Vec, Vec);
