@@ -12,7 +12,7 @@
 /* SUBMANSEC = DUALSPACE */
 
 /*S
-  PetscDualSpace - PETSc object that manages the dual space to a linear space, e.g. the space of evaluation functionals at the vertices of a triangle
+  PetscDualSpace - PETSc object that manages a dual space `PetscSpace`, e.g. the space of evaluation functionals at the vertices of a triangle
 
   Level: beginner
 

@@ -860,7 +860,7 @@ cdef class TS(Object):
         J
             The matrix into which the Jacobian is computed.
         P
-            The optional matrix to use for building a preconditioner matrix.
+            The optional matrix to use for building a preconditioner.
         args
             Additional positional arguments for ``jacobian``.
         kargs

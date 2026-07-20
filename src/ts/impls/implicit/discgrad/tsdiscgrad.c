@@ -620,28 +620,28 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 + Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
 . Gfunc - constructor for the gradient of F from the formulation
-- ctx   - the user context
+- ctx   - the application context
 
   Calling sequence of `Sfunc`:
 + ts   - the integrator
 . time - the current time
 . u    - the solution
 . S    - the S-matrix from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Calling sequence of `Ffunc`:
 + ts   - the integrator
 . time - the current time
 . u    - the solution
 . F    - the computed function from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Calling sequence of `Gfunc`:
 + ts   - the integrator
 . time - the current time
 . u    - the solution
 . G    - the gradient of the computed function from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Level: intermediate
 
@@ -676,21 +676,21 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, P
 . time - the current time
 . u    - the solution
 . S    - the S-matrix from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Calling sequence of `Ffunc`:
 + ts   - the integrator
 . time - the current time
 . u    - the solution
 . F    - the computed function from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Calling sequence of `Gfunc`:
 + ts   - the integrator
 . time - the current time
 . u    - the solution
 . G    - the gradient of the computed function from the formulation
-- ctx  - the user context
+- ctx  - the application context
 
   Level: intermediate
 

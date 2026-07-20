@@ -96,6 +96,28 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPatchCreateGrid - Create a `DMPATCH` whose coarse `DM` is a structured `DMDA` of the requested global size, with the given patch and process-grid sizes
+
+  Collective
+
+  Input Parameters:
++ comm      - the MPI communicator
+. dim       - the spatial dimension (1, 2, or 3); unused dimensions of `gridSize` and `patchSize` are forced to 1
+. patchSize - `MatStencil` giving the size of each patch in cells
+. commSize  - `MatStencil` giving the process grid used per patch (see `DMPatchSetCommSize()`)
+- gridSize  - `MatStencil` giving the global cell count of the underlying `DMDA` in each dimension
+
+  Output Parameter:
+. dm - the newly created `DMPATCH`
+
+  Level: developer
+
+  Note:
+  The coarse `DM` is created as a `DMDA` with a single degree of freedom per node, stencil width 1, and `DM_BOUNDARY_NONE` on every side.
+
+.seealso: `DMPATCH`, `DMPatchCreate()`, `DMPatchSetPatchSize()`, `DMPatchSetCommSize()`, `DMDA`, `MatStencil`
+@*/
 PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
 {
   DM_Patch *mesh;

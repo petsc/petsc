@@ -307,14 +307,15 @@ ai-review-optional:
     - date
     - hostname
   script:
-    - test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
     - claude --version || { echo "claude not installed"; exit 1; }
     - glab --version || { echo "glab not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
-      if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'AI review'; then
+      if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'Post AI review'; then
+        test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
         REVIEW_CMD="/review-mr-post"
       else
+        unset GITLAB_TOKEN
         REVIEW_CMD="/review-mr"
       fi
       # --max-turns 100: large MRs were hitting the 30-turn cap before the review finished.

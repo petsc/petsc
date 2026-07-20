@@ -1,33 +1,26 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 
-/*
-This function is used before applying a
-symmetric reordering to matrix A that is
-in SBAIJ format.
+/*@
+  MatReorderingSeqSBAIJ - Prepare an updated index structure for a symmetric reordering of a `MATSEQSBAIJ` matrix.
 
-The permutation is assumed to be symmetric, i.e.,
-P = P^T (= inv(P)),
-so the permuted matrix P*A*inv(P)=P*A*P^T is ensured to be symmetric.
- - a wrong assumption! This code needs rework!  -- Hong
+  Not Collective
 
-The function is modified from sro.f of YSMP. The description from YSMP:
-C    THE NONZERO ENTRIES OF THE MATRIX M ARE ASSUMED TO BE STORED
-C    SYMMETRICALLY IN (IA,JA,A) FORMAT (I.E., NOT BOTH M(I,J) AND M(J,I)
-C    ARE STORED IF I NE J).
-C
-C    SRO DOES NOT REARRANGE THE ORDER OF THE ROWS, BUT DOES MOVE
-C    NONZEROES FROM ONE ROW TO ANOTHER TO ENSURE THAT IF M(I,J) WILL BE
-C    IN THE UPPER TRIANGLE OF M WITH RESPECT TO THE NEW ORDERING, THEN
-C    M(I,J) IS STORED IN ROW I (AND THUS M(J,I) IS NOT STORED);  WHEREAS
-C    IF M(I,J) WILL BE IN THE STRICT LOWER TRIANGLE OF M, THEN M(J,I) IS
-C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
+  Input Parameters:
++ A    - the `MATSEQSBAIJ` matrix
+- perm - the (assumed symmetric) permutation to be applied
 
-  -- output: new index set (inew, jnew) for A and a map a2anew that maps
-             values a to anew, such that all
-             nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
-             Note: matrix A is not permuted by this function!
-*/
+  Level: developer
+
+  Notes:
+  This routine currently raises `PETSC_ERR_SUP`; matrix reordering is not supported for `MATSEQSBAIJ` matrices,
+  so callers should convert to `MATSEQAIJ` first.
+
+  The intent (unimplemented) is to compute a new index set `(inew, jnew)` for `A` and a value map so that
+  all nonzero entries `A(perm(i), perm(k))` are stored in the upper triangle; the matrix itself is not permuted.
+
+.seealso: `Mat`, `MATSEQSBAIJ`, `MatGetOrdering()`, `MatPermute()`
+@*/
 PetscErrorCode MatReorderingSeqSBAIJ(Mat A, IS perm)
 {
   Mat_SeqSBAIJ  *a   = (Mat_SeqSBAIJ *)A->data;

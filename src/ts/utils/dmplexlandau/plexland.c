@@ -2272,7 +2272,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   Input Parameters:
 + pack     - the `DMCOMPOSITE`
 . func     - call back function
-- user_ctx - user context
+- user_ctx - application context
 
   Input/Output Parameter:
 . X - Vector to data to

@@ -4113,11 +4113,26 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     This is really ugly. if inodes are used this replaces the
-  permutations with ones that correspond to rows/cols of the matrix
-  rather than inode blocks
-*/
+/*@
+  MatInodeAdjustForInodes - If the matrix uses identical-node (inode) blocks, replace the given permutations,
+  which are expressed on inode blocks, with permutations expressed on the individual rows and columns.
+
+  Not Collective
+
+  Input Parameter:
+. A - the matrix
+
+  Output Parameters:
++ rperm - the row permutation, updated in place
+- cperm - the column permutation, updated in place
+
+  Level: developer
+
+  Note:
+  If `A` does not use inodes, or all inodes are of size 1, the permutations are returned unchanged.
+
+.seealso: `Mat`, `MATSEQAIJ`, `MatInodeGetInodeSizes()`, `MatGetOrdering()`
+@*/
 PetscErrorCode MatInodeAdjustForInodes(Mat A, IS *rperm, IS *cperm)
 {
   PetscFunctionBegin;

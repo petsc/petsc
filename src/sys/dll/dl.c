@@ -14,6 +14,21 @@ struct _n_PetscDLLibrary {
   char           libname[PETSC_MAX_PATH_LEN];
 };
 
+/*@C
+  PetscDLLibraryPrintPath - Prints the names of all dynamic libraries in a `PetscDLLibrary` list to the PETSc error output stream
+
+  Not Collective
+
+  Input Parameter:
+. libs - the linked list of currently opened dynamic libraries
+
+  Level: developer
+
+  Note:
+  Used internally when reporting errors from `PetscDLLibrarySym()` to help the user see which libraries have been searched.
+
+.seealso: `PetscDLLibrary`, `PetscDLLibraryOpen()`, `PetscDLLibrarySym()`, `PetscDLLibraryAppend()`, `PetscDLLibraryClose()`
+@*/
 PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
   PetscFunctionBegin;

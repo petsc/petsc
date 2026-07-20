@@ -2433,7 +2433,7 @@ PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 . J    - array of `M` target point indices into the user's target coordinate array
 . K    - array of `N` source point indices into the user's source coordinate array
 . ptr  - column-major output buffer of length `M*N` to fill with kernel values
-- ctx  - the optional user context passed at registration
+- ctx  - the optional application context passed at registration
 
   Level: intermediate
 

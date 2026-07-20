@@ -394,8 +394,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode KSPFlexibleModifyPCFn(KSP ksp, Petsc
 
 PETSC_EXTERN PetscErrorCode KSPFlexibleSetModifyPC(KSP, KSPFlexibleModifyPCFn *, PetscCtx, PetscCtxDestroyFn *);
 
-PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
-static inline PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", ) static inline PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
 {
   return KSPFlexibleSetModifyPC(ksp, fun, ctx, dfun);
 }
@@ -426,8 +425,7 @@ PETSC_EXTERN PetscErrorCode KSPIDRGetCosine(KSP, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPIDRSetRandom(KSP, PetscRandom);
 PETSC_EXTERN PetscErrorCode KSPIDRGetRandom(KSP, PetscRandom *);
 
-PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", )
-static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleSetModifyPC()", ) static inline PetscErrorCode KSPGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fun, PetscCtx ctx, PetscCtxDestroyFn *dfun)
 {
   return KSPFlexibleSetModifyPC(ksp, fun, ctx, dfun);
 }
@@ -564,14 +562,12 @@ PETSC_EXTERN PetscErrorCode KSPGMRESGetCGSRefinementType(KSP, KSPGMRESCGSRefinem
 PETSC_EXTERN KSPFlexibleModifyPCFn KSPFlexibleModifyPCNoChange;
 PETSC_EXTERN KSPFlexibleModifyPCFn KSPFlexibleModifyPCKSP;
 
-PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCNoChange()", )
-static inline PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCNoChange()", ) static inline PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   return KSPFlexibleModifyPCNoChange(ksp, total_its, loc_its, res_norm, ctx);
 }
 
-PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCKSP()", )
-static inline PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
+PETSC_DEPRECATED_FUNCTION(3, 25, 0, "KSPFlexibleModifyPCKSP()", ) static inline PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, PetscCtx ctx)
 {
   return KSPFlexibleModifyPCKSP(ksp, total_its, loc_its, res_norm, ctx);
 }

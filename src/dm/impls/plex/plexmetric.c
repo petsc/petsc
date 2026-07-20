@@ -3,6 +3,39 @@
 
 PetscLogEvent DMPLEX_MetricEnforceSPD, DMPLEX_MetricNormalize, DMPLEX_MetricAverage, DMPLEX_MetricIntersection;
 
+/*@
+  DMPlexMetricSetFromOptions - Configure the Riemannian metric context on a `DMPLEX` from the options database
+
+  Collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Options Database Keys:
++ -dm_plex_metric_isotropic (true|false)                 - Is the metric isotropic?
+. -dm_plex_metric_uniform (true|false)                   - Is the metric uniform?
+. -dm_plex_metric_restrict_anisotropy_first (true|false) - Restrict anisotropy before normalization
+. -dm_plex_metric_no_insert (true|false)                 - Turn off node insertion and deletion during adaptation
+. -dm_plex_metric_no_swap (true|false)                   - Turn off facet swapping
+. -dm_plex_metric_no_move (true|false)                   - Turn off facet node movement
+. -dm_plex_metric_no_surf (true|false)                   - Turn off surface modification
+. -dm_plex_metric_num_iterations nits                    - Number of `ParMmg` adaptation iterations
+. -dm_plex_metric_verbosity verbosity                    - Verbosity of the metric-based adaptation package (-1 silent, 10 maximum)
+. -dm_plex_metric_h_min h_min                            - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max h_max                            - Maximum tolerated metric magnitude
+. -dm_plex_metric_a_max a_max                            - Maximum tolerated anisotropy
+. -dm_plex_metric_p order                                - L-p normalization order
+. -dm_plex_metric_target_complexity comp                 - Target metric complexity
+. -dm_plex_metric_gradation_factor fact                  - Metric gradation factor
+- -dm_plex_metric_hausdorff_number h                     - Metric Hausdorff number
+
+  Level: beginner
+
+  Note:
+  A metric context is created on the `DM` if none exists.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexMetricSetIsotropic()`, `DMPlexMetricSetUniform()`, `DMPlexMetricSetMinimumMagnitude()`, `DMPlexMetricSetMaximumMagnitude()`, `DMPlexMetricSetTargetComplexity()`
+@*/
 PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   DM_Plex  *plex = (DM_Plex *)dm->data;

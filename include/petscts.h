@@ -937,7 +937,7 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(Pet
 . t    - time at which to evaluate residual
 . x    - array of local state information
 . f    - output array of local residual information
-- ctx  - optional user context
+- ctx  - optional application context
 
   Level: beginner
 

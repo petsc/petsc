@@ -39,7 +39,7 @@ static PetscErrorCode constant_u_2d(PetscInt, PetscReal, const PetscReal[], Pets
 . time - The TS time
 . x    - The coordinates of the evaluation point
 . u    - The field values at point x
-- ctx  - A user context, or NULL
+- ctx  - An application context, or NULL
 
   Output Parameter:
 . f    - The value of the functional at point x

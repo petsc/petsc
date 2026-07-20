@@ -852,7 +852,7 @@ time is:
   Jacobian need not be computed.
 
 You are free to have your `FormFunction()` compute as much of the Jacobian at that point
-as you like, keep the information in the user context (the final argument to
+as you like, keep the information in the application context (the final argument to
 `FormFunction()` and `FormJacobian()`) and then retrieve the information in your
 `FormJacobian()` function.
 

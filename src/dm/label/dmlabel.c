@@ -2290,13 +2290,13 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 . pointSF   - The `PetscSF` describing parallel layout of the label points
 . merge     - The operator which merges label values
 . markPoint - An optional callback that is called when a point is marked, or `NULL`
-- ctx       - An optional user context for the callback, or `NULL`
+- ctx       - An optional application context for the callback, or `NULL`
 
   Calling sequence of `markPoint`:
 + label - The `DMLabel`
 . p     - The point being marked
 . val   - The label value for `p`
-- ctx   - An optional user context
+- ctx   - An optional application context
 
   Level: intermediate
 

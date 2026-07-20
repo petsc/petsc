@@ -1258,7 +1258,7 @@ PetscErrorCode SNESSetComputeApplicationContext(SNES snes, PetscErrorCode (*comp
 
   Input Parameters:
 + snes - the `SNES` context
-- ctx  - the user context
+- ctx  - the application context
 
   Level: intermediate
 
@@ -2260,10 +2260,26 @@ PetscErrorCode SNESSetNGS(SNES snes, SNESNGSFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     This is used for -snes_mf_operator; it uses a duplicate of snes->jacobian_pre because snes->jacobian_pre cannot be
-   changed during the KSPSolve()
-*/
+/*@C
+  SNESPicardComputeMFFunction - Matrix-free residual $A(x) x - b(x)$ used by `SNESSetPicard()` when the operator is applied through `-snes_mf_operator`
+
+  Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+. x    - the current iterate
+- ctx  - unused application context; the Picard callbacks are retrieved from the attached `DMSNES`
+
+  Output Parameter:
+. f - the residual vector
+
+  Level: developer
+
+  Note:
+  Uses a duplicate of `snes->jacobian_pre` because `snes->jacobian_pre` cannot be changed during the `KSPSolve()`.
+
+.seealso: [](ch_snes), `SNES`, `SNESSetPicard()`, `SNESPicardComputeFunction()`, `SNESPicardComputeJacobian()`
+@*/
 PetscErrorCode SNESPicardComputeMFFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   DM     dm;
@@ -2287,6 +2303,23 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes, Vec x, Vec f, PetscCtx ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPicardComputeFunction - Compute the residual $A(x) x - b(x)$ using the callbacks registered by `SNESSetPicard()`
+
+  Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+. x    - the current iterate
+- ctx  - unused application context; the Picard callbacks are retrieved from the attached `DMSNES`
+
+  Output Parameter:
+. f - the residual vector
+
+  Level: developer
+
+.seealso: [](ch_snes), `SNES`, `SNESSetPicard()`, `SNESPicardComputeMFFunction()`, `SNESPicardComputeJacobian()`
+@*/
 PetscErrorCode SNESPicardComputeFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
 {
   DM     dm;
@@ -2308,6 +2341,25 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESPicardComputeJacobian - Trivial Jacobian assembly callback used by `SNESSetPicard()`; the Picard operator is filled in by `SNESPicardComputeFunction()`
+
+  Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+. x1   - the current iterate (unused)
+. J    - the Jacobian matrix to assemble
+. B    - the preconditioning matrix (unused)
+- ctx  - unused application context
+
+  Level: developer
+
+  Note:
+  Only calls `MatAssemblyBegin()`/`MatAssemblyEnd()` on `J`, because the Picard iteration reuses the operator already assembled by `SNESPicardComputeFunction()`.
+
+.seealso: [](ch_snes), `SNES`, `SNESSetPicard()`, `SNESPicardComputeFunction()`, `SNESPicardComputeMFFunction()`
+@*/
 PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, PetscCtx ctx)
 {
   PetscFunctionBegin;
@@ -4111,6 +4163,24 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
 
 PETSC_INTERN PetscErrorCode SNESMonitorRange_Private(SNES, PetscInt, PetscReal *);
 
+/*@C
+  SNESMonitorLGRange - Line-graph monitor that plots the residual norm together with residual-range statistics for a `SNESSolve()`
+
+  Collective
+
+  Input Parameters:
++ snes   - the `SNES` context
+. n      - the iteration number
+. rnorm  - the 2-norm of the residual
+- monctx - a `PetscViewer` of type `PETSCVIEWERDRAW` set up with `PetscViewerMonitorLGSetUp()`
+
+  Level: intermediate
+
+  Note:
+  Plots four line graphs in the viewer: the residual norm (log scale), the fraction of residual entries larger than 20% of the maximum entry, the relative decrease `(prev - rnorm)/prev`, and their product.
+
+.seealso: [](ch_snes), `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`, `PetscViewerDrawGetDrawLG()`, `PetscDrawLG`
+@*/
 PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, PetscCtx monctx)
 {
   PetscDrawLG      lg;
@@ -5353,6 +5423,21 @@ PetscErrorCode SNESRegister(const char sname[], PetscErrorCode (*function)(SNES)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESTestLocalMin - Diagnostic that probes each entry of the current `SNES` solution to check whether the residual norm has a local minimum along the coordinate directions
+
+  Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Level: developer
+
+  Note:
+  Currently intended for serial runs. For each degree of freedom it perturbs the solution by increasing amounts and prints the resulting `SNESComputeFunction()` residual norms so the user can inspect local behavior.
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESComputeFunction()`
+@*/
 PetscErrorCode SNESTestLocalMin(SNES snes)
 {
   PetscInt    N, i, j;

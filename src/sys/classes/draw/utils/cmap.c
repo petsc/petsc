@@ -13,6 +13,18 @@
  */
 static PetscReal Gamma = 2.0;
 
+/*@
+  PetscDrawUtilitySetGamma - Set the monitor gamma-correction value used by the drawing colormap utilities.
+
+  Not Collective
+
+  Input Parameter:
+. g - the gamma value; a typical value is 2.0
+
+  Level: developer
+
+.seealso: `PetscDraw`, `PetscDrawUtilitySetCmap()`
+@*/
 PetscErrorCode PetscDrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -199,6 +211,30 @@ static struct {
   {"magma",    PetscDrawCmap_magma,    NULL              }, /* matplotlib 1.5 */
 };
 
+/*@C
+  PetscDrawUtilitySetCmap - Populate the RGB entries of a colormap from a named palette, honoring options-database
+  overrides for the colormap name, reversal, and brightness.
+
+  Not Collective
+
+  Input Parameters:
++ colormap - the name of the colormap (e.g. `"hue"`, `"gray"`, `"jet"`, `"viridis"`), or `NULL`/empty for the default
+- mapsize  - the number of colormap entries to fill
+
+  Output Parameters:
++ R - the red channel of length `mapsize`
+. G - the green channel of length `mapsize`
+- B - the blue channel of length `mapsize`
+
+  Options Database Keys:
++ -draw_cmap name           - select the colormap by name
+. -draw_cmap_reverse        - reverse the colormap
+- -draw_cmap_brighten value - brighten (positive) or darken (negative) the colormap; value must be in `(-1, 1)`
+
+  Level: developer
+
+.seealso: `PetscDraw`, `PetscDrawUtilitySetGamma()`
+@*/
 PetscErrorCode PetscDrawUtilitySetCmap(const char colormap[], int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
 {
   int         i, j;

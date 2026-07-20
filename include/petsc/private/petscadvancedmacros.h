@@ -66,4 +66,4 @@
 
 .seealso: `PetscIf()`, `PetscDefined()`, `PetscConcat()`, `PetscExpand()`, `PetscCompl()`
 */
-#define PetscIfPetscDefined(cond, result_if_true, ...) PetscIf(PetscDefined(cond), result_if_true, __VA_ARGS__)
+#define PetscIfPetscDefined(cond, result_if_true, ...) PetscIf(PetscDefined_(PETSC_##cond), result_if_true, __VA_ARGS__)

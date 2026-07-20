@@ -5996,8 +5996,8 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 
   Options Database Keys:
 + -dm_refine_pre times                     - Refine mesh before distribution, possibly multiple times
-+ -dm_refine_uniform_pre (true|false)      - Choose uniform or generator-based refinement
-+ -dm_refine_volume_limit_pre vol          - Cell volume limit after pre-refinement using generator
+. -dm_refine_uniform_pre (true|false)      - Choose uniform or generator-based refinement
+. -dm_refine_volume_limit_pre vol          - Cell volume limit after pre-refinement using generator
 . -dm_distribute (true|false)              - Distribute mesh across processes
 . -dm_distribute_overlap num               - Number of cells to overlap for distribution
 . -dm_refine                               - Refine mesh after distribution

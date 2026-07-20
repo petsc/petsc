@@ -2744,6 +2744,24 @@ PetscErrorCode DMConstructBasisTransform_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMCopyTransform - Copy the basis transform context and callbacks from `dm` to `newdm`
+
+  Not Collective
+
+  Input Parameter:
+. dm - the source `DM`
+
+  Output Parameter:
+. newdm - the destination `DM`
+
+  Level: developer
+
+  Note:
+  If the transform requires setup, `DMConstructBasisTransform_Internal()` is invoked on `newdm`.
+
+.seealso: [](ch_dmbase), `DM`, `DMCopyDS()`, `DMCopyDisc()`
+@*/
 PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 {
   PetscFunctionBegin;
@@ -3794,19 +3812,19 @@ PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscCtxDestroyFn *destroy)
 }
 
 /*@
-  DMSetApplicationContext - Set a user context into a `DM` object
+  DMSetApplicationContext - Set an application context into a `DM` object
 
   Not Collective
 
   Input Parameters:
 + dm  - the `DM` object
-- ctx - the user context
+- ctx - the application context
 
   Level: intermediate
 
   Note:
-  A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
-  In a multilevel solver, the user context is shared by all the `DM` in the hierarchy; it is thus not advisable
+  An application context is a way to pass problem specific information that is accessible whenever the `DM` is available
+  In a multilevel solver, the application context is shared by all the `DM` in the hierarchy; it is thus not advisable
   to store objects that represent discretized quantities inside the context.
 
   Fortran Notes:
@@ -3826,7 +3844,7 @@ PetscErrorCode DMSetApplicationContext(DM dm, PetscCtx ctx)
 }
 
 /*@
-  DMGetApplicationContext - Gets a user context from a `DM` object provided with `DMSetApplicationContext()`
+  DMGetApplicationContext - Gets an application context from a `DM` object provided with `DMSetApplicationContext()`
 
   Not Collective
 
@@ -3834,12 +3852,12 @@ PetscErrorCode DMSetApplicationContext(DM dm, PetscCtx ctx)
 . dm - the `DM` object
 
   Output Parameter:
-. ctx - a pointer to the user context
+. ctx - a pointer to the application context
 
   Level: intermediate
 
   Note:
-  A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
+  An application context is a way to pass problem specific information that is accessible whenever the `DM` is available
 
   Fortran Notes:
   This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
@@ -4298,6 +4316,21 @@ PetscErrorCode DMLoad(DM newdm, PetscViewer viewer)
 
 /* FEM Support */
 
+/*@
+  DMPrintCellIndices - Print an integer array of per-cell indices to `PETSC_COMM_SELF`
+
+  Not Collective
+
+  Input Parameters:
++ c    - the cell number
+. name - the label to print with the cell (typically the element or field name)
+. len  - the length of `x`
+- x    - the array of integer indices
+
+  Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `DMPrintCellVector()`, `DMPrintCellVectorReal()`, `DMPrintCellMatrix()`, `DMPrintLocalVec()`
+@*/
 PetscErrorCode DMPrintCellIndices(PetscInt c, const char name[], PetscInt len, const PetscInt x[])
 {
   PetscInt f;
@@ -4308,6 +4341,24 @@ PetscErrorCode DMPrintCellIndices(PetscInt c, const char name[], PetscInt len, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPrintCellVector - Print a scalar array representing a per-cell vector to `PETSC_COMM_SELF`
+
+  Not Collective
+
+  Input Parameters:
++ c    - the cell number
+. name - the label to print with the cell (typically the element or field name)
+. len  - the length of `x`
+- x    - the array of `PetscScalar` values
+
+  Level: developer
+
+  Note:
+  Only the real part of each entry is printed.
+
+.seealso: [](ch_dmbase), `DM`, `DMPrintCellIndices()`, `DMPrintCellVectorReal()`, `DMPrintCellMatrix()`, `DMPrintLocalVec()`
+@*/
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[])
 {
   PetscInt f;
@@ -4318,6 +4369,21 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPrintCellVectorReal - Print a real array representing a per-cell vector to `PETSC_COMM_SELF`
+
+  Not Collective
+
+  Input Parameters:
++ c    - the cell number
+. name - the label to print with the cell (typically the element or field name)
+. len  - the length of `x`
+- x    - the array of `PetscReal` values
+
+  Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `DMPrintCellIndices()`, `DMPrintCellVector()`, `DMPrintCellMatrix()`, `DMPrintLocalVec()`
+@*/
 PetscErrorCode DMPrintCellVectorReal(PetscInt c, const char name[], PetscInt len, const PetscReal x[])
 {
   PetscFunctionBegin;
@@ -4326,6 +4392,25 @@ PetscErrorCode DMPrintCellVectorReal(PetscInt c, const char name[], PetscInt len
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPrintCellMatrix - Print a scalar array representing a per-cell matrix to `PETSC_COMM_SELF`
+
+  Not Collective
+
+  Input Parameters:
++ c    - the cell number
+. name - the label to print with the cell (typically the element or field name)
+. rows - number of rows in the matrix
+. cols - number of columns in the matrix
+- A    - the row-major array of `PetscScalar` matrix entries
+
+  Level: developer
+
+  Note:
+  Only the real part of each entry is printed.
+
+.seealso: [](ch_dmbase), `DM`, `DMPrintCellIndices()`, `DMPrintCellVector()`, `DMPrintCellVectorReal()`, `DMPrintLocalVec()`
+@*/
 PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[])
 {
   PetscFunctionBegin;
@@ -4338,6 +4423,24 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPrintLocalVec - Print a `Vec` associated with a `DM`, filtering out very small entries
+
+  Collective
+
+  Input Parameters:
++ dm   - the `DM` providing the communicator
+. name - a label printed before the vector values
+. tol  - tolerance below which entries are filtered to zero using `VecFilter()`
+- X    - the `Vec` to print
+
+  Level: developer
+
+  Note:
+  Runs in parallel by wrapping the local portion of the vector in an MPI vector for viewing.
+
+.seealso: [](ch_dmbase), `DM`, `DMPrintCellIndices()`, `DMPrintCellVector()`, `DMPrintCellVectorReal()`, `DMPrintCellMatrix()`, `VecFilter()`
+@*/
 PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 {
   PetscInt           localSize, bs;
@@ -8079,7 +8182,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
-- ctx      - An optional user context for bcFunc
+- ctx      - An optional application context for `bcFunc`
 
   Output Parameter:
 . bd - (Optional) Boundary number
@@ -8198,7 +8301,22 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: missing manual page */
+/*@
+  DMIsBoundaryPoint - Determine whether a mesh point lies on a `DM` boundary
+
+  Not Collective
+
+  Input Parameters:
++ dm    - the `DM` object
+- point - the mesh point number
+
+  Output Parameter:
+. isBd - `PETSC_TRUE` if `point` belongs to any boundary label registered on the `DM`
+
+  Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `DMLabel`, `DMAddBoundary()`, `PetscDSGetBoundary()`
+@*/
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
   DMBoundary b;

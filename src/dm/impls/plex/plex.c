@@ -6917,6 +6917,31 @@ static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscI
   return PETSC_SUCCESS;
 }
 
+/*@C
+  DMPlexGetCompressedClosure - Return the transitive closure of a point, restricted to points with dof in the given section
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The `DMPLEX`
+. section - The `PetscSection` used to filter closure points
+. point   - The mesh point
+- ornt    - The orientation of `point`; when zero the cached closure index (if any) is used directly
+
+  Output Parameters:
++ numPoints - Number of closure points that participate in `section`
+. points    - Array of `(point, orientation)` pairs; either the cached closure or a work array from `DMPlexGetTransitiveClosure_Internal()`
+. clSec     - The section describing the closure index, or `NULL` if none is cached
+. clPoints  - The `IS` holding the closure indices, or `NULL` if none is cached
+- clp       - Raw pointer into the closure-index `IS` when it is used, or `NULL` otherwise
+
+  Level: developer
+
+  Note:
+  This routine does not apply the closure permutation. Release the outputs with `DMPlexRestoreCompressedClosure()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSection`, `DMPlexRestoreCompressedClosure()`, `DMPlexGetTransitiveClosure()`, `PetscSectionGetClosureIndex()`
+@*/
 /* Compressed closure does not apply closure permutation */
 PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt ornt, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
@@ -6943,6 +6968,25 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexRestoreCompressedClosure - Release the arrays returned by `DMPlexGetCompressedClosure()`
+
+  Not Collective
+
+  Input Parameters:
++ dm        - The `DMPLEX`
+. section   - The `PetscSection` passed to `DMPlexGetCompressedClosure()`
+. point     - The mesh point
+. numPoints - The number of closure points
+. points    - The closure array
+. clSec     - The cached closure section
+. clPoints  - The cached closure `IS`
+- clp       - The raw pointer into the closure index
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSection`, `DMPlexGetCompressedClosure()`, `DMPlexRestoreTransitiveClosure()`
+@*/
 PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
   PetscFunctionBeginHot;
@@ -9027,6 +9071,32 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexMatSetClosureRefined - Insert values into `A` for the closure of a coarse-cell point, using indices from the associated refined subcells
+
+  Not Collective
+
+  Input Parameters:
++ dmf            - The fine `DMPLEX`
+. fsection       - The fine local `PetscSection`, or `NULL` to use `DMGetLocalSection(dmf, ...)`
+. globalFSection - The fine global `PetscSection`, or `NULL` to use `DMGetGlobalSection(dmf, ...)`
+. dmc            - The coarse `DMPLEX`
+. csection       - The coarse local `PetscSection`, or `NULL` to use `DMGetLocalSection(dmc, ...)`
+. globalCSection - The coarse global `PetscSection`, or `NULL` to use `DMGetGlobalSection(dmc, ...)`
+. A              - The matrix
+. point          - The coarse-mesh point whose refined closure is inserted
+. values         - The values to insert (row block of size equal to the fine-closure dof count, column block of size equal to the coarse-closure dof count)
+- mode           - The `InsertMode` (`ADD_VALUES` or `INSERT_VALUES`)
+
+  Level: developer
+
+  Note:
+  This helper mirrors `DMPlexMatSetClosure()` but produces row indices from the fine subcells associated
+  with the coarse `point` under regular refinement. It is used when assembling operators that couple a
+  coarse cell to its uniform refinement.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexMatSetClosure()`, `DMPlexMatGetClosureIndicesRefined()`, `DMPlexTransformCellTransform()`, `MatSetValues()`
+@*/
 PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   DM_Plex        *mesh    = (DM_Plex *)dmf->data;
@@ -9193,6 +9263,32 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexMatGetClosureIndicesRefined - Compute the fine-row and coarse-column global indices associated with the refined closure of a coarse point
+
+  Not Collective
+
+  Input Parameters:
++ dmf            - The fine `DMPLEX`
+. fsection       - The fine local `PetscSection`, or `NULL` to use `DMGetLocalSection(dmf, ...)`
+. globalFSection - The fine global `PetscSection`, or `NULL` to use `DMGetGlobalSection(dmf, ...)`
+. dmc            - The coarse `DMPLEX`
+. csection       - The coarse local `PetscSection`, or `NULL` to use `DMGetLocalSection(dmc, ...)`
+. globalCSection - The coarse global `PetscSection`, or `NULL` to use `DMGetGlobalSection(dmc, ...)`
+- point          - The coarse-mesh point
+
+  Output Parameters:
++ cindices - Global column indices for the coarse closure (caller-provided buffer of the correct size)
+- findices - Global row indices for the fine closure across all subcells produced by uniformly refining `point`
+
+  Level: developer
+
+  Note:
+  This companion to `DMPlexMatSetClosureRefined()` returns the index sets without inserting values,
+  allowing callers to build sparsity patterns or perform their own `MatSetValues()` calls.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexMatSetClosureRefined()`, `DMPlexGetClosureIndices()`, `DMPlexTransformCellTransform()`
+@*/
 PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, PetscInt point, PetscInt cindices[], PetscInt findices[])
 {
   PetscInt       *fpoints = NULL, *ftotpoints = NULL;

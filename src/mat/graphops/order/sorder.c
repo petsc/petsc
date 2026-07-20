@@ -204,6 +204,18 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatGetOrderingList - Get the `PetscFunctionList` of registered matrix ordering methods.
+
+  Not Collective
+
+  Output Parameter:
+. list - the function list
+
+  Level: developer
+
+.seealso: `Mat`, `MatOrderingType`, `MatOrderingRegister()`, `MatGetOrdering()`
+@*/
 PetscErrorCode MatGetOrderingList(PetscFunctionList *list)
 {
   PetscFunctionBegin;

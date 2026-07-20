@@ -217,6 +217,35 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, PetscPointFn **funcs
 /********************* Adaptive Interpolation **************************/
 
 /* See the discussion of Adaptive Interpolation in manual/high_level_mg.rst */
+/*@
+  DMAdaptInterpolator - Adapts a grid interpolator so that it accurately reproduces a set of sample fine-grid vectors
+
+  Collective
+
+  Input Parameters:
++ dmc      - the coarse `DM`
+. dmf      - the fine `DM`
+. In       - the input (unadapted) interpolation matrix from `dmc` to `dmf`
+. smoother - a `KSP` whose operator provides the fine-grid matrix used to weight modes by their Rayleigh quotient
+. MF       - a dense matrix whose columns are fine-grid sample vectors
+. MC       - a dense matrix whose columns are the corresponding coarse-grid sample vectors (may be `NULL`, in which case $I_n^T M_F$ is used)
+- user     - unused application context
+
+  Output Parameter:
+. InAdapt - the adapted interpolation matrix (created inside the routine)
+
+  Options Database Key:
+. -dm_interpolator_adapt_debug flag - print diagnostic information about the least-squares systems solved for each row
+
+  Level: developer
+
+  Note:
+  For each row of `In` a small weighted least-squares problem is solved (using LAPACK GELSS) so that the adapted
+  interpolation reproduces the fine-grid samples as accurately as possible; see the discussion of adaptive interpolation
+  in `manual/high_level_mg.rst`.
+
+.seealso: [](ch_ksp), `DM`, `Mat`, `KSP`, `DMCheckInterpolator()`, `DMCreateInterpolation()`, `PCMG`
+@*/
 PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF, Mat MC, Mat *InAdapt, void *user)
 {
   Mat                globalA, AF;
@@ -377,6 +406,29 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMCheckInterpolator - Check that an interpolation matrix accurately reproduces a set of sample fine-grid vectors
+
+  Collective
+
+  Input Parameters:
++ dmf - the fine `DM`
+. In  - the interpolation matrix from a coarse `DM` to `dmf`
+. MC  - a dense matrix whose columns are coarse-grid sample vectors
+. MF  - a dense matrix whose columns are the corresponding fine-grid sample vectors
+- tol - tolerance on the maximum 2-norm of $v_f - I v_c$ across all sample vectors
+
+  Options Database Key:
+. -dm_interpolator_adapt_error view - view the coarse, fine, and error vectors for each sample
+
+  Level: developer
+
+  Note:
+  For each column `k`, the residual $v_f^k - I v_c^k$ is computed and its infinity and 2 norms are printed. An error
+  is raised if the maximum 2-norm exceeds `tol`. Typically used with `DMAdaptInterpolator()` to validate the adapted operator.
+
+.seealso: [](ch_ksp), `DM`, `Mat`, `DMAdaptInterpolator()`, `DMCreateInterpolation()`, `PCMG`
+@*/
 PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol)
 {
   Vec       tmp;
@@ -806,6 +858,27 @@ static PetscErrorCode DMSwarmProjectGradientFields_Plex_Internal(DM sw, DM dm, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmProjectGradientFields - Project the gradient of continuum fields on a mesh onto particle fields in a `DMSWARM`, or the reverse
+
+  Collective
+
+  Input Parameters:
++ sw         - the `DMSWARM`
+. dm         - the continuum `DM` (a `DMPLEX`); if `NULL` the swarm's cell `DM` is used
+. nfields    - the number of fields to project
+. fieldnames - the names of the swarm fields to receive (or supply) the gradient
+. fields     - the corresponding mesh `Vec` objects
+- mode       - `SCATTER_FORWARD` to project mesh field gradients to particles, `SCATTER_REVERSE` to project particle values back to the mesh
+
+  Level: intermediate
+
+  Note:
+  Only `DMPLEX` cell DMs and single-field projection are currently supported. The swarm field block size must equal
+  the mesh field component count times the coordinate dimension.
+
+.seealso: `DMSWARM`, `DMPLEX`, `DMSwarmProjectFields()`, `DMSwarmVectorDefineFields()`, `DMSwarmCreateGlobalVectorFromField()`
+@*/
 PetscErrorCode DMSwarmProjectGradientFields(DM sw, DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
 {
   PetscBool isPlex;

@@ -892,6 +892,22 @@ PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM trdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetChart - Get the chart `[pStart, pEnd)` for the points produced by the transform
+
+  Not Collective
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameters:
++ pStart - The first point in the transformed mesh, or `NULL` if not needed
+- pEnd   - One past the last point in the transformed mesh, or `NULL` if not needed
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMPlexTransformGetCellType()`, `DMPlexTransformGetCellTypeStratum()`
+@*/
 PetscErrorCode DMPlexTransformGetChart(DMPlexTransform tr, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscFunctionBegin;
@@ -900,6 +916,22 @@ PetscErrorCode DMPlexTransformGetChart(DMPlexTransform tr, PetscInt *pStart, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetCellType - Return the cell type for a point in the transformed mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr   - The `DMPlexTransform`
+- cell - The point number in the transformed mesh
+
+  Output Parameter:
+. celltype - The `DMPolytopeType` of the point
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetChart()`, `DMPlexTransformGetCellTypeStratum()`
+@*/
 PetscErrorCode DMPlexTransformGetCellType(DMPlexTransform tr, PetscInt cell, DMPolytopeType *celltype)
 {
   PetscInt ctNew;
@@ -918,6 +950,23 @@ PetscErrorCode DMPlexTransformGetCellType(DMPlexTransform tr, PetscInt cell, DMP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetCellTypeStratum - Return the point range for a given cell type in the transformed mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr       - The `DMPlexTransform`
+- celltype - The `DMPolytopeType` of the requested stratum
+
+  Output Parameters:
++ start - The first point of the stratum, or `NULL` if not needed
+- end   - One past the last point of the stratum, or `NULL` if not needed
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetCellType()`, `DMPlexTransformGetChart()`, `DMPlexGetDepthStratum()`
+@*/
 PetscErrorCode DMPlexTransformGetCellTypeStratum(DMPlexTransform tr, DMPolytopeType celltype, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
@@ -927,6 +976,21 @@ PetscErrorCode DMPlexTransformGetCellTypeStratum(DMPlexTransform tr, DMPolytopeT
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetDepth - Return the topological depth of the transformed mesh
+
+  Not Collective
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameter:
+. depth - The depth of the transformed mesh
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetDepthStratum()`, `DMPlexGetDepth()`
+@*/
 PetscErrorCode DMPlexTransformGetDepth(DMPlexTransform tr, PetscInt *depth)
 {
   PetscFunctionBegin;
@@ -935,6 +999,23 @@ PetscErrorCode DMPlexTransformGetDepth(DMPlexTransform tr, PetscInt *depth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetDepthStratum - Return the point range for a given depth in the transformed mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr    - The `DMPlexTransform`
+- depth - The requested depth in the transformed mesh
+
+  Output Parameters:
++ start - The first point at the given depth, or `NULL` if not needed
+- end   - One past the last point at the given depth, or `NULL` if not needed
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetDepth()`, `DMPlexGetDepthStratum()`
+@*/
 PetscErrorCode DMPlexTransformGetDepthStratum(DMPlexTransform tr, PetscInt depth, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
@@ -1234,6 +1315,33 @@ PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform tr, DMPolytopeType s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetSubcellOrientationIdentity - Default `getsubcellorientation` implementation for transforms that reproduce the input mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr  - The `DMPlexTransform`
+. sct - The source point cell type
+. sp  - The source point
+. so  - The orientation of the source point in its enclosing parent
+. tct - The target point cell type
+. r   - The replica number requested for the produced cell type
+- o   - The orientation of the replica
+
+  Output Parameters:
++ rnew - The replica number, given the orientation of the parent (returns `r`)
+- onew - The replica orientation composed with the source orientation
+
+  Level: developer
+
+  Note:
+  This is the identity variant used by transforms such as the "identity" refiner where each source
+  point produces itself, so the replica number is unchanged and the returned orientation is simply
+  `o` composed with `so` via `DMPolytopeTypeComposeOrientation()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetSubcellOrientation()`, `DMPlexTransformCellTransformIdentity()`, `DMPolytopeTypeComposeOrientation()`
+@*/
 PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   PetscFunctionBegin;
@@ -1242,7 +1350,33 @@ PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform tr, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Returns the same thing */
+/*@
+  DMPlexTransformCellTransformIdentity - Default `celltransform` implementation for transforms that reproduce the input mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr     - The `DMPlexTransform`
+. source - The cell type of the source point
+- p      - The source point
+
+  Output Parameters:
++ rt     - Refinement type of the source point (set to 0), or `NULL`
+. Nt     - Number of target cell types produced (always 1)
+. target - Array of produced cell types (a single-element array containing `source`)
+. size   - Array of replica counts for each produced type (a single-element array containing 1)
+. cone   - Cone description used by `DMPlexTransformGetCone()`; encodes that the replica takes the entire parent cone
+- ornt   - Orientation array associated with `cone`; all zero for identity
+
+  Level: developer
+
+  Note:
+  This routine returns statically allocated arrays describing an identity refinement for each supported
+  `DMPolytopeType`; every source point produces a single replica of the same type with unchanged cone
+  and orientation.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformCellTransform()`, `DMPlexTransformGetSubcellOrientationIdentity()`
+@*/
 PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
   static DMPolytopeType vertexT[] = {DM_POLYTOPE_POINT};
@@ -1456,6 +1590,22 @@ static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetConeSize - Return the cone size of a point in the transformed mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr - The `DMPlexTransform`
+- q  - The point number in the transformed mesh
+
+  Output Parameter:
+. coneSize - The number of points in the cone of `q`
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetCone()`, `DMPlexTransformGetCellType()`, `DMPlexGetConeSize()`
+@*/
 PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q, PetscInt *coneSize)
 {
   DMPolytopeType ctNew;
@@ -1598,6 +1748,27 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetConeOriented - Return the cone of a point in the transformed mesh, computed using a specified parent orientation
+
+  Not Collective
+
+  Input Parameters:
++ tr - The `DMPlexTransform`
+. q  - The point number in the transformed mesh
+- po - The orientation of the parent cell in the original mesh to use when producing the cone
+
+  Output Parameters:
++ cone - The cone points, obtained from an internal work array
+- ornt - The orientations of the cone points, obtained from an internal work array
+
+  Level: developer
+
+  Note:
+  Both `cone` and `ornt` are returned in work arrays that must be released with `DMPlexTransformRestoreCone()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetCone()`, `DMPlexTransformRestoreCone()`, `DMPlexTransformGetConeSize()`
+@*/
 PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, PetscInt po, const PetscInt *cone[], const PetscInt *ornt[])
 {
   DM              dm;
@@ -1639,6 +1810,26 @@ PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetCone - Return the cone of a point in the transformed mesh
+
+  Not Collective
+
+  Input Parameters:
++ tr - The `DMPlexTransform`
+- q  - The point number in the transformed mesh
+
+  Output Parameters:
++ cone - The cone points, obtained from an internal work array, or `NULL` if not requested
+- ornt - The orientations of the cone points, obtained from an internal work array, or `NULL` if not requested
+
+  Level: developer
+
+  Note:
+  Any non-`NULL` output must be released with `DMPlexTransformRestoreCone()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformRestoreCone()`, `DMPlexTransformGetConeOriented()`, `DMPlexTransformGetConeSize()`, `DMPlexGetCone()`
+@*/
 PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[])
 {
   DM              dm;
@@ -1682,6 +1873,21 @@ PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformRestoreCone - Return the work arrays produced by `DMPlexTransformGetCone()` or `DMPlexTransformGetConeOriented()`
+
+  Not Collective
+
+  Input Parameters:
++ tr   - The `DMPlexTransform`
+. q    - The point number in the transformed mesh
+. cone - The cone points to release, or `NULL`
+- ornt - The orientations to release, or `NULL`
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetCone()`, `DMPlexTransformGetConeOriented()`
+@*/
 PetscErrorCode DMPlexTransformRestoreCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[])
 {
   DM dm;
@@ -2004,6 +2210,24 @@ static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformCreateDiscLabels - Refine the labels which define field and discrete system regions on the transformed `DM`
+
+  Not Collective
+
+  Input Parameters:
++ tr  - The `DMPlexTransform`
+- rdm - The refined `DM` produced by the transform
+
+  Level: developer
+
+  Note:
+  Region labels attached to fields (see `DMSetField()`) and to discrete systems (see `DMSetRegionNumDS()`) are
+  not automatically included in the list of `DM` labels, so this routine walks each field and each `PetscDS`
+  and updates the labels to refer to the refined points.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMSetField()`, `DMSetRegionNumDS()`
+@*/
 /* This refines the labels which define regions for fields and DSes since they are not in the list of labels for the DM */
 PetscErrorCode DMPlexTransformCreateDiscLabels(DMPlexTransform tr, DM rdm)
 {
@@ -2532,6 +2756,27 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *trdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformAdaptLabel - Adapt a `DMPLEX` using a `DMPlexTransform` driven by a `DMLabel` marking cells to be refined or coarsened.
+
+  Collective
+
+  Input Parameters:
++ dm         - the input `DMPLEX`
+. metric     - unused; present to conform to the `DMAdaptor` label-based interface
+. adaptLabel - a `DMLabel` marking cells with `DM_ADAPT_REFINE`, `DM_ADAPT_COARSEN`, etc.
+- rgLabel    - unused region-tag label; present to conform to the `DMAdaptor` interface
+
+  Output Parameter:
+. rdm - the adapted `DMPLEX`
+
+  Level: developer
+
+  Note:
+  This routine is registered as the "cellrefiner" adaptor by `DMGenerateRegisterAll()` and is invoked through `DMAdaptLabel()`.
+
+.seealso: `DMPLEX`, `DMPlexTransform`, `DMAdaptLabel()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`, `DMLabel`
+@*/
 PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *rdm)
 {
   DMPlexTransform tr;

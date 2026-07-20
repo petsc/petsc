@@ -33,6 +33,8 @@ typedef struct {
   PetscShmgetAddressesFinalize - frees any shared memory that was allocated by `PetscShmgetAllocateArray()` but
   not deallocated with `PetscShmgetDeallocateArray()`
 
+  Not Collective
+
   Level: developer
 
   Notes:
@@ -60,6 +62,22 @@ PetscErrorCode PetscShmgetAddressesFinalize(void)
 }
 
 /* takes a void so can work bsan safe with PetscObjectContainerCompose() */
+/*@C
+  PCMPIServerAddressesDestroy - Destroys a `PCMPIServerAddresses` context, unmapping its shared-memory addresses
+
+  Logically Collective
+
+  Input Parameter:
+. ctx - pointer to the `PCMPIServerAddresses` structure to free
+
+  Level: developer
+
+  Note:
+  Intended for use as a destructor callback registered via `PetscObjectContainerCompose()`; the argument type is
+  a generic pointer so it satisfies that interface.
+
+.seealso: `PCMPI`, `PetscShmgetMapAddresses()`, `PetscShmgetUnmapAddresses()`, `PetscObjectContainerCompose()`
+@*/
 PetscErrorCode PCMPIServerAddressesDestroy(PetscCtxRt ctx)
 {
   PCMPIServerAddresses *addresses = *(PCMPIServerAddresses **)ctx;
@@ -77,6 +95,8 @@ PetscErrorCode PCMPIServerAddressesDestroy(PetscCtxRt ctx)
 /*@C
   PetscShmgetMapAddresses - given shared address on the first MPI process determines the
   addresses on the other MPI processes that map to the same physical memory
+
+  Collective
 
   Input Parameters:
 + comm       - the `MPI_Comm` to scatter the address
@@ -157,10 +177,12 @@ PetscErrorCode PetscShmgetMapAddresses(MPI_Comm comm, PetscInt n, const void **b
 }
 
 /*@C
-  PetscShmgetUnmapAddresses - given shared addresses on a MPI process unlink it
+  PetscShmgetUnmapAddresses - unlinks given shared addresses on a MPI process that is not of `PetscGlobalRank` 0
+
+  Not Collective
 
   Input Parameters:
-+ n      - the number of addresses, each obtained on MPI process zero by `PetscShmgetAllocateArray()`
++ n      - the number of addresses, each obtained originally on MPI `PetscGlobalRank` zero by `PetscShmgetAllocateArray()`
 - addres - the addresses
 
   Level: developer
@@ -199,7 +221,7 @@ PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres) PeNS
 }
 
 /*@C
-  PetscShmgetAllocateArray - allocates shared memory accessible by all MPI processes in the server
+  PetscShmgetAllocateArray - allocates shared memory that will later be made accessible by all MPI processes in the server
 
   Not Collective, only called on the first MPI process
 
@@ -304,7 +326,7 @@ PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void *addr[])
 }
 
 /*@C
-  PetscShmgetDeallocateArray - deallocates shared memory accessible by all MPI processes in the server
+  PetscShmgetDeallocateArray - deallocates shared memory accessible by all MPI processes in the server obtained with `PetscShmgetAllocateArray()`
 
   Not Collective, only called on the first MPI process
 

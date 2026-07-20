@@ -238,11 +238,11 @@ static PetscErrorCode FormFunctionGradient(TaoTerm term, Vec x, Vec params, Pets
 + term      - the `TaoTerm` for the objective function
 . x         - input vector
 . params    - optional vector of parameters
-- Hpre      - optional preconditioner matrix
+- Hpre      - optional matrix for building the preconditioner
 
   Output Parameters:
 + H    - Hessian matrix
-- Hpre - Preconditioning matrix
+- Hpre - matrix for building the preconditioning
 
   Note:
   Computes H = I (identity matrix), matching TAOTERMHALFL2SQUARED.
@@ -284,7 +284,7 @@ static PetscErrorCode CtxDestroy(PetscCtxRt ctx_ptr)
   Input Parameters:
 + tao  - the Tao solver context
 . x    - input vector (size n)
-- ctx  - user context containing A and p
+- ctx  - application context containing A and p
 
   Output Parameters:
 + f - function value: 0.5 * ||Ax - p||_2^2
@@ -320,7 +320,7 @@ static PetscErrorCode FormObjectiveGradient_Callback(Tao tao, Vec x, PetscReal *
 . x    - input vector
 . H    - Hessian matrix (should be pre-allocated as A^T * A)
 . Hpre - preconditioner matrix
-- ctx  - user context containing A and p
+- ctx  - application context containing A and p
 
   Output Parameters:
 + H    - Hessian matrix (A^T * A)

@@ -3014,6 +3014,26 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDSGetEvaluationArrays - Get scratch arrays used to evaluate fields, time derivatives, and field gradients at quadrature points.
+
+  Not Collective
+
+  Input Parameter:
+. prob - the `PetscDS`
+
+  Output Parameters:
++ u   - array for the field values, or `NULL` if not needed
+. u_t - array for the field time derivatives, or `NULL` if not needed
+- u_x - array for the field gradients, or `NULL` if not needed
+
+  Level: developer
+
+  Note:
+  The returned arrays are owned by the `PetscDS` and must not be freed by the caller.
+
+.seealso: `PetscDS`, `PetscDSGetWeakFormArrays()`, `PetscDSGetWorkspace()`
+@*/
 PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar *u[], PetscScalar *u_t[], PetscScalar *u_x[])
 {
   PetscFunctionBegin;
@@ -3066,6 +3086,28 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar *f0[], PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDSGetWorkspace - Get scratch storage used during discretization computations.
+
+  Not Collective
+
+  Input Parameter:
+. prob - the `PetscDS`
+
+  Output Parameters:
++ x            - array for real-valued quadrature point coordinates, or `NULL` if not needed
+. basisReal    - array for the real-valued basis function values, or `NULL` if not needed
+. basisDerReal - array for the real-valued basis function derivatives, or `NULL` if not needed
+. testReal     - array for the real-valued test function values, or `NULL` if not needed
+- testDerReal  - array for the real-valued test function derivatives, or `NULL` if not needed
+
+  Level: developer
+
+  Note:
+  The returned arrays are owned by the `PetscDS` and must not be freed by the caller.
+
+.seealso: `PetscDS`, `PetscDSGetEvaluationArrays()`, `PetscDSGetWeakFormArrays()`
+@*/
 PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **basisReal, PetscScalar **basisDerReal, PetscScalar **testReal, PetscScalar **testDerReal)
 {
   PetscFunctionBegin;
@@ -3111,7 +3153,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
-- ctx      - An optional user context for `bcFunc`
+- ctx      - An optional application context for `bcFunc`
 
   Output Parameter:
 . bd - The boundary number
@@ -3239,7 +3281,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
-- ctx      - An optional user context for `bcFunc`
+- ctx      - An optional application context for `bcFunc`
 
   Output Parameter:
 . bd - The boundary number
@@ -3354,7 +3396,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
-- ctx      - An optional user context for `bcFunc`
+- ctx      - An optional application context for `bcFunc`
 
   Level: developer
 
@@ -3461,13 +3503,13 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 . comps  - An array of constrained component numbers
 . func   - A pointwise function giving boundary values
 . func_t - A pointwise function giving the time derivative of the boundary values
-- ctx    - An optional user context for `bcFunc`
+- ctx    - An optional application context for `func`
 
   Level: developer
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], PetscVoidFn **func, PetscVoidFn **func_t, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], PetscVoidFn **func, PetscVoidFn **func_t, PetscCtxRt ctx)
 {
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;
@@ -3526,7 +3568,7 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
   }
   if (ctx) {
     PetscAssertPointer(ctx, 14);
-    *ctx = b->ctx;
+    *(void **)ctx = b->ctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3899,6 +3941,28 @@ PetscErrorCode PetscDSCopyBounds(PetscDS ds, PetscDS newds)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscDSCopy - Copy the contents of a `PetscDS` into another `PetscDS` on a new `DM`.
+
+  Collective
+
+  Input Parameters:
++ ds        - the source `PetscDS`
+. minDegree - the minimum polynomial degree to consider when selecting discretizations, or `PETSC_DETERMINE`
+. maxDegree - the maximum polynomial degree to consider when selecting discretizations, or `PETSC_DETERMINE`
+- dmNew     - the target `DM` used to resolve boundary condition labels for the copied boundaries
+
+  Output Parameter:
+. dsNew - the destination `PetscDS`
+
+  Level: developer
+
+  Note:
+  This copies constants, exact solutions, bounds, discretizations, equations, field contexts,
+  cohesive flags, jet degrees, and boundary conditions.
+
+.seealso: `PetscDS`, `PetscDSCopyEquations()`, `PetscDSCopyConstants()`, `PetscDSCopyExactSolutions()`, `PetscDSCopyBounds()`, `PetscDSCopyBoundary()`
+@*/
 PetscErrorCode PetscDSCopy(PetscDS ds, PetscInt minDegree, PetscInt maxDegree, DM dmNew, PetscDS dsNew)
 {
   DSBoundary b;
@@ -3934,6 +3998,25 @@ PetscErrorCode PetscDSCopy(PetscDS ds, PetscInt minDegree, PetscInt maxDegree, D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscDSGetHeightSubspace - Get the `PetscDS` for the trace subspace at a given height in the mesh.
+
+  Not Collective
+
+  Input Parameters:
++ prob   - the `PetscDS`
+- height - the height (0 for the ambient cell, 1 for faces, etc.)
+
+  Output Parameter:
+. subprob - the `PetscDS` for the trace subspace; `prob` itself is returned when `height` is 0
+
+  Level: developer
+
+  Note:
+  Only `PetscFE` discretizations are currently supported.
+
+.seealso: `PetscDS`, `PetscFE`, `PetscFEGetHeightSubspace()`, `PetscDSGetSpatialDimension()`
+@*/
 PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob)
 {
   PetscInt dim, Nf, f;
@@ -3971,6 +4054,24 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscDSPermuteQuadPoint - Permute a quadrature point index according to a cell orientation.
+
+  Not Collective
+
+  Input Parameters:
++ ds    - the `PetscDS`
+. ornt  - the cell orientation, in `[-Na, Na)` where `Na` is half the number of arrangements for the cell type
+. field - the field number whose quadrature is used
+- q     - the input quadrature point index in `[0, Nq)`
+
+  Output Parameter:
+. qperm - the permuted quadrature point index
+
+  Level: developer
+
+.seealso: `PetscDS`, `PetscQuadrature`, `PetscQuadratureComputePermutations()`, `DMPolytopeTypeGetNumArrangements()`
+@*/
 PetscErrorCode PetscDSPermuteQuadPoint(PetscDS ds, PetscInt ornt, PetscInt field, PetscInt q, PetscInt *qperm)
 {
   IS              permIS;

@@ -679,6 +679,23 @@ PetscErrorCode PetscObjectDereference(PetscObject obj)
      The following routines are the versions private to the PETSc object
      data structures.
 */
+/*@
+  PetscObjectRemoveReference - Removes a reference link from a `PetscObject`'s object list without dereferencing the referenced object
+
+  Logically collective
+
+  Input Parameters:
++ obj  - the `PetscObject` whose list will be modified
+- name - the name under which the reference was composed
+
+  Level: developer
+
+  Note:
+  This is a private helper used to break composed reference cycles; user code should normally use `PetscObjectCompose()`
+  with a `NULL` pointer to remove a composed object.
+
+.seealso: `PetscObject`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectReference()`, `PetscObjectDereference()`
+@*/
 PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
 {
   PetscFunctionBegin;

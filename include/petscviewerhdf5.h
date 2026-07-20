@@ -2,7 +2,8 @@
 
 #include <petscviewer.h>
 
-/* MANSEC = Viewer */
+/* MANSEC = Sys */
+/* SUBMANSEC = Viewer */
 
 #if defined(PETSC_HAVE_HDF5)
   #include <hdf5.h>
@@ -60,14 +61,30 @@ PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t, PetscDataTyp
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
 #endif /* defined(PETSC_HAVE_HDF5) */
 
-static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) PeNS
+/*@
+  PetscViewerHDF5PathIsRelative - Determine whether an HDF5 path string is relative (does not begin with `/`).
+
+  Not Collective
+
+  Input Parameters:
++ path            - the HDF5 path
+- emptyIsRelative - the value to return when `path` is empty
+
+  Output Parameter:
+. rel - `PETSC_TRUE` if `path` is relative, `PETSC_FALSE` if it is absolute
+
+  Level: developer
+
+.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5GetGroup()`
+@*/
+static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *rel)
 {
   size_t len;
 
   PetscFunctionBegin;
-  *has = emptyIsRelative;
+  *rel = emptyIsRelative;
   PetscCall(PetscStrlen(path, &len));
-  if (len) *has = (PetscBool)(path[0] != '/');
+  if (len) *rel = (PetscBool)(path[0] != '/');
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

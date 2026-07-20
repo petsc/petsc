@@ -340,6 +340,21 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocalFn *func, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorDMDARayDestroy - Destroys the context created for the `-ts_monitor_dmda_ray` and `-ts_monitor_lg_dmda_ray` monitors
+
+  Collective
+
+  Input Parameter:
+. mctx - pointer to the `TSMonitorDMDARayCtx` context
+
+  Level: developer
+
+  Note:
+  This is normally passed to `TSMonitorSet()` alongside `TSMonitorDMDARay()` or `TSMonitorLGDMDARay()`; it is not called directly by users.
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDMDARay()`, `TSMonitorLGDMDARay()`
+@*/
 PetscErrorCode TSMonitorDMDARayDestroy(PetscCtxRt mctx)
 {
   TSMonitorDMDARayCtx *rayctx = *(TSMonitorDMDARayCtx **)mctx;
@@ -353,6 +368,25 @@ PetscErrorCode TSMonitorDMDARayDestroy(PetscCtxRt mctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorDMDARay - Monitors the solution of a `DMDA`-based `TS` by scattering values along a ray to a viewer
+
+  Collective
+
+  Input Parameters:
++ ts    - the `TS` context
+. steps - the current time-step number
+. time  - the current time
+. u     - the current solution (unused; the current `TS` solution is fetched)
+- mctx  - the `TSMonitorDMDARayCtx` context
+
+  Level: developer
+
+  Note:
+  This is not called directly by users; pass this function to `TSMonitorSet()` along with a context that has been populated with the scatter and viewer describing the ray.
+
+.seealso: [](ch_ts), `TS`, `DMDA`, `TSMonitorSet()`, `TSMonitorLGDMDARay()`, `TSMonitorDMDARayDestroy()`
+@*/
 PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)mctx;
@@ -366,6 +400,25 @@ PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorLGDMDARay - Monitors the solution of a `DMDA`-based `TS` by plotting values along a ray in a line graph
+
+  Collective
+
+  Input Parameters:
++ ts    - the `TS` context
+. step  - the current time-step number
+. ptime - the current time
+. u     - the current solution
+- ctx   - the `TSMonitorDMDARayCtx` context, which contains the ray scatter and an embedded `TSMonitorLGCtx`
+
+  Level: developer
+
+  Note:
+  This is not called directly by users; pass this function to `TSMonitorSet()` together with the context and `TSMonitorDMDARayDestroy()`.
+
+.seealso: [](ch_ts), `TS`, `DMDA`, `TSMonitorSet()`, `TSMonitorDMDARay()`, `TSMonitorDMDARayDestroy()`
+@*/
 PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscCtx ctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)ctx;

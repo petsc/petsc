@@ -462,6 +462,26 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMFieldCreateDA - Create a `DMField` of type `DMFIELDDA` that represents a multilinear field on a `DMDA` given by its values at the corners of the reference element.
+
+  Collective
+
+  Input Parameters:
++ dm           - the `DMDA` on which the field lives
+. nc           - the number of components of the field
+- cornerValues - array of length `nc * (1 << dim)` holding the field values at each corner of the reference element, ordered by lexicographic corner index
+
+  Output Parameter:
+. field - the newly created `DMField`
+
+  Level: intermediate
+
+  Note:
+  Internally the corner values are converted to coefficients of a tensor-product multilinear polynomial so that evaluation at arbitrary points is inexpensive.
+
+.seealso: `DMField`, `DMFIELDDA`, `DMDA`, `DMFieldCreate()`, `DMFieldCreateDS()`, `DMFieldCreateShell()`
+@*/
 PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValues, DMField *field)
 {
   DMField      b;

@@ -58,7 +58,7 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 . isFE   - Flag indicating whether each output field has an FE discretization
 . sp     - The output `PetscDualSpace` for each field
 . funcs  - The evaluation function for each field
-- ctxs   - The user context for each field
+- ctxs   - The application context for each field
 
   Output Parameter:
 . values - The value for each dual basis vector in the output dual space
@@ -183,7 +183,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
 . T              - Input basis and derivatives for each field tabulated on the quadrature points
 . TAux           - Auxiliary basis and derivatives for each aux field tabulated on the quadrature points
 . funcs          - The evaluation function for each field
-- ctxs           - The user context for each field
+- ctxs           - The application context for each field
 
   Output Parameter:
 . values         - The value for each dual basis vector in the output dual space

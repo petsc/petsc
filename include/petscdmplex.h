@@ -517,8 +517,7 @@ static inline PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF sf)
   if (sf) PetscCall(DMSetUseNatural(dm, PETSC_TRUE));
   return DMSetNaturalSF(dm, sf);
 }
-PETSC_DEPRECATED_FUNCTION(3, 23, 0, "DMGetNaturalSF()", )
-static inline PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *sf)
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "DMGetNaturalSF()", ) static inline PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *sf)
 {
   return DMGetNaturalSF(dm, sf);
 }

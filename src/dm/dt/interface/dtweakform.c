@@ -424,6 +424,24 @@ PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm wf, DMLabel label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormClearIndex - Clear the pointwise function at a given index for the given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. kind  - The kind of weak form, see `PetscWeakFormKind`
+- ind   - The index of the function to clear in the function list for this key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormKind`, `PetscWeakFormCreate()`
+@*/
 PetscErrorCode PetscWeakFormClearIndex(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscWeakFormKind kind, PetscInt ind)
 {
   PetscFunctionBegin;
@@ -431,6 +449,26 @@ PetscErrorCode PetscWeakFormClearIndex(PetscWeakForm wf, DMLabel label, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetObjective - Retrieve the list of objective pointwise functions for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n   - The number of objective pointwise functions registered for this key
+- obj - The array of objective pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetObjective()`, `PetscWeakFormAddObjective()`, `PetscWeakFormSetIndexObjective()`, `PetscWeakFormGetIndexObjective()`
+@*/
 PetscErrorCode PetscWeakFormGetObjective(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt *n, void (***obj)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -438,6 +476,24 @@ PetscErrorCode PetscWeakFormGetObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetObjective - Set the list of objective pointwise functions for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. n     - The number of objective pointwise functions to set
+- obj   - The array of objective pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetObjective()`, `PetscWeakFormAddObjective()`, `PetscWeakFormSetIndexObjective()`
+@*/
 PetscErrorCode PetscWeakFormSetObjective(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt n, void (**obj)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -445,6 +501,23 @@ PetscErrorCode PetscWeakFormSetObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddObjective - Append an objective pointwise function to the list for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+- obj   - The objective pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetObjective()`, `PetscWeakFormGetObjective()`, `PetscWeakFormSetIndexObjective()`
+@*/
 PetscErrorCode PetscWeakFormAddObjective(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, void (*obj)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -452,6 +525,26 @@ PetscErrorCode PetscWeakFormAddObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetIndexObjective - Retrieve a single objective pointwise function at the given index for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+- ind   - The index into the list of objective pointwise functions for this key
+
+  Output Parameter:
+. obj - The objective pointwise function at position `ind`, or `NULL` if no function is registered for this key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetIndexObjective()`, `PetscWeakFormGetObjective()`, `PetscWeakFormSetObjective()`, `PetscWeakFormAddObjective()`
+@*/
 PetscErrorCode PetscWeakFormGetIndexObjective(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt ind, void (**obj)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -459,6 +552,24 @@ PetscErrorCode PetscWeakFormGetIndexObjective(PetscWeakForm wf, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexObjective - Set a single objective pointwise function at the given index for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. ind   - The index into the list of objective pointwise functions for this key
+- obj   - The objective pointwise function to store at position `ind`; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetIndexObjective()`, `PetscWeakFormSetObjective()`, `PetscWeakFormAddObjective()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexObjective(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt ind, void (*obj)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -466,6 +577,28 @@ PetscErrorCode PetscWeakFormSetIndexObjective(PetscWeakForm wf, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetResidual - Retrieve the lists of residual pointwise functions `f0` and `f1` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `f0` pointwise functions registered for this key
+. f0 - The array of `f0` residual pointwise functions
+. n1 - The number of `f1` pointwise functions registered for this key
+- f1 - The array of `f1` residual pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetResidual()`, `PetscWeakFormAddResidual()`, `PetscWeakFormGetBdResidual()`
+@*/
 PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt *n0, void (***f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -474,6 +607,24 @@ PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddResidual - Append residual pointwise functions `f0` and `f1` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. f0    - The `f0` residual pointwise function to append; a `NULL` is ignored
+- f1    - The `f1` residual pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetResidual()`, `PetscWeakFormGetResidual()`, `PetscWeakFormSetIndexResidual()`, `PetscWeakFormAddBdResidual()`
+@*/
 PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, void (*f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -482,6 +633,26 @@ PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetResidual - Set the lists of residual pointwise functions `f0` and `f1` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `f0` pointwise functions to set
+. f0    - The array of `f0` residual pointwise functions, or `NULL` to clear the key
+. n1    - The number of `f1` pointwise functions to set
+- f1    - The array of `f1` residual pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetResidual()`, `PetscWeakFormAddResidual()`, `PetscWeakFormSetIndexResidual()`
+@*/
 PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt n0, void (**f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -490,6 +661,26 @@ PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexResidual - Set the residual pointwise functions `f0` and `f1` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `f0` in the `f0` list
+. f0    - The `f0` residual pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `f1` in the `f1` list
+- f1    - The `f1` residual pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetResidual()`, `PetscWeakFormAddResidual()`, `PetscWeakFormGetResidual()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt i0, void (*f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -498,6 +689,28 @@ PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetBdResidual - Retrieve the lists of boundary residual pointwise functions `f0` and `f1` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `f0` boundary pointwise functions registered for this key
+. f0 - The array of `f0` boundary residual pointwise functions
+. n1 - The number of `f1` boundary pointwise functions registered for this key
+- f1 - The array of `f1` boundary residual pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdResidual()`, `PetscWeakFormAddBdResidual()`, `PetscWeakFormGetResidual()`
+@*/
 PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt *n0, void (***f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -506,6 +719,24 @@ PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddBdResidual - Append boundary residual pointwise functions `f0` and `f1` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. f0    - The `f0` boundary residual pointwise function to append; a `NULL` is ignored
+- f1    - The `f1` boundary residual pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdResidual()`, `PetscWeakFormGetBdResidual()`, `PetscWeakFormAddResidual()`
+@*/
 PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, void (*f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -514,6 +745,26 @@ PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetBdResidual - Set the lists of boundary residual pointwise functions `f0` and `f1` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `f0` boundary pointwise functions to set
+. f0    - The array of `f0` boundary residual pointwise functions, or `NULL` to clear the key
+. n1    - The number of `f1` boundary pointwise functions to set
+- f1    - The array of `f1` boundary residual pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetBdResidual()`, `PetscWeakFormAddBdResidual()`, `PetscWeakFormSetResidual()`
+@*/
 PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt n0, void (**f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -522,6 +773,26 @@ PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexBdResidual - Set the boundary residual pointwise functions `f0` and `f1` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `f0` in the `f0` list
+. f0    - The `f0` boundary residual pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `f1` in the `f1` list
+- f1    - The `f1` boundary residual pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdResidual()`, `PetscWeakFormAddBdResidual()`, `PetscWeakFormGetBdResidual()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexBdResidual(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt i0, void (*f0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*f1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
@@ -530,6 +801,21 @@ PetscErrorCode PetscWeakFormSetIndexBdResidual(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormHasJacobian - Returns whether the `PetscWeakForm` has any Jacobian (`g0`, `g1`, `g2`, or `g3`) pointwise functions registered
+
+  Not Collective
+
+  Input Parameter:
+. wf - The `PetscWeakForm`
+
+  Output Parameter:
+. hasJac - `PETSC_TRUE` if any Jacobian pointwise functions are registered, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobian()`, `PetscWeakFormGetJacobian()`, `PetscWeakFormHasJacobianPreconditioner()`, `PetscWeakFormHasBdJacobian()`
+@*/
 PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm wf, PetscBool *hasJac)
 {
   PetscInt n0, n1, n2, n3;
@@ -545,6 +831,33 @@ PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm wf, PetscBool *hasJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetJacobian - Retrieve the lists of Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `g0` pointwise functions registered for this key
+. g0 - The array of `g0` Jacobian pointwise functions
+. n1 - The number of `g1` pointwise functions registered for this key
+. g1 - The array of `g1` Jacobian pointwise functions
+. n2 - The number of `g2` pointwise functions registered for this key
+. g2 - The array of `g2` Jacobian pointwise functions
+. n3 - The number of `g3` pointwise functions registered for this key
+- g3 - The array of `g3` Jacobian pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobian()`, `PetscWeakFormAddJacobian()`, `PetscWeakFormHasJacobian()`, `PetscWeakFormGetJacobianPreconditioner()`
+@*/
 PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt *n0, void (***g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n2, void (***g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n3, void (***g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -557,6 +870,27 @@ PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddJacobian - Append Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. g0    - The `g0` Jacobian pointwise function to append; a `NULL` is ignored
+. g1    - The `g1` Jacobian pointwise function to append; a `NULL` is ignored
+. g2    - The `g2` Jacobian pointwise function to append; a `NULL` is ignored
+- g3    - The `g3` Jacobian pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobian()`, `PetscWeakFormGetJacobian()`, `PetscWeakFormSetIndexJacobian()`
+@*/
 PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -569,6 +903,31 @@ PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetJacobian - Set the lists of Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `g0` pointwise functions to set
+. g0    - The array of `g0` Jacobian pointwise functions, or `NULL` to clear the key
+. n1    - The number of `g1` pointwise functions to set
+. g1    - The array of `g1` Jacobian pointwise functions, or `NULL` to clear the key
+. n2    - The number of `g2` pointwise functions to set
+. g2    - The array of `g2` Jacobian pointwise functions, or `NULL` to clear the key
+. n3    - The number of `g3` pointwise functions to set
+- g3    - The array of `g3` Jacobian pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetJacobian()`, `PetscWeakFormAddJacobian()`, `PetscWeakFormSetIndexJacobian()`, `PetscWeakFormSetJacobianPreconditioner()`
+@*/
 PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt n0, void (**g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n2, void (**g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n3, void (**g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -581,6 +940,31 @@ PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexJacobian - Set the Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `g0` in the `g0` list
+. g0    - The `g0` Jacobian pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `g1` in the `g1` list
+. g1    - The `g1` Jacobian pointwise function; a `NULL` is ignored
+. i2    - The index at which to store `g2` in the `g2` list
+. g2    - The `g2` Jacobian pointwise function; a `NULL` is ignored
+. i3    - The index at which to store `g3` in the `g3` list
+- g3    - The `g3` Jacobian pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobian()`, `PetscWeakFormAddJacobian()`, `PetscWeakFormGetJacobian()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt i0, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i2, void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i3, void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -593,6 +977,21 @@ PetscErrorCode PetscWeakFormSetIndexJacobian(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormHasJacobianPreconditioner - Returns whether the `PetscWeakForm` has any Jacobian preconditioner (`g0`, `g1`, `g2`, or `g3`) pointwise functions registered
+
+  Not Collective
+
+  Input Parameter:
+. wf - The `PetscWeakForm`
+
+  Output Parameter:
+. hasJacPre - `PETSC_TRUE` if any Jacobian preconditioner pointwise functions are registered, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobianPreconditioner()`, `PetscWeakFormGetJacobianPreconditioner()`, `PetscWeakFormHasJacobian()`, `PetscWeakFormHasBdJacobianPreconditioner()`
+@*/
 PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm wf, PetscBool *hasJacPre)
 {
   PetscInt n0, n1, n2, n3;
@@ -608,6 +1007,33 @@ PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm wf, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetJacobianPreconditioner - Retrieve the lists of Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `g0` pointwise functions registered for this key
+. g0 - The array of `g0` Jacobian preconditioner pointwise functions
+. n1 - The number of `g1` pointwise functions registered for this key
+. g1 - The array of `g1` Jacobian preconditioner pointwise functions
+. n2 - The number of `g2` pointwise functions registered for this key
+. g2 - The array of `g2` Jacobian preconditioner pointwise functions
+. n3 - The number of `g3` pointwise functions registered for this key
+- g3 - The array of `g3` Jacobian preconditioner pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobianPreconditioner()`, `PetscWeakFormAddJacobianPreconditioner()`, `PetscWeakFormHasJacobianPreconditioner()`, `PetscWeakFormGetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt *n0, void (***g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n2, void (***g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n3, void (***g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -620,6 +1046,27 @@ PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddJacobianPreconditioner - Append Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. g0    - The `g0` Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+. g1    - The `g1` Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+. g2    - The `g2` Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+- g3    - The `g3` Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobianPreconditioner()`, `PetscWeakFormGetJacobianPreconditioner()`, `PetscWeakFormAddJacobian()`
+@*/
 PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -632,6 +1079,31 @@ PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetJacobianPreconditioner - Set the lists of Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `g0` pointwise functions to set
+. g0    - The array of `g0` Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n1    - The number of `g1` pointwise functions to set
+. g1    - The array of `g1` Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n2    - The number of `g2` pointwise functions to set
+. g2    - The array of `g2` Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n3    - The number of `g3` pointwise functions to set
+- g3    - The array of `g3` Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetJacobianPreconditioner()`, `PetscWeakFormAddJacobianPreconditioner()`, `PetscWeakFormSetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt n0, void (**g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n2, void (**g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n3, void (**g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -644,6 +1116,31 @@ PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexJacobianPreconditioner - Set the Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `g0` in the `g0` list
+. g0    - The `g0` Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `g1` in the `g1` list
+. g1    - The `g1` Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i2    - The index at which to store `g2` in the `g2` list
+. g2    - The `g2` Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i3    - The index at which to store `g3` in the `g3` list
+- g3    - The `g3` Jacobian preconditioner pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetJacobianPreconditioner()`, `PetscWeakFormAddJacobianPreconditioner()`, `PetscWeakFormGetJacobianPreconditioner()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt i0, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i2, void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i3, void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -656,6 +1153,21 @@ PetscErrorCode PetscWeakFormSetIndexJacobianPreconditioner(PetscWeakForm wf, DML
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormHasBdJacobian - Returns whether the `PetscWeakForm` has any boundary Jacobian (`g0`, `g1`, `g2`, or `g3`) pointwise functions registered
+
+  Not Collective
+
+  Input Parameter:
+. wf - The `PetscWeakForm`
+
+  Output Parameter:
+. hasJac - `PETSC_TRUE` if any boundary Jacobian pointwise functions are registered, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobian()`, `PetscWeakFormGetBdJacobian()`, `PetscWeakFormHasJacobian()`, `PetscWeakFormHasBdJacobianPreconditioner()`
+@*/
 PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm wf, PetscBool *hasJac)
 {
   PetscInt n0, n1, n2, n3;
@@ -671,6 +1183,33 @@ PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm wf, PetscBool *hasJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetBdJacobian - Retrieve the lists of boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `g0` boundary pointwise functions registered for this key
+. g0 - The array of `g0` boundary Jacobian pointwise functions
+. n1 - The number of `g1` boundary pointwise functions registered for this key
+. g1 - The array of `g1` boundary Jacobian pointwise functions
+. n2 - The number of `g2` boundary pointwise functions registered for this key
+. g2 - The array of `g2` boundary Jacobian pointwise functions
+. n3 - The number of `g3` boundary pointwise functions registered for this key
+- g3 - The array of `g3` boundary Jacobian pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobian()`, `PetscWeakFormAddBdJacobian()`, `PetscWeakFormHasBdJacobian()`, `PetscWeakFormGetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt *n0, void (***g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n2, void (***g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n3, void (***g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -683,6 +1222,27 @@ PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddBdJacobian - Append boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. g0    - The `g0` boundary Jacobian pointwise function to append; a `NULL` is ignored
+. g1    - The `g1` boundary Jacobian pointwise function to append; a `NULL` is ignored
+. g2    - The `g2` boundary Jacobian pointwise function to append; a `NULL` is ignored
+- g3    - The `g3` boundary Jacobian pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobian()`, `PetscWeakFormGetBdJacobian()`, `PetscWeakFormAddJacobian()`
+@*/
 PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -695,6 +1255,31 @@ PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetBdJacobian - Set the lists of boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `g0` boundary pointwise functions to set
+. g0    - The array of `g0` boundary Jacobian pointwise functions, or `NULL` to clear the key
+. n1    - The number of `g1` boundary pointwise functions to set
+. g1    - The array of `g1` boundary Jacobian pointwise functions, or `NULL` to clear the key
+. n2    - The number of `g2` boundary pointwise functions to set
+. g2    - The array of `g2` boundary Jacobian pointwise functions, or `NULL` to clear the key
+. n3    - The number of `g3` boundary pointwise functions to set
+- g3    - The array of `g3` boundary Jacobian pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetBdJacobian()`, `PetscWeakFormAddBdJacobian()`, `PetscWeakFormSetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt n0, void (**g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n2, void (**g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n3, void (**g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -707,6 +1292,31 @@ PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexBdJacobian - Set the boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `g0` in the `g0` list
+. g0    - The `g0` boundary Jacobian pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `g1` in the `g1` list
+. g1    - The `g1` boundary Jacobian pointwise function; a `NULL` is ignored
+. i2    - The index at which to store `g2` in the `g2` list
+. g2    - The `g2` boundary Jacobian pointwise function; a `NULL` is ignored
+. i3    - The index at which to store `g3` in the `g3` list
+- g3    - The `g3` boundary Jacobian pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobian()`, `PetscWeakFormAddBdJacobian()`, `PetscWeakFormGetBdJacobian()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexBdJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt i0, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i2, void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i3, void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -719,6 +1329,21 @@ PetscErrorCode PetscWeakFormSetIndexBdJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormHasBdJacobianPreconditioner - Returns whether the `PetscWeakForm` has any boundary Jacobian preconditioner (`g0`, `g1`, `g2`, or `g3`) pointwise functions registered
+
+  Not Collective
+
+  Input Parameter:
+. wf - The `PetscWeakForm`
+
+  Output Parameter:
+. hasJacPre - `PETSC_TRUE` if any boundary Jacobian preconditioner pointwise functions are registered, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobianPreconditioner()`, `PetscWeakFormGetBdJacobianPreconditioner()`, `PetscWeakFormHasBdJacobian()`, `PetscWeakFormHasJacobianPreconditioner()`
+@*/
 PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm wf, PetscBool *hasJacPre)
 {
   PetscInt n0, n1, n2, n3;
@@ -734,6 +1359,33 @@ PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm wf, PetscB
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetBdJacobianPreconditioner - Retrieve the lists of boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `g0` boundary pointwise functions registered for this key
+. g0 - The array of `g0` boundary Jacobian preconditioner pointwise functions
+. n1 - The number of `g1` boundary pointwise functions registered for this key
+. g1 - The array of `g1` boundary Jacobian preconditioner pointwise functions
+. n2 - The number of `g2` boundary pointwise functions registered for this key
+. g2 - The array of `g2` boundary Jacobian preconditioner pointwise functions
+. n3 - The number of `g3` boundary pointwise functions registered for this key
+- g3 - The array of `g3` boundary Jacobian preconditioner pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobianPreconditioner()`, `PetscWeakFormAddBdJacobianPreconditioner()`, `PetscWeakFormHasBdJacobianPreconditioner()`, `PetscWeakFormGetBdJacobian()`
+@*/
 PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt *n0, void (***g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n2, void (***g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n3, void (***g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -746,6 +1398,27 @@ PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddBdJacobianPreconditioner - Append boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. g0    - The `g0` boundary Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+. g1    - The `g1` boundary Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+. g2    - The `g2` boundary Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+- g3    - The `g3` boundary Jacobian preconditioner pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobianPreconditioner()`, `PetscWeakFormGetBdJacobianPreconditioner()`, `PetscWeakFormAddBdJacobian()`
+@*/
 PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -758,6 +1431,31 @@ PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetBdJacobianPreconditioner - Set the lists of boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `g0` boundary pointwise functions to set
+. g0    - The array of `g0` boundary Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n1    - The number of `g1` boundary pointwise functions to set
+. g1    - The array of `g1` boundary Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n2    - The number of `g2` boundary pointwise functions to set
+. g2    - The array of `g2` boundary Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+. n3    - The number of `g3` boundary pointwise functions to set
+- g3    - The array of `g3` boundary Jacobian preconditioner pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetBdJacobianPreconditioner()`, `PetscWeakFormAddBdJacobianPreconditioner()`, `PetscWeakFormSetBdJacobian()`
+@*/
 PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt n0, void (**g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n2, void (**g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n3, void (**g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -770,6 +1468,31 @@ PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexBdJacobianPreconditioner - Set the boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the boundary region, or `NULL` for the entire boundary
+. val   - The label value selecting the boundary region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `g0` in the `g0` list
+. g0    - The `g0` boundary Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `g1` in the `g1` list
+. g1    - The `g1` boundary Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i2    - The index at which to store `g2` in the `g2` list
+. g2    - The `g2` boundary Jacobian preconditioner pointwise function; a `NULL` is ignored
+. i3    - The index at which to store `g3` in the `g3` list
+- g3    - The `g3` boundary Jacobian preconditioner pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetBdJacobianPreconditioner()`, `PetscWeakFormAddBdJacobianPreconditioner()`, `PetscWeakFormGetBdJacobianPreconditioner()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexBdJacobianPreconditioner(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt i0, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i2, void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i3, void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -782,6 +1505,24 @@ PetscErrorCode PetscWeakFormSetIndexBdJacobianPreconditioner(PetscWeakForm wf, D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscWeakFormHasDynamicJacobian - Returns whether the `PetscWeakForm` has any dynamic Jacobian (`g0`, `g1`, `g2`, or `g3`) pointwise functions registered
+
+  Not Collective
+
+  Input Parameter:
+. wf - The `PetscWeakForm`
+
+  Output Parameter:
+. hasDynJac - `PETSC_TRUE` if any dynamic Jacobian pointwise functions are registered, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+  Note:
+  The dynamic Jacobian is the Jacobian of the time-derivative term for transient problems.
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetDynamicJacobian()`, `PetscWeakFormGetDynamicJacobian()`, `PetscWeakFormHasJacobian()`
+@*/
 PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm wf, PetscBool *hasDynJac)
 {
   PetscInt n0, n1, n2, n3;
@@ -797,6 +1538,33 @@ PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm wf, PetscBool *hasD
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetDynamicJacobian - Retrieve the lists of dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n0 - The number of `g0` pointwise functions registered for this key
+. g0 - The array of `g0` dynamic Jacobian pointwise functions
+. n1 - The number of `g1` pointwise functions registered for this key
+. g1 - The array of `g1` dynamic Jacobian pointwise functions
+. n2 - The number of `g2` pointwise functions registered for this key
+. g2 - The array of `g2` dynamic Jacobian pointwise functions
+. n3 - The number of `g3` pointwise functions registered for this key
+- g3 - The array of `g3` dynamic Jacobian pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetDynamicJacobian()`, `PetscWeakFormAddDynamicJacobian()`, `PetscWeakFormHasDynamicJacobian()`, `PetscWeakFormGetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt *n0, void (***g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n1, void (***g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n2, void (***g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt *n3, void (***g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -809,6 +1577,27 @@ PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormAddDynamicJacobian - Append dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. g0    - The `g0` dynamic Jacobian pointwise function to append; a `NULL` is ignored
+. g1    - The `g1` dynamic Jacobian pointwise function to append; a `NULL` is ignored
+. g2    - The `g2` dynamic Jacobian pointwise function to append; a `NULL` is ignored
+- g3    - The `g3` dynamic Jacobian pointwise function to append; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetDynamicJacobian()`, `PetscWeakFormGetDynamicJacobian()`, `PetscWeakFormAddJacobian()`
+@*/
 PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -821,6 +1610,31 @@ PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetDynamicJacobian - Set the lists of dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. n0    - The number of `g0` pointwise functions to set
+. g0    - The array of `g0` dynamic Jacobian pointwise functions, or `NULL` to clear the key
+. n1    - The number of `g1` pointwise functions to set
+. g1    - The array of `g1` dynamic Jacobian pointwise functions, or `NULL` to clear the key
+. n2    - The number of `g2` pointwise functions to set
+. g2    - The array of `g2` dynamic Jacobian pointwise functions, or `NULL` to clear the key
+. n3    - The number of `g3` pointwise functions to set
+- g3    - The array of `g3` dynamic Jacobian pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetDynamicJacobian()`, `PetscWeakFormAddDynamicJacobian()`, `PetscWeakFormSetJacobian()`
+@*/
 PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt n0, void (**g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n1, void (**g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n2, void (**g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt n3, void (**g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -833,6 +1647,31 @@ PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexDynamicJacobian - Set the dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The test field number
+. g     - The trial field number
+. part  - The equation part, or 0 if unused
+. i0    - The index at which to store `g0` in the `g0` list
+. g0    - The `g0` dynamic Jacobian pointwise function; a `NULL` is ignored
+. i1    - The index at which to store `g1` in the `g1` list
+. g1    - The `g1` dynamic Jacobian pointwise function; a `NULL` is ignored
+. i2    - The index at which to store `g2` in the `g2` list
+. g2    - The `g2` dynamic Jacobian pointwise function; a `NULL` is ignored
+. i3    - The index at which to store `g3` in the `g3` list
+- g3    - The `g3` dynamic Jacobian pointwise function; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetDynamicJacobian()`, `PetscWeakFormAddDynamicJacobian()`, `PetscWeakFormGetDynamicJacobian()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt g, PetscInt part, PetscInt i0, void (*g0)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i1, void (*g1)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i2, void (*g2)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscInt i3, void (*g3)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscInt find = f * wf->Nf + g;
@@ -845,6 +1684,26 @@ PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm wf, DMLabel la
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormGetRiemannSolver - Retrieve the list of Riemann solver pointwise functions for a given key from a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+- part  - The equation part, or 0 if unused
+
+  Output Parameters:
++ n - The number of Riemann solver pointwise functions registered for this key
+- r - The array of Riemann solver pointwise functions
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetRiemannSolver()`, `PetscWeakFormSetIndexRiemannSolver()`
+@*/
 PetscErrorCode PetscWeakFormGetRiemannSolver(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt *n, void (***r)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *))
 {
   PetscFunctionBegin;
@@ -852,6 +1711,24 @@ PetscErrorCode PetscWeakFormGetRiemannSolver(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetRiemannSolver - Set the list of Riemann solver pointwise functions for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. n     - The number of Riemann solver pointwise functions to set
+- r     - The array of Riemann solver pointwise functions, or `NULL` to clear the key
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormGetRiemannSolver()`, `PetscWeakFormSetIndexRiemannSolver()`
+@*/
 PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt n, void (**r)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *))
 {
   PetscFunctionBegin;
@@ -859,6 +1736,24 @@ PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscWeakFormSetIndexRiemannSolver - Set a single Riemann solver pointwise function at the given index for a given key in a `PetscWeakForm`
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The `PetscWeakForm`
+. label - The label selecting the mesh region, or `NULL` for the entire domain
+. val   - The label value selecting the mesh region
+. f     - The field number
+. part  - The equation part, or 0 if unused
+. i     - The index into the list of Riemann solver pointwise functions for this key
+- r     - The Riemann solver pointwise function to store at position `i`; a `NULL` is ignored
+
+  Level: intermediate
+
+.seealso: `PetscWeakForm`, `PetscWeakFormSetRiemannSolver()`, `PetscWeakFormGetRiemannSolver()`, `PetscWeakFormClearIndex()`
+@*/
 PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel label, PetscInt val, PetscInt f, PetscInt part, PetscInt i, void (*r)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *))
 {
   PetscFunctionBegin;

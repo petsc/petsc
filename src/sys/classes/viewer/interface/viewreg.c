@@ -13,6 +13,18 @@ struct _n_PetscOptionsHelpPrinted {
   PetscSegBuffer      strings;
 };
 
+/*@
+  PetscOptionsHelpPrintedDestroy - Destroys the object used to track which help messages have already been printed
+
+  Not Collective
+
+  Input Parameter:
+. hp - pointer to the `PetscOptionsHelpPrinted` object to destroy; set to `NULL` on return
+
+  Level: developer
+
+.seealso: `PetscOptionsHelpPrintedCreate()`, `PetscOptionsHelpPrintedCheck()`
+@*/
 PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 {
   PetscFunctionBegin;
@@ -642,6 +654,28 @@ PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerFlowControlStart - Begin a flow-controlled viewer operation on the main MPI process
+
+  Collective
+
+  Input Parameter:
+. viewer - the binary viewer
+
+  Output Parameters:
++ mcnt - the current flow-control counter on the main MPI process
+- cnt  - the flow-control window size (also read from the viewer)
+
+  Level: developer
+
+  Note:
+  Used together with `PetscViewerFlowControlStepMain()` and `PetscViewerFlowControlEndMain()` on the main process (rank 0),
+  and with `PetscViewerFlowControlStepWorker()` and `PetscViewerFlowControlEndWorker()` on the other processes, to serialize
+  I/O work through a bounded window so that all processes do not simultaneously flood the main process with data.
+
+.seealso: `PetscViewer`, `PetscViewerFlowControlStepMain()`, `PetscViewerFlowControlEndMain()`, `PetscViewerFlowControlStepWorker()`,
+          `PetscViewerFlowControlEndWorker()`, `PetscViewerBinaryGetFlowControl()`
+@*/
 PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer, PetscInt *mcnt, PetscInt *cnt)
 {
   PetscFunctionBegin;
@@ -650,6 +684,28 @@ PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer, PetscInt *mcnt, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerFlowControlStepMain - Advance the flow-control window on the main MPI process during a viewer operation
+
+  Collective
+
+  Input Parameters:
++ viewer - the binary viewer
+. i      - the current MPI rank being served
+- cnt    - the flow-control window size returned by `PetscViewerFlowControlStart()`
+
+  Input/Output Parameter:
+. mcnt - the running flow-control counter; incremented and broadcast when `i` reaches it
+
+  Level: developer
+
+  Note:
+  Called on the main MPI process (rank 0) once per worker rank in a loop; when the current rank has caught up to `mcnt`
+  the window is advanced by `cnt` and broadcast so waiting workers can proceed.
+
+.seealso: `PetscViewer`, `PetscViewerFlowControlStart()`, `PetscViewerFlowControlEndMain()`, `PetscViewerFlowControlStepWorker()`,
+          `PetscViewerFlowControlEndWorker()`
+@*/
 PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
 {
   MPI_Comm comm;
@@ -663,6 +719,25 @@ PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerFlowControlEndMain - Finish a flow-controlled viewer operation on the main MPI process by signalling completion to the workers
+
+  Collective
+
+  Input Parameter:
+. viewer - the binary viewer
+
+  Input/Output Parameter:
+. mcnt - the flow-control counter; reset to 0 and broadcast to signal completion
+
+  Level: developer
+
+  Note:
+  Broadcasting `mcnt = 0` releases any worker MPI processes still waiting inside `PetscViewerFlowControlEndWorker()`.
+
+.seealso: `PetscViewer`, `PetscViewerFlowControlStart()`, `PetscViewerFlowControlStepMain()`, `PetscViewerFlowControlStepWorker()`,
+          `PetscViewerFlowControlEndWorker()`
+@*/
 PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
 {
   MPI_Comm comm;
@@ -674,6 +749,27 @@ PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerFlowControlStepWorker - Wait on a worker MPI process until the flow-control window includes this rank
+
+  Collective
+
+  Input Parameters:
++ viewer - the binary viewer
+- rank   - the calling MPI process rank
+
+  Input/Output Parameter:
+. mcnt - the flow-control counter; updated with values broadcast from the main MPI process until it exceeds `rank`
+
+  Level: developer
+
+  Note:
+  Blocks in a loop of `MPI_Bcast()` until the main MPI process (through `PetscViewerFlowControlStepMain()`) advances the
+  window past this rank, giving the worker permission to perform its I/O.
+
+.seealso: `PetscViewer`, `PetscViewerFlowControlStart()`, `PetscViewerFlowControlStepMain()`, `PetscViewerFlowControlEndMain()`,
+          `PetscViewerFlowControlEndWorker()`
+@*/
 PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt rank, PetscInt *mcnt)
 {
   MPI_Comm comm;
@@ -687,6 +783,25 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerFlowControlEndWorker - Wait on a worker MPI process for the main MPI process to signal completion of a flow-controlled viewer operation
+
+  Collective
+
+  Input Parameter:
+. viewer - the binary viewer
+
+  Input/Output Parameter:
+. mcnt - the flow-control counter; updated with values broadcast from the main MPI process until it becomes 0
+
+  Level: developer
+
+  Note:
+  Blocks in a loop of `MPI_Bcast()` until `PetscViewerFlowControlEndMain()` sends a `mcnt = 0` completion signal.
+
+.seealso: `PetscViewer`, `PetscViewerFlowControlStart()`, `PetscViewerFlowControlStepMain()`, `PetscViewerFlowControlEndMain()`,
+          `PetscViewerFlowControlStepWorker()`
+@*/
 PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer, PetscInt *mcnt)
 {
   MPI_Comm comm;

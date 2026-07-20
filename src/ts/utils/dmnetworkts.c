@@ -25,6 +25,31 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorLGCtxNetworkCreate - Creates a `TSMonitorLGCtxNetwork` context with one line-graph window for each edge and each vertex of a `DMNETWORK`
+
+  Collective
+
+  Input Parameters:
++ ts       - the `TS` context whose `DM` is a `DMNETWORK`
+. host     - the X display to open, or `NULL` for the local machine
+. label    - the title to put in the title bar
+. x        - the x screen coordinates of the upper left coordinate of the window
+. y        - the y screen coordinates of the upper left coordinate of the window
+. m        - the screen width in pixels
+. n        - the screen height in pixels
+- howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
+
+  Output Parameter:
+. ctx - the newly created network line-graph monitor context
+
+  Level: intermediate
+
+  Note:
+  Pass this context and `TSMonitorLGCtxNetworkDestroy()` to `TSMonitorSet()` with `TSMonitorLGCtxNetworkSolution()` to display the solution on the network during integration.
+
+.seealso: [](ch_ts), `TS`, `DMNETWORK`, `TSMonitorSet()`, `TSMonitorLGCtxNetworkSolution()`, `TSMonitorLGCtxNetworkDestroy()`
+@*/
 PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx)
 {
   PetscDraw draw;

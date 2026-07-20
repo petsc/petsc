@@ -146,6 +146,25 @@ PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db, const char r
  }
  */
 
+/*@C
+  DMSwarmDataBucketGetDMSwarmDataFieldIdByName - Return the index of a `DMSwarmDataField` within a `DMSwarmDataBucket` given its name.
+
+  Not Collective
+
+  Input Parameters:
++ db   - the `DMSwarmDataBucket`
+- name - the field name
+
+  Output Parameter:
+. idx - the index of the field within the bucket
+
+  Level: developer
+
+  Note:
+  Errors if no field with the given name is registered; use `DMSwarmDataBucketQueryDMSwarmDataFieldByName()` first when the name may be absent.
+
+.seealso: `DMSwarmDataBucket`, `DMSwarmDataField`, `DMSwarmDataBucketGetDMSwarmDataFieldByName()`, `DMSwarmDataBucketQueryDMSwarmDataFieldByName()`
+@*/
 PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket db, const char name[], PetscInt *idx)
 {
   PetscBool found;
@@ -158,6 +177,25 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket db
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmDataBucketGetDMSwarmDataFieldByName - Return the `DMSwarmDataField` handle registered in a `DMSwarmDataBucket` under a given name.
+
+  Not Collective
+
+  Input Parameters:
++ db   - the `DMSwarmDataBucket`
+- name - the field name
+
+  Output Parameter:
+. gfield - the `DMSwarmDataField` handle
+
+  Level: developer
+
+  Note:
+  Errors if no field with the given name is registered; use `DMSwarmDataBucketQueryDMSwarmDataFieldByName()` first when the name may be absent.
+
+.seealso: `DMSwarmDataBucket`, `DMSwarmDataField`, `DMSwarmDataBucketGetDMSwarmDataFieldIdByName()`, `DMSwarmDataBucketQueryDMSwarmDataFieldByName()`
+@*/
 PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db, const char name[], DMSwarmDataField *gfield)
 {
   PetscInt  idx;
@@ -171,6 +209,22 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmDataBucketQueryDMSwarmDataFieldByName - Test whether a `DMSwarmDataBucket` contains a `DMSwarmDataField` with the given name.
+
+  Not Collective
+
+  Input Parameters:
++ db   - the `DMSwarmDataBucket`
+- name - the field name to look up
+
+  Output Parameter:
+. found - `PETSC_TRUE` if a field with the given name is registered, otherwise `PETSC_FALSE`
+
+  Level: developer
+
+.seealso: `DMSwarmDataBucket`, `DMSwarmDataField`, `DMSwarmDataBucketGetDMSwarmDataFieldByName()`, `DMSwarmDataBucketGetDMSwarmDataFieldIdByName()`
+@*/
 PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket db, const char name[], PetscBool *found)
 {
   PetscFunctionBegin;
@@ -386,6 +440,24 @@ PetscErrorCode DMSwarmDataFieldGetAtomicSize(const DMSwarmDataField gfield, size
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmDataFieldGetEntries - Return a pointer to the raw contiguous storage backing a `DMSwarmDataField`.
+
+  Not Collective
+
+  Input Parameter:
+. gfield - the `DMSwarmDataField`
+
+  Output Parameter:
+. data - pointer to the raw entries; must be released with `DMSwarmDataFieldRestoreEntries()`
+
+  Level: developer
+
+  Note:
+  The array has `L * bs` entries of `atomic_size` bytes, where `L` is the number of particles and `bs` is the block size of the field.
+
+.seealso: `DMSwarmDataField`, `DMSwarmDataFieldRestoreEntries()`, `DMSwarmDataFieldGetNumEntries()`, `DMSwarmDataFieldGetAtomicSize()`
+@*/
 PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField gfield, void **data)
 {
   PetscFunctionBegin;
@@ -393,6 +465,21 @@ PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField gfield, void **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmDataFieldRestoreEntries - Release a pointer obtained from `DMSwarmDataFieldGetEntries()`, clearing the caller's handle to `NULL`.
+
+  Not Collective
+
+  Input Parameter:
+. gfield - the `DMSwarmDataField`
+
+  Output Parameter:
+. data - pointer that will be set to `NULL`
+
+  Level: developer
+
+.seealso: `DMSwarmDataField`, `DMSwarmDataFieldGetEntries()`
+@*/
 PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField gfield, void **data)
 {
   PetscFunctionBegin;

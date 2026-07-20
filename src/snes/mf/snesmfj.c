@@ -15,7 +15,7 @@
 . x     - the point at which the Jacobian-vector products will be performed
 . jac   - the matrix-free Jacobian object of `MatType` `MATMFFD`, likely obtained with `MatCreateSNESMF()`
 . B     - either the same as `jac` or another matrix type (ignored)
-- dummy - the user context (ignored)
+- dummy - the application context (ignored)
 
   Options Database Key:
 . -snes_mf - use the matrix created with `MatSNESMFCreate()` to setup the Jacobian for each new solution in the Newton process

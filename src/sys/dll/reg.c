@@ -351,9 +351,19 @@ PetscErrorCode PetscFunctionListClear(PetscFunctionList fl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   Print registered PetscFunctionLists
-*/
+/*@
+  PetscFunctionListPrintAll - Prints the names of all functions registered in every `PetscFunctionList` known to PETSc
+
+  Not Collective
+
+  Level: developer
+
+  Note:
+  Intended for debugging; iterates over the global list of registered `PetscFunctionList` objects and prints each
+  non-empty function name to `PETSC_COMM_SELF` on the calling MPI process.
+
+.seealso: `PetscFunctionList`, `PetscFunctionListPrintNonEmpty()`, `PetscFunctionListAdd()`, `PetscFunctionListView()`
+@*/
 PetscErrorCode PetscFunctionListPrintAll(void)
 {
   PetscFunctionListDLAll current = dlallhead;

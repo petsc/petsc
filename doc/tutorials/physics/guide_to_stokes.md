@@ -460,7 +460,7 @@ SNES Object: 1 MPI process
                   package used to perform factorization: petsc
                   total: nonzeros=426, allocated nonzeros=426
                     using I-node routines: found 17 nodes, limit used is 5
-          linear system matrix followed by preconditioner matrix:
+          linear system matrix followed by matrix used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=30, cols=30
@@ -495,7 +495,7 @@ SNES Object: 1 MPI process
                   package used to perform factorization: petsc
                   total: nonzeros=51, allocated nonzeros=51
                     not using I-node routines
-          linear system matrix followed by preconditioner matrix:
+          linear system matrix followed by matrix used to construct the preconditioner:
           Mat Object: (fieldsplit_pressure_) 1 MPI process
             type: schurcomplement
             rows=9, cols=9
@@ -530,7 +530,7 @@ SNES Object: 1 MPI process
             total: nonzeros=41, allocated nonzeros=41
             total number of mallocs used during MatSetValues calls=0
               not using I-node routines
-    linear system matrix followed by preconditioner matrix:
+    linear system matrix followed by matrix used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=39, cols=39
@@ -620,7 +620,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
                   package used to perform factorization: petsc
                   total: nonzeros=426, allocated nonzeros=426
                     using I-node routines: found 17 nodes, limit used is 5
-          linear system matrix followed by preconditioner matrix:
+          linear system matrix followed by matrix used to construct the preconditioner:
           Mat Object: 1 MPI process
             type: seqaij
             rows=30, cols=30
@@ -661,7 +661,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
                   package used to perform factorization: petsc
                   total: nonzeros=51, allocated nonzeros=51
                     not using I-node routines
-          linear system matrix followed by preconditioner matrix:
+          linear system matrix followed by matrix used to construct the preconditioner:
           Mat Object: (fieldsplit_pressure_) 1 MPI process
             type: schurcomplement
             rows=9, cols=9
@@ -704,7 +704,7 @@ $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-sne
                           package used to perform factorization: petsc
                           total: nonzeros=426, allocated nonzeros=426
                             using I-node routines: found 17 nodes, limit used is 5
-                  linear system matrix followed by preconditioner matrix:
+                  linear system matrix followed by matrix used to construct the preconditioner:
                   Mat Object: 1 MPI process
                     type: seqaij
                     rows=30, cols=30
@@ -736,7 +736,7 @@ Finally, the SNES viewer reports the system matrix and matrix from which the pre
 
 ```console
 $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
-    linear system matrix followed by preconditioner matrix:
+    linear system matrix followed by matrix used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=39, cols=39
@@ -756,7 +756,7 @@ We see that they have the same nonzero pattern, even though the matrix used to c
 
 ```console
 $ make -f ./gmakefile test search="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view -dm_preallocate_only -prec_mat_ignore_zero_entries"
-    linear system matrix followed by preconditioner matrix:
+    linear system matrix followed by matrix used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij
       rows=39, cols=39

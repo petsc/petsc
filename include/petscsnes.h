@@ -179,9 +179,9 @@ PETSC_EXTERN PetscErrorCode SNESNewtonTRSetNormType(SNES, NormType);
     SNESNewtonTRQNType - type of quasi-Newton model to use
 
    Values:
-+  `SNES_TR_QN_NONE` - do not use a quasi-Newton model
-.  `SNES_TR_QN_SAME` - use the same quasi-Newton model for matrix and preconditioner
--  `SNES_TR_QN_DIFFERENT` - use different quasi-Newton models for matrix and preconditioner
++  `SNES_TR_QN_NONE`      - do not use a quasi-Newton model
+.  `SNES_TR_QN_SAME`      - use the same quasi-Newton model for matrix and the generation of the preconditioner
+-  `SNES_TR_QN_DIFFERENT` - use different quasi-Newton models for matrix and the generation of the preconditioner
 
    Level: intermediate
 
@@ -1381,7 +1381,7 @@ PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES, PetscInt, SNES *);
 PETSC_EXTERN PetscErrorCode SNESCompositeGetNumber(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES, PetscInt, PetscReal);
 
-PETSC_EXTERN PetscErrorCode SNESPatchSetDiscretisationInfo(SNES, PetscInt, DM *, PetscInt *, PetscInt *, const PetscInt **, const PetscInt *, PetscInt, const PetscInt *, PetscInt, const PetscInt *);
+PETSC_EXTERN PetscErrorCode SNESPatchSetDiscretisationInfo(SNES, PetscInt, DM[], PetscInt[], PetscInt[], const PetscInt **, const PetscInt[], PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode SNESPatchSetComputeOperator(SNES, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode SNESPatchSetComputeFunction(SNES, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode SNESPatchSetConstructType(SNES, PCPatchConstructType, PetscErrorCode (*func)(PC, PetscInt *, IS **, IS *, PetscCtx), PetscCtx);

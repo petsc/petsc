@@ -243,7 +243,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Input Parameters:
 + viewer - The `PetscViewer`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -263,6 +263,19 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  SNESMonitorDefaultSetUp - Prepare the `PetscViewerAndFormat` associated with `SNESMonitorDefault()`, in particular by initializing the underlying `PetscDrawLG` when the viewer format is `PETSC_VIEWER_DRAW_LG`
+
+  Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+- vf   - the viewer/format pair passed to `SNESMonitorSet()` along with `SNESMonitorDefault()`
+
+  Level: developer
+
+.seealso: [](ch_snes), `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`, `PetscViewerAndFormat`, `PetscViewerMonitorLGSetUp()`
+@*/
 PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 {
   PetscFunctionBegin;

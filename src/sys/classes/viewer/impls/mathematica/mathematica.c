@@ -463,6 +463,25 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerMathematicaPutMatrix - Send a dense matrix to a Mathematica kernel as a two-dimensional array
+  bound to a symbol in the kernel's namespace.
+
+  Not Collective
+
+  Input Parameters:
++ viewer - the `PETSCVIEWERMATHEMATICA` viewer
+. m      - the number of rows
+. n      - the number of columns
+- a      - the matrix values, in column-major order, of length `m` * `n`
+
+  Level: developer
+
+  Note:
+  The Mathematica symbol name defaults to `mat` and can be changed with `PetscViewerMathematicaSetName()`.
+
+.seealso: `PetscViewer`, `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaPutCSRMatrix()`, `PetscViewerMathematicaSetName()`
+@*/
 PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer viewer, int m, int n, PetscReal *a)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
@@ -490,6 +509,27 @@ PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer viewer, int m, int n,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerMathematicaPutCSRMatrix - Send a sparse matrix in CSR format to a Mathematica kernel as a
+  LinearAlgebraCSRMatrix bound to a symbol in the kernel's namespace.
+
+  Not Collective
+
+  Input Parameters:
++ viewer - the `PETSCVIEWERMATHEMATICA` viewer
+. m      - the number of rows
+. n      - the number of columns
+. i      - CSR row pointers of length `m + 1`
+. j      - CSR column indices
+- a      - CSR nonzero values
+
+  Level: developer
+
+  Note:
+  The Mathematica symbol name defaults to `mat` and can be changed with `PetscViewerMathematicaSetName()`.
+
+.seealso: `PetscViewer`, `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaPutMatrix()`, `PetscViewerMathematicaSetName()`
+@*/
 PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer viewer, int m, int n, int *i, int *j, PetscReal *a)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;

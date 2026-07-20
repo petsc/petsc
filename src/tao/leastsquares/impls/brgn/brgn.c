@@ -642,14 +642,14 @@ static PetscErrorCode TaoBRGNSetDictionaryMatrix_BRGN(Tao tao, Mat dict)
   Input Parameters:
 + tao  - the Tao context
 . func - function pointer for the regularizer value and gradient evaluation
-- ctx  - user context for the regularizer
+- ctx  - application context for the regularizer
 
   Calling sequence:
 + tao - the `Tao` context
 . u   - the location at which to compute the objective and gradient
 . val - location to store objective function value
 . g   - location to store gradient
-- ctx - user context for the regularizer Hessian
+- ctx - application context for the regularizer Hessian
 
   Level: advanced
 
@@ -681,13 +681,13 @@ static PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine_BRGN(Tao 
 + tao  - the `Tao` context
 . Hreg - user-created matrix for the Hessian of the regularization term
 . func - function pointer for the regularizer Hessian evaluation
-- ctx  - user context for the regularizer Hessian
+- ctx  - application context for the regularizer Hessian
 
   Calling sequence:
 + tao  - the `Tao` context
 . u    - the location at which to compute the Hessian
 . Hreg - user-created matrix for the Hessian of the regularization term
-- ctx  - user context for the regularizer Hessian
+- ctx  - application context for the regularizer Hessian
 
   Level: advanced
 

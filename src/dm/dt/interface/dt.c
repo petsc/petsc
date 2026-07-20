@@ -2386,7 +2386,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
 . a      - lower limit of integration
 . b      - upper limit of integration
 . digits - target number of correct decimal digits
-- ctx    - optional user context passed to `func`
+- ctx    - optional application context passed to `func`
 
   Output Parameter:
 . sol - the approximate value of the integral
@@ -2476,7 +2476,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], PetscCtx
 . a      - lower limit of integration
 . b      - upper limit of integration
 . digits - target number of correct decimal digits (also drives the working MPFR precision)
-- ctx    - optional user context passed to `func`
+- ctx    - optional application context passed to `func`
 
   Output Parameter:
 . sol - the approximate value of the integral

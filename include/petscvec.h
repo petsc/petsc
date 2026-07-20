@@ -679,6 +679,23 @@ PETSC_EXTERN PetscErrorCode VecLockWriteSet(Vec, PetscBool);
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec, PetscInt *);
 PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec, const char *[], const char *[], int *);
 
+/*@
+  VecSetErrorIfLocked - Raise an error if the `Vec` is currently locked for read or write access.
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ x   - the `Vec` to test
+- arg - the argument position of `x` in the calling routine, used in the error message
+
+  Level: developer
+
+  Note:
+  This is intended as an internal check for routines that must have exclusive access to a `Vec`.
+  A locked `Vec` typically indicates that another routine currently holds a read or write reference to it.
+
+.seealso: `Vec`, `VecLockGet()`, `VecLockGetLocation()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecLockWriteSet()`
+@*/
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
 {
   PetscInt state;

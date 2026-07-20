@@ -115,6 +115,19 @@ PetscErrorCode TSGLLEAdaptInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSGLLEAdaptSetType - Sets the type of a `TSGLLEAdapt` step-size and order adaptivity object
+
+  Logically Collective
+
+  Input Parameters:
++ adapt - the `TSGLLEAdapt` context
+- type  - the name of the adaptivity scheme, e.g. `TSGLLEADAPT_NONE`, `TSGLLEADAPT_SIZE`, `TSGLLEADAPT_BOTH`
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptCreate()`, `TSGLLEAdaptType`, `TSGLLEAdaptRegister()`
+@*/
 PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type)
 {
   PetscErrorCode (*r)(TSGLLEAdapt);
@@ -128,6 +141,19 @@ PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptSetOptionsPrefix - Sets the prefix used for searching for `TSGLLEAdapt` options in the options database
+
+  Logically Collective
+
+  Input Parameters:
++ adapt  - the `TSGLLEAdapt` context
+- prefix - the prefix to prepend to all option names
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptSetFromOptions()`
+@*/
 PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt adapt, const char prefix[])
 {
   PetscFunctionBegin;
@@ -135,6 +161,19 @@ PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt adapt, const char prefix[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptView - Views a `TSGLLEAdapt` step-size and order adaptivity object
+
+  Collective
+
+  Input Parameters:
++ adapt  - the `TSGLLEAdapt` context
+- viewer - the `PetscViewer` used to view the object
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptCreate()`, `PetscViewer`
+@*/
 PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer)
 {
   PetscBool isascii;
@@ -152,6 +191,18 @@ PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptDestroy - Destroys a `TSGLLEAdapt` context
+
+  Collective
+
+  Input Parameter:
+. adapt - the `TSGLLEAdapt` context
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptCreate()`
+@*/
 PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
 {
   PetscFunctionBegin;
@@ -166,6 +217,25 @@ PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptSetFromOptions - Sets options from the options database for a `TSGLLEAdapt` context
+
+  Collective
+
+  Input Parameters:
++ adapt              - the `TSGLLEAdapt` context
+- PetscOptionsObject - the `PetscOptionItems` used to process options
+
+  Options Database Key:
+. -ts_adapt_type (none|size|both) - algorithm to use for adaptivity
+
+  Level: advanced
+
+  Note:
+  This function is currently intended for internal use from inside `TSSetFromOptions_GLLE()`.
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptSetType()`
+@*/
 PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems PetscOptionsObject)
 {
   char      type[256] = TSGLLEADAPT_BOTH;
@@ -182,6 +252,30 @@ PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptChoose - Choose the next scheme and step size using a `TSGLLEAdapt` step-size and order controller
+
+  Logically Collective
+
+  Input Parameters:
++ adapt  - the `TSGLLEAdapt` context
+. n      - the number of candidate schemes
+. orders - the orders of accuracy of the candidate schemes
+. errors - the error estimates for each candidate scheme
+. cost   - the relative cost of each candidate scheme
+. cur    - the index of the currently active scheme
+. h      - the last step size that was taken
+- tleft  - the amount of remaining integration time
+
+  Output Parameters:
++ next_sc - the index of the scheme to use next
+. next_h  - the step size to take next
+- finish  - `PETSC_TRUE` if `next_h` was truncated to `tleft` because the end of the interval has been reached
+
+  Level: developer
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptCreate()`, `TSGLLEAdaptSetType()`
+@*/
 PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
 {
   PetscFunctionBegin;
@@ -196,6 +290,24 @@ PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt o
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TSGLLEAdaptCreate - Create a `TSGLLEAdapt` step-size and order adaptivity object
+
+  Collective
+
+  Input Parameter:
+. comm - the MPI communicator
+
+  Output Parameter:
+. inadapt - the newly created `TSGLLEAdapt` context
+
+  Level: intermediate
+
+  Note:
+  Typically this is not called by users; use `TSGetAdapt()` on the enclosing `TS` instead.
+
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptSetType()`, `TSGLLEAdaptDestroy()`
+@*/
 PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt)
 {
   TSGLLEAdapt adapt;
@@ -206,10 +318,6 @@ PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt)
   *inadapt = adapt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*
-   Implementations
-*/
 
 static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt)
 {

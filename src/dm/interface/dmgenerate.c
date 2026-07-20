@@ -120,6 +120,15 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMGenerateRegisterDestroy - Frees the list of `DM` mesh generators that were registered by `DMGenerateRegister()` or `DMGenerateRegisterAll()`.
+
+  Not Collective
+
+  Level: advanced
+
+.seealso: `DM`, `DMGenerateRegister()`, `DMGenerateRegisterAll()`
+@*/
 PetscErrorCode DMGenerateRegisterDestroy(void)
 {
   DMGeneratorFunctionList next, fl;

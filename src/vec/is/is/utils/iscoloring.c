@@ -4,6 +4,21 @@
 
 const char *const ISColoringTypes[] = {"global", "ghosted", "ISColoringType", "IS_COLORING_", NULL};
 
+/*@
+  ISColoringReference - Increases the reference count of an `ISColoring` object by one
+
+  Logically collective
+
+  Input Parameter:
+. coloring - the `ISColoring` object
+
+  Level: developer
+
+  Note:
+  The reference count is decreased by a matching call to `ISColoringDestroy()`.
+
+.seealso: `ISColoring`, `ISColoringCreate()`, `ISColoringDestroy()`
+@*/
 PetscErrorCode ISColoringReference(ISColoring coloring)
 {
   PetscFunctionBegin;

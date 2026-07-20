@@ -151,6 +151,23 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 
 #include <petsc/private/dmplextransformimpl.h>
 
+/*@
+  DMPlexSetTransform - Set the `DMPlexTransform` cached on the `DM`
+
+  Not Collective
+
+  Input Parameters:
++ dm - The `DM`
+- tr - The `DMPlexTransform`
+
+  Level: developer
+
+  Note:
+  This is normally used together with `DMPlexSetSaveTransform()` so that the transform used to produce
+  the refined mesh remains accessible.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexGetTransform()`, `DMPlexSetSaveTransform()`, `DMPlexGetSaveTransform()`
+@*/
 PetscErrorCode DMPlexSetTransform(DM dm, DMPlexTransform tr)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
@@ -166,6 +183,25 @@ PetscErrorCode DMPlexSetTransform(DM dm, DMPlexTransform tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexGetTransform - Get the `DMPlexTransform` cached on the `DM`
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
+. tr - The `DMPlexTransform`, or `NULL` if none has been saved
+
+  Level: developer
+
+  Note:
+  The transform is only available when `DMPlexSetSaveTransform()` has been called with `PETSC_TRUE`
+  before the refinement was performed.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexSetTransform()`, `DMPlexSetSaveTransform()`, `DMPlexGetSaveTransform()`
+@*/
 PetscErrorCode DMPlexGetTransform(DM dm, DMPlexTransform *tr)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
@@ -177,6 +213,19 @@ PetscErrorCode DMPlexGetTransform(DM dm, DMPlexTransform *tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexSetSaveTransform - Set the flag which determines whether the `DMPlexTransform` used to produce a refined `DM` is retained
+
+  Logically Collective
+
+  Input Parameters:
++ dm   - The `DM`
+- save - If `PETSC_TRUE`, keep the transform on the refined `DM` so it can be retrieved with `DMPlexGetTransform()`
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexGetSaveTransform()`, `DMPlexGetTransform()`, `DMPlexSetTransform()`
+@*/
 PetscErrorCode DMPlexSetSaveTransform(DM dm, PetscBool save)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
@@ -187,6 +236,21 @@ PetscErrorCode DMPlexSetSaveTransform(DM dm, PetscBool save)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexGetSaveTransform - Get the flag which determines whether the `DMPlexTransform` used to produce a refined `DM` is retained
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
+. save - If `PETSC_TRUE`, the transform will be kept on the refined `DM`
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexSetSaveTransform()`, `DMPlexGetTransform()`, `DMPlexSetTransform()`
+@*/
 PetscErrorCode DMPlexGetSaveTransform(DM dm, PetscBool *save)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;

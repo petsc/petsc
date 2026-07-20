@@ -149,6 +149,22 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerDrawSetDrawType - Set the underlying `PetscDrawType` used by a `PETSCVIEWERDRAW` viewer.
+
+  Logically Collective
+
+  Input Parameters:
++ v        - the `PETSCVIEWERDRAW` viewer
+- drawtype - the `PetscDrawType` (e.g. `PETSC_DRAW_X`, `PETSC_DRAW_IMAGE`, `PETSC_DRAW_NULL`)
+
+  Level: advanced
+
+  Note:
+  If `v` is not a `PETSCVIEWERDRAW` viewer, the call is a no-op.
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscDrawType`, `PetscViewerDrawGetDrawType()`, `PetscViewerDrawGetDraw()`
+@*/
 PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype)
 {
   PetscViewer_Draw *vdraw;
@@ -165,6 +181,21 @@ PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerDrawGetDrawType - Get the underlying `PetscDrawType` used by a `PETSCVIEWERDRAW` viewer.
+
+  Not Collective
+
+  Input Parameter:
+. v - the `PETSCVIEWERDRAW` viewer
+
+  Output Parameter:
+. drawtype - the `PetscDrawType` currently in use
+
+  Level: advanced
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscDrawType`, `PetscViewerDrawSetDrawType()`, `PetscViewerDrawGetDraw()`
+@*/
 PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v, PetscDrawType *drawtype)
 {
   PetscViewer_Draw *vdraw;

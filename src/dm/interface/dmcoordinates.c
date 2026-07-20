@@ -845,6 +845,24 @@ PetscErrorCode DMSetCellCoordinatesLocal(DM dm, Vec c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMGetCoordinateField - Get the `DMField` representation of the mesh coordinates
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DM`
+
+  Output Parameter:
+. field - the `DMField` describing the coordinates
+
+  Level: advanced
+
+  Note:
+  If the coordinate field does not yet exist, the `DM` implementation is asked to construct one.
+
+.seealso: `DM`, `DMField`, `DMSetCoordinateField()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
+@*/
 PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
 {
   PetscFunctionBegin;
@@ -855,6 +873,19 @@ PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMSetCoordinateField - Set the `DMField` representation of the mesh coordinates
+
+  Logically Collective
+
+  Input Parameters:
++ dm    - the `DM`
+- field - the `DMField` describing the coordinates
+
+  Level: advanced
+
+.seealso: `DM`, `DMField`, `DMGetCoordinateField()`, `DMSetCoordinateDM()`, `DMSetCoordinates()`
+@*/
 PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 {
   PetscFunctionBegin;
@@ -866,6 +897,22 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMSetCellCoordinateField - Set the `DMField` representation of the discontinuous per-cell mesh coordinates
+
+  Logically Collective
+
+  Input Parameters:
++ dm    - the `DM`
+- field - the `DMField` describing the cell coordinates
+
+  Level: advanced
+
+  Note:
+  Cell coordinates support meshes whose coordinate representation is discontinuous at cell boundaries, such as those used by discontinuous Galerkin methods.
+
+.seealso: `DM`, `DMField`, `DMSetCoordinateField()`, `DMGetCellCoordinateDM()`, `DMSetCellCoordinates()`
+@*/
 PetscErrorCode DMSetCellCoordinateField(DM dm, DMField field)
 {
   PetscFunctionBegin;

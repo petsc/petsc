@@ -118,6 +118,26 @@ PetscErrorCode TaoGetHessianMatrices(Tao tao, Mat *H, Mat *Hpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  TaoTestHessian - Compare the user-supplied Hessian with a finite-difference approximation, when requested via
+  the options database, and print the difference.
+
+  Collective
+
+  Input Parameter:
+. tao - the `Tao` context
+
+  Options Database Keys:
++ -tao_test_hessian threshold - enable the comparison, optionally overriding the reporting threshold (default `1e-5`)
+- -tao_test_hessian_view      - display the user-supplied Hessian, the finite-difference Hessian, and their difference
+
+  Level: intermediate
+
+  Note:
+  If `-tao_test_hessian` is not set, this routine returns immediately without performing any work.
+
+.seealso: [](ch_tao), `Tao`, `TaoTestGradient()`, `TaoComputeHessian()`
+@*/
 PetscErrorCode TaoTestHessian(Tao tao)
 {
   Mat               A, B, C, D, hessian;

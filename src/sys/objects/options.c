@@ -183,9 +183,18 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    PetscOptionsCreateDefault - Creates the default global options database
-*/
+/*@
+  PetscOptionsCreateDefault - Creates the default global options database if it does not already exist
+
+  Logically collective
+
+  Level: developer
+
+  Note:
+  This is called during `PetscInitialize()`; user code normally does not need to call it directly.
+
+.seealso: `PetscOptionsDestroyDefault()`, `PetscOptionsCreate()`, `PetscOptionsPush()`, `PetscOptionsPop()`
+@*/
 PetscErrorCode PetscOptionsCreateDefault(void)
 {
   PetscFunctionBegin;
@@ -247,9 +256,18 @@ PetscErrorCode PetscOptionsPop(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    PetscOptionsDestroyDefault - Destroys the default global options database
-*/
+/*@
+  PetscOptionsDestroyDefault - Destroys the default global options database
+
+  Logically collective
+
+  Level: developer
+
+  Note:
+  This is called during `PetscFinalize()`; any options databases the user pushed but did not pop are also destroyed.
+
+.seealso: `PetscOptionsCreateDefault()`, `PetscOptionsDestroy()`, `PetscOptionsPush()`, `PetscOptionsPop()`
+@*/
 PetscErrorCode PetscOptionsDestroyDefault(void)
 {
   PetscFunctionBegin;
@@ -973,9 +991,19 @@ PetscErrorCode PetscOptionsView(PetscOptions options, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   Called by error handlers to print options used in run
-*/
+/*@
+  PetscOptionsLeftError - Prints a warning listing any options in the default database that were never used
+
+  Not Collective
+
+  Level: developer
+
+  Note:
+  This is intended for use inside PETSc error handlers. Unused options may indicate a program that crashed before it
+  read them, a spelling mistake, or an option intended for a different context.
+
+.seealso: `PetscOptionsLeft()`, `PetscOptionsAllUsed()`, `PetscOptionsView()`
+@*/
 PetscErrorCode PetscOptionsLeftError(void)
 {
   PetscInt i, nopt = 0;
@@ -2135,10 +2163,25 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PetscOptionsStringToBool - Converts string to PetscBool, handles cases like "yes", "no", "true", "false", "0", "1", "off", "on".
-     Empty string is considered as true.
-*/
+/*@
+  PetscOptionsStringToBool - Converts a string to a `PetscBool`
+
+  Not Collective
+
+  Input Parameter:
+. value - the string to convert; may be `NULL` or `""`
+
+  Output Parameter:
+. a - the resulting `PetscBool`
+
+  Level: developer
+
+  Note:
+  Recognizes (case-insensitive) `TRUE`, `YES`, `1`, `on` as `PETSC_TRUE` and `FALSE`, `NO`, `0`, `off` as `PETSC_FALSE`.
+  An empty or `NULL` string is treated as `PETSC_TRUE`. Any other input generates an error.
+
+.seealso: `PetscOptionsStringToInt()`, `PetscOptionsStringToReal()`, `PetscOptionsStringToScalar()`, `PetscOptionsGetBool()`
+@*/
 PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
 {
   PetscBool istrue, isfalse;
@@ -2194,9 +2237,25 @@ PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
 }
 
-/*
-   PetscOptionsStringToInt - Converts a string to an integer value. Handles special cases such as "default" and "decide"
-*/
+/*@
+  PetscOptionsStringToInt - Converts a string to an integer value. Handles special cases such as "default" and "decide"
+
+  Not Collective
+
+  Input Parameter:
+. name - the string to convert
+
+  Output Parameter:
+. a - the resulting `PetscInt` value
+
+  Level: developer
+
+  Note:
+  Recognizes the special strings `PETSC_DEFAULT`, `DEFAULT`, `PETSC_DECIDE`, `DECIDE`, `PETSC_DETERMINE`, `DETERMINE`, `PETSC_UNLIMITED`,
+  `UNLIMITED`, and `mouse` (which returns `-1`). Otherwise the value is parsed as a base-10 integer.
+
+.seealso: `PetscOptionsStringToReal()`, `PetscOptionsStringToScalar()`, `PetscOptionsStringToBool()`, `PetscOptionsGetInt()`
+@*/
 PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a)
 {
   size_t    len;
@@ -2292,9 +2351,25 @@ static PetscErrorCode PetscStrtoz(const char name[], PetscScalar *a, char **endp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   Converts a string to PetscReal value. Handles special cases like "default" and "decide"
-*/
+/*@
+  PetscOptionsStringToReal - Converts a string to a `PetscReal` value. Handles special cases like `default` and `decide`
+
+  Not Collective
+
+  Input Parameter:
+. name - the string to convert
+
+  Output Parameter:
+. a - the resulting `PetscReal` value
+
+  Level: developer
+
+  Note:
+  Recognizes the special strings `PETSC_DEFAULT`, `DEFAULT`, `PETSC_DECIDE`, `DECIDE`, `PETSC_DETERMINE`, `DETERMINE`,
+  `PETSC_UNLIMITED`, and `UNLIMITED`. Otherwise the value is parsed as a floating-point number.
+
+.seealso: `PetscOptionsStringToInt()`, `PetscOptionsStringToScalar()`, `PetscOptionsStringToBool()`, `PetscOptionsGetReal()`
+@*/
 PetscErrorCode PetscOptionsStringToReal(const char name[], PetscReal *a)
 {
   size_t    len;
@@ -2338,6 +2413,24 @@ PetscErrorCode PetscOptionsStringToReal(const char name[], PetscReal *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscOptionsStringToScalar - Converts a string to a `PetscScalar` value; when PETSc is built with complex scalars, parses an optional imaginary part
+
+  Not Collective
+
+  Input Parameter:
+. name - the string to convert
+
+  Output Parameter:
+. a - the resulting `PetscScalar` value
+
+  Level: developer
+
+  Note:
+  Accepts forms such as `1.5`, `-2`, `3+4i`, `i`, or `-i`. Using an imaginary component when PETSc is built without complex scalars is an error.
+
+.seealso: `PetscOptionsStringToInt()`, `PetscOptionsStringToReal()`, `PetscOptionsStringToBool()`, `PetscOptionsGetScalar()`
+@*/
 PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
 {
   PetscBool   imag1;

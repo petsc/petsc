@@ -99,6 +99,23 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscViewerDrawResize - Set the default width and height (in pixels) for `PetscDraw` windows created by a `PETSCVIEWERDRAW` viewer.
+
+  Logically Collective
+
+  Input Parameters:
++ v - the `PETSCVIEWERDRAW` viewer
+. w - the new default window width in pixels; values less than 1 are ignored
+- h - the new default window height in pixels; values less than 1 are ignored
+
+  Level: intermediate
+
+  Note:
+  If `v` is not a `PETSCVIEWERDRAW` viewer, the call is a no-op.
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetInfo()`
+@*/
 PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h)
 {
   PetscViewer_Draw *vdraw;
@@ -115,6 +132,28 @@ PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerDrawSetInfo - Record the default display, title, position, and size to use for `PetscDraw` windows
+  created by a `PETSCVIEWERDRAW` viewer.
+
+  Logically Collective
+
+  Input Parameters:
++ v       - the `PETSCVIEWERDRAW` viewer
+. display - the X display name, or `NULL` for the local machine
+. title   - the window title, or `NULL`
+. x       - the horizontal screen coordinate of the upper left corner (unused; retained for API symmetry)
+. y       - the vertical screen coordinate of the upper left corner (unused; retained for API symmetry)
+. w       - the default window width in pixels; values less than 1 are ignored
+- h       - the default window height in pixels; values less than 1 are ignored
+
+  Level: intermediate
+
+  Note:
+  If `v` is not a `PETSCVIEWERDRAW` viewer, the call is a no-op.
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetTitle()`, `PetscViewerDrawResize()`
+@*/
 PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const char title[], int x, int y, int w, int h)
 {
   PetscViewer_Draw *vdraw;
@@ -133,6 +172,22 @@ PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerDrawSetTitle - Set the default title used for `PetscDraw` windows created by a `PETSCVIEWERDRAW` viewer.
+
+  Logically Collective
+
+  Input Parameters:
++ v     - the `PETSCVIEWERDRAW` viewer
+- title - the window title, or `NULL` for no title
+
+  Level: intermediate
+
+  Note:
+  If `v` is not a `PETSCVIEWERDRAW` viewer, the call is a no-op.
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscViewerDrawGetTitle()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetInfo()`
+@*/
 PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[])
 {
   PetscViewer_Draw *vdraw;
@@ -149,6 +204,21 @@ PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerDrawGetTitle - Get the default title used for `PetscDraw` windows created by a `PETSCVIEWERDRAW` viewer.
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. v - the `PETSCVIEWERDRAW` viewer
+
+  Output Parameter:
+. title - the window title (owned by the viewer; do not free)
+
+  Level: intermediate
+
+.seealso: `PetscViewer`, `PETSCVIEWERDRAW`, `PetscViewerDrawSetTitle()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetInfo()`
+@*/
 PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 {
   PetscViewer_Draw *vdraw;

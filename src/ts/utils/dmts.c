@@ -365,7 +365,7 @@ PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest)
   Level: developer
 
   Note:
-  `TSSetIFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetIFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -440,7 +440,7 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `TSGetIFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetIFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `DMTSSetIFunction()`, `TSIFunctionFn`
@@ -473,7 +473,7 @@ PetscErrorCode DMTSGetIFunction(DM dm, TSIFunctionFn **func, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSSetI2Function()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetI2Function()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSSetI2Function()`
@@ -509,7 +509,7 @@ PetscErrorCode DMTSSetI2Function(DM dm, TSI2FunctionFn *fun, PetscCtx ctx)
   Level: developer
 
   Note:
-  `TSSetI2FunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetI2FunctionContextDestroy()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `TSSetI2FunctionContextDestroy()`, `DMTSSetI2Function()`, `TSSetI2Function()`
@@ -551,7 +551,7 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `TSGetI2Function()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetI2Function()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetI2Function()`, `TSGetI2Function()`
@@ -584,7 +584,7 @@ PetscErrorCode DMTSGetI2Function(DM dm, TSI2FunctionFn **fun, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSSetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetI2Jacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSI2JacobianFn`, `TSSetI2Jacobian()`
@@ -661,7 +661,7 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `TSGetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetI2Jacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`, `TSI2JacobianFn`
@@ -694,7 +694,7 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2JacobianFn **jac, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSSetRHSFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetRHSFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -731,7 +731,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunctionFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `TSSetRHSFunctionContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetRHSFunctionContextDestroy()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -874,7 +874,7 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFn **func, PetscCtxRt ct
   Level: developer
 
   Note:
-  `TSSetSolutionFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetSolutionFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -905,7 +905,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetForcingFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -938,7 +938,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `TSSetForcingFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetForcingFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -971,7 +971,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFn **f, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSGetRHSFunction()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetRHSFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the DM.
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSRHSFunctionFn`, `TSGetRHSFunction()`
@@ -1004,7 +1004,7 @@ PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunctionFn **func, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSSetIJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetIJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
@@ -1041,7 +1041,7 @@ PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobianFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `TSSetIJacobianContextDestroy()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetIJacobianContextDestroy()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -1087,7 +1087,7 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `TSGetIJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetIJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
@@ -1121,7 +1121,7 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobianFn **func, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `TSSetRHSJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSSetRHSJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -1202,7 +1202,7 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `TSGetRHSJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `TSGetRHSJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 

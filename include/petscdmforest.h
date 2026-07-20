@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode DMForestGetTopology(DM, DMForestTopology *);
 PETSC_EXTERN PetscErrorCode DMForestSetBaseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMForestGetBaseDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMForestSetBaseCoordinateMapping(DM, PetscErrorCode (*)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtx);
-PETSC_EXTERN PetscErrorCode DMForestGetBaseCoordinateMapping(DM, PetscErrorCode (**)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMForestGetBaseCoordinateMapping(DM, PetscErrorCode (**)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtxRt);
 
 /* this is the forest from which we adapt */
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityForest(DM, DM);

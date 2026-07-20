@@ -223,7 +223,7 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 
   Input Parameters:
 + pc  - the `PC` context
-- ctx - optional user context
+- ctx - optional application context
 
   Level: advanced
 
@@ -251,7 +251,7 @@ PetscErrorCode PCSetApplicationContext(PC pc, PetscCtx ctx)
 . pc - `PC` context
 
   Output Parameter:
-. ctx - user context
+. ctx - application context
 
   Level: intermediate
 

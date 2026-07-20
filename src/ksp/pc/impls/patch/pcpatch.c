@@ -314,7 +314,19 @@ static PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchSetSaveOperators - Set whether the per-patch sub-matrices should be built and kept, instead of being reassembled at each application
+
+  Logically Collective
+
+  Input Parameters:
++ pc  - the `PCPATCH` preconditioner
+- flg - `PETSC_TRUE` to store the assembled sub-matrices for each patch, `PETSC_FALSE` to rebuild them on demand
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetSaveOperators()`, `PCPatchSetPrecomputeElementTensors()`
+@*/
 PetscErrorCode PCPatchSetSaveOperators(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -324,7 +336,21 @@ PetscErrorCode PCPatchSetSaveOperators(PC pc, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchGetSaveOperators - Get whether the per-patch sub-matrices are built and kept between applications of the `PCPATCH` preconditioner
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if the assembled sub-matrices are stored, `PETSC_FALSE` if they are rebuilt on demand
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetSaveOperators()`, `PCPatchSetPrecomputeElementTensors()`
+@*/
 PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -334,7 +360,19 @@ PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchSetPrecomputeElementTensors - Set whether element tensors should be precomputed once and reused when assembling each patch matrix
+
+  Logically Collective
+
+  Input Parameters:
++ pc  - the `PCPATCH` preconditioner
+- flg - `PETSC_TRUE` to precompute the element tensors, `PETSC_FALSE` to recompute them for each patch
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetPrecomputeElementTensors()`, `PCPatchSetSaveOperators()`
+@*/
 PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -344,7 +382,21 @@ PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchGetPrecomputeElementTensors - Get whether element tensors are precomputed once and reused when assembling each patch matrix
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if the element tensors are precomputed, `PETSC_FALSE` if they are recomputed for each patch
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetPrecomputeElementTensors()`, `PCPatchSetSaveOperators()`
+@*/
 PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -354,7 +406,19 @@ PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchSetPartitionOfUnity - Set whether the patch contributions should be weighted by a partition of unity when combining local solves
+
+  Logically Collective
+
+  Input Parameters:
++ pc  - the `PCPATCH` preconditioner
+- flg - `PETSC_TRUE` to weight local patch updates by a partition of unity, `PETSC_FALSE` to sum them directly
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetPartitionOfUnity()`
+@*/
 PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -364,7 +428,21 @@ PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchGetPartitionOfUnity - Get whether the patch contributions are weighted by a partition of unity when combining local solves
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if local patch updates are weighted by a partition of unity, `PETSC_FALSE` if they are summed directly
+
+  Level: intermediate
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetPartitionOfUnity()`
+@*/
 PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -385,8 +463,26 @@ static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
-PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
+/*@
+  PCPatchGetSubKSP - Get the per-patch `KSP` objects used to solve each local patch problem in a `PCPATCH` preconditioner
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameters:
++ npatch - number of local patches (may be `NULL`)
+- ksp    - newly allocated array of length `npatch` holding the per-patch `KSP` objects; the caller must free the array with `PetscFree()`
+
+  Level: advanced
+
+  Note:
+  `PCSetUp()` must have been called on the `PCPATCH` (typically through `KSPSetUp()` on the outer `KSP`) before calling this routine.
+
+.seealso: [](ch_ksp), `PCPATCH`, `KSP`, `PCASMGetSubKSP()`
+@*/
+PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP *ksp[])
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -398,7 +494,19 @@ PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchSetSubMatType - Set the `MatType` used to store the per-patch sub-matrices in a `PCPATCH` preconditioner
+
+  Logically Collective
+
+  Input Parameters:
++ pc           - the `PCPATCH` preconditioner
+- sub_mat_type - the `MatType` to use for the per-patch sub-matrices (e.g. `MATDENSE`, `MATSEQAIJ`)
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetSubMatType()`, `MatType`
+@*/
 PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -409,7 +517,21 @@ PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchGetSubMatType - Get the `MatType` used to store the per-patch sub-matrices in a `PCPATCH` preconditioner
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameter:
+. sub_mat_type - the `MatType` used for the per-patch sub-matrices
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetSubMatType()`, `MatType`
+@*/
 PetscErrorCode PCPatchGetSubMatType(PC pc, MatType *sub_mat_type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -419,7 +541,19 @@ PetscErrorCode PCPatchGetSubMatType(PC pc, MatType *sub_mat_type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchSetCellNumbering - Set the `PetscSection` that provides a numbering of the cells used to define patches in a `PCPATCH` preconditioner
+
+  Logically Collective
+
+  Input Parameters:
++ pc            - the `PCPATCH` preconditioner
+- cellNumbering - the `PetscSection` giving the cell numbering; its reference count is incremented
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetCellNumbering()`, `PetscSection`
+@*/
 PetscErrorCode PCPatchSetCellNumbering(PC pc, PetscSection cellNumbering)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -430,7 +564,21 @@ PetscErrorCode PCPatchSetCellNumbering(PC pc, PetscSection cellNumbering)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
+/*@
+  PCPatchGetCellNumbering - Get the `PetscSection` that provides the numbering of the cells used to define patches in a `PCPATCH` preconditioner
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameter:
+. cellNumbering - the `PetscSection` giving the cell numbering
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetCellNumbering()`, `PetscSection`
+@*/
 PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
@@ -440,8 +588,29 @@ PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
-PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscErrorCode (*func)(PC, PetscInt *, IS **, IS *, void *), PetscCtx ctx)
+/*@C
+  PCPatchSetConstructType - Set the way patches are constructed for a `PCPATCH` preconditioner
+
+  Logically Collective
+
+  Input Parameters:
++ pc    - the `PCPATCH` preconditioner
+. ctype - the `PCPatchConstructType` selecting the patch construction strategy (e.g. `PC_PATCH_STAR`, `PC_PATCH_VANKA`, `PC_PATCH_PARDECOMP`, `PC_PATCH_USER`, `PC_PATCH_PYTHON`)
+. func  - user callback that builds the patches, used only when `ctype` is `PC_PATCH_USER` or `PC_PATCH_PYTHON`; may be `NULL` otherwise
+- ctx   - optional application context passed to `func`
+
+  Calling sequence of `func`:
++ pc                - the `PCPATCH` preconditioner
+. npatch            - number of patches
+. patches           - the `IS` that define each patch
+. patchIterationSet - how the patches are iterated over
+- ctx               - optional application context
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchGetConstructType()`, `PCPatchConstructType`
+@*/
+PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscErrorCode (*func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtx ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -475,8 +644,31 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
-PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, PetscErrorCode (**func)(PC, PetscInt *, IS **, IS *, void *), void **ctx)
+/*@C
+  PCPatchGetConstructType - Get the strategy currently used to construct patches for a `PCPATCH` preconditioner
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCPATCH` preconditioner
+
+  Output Parameters:
++ ctype - the `PCPatchConstructType`
+. func  - the callback that builds the patches when `ctype` is `PC_PATCH_USER` or `PC_PATCH_PYTHON`; otherwise unchanged
+- ctx   - the application context associated with `func`; otherwise unchanged
+
+  Calling sequence of `func`:
++ pc                - the `PCPATCH` preconditioner
+. npatch            - number of patches
+. patches           - the `IS` that define each patch
+. patchIterationSet - how the patches are iterated over
+- ctx               - optional application context
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetConstructType()`, `PCPatchConstructType`
+@*/
+PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, PetscErrorCode (**func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtxRt ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -489,8 +681,8 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
-    *func = patch->userpatchconstructionop;
-    *ctx  = patch->userpatchconstructctx;
+    *func         = patch->userpatchconstructionop;
+    *(void **)ctx = patch->userpatchconstructctx;
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Unknown patch construction type %" PetscInt_FMT, (PetscInt)patch->ctype);
@@ -498,8 +690,29 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: Docs */
-PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms, PetscInt *bs, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, const PetscInt *subspaceOffsets, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+/*@C
+  PCPatchSetDiscretisationInfo - Provide the per-subspace discretisation information required by a `PCPATCH` preconditioner to build patch problems
+
+  Logically Collective
+
+  Input Parameters:
++ pc              - the `PCPATCH` preconditioner
+. nsubspaces      - the number of discretisation subspaces (e.g. fields)
+. dms             - array of length `nsubspaces` of `DM`s, one per subspace, from which the local sections and section `PetscSF`s are obtained
+. bs              - array of length `nsubspaces` giving the block size of each subspace
+. nodesPerCell    - array of length `nsubspaces` giving the number of nodes per cell for each subspace
+. cellNodeMap     - array of length `nsubspaces`; entry `i` is a cell-to-node map (array) of length `(cEnd - cStart) * nodesPerCell[i]`
+. subspaceOffsets - array of length `nsubspaces + 1` giving the starting global dof offset of each subspace
+. numGhostBcs     - number of ghost (off-process) boundary-condition dofs
+. ghostBcNodes    - array of length `numGhostBcs` of the ghost boundary-condition dof indices
+. numGlobalBcs    - number of global boundary-condition dofs
+- globalBcNodes   - array of length `numGlobalBcs` of the global boundary-condition dof indices
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PCPATCH`, `PCPatchSetComputeOperator()`, `PCPatchSetComputeFunction()`
+@*/
+PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt nodesPerCell[], const PetscInt **cellNodeMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcNodes[], PetscInt numGlobalBcs, const PetscInt globalBcNodes[])
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   DM        dm, plex;
@@ -582,7 +795,7 @@ static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscIn
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -593,7 +806,7 @@ static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscIn
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
@@ -620,7 +833,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, Pe
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -631,7 +844,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, Pe
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
@@ -658,7 +871,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -669,7 +882,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
@@ -696,7 +909,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -707,7 +920,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
@@ -734,7 +947,7 @@ PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*f
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -745,7 +958,7 @@ PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*f
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
@@ -772,7 +985,7 @@ PetscErrorCode PCPatchSetComputeOperatorExteriorFacets(PC pc, PetscErrorCode (*f
   Input Parameters:
 + pc   - The `PC`
 . func - The callback function
-- ctx  - The user context
+- ctx  - The application context
 
   Calling sequence of `func`:
 + pc               - The `PC`
@@ -783,7 +996,7 @@ PetscErrorCode PCPatchSetComputeOperatorExteriorFacets(PC pc, PetscErrorCode (*f
 . n                - The size of `dofsArray`
 . dofsArray        - The dofmap for the dofs to be solved for
 . dofsArrayWithAll - The dofmap for all dofs on the patch
-- ctx              - The user context
+- ctx              - The application context
 
   Level: advanced
 
