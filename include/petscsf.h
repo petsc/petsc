@@ -199,26 +199,22 @@ PETSC_EXTERN PetscErrorCode PetscSFDeregisterPersistent(PetscSF, MPI_Datatype, c
 
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
-PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )
-static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt *ranks[], const PetscInt *roffset[], const PetscInt *rmine[], const PetscInt *rremote[])
+PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", ) static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt *ranks[], const PetscInt *roffset[], const PetscInt *rmine[], const PetscInt *rremote[])
 {
   return PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote);
 }
 
-PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFCreateEmbeddedRootSF()", )
-static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *esf)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFCreateEmbeddedRootSF()", ) static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf, PetscInt nselected, const PetscInt selected[], PetscSF *esf)
 {
   return PetscSFCreateEmbeddedRootSF(sf, nselected, selected, esf);
 }
 
-PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastBegin()", )
-static inline PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastBegin()", ) static inline PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
 {
   return PetscSFBcastBegin(sf, unit, rootdata, leafdata, op);
 }
 
-PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastEnd()", )
-static inline PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
+PETSC_DEPRECATED_FUNCTION(3, 15, 0, "PetscSFBcastEnd()", ) static inline PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
 {
   return PetscSFBcastEnd(sf, unit, rootdata, leafdata, op);
 }
