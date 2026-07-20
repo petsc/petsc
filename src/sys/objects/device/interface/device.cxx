@@ -73,7 +73,7 @@ sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 
   if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
 */
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PETSC_VOID_0)(IMPLS, func, __VA_ARGS__)
+#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(HAVE_##IMPLS, PETSC_DEVICE_CASE, PETSC_VOID_0)(IMPLS, func, __VA_ARGS__)
 
 /*@C
   PetscDeviceCreate - Get a new handle for a particular device (often a GPU) type

@@ -927,10 +927,11 @@ M*/
   this macro should not be used if its argument may be defined to a non-empty value other than
   1.
 
-  The prefix `PETSC_` is automatically prepended to `def`. To avoid prepending `PETSC_`, say to
-  add custom checks in user code, one should use `PetscDefined_()`.
+  The prefix `PETSC_` is automatically prepended to `def`, which is treated as a literal suffix
+  and is not macro-expanded. To avoid prepending `PETSC_`, say to add custom checks in user code,
+  one should use `PetscDefined_()`.
 .vb
-  #define FooDefined(d) PetscDefined_(PetscConcat(FOO_, d))
+  #define FooDefined(d) PetscDefined_(FOO_##d)
 .ve
 
   Developer Notes:
@@ -941,7 +942,9 @@ M*/
   and when the last step cherry picks the 2nd arg, we get a zero.
 
   Our extra expansion via PetscDefined__take_second_expand() is needed with MSVC, which has a
-  nonconforming implementation of variadic macros.
+  nonconforming implementation of variadic macros. The `PETSC_` prefix must be pasted in
+  `PetscDefined()` itself so that an unprefixed macro matching `def` cannot expand before the
+  prefix is added.
 
   Example Usage:
   Suppose you would like to call either `foo()` or `bar()` depending on whether `PETSC_USE_DEBUG`
@@ -981,7 +984,7 @@ M*/
 .seealso: `PetscHasAttribute()`, `PetscUnlikely()`, `PetscLikely()`, `PetscConcat()`,
           `PetscExpandToNothing()`, `PetscCompl()`
 M*/
-#define PetscDefined(def) PetscDefined_(PetscConcat(PETSC_, def))
+#define PetscDefined(def) PetscDefined_(PETSC_##def)
 
 /*MC
   PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
