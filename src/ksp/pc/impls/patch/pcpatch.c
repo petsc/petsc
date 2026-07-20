@@ -443,7 +443,7 @@ PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscErrorCode (*func)(PC, PetscInt *, IS **, IS *, void *), PetscCtx ctx)
+PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscErrorCode (*func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtx ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -478,7 +478,7 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, PetscErrorCode (**func)(PC, PetscInt *, IS **, IS *, void *), void **ctx)
+PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, PetscErrorCode (**func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtxRt ctx)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -491,8 +491,8 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
-    *func = patch->userpatchconstructionop;
-    *ctx  = patch->userpatchconstructctx;
+    *func         = patch->userpatchconstructionop;
+    *(void **)ctx = patch->userpatchconstructctx;
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Unknown patch construction type %" PetscInt_FMT, (PetscInt)patch->ctype);

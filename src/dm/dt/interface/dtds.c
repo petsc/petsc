@@ -3475,7 +3475,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], PetscVoidFn **func, PetscVoidFn **func_t, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], PetscVoidFn **func, PetscVoidFn **func_t, PetscCtxRt ctx)
 {
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;
@@ -3534,7 +3534,7 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
   }
   if (ctx) {
     PetscAssertPointer(ctx, 14);
-    *ctx = b->ctx;
+    *(void **)ctx = b->ctx;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
