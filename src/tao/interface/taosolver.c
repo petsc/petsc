@@ -11,7 +11,7 @@ PetscLogEvent TAO_ResidualEval;
 PetscLogEvent TAO_JacobianEval;
 PetscLogEvent TAO_ConstraintsEval;
 
-const char *TaoSubSetTypes[] = {"subvec", "mask", "matrixfree", "TaoSubSetType", "TAO_SUBSET_", NULL};
+const char *const TaoSubsetTypes[] = {"subvec", "mask", "matrixfree", "TaoSubsetType", "TAO_SUBSET_", NULL};
 
 struct _n_TaoMonitorDrawCtx {
   PetscViewer viewer;
@@ -591,7 +591,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   }
   PetscCall(PetscOptionsBool("-tao_recycle_history", "enable recycling/re-using information from the previous TaoSolve() call for some algorithms", "TaoSetRecycleHistory", flg, &flg, &found));
   if (found) PetscCall(TaoSetRecycleHistory(tao, flg));
-  PetscCall(PetscOptionsEnum("-tao_subset_type", "subset type", "", TaoSubSetTypes, (PetscEnum)tao->subset_type, (PetscEnum *)&tao->subset_type, NULL));
+  PetscCall(PetscOptionsEnum("-tao_subset_type", "subset type", "", TaoSubsetTypes, (PetscEnum)tao->subset_type, (PetscEnum *)&tao->subset_type, NULL));
 
   if (tao->ksp) {
     PetscCall(PetscOptionsBool("-tao_ksp_ew", "Use Eisentat-Walker linear system convergence test", "TaoKSPSetUseEW", tao->ksp_ewconv, &tao->ksp_ewconv, NULL));
@@ -751,7 +751,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "total KSP iterations: %" PetscInt_FMT "\n", tao->ksp_tot_its));
     }
 
-    if (tao->XL || tao->XU) PetscCall(PetscViewerASCIIPrintf(viewer, "Active Set subset type: %s\n", TaoSubSetTypes[tao->subset_type]));
+    if (tao->XL || tao->XU) PetscCall(PetscViewerASCIIPrintf(viewer, "Active Set subset type: %s\n", TaoSubsetTypes[tao->subset_type]));
 
     PetscCall(PetscViewerASCIIPrintf(viewer, "convergence tolerances: gatol=%g,", (double)tao->gatol));
     PetscCall(PetscViewerASCIIPrintf(viewer, " grtol=%g,", (double)tao->grtol));
