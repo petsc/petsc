@@ -370,7 +370,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM *dms, PetscInt *bs, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, const PetscInt *subspaceOffsets, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt nodesPerCell[], const PetscInt **cellNodeMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcNodes[], PetscInt numGlobalBcs, const PetscInt globalBcNodes[])
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
   DM          dm;
@@ -383,7 +383,7 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx)
+PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
 
@@ -392,7 +392,7 @@ PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx)
+PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
 
@@ -401,7 +401,7 @@ PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, PetscErrorCode (*func)(PC, PetscInt *, IS **, IS *, void *), PetscCtx ctx)
+PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, PetscErrorCode (*func)(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx), PetscCtx ctx)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
 

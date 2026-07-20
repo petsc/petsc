@@ -493,7 +493,7 @@ PETSC_EXTERN PetscErrorCode PCPatchSetCellNumbering(PC, PetscSection);
 PETSC_EXTERN PetscErrorCode PCPatchGetCellNumbering(PC, PetscSection *);
 PETSC_EXTERN PetscErrorCode PCPatchSetConstructType(PC, PCPatchConstructType, PetscErrorCode (*)(PC, PetscInt *, IS *[], IS *, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode PCPatchGetConstructType(PC, PCPatchConstructType *, PetscErrorCode (**)(PC, PetscInt *, IS *[], IS *, PetscCtx), PetscCtxRt);
-PETSC_EXTERN PetscErrorCode PCPatchSetDiscretisationInfo(PC, PetscInt, DM *, PetscInt *, PetscInt *, const PetscInt **, const PetscInt *, PetscInt, const PetscInt *, PetscInt, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PCPatchSetDiscretisationInfo(PC, PetscInt, DM[], PetscInt[], PetscInt[], const PetscInt **, const PetscInt[], PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperator(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), PetscCtx ctx);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);

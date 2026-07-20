@@ -388,7 +388,7 @@ static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
+PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP *ksp[])
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
 
@@ -501,7 +501,7 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
 }
 
 /* TODO: Docs */
-PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms, PetscInt *bs, PetscInt *nodesPerCell, const PetscInt **cellNodeMap, const PetscInt *subspaceOffsets, PetscInt numGhostBcs, const PetscInt *ghostBcNodes, PetscInt numGlobalBcs, const PetscInt *globalBcNodes)
+PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt nodesPerCell[], const PetscInt **cellNodeMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcNodes[], PetscInt numGlobalBcs, const PetscInt globalBcNodes[])
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   DM        dm, plex;

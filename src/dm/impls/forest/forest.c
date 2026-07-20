@@ -346,7 +346,7 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtx ctx)
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM base, PetscInt coarsePoint, PetscInt dim, const PetscReal coordIn[], PetscReal coordOut[], PetscCtx ctx), PetscCtx ctx)
 {
   DM_Forest *forest = (DM_Forest *)dm->data;
 
@@ -357,7 +357,7 @@ PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtxRt ctx)
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM base, PetscInt coarsePoint, PetscInt dim, const PetscReal coordIn[], PetscReal coordOut[], PetscCtx ctx), PetscCtxRt ctx)
 {
   DM_Forest *forest = (DM_Forest *)dm->data;
 
