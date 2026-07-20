@@ -371,6 +371,21 @@ static PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatPartitioningHierarchicalGetFineparts - Get the fine-level partitioning of a hierarchical `MatPartitioning`.
+
+  Not Collective
+
+  Input Parameter:
+. part - the `MatPartitioning` of type `MATPARTITIONINGHIERARCH`
+
+  Output Parameter:
+. fineparts - the `IS` mapping each local row to its fine partition; the caller must destroy it with `ISDestroy()`
+
+  Level: advanced
+
+.seealso: `MatPartitioning`, `MATPARTITIONINGHIERARCH`, `MatPartitioningHierarchicalGetCoarseparts()`, `MatPartitioningHierarchicalSetNfineparts()`
+@*/
 PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part, IS *fineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
@@ -381,6 +396,21 @@ PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part, IS 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatPartitioningHierarchicalGetCoarseparts - Get the coarse-level partitioning of a hierarchical `MatPartitioning`.
+
+  Not Collective
+
+  Input Parameter:
+. part - the `MatPartitioning` of type `MATPARTITIONINGHIERARCH`
+
+  Output Parameter:
+. coarseparts - the `IS` mapping each local row to its coarse partition; the caller must destroy it with `ISDestroy()`
+
+  Level: advanced
+
+.seealso: `MatPartitioning`, `MATPARTITIONINGHIERARCH`, `MatPartitioningHierarchicalGetFineparts()`, `MatPartitioningHierarchicalSetNcoarseparts()`
+@*/
 PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part, IS *coarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
@@ -391,6 +421,19 @@ PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part, I
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatPartitioningHierarchicalSetNcoarseparts - Set the number of coarse partitions produced by a hierarchical `MatPartitioning`.
+
+  Logically Collective
+
+  Input Parameters:
++ part         - the `MatPartitioning` of type `MATPARTITIONINGHIERARCH`
+- ncoarseparts - the number of coarse partitions
+
+  Level: advanced
+
+.seealso: `MatPartitioning`, `MATPARTITIONINGHIERARCH`, `MatPartitioningHierarchicalSetNfineparts()`, `MatPartitioningHierarchicalGetCoarseparts()`
+@*/
 PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, PetscInt ncoarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
@@ -400,6 +443,19 @@ PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatPartitioningHierarchicalSetNfineparts - Set the number of fine partitions per coarse partition produced by a hierarchical `MatPartitioning`.
+
+  Logically Collective
+
+  Input Parameters:
++ part       - the `MatPartitioning` of type `MATPARTITIONINGHIERARCH`
+- nfineparts - the number of fine partitions per coarse partition
+
+  Level: advanced
+
+.seealso: `MatPartitioning`, `MATPARTITIONINGHIERARCH`, `MatPartitioningHierarchicalSetNcoarseparts()`, `MatPartitioningHierarchicalGetFineparts()`
+@*/
 PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, PetscInt nfineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;

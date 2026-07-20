@@ -3938,6 +3938,23 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blockinvert.h>
 
+/*@
+  MatSeqDenseInvert - Invert a small `MATSEQDENSE` matrix in place using a hard-coded kernel.
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATSEQDENSE` matrix
+
+  Level: developer
+
+  Note:
+  Intended for small blocks; specialized kernels are used for sizes up to 7 and `LAPACK` is used for larger sizes.
+  If the matrix is singular and `MatSetErrorIfFailure()` was called an error will be immediately generated, otherwise the factor error type
+  in the matrix, which can be obtained with `MatFactorGetError()`, is set to `MAT_FACTOR_NUMERIC_ZEROPIVOT`.
+
+.seealso: `Mat`, `MATSEQDENSE`, `MatInvertBlockDiagonal()`, `MatLUFactor()`, `MatSetErrorIfFailure()`, `MatFactorGetError()`
+@*/
 PetscErrorCode MatSeqDenseInvert(Mat A)
 {
   PetscInt        m;

@@ -49,6 +49,20 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerMatlabPutVariable - Write a raw MATLAB `mxArray` variable into a `PETSCVIEWERMATLAB` file under a chosen name.
+
+  Not Collective; only processor zero writes the variable
+
+  Input Parameters:
++ viewer - the `PETSCVIEWERMATLAB` viewer
+. name   - the MATLAB variable name
+- mat    - the `mxArray *` variable to write (cast to `void *`)
+
+  Level: advanced
+
+.seealso: `PetscViewer`, `PETSCVIEWERMATLAB`, `PetscViewerMatlabPutArray()`, `PetscViewerMatlabGetArray()`, `PetscViewerMatlabOpen()`
+@*/
 PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name, void *mat)
 {
   PetscViewer_Matlab *ml = (PetscViewer_Matlab *)viewer->data;

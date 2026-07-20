@@ -195,7 +195,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
   Level: developer
 
   Note:
-  `KSPSetComputeOperators()` is normally used, but it calls this function internally because the user context is actually
+  `KSPSetComputeOperators()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -257,7 +257,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, Pet
   Level: developer
 
   Note:
-  `KSPSetComputeRHS()` is normally used, but it calls this function internally because the user context is actually
+  `KSPSetComputeRHS()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -291,7 +291,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
+  `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPComputeInitialGuessFn`

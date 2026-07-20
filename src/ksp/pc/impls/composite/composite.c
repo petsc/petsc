@@ -498,6 +498,20 @@ PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PCCompositeSpecialSetAlphaMat - Sets the matrix `alpha_mat` used in place of a scalar $\alpha I$ term for the special composite preconditioner, `PC_COMPOSITE_SPECIAL`, for $M + R + S$
+
+  Logically Collective
+
+  Input Parameters:
++ pc        - the preconditioner context
+- alpha_mat - the matrix `M`
+
+  Level: developer
+
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+          `PCCompositeSetType()`, `PCCompositeSpecialSetAlpha()`
+@*/
 PetscErrorCode PCCompositeSpecialSetAlphaMat(PC pc, Mat alpha_mat)
 {
   PetscFunctionBegin;

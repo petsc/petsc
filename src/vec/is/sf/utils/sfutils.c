@@ -560,7 +560,29 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* TODO: handle nooffprocentries like MatZeroRowsMapLocal_Private, since this code is the same */
+/*@
+  PetscLayoutMapLocal - Maps a set of global indices to the subset owned locally by each MPI process according to a `PetscLayout`
+
+  Collective
+
+  Input Parameters:
++ map  - the `PetscLayout` describing global ownership
+. N    - the number of input indices
+- idxs - the global indices; negative entries are ignored
+
+  Output Parameters:
++ on     - number of indices in the returned local set (may be `NULL`)
+. oidxs  - the local (0-based) indices owned by this MPI process (may be `NULL`); caller must `PetscFree()`
+- ogidxs - the corresponding global indices in a compact numbering (may be `NULL`); caller must `PetscFree()`
+
+  Level: developer
+
+  Developer Note:
+  Uses a `PetscSF` internally to route each input index to its owner and reduce with `MPI_LOR`, producing on each MPI
+  process the sorted, deduplicated list of local indices for which at least one process supplied a matching global index.
+
+.seealso: `PetscLayout`, `PetscSF`, `PetscLayoutFindOwner()`, `PetscSFCreateFromLayouts()`
+@*/
 PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt idxs[], PetscInt *on, PetscInt *oidxs[], PetscInt *ogidxs[])
 {
   PetscInt    *owners = map->range;

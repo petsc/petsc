@@ -6,6 +6,20 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 #include <petsc/private/isimpl.h>
 
+/*@
+  MatFDColoringSetF - Cache the current function value used by the finite-difference coloring context to
+  avoid recomputing `F(x)` during a Jacobian evaluation.
+
+  Logically Collective
+
+  Input Parameters:
++ fd - the `MatFDColoring` context
+- F  - the current function value `F(x)`, or `NULL` to invalidate any cached value
+
+  Level: advanced
+
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringApply()`
+@*/
 PetscErrorCode MatFDColoringSetF(MatFDColoring fd, Vec F)
 {
   PetscFunctionBegin;

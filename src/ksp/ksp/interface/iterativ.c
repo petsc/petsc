@@ -243,7 +243,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   Input Parameters:
 + viewer - The `PetscViewer` of type `PETSCVIEWERDRAW`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -528,7 +528,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Input Parameters:
 + viewer - The `PetscViewer` of type `PETSCVIEWERDRAW`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -782,7 +782,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
   Input Parameters:
 + viewer - The `PetscViewer`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -969,7 +969,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   Input Parameters:
 + viewer - The `PetscViewer`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -1054,7 +1054,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
   Input Parameters:
 + viewer - The PetscViewer
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context
@@ -1635,8 +1635,7 @@ PetscErrorCode KSPConvergedDefaultDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
+/*@
   KSPBuildSolutionDefault - Default code to build/move the solution.
 
   Collective
@@ -1658,7 +1657,7 @@ PetscErrorCode KSPConvergedDefaultDestroy(PetscCtxRt ctx)
   This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
-*/
+@*/
 PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
 {
   PetscFunctionBegin;
@@ -1864,9 +1863,10 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-  KSPDestroyDefault - Destroys a iterative context variable for methods with no separate context.  Preferred calling sequence `KSPDestroy()`.
+/*@
+  KSPDestroyDefault - Destroys an iterative context variable for methods with no separate context.  Preferred calling sequence `KSPDestroy()`.
+
+  Collective
 
   Input Parameter:
 . ksp - the iterative context
@@ -1877,7 +1877,7 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
   This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
 
 .seealso: [](ch_ksp), `KSP`, `KSPDestroy()`
-*/
+@*/
 PetscErrorCode KSPDestroyDefault(KSP ksp)
 {
   PetscFunctionBegin;
@@ -2047,12 +2047,12 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
 
   Input Parameters:
 + ksp - the `KSP` context
-- ctx - user context
+- ctx - application context
 
   Level: intermediate
 
   Notes:
-  The user context is a way for users to attach any information to the `KSP` that they may need later when interacting with the `KSP`
+  The application context is a way for users to attach any information to the `KSP` that they may need later when interacting with the `KSP`
 
   Use `KSPGetApplicationContext()` to get access to the context at a later time.
 

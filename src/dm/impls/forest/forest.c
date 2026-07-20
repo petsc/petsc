@@ -346,7 +346,29 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtx ctx)
+/*@C
+  DMForestSetBaseCoordinateMapping - Set a user-supplied mapping that is applied to the base `DM`'s coordinates when the forest computes coordinates for refined cells.
+
+  Logically Collective
+
+  Input Parameters:
++ dm   - the `DMFOREST`
+. func - callback that maps reference coordinates to physical coordinates
+- ctx  - optional application context passed through to `func`
+
+  Calling sequence of `func`:
++ base        - the base `DM` of the forest
+. coarsePoint - the base-`DM` cell that owns the coordinate being mapped
+. dim         - the coordinate dimension (at most 3)
+. coordIn     - the input coordinate on the base `DM`
+. coordOut    - the mapped coordinate to be written
+- ctx         - optional application context
+
+  Level: intermediate
+
+.seealso: `DM`, `DMFOREST`, `DMForestGetBaseCoordinateMapping()`, `DMForestSetBaseDM()`
+@*/
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM base, PetscInt coarsePoint, PetscInt dim, const PetscReal coordIn[], PetscReal coordOut[], PetscCtx ctx), PetscCtx ctx)
 {
   DM_Forest *forest = (DM_Forest *)dm->data;
 
@@ -357,7 +379,31 @@ PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], PetscCtx), PetscCtxRt ctx)
+/*@C
+  DMForestGetBaseCoordinateMapping - Get the user-supplied coordinate mapping previously set with `DMForestSetBaseCoordinateMapping()`.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMFOREST`
+
+  Output Parameters:
++ func - the callback, or `NULL`
+- ctx  - the application context that was registered with the callback, or `NULL`
+
+  Calling sequence of `func`:
++ base        - the base `DM` of the forest
+. coarsePoint - the base-`DM` cell that owns the coordinate being mapped
+. dim         - the coordinate dimension (at most 3)
+. coordIn     - the input coordinate on the base `DM`
+. coordOut    - the mapped coordinate to be written
+- ctx         - optional application context
+
+  Level: intermediate
+
+.seealso: `DM`, `DMFOREST`, `DMForestSetBaseCoordinateMapping()`
+@*/
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM base, PetscInt coarsePoint, PetscInt dim, const PetscReal coordIn[], PetscReal coordOut[], PetscCtx ctx), PetscCtxRt ctx)
 {
   DM_Forest *forest = (DM_Forest *)dm->data;
 
@@ -997,6 +1043,28 @@ PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMForestTransferVec - Transfer a `Vec` between two related `DMFOREST` grids, e.g. before and after adaptation.
+
+  Collective
+
+  Input Parameters:
++ dmIn   - source `DMFOREST`
+. vecIn  - vector on `dmIn`
+. dmOut  - destination `DMFOREST`
+. useBCs - if `PETSC_TRUE`, apply boundary conditions during transfer
+- time   - simulation time supplied to any time-dependent boundary conditions
+
+  Output Parameter:
+. vecOut - vector on `dmOut` that receives the transferred values
+
+  Level: intermediate
+
+  Note:
+  Requires the forest implementation to provide a transfer routine; otherwise raises `PETSC_ERR_SUP`.
+
+.seealso: `DM`, `DMFOREST`, `DMForestTransferVecFromBase()`, `DMForestSetAdaptivityForest()`
+@*/
 PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
   DM_Forest *forest;
@@ -1012,6 +1080,25 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMForestTransferVecFromBase - Transfer a `Vec` defined on the base `DM` of a `DMFOREST` onto the refined forest.
+
+  Collective
+
+  Input Parameters:
++ dm    - the `DMFOREST`
+- vecIn - vector defined on the base `DM` returned by `DMForestGetBaseDM()`
+
+  Output Parameter:
+. vecOut - vector on `dm` that receives the transferred values
+
+  Level: intermediate
+
+  Note:
+  Requires the forest implementation to provide a base-to-forest transfer routine; otherwise raises `PETSC_ERR_SUP`.
+
+.seealso: `DM`, `DMFOREST`, `DMForestTransferVec()`, `DMForestGetBaseDM()`
+@*/
 PetscErrorCode DMForestTransferVecFromBase(DM dm, Vec vecIn, Vec vecOut)
 {
   DM_Forest *forest;

@@ -3371,6 +3371,24 @@ PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat mat, PetscReal fact)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatMPIBAIJGetSeqBAIJ - Get the on-process (diagonal block) and off-process (off-diagonal block) `MATSEQBAIJ`
+  matrices that make up an `MATMPIBAIJ` matrix, together with the local-to-global column map for the off-diagonal block.
+
+  Not Collective
+
+  Input Parameter:
+. A - the `MATMPIBAIJ` matrix
+
+  Output Parameters:
++ Ad     - the diagonal block `MATSEQBAIJ`, or `NULL` if not needed
+. Ao     - the off-diagonal block `MATSEQBAIJ`, or `NULL` if not needed
+- colmap - the local-to-global column index map for `Ao`, or `NULL` if not needed
+
+  Level: advanced
+
+.seealso: `Mat`, `MATMPIBAIJ`, `MATSEQBAIJ`, `MatMPIAIJGetSeqAIJ()`
+@*/
 PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;

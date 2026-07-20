@@ -290,7 +290,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
   Level: developer
 
   Note:
-  `SNESSetFunction()` is normally used, but it calls this function internally because the user context is actually
+  `SNESSetFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -397,7 +397,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, PetscCtx ctx)
   Level: developer
 
   Note:
-  `SNESGetFunction()` is normally used, but it calls this function internally because the user context is actually
+  `SNESGetFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetFunction()`, `SNESSetFunction()`, `SNESFunctionFn`
@@ -458,7 +458,7 @@ PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, PetscCtx ctx)
   Level: developer
 
   Note:
-  `SNESGetFunction()` is normally used, but it calls this function internally because the user context is actually
+  `SNESGetFunction()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
 .seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetObjective()`, `SNESSetFunction()`, `SNESObjectiveFn`
@@ -488,7 +488,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, PetscCtxRt ctx)
   Level: developer
 
   Note:
-  `SNESSetNGS()` is normally used, but it calls this function internally because the user context is actually
+  `SNESSetNGS()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
@@ -524,7 +524,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
   Level: developer
 
   Note:
-  `SNESGetNGS()` is normally used, but it calls this function internally because the user context is actually
+  `SNESGetNGS()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
   Developer Note:
@@ -558,7 +558,7 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
   Level: developer
 
   Note:
-  `SNESSetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `SNESSetJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.
 
   Developer Note:
@@ -636,7 +636,7 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
   Level: developer
 
   Note:
-  `SNESGetJacobian()` is normally used, but it calls this function internally because the user context is actually
+  `SNESGetJacobian()` is normally used, but it calls this function internally because the application context is actually
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 

@@ -11449,6 +11449,18 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat, PetscBool *cong)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatSetInf - Set every entry (of a given nonzero pattern) of a matrix to positive infinity.
+
+  Logically Collective
+
+  Input Parameter:
+. A - the matrix
+
+  Level: developer
+
+.seealso: `Mat`, `MatZeroEntries()`, `MatSetValues()`
+@*/
 PetscErrorCode MatSetInf(Mat A)
 {
   PetscFunctionBegin;

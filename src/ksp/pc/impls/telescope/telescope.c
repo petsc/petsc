@@ -1046,7 +1046,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v)
   No assumption is made about the data type of the state variables.
   These must be managed by the user and must be accessible from the `DM`.
 
-  Care must be taken in defining the user context passed to `KSPSetComputeOperators()` which is to be
+  Care must be taken in defining the application context passed to `KSPSetComputeOperators()` which is to be
   associated with the sub-`KSP` residing within `PCTELESCOPE`.
   In general, `PCTELESCOPE` assumes that the context on the fine and coarse `DM` used with
   `KSPSetComputeOperators()` should be "similar" in type or origin.
@@ -1259,7 +1259,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    and `MatSetNearNullSpace()` are extracted, re-partitioned and set on B'
    (currently there is no support for nullspaces provided with `MatNullSpaceSetFunction()`).
    Support is provided for `KSPSetComputeOperators()`. The user provided function and context is propagated to the sub `KSP`.
-   This is fragile since the user must ensure that their user context is valid for use on c'.
+   This is fragile since the user must ensure that their application context is valid for use on c'.
    Currently there is no support for the flag `-pc_use_amat`.
 
    [3] Coarse `DM` setup
@@ -1275,8 +1275,8 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    (currently there is no support for nullspaces provided with `MatNullSpaceSetFunction()`).
    There is no general method to permute field orderings, hence only `KSPSetComputeOperators()` is supported.
    The user must use `PetscObjectComposeFunction()` with dmfine to define the method to scatter fields from dmfine to dmcoarse.
-   Propagation of the user context for `KSPSetComputeOperators()` on the sub `KSP` is attempted by querying the `DM` contexts associated with
-   dmfine and dmcoarse. Alternatively, the user may use `PetscObjectComposeFunction()` with dmcoarse to define a method which will return the appropriate user context for `KSPSetComputeOperators()`.
+   Propagation of the application context for `KSPSetComputeOperators()` on the sub `KSP` is attempted by querying the `DM` contexts associated with
+   dmfine and dmcoarse. Alternatively, the user may use `PetscObjectComposeFunction()` with dmcoarse to define a method which will return the appropriate application context for `KSPSetComputeOperators()`.
    Currently there is no support for the flag `-pc_use_amat`.
    This setup can be invoked by the option `-pc_telescope_use_coarse_dm` or by calling `PCTelescopeSetUseCoarseDM`(pc,`PETSC_TRUE`);
    Further information about the user-provided methods required by this setup type are described here `PCTelescopeSetUseCoarseDM()`.
@@ -1308,7 +1308,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
    Limitations/improvements include the following.
    `VecPlaceArray()` could be used within `PCApply()` to improve efficiency and reduce memory usage.
-   A unified mechanism to query for user contexts as required by `KSPSetComputeOperators()` and `MatNullSpaceSetFunction()`.
+   A unified mechanism to query for application contexts as required by `KSPSetComputeOperators()` and `MatNullSpaceSetFunction()`.
 
    The symmetric permutation used when a `DMDA` is encountered is performed via explicitly assembling a permutation matrix P,
    and performing P^T.A.P. Possibly it might be more efficient to use `MatPermute()`. We opted to use P^T.A.P as it appears

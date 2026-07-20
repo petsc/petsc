@@ -41,6 +41,25 @@ PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESComputeFunctionDefaultNPC - Compute the residual by applying the attached nonlinear preconditioner when one is present, otherwise defer to `SNESComputeFunction()`
+
+  Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+- X    - the current iterate
+
+  Output Parameter:
+. F - the residual vector produced by the nonlinear preconditioner (or the standard function evaluation)
+
+  Level: developer
+
+  Note:
+  Used as the residual callback for `SNESMF` when a nonlinear preconditioner is set on the outer `SNES`.
+
+.seealso: [](ch_snes), `SNES`, `SNESSetNPC()`, `SNESApplyNPC()`, `SNESComputeFunction()`, `SNESGetNPCFunction()`
+@*/
 PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 {
   /* This is to be used as an argument to SNESMF -- NOT as a "function" */

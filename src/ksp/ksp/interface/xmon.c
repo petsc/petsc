@@ -1,6 +1,26 @@
 #include <petsc/private/kspimpl.h> /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
+/*@C
+  KSPMonitorLGRange - Prints line graphs summarizing the residual norm, the fraction of elements that dominate the residual, and the convergence factor at each iteration of the `KSP` solver
+
+  Collective
+
+  Input Parameters:
++ ksp    - iterative context
+. n      - iteration number
+. rnorm  - the 2-norm of the residual (or an approximation)
+- monctx - a `PetscViewer` (typically of type `PETSCVIEWERDRAW`) containing the line graphs to update
+
+  Level: intermediate
+
+  Note:
+  Suitable for use as a `KSP` monitor via `KSPMonitorSet()`. Draws four line graphs: the log residual norm, the
+  percentage of entries whose magnitude exceeds $0.2$ times the maximum, the relative change in residual norm per
+  iteration, and their product.
+
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `PETSCVIEWERDRAW`, `PetscDrawLG`
+@*/
 PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *monctx)
 {
   PetscDrawLG      lg;

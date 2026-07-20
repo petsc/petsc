@@ -174,6 +174,23 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscConvEstComputeInitialGuess - Fill `u` with the initial guess to use on refinement level `r` of a convergence-estimation run
+
+  Collective
+
+  Input Parameters:
++ ce - the `PetscConvEst` object
+. r  - the refinement level
+- dm - the `DM` on which `u` is defined (may be `NULL`)
+
+  Output Parameter:
+. u - the initial-guess vector
+
+  Level: developer
+
+.seealso: `PetscConvEst`, `PetscConvEstComputeError()`, `PetscConvEstGetConvRate()`
+@*/
 PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM dm, Vec u)
 {
   PetscFunctionBegin;
@@ -184,6 +201,24 @@ PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscConvEstComputeError - Compute per-field discretization errors of `u` on refinement level `r`
+
+  Collective
+
+  Input Parameters:
++ ce - the `PetscConvEst` object
+. r  - the refinement level
+. dm - the `DM` on which `u` is defined (may be `NULL`)
+- u  - the computed solution
+
+  Output Parameter:
+. errors - array of length `Nf` (number of fields in the DS) filled with the error in each field
+
+  Level: developer
+
+.seealso: `PetscConvEst`, `PetscConvEstComputeInitialGuess()`, `PetscConvEstGetConvRate()`
+@*/
 PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
 {
   PetscFunctionBegin;

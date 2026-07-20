@@ -356,6 +356,21 @@ static PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESNGMRESGetRestartFmRise - Get whether `SNESNGMRES` increases the restart count when a step $x_M$ increases the residual $F_M$
+
+  Not Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if the option is enabled
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSetRestartType()`
+@*/
 PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes, PetscBool *flg)
 {
   PetscErrorCode (*f)(SNES, PetscBool *);

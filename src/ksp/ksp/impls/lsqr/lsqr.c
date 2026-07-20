@@ -494,7 +494,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Input Parameters:
 + viewer - The `PetscViewer`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The `PetscViewerAndFormat`

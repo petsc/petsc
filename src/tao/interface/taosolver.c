@@ -2781,7 +2781,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
 
   Input Parameters:
 + tao - the `Tao` context
-- ctx - the user context
+- ctx - the application context
 
   Level: intermediate
 
@@ -2809,7 +2809,7 @@ PetscErrorCode TaoSetApplicationContext(Tao tao, PetscCtx ctx)
 . tao - the `Tao` context
 
   Output Parameter:
-. ctx - a pointer to the user context
+. ctx - a pointer to the application context
 
   Level: intermediate
 

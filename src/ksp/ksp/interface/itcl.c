@@ -228,7 +228,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 + ksp  - `KSP` object you wish to monitor
 . opt  - the command line option for this monitor
 . name - the monitor type one is seeking
-- ctx  - An optional user context for the monitor, or `NULL`
+- ctx  - An optional application context for the monitor, or `NULL`
 
   Level: developer
 

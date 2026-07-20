@@ -276,6 +276,22 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscConvEstUseTS - Configure a `PetscConvEst` object to use a `TS` solver for a convergence study
+
+  Not Collective
+
+  Input Parameters:
++ ce            - the convergence estimator
+- checkTemporal - `PETSC_TRUE` to run a temporal convergence study (refining the time step), `PETSC_FALSE` to run a spatial convergence study (refining the mesh)
+
+  Level: intermediate
+
+  Note:
+  This installs the appropriate callbacks on `ce` so that the enclosed `TS` solver is run at each refinement level and the resulting errors are used to estimate the observed convergence rate.
+
+.seealso: [](ch_ts), `PetscConvEst`, `TS`, `PetscConvEstGetConvRate()`
+@*/
 PetscErrorCode PetscConvEstUseTS(PetscConvEst ce, PetscBool checkTemporal)
 {
   PetscFunctionBegin;

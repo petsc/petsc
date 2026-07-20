@@ -233,7 +233,7 @@ PETSC_EXTERN_TYPEDEF typedef void PetscBdPointJacFn(PetscInt dim, PetscInt Nf, P
 . x   - coordinates of the current point
 . Nc  - the number of field components
 . u   - the solution field evaluated at the current point
-- ctx - a user context, set with `PetscDSSetExactSolution()` or `PetscDSSetExactSolutionTimeDerivative()`
+- ctx - an application context, set with `PetscDSSetExactSolution()` or `PetscDSSetExactSolutionTimeDerivative()`
 
   Level: beginner
 
@@ -254,7 +254,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscPointExactSolutionFn(PetscInt d
 . numConstants - number of constant parameters
 . constants    - constant parameters
 . flux         - output array of flux through the interface
-- ctx          - optional user context
+- ctx          - optional application context
 
   Level: beginner
 
@@ -271,7 +271,7 @@ PETSC_EXTERN_TYPEDEF typedef void PetscRiemannFn(PetscInt dim, PetscInt Nf, cons
 . x    - The location of the current normal, in the coordinate space of the original mesh
 . r    - The layer number of this point
 . u    - The user provides the computed normal on output
-- ctx  - An optional user context, this context may be obtained by the calling code with `DMGetApplicationContext()`
+- ctx  - An optional application context, this context may be obtained by the calling code with `DMGetApplicationContext()`
 
   Level: beginner
 
@@ -298,7 +298,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscRiemannFn     *PetscRiemannFunc PETSC_DEPRECAT
 . x   - coordinates of the current point
 . Nc  - the number of field components
 . u   - the lower bound evaluated at the current point
-- ctx - a user context, passed in with, for example, `PetscDSSetLowerBound()`
+- ctx - an application context, passed in with, for example, `PetscDSSetLowerBound()`
 
   Level: beginner
 

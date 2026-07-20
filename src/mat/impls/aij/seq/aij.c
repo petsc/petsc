@@ -345,19 +345,34 @@ static PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A, PetscInt row, const PetscSca
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    MatSeqAIJSetValuesLocalFast - An optimized version of MatSetValuesLocal() for SeqAIJ matrices with several assumptions
-
-      -   a single row of values is set with each call
-      -   no row or column indices are negative or (in error) larger than the number of rows or columns
-      -   the values are always added to the matrix, not set
-      -   no new locations are introduced in the nonzero structure of the matrix
-
-     This does NOT assume the global column indices are sorted
-
-*/
-
 #include <petsc/private/isimpl.h>
+
+/*@
+  MatSeqAIJSetValuesLocalFast - An optimized version of `MatSetValuesLocal()` for `MATSEQAIJ` matrices, valid under
+  several restrictive assumptions.
+
+  Not Collective
+
+  Input Parameters:
++ A  - the `MATSEQAIJ` matrix
+. m  - the number of rows being set (must be 1)
+. im - array of length `m` giving the local row index
+. n  - the number of columns being set
+. in - array of length `n` giving the local column indices
+. v  - array of length `n` of values to add
+- is - the insert mode (must be `ADD_VALUES`)
+
+  Level: developer
+
+  Notes:
+  This routine requires that a single row of values is set with each call, that no row or column
+  index is negative or larger than the number of rows or columns, that values are always added
+  (not inserted), and that no new nonzero locations are introduced.
+
+  The global column indices are not assumed to be sorted.
+
+.seealso: `Mat`, `MATSEQAIJ`, `MatSetValuesLocal()`, `MatSetValues()`
+@*/
 PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;

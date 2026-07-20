@@ -6,6 +6,26 @@
 #include <petscdmceed.h>
 #include <petscdmplexceed.h>
 
+/*@C
+  DMPlexSNESComputeResidualCEED - Assemble the local residual for a `SNES` on a `DMPLEX` using the libCEED operator attached to the `DM`
+
+  Collective
+
+  Input Parameters:
++ dm   - the `DMPLEX` for which libCEED operators have been created by `DMCeedCreate()`
+. locX - local solution vector including ghost values
+- ctx  - application context (unused)
+
+  Output Parameter:
+. locF - local residual vector to be assembled
+
+  Level: developer
+
+  Note:
+  This is normally installed as the `SNES` local residual callback via `DMSNESSetFunctionLocal()` when using libCEED for the finite-element evaluation.
+
+.seealso: [](ch_snes), `SNES`, `DMPLEX`, `DMCeedCreate()`, `DMSNESSetFunctionLocal()`, `DMPlexTSComputeRHSFunctionFVMCEED()`
+@*/
 PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, PetscCtx ctx)
 {
   Ceed       ceed;

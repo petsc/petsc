@@ -1154,6 +1154,28 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DS(DMField field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMFieldCreateDSWithDG - Create a `DMField` of type `DMFIELDDS` for a `PetscDS` field, optionally paired with a matching discontinuous-Galerkin representation on a companion `DM`.
+
+  Collective
+
+  Input Parameters:
++ dm       - the `DM` carrying the primary (continuous) discretization
+. dmDG     - optional `DM` carrying a matching discontinuous-Galerkin discretization, or `NULL`
+. fieldNum - the field number within the `DM`'s `PetscDS`
+. vec      - local vector holding the coefficients on `dm`
+- vecDG    - local vector holding the coefficients on `dmDG`, or `NULL` if `dmDG` is `NULL`
+
+  Output Parameter:
+. field - the newly created `DMField`
+
+  Level: intermediate
+
+  Note:
+  When the `DM` has no discretization set for `fieldNum`, or the field is only marked with a `PetscContainer`, a default Lagrange `PetscFE` is constructed for the topmost stratum.
+
+.seealso: `DMField`, `DMFIELDDS`, `DMFieldCreateDS()`, `DMFieldCreate()`, `PetscDS`, `PetscFE`
+@*/
 PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec, Vec vecDG, DMField *field)
 {
   DMField      b;
@@ -1216,6 +1238,26 @@ PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMFieldCreateDS - Create a `DMField` of type `DMFIELDDS` for a `PetscDS` field on a `DM`.
+
+  Collective
+
+  Input Parameters:
++ dm       - the `DM` carrying the discretization
+. fieldNum - the field number within the `DM`'s `PetscDS`
+- vec      - local vector holding the coefficients
+
+  Output Parameter:
+. field - the newly created `DMField`
+
+  Level: intermediate
+
+  Note:
+  Equivalent to `DMFieldCreateDSWithDG()` with `dmDG` set to `NULL`.
+
+.seealso: `DMField`, `DMFIELDDS`, `DMFieldCreateDSWithDG()`, `DMFieldCreate()`, `PetscDS`
+@*/
 PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec, DMField *field)
 {
   PetscFunctionBegin;

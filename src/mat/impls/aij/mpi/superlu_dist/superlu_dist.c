@@ -127,6 +127,21 @@ static PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F, PetscScalar *di
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatSuperluDistGetDiagU - Get the diagonal of the U factor of a `MATSOLVERSUPERLU_DIST` factored matrix.
+
+  Collective
+
+  Input Parameter:
+. F - the factored matrix returned by `MatGetFactor()` with `MATSOLVERSUPERLU_DIST`
+
+  Output Parameter:
+. diagU - array of the U factor diagonal; must be preallocated by the caller
+
+  Level: advanced
+
+.seealso: `Mat`, `MATSOLVERSUPERLU_DIST`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`
+@*/
 PetscErrorCode MatSuperluDistGetDiagU(Mat F, PetscScalar *diagU)
 {
   PetscFunctionBegin;

@@ -1747,6 +1747,26 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTreeRefineCell - Refine a single cell on rank 0 using the `DM`'s reference tree, producing a non-conforming mesh
+
+  Collective
+
+  Input Parameters:
++ dm   - The `DM` with an attached reference tree (see `DMPlexSetReferenceTree()`)
+- cell - The cell to be refined
+
+  Output Parameter:
+. ncdm - A new `DM` in which `cell` has been split according to the reference tree
+
+  Level: developer
+
+  Note:
+  This routine is intended for testing and demonstration; it produces one example of a non-conforming
+  mesh but is not a general local-refinement facility. Only rank 0 performs the refinement.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `DMPlexSetTree()`
+@*/
 /* refine a single cell on rank 0: this is not intended to provide good local refinement, only to create an example of
  * a non-conforming mesh.  Local refinement comes later */
 PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
@@ -2812,6 +2832,26 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
  *         a_{i,j} += interp_{i,k} * \phi^f_k(x_l) * \phi^f_j(x_l) * w_l
  *                    [^^^ this is = \phi^c_i ^^^]
  */
+/*@
+  DMPlexComputeInjectorReferenceTree - Compute the injection matrix from fine to coarse degrees of freedom on the reference tree
+
+  Collective
+
+  Input Parameter:
+. refTree - The reference-tree `DMPLEX` (see `DMPlexCreateDefaultReferenceTree()`)
+
+  Output Parameter:
+. inj - The newly created injection `Mat` mapping fine-space coefficients on the reference tree to their coarse-space counterparts
+
+  Level: developer
+
+  Note:
+  For a nodal basis, the injection is derived from the constraint matrix attached to the reference
+  tree; the returned matrix is used internally by `DMPlexComputeInjectorTree()` to construct the
+  global injection between refined and coarse meshes.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`, `DMPlexComputeInjectorTree()`, `DMPlexComputeInterpolatorTree()`
+@*/
 PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
 {
   PetscDS      ds;

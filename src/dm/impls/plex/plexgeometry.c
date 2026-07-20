@@ -695,6 +695,23 @@ static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscGridHashCreate - Create a `PetscGridHash` for spatially locating points in a mesh.
+
+  Collective
+
+  Input Parameters:
++ comm  - the MPI communicator
+. dim   - the spatial dimension
+- point - an initial point used to seed the bounding box, or `NULL` for a zero-initialized box
+
+  Output Parameter:
+. box - the newly created `PetscGridHash`
+
+  Level: developer
+
+.seealso: `DMPLEX`, `PetscGridHash`, `PetscGridHashEnlarge()`, `PetscGridHashDestroy()`
+@*/
 PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
 {
   PetscFunctionBegin;
@@ -703,6 +720,19 @@ PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscGridHashEnlarge - Enlarge the bounding box of a `PetscGridHash` to include a new point.
+
+  Not Collective
+
+  Input Parameters:
++ box   - the `PetscGridHash`
+- point - the point whose coordinates extend the box's lower and upper bounds
+
+  Level: developer
+
+.seealso: `DMPLEX`, `PetscGridHash`, `PetscGridHashCreate()`, `PetscGridHashDestroy()`
+@*/
 PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[])
 {
   PetscInt d;
@@ -876,6 +906,18 @@ static PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscGridHashDestroy - Destroy a `PetscGridHash` and free its resources.
+
+  Collective
+
+  Input Parameter:
+. box - the `PetscGridHash` to destroy; set to `NULL` on return
+
+  Level: developer
+
+.seealso: `DMPLEX`, `PetscGridHash`, `PetscGridHashCreate()`, `PetscGridHashEnlarge()`
+@*/
 PetscErrorCode PetscGridHashDestroy(PetscGridHash *box)
 {
   PetscFunctionBegin;

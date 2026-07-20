@@ -400,7 +400,7 @@ PetscErrorCode DMAdaptorMonitorCancel(DMAdaptor adaptor)
 + adaptor - `DMadaptor` object you wish to monitor
 . opt     - the command line option for this monitor
 . name    - the monitor type one is seeking
-- ctx     - An optional user context for the monitor, or `NULL`
+- ctx     - An optional application context for the monitor, or `NULL`
 
   Level: developer
 
@@ -676,6 +676,29 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMAdaptorGetTransferFunction - Get the callback used by a `DMAdaptor` to transfer a solution vector from an old `DM` to the adapted `DM`
+
+  Not Collective
+
+  Input Parameter:
+. adaptor - the `DMAdaptor` object
+
+  Output Parameter:
+. tfunc - pointer to the transfer callback
+
+  Calling sequence of `tfunc`:
++ adaptor - the `DMAdaptor` object
+. dm      - the current `DM`
+. xin     - the current solution
+. newdm   - the adapted `DM`
+. xout    - the transferred solution on `newdm`
+- ctx     - application context, set with `DMSetApplicationContext()`
+
+  Level: developer
+
+.seealso: `DMAdaptor`, `DMAdaptorSetTransferFunction()`, `DMAdaptorAdapt()`
+@*/
 PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor adaptor, DM dm, Vec xin, DM newdm, Vec xout, PetscCtx ctx))
 {
   PetscFunctionBegin;
@@ -683,6 +706,27 @@ PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMAdaptorSetTransferFunction - Set the callback used by a `DMAdaptor` to transfer a solution vector from an old `DM` to the adapted `DM`
+
+  Logically Collective
+
+  Input Parameters:
++ adaptor - the `DMAdaptor` object
+- tfunc   - the transfer callback
+
+  Calling sequence of `tfunc`:
++ adaptor - the `DMAdaptor` object
+. dm      - the current `DM`
+. xin     - the current solution
+. newdm   - the adapted `DM`
+. xout    - the transferred solution on `newdm`
+- ctx     - application context, set with `DMSetApplicationContext()`
+
+  Level: developer
+
+.seealso: `DMAdaptor`, `DMAdaptorGetTransferFunction()`, `DMAdaptorAdapt()`
+@*/
 PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor adaptor, DM dm, Vec xin, DM newdm, Vec xout, PetscCtx ctx))
 {
   PetscFunctionBegin;
@@ -826,7 +870,7 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 . field    - The field integrated over the cell
 . gradient - The gradient integrated over the cell
 . cg       - A `PetscFVCellGeom` struct
-- ctx      - A user context
+- ctx      - An application context
 
   Output Parameter:
 . errInd   - The error indicator
@@ -1181,7 +1225,7 @@ PetscErrorCode DMAdaptorMonitorErrorDraw(DMAdaptor adaptor, PetscInt n, DM odm, 
   Input Parameters:
 + viewer - The `PetscViewer`
 . format - The viewer format
-- ctx    - An optional user context
+- ctx    - An optional application context
 
   Output Parameter:
 . vf - The viewer context

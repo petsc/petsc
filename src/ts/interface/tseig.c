@@ -89,6 +89,30 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorSPEig - Monitors the eigenvalues of the linearized right-hand-side operator on a scatter plot at each time step
+
+  Collective
+
+  Input Parameters:
++ ts     - the `TS` context
+. step   - the current time-step number (a negative value indicates an interpolated solution and is ignored)
+. ptime  - the current time
+. v      - the current solution
+- monctx - the `TSMonitorSPEigCtx` context, created with `TSMonitorSPEigCtxCreate()`
+
+  Options Database Key:
+. -ts_monitor_sp_eig - plot eigenvalues of linearized right-hand side
+
+  Level: intermediate
+
+  Notes:
+  This is not called directly by users; pass this function to `TSMonitorSet()` along with the context created by `TSMonitorSPEigCtxCreate()` and `TSMonitorSPEigCtxDestroy()`.
+
+  Currently only works when the Jacobian is provided explicitly and the ODE has no mass matrix.
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorSPEigCtxCreate()`, `TSMonitorSPEigCtxDestroy()`
+@*/
 PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx)
 {
   TSMonitorSPEigCtx ctx = (TSMonitorSPEigCtx)monctx;

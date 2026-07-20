@@ -1894,6 +1894,23 @@ PetscErrorCode DMSwarmRestoreField(DM dm, const char fieldname[], PetscInt *bloc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMSwarmGetFieldInfo - Return the block size and data type of a registered `DMSWARM` field without accessing its data.
+
+  Not Collective
+
+  Input Parameters:
++ dm        - a `DMSWARM`
+- fieldname - the name of the registered field
+
+  Output Parameters:
++ blocksize - the number of entries of `type` per particle, or `NULL`
+- type      - the `PetscDataType` of a single entry, or `NULL`
+
+  Level: intermediate
+
+.seealso: `DM`, `DMSWARM`, `DMSwarmGetField()`, `DMSwarmRestoreField()`, `DMSwarmRegisterPetscDatatypeField()`
+@*/
 PetscErrorCode DMSwarmGetFieldInfo(DM dm, const char fieldname[], PetscInt *blocksize, PetscDataType *type)
 {
   DM_Swarm        *swarm = (DM_Swarm *)dm->data;
@@ -2817,6 +2834,22 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
 /* Replace dm with the contents of ndm, and then destroy ndm
    - Share the DM_Swarm structure
 */
+/*@
+  DMSwarmReplace - Replace the internal state of a `DMSWARM` with that of another `DMSWARM`, sharing the underlying particle data and destroying the source `DM`.
+
+  Collective
+
+  Input Parameters:
++ dm  - the destination `DMSWARM`, whose current contents are discarded
+- ndm - pointer to the source `DMSWARM`; destroyed and set to `NULL` on return
+
+  Level: developer
+
+  Note:
+  The dimension, periodicity, name, and shared reference to the underlying particle bucket are transferred from the source to the destination.
+
+.seealso: `DM`, `DMSWARM`, `DMSwarmDuplicate()`, `DMDestroy()`
+@*/
 PetscErrorCode DMSwarmReplace(DM dm, DM *ndm)
 {
   DM               dmNew = *ndm;

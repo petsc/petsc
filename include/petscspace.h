@@ -9,7 +9,7 @@
 /* SUBMANSEC = SPACE */
 
 /*S
-  PetscSpace - PETSc object that manages a linear space, e.g. the space of d-dimensional polynomials of given degree
+  PetscSpace - PETSc object that manages a linear (vector) space of multi-component d-dimensional functions. For example, polynomials of given degree.
 
   Level: beginner
 
