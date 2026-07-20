@@ -7,9 +7,9 @@ PETSC_EXTERN PetscBool      SNESLineSearchRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 PETSC_EXTERN PetscLogEvent  SNESLINESEARCH_Apply;
 
-typedef struct _LineSearchOps *LineSearchOps;
+typedef struct _SNESLineSearchOps *SNESLineSearchOps;
 
-struct _LineSearchOps {
+struct _SNESLineSearchOps {
   PetscErrorCode (*view)(SNESLineSearch, PetscViewer);
   SNESLineSearchApplyFn *apply;
   PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, void *);
@@ -26,8 +26,8 @@ struct _LineSearchOps {
 
 #define MAXSNESLSMONITORS 5
 
-struct _p_LineSearch {
-  PETSCHEADER(struct _LineSearchOps);
+struct _p_SNESLineSearch {
+  PETSCHEADER(struct _SNESLineSearchOps);
 
   SNES snes;
 

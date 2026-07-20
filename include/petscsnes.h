@@ -739,7 +739,7 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES, PetscErrorCode (*)(SNES, Vec
 
 .seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
 S*/
-typedef struct _p_LineSearch *SNESLineSearch;
+typedef struct _p_SNESLineSearch *SNESLineSearch;
 
 /*J
    SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`. Provides all the linesearches for the nonlinear solvers, `SNES`,
