@@ -15,7 +15,7 @@ typedef struct {
   PetscFileMode            btype;
   PetscObject              dm;
   PetscViewerVTKObjectLink link;
-  PetscErrorCode (*write)(PetscObject, PetscViewer);
+  PetscViewerVTKWriteFn   *write;
 } PetscViewer_VTK;
 
 PETSC_EXTERN PetscErrorCode PetscViewerVTKFWrite(PetscViewer, FILE *, const void *, PetscCount, MPI_Datatype);

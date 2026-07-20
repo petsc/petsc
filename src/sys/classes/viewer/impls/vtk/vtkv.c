@@ -1,49 +1,33 @@
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
 
-/*MC
-    PetscViewerVTKWriteFunction - functional form used to provide a writer to the `PETSCVIEWERVTK`
-
-     Synopsis:
-     #include <petscviewer.h>
-     PetscViewerVTKWriteFunction(PetscObject object,PetscViewer viewer)
-
-     Input Parameters:
-+      object - the PETSc object to be written
--      viewer - viewer it is to be written to
-
-   Level: developer
-
-.seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKAddField()`
-M*/
-
 /*@C
   PetscViewerVTKAddField - Add a field to the viewer
 
   Collective
 
   Input Parameters:
-+ viewer                      - `PETSCVIEWERVTK`
-. dm                          - `DM` on which `Vec` lives
-. PetscViewerVTKWriteFunction - function to write this `Vec`
-. fieldnum                    - which field of the `DM` to write (`PETSC_DEFAULT` if the whole vector should be written)
-. fieldtype                   - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
-. checkdm                     - whether to check for identical dm arguments as fields are added
-- vec                         - `Vec` from which to write
++ viewer    - `PETSCVIEWERVTK`
+. dm        - `DM` on which `Vec` lives
+. write     - function to write this `Vec`, see `PetscViewerVTKWriteFn`
+. fieldnum  - which field of the `DM` to write (`PETSC_DEFAULT` if the whole vector should be written)
+. fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
+. checkdm   - whether to check for identical dm arguments as fields are added
+- vec       - `Vec` from which to write
 
   Level: developer
 
   Note:
   This routine keeps exclusive ownership of the `Vec`. The caller should not use or destroy the `Vec` after calling it.
 
-.seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
+.seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFn`, `PetscViewerVTKGetDM()`
 @*/
-PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
+PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscViewerVTKWriteFn *write, PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(dm, 2);
   PetscValidHeader(vec, 7);
-  PetscUseMethod(viewer, "PetscViewerVTKAddField_C", (PetscViewer, PetscObject, PetscErrorCode (*)(PetscObject, PetscViewer), PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject), (viewer, dm, PetscViewerVTKWriteFunction, fieldnum, fieldtype, checkdm, vec));
+  PetscUseMethod(viewer, "PetscViewerVTKAddField_C", (PetscViewer, PetscObject, PetscViewerVTKWriteFn *, PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject), (viewer, dm, write, fieldnum, fieldtype, checkdm, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -58,7 +42,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
 
   Level: developer
 
-.seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKAddField()`
+.seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFn`, `PetscViewerVTKAddField()`
 @*/
 PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer, PetscObject *dm)
 {
@@ -164,7 +148,7 @@ static PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
+static PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, PetscViewerVTKWriteFn *write, PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
 {
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;
   PetscViewerVTKObjectLink link, tail = vtk->link;
@@ -176,7 +160,7 @@ static PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject
     PetscCall(PetscObjectReference(dm));
     vtk->dm = dm;
   }
-  vtk->write = PetscViewerVTKWriteFunction;
+  vtk->write = write;
   PetscCall(PetscNew(&link));
   link->ft    = fieldtype;
   link->vec   = vec;
