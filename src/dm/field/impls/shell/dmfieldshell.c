@@ -216,11 +216,11 @@ PetscErrorCode DMFieldShellSetGetDegree(DMField field, PetscErrorCode (*getDegre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField field, PetscErrorCode (*createDefaultQuadrature)(DMField field, IS is, PetscQuadrature *quad))
+PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField field, PetscErrorCode (*create)(DMField f, IS is, PetscQuadrature *quad))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
-  field->ops->createDefaultQuadrature = createDefaultQuadrature;
+  field->ops->createDefaultQuadrature = create;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

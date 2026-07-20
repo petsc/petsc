@@ -60,14 +60,14 @@ PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t, PetscDataTyp
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, const char[], hid_t *, hid_t *);
 #endif /* defined(PETSC_HAVE_HDF5) */
 
-static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) PeNS
+static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *rel) PeNS
 {
   size_t len;
 
   PetscFunctionBegin;
-  *has = emptyIsRelative;
+  *rel = emptyIsRelative;
   PetscCall(PetscStrlen(path, &len));
-  if (len) *has = (PetscBool)(path[0] != '/');
+  if (len) *rel = (PetscBool)(path[0] != '/');
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1992,11 +1992,12 @@ PetscErrorCode PetscFECreateFromSpaces(PetscSpace P, PetscDualSpace Q, PetscQuad
 
 static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscInt Nc, DMPolytopeType ct, const char prefix[], PetscInt degree, PetscInt qorder, PetscBool setFromOptions, PetscFE *fem)
 {
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscQuadrature q, fq;
-  PetscBool       tensor;
+  DM                           K;
+  PetscSpace                   P;
+  PetscDualSpace               Q;
+  PetscQuadrature              q, fq;
+  PetscBool                    tensor;
+  PetscDTSimplexQuadratureType qtype = PETSCDTSIMPLEXQUAD_DEFAULT;
 
   PetscFunctionBegin;
   if (prefix) PetscAssertPointer(prefix, 5);
@@ -2077,8 +2078,6 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   PetscCall(PetscDualSpaceLagrangeSetTensor(Q, (tensor || (ct == DM_POLYTOPE_TRI_PRISM)) ? PETSC_TRUE : PETSC_FALSE));
   if (setFromOptions) PetscCall(PetscDualSpaceSetFromOptions(Q));
   PetscCall(PetscDualSpaceSetUp(Q));
-  /* Create quadrature */
-  PetscDTSimplexQuadratureType qtype = PETSCDTSIMPLEXQUAD_DEFAULT;
 
   qorder = qorder >= 0 ? qorder : degree;
   if (setFromOptions) {
