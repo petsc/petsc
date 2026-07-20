@@ -1,6 +1,13 @@
 static char help[] = "Tests inclusion of petscsystypes.h.\n\n";
 
+// Simulate a third-party configuration macro sharing a suffix with a PETSc macro.
+#define PETSC_DEFINED_TEST 1
+#define DEFINED_TEST       1
+
 #include <petscsys.h>
+
+static_assert(PetscDefined(DEFINED_TEST), "PetscDefined() expanded its argument before prepending PETSC_");
+static_assert(PetscIfPetscDefined(DEFINED_TEST, 1, 0), "PetscIfPetscDefined() expanded its argument before prepending PETSC_");
 
 #if defined(PETSC_HAVE_COMPLEX)
 template <class Type>
