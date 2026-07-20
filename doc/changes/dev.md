@@ -15,6 +15,7 @@
 ## Configure/Build
 
 - Add `providesDocs` and `docsDirs` package attributes so that an external package's sources can be cloned and scanned to generate PETSc manual pages when the documentation is built
+- Add interface to LIBXSMM
 
 ## Sys
 
@@ -71,6 +72,7 @@
 - Add `MatGetMultPetscSF()` to access the `PetscSF` used to communicate off-process vector entries in `MatMult()` for `MATMPIAIJ`, `MATMPIBAIJ`, `MATMPISBAIJ`, `MATMPIDENSE`, and `MATMPISELL`
 - Change `MatGetValues()` to respect the row or column orientation set with `MatSetOption(mat, MAT_ROW_ORIENTED, ...)`. This will break current code that calls
   `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` and uses `MatGetValues()`
+- Add new `MatType` `MATSEQBAIJLIBXSMM` and `MATMPIBAIJLIBXSMM`
 
 ## MatCoarsen
 

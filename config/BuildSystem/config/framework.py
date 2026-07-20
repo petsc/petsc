@@ -761,7 +761,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # because libraries.havelib() is used to find library in this list we had to list the libraries in the
     # list even though we don't need them in petscconf.h
     # Some packages have LIB in their name, so we have to include them here
-    if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
+    if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED','PETSC_HAVE_LIBXSMM']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
     if value:
       if (condition):
         f.write('#if (%s)\n' % condition)
@@ -772,7 +772,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def outputPoison(self, f, name):
     '''Outputs a poison version of name to prevent accidental usage, see outputHeader'''
-    if (name.startswith('PETSC_HAVE_LIB') and not name in {'PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED'}) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
+    if (name.startswith('PETSC_HAVE_LIB') and not name in {'PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED','PETSC_HAVE_LIBXSMM'}) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
     if name.startswith(('PETSC_USE_','PETSC_HAVE_','PETSC_SKIP_')):
       f.write('#pragma GCC poison PETSC_%s\n' % name)
 

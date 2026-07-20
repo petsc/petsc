@@ -15,6 +15,7 @@ configure_options = [
   '--download-suitesparse=1',
   '--with-shared-libraries=0',
   '--download-eigen',
+  '--download-libxsmm',
   #'--with-coverage',
   '--with-strict-petscerrorcode=0',
   ]

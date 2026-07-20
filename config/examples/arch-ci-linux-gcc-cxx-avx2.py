@@ -19,6 +19,7 @@ if __name__ == '__main__':
     '--with-blaslapack-dir=/nfs/gce/projects/petsc/soft/u22.04/gcc-avx2/fblaslapack-3.4.2-p3',
     '--with-memalign=64',
     '--download-metis=1',
+    '--download-libxsmm=1',
     '--download-parmetis=1',
     '--download-superlu_dist=1',
     '--with-strict-petscerrorcode',
