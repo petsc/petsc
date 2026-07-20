@@ -943,7 +943,7 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems PetscOptions
   For a `DMSTAG` each point on the same dimension has the same number of `dof` associated with it. For example, all cell points may
   have a single degree of freedom representing a pressure. This uniformity makes it possible to more efficiently "index into" (using
   a computable offset) vectors and arrays than for `DMPLEX` where each point may have a different number of degrees of freedom so the
-  each `offset (as well as the `dof`) must be explicitly stored.
+  each `offset` (as well as the `dof`) must be explicitly stored.
 
 .seealso: [](ch_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
           `DMSetType()`, `DMStagVecSplitToDMDA()`
