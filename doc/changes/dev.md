@@ -11,6 +11,7 @@
 ## General
 
 - Increase the minimum required CUDA Toolkit version to 11.4
+- Change the policy so that documentation changes/fixes/additions are added to the `main` branch, not the `release` branch
 
 ## Configure/Build
 
