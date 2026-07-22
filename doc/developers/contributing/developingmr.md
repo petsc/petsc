@@ -123,6 +123,12 @@ $ git checkout -b yourname/fix-component-name origin/main
   $ make alltests TIMEOUT=600
   ```
 
+- Test generating the documentation.
+
+  ```console
+  $ make docs
+  ```
+
 - Run the source checkers on your machine.
 
   ```console

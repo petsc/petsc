@@ -9,7 +9,7 @@ LINKCHECKDIR  = _build/linkcheck
 
 # First so that "make" without arguments is like "make help".
 help:
-	-@echo "   make sphinxhtml - build the HTML website inside a created Python virtual environment (venv)"
+	-@echo "   make docs - build the HTML website inside a created Python virtual environment (venv)"
 
 # The following does not work because it triggers the loading of docutils that many people may not have in Python
 #	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(SPHINXOPTS_EXTRA)
@@ -37,8 +37,9 @@ website-deploy: images
 docs:
 	cd .. ; if [ ! -z ${PETSC_ARCH} ]; then export PETSC_DOC=${PETSC_ARCH}-doc; ${RM} -rf $${PETSC_DOC} ;  cp -r  doc $${PETSC_DOC}; else export PETSC_DOC=doc ; fi;  python3 -m venv petsc-doc-env ; . petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd $${PETSC_DOC} ;  make  SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 8" html  ;  deactivate
 
+# use this rule AFTER make docs to build the users manual as a PDF file
 docspdf:
-	cd .. ; if [ ! -z ${PETSC_ARCH} ]; then export PETSC_DOC=${PETSC_ARCH}-doc; ${RM} -rf $${PETSC_DOC} ;  cp -r  doc $${PETSC_DOC}; else export PETSC_DOC=doc ; fi;  python3 -m venv petsc-doc-env ; . petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd $${PETSC_DOC} ;  make  SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 8" latexpdf  ;  deactivate
+	cd .. ; if [ ! -z ${PETSC_ARCH} ]; then export PETSC_DOC=${PETSC_ARCH}-doc; ${RM} -rf $${PETSC_DOC}/_build/latex; else export PETSC_DOC=doc ; fi;  python3 -m venv petsc-doc-env ; . petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd $${PETSC_DOC} ;  make  SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 8" latexpdf  ;  deactivate
 
 # Catch-all target: route all unknown targets to Sphinx using the new "make mode" option.
 %: makefile images

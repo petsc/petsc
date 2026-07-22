@@ -462,10 +462,13 @@ etags:
 allgtags:
 	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|cxx\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
-# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules_doc.mk **************************************************
+# ********* Rules for building documentation (website and users manual); uses rules also in lib/petsc/conf/rules_doc.mk **************************************************
 
 docs:
 	cd doc; ${OMAKE_SELF} docs
+
+docspdf:
+	cd doc; ${OMAKE_SELF} docspdf
 
 chk_in_petscdir:
 	@if [ ! -f include/petscversion.h ]; then\
