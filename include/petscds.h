@@ -23,6 +23,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDSGetForceQuad(PetscDS, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDSSetForceQuad(PetscDS, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscFormKeySort(PetscInt, PetscFormKey[]);
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetKeys(PetscWeakForm, PetscWeakFormKind, PetscInt *, PetscFormKey *[]);
 PETSC_EXTERN PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm, DMLabel, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm, DMLabel);
 PETSC_EXTERN PetscErrorCode PetscWeakFormClearIndex(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscWeakFormKind, PetscInt);

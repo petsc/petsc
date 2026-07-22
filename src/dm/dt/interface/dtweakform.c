@@ -1977,6 +1977,42 @@ PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 }
 
 /*@
+  PetscWeakFormGetKeys - Return an array of `PetscFormKey` of a certain `PetscWeakFormKind`
+
+  Not Collective
+
+  Input Parameters:
++ wf - the `PetscWeakForm` object
+- k  - the `PetscWeakFormKind` to get keys for
+
+  Output Parameters:
++ Nk   - the number of keys returned
+- keys - the array of `PetscFormKey` objects
+
+  Level: developer
+
+  Note:
+  The caller must `PetscFree()` the `keys` array when it is no longer needed.
+
+.seealso: `PetscWeakForm`, `PetscWeakFormDestroy()`, `PetscWeakFormCreate()`
+@*/
+PetscErrorCode PetscWeakFormGetKeys(PetscWeakForm wf, PetscWeakFormKind k, PetscInt *Nk, PetscFormKey *keys[])
+{
+  PetscHMapForm map;
+  PetscInt      off = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
+  PetscAssertPointer(Nk, 3);
+  PetscAssertPointer(keys, 4);
+  map = wf->form[k];
+  PetscCall(PetscHMapFormGetSize(map, Nk));
+  PetscCall(PetscMalloc1(*Nk, keys));
+  PetscCall(PetscHMapFormGetKeys(map, &off, *keys));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscWeakFormCreate - Creates an empty `PetscWeakForm` object.
 
   Collective
