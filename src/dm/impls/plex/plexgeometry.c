@@ -2548,6 +2548,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   } else {
     PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &quadPoints, NULL));
   }
+  PetscCheck(qdim == dim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %" PetscInt_FMT " != quadrature dimension %" PetscInt_FMT, dim, qdim);
   PetscCall(PetscFEGetDimension(fe, &pdim));
   PetscCall(PetscFEGetQuadrature(fe, &feQuad));
   if (feQuad == quad) {
@@ -2556,7 +2557,6 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   } else {
     PetscCall(PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T));
   }
-  PetscCheck(qdim == dim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %" PetscInt_FMT " != quadrature dimension %" PetscInt_FMT, dim, qdim);
   {
     const PetscReal *basis    = T->T[0];
     const PetscReal *basisDer = T->T[1];
@@ -2658,17 +2658,24 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   if (cdm) {
+    PetscSpace   sp;
     PetscClassId id;
-    PetscInt     numFields;
     PetscDS      prob;
     PetscObject  disc;
+    PetscInt     Nf, spdim, qdim;
 
-    PetscCall(DMGetNumFields(cdm, &numFields));
-    if (numFields) {
+    PetscCall(DMGetNumFields(cdm, &Nf));
+    if (Nf) {
       PetscCall(DMGetDS(cdm, &prob));
       PetscCall(PetscDSGetDiscretization(prob, 0, &disc));
       PetscCall(PetscObjectGetClassId(disc, &id));
       if (id == PETSCFE_CLASSID) fe = (PetscFE)disc;
+      if (fe && quad) {
+        PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, NULL, NULL, NULL));
+        PetscCall(PetscFEGetBasisSpace(fe, &sp));
+        PetscCall(PetscSpaceGetNumVariables(sp, &spdim));
+        if (qdim != spdim) fe = NULL;
+      }
     }
   }
   if (!fe || (dim != cdim)) PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm, cell, quad, v, J, invJ, detJ));
