@@ -21,10 +21,10 @@ PetscErrorCode PetscViewerFinalizePackage(void)
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval));
   if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval));
   if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval));
 #endif
-#if defined(PETSC_USE_SOCKETVIEWER)
+#if PetscDefined(USE_SOCKETVIEWER)
   if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval));
 #endif
   PetscCall(PetscFunctionListDestroy(&PetscViewerList));
@@ -65,7 +65,7 @@ PetscErrorCode PetscViewerInitializePackage(void)
     PetscCall(PetscStrInList("viewer", logList, ',', &pkg));
     if (pkg) PetscCall(PetscLogEventExcludeClass(PETSC_VIEWER_CLASSID));
   }
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   PetscCall(PetscViewerMathematicaInitializePackage());
 #endif
   /* Register package finalizer */
@@ -336,7 +336,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
 {
   PetscBool         isascii;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -348,7 +348,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
   PetscCheckSameComm(v, 1, viewer, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isascii) {
@@ -360,7 +360,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
       PetscTryTypeMethod(v, view, viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     if (!((PetscObject)v)->amsmem) {
       PetscCall(PetscObjectViewSAWs((PetscObject)v, viewer));

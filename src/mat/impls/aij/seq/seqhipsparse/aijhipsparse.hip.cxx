@@ -2664,7 +2664,7 @@ static PetscErrorCode MatAXPY_SeqAIJHIPSPARSE(Mat Y, PetscScalar a, Mat X, MatSt
   /* spgeam is buggy with one column */
   if (Y->cmap->n == 1 && str != SAME_NONZERO_PATTERN) str = DIFFERENT_NONZERO_PATTERN;
 
-#if !defined(PETSC_USE_64BIT_INDICES) // hipsparseScsrgeam2 etc. do not support 64bit indices
+#if !PetscDefined(USE_64BIT_INDICES) // hipsparseScsrgeam2 etc. do not support 64bit indices
   if (str == SUBSET_NONZERO_PATTERN) {
     PetscScalar       *ay, b = 1.0;
     const PetscScalar *ax;
@@ -2846,7 +2846,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat A, MatType mty
   PetscCall(MatBindToCPU_SeqAIJHIPSPARSE(B, PETSC_FALSE));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJHIPSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatHIPSPARSESetFormat_C", MatHIPSPARSESetFormat_SeqAIJHIPSPARSE));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaijhipsparse_hypre_C", MatConvert_AIJ_HYPRE));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatHIPSPARSESetUseCPUSolve_C", MatHIPSPARSESetUseCPUSolve_SeqAIJHIPSPARSE));

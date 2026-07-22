@@ -79,13 +79,13 @@ PetscErrorCode PetscGetConfiguration(const char *configuration[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
+#if PetscDefined(HAVE_BLI_THREAD_SET_NUM_THREADS)
 EXTERN_C_BEGIN
 void bli_thread_set_num_threads(int);
 EXTERN_C_END
-#elif defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
+#elif PetscDefined(HAVE_MKL_SET_NUM_THREADS)
   #include <mkl.h>
-#elif defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
+#elif PetscDefined(HAVE_OPENBLAS_SET_NUM_THREADS)
 EXTERN_C_BEGIN
 void openblas_set_num_threads(int);
 EXTERN_C_END
@@ -117,13 +117,13 @@ PetscErrorCode PetscBLASSetNumThreads(PetscInt nt)
 {
   PetscFunctionBegin;
   PetscNumBLASThreads = nt;
-#if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
+#if PetscDefined(HAVE_BLI_THREAD_SET_NUM_THREADS)
   bli_thread_set_num_threads(nt);
   PetscCall(PetscInfo(NULL, "Setting number of threads used for BLIS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
-#elif defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
+#elif PetscDefined(HAVE_MKL_SET_NUM_THREADS)
   mkl_set_num_threads((int)nt);
   PetscCall(PetscInfo(NULL, "Setting number of threads used for MKL provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
-#elif defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
+#elif PetscDefined(HAVE_OPENBLAS_SET_NUM_THREADS)
   openblas_set_num_threads((int)nt);
   PetscCall(PetscInfo(NULL, "Setting number of threads used for OpenBLAS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
 #else

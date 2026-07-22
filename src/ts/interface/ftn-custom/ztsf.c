@@ -2,7 +2,7 @@
 #include <petscts.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define tsmonitorlgsettransform_      TSMONITORLGSETTRANSFORM
   #define tssetrhsfunction_             TSSETRHSFUNCTION
   #define tsgetrhsfunction_             TSGETRHSFUNCTION
@@ -24,7 +24,7 @@
   #define tsmonitordefault_             TSMONITORDEFAULT
   #define tssetprestep_                 TSSETPRESTEP
   #define tssetpoststep_                TSSETPOSTSTEP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define tsmonitorlgsettransform_      tsmonitorlgsettransform
   #define tssetrhsfunction_             tssetrhsfunction
   #define tsgetrhsfunction_             tsgetrhsfunction
@@ -60,14 +60,14 @@ static struct {
   PetscFortranCallbackId monitor;
   PetscFortranCallbackId mondestroy;
   PetscFortranCallbackId transform;
-#if defined(PETSC_HAVE_F90_2PTR_ARG)
+#if PetscDefined(HAVE_F90_2PTR_ARG)
   PetscFortranCallbackId function_pgiptr;
 #endif
 } _cb;
 
 static PetscErrorCode ourprestep(TS ts)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -75,7 +75,7 @@ static PetscErrorCode ourprestep(TS ts)
 }
 static PetscErrorCode ourpoststep(TS ts)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -83,7 +83,7 @@ static PetscErrorCode ourpoststep(TS ts)
 }
 static PetscErrorCode ourrhsfunction(TS ts, PetscReal d, Vec x, Vec f, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -91,7 +91,7 @@ static PetscErrorCode ourrhsfunction(TS ts, PetscReal d, Vec x, Vec f, PetscCtx 
 }
 static PetscErrorCode ourifunction(TS ts, PetscReal d, Vec x, Vec xdot, Vec f, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -99,7 +99,7 @@ static PetscErrorCode ourifunction(TS ts, PetscReal d, Vec x, Vec xdot, Vec f, P
 }
 static PetscErrorCode ourrhsjacobian(TS ts, PetscReal d, Vec x, Mat m, Mat p, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -107,7 +107,7 @@ static PetscErrorCode ourrhsjacobian(TS ts, PetscReal d, Vec x, Mat m, Mat p, Pe
 }
 static PetscErrorCode ourijacobian(TS ts, PetscReal d, Vec x, Vec xdot, PetscReal shift, Mat m, Mat p, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -115,7 +115,7 @@ static PetscErrorCode ourijacobian(TS ts, PetscReal d, Vec x, Vec xdot, PetscRea
 }
 static PetscErrorCode ourijacobianp(TS ts, PetscReal d, Vec x, Vec xdot, PetscReal shift, Mat m, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
@@ -123,7 +123,7 @@ static PetscErrorCode ourijacobianp(TS ts, PetscReal d, Vec x, Vec xdot, PetscRe
 }
 static PetscErrorCode ourrhsjacobianp(TS ts, PetscReal d, Vec x, Mat m, PetscCtx ctx)
 {
-#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+#if PetscDefined(HAVE_F90_2PTR_ARG) && defined(foo)
   void *ptr;
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif

@@ -12,16 +12,16 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 #include <ctype.h>
-#if defined(PETSC_HAVE_MALLOC_H)
+#if PetscDefined(HAVE_MALLOC_H)
   #include <malloc.h>
 #endif
-#if defined(PETSC_HAVE_STRINGS_H)
+#if PetscDefined(HAVE_STRINGS_H)
   #include <strings.h> /* strcasecmp */
 #endif
 
-#if defined(PETSC_HAVE_STRCASECMP)
+#if PetscDefined(HAVE_STRCASECMP)
   #define PetscOptNameCmp(a, b) strcasecmp(a, b)
-#elif defined(PETSC_HAVE_STRICMP)
+#elif PetscDefined(HAVE_STRICMP)
   #define PetscOptNameCmp(a, b) stricmp(a, b)
 #else
   #define PetscOptNameCmp(a, b) Error_strcasecmp_not_found
@@ -2286,10 +2286,10 @@ PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a)
     strtolval = strtol(name, &endptr, 10);
     PetscCheck((size_t)(endptr - name) == len, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input string %s has no integer value (do not include . in it)", name);
 
-#if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
+#if PetscDefined(USE_64BIT_INDICES) && PetscDefined(HAVE_ATOLL)
     (void)strtolval;
     *a = atoll(name);
-#elif defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE___INT64)
+#elif PetscDefined(USE_64BIT_INDICES) && PetscDefined(HAVE___INT64)
     (void)strtolval;
     *a = _atoi64(name);
 #else
@@ -2299,14 +2299,14 @@ PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   #include <quadmath.h>
 #endif
 
 static PetscErrorCode PetscStrtod(const char name[], PetscReal *a, char **endptr)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   *a = strtoflt128(name, endptr);
 #else
   *a = (PetscReal)strtod(name, endptr);
@@ -2340,7 +2340,7 @@ static PetscErrorCode PetscStrtoz(const char name[], PetscScalar *a, char **endp
   *endptr      = ptr;
   *isImaginary = hasi;
   if (hasi) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input string %s contains imaginary but complex not supported ", name);
 #else
     *a = PetscCMPLX(0., strtoval);
@@ -2442,7 +2442,7 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
   PetscCall(PetscStrlen(name, &len));
   PetscCheck(len, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "character string of length zero has no numerical value");
   PetscCall(PetscStrtoz(name, &val, &ptr, &imag1));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if ((size_t)(ptr - name) < len) {
     PetscBool   imag2;
     PetscScalar val2;
@@ -2883,7 +2883,7 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options, const char pre[], con
     if (!value) {
       if (set) *set = PETSC_FALSE;
     } else {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
       PetscCall(PetscOptionsStringToReal(value, dvalue));
 #else
       PetscCall(PetscOptionsStringToScalar(value, dvalue));

@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define kspgmressetorthogonalization_                  KSPGMRESSETORTHOGONALIZATION
   #define kspgmresmodifiedgramschmidtorthogonalization_  KSPGMRESMODIFIEDGRAMSCHMIDTORTHOGONALIZATION
   #define kspgmresclassicalgramschmidtorthogonalization_ KSPGMRESCLASSICALGRAMSCHMIDTORTHOGONALIZATION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define kspgmressetorthogonalization_                  kspgmressetorthogonalization
   #define kspgmresmodifiedgramschmidtorthogonalization_  kspgmresmodifiedgramschmidtorthogonalization
   #define kspgmresclassicalgramschmidtorthogonalization_ kspgmresclassicalgramschmidtorthogonalization

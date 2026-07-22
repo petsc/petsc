@@ -12,12 +12,12 @@
 
 #pragma once
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_KERNEL_MAXPY)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranmaxpy4_ FORTRANMAXPY4
     #define fortranmaxpy3_ FORTRANMAXPY3
     #define fortranmaxpy2_ FORTRANMAXPY2
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define fortranmaxpy4_ fortranmaxpy4
     #define fortranmaxpy3_ fortranmaxpy3
     #define fortranmaxpy2_ fortranmaxpy2
@@ -28,7 +28,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
 #endif
 #include <petscblaslapack.h>
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
+#if PetscDefined(USE_FORTRAN_KERNEL_MAXPY)
   #define PetscKernelAXPY(U, a1, p1, n) \
     { \
       PetscBLASInt one = 1; \
@@ -48,7 +48,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       fortranmaxpy4_(U, &a1, &a2, &a3, &a4, p1, p2, p3, p4, &n); \
     }
 
-#elif defined(PETSC_USE_UNROLL_KERNELS)
+#elif PetscDefined(USE_UNROLL_KERNELS)
 
   #define PetscKernelAXPY(U, Alpha, P, n) \
     { \
@@ -149,7 +149,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       } \
     }
 
-#elif defined(PETSC_USE_WHILE_KERNELS)
+#elif PetscDefined(USE_WHILE_KERNELS)
 
   #define PetscKernelAXPY(U, a1, p1, n) \
     { \
@@ -168,7 +168,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++; \
     }
 
-#elif defined(PETSC_USE_BLAS_KERNELS)
+#elif PetscDefined(USE_BLAS_KERNELS)
 
   #define PetscKernelAXPY(U, a1, p1, n) \
     { \

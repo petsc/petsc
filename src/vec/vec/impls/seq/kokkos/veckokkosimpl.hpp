@@ -3,7 +3,7 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/kokkosimpl.hpp>
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #define VecErrorIfNotKokkos(v) \
     do { \
       PetscBool isKokkos = PETSC_FALSE; \

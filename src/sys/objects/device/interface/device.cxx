@@ -15,7 +15,7 @@
 
 using namespace Petsc::device;
 
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
 int PetscDeviceCUPMRuntimeArch = 0;
 #endif
 

@@ -9,7 +9,7 @@ typedef struct {
   int       port;
   PetscInt  flowcontrol; /* allow only <flowcontrol> messages outstanding at a time while doing IO */
   PetscBool skipheader;  /* don't write header, only raw data */
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
   PetscBool MPIIO;
 #endif
 } PetscViewer_Socket;

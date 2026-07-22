@@ -755,16 +755,12 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n", m, A->cmap->n));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%% Nonzeros = %" PetscInt_FMT " \n", a->nz));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",4);\n", a->nz + nofinalvalue));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",3);\n", a->nz + nofinalvalue));
-#endif
+    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",%d);\n", a->nz + nofinalvalue, PetscDefined(USE_COMPLEX) ? 4 : 3));
     PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = [\n"));
 
     for (i = 0; i < m; i++) {
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n", i + 1, a->j[j] + 1, (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
 #else
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n", i + 1, a->j[j] + 1, (double)a->a[j]));
@@ -772,11 +768,8 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
       }
     }
     if (nofinalvalue) {
-#if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n", m, A->cmap->n, 0., 0.));
-#else
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n", m, A->cmap->n, 0.0));
-#endif
+      if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n", m, A->cmap->n, 0., 0.));
+      else PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n", m, A->cmap->n, 0.0));
     }
     PetscCall(PetscObjectGetName((PetscObject)A, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "];\n %s = spconvert(zzz);\n", name));
@@ -786,7 +779,7 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
     for (i = 0; i < m; i++) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         if (PetscImaginaryPart(a->a[j]) > 0.0 && PetscRealPart(a->a[j]) != 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
         } else if (PetscImaginaryPart(a->a[j]) < 0.0 && PetscRealPart(a->a[j]) != 0.0) {
@@ -809,11 +802,7 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
       sptr[i] = nzd + 1;
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
         if (a->j[j] >= i) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->a[j]) != 0.0 || PetscRealPart(a->a[j]) != 0.0) nzd++;
-#else
-          if (a->a[j] != 0.0) nzd++;
-#endif
+          if (PetscDefined(USE_COMPLEX) ? (PetscImaginaryPart(a->a[j]) != 0.0 || PetscRealPart(a->a[j]) != 0.0) : a->a[j] != 0.0) nzd++;
         }
       }
     }
@@ -846,7 +835,7 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
     for (i = 0; i < m; i++) {
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
         if (a->j[j] >= i) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
           if (PetscImaginaryPart(a->a[j]) != 0.0 || PetscRealPart(a->a[j]) != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " %18.16e %18.16e ", (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
 #else
           if (a->a[j] != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " %18.16e ", (double)a->a[j]));
@@ -859,16 +848,16 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     PetscInt    cnt = 0, jcnt;
     PetscScalar value;
-#if defined(PETSC_USE_COMPLEX)
-    PetscBool realonly = PETSC_TRUE;
+    PetscBool   realonly = PETSC_TRUE;
 
-    for (i = 0; i < a->i[m]; i++) {
-      if (PetscImaginaryPart(a->a[i]) != 0.0) {
-        realonly = PETSC_FALSE;
-        break;
+    if (PetscDefined(USE_COMPLEX)) {
+      for (i = 0; i < a->i[m]; i++) {
+        if (PetscImaginaryPart(a->a[i]) != 0.0) {
+          realonly = PETSC_FALSE;
+          break;
+        }
       }
     }
-#endif
 
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     for (i = 0; i < m; i++) {
@@ -880,15 +869,11 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
         } else {
           value = 0.0;
         }
-#if defined(PETSC_USE_COMPLEX)
-        if (realonly) {
+        if (!PetscDefined(USE_COMPLEX) || realonly) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e ", (double)PetscRealPart(value)));
         } else {
           PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e+%7.5e i ", (double)PetscRealPart(value), (double)PetscImaginaryPart(value)));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e ", (double)value));
-#endif
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
@@ -896,15 +881,11 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_MATRIXMARKET) {
     PetscInt fshift = 1;
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate complex general\n"));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate real general\n"));
-#endif
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate %s general\n", PetscDefined(USE_COMPLEX) ? "complex" : "real"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, A->cmap->n, a->nz));
     for (i = 0; i < m; i++) {
       for (j = a->i[i]; j < a->i[i + 1]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %g %g\n", i + fshift, a->j[j] + fshift, (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
 #else
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %g\n", i + fshift, a->j[j] + fshift, (double)a->a[j]));
@@ -922,45 +903,33 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
         /* L part */
         for (j = a->i[i]; j < a->i[i + 1]; j++) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->a[j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
-          } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)(-PetscImaginaryPart(a->a[j]))));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)PetscRealPart(a->a[j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)a->a[j]));
-#endif
         }
         /* diagonal */
         j = adiag[i];
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(a->a[j]) > 0.0) {
+        if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) > 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->j[j], (double)PetscRealPart(1 / a->a[j]), (double)PetscImaginaryPart(1 / a->a[j])));
-        } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
+        } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) < 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->j[j], (double)PetscRealPart(1 / a->a[j]), (double)(-PetscImaginaryPart(1 / a->a[j]))));
         } else {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)PetscRealPart(1 / a->a[j])));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)(1 / a->a[j])));
-#endif
 
         /* U part */
         for (j = adiag[i + 1] + 1; j < adiag[i]; j++) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->a[j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
-          } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)(-PetscImaginaryPart(a->a[j]))));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)PetscRealPart(a->a[j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)a->a[j]));
-#endif
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
@@ -968,17 +937,13 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
       for (i = 0; i < m; i++) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
         for (j = a->i[i]; j < a->i[i + 1]; j++) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->a[j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)PetscImaginaryPart(a->a[j])));
-          } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->a[j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->j[j], (double)PetscRealPart(a->a[j]), (double)-PetscImaginaryPart(a->a[j])));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)PetscRealPart(a->a[j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->j[j], (double)a->a[j]));
-#endif
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
@@ -1283,30 +1248,30 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqbaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijperm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijsell_C", NULL));
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijmkl_C", NULL));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijcusparse_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijcusparse_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaij_seqaijcusparse_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijhipsparse_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijhipsparse_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaij_seqaijhipsparse_C", NULL));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijkokkos_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijcrl_C", NULL));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_scalapack_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_hypre_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_transpose_seqaij_seqaij_C", NULL));
 #endif
@@ -1425,7 +1390,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A, Vec xx, Vec zz, Vec yy)
   PetscScalar       *y;
   const PetscScalar *x;
   PetscInt           m = A->rmap->n;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
+#if !PetscDefined(USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   const MatScalar  *v;
   PetscScalar       alpha;
   PetscInt          n, i, j;
@@ -1440,7 +1405,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A, Vec xx, Vec zz, Vec yy)
   PetscCall(VecGetArray(yy, &y));
   PetscCall(MatSeqAIJGetArrayRead(A, &aa));
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
+#if PetscDefined(USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   fortranmulttransposeaddaij_(&m, x, a->i, a->j, aa, y);
 #else
   if (usecprow) {
@@ -1489,7 +1454,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
   const PetscInt    *ii, *ridx = NULL;
   PetscBool          usecprow = a->compressedrow.use;
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aa)
 #endif
 
@@ -1518,7 +1483,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
       y[ridx[i]] = sum;
     }
   } else { /* do not use compressed row format */
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+#if PetscDefined(USE_FORTRAN_KERNEL_MULTAIJ)
     fortranmultaij_(&m, x, ii, a->j, a_a, y);
 #else
     PetscPragmaUseOMPKernels(parallel for)
@@ -1552,7 +1517,7 @@ PETSC_EXTERN PetscErrorCode MatMultMax_SeqAIJ(Mat A, Vec xx, Vec yy)
   PetscScalar        sum;
   PetscBool          usecprow = a->compressedrow.use;
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aa)
 #endif
 
@@ -1674,7 +1639,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
     }
   } else { /* do not use compressed row format */
     ii = a->i;
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if PetscDefined(USE_FORTRAN_KERNEL_MULTADDAIJ)
     fortranmultaddaij_(&m, x, ii, a->j, a_a, y, z);
 #else
     PetscPragmaUseOMPKernels(parallel for)
@@ -2224,7 +2189,7 @@ static PetscErrorCode MatNorm_SeqAIJ(Mat A, NormType type, PetscReal *nrm)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJGetArrayRead(A, &v));
   if (type == NORM_FROBENIUS) {
-#if defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FP16)
     PetscBLASInt one = 1, nz = a->nz;
     PetscCallBLAS("BLASnrm2", *nrm = BLASnrm2_(&nz, v, &one));
 #else
@@ -2567,7 +2532,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     }
     PetscCall(MatSeqAIJRestoreArrayWrite(C, &c_a));
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(MatBindToCPU(C, A->boundtocpu));
 #endif
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
@@ -2675,7 +2640,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
     PetscCall(PetscFree(submatj->pa));
   }
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&submatj->rmap));
   PetscCall(PetscFree(submatj->cmap_loc));
   PetscCall(PetscFree(submatj->rmap_loc));
@@ -2684,7 +2649,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
 #endif
 
   if (!submatj->allcolumns) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&submatj->cmap));
 #else
     PetscCall(PetscFree(submatj->cmap));
@@ -2871,7 +2836,7 @@ static PetscErrorCode MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
 
   (*B)->assembled = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(MatBindToCPU(*B, A->boundtocpu));
 #endif
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
@@ -4300,13 +4265,13 @@ M*/
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType, MatReuse, Mat *);
 #endif
 
@@ -4770,13 +4735,13 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJ(Mat A, const PetscScalar v[], Inser
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat, MatType, MatReuse, Mat *);
 #endif
 
@@ -4815,7 +4780,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepnonzeropattern = PETSC_FALSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "PetscMatlabEnginePut_C", MatlabEnginePut_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "PetscMatlabEngineGet_C", MatlabEngineGet_SeqAIJ));
 #endif
@@ -4826,30 +4791,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqbaij_C", MatConvert_SeqAIJ_SeqBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijperm_C", MatConvert_SeqAIJ_SeqAIJPERM));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijsell_C", MatConvert_SeqAIJ_SeqAIJSELL));
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijmkl_C", MatConvert_SeqAIJ_SeqAIJMKL));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijcusparse_C", MatConvert_SeqAIJ_SeqAIJCUSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaijcusparse_seqaij_C", MatProductSetFromOptions_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqaijcusparse_C", MatProductSetFromOptions_SeqAIJ));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijhipsparse_C", MatConvert_SeqAIJ_SeqAIJHIPSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaijhipsparse_seqaij_C", MatProductSetFromOptions_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqaijhipsparse_C", MatProductSetFromOptions_SeqAIJ));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijkokkos_C", MatConvert_SeqAIJ_SeqAIJKokkos));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijcrl_C", MatConvert_SeqAIJ_SeqAIJCRL));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_elemental_C", MatConvert_SeqAIJ_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_scalapack_C", MatConvert_AIJ_ScaLAPACK));
 #endif
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_hypre_C", MatConvert_AIJ_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_transpose_seqaij_seqaij_C", MatProductSetFromOptions_Transpose_AIJ_AIJ));
 #endif
@@ -4989,7 +4954,7 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   if (isbinary) {
     PetscCall(MatLoad_SeqAIJ_Binary(newMat, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(MatLoad_AIJ_HDF5(newMat, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)newMat), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -5448,19 +5413,19 @@ PetscErrorCode MatSeqAIJRegisterAll(void)
   PetscCall(MatSeqAIJRegister(MATSEQAIJCRL, MatConvert_SeqAIJ_SeqAIJCRL));
   PetscCall(MatSeqAIJRegister(MATSEQAIJPERM, MatConvert_SeqAIJ_SeqAIJPERM));
   PetscCall(MatSeqAIJRegister(MATSEQAIJSELL, MatConvert_SeqAIJ_SeqAIJSELL));
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(MatSeqAIJRegister(MATSEQAIJMKL, MatConvert_SeqAIJ_SeqAIJMKL));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatSeqAIJRegister(MATSEQAIJCUSPARSE, MatConvert_SeqAIJ_SeqAIJCUSPARSE));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(MatSeqAIJRegister(MATSEQAIJHIPSPARSE, MatConvert_SeqAIJ_SeqAIJHIPSPARSE));
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(MatSeqAIJRegister(MATSEQAIJKOKKOS, MatConvert_SeqAIJ_SeqAIJKokkos));
 #endif
-#if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
+#if PetscDefined(HAVE_VIENNACL) && PetscDefined(HAVE_VIENNACL_NO_CUDA)
   PetscCall(MatSeqAIJRegister(MATMPIAIJVIENNACL, MatConvert_SeqAIJ_SeqAIJViennaCL));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5469,9 +5434,9 @@ PetscErrorCode MatSeqAIJRegisterAll(void)
 /*
     Special version for direct calls from Fortran
 */
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matsetvaluesseqaij_ matsetvaluesseqaij
 #endif
 

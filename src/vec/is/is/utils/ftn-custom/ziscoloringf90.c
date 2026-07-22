@@ -1,10 +1,10 @@
 #include <petscis.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define iscoloringgetis_     ISCOLORINGGETIS
   #define iscoloringrestoreis_ ISCOLORINGRESTOREIS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define iscoloringgetis_     iscoloringgetis
   #define iscoloringrestoreis_ iscoloringrestoreis
 #endif

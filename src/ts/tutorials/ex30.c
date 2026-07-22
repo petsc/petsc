@@ -978,7 +978,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscCall(PetscOptionsInt("-monitor_diagnostic_num", "Number of diagnostics to be computed", __FILE__, options->diagnostic_num, &options->diagnostic_num, NULL));
 
   if (flg) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewer viewer;
 
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, hdf5monfilename, FILE_MODE_WRITE, &viewer));
@@ -1022,7 +1022,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
 
 static PetscErrorCode SaveToFile(DM dm, Vec u, const char *filename)
 {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscViewerFormat format = PETSC_VIEWER_HDF5_PETSC;
   PetscViewer       viewer;
   DM                cdm       = dm;
@@ -1136,7 +1136,7 @@ static PetscErrorCode SaveToFile(DM dm, Vec u, const char *filename)
 
 static PetscErrorCode LoadFromFile(MPI_Comm comm, const char *filename, DM *odm)
 {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscViewerFormat format = PETSC_VIEWER_HDF5_PETSC;
   PetscViewer       viewer;
   DM                dm, cdm = NULL;

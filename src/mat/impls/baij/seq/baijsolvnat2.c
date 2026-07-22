@@ -1,7 +1,7 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#if defined(PETSC_HAVE_XMMINTRIN_H)
+#if PetscDefined(HAVE_XMMINTRIN_H)
   #include <xmmintrin.h>
 #endif
 

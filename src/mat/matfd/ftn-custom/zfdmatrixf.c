@@ -5,12 +5,12 @@
 typedef struct _p_TS   *TS;
 typedef struct _p_SNES *SNES;
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matfdcoloringsetfunctionts_           MATFDCOLORINGSETFUNCTIONTS
   #define matfdcoloringsetfunction_             MATFDCOLORINGSETFUNCTION
   #define matfdcoloringgetperturbedcolumns_     MATFDCOLORINGGETPERTURBEDCOLUMNS
   #define matfdcoloringrestoreperturbedcolumns_ MATFDCOLORINGRESTOREPERTURBEDCOLUMNS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matfdcoloringsetfunctionts_           matfdcoloringsetfunctionts
   #define matfdcoloringsetfunction_             matfdcoloringsetfunction
   #define matfdcoloringgetperturbedcolumns_     matfdcoloringgetperturbedcolumns

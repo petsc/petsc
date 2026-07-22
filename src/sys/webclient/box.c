@@ -11,7 +11,7 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 #define PETSC_BOX_CLIENT_ID "sse42nygt4zqgrdwi0luv79q1u1f0xza"
 #define PETSC_BOX_CLIENT_ST "A0Dy4KgOYLB2JIYZqpbze4EzjeIiX5k4"
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <mongoose.h>
 
 static volatile char *result = NULL;
@@ -63,7 +63,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #if defined(PETSC_HAVE_UNISTD_H)
+  #if PetscDefined(HAVE_UNISTD_H)
     #include <unistd.h>
   #endif
 
@@ -187,7 +187,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
       PetscBool set;
       PetscCall(PetscMalloc1(512, &refreshtoken));
       PetscCall(PetscOptionsGetString(NULL, NULL, "-box_refresh_token", refreshtoken, sizeof(refreshtoken), &set));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
       if (!set) {
         PetscCall(PetscBoxAuthorize(comm, access_token, new_refresh_token, 512 * sizeof(char)));
         PetscCall(PetscFree(refreshtoken));

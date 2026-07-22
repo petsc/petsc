@@ -30,7 +30,7 @@ typedef struct {                                /* used by MatPtAPXXX_MPIAIJ_MPI
   MatMergeSeqsToMPI *merge;
 } MatProductCtx_APMPI;
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   #define PETSCTABLE PetscHMapI
 #else
   #define PETSCTABLE PetscInt *
@@ -143,11 +143,11 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat, Mat, Mat)
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat, Mat, Mat);
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 

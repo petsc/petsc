@@ -10,7 +10,7 @@
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 #include "petsc_p4est_package.h"
 
-#if defined(PETSC_HAVE_P4EST)
+#if PetscDefined(HAVE_P4EST)
 
   #if !defined(P4_TO_P8)
     #include <p4est.h>
@@ -994,7 +994,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   } else { /* initial */
     PetscInt initLevel, minLevel;
-  #if defined(PETSC_HAVE_MPIUNI)
+  #if PetscDefined(HAVE_MPIUNI)
     sc_MPI_Comm comm = sc_MPI_COMM_WORLD;
   #else
     MPI_Comm comm = PetscObjectComm((PetscObject)dm);
@@ -1828,7 +1828,7 @@ static PetscErrorCode coords_double_to_PetscScalar(sc_array_t *array, PetscInt d
 
   PetscFunctionBegin;
   PetscCheck(array->elem_size == 3 * sizeof(double), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong coordinate size");
-  #if !defined(PETSC_USE_COMPLEX)
+  #if !PetscDefined(USE_COMPLEX)
   if (sizeof(double) == sizeof(PetscScalar) && dim == 3) PetscFunctionReturn(PETSC_SUCCESS);
   #endif
 
@@ -2051,7 +2051,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   DM                    dmRoot, dmRefined;
   DM_Plex              *mesh;
   PetscMPIInt           rank;
-  #if defined(PETSC_HAVE_MPIUNI)
+  #if PetscDefined(HAVE_MPIUNI)
   sc_MPI_Comm comm_self = sc_MPI_COMM_SELF;
   #else
   MPI_Comm comm_self = PETSC_COMM_SELF;
@@ -3834,7 +3834,7 @@ static PetscErrorCode PforestQuadrantIsInterior(p4est_quadrant_t *quad, PetscBoo
   PetscFunctionBegin;
   p4est_qcoord_t h = P4EST_QUADRANT_LEN(quad->level);
   if ((quad->x > 0) && (quad->x + h < P4EST_ROOT_LEN)
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
       && (quad->z > 0) && (quad->z + h < P4EST_ROOT_LEN)
   #endif
       && (quad->y > 0) && (quad->y + h < P4EST_ROOT_LEN)) {
@@ -3874,7 +3874,7 @@ static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecO
 
       quad_coords[0] = quad->x;
       quad_coords[1] = quad->y;
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
       quad_coords[2] = quad->z;
   #endif
       for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
@@ -3919,7 +3919,7 @@ static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pfor
 
     quad_coords[0] = quad->x;
     quad_coords[1] = quad->y;
-  #ifdef P4_TO_P8
+  #if defined(P4_TO_P8)
     quad_coords[2] = quad->z;
   #endif
     for (int d = 0; d < 3; d++) quad_coords[d] += (corner & (1 << d)) ? h : 0;
@@ -5199,4 +5199,4 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#endif /* defined(PETSC_HAVE_P4EST) */
+#endif /* PetscDefined(HAVE_P4EST) */

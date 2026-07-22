@@ -20,12 +20,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
 PETSC_INTERN PetscErrorCode MatCreate_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatCreate_MPIDense(Mat);
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat);
 PETSC_INTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatCreate_SeqDenseHIP(Mat);
 PETSC_INTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat);
 #endif
@@ -40,12 +40,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJSELL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat);
 
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat);
 #endif
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat);
 #endif
@@ -60,55 +60,55 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELLCUDA(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELLCUDA(Mat);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELLHIP(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELLHIP(Mat);
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat);
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJKokkos(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat);
 #endif
 
-#if defined(PETSC_HAVE_FFTW)
+#if PetscDefined(HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat);
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat);
 
-#if defined(PETSC_HAVE_H2OPUS)
+#if PetscDefined(HAVE_H2OPUS)
 PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat);
 #endif
 
-#if defined(PETSC_HAVE_HTOOL)
+#if PetscDefined(HAVE_HTOOL)
 PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
 #endif
 
@@ -154,13 +154,13 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATMPIAIJSELL, MatCreate_MPIAIJSELL));
   PetscCall(MatRegister(MATSEQAIJSELL, MatCreate_SeqAIJSELL));
 
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(MatRegisterRootName(MATAIJMKL, MATSEQAIJMKL, MATMPIAIJMKL));
   PetscCall(MatRegister(MATMPIAIJMKL, MatCreate_MPIAIJMKL));
   PetscCall(MatRegister(MATSEQAIJMKL, MatCreate_SeqAIJMKL));
 #endif
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
   PetscCall(MatRegisterRootName(MATBAIJMKL, MATSEQBAIJMKL, MATMPIBAIJMKL));
   PetscCall(MatRegister(MATMPIBAIJMKL, MatCreate_MPIBAIJMKL));
   PetscCall(MatRegister(MATSEQBAIJMKL, MatCreate_SeqBAIJMKL));
@@ -181,13 +181,13 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegisterRootName(MATDENSE, MATSEQDENSE, MATMPIDENSE));
   PetscCall(MatRegister(MATMPIDENSE, MatCreate_MPIDense));
   PetscCall(MatRegister(MATSEQDENSE, MatCreate_SeqDense));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatRegisterRootName(MATDENSECUDA, MATSEQDENSECUDA, MATMPIDENSECUDA));
   PetscCall(MatRegister(MATSEQDENSECUDA, MatCreate_SeqDenseCUDA));
   PetscCall(MatRegister(MATMPIDENSECUDA, MatCreate_MPIDenseCUDA));
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(MatRegisterRootName(MATDENSEHIP, MATSEQDENSEHIP, MATMPIDENSEHIP));
   PetscCall(MatRegister(MATSEQDENSEHIP, MatCreate_SeqDenseHIP));
   PetscCall(MatRegister(MATMPIDENSEHIP, MatCreate_MPIDenseHIP));
@@ -202,7 +202,7 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATMPISELL, MatCreate_MPISELL));
   PetscCall(MatRegister(MATSEQSELL, MatCreate_SeqSELL));
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatRegisterRootName(MATAIJCUSPARSE, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE));
   PetscCall(MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE));
   PetscCall(MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE));
@@ -211,7 +211,7 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATMPISELLCUDA, MatCreate_MPISELLCUDA));
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(MatRegisterRootName(MATAIJHIPSPARSE, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE));
   PetscCall(MatRegister(MATSEQAIJHIPSPARSE, MatCreate_SeqAIJHIPSPARSE));
   PetscCall(MatRegister(MATMPIAIJHIPSPARSE, MatCreate_MPIAIJHIPSPARSE));
@@ -220,25 +220,25 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATMPISELLHIP, MatCreate_MPISELLHIP));
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
   PetscCall(MatRegisterRootName(MATAIJVIENNACL, MATSEQAIJVIENNACL, MATMPIAIJVIENNACL));
   PetscCall(MatRegister(MATSEQAIJVIENNACL, MatCreate_SeqAIJViennaCL));
   PetscCall(MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL));
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(MatRegisterRootName(MATAIJKOKKOS, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS));
   PetscCall(MatRegister(MATSEQAIJKOKKOS, MatCreate_SeqAIJKokkos));
   PetscCall(MatRegister(MATMPIAIJKOKKOS, MatCreate_MPIAIJKokkos));
 #endif
 
-#if defined(PETSC_HAVE_FFTW)
+#if PetscDefined(HAVE_FFTW)
   PetscCall(MatRegister(MATFFTW, MatCreate_FFTW));
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(MatRegister(MATELEMENTAL, MatCreate_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(MatRegister(MATSCALAPACK, MatCreate_ScaLAPACK));
 #endif
 
@@ -248,15 +248,15 @@ PetscErrorCode MatRegisterAll(void)
   PetscCall(MatRegister(MATCONSTANTDIAGONAL, MatCreate_ConstantDiagonal));
   PetscCall(MatRegister(MATDIAGONAL, MatCreate_Diagonal));
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatRegister(MATHYPRE, MatCreate_HYPRE));
 #endif
 
-#if defined(PETSC_HAVE_H2OPUS)
+#if PetscDefined(HAVE_H2OPUS)
   PetscCall(MatRegister(MATH2OPUS, MatCreate_H2OPUS));
 #endif
 
-#if defined(PETSC_HAVE_HTOOL)
+#if PetscDefined(HAVE_HTOOL)
   PetscCall(MatRegister(MATHTOOL, MatCreate_Htool));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -14,7 +14,7 @@ static PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   PetscCall(MatStashDestroy_Private(&mat->bstash));
   PetscCall(MatDestroy(&baij->A));
   PetscCall(MatDestroy(&baij->B));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
   PetscCall(PetscFree(baij->colmap));
@@ -39,7 +39,7 @@ static PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpibaij_mpisbaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpibaij_mpiadj_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpibaij_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpibaij_hypre_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpibaij_is_C", NULL));
@@ -51,7 +51,7 @@ static PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
 #include "../src/mat/impls/aij/mpi/mpihashmat.h"
 #undef TYPE
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
 #endif
 
@@ -148,7 +148,7 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
   PetscInt     nbs = B->nbs, i, bs = mat->rmap->bs;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(baij->nbs, &baij->colmap));
   for (i = 0; i < nbs; i++) PetscCall(PetscHMapISet(baij->colmap, baij->garray[i] + 1, i * bs + 1));
 #else
@@ -281,7 +281,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
           PetscCheck(in[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] / bs + 1, 0, &col));
             col = col - 1;
 #else
@@ -458,7 +458,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
             col = col < 1 ? -1 : (col - 1) / bs;
 #else
@@ -670,7 +670,7 @@ static PetscErrorCode MatGetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt i
         PetscCall(MatGetValues_SeqBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
       } else {
         if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
         data--;
 #else
@@ -806,9 +806,7 @@ static PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat, PetscReal fact
   PetscInt    *HT, key;
   MatScalar  **HD;
   PetscReal    tmp;
-#if defined(PETSC_USE_INFO)
-  PetscInt ct = 0, max = 0;
-#endif
+  PetscInt     ct = 0, max = 0;
 
   PetscFunctionBegin;
   if (baij->ht) PetscFunctionReturn(PETSC_SUCCESS);
@@ -834,15 +832,9 @@ static PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat, PetscReal fact
           HT[(h1 + k) % ht_size] = key;
           HD[(h1 + k) % ht_size] = a->a + j * bs2;
           break;
-#if defined(PETSC_USE_INFO)
-        } else {
-          ct++;
-#endif
-        }
+        } else if (PetscDefined(USE_INFO)) ct++;
       }
-#if defined(PETSC_USE_INFO)
-      if (k > max) max = k;
-#endif
+      if (PetscDefined(USE_INFO) && k > max) max = k;
     }
   }
   /* Loop Over B */
@@ -857,25 +849,19 @@ static PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat, PetscReal fact
           HT[(h1 + k) % ht_size] = key;
           HD[(h1 + k) % ht_size] = b->a + j * bs2;
           break;
-#if defined(PETSC_USE_INFO)
-        } else {
-          ct++;
-#endif
-        }
+        } else if (PetscDefined(USE_INFO)) ct++;
       }
-#if defined(PETSC_USE_INFO)
-      if (k > max) max = k;
-#endif
+      if (PetscDefined(USE_INFO) && k > max) max = k;
     }
   }
 
   /* Print Summary */
-#if defined(PETSC_USE_INFO)
-  for (i = 0, j = 0; i < ht_size; i++) {
-    if (HT[i]) j++;
+  if (PetscDefined(USE_INFO)) {
+    for (i = 0, j = 0; i < ht_size; i++) {
+      if (HT[i]) j++;
+    }
+    PetscCall(PetscInfo(mat, "Average Search = %5.2g,max search = %" PetscInt_FMT "\n", (!j) ? 0.0 : (double)(((PetscReal)(ct + j)) / j), max));
   }
-  PetscCall(PetscInfo(mat, "Average Search = %5.2g,max search = %" PetscInt_FMT "\n", (!j) ? 0.0 : (double)(((PetscReal)(ct + j)) / j), max));
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -976,14 +962,12 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
   PetscCall(MatAssemblyBegin(baij->B, mode));
   PetscCall(MatAssemblyEnd(baij->B, mode));
 
-#if defined(PETSC_USE_INFO)
-  if (baij->ht && mode == MAT_FINAL_ASSEMBLY) {
+  if (PetscDefined(USE_INFO) && baij->ht && mode == MAT_FINAL_ASSEMBLY) {
     PetscCall(PetscInfo(mat, "Average Hash Table Search in MatSetValues = %5.2f\n", (double)((PetscReal)baij->ht_total_ct) / baij->ht_insert_ct));
 
     baij->ht_total_ct  = 0;
     baij->ht_insert_ct = 0;
   }
-#endif
   if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
     PetscCall(MatCreateHashTable_MPIBAIJ_Private(mat, baij->ht_fact));
 
@@ -2690,7 +2674,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt bs, PetscInt d
   b->cstartbs = B->cmap->rstart / bs;
   b->cendbs   = B->cmap->rend / bs;
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
@@ -2908,7 +2892,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpiadj_C", MatConvert_MPIBAIJ_MPIAdj));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpiaij_C", MatConvert_MPIBAIJ_MPIAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpisbaij_C", MatConvert_MPIBAIJ_MPISBAIJ));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_hypre_C", MatConvert_AIJ_HYPRE));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatStoreValues_C", MatStoreValues_MPIBAIJ));
@@ -3211,7 +3195,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin, MatDuplicateOption cpvalue
 
     PetscCall(PetscArraycpy(a->rangebs, oldmat->rangebs, a->size + 1));
     if (oldmat->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
       PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
       PetscCall(PetscMalloc1(a->Nbs, &a->colmap));
@@ -3415,9 +3399,9 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 /*
     Special version for direct calls from Fortran (to eliminate two function call overheads
 */
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matmpibaijsetvaluesblocked_ MATMPIBAIJSETVALUESBLOCKED
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matmpibaijsetvaluesblocked_ matmpibaijsetvaluesblocked
 #endif
 
@@ -3510,18 +3494,16 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_DEBUG)
-  #if defined(PETSC_USE_CTABLE)
-            {
+#if PetscDefined(USE_CTABLE)
+            if (PetscDefined(USE_DEBUG)) {
               PetscInt data;
               PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
               PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
             }
-  #else
-            PetscCheck((baij->colmap[in[j]] - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-  #endif
+#else
+            if (PetscDefined(USE_DEBUG)) PetscCheck((baij->colmap[in[j]] - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
 #endif
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
             col = (col - 1) / bs;
 #else

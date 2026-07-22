@@ -257,7 +257,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
 
   jac->rcond = -1.;
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, jac->rwork, &info));
 #else
   PetscCallLAPACKInfo("LAPACKgelss", LAPACKgelss_(&jac->n, &jac->n, &jac->nrhs, jac->h, &jac->lda, jac->beta, &jac->lda, jac->s, &jac->rcond, &jac->rank, jac->work, &jac->lwork, &info));
@@ -357,7 +357,7 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
 
     PetscCall(PetscMalloc4(jac->n * jac->n, &jac->h, jac->n, &jac->beta, jac->n, &jac->s, jac->n, &jac->g));
     jac->lwork = 12 * jac->n;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(PetscMalloc1(jac->lwork, &jac->rwork));
 #endif
     PetscCall(PetscMalloc1(jac->lwork, &jac->work));

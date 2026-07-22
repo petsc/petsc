@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/sfimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsfrestoregraph_     PETSCSFRESTOREGRAPH
   #define petscsfgetgraph_         PETSCSFGETGRAPH
   #define petscsfbcastbegin_       PETSCSFBCASTBEGIN
@@ -12,7 +12,7 @@
   #define petscsfgetrootranks_     PETSCSFGETROOTRANKS
   #define f90array1dcreatesfnode_  F90ARRAY1DCREATESFNODE
   #define f90array1ddestroysfnode_ F90ARRAY1DDESTROYSFNODE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsfrestoregraph_     petscsfrestoregraph
   #define petscsfgetgraph_         petscsfgetgraph
   #define petscsfbcastbegin_       petscsfbcastbegin
@@ -85,7 +85,7 @@ PETSC_EXTERN void petscsfgetrootranks_(PetscSF *sf, PetscMPIInt *nranks, F90Arra
   if (*ierr) return;
 }
 
-#if defined(PETSC_HAVE_F90_ASSUMED_TYPE_NOT_PTR)
+#if PetscDefined(HAVE_F90_ASSUMED_TYPE_NOT_PTR)
 PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, MPI_Fint *op, PetscErrorCode *ierr)
 {
   MPI_Datatype dtype;

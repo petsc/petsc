@@ -131,14 +131,14 @@ int main(int argc, char **args)
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
     PetscCall(KSPGetPC(subksp[0], &pc));
     /* inner preconditioner associated to top-left block */
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
     PetscCall(PCSetType(pc, PCHPDDM));
     PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
 #endif
     PetscCall(PCSetFromOptions(pc));
     PetscCall(KSPGetPC(subksp[1], &pc));
     /* inner preconditioner associated to Schur complement, which will be set internally to PCKSP (or PCASM if the Schur complement is centralized on a single process) */
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
     PetscCall(PCSetType(pc, PCHPDDM));
     if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
 #endif
@@ -171,12 +171,12 @@ int main(int argc, char **args)
     PetscCall(PCSetUp(pc)); /* update PCFIELDSPLIT submatrices */
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
     PetscCall(KSPGetPC(subksp[0], &pc));
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
     PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
 #endif
     PetscCall(PCSetFromOptions(pc));
     PetscCall(KSPGetPC(subksp[1], &pc));
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
     PetscCall(PCSetType(pc, PCHPDDM)); /* may have been set to PCKSP internally (or PCASM if the Schur complement is centralized on a single process), so need to enforce the proper PCType */
     if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
 #endif

@@ -196,7 +196,7 @@ struct _n_PetscOptionItems {
   PetscOptions    options;
 };
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 extern PetscOptionItems PetscOptionsObject; /* declare this so that the PetscOptions stubs work */
 PetscErrorCode          PetscOptionsBegin(MPI_Comm, const char *, const char *, const char *);
 PetscErrorCode          PetscObjectOptionsBegin(PetscObject);
@@ -339,7 +339,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject, PetscOp
 PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems);
 PETSC_EXTERN PetscErrorCode PetscOptionsHeadBegin(PetscOptionItems, const char[]);
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 template <typename... T>
 void PetscOptionsHeadBegin(T...);
 void PetscOptionsHeadEnd(void);

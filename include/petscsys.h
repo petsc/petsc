@@ -80,21 +80,21 @@ M*/
 
 /* SUBMANSEC = Sys */
 
-#if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
+#if PetscDefined(DESIRE_FEATURE_TEST_MACROS)
   /*
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
    We only turn these in PETSc source files that require them by setting PETSC_DESIRE_FEATURE_TEST_MACROS
 */
-  #if defined(PETSC__POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
+  #if PetscDefined(_POSIX_C_SOURCE_200112L) && !defined(_POSIX_C_SOURCE)
     #define _POSIX_C_SOURCE 200112L
   #endif
-  #if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
+  #if PetscDefined(_BSD_SOURCE) && !defined(_BSD_SOURCE)
     #define _BSD_SOURCE
   #endif
-  #if defined(PETSC__DEFAULT_SOURCE) && !defined(_DEFAULT_SOURCE)
+  #if PetscDefined(_DEFAULT_SOURCE) && !defined(_DEFAULT_SOURCE)
     #define _DEFAULT_SOURCE
   #endif
-  #if defined(PETSC__GNU_SOURCE) && !defined(_GNU_SOURCE)
+  #if PetscDefined(_GNU_SOURCE) && !defined(_GNU_SOURCE)
     #define _GNU_SOURCE
   #endif
 #endif
@@ -118,7 +118,7 @@ M*/
 #if !defined(OMPI_SKIP_MPICXX)
   #define OMPI_SKIP_MPICXX 1
 #endif
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #include <petsc/mpiuni/mpi.h>
 #else
   #include <mpi.h>
@@ -131,23 +131,23 @@ M*/
       * an extra include path -I/something (which contains the unexpected mpi.h) is being passed to the compiler
    Note: with MPICH and OpenMPI, accept versions [x.y.z, x+1.0.0) as compatible
 */
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #if !defined(MPIUNI_H)
     #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
   #endif
-#elif defined(PETSC_HAVE_I_MPI)
+#elif PetscDefined(HAVE_I_MPI)
   #if !defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with I_MPI but now appears to be compiling using a non-I_MPI mpi.h"
   #elif I_MPI_NUMVERSION != PETSC_PKG_I_MPI_NUMVERSION
     #error "PETSc was configured with one I_MPI mpi.h version but now appears to be compiling using a different I_MPI mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MVAPICH2)
+#elif PetscDefined(HAVE_MVAPICH2)
   #if !defined(MVAPICH2_NUMVERSION)
     #error "PETSc was configured with MVAPICH2 but now appears to be compiling using a non-MVAPICH2 mpi.h"
   #elif MVAPICH2_NUMVERSION != PETSC_PKG_MVAPICH2_NUMVERSION
     #error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MPICH)
+#elif PetscDefined(HAVE_MPICH)
   #if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
   #elif PETSC_PKG_MPICH_VERSION_GT(MPICH_NUMVERSION / 10000000, MPICH_NUMVERSION / 100000 % 100, MPICH_NUMVERSION / 1000 % 100)
@@ -155,7 +155,7 @@ M*/
   #elif PETSC_PKG_MPICH_VERSION_LT(MPICH_NUMVERSION / 10000000, 0, 0)
     #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a newer major MPICH mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_OPENMPI)
+#elif PetscDefined(HAVE_OPENMPI)
   #if !defined(OMPI_MAJOR_VERSION)
     #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
   #elif PETSC_PKG_OPENMPI_VERSION_GT(OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION, OMPI_RELEASE_VERSION)
@@ -199,7 +199,7 @@ PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 
 .seealso: `MPI_Datatype`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_COUNT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   #define MPIU_INT MPIU_INT64
 #else
   #define MPIU_INT MPI_INT
@@ -441,17 +441,17 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscCommGetComm(MPI_Comm, MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscCommRestoreComm(MPI_Comm, MPI_Comm *);
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void); /* Initialize Kokkos if not yet. */
 #endif
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
 PETSC_EXTERN PetscBool      PetscBeganNvshmem;
 PETSC_EXTERN PetscBool      PetscNvshmemInitialized;
 PETSC_EXTERN PetscErrorCode PetscNvshmemFinalize(void);
 #endif
 
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalInitialized(PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
@@ -1233,11 +1233,11 @@ PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 */
 PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode PetscMallocSetCUDAHost(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetCUDAHost(void);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetHIPHost(void);
 #endif
@@ -1271,7 +1271,7 @@ PETSC_EXTERN PetscErrorCode PetscDataTypeFromString(const char *, PetscDataType 
    These are MPI operations for MPI_Allreduce() etc
 */
 PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
-#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FLOAT128) || PetscDefined(USE_REAL___FP16)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 PETSC_EXTERN MPI_Op MPIU_MAX;
 PETSC_EXTERN MPI_Op MPIU_MIN;
@@ -1283,7 +1283,7 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
 PETSC_EXTERN MPI_Op         Petsc_Garbage_SetIntersectOp;
 PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
 
-#if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
+#if (PetscDefined(HAVE_REAL___FLOAT128) && !PetscDefined(SKIP_REAL___FLOAT128)) || (PetscDefined(HAVE_REAL___FP16) && !PetscDefined(SKIP_REAL___FP16))
 /*MC
    MPIU_SUM___FP16___FLOAT128 - `MPI_Op` that acts as a replacement for `MPI_SUM` with
    custom `MPI_Datatype` `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
@@ -1665,7 +1665,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject, PetscBool
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
 PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject, PetscBool);
@@ -1920,7 +1920,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
 #include <stddef.h>
 #include <stdlib.h>
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
   #define PetscPrefetchBlock(a, b, c, d)
 #else
 /*MC
@@ -1968,49 +1968,49 @@ M*/
    is faster than the C/C++ versions. The flag --with-fortran-kernels
    should be used with ./configure to turn these on.
 */
-#if defined(PETSC_USE_FORTRAN_KERNELS)
+#if PetscDefined(USE_FORTRAN_KERNELS)
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MULTCRL)
     #define PETSC_USE_FORTRAN_KERNEL_MULTCRL
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MULTAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_MULTAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MAXPY)
     #define PETSC_USE_FORTRAN_KERNEL_MAXPY
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_SOLVEAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MULTADDAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_MDOT)
     #define PETSC_USE_FORTRAN_KERNEL_MDOT
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_XTIMESY)
     #define PETSC_USE_FORTRAN_KERNEL_XTIMESY
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_AYPX)
     #define PETSC_USE_FORTRAN_KERNEL_AYPX
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
+  #if !PetscDefined(USE_FORTRAN_KERNEL_WAXPY)
     #define PETSC_USE_FORTRAN_KERNEL_WAXPY
   #endif
 
@@ -2043,7 +2043,7 @@ M*/
 .seealso: `PETSC_COMM_WORLD`, `PETSC_COMM_SELF`
 M*/
 
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
 PETSC_EXTERN PetscErrorCode MPIU_File_write_all(MPI_File, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(2, 4);
 PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(2, 4);
 PETSC_EXTERN PetscErrorCode MPIU_File_write_at(MPI_File, MPI_Offset, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 5);
@@ -2062,7 +2062,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 
 .seealso: `MPI_Count`, `MPIU_COUNT`, `MPIU_Send()`, `MPIU_Recv()`, `MPIU_Reduce()`, `PetscInt64`
 M*/
-#if defined(PETSC_HAVE_MPI_COUNT)
+#if PetscDefined(HAVE_MPI_COUNT)
 typedef MPI_Count MPIU_Count;
 #else
 typedef PetscInt64 MPIU_Count;
@@ -2243,7 +2243,7 @@ static inline PetscErrorCode PetscCIntCast(MPIU_Count a, int *b)
 
 .seealso: [](stylePetscCount), `PetscIntMultError()`, `PetscIntMultTruncate()`
 M*/
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   #define PetscInt64Mult(a, b) ((a) * (b))
 #else
   #define PetscInt64Mult(a, b) (((PetscInt64)(a)) * ((PetscInt64)(b)))
@@ -2285,7 +2285,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 {
   PetscInt64 r = (PetscInt64)(a * (PetscReal)b);
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   return r;
 #else
   return (PetscInt)r;
@@ -2325,7 +2325,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = PetscInt64Mult(a, b);
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   return r;
 #else
   return (PetscInt)r;
@@ -2364,7 +2364,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 
   r += b;
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   return r;
 #else
   return (PetscInt)r;
@@ -2401,7 +2401,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscInt64 r = PetscInt64Mult(a, b);
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   if (result) *result = r;
 #else
   if (result) *result = (PetscInt)r;
@@ -2439,7 +2439,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
 
   PetscFunctionBegin;
   r += b;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   if (result) *result = r;
 #else
   if (result) *result = (PetscInt)r;
@@ -2457,7 +2457,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
   #undef hz
 #endif
 
-#if defined(PETSC_HAVE_SYS_TYPES_H)
+#if PetscDefined(HAVE_SYS_TYPES_H)
   #include <sys/types.h>
 #endif
 
@@ -2647,7 +2647,7 @@ PETSC_EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscGetTmp(MPI_Comm, char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm, const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm, const char[], char[], size_t, PetscBool *);
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
 PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[], int, int *);
 #endif
 
@@ -2837,7 +2837,7 @@ PETSC_EXTERN PetscErrorCode PetscGlobusUpload(MPI_Comm, const char[], const char
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[], const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[], size_t);
 
-#if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
+#if !PetscDefined(HAVE_MPI_LARGE_COUNT)
   /*
    Cast PetscCount <a> to PetscMPIInt <b>, where <a> is likely used for the 'count' argument in MPI routines.
    It is similar to PetscMPIIntCast() except that here it returns an MPI error code.
@@ -2922,7 +2922,7 @@ static inline PetscMPIInt MPIU_Reduce(const void *inbuf, void *outbuf, MPIU_Coun
   return err;
 }
 
-  #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+  #if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
 static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op)
 {
   PetscMPIInt count2, err;
@@ -2933,7 +2933,7 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, M
 }
   #endif
 
-  #if !defined(PETSC_USE_64BIT_INDICES)
+  #if !PetscDefined(USE_64BIT_INDICES)
     #define MPIU_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm)
     #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)
   #else
@@ -2972,7 +2972,7 @@ static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype,
   #define MPIU_Recv(buf, count, dtype, source, tag, comm, status)       MPI_Recv_c(buf, (MPI_Count)(count), dtype, source, tag, comm, status)
   #define MPIU_Recv_init(buf, count, dtype, source, tag, comm, request) MPI_Recv_init_c(buf, (MPI_Count)(count), dtype, source, tag, comm, request)
   #define MPIU_Irecv(buf, count, dtype, source, tag, comm, request)     MPI_Irecv_c(buf, (MPI_Count)(count), dtype, source, tag, comm, request)
-  #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+  #if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
     #define MPIU_Reduce_local(inbuf, inoutbuf, count, dtype, op) MPI_Reduce_local_c(inbuf, inoutbuf, (MPI_Count)(count), dtype, op)
   #endif
 
@@ -3008,7 +3008,7 @@ static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype,
 .seealso: [](stylePetscCount), `MPI_Allreduce()`, `MPIU_Gatherv()`
 M*/
 
-  #if !defined(PETSC_USE_64BIT_INDICES)
+  #if !PetscDefined(USE_64BIT_INDICES)
     #define MPIU_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm)
     #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)
   #else
@@ -3021,7 +3021,6 @@ M*/
 PETSC_EXTERN PetscMPIInt    MPIU_Allreduce_Private(const void *, void *, MPIU_Count, MPI_Datatype, MPI_Op, MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscCheckAllreduceSameLineAndCount_Private(MPI_Comm, const char *, PetscMPIInt, PetscMPIInt);
 
-#if defined(PETSC_USE_DEBUG)
 static inline unsigned int PetscStrHash(const char *str)
 {
   unsigned int c, hash = 5381;
@@ -3029,7 +3028,6 @@ static inline unsigned int PetscStrHash(const char *str)
   while ((c = (unsigned int)*str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
   return hash;
 }
-#endif
 
 /*MC
   MPIU_Allreduce - A replacement for `MPI_Allreduce()` that (1) performs single-count `MPIU_INT` operations in `PetscInt64` to detect
@@ -3060,7 +3058,7 @@ static inline unsigned int PetscStrHash(const char *str)
 
 .seealso: [](stylePetscCount), `MPI_Allreduce()`
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #define MPIU_Allreduce(a, b, count, dtype, op, comm) \
     PetscMacroReturnStandard( \
     PetscCall(PetscCheckAllreduceSameLineAndCount_Private((comm), __FILE__, (PetscMPIInt)__LINE__, (PetscMPIInt)(count))); \
@@ -3070,7 +3068,7 @@ M*/
 #endif
 
 /* this is a vile hack */
-#if defined(PETSC_HAVE_NECMPI)
+#if PetscDefined(HAVE_NECMPI)
   #if !defined(PETSC_NECMPI_VERSION_MAJOR) || !defined(PETSC_NECMPI_VERSION_MINOR) || PETSC_NECMPI_VERSION_MAJOR < 2 || (PETSC_NECMPI_VERSION_MAJOR == 2 && PETSC_NECMPI_VERSION_MINOR < 18)
     #define MPI_Type_free(a) (*(a) = MPI_DATATYPE_NULL, 0);
   #endif

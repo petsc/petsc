@@ -1,7 +1,7 @@
 #if !defined(PETSC4PY_COMPAT_CUDA_H)
 #define PETSC4PY_COMPAT_CUDA_H
 
-#if !defined(PETSC_HAVE_CUDA)
+#if !PetscDefined(HAVE_CUDA)
 
 #define PetscCUDAError do { \
     PetscFunctionBegin; \

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <petscsys.h>
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define fortrancopy_ FORTRANCOPY
   #define fortranzero_ FORTRANZERO
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define fortrancopy_ fortrancopy
   #define fortranzero_ fortranzero
 #endif

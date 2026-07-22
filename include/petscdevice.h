@@ -6,7 +6,7 @@
 #if PETSC_CPP_VERSION >= 11 // C++11
   #define PETSC_DEVICE_ALIGNOF(...) alignof(decltype(__VA_ARGS__))
 #elif PETSC_C_VERSION >= 11 // C11
-  #ifdef __GNUC__
+  #if defined(__GNUC__)
     #define PETSC_DEVICE_ALIGNOF(...) _Alignof(__typeof__(__VA_ARGS__))
   #else
     #include <stddef.h> // max_align_t

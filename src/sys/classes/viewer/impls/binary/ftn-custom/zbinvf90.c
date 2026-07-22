@@ -1,14 +1,14 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscviewerbinarywriteint_    PETSCVIEWERBINARYWRITEINT
   #define petscviewerbinarywritescalar_ PETSCVIEWERBINARYWRITESCALAR
   #define petscviewerbinarywritereal_   PETSCVIEWERBINARYWRITEREAL
   #define petscviewerbinaryreadint_     PETSCVIEWERBINARYREADINT
   #define petscviewerbinaryreadscalar_  PETSCVIEWERBINARYREADSCALAR
   #define petscviewerbinaryreadreal_    PETSCVIEWERBINARYREADREAL
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscviewerbinarywriteint_    petscviewerbinarywriteint
   #define petscviewerbinarywritescalar_ petscviewerbinarywritescalar
   #define petscviewerbinarywritereal_   petscviewerbinarywritereal

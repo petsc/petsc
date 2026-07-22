@@ -62,7 +62,7 @@ M*/
 #define PETSC_PASTE4_(a, b, c, d) a##b##c##d
 #define PETSC_PASTE4(a, b, c, d)  PETSC_PASTE4_(a, b, c, d)
 
-#if defined(PETSC_BLASLAPACK_CAPS)
+#if PetscDefined(BLASLAPACK_CAPS)
   #define PETSC_SCALAPACK_PREFIX_ P
   #define PETSCBLASNOTYPE(x, X)   PETSC_PASTE2(X, PETSC_BLASLAPACK_SUFFIX_)
   #define PETSCSCALAPACK(x, X)    PETSC_PASTE4(PETSC_SCALAPACK_PREFIX_, PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
@@ -88,7 +88,7 @@ BLAS_EXTERN void         Cdgsum2d(PetscBLASInt ctxt, const char *scope, const ch
 /* PBLAS */
 #define PBLASgemv_ PETSCSCALAPACK(gemv, GEMV)
 #define PBLASgemm_ PETSCSCALAPACK(gemm, GEMM)
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define PBLAStran_ PETSCSCALAPACK(tranc, TRANC)
 #else
   #define PBLAStran_ PETSCSCALAPACK(tran, TRAN)
@@ -131,7 +131,7 @@ BLAS_EXTERN void         SCALAPACKelget_(const char *, const char *, PetscScalar
 /*
     Macros to test valid arguments
 */
-#if !defined(PETSC_USE_DEBUG)
+#if !PetscDefined(USE_DEBUG)
 
   #define MatScaLAPACKCheckDistribution(a, arga, b, argb) \
     do { \

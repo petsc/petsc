@@ -64,7 +64,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 /*@
@@ -106,7 +106,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
   PetscBool isascii, isbinary, isdraw, isstring;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -120,7 +120,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isascii) {
@@ -188,7 +188,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
       bottom = y;
     }
     PetscCall(PetscDrawPushCurrentPoint(draw, x, bottom));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
     const char *name;
@@ -453,7 +453,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 

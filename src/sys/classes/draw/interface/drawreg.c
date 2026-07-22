@@ -3,7 +3,7 @@
 */
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>            /*I "petscviewer.h" I*/
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -41,7 +41,7 @@ PetscFunctionList PetscDrawList = NULL;
 PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 {
   PetscBool isdraw;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -53,7 +53,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)indraw, viewer));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isdraw) {
@@ -68,7 +68,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw, x, y, PETSC_DRAW_RED, PETSC_DRAW_BLACK, str, NULL, &h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw, x, bottom));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
 
@@ -228,7 +228,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
    was requested but is not installed on this machine. Mostly this is for
    testing.
    */
-#if !defined(PETSC_HAVE_X)
+#if !PetscDefined(HAVE_X)
   if (!flg) {
     PetscCall(PetscStrcmp(type, PETSC_DRAW_X, &match));
     if (match) {
@@ -382,7 +382,7 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
   PetscBool   flg, nox;
   char        vtype[256];
   const char *def;
-#if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
+#if !PetscDefined(USE_WINDOWS_GRAPHICS) && !PetscDefined(HAVE_X)
   PetscBool warn;
 #endif
 
@@ -395,9 +395,9 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
   else {
     PetscCall(PetscOptionsHasName(((PetscObject)draw)->options, NULL, "-nox", &nox));
     def = PETSC_DRAW_NULL;
-#if defined(PETSC_USE_WINDOWS_GRAPHICS)
+#if PetscDefined(USE_WINDOWS_GRAPHICS)
     if (!nox) def = PETSC_DRAW_WIN32;
-#elif defined(PETSC_HAVE_X)
+#elif PetscDefined(HAVE_X)
     if (!nox) def = PETSC_DRAW_X;
 #else
     PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &warn));

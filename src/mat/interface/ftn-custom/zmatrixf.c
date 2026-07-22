@@ -2,14 +2,14 @@
 #include <petscmat.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matdestroymatrices_      MATDESTROYMATRICES
   #define matdestroysubmatrices_   MATDESTROYSUBMATRICES
   #define matcreatesubmatrices_    MATCREATESUBMATRICES
   #define matcreatesubmatricesmpi_ MATCREATESUBMATRICESMPI
   #define matnullspacesetfunction_ MATNULLSPACESETFUNCTION
   #define matfindnonzerorows_      MATFINDNONZEROROWS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matdestroymatrices_      matdestroymatrices
   #define matdestroysubmatrices_   matdestroysubmatrices
   #define matcreatesubmatrices_    matcreatesubmatrices

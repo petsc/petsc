@@ -28,14 +28,8 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da, PetscBool *fieldsnamed)
 
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
 {
-  const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
-#if defined(PETSC_USE_REAL_SINGLE)
-  const char precision[] = "Float32";
-#elif defined(PETSC_USE_REAL_DOUBLE)
-  const char precision[] = "Float64";
-#else
-  const char precision[] = "UnknownPrecision";
-#endif
+  const char              *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
+  const char              *precision  = PetscDefined(USE_REAL_SINGLE) ? "Float32" : (PetscDefined(USE_REAL_DOUBLE) ? "Float64" : "UnknownPrecision");
   MPI_Comm                 comm;
   Vec                      Coords;
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;
@@ -254,14 +248,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
 
 static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
 {
-  const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
-#if defined(PETSC_USE_REAL_SINGLE)
-  const char precision[] = "Float32";
-#elif defined(PETSC_USE_REAL_DOUBLE)
-  const char precision[] = "Float64";
-#else
-  const char precision[] = "UnknownPrecision";
-#endif
+  const char              *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
+  const char              *precision  = PetscDefined(USE_REAL_SINGLE) ? "Float32" : (PetscDefined(USE_REAL_DOUBLE) ? "Float64" : "UnknownPrecision");
   MPI_Comm                 comm;
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;
   PetscViewerVTKObjectLink link;

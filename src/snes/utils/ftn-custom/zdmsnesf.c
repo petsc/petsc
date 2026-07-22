@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/snesimpl.h>
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmsnessetjacobian_ DMSNESSETJACOBIAN
   #define dmsnessetfunction_ DMSNESSETFUNCTION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmsnessetjacobian_ dmsnessetjacobian
   #define dmsnessetfunction_ dmsnessetfunction
 #endif

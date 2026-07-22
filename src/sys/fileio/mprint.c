@@ -116,7 +116,7 @@ PetscErrorCode PetscFormatConvert(const char format[], char newformat[])
       for (; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
       switch (format[i]) {
       case 'D':
-#if !defined(PETSC_USE_64BIT_INDICES)
+#if !PetscDefined(USE_64BIT_INDICES)
         newformat[j++] = 'd';
 #else
         newformat[j++] = 'l';
@@ -188,7 +188,7 @@ PetscErrorCode PetscVSNPrintf(char str[], size_t len, const char format[], size_
     PetscCall(PetscMalloc1(newLength, &newformat));
   }
   PetscCall(PetscFormatConvert(format, newformat));
-#if defined(PETSC_HAVE_VSNPRINTF)
+#if PetscDefined(HAVE_VSNPRINTF)
   flen = vsnprintf(str, len, newformat, Argp);
 #else
   #error "vsnprintf not found"
@@ -263,7 +263,7 @@ PetscErrorCode PetscFFlush(FILE *fd)
   PetscFunctionBegin;
   if (fd) PetscAssertPointer(fd, 1);
   err = fflush(fd);
-#if !defined(PETSC_MISSING_SIGPIPE) && defined(EPIPE) && defined(ECONNRESET)
+#if !PetscDefined(MISSING_SIGPIPE) && defined(EPIPE) && defined(ECONNRESET)
   if (fd && err && (errno == EPIPE || errno == ECONNRESET)) err = 0; /* ignore error, rely on SIGPIPE */
 #endif
   // could also use PetscCallExternal() here, but since we can get additional error explanation
@@ -320,24 +320,24 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char format[], va_list Argp)
   char   str[PETSCDEFAULTBUFFERSIZE];
   char  *buff = str;
   size_t fullLength;
-#if defined(PETSC_HAVE_VA_COPY)
+#if PetscDefined(HAVE_VA_COPY)
   va_list Argpcopy;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VA_COPY)
+#if PetscDefined(HAVE_VA_COPY)
   va_copy(Argpcopy, Argp);
 #endif
   PetscCall(PetscVSNPrintf(str, sizeof(str), format, &fullLength, Argp));
   if (fullLength > sizeof(str)) {
     PetscCall(PetscMalloc1(fullLength, &buff));
-#if defined(PETSC_HAVE_VA_COPY)
+#if PetscDefined(HAVE_VA_COPY)
     PetscCall(PetscVSNPrintf(buff, fullLength, format, NULL, Argpcopy));
 #else
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
 #endif
   }
-#if defined(PETSC_HAVE_VA_COPY)
+#if PetscDefined(HAVE_VA_COPY)
   va_end(Argpcopy);
 #endif
   {

@@ -6,7 +6,7 @@ using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscconvest.h>
-#if defined(PETSC_HAVE_AMGX)
+#if PetscDefined(HAVE_AMGX)
   #include <amgx_c.h>
 #endif
 
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(PetscTime(&time));
   PetscCall(SNESSetUp(snes));
-#if defined(PETSC_HAVE_AMGX)
+#if PetscDefined(HAVE_AMGX)
   KSP                   ksp;
   PC                    pc;
   PetscBool             flg;

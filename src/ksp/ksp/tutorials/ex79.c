@@ -62,7 +62,7 @@ int main(int argc, char **args)
     PetscCall(PCFieldSplitSetIS(pc, NULL, is));
     PetscCall(ISDestroy(&is));
   }
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#if PetscDefined(HAVE_HYPRE_DEVICE)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
   if (flg) {
     HYPRE_MemoryLocation hmem;

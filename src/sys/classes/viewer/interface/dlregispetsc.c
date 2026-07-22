@@ -65,9 +65,9 @@ PetscErrorCode PetscSysInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if PetscDefined(HAVE_DYNAMIC_LIBRARIES)
 
-  #if defined(PETSC_USE_SINGLE_LIBRARY)
+  #if PetscDefined(USE_SINGLE_LIBRARY)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void);
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void);
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void);
@@ -82,7 +82,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void);
   This one registers all the system level objects.
 
  */
-  #if defined(PETSC_USE_SINGLE_LIBRARY)
+  #if PetscDefined(USE_SINGLE_LIBRARY)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsc(void)
   #else
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
@@ -97,7 +97,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
   PetscCall(PetscViewerInitializePackage());
   PetscCall(PetscRandomInitializePackage());
 
-  #if defined(PETSC_USE_SINGLE_LIBRARY)
+  #if PetscDefined(USE_SINGLE_LIBRARY)
   PetscCall(PetscDLLibraryRegister_petscvec());
   PetscCall(PetscDLLibraryRegister_petscmat());
   PetscCall(PetscDLLibraryRegister_petscdm());

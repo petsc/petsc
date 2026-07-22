@@ -13,13 +13,13 @@
 
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscinitializef_          PETSCINITIALIZEF
   #define mpi_init_                  MPI_INIT
   #define petscgetcomm_              PETSCGETCOMM
   #define petsccommandargumentcount_ PETSCCOMMANDARGUMENTCOUNT
   #define petscgetcommandargument_   PETSCGETCOMMANDARGUMENT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscinitializef_          petscinitializef
   #define mpi_init_                  mpi_init
   #define petscgetcomm_              petscgetcomm
@@ -32,18 +32,18 @@
   extra _ at the end if the original routine name
   contained any _.
 */
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if PetscDefined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
   #define mpi_init_ mpi_init__
 #endif
 
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #if defined(mpi_init_)
     #undef mpi_init_
-    #if defined(PETSC_HAVE_FORTRAN_CAPS)
+    #if PetscDefined(HAVE_FORTRAN_CAPS)
       #define mpi_init_ PETSC_MPI_INIT
-    #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+    #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
       #define mpi_init_ petsc_mpi_init
-    #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+    #elif PetscDefined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
       #define mpi_init_ petsc_mpi_init__
     #endif
   #else /* mpi_init_ */

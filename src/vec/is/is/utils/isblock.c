@@ -25,7 +25,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscInt        isz, len, i, j, ival, bbs;
   const PetscInt *idx;
   PetscBool       isblock;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL;
   PetscInt      tt, gid1, *nidx;
   PetscHashIter tpos;
@@ -36,7 +36,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(nkeys / bs, &gid1_lid1));
 #else
   Nbs = n / bs;
@@ -58,7 +58,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
       }
     }
     isz = 0;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIClear(gid1_lid1));
 #else
     PetscCall(PetscBTMemzero(Nbs, table));
@@ -66,7 +66,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
     PetscCall(ISGetIndices(is_in[i], &idx));
     for (j = 0; j < len; j++) {
       ival = idx[j] / bs; /* convert the indices into block indices */
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
       PetscCall(PetscHMapIGetWithDefault(gid1_lid1, ival + 1, 0, &tt));
       if (!tt) {
         PetscCall(PetscHMapISet(gid1_lid1, ival + 1, isz + 1));
@@ -79,7 +79,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
     }
     PetscCall(ISRestoreIndices(is_in[i], &idx));
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscMalloc1(isz, &nidx));
     PetscHashIterBegin(gid1_lid1, tpos);
     j = 0;
@@ -97,7 +97,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_COPY_VALUES, is_out + i));
 #endif
   }
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&gid1_lid1));
 #else
   PetscCall(PetscBTDestroy(&table));

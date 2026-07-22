@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   PetscErrorCodeFn *approxnormfunc;
   PetscErrorCodeFn *Anormfunc;
 
-#if defined(PETSC_HAVE_MPI_INIT_THREAD)
+#if PetscDefined(HAVE_MPI_INIT_THREAD)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
 #endif
   PetscFunctionBeginUser;

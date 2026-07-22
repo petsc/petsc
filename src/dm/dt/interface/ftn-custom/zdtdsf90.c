@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscds.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscdsgettabulationsetsizes_    PETSCDSGETTABULATIONSETSIZES
   #define petscdsgettabulationsetpointers_ PETSCDSGETTABULATIONSETPOINTERS
   #define f90arraysetrealpointer_          F90ARRAYSETREALPOINTER
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscdsgettabulationsetsizes_    petscdsgettabulationsetsizes
   #define petscdsgettabulationsetpointers_ petscdsgettabulationsetpointers
   #define f90arraysetrealpointer_          f90arraysetrealpointer

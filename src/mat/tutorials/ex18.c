@@ -167,10 +167,10 @@ int main(int argc, char **args)
   PetscCall(MatZeroEntries(A));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJKOKKOS, &is_kokkos));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJCUSPARSE, &is_cuda));
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
   if (is_kokkos) PetscCall(FillMatrixKokkosCOO(&fe, A));
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (is_cuda) PetscCall(FillMatrixCUDACOO(&fe, A));
 #endif
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));

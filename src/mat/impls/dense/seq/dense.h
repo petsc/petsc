@@ -105,13 +105,13 @@ PETSC_INTERN PetscErrorCode MatMultAddColumnRange_SeqDense(Mat, Vec, Vec, Vec, P
 PETSC_INTERN PetscErrorCode MatMultHermitianTransposeColumnRange_SeqDense(Mat, Vec, Vec, PetscInt, PetscInt);
 PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAddColumnRange_SeqDense(Mat, Vec, Vec, Vec, PetscInt, PetscInt);
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);
 PETSC_INTERN PetscErrorCode                MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Internal(Mat, Mat, Mat, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode                MatConvert_SeqDense_SeqDenseCUDA(Mat, MatType, MatReuse, Mat *);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseHIPInvertFactors_Internal(Mat);
 PETSC_INTERN PetscErrorCode                MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Internal(Mat, Mat, Mat, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode                MatConvert_SeqDense_SeqDenseHIP(Mat, MatType, MatReuse, Mat *);

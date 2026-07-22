@@ -33,35 +33,21 @@ int main(int argc, char **args)
   if (!data_provided) { /* get matrices from PETSc distribution */
     PetscCall(PetscStrncpy(file, "${PETSC_DIR}/share/petsc/datafiles/matrices/", sizeof(file)));
     if (hpd) {
-#if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscStrlcat(file, "hpd-complex-", sizeof(file)));
-#else
-      PetscCall(PetscStrlcat(file, "spd-real-", sizeof(file)));
-#endif
+      if (PetscDefined(USE_COMPLEX)) PetscCall(PetscStrlcat(file, "hpd-complex-", sizeof(file)));
+      else PetscCall(PetscStrlcat(file, "spd-real-", sizeof(file)));
       ftyp = MAT_FACTOR_CHOLESKY;
     } else {
-#if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscStrlcat(file, "nh-complex-", sizeof(file)));
-#else
-      PetscCall(PetscStrlcat(file, "ns-real-", sizeof(file)));
-#endif
+      if (PetscDefined(USE_COMPLEX)) PetscCall(PetscStrlcat(file, "nh-complex-", sizeof(file)));
+      else PetscCall(PetscStrlcat(file, "ns-real-", sizeof(file)));
     }
-#if defined(PETSC_USE_64BIT_INDICES)
-    PetscCall(PetscStrlcat(file, "int64-", sizeof(file)));
-#else
-    PetscCall(PetscStrlcat(file, "int32-", sizeof(file)));
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-    PetscCall(PetscStrlcat(file, "float32", sizeof(file)));
-#else
-    PetscCall(PetscStrlcat(file, "float64", sizeof(file)));
-#endif
+    if (PetscDefined(USE_64BIT_INDICES)) PetscCall(PetscStrlcat(file, "int64-", sizeof(file)));
+    else PetscCall(PetscStrlcat(file, "int32-", sizeof(file)));
+    if (PetscDefined(USE_REAL_SINGLE)) PetscCall(PetscStrlcat(file, "float32", sizeof(file)));
+    else PetscCall(PetscStrlcat(file, "float64", sizeof(file)));
   }
 
   /* Load matrix A */
-#if defined(PETSC_USE_REAL___FLOAT128)
-  PetscCall(PetscOptionsInsertString(NULL, "-binary_read_double"));
-#endif
+  if (PetscDefined(USE_REAL___FLOAT128)) PetscCall(PetscOptionsInsertString(NULL, "-binary_read_double"));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatLoad(A, fd));

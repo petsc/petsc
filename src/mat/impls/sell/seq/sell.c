@@ -13,7 +13,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
                                " year = 2018\n"
                                "}\n";
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && (defined(__AVX512F__) || (defined(__AVX2__) && defined(__FMA__)) || defined(__AVX__)) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && (defined(__AVX512F__) || (defined(__AVX2__) && defined(__FMA__)) || defined(__AVX__)) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
 
   #include <immintrin.h>
 
@@ -88,7 +88,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
 {
   Mat_SeqSELL *b;
   PetscInt     i, j, totalslices;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   PetscInt rlenmax = 0;
 #endif
   PetscBool skipallocation = PETSC_FALSE, realalloc = PETSC_FALSE;
@@ -118,7 +118,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
   b = (Mat_SeqSELL *)B->data;
 
   if (!b->sliceheight) { /* not set yet */
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
     b->sliceheight = 16;
 #else
     b->sliceheight = 8;
@@ -135,14 +135,14 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
     if (!rlen) { /* if rlen is not provided, allocate same space for all the slices */
       if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 10;
       else if (maxallocrow < 0) maxallocrow = 1;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
       rlenmax = maxallocrow;
       /* Pad the slice to DEVICE_MEM_ALIGN */
       while (b->sliceheight * maxallocrow % DEVICE_MEM_ALIGN) maxallocrow++;
 #endif
       for (i = 0; i <= totalslices; i++) b->sliidx[i] = b->sliceheight * i * maxallocrow;
     } else {
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
       PetscInt mul = DEVICE_MEM_ALIGN / b->sliceheight;
 #endif
       maxallocrow  = 0;
@@ -150,7 +150,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
       for (i = 1; i < totalslices; i++) {
         b->sliidx[i] = 0;
         for (j = 0; j < b->sliceheight; j++) b->sliidx[i] = PetscMax(b->sliidx[i], rlen[b->sliceheight * (i - 1) + j]);
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
         if (mul != 0) { /* Pad the slice to DEVICE_MEM_ALIGN if sliceheight < DEVICE_MEM_ALIGN */
           rlenmax      = PetscMax(b->sliidx[i], rlenmax);
           b->sliidx[i] = ((b->sliidx[i] - 1) / mul + 1) * mul;
@@ -162,7 +162,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
       /* last slice */
       b->sliidx[totalslices] = 0;
       for (j = b->sliceheight * (totalslices - 1); j < B->rmap->n; j++) b->sliidx[totalslices] = PetscMax(b->sliidx[totalslices], rlen[j]);
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
       if (mul != 0) {
         rlenmax                = PetscMax(b->sliidx[i], rlenmax);
         b->sliidx[totalslices] = ((b->sliidx[totalslices] - 1) / mul + 1) * mul;
@@ -190,7 +190,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
 
   b->nz          = 0;
   b->maxallocrow = maxallocrow;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   b->rlenmax = rlenmax;
 #else
   b->rlenmax = maxallocrow;
@@ -325,18 +325,18 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
   PetscInt           totalslices = a->totalslices;
   const PetscInt    *acolidx     = a->colidx;
   PetscInt           i, j;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
   __mmask8 mask;
   __m512d  vec_x2, vec_y2, vec_vals2, vec_x3, vec_y3, vec_vals3, vec_x4, vec_y4, vec_vals4;
   __m256i  vec_idx2, vec_idx3, vec_idx4;
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m128i   vec_idx;
   __m256d   vec_x, vec_y, vec_y2, vec_vals;
   MatScalar yval;
   PetscInt  r, rows_left, row, nnz_in_row;
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m128d   vec_x_tmp;
   __m256d   vec_x, vec_y, vec_y2, vec_vals;
   MatScalar yval;
@@ -346,14 +346,14 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
   PetscScalar *sum;
 #endif
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aval)
 #endif
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(a->sliceheight == 8, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height of 8, but the input matrix has a slice height of %" PetscInt_FMT, a->sliceheight);
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx, a->sliidx[i + 1] - a->sliidx[i], 0, PETSC_PREFETCH_HINT_T0);
@@ -420,7 +420,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
       _mm512_storeu_pd(&y[8 * i], vec_y);
     }
   }
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(a->sliceheight == 8, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height of 8, but the input matrix has a slice height of %" PetscInt_FMT, a->sliceheight);
   for (i = 0; i < totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx, a->sliidx[i + 1] - a->sliidx[i], 0, PETSC_PREFETCH_HINT_T0);
@@ -457,7 +457,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
     _mm256_storeu_pd(y + i * 8, vec_y);
     _mm256_storeu_pd(y + i * 8 + 4, vec_y2);
   }
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(a->sliceheight == 8, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height of 8, but the input matrix has a slice height of %" PetscInt_FMT, a->sliceheight);
   for (i = 0; i < totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx, a->sliidx[i + 1] - a->sliidx[i], 0, PETSC_PREFETCH_HINT_T0);
@@ -540,13 +540,13 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscInt           totalslices = a->totalslices;
   const PetscInt    *acolidx     = a->colidx;
   PetscInt           i, j;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
   __mmask8 mask = 0;
   __m512d  vec_x2, vec_y2, vec_vals2, vec_x3, vec_y3, vec_vals3, vec_x4, vec_y4, vec_vals4;
   __m256i  vec_idx2, vec_idx3, vec_idx4;
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   __m128d   vec_x_tmp;
   __m256d   vec_x, vec_y, vec_y2, vec_vals;
   MatScalar yval;
@@ -556,7 +556,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscScalar *sum;
 #endif
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aval)
 #endif
 
@@ -567,7 +567,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
   }
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArrayPair(yy, zz, &y, &z));
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(a->sliceheight == 8, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height of 8, but the input matrix has a slice height of %" PetscInt_FMT, a->sliceheight);
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx, a->sliidx[i + 1] - a->sliidx[i], 0, PETSC_PREFETCH_HINT_T0);
@@ -638,7 +638,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
       _mm512_storeu_pd(&z[8 * i], vec_y);
     }
   }
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#elif PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   PetscCheck(a->sliceheight == 8, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height of 8, but the input matrix has a slice height of %" PetscInt_FMT, a->sliceheight);
   for (i = 0; i < totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx, a->sliidx[i + 1] - a->sliidx[i], 0, PETSC_PREFETCH_HINT_T0);
@@ -718,7 +718,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A, Vec xx, Vec zz, Vec yy)
   const PetscInt    *acolidx = a->colidx;
   PetscInt           i, j, r, row, nnz_in_row, totalslices = a->totalslices, sliceheight = a->sliceheight;
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*x, *y, *aval)
 #endif
 
@@ -901,7 +901,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscFree(a->saved_values));
   PetscCall(PetscFree2(a->getrowcols, a->getrowvals));
   PetscCall(PetscFree(A->data));
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   PetscCall(PetscFree(a->chunk_slice_map));
 #endif
 
@@ -912,10 +912,10 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLRestoreArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqaij_C", NULL));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqsellcuda_C", NULL));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqsellhip_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetFillRatio_C", NULL));
@@ -1033,7 +1033,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr)
     PetscCall(VecRestoreArrayRead(rr, &r));
     PetscCall(PetscLogFlops(a->nz));
   }
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1096,17 +1096,13 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n", m, A->cmap->n));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%% Nonzeros = %" PetscInt_FMT " \n", a->nz));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",4);\n", a->nz + nofinalvalue));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",3);\n", a->nz + nofinalvalue));
-#endif
+    PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = zeros(%" PetscInt_FMT ",%d);\n", a->nz + nofinalvalue, PetscDefined(USE_COMPLEX) ? 4 : 3));
     PetscCall(PetscViewerASCIIPrintf(viewer, "zzz = [\n"));
 
     for (i = 0; i < m; i++) {
       shift = a->sliidx[i / a->sliceheight] + i % a->sliceheight;
       for (j = 0; j < a->rlen[i]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n", i + 1, a->colidx[shift + a->sliceheight * j] + 1, (double)PetscRealPart(a->val[shift + a->sliceheight * j]), (double)PetscImaginaryPart(a->val[shift + a->sliceheight * j])));
 #else
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n", i + 1, a->colidx[shift + a->sliceheight * j] + 1, (double)a->val[shift + a->sliceheight * j]));
@@ -1115,7 +1111,7 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
     }
     /*
     if (nofinalvalue) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n",m,A->cmap->n,0.,0.));
 #else
       PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n",m,A->cmap->n,0.0));
@@ -1133,7 +1129,7 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
       shift = a->sliidx[i / a->sliceheight] + i % a->sliceheight;
       for (j = 0; j < a->rlen[i]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         if (PetscImaginaryPart(a->val[shift + a->sliceheight * j]) > 0.0 && PetscRealPart(a->val[shift + a->sliceheight * j]) != 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->colidx[shift + a->sliceheight * j], (double)PetscRealPart(a->val[shift + a->sliceheight * j]), (double)PetscImaginaryPart(a->val[shift + a->sliceheight * j])));
         } else if (PetscImaginaryPart(a->val[shift + a->sliceheight * j]) < 0.0 && PetscRealPart(a->val[shift + a->sliceheight * j]) != 0.0) {
@@ -1151,15 +1147,16 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     PetscInt    cnt = 0, jcnt;
     PetscScalar value;
-#if defined(PETSC_USE_COMPLEX)
-    PetscBool realonly = PETSC_TRUE;
-    for (i = 0; i < a->sliidx[a->totalslices]; i++) {
-      if (PetscImaginaryPart(a->val[i]) != 0.0) {
-        realonly = PETSC_FALSE;
-        break;
+    PetscBool   realonly = PETSC_TRUE;
+
+    if (PetscDefined(USE_COMPLEX)) {
+      for (i = 0; i < a->sliidx[a->totalslices]; i++) {
+        if (PetscImaginaryPart(a->val[i]) != 0.0) {
+          realonly = PETSC_FALSE;
+          break;
+        }
       }
     }
-#endif
 
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     for (i = 0; i < m; i++) {
@@ -1172,15 +1169,11 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
         } else {
           value = 0.0;
         }
-#if defined(PETSC_USE_COMPLEX)
-        if (realonly) {
+        if (!PetscDefined(USE_COMPLEX) || realonly) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e ", (double)PetscRealPart(value)));
         } else {
           PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e+%7.5e i ", (double)PetscRealPart(value), (double)PetscImaginaryPart(value)));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, " %7.5e ", (double)value));
-#endif
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     }
@@ -1188,16 +1181,12 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_MATRIXMARKET) {
     PetscInt fshift = 1;
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate complex general\n"));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate real general\n"));
-#endif
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%%%%MatrixMarket matrix coordinate %s general\n", PetscDefined(USE_COMPLEX) ? "complex" : "real"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, A->cmap->n, a->nz));
     for (i = 0; i < m; i++) {
       shift = a->sliidx[i / a->sliceheight] + i % a->sliceheight;
       for (j = 0; j < a->rlen[i]; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %g %g\n", i + fshift, a->colidx[shift + a->sliceheight * j] + fshift, (double)PetscRealPart(a->val[shift + a->sliceheight * j]), (double)PetscImaginaryPart(a->val[shift + a->sliceheight * j])));
 #else
         PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT " %g\n", i + fshift, a->colidx[shift + a->sliceheight * j] + fshift, (double)a->val[shift + a->sliceheight * j]));
@@ -1210,17 +1199,13 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
       PetscInt row;
       PetscCall(PetscViewerASCIIPrintf(viewer, "slice %" PetscInt_FMT ": %" PetscInt_FMT " %" PetscInt_FMT "\n", i, a->sliidx[i], a->sliidx[i + 1]));
       for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = (row + 1) % a->sliceheight) {
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(a->val[j]) > 0.0) {
+        if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) > 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "  %" PetscInt_FMT " %" PetscInt_FMT " %g + %g i\n", a->sliceheight * i + row, a->colidx[j], (double)PetscRealPart(a->val[j]), (double)PetscImaginaryPart(a->val[j])));
-        } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
+        } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) < 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "  %" PetscInt_FMT " %" PetscInt_FMT " %g - %g i\n", a->sliceheight * i + row, a->colidx[j], (double)PetscRealPart(a->val[j]), -(double)PetscImaginaryPart(a->val[j])));
         } else {
           PetscCall(PetscViewerASCIIPrintf(viewer, "  %" PetscInt_FMT " %" PetscInt_FMT " %g\n", a->sliceheight * i + row, a->colidx[j], (double)PetscRealPart(a->val[j])));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  %" PetscInt_FMT " %" PetscInt_FMT " %g\n", a->sliceheight * i + row, a->colidx[j], (double)a->val[j]));
-#endif
       }
     }
   } else {
@@ -1231,45 +1216,33 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
         /* L part */
         for (j = shift; j < a->diag[i]; j += a->sliceheight) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->val[shift + a->sliceheight * j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[shift + a->sliceheight * j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->colidx[j], (double)PetscRealPart(a->val[j]), (double)PetscImaginaryPart(a->val[j])));
-          } else if (PetscImaginaryPart(a->val[shift + a->sliceheight * j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[shift + a->sliceheight * j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->colidx[j], (double)PetscRealPart(a->val[j]), (double)(-PetscImaginaryPart(a->val[j]))));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)PetscRealPart(a->val[j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)a->val[j]));
-#endif
         }
         /* diagonal */
         j = a->diag[i];
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(a->val[j]) > 0.0) {
+        if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) > 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->colidx[j], (double)PetscRealPart(1.0 / a->val[j]), (double)PetscImaginaryPart(1.0 / a->val[j])));
-        } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
+        } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) < 0.0) {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->colidx[j], (double)PetscRealPart(1.0 / a->val[j]), (double)(-PetscImaginaryPart(1.0 / a->val[j]))));
         } else {
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)PetscRealPart(1.0 / a->val[j])));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)(1 / a->val[j])));
-#endif
 
         /* U part */
         for (j = a->diag[i] + 1; j < shift + a->sliceheight * a->rlen[i]; j += a->sliceheight) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->val[j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->colidx[j], (double)PetscRealPart(a->val[j]), (double)PetscImaginaryPart(a->val[j])));
-          } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->colidx[j], (double)PetscRealPart(a->val[j]), (double)(-PetscImaginaryPart(a->val[j]))));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)PetscRealPart(a->val[j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)a->val[j]));
-#endif
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
@@ -1278,17 +1251,13 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
         shift = a->sliidx[i / a->sliceheight] + i % a->sliceheight;
         PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i));
         for (j = 0; j < a->rlen[i]; j++) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(a->val[j]) > 0.0) {
+          if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) > 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i)", a->colidx[shift + a->sliceheight * j], (double)PetscRealPart(a->val[shift + a->sliceheight * j]), (double)PetscImaginaryPart(a->val[shift + a->sliceheight * j])));
-          } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
+          } else if (PetscDefined(USE_COMPLEX) && PetscImaginaryPart(a->val[j]) < 0.0) {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i)", a->colidx[shift + a->sliceheight * j], (double)PetscRealPart(a->val[shift + a->sliceheight * j]), (double)-PetscImaginaryPart(a->val[shift + a->sliceheight * j])));
           } else {
             PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[shift + a->sliceheight * j], (double)PetscRealPart(a->val[shift + a->sliceheight * j])));
           }
-#else
-          PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[shift + a->sliceheight * j], (double)a->val[shift + a->sliceheight * j]));
-#endif
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
@@ -1437,7 +1406,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
   PetscInt     i, shift, row_in_slice, row, nrow, *cp, lastcol, j, k;
   MatScalar   *vp;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   PetscInt totalchunks = 0;
 #endif
 
@@ -1485,7 +1454,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   A->info.mallocs += a->reallocs;
   a->reallocs = 0;
 
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   if (!a->chunksize && a->totalslices) {
     a->chunksize = 64;
     while (a->chunksize < 1024 && 2 * a->chunksize <= a->sliidx[a->totalslices] / a->totalslices) a->chunksize *= 2;
@@ -1535,7 +1504,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
   PetscInt     shift, i, k, l, low, high, t, ii, row, col, nrow;
   PetscInt    *cp, nonew = a->nonew, lastcol = -1;
   MatScalar   *vp, value;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   PetscBool inserted = PETSC_FALSE;
   PetscInt  mul      = DEVICE_MEM_ALIGN / a->sliceheight;
 #endif
@@ -1577,7 +1546,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
         if (*(cp + a->sliceheight * i) == col) {
           if (is == ADD_VALUES) *(vp + a->sliceheight * i) += value;
           else *(vp + a->sliceheight * i) = value;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
           inserted = PETSC_TRUE;
 #endif
           low = i + 1;
@@ -1587,7 +1556,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       if (value == 0.0 && a->ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") in the matrix", row, col);
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
       MatSeqXSELLReallocateSELL(A, A->rmap->n, 1, nrow, a->sliidx, a->sliceheight, row / a->sliceheight, row, col, a->colidx, a->val, cp, vp, nonew, MatScalar, mul);
 #else
       /* If the current row length exceeds the slice width (e.g. nrow==slice_width), allocate a new space, otherwise do nothing */
@@ -1602,7 +1571,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       *(cp + a->sliceheight * i) = col;
       *(vp + a->sliceheight * i) = value;
       a->nz++;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
       inserted = PETSC_TRUE;
 #endif
       low = i + 1;
@@ -1612,7 +1581,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
     }
     a->rlen[row] = nrow;
   }
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1667,7 +1636,7 @@ PetscErrorCode MatScale_SeqSELL(Mat inA, PetscScalar alpha)
   PetscCall(PetscBLASIntCast(a->sliidx[a->totalslices], &size));
   PetscCallBLAS("BLASscal", BLASscal_(&size, &oalpha, aval, &one));
   PetscCall(PetscLogFlops(a->nz));
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   if (inA->offloadmask != PETSC_OFFLOAD_UNALLOCATED) inA->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2013,7 +1982,7 @@ static PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheig
   if (A->preallocated) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(a->sliceheight <= 0 || a->sliceheight == sliceheight, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot change slice height %" PetscInt_FMT " to %" PetscInt_FMT, a->sliceheight, sliceheight);
   a->sliceheight = sliceheight;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   PetscCheck(PetscMax(DEVICE_MEM_ALIGN, sliceheight) % PetscMin(DEVICE_MEM_ALIGN, sliceheight) == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The slice height is not compatible with DEVICE_MEM_ALIGN (one must be divisible by the other) %" PetscInt_FMT, sliceheight);
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2132,10 +2101,10 @@ PetscErrorCode MatSeqSELLGetVarSliceSize(Mat A, PetscReal *variance)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLCUDA(Mat);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_EXTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLHIP(Mat);
 #endif
 
@@ -2180,10 +2149,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatRetrieveValues_C", MatRetrieveValues_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLSetPreallocation_C", MatSeqSELLSetPreallocation_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqaij_C", MatConvert_SeqSELL_SeqAIJ));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqsellcuda_C", MatConvert_SeqSELL_SeqSELLCUDA));
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqsellhip_C", MatConvert_SeqSELL_SeqSELLHIP));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetFillRatio_C", MatSeqSELLGetFillRatio_SeqSELL));
@@ -2196,13 +2165,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   {
     PetscInt  newsh = -1;
     PetscBool flg;
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
     PetscInt chunksize = 0;
 #endif
 
     PetscCall(PetscOptionsInt("-mat_sell_slice_height", "Set the slice height used to store SELL matrix", "MatSELLSetSliceHeight", newsh, &newsh, &flg));
     if (flg) PetscCall(MatSeqSELLSetSliceHeight(B, newsh));
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
     PetscCall(PetscOptionsInt("-mat_sell_chunk_size", "Set the chunksize for load-balanced CUDA/HIP kernels. Choices include 64,128,256,512,1024", NULL, chunksize, &chunksize, &flg));
     if (flg) {
       PetscCheck(chunksize >= 64 && chunksize <= 1024 && chunksize % 64 == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "chunksize must be a number in {64,128,256,512,1024}: value %" PetscInt_FMT, chunksize);
@@ -2419,7 +2388,7 @@ PetscErrorCode MatConjugate_SeqSELL(Mat A)
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

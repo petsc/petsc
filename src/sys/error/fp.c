@@ -16,7 +16,7 @@
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"  I*/
 #include <signal.h>
-#if defined(PETSC_HAVE_XMMINTRIN_H)
+#if PetscDefined(HAVE_XMMINTRIN_H)
   #include <xmmintrin.h>
 #endif
 
@@ -58,7 +58,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&link));
-#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_THREADSAFETY) && PetscDefined(HAVE_OPENMP)
   PetscPragmaOMP(critical)
 #endif
   {
@@ -85,7 +85,7 @@ PetscErrorCode PetscFPTrapPop(void)
 
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
-#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_THREADSAFETY) && PetscDefined(HAVE_OPENMP)
   PetscPragmaOMP(critical)
 #endif
   {
@@ -96,7 +96,7 @@ PetscErrorCode PetscFPTrapPop(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
+#if PetscDefined(HAVE_SUN4_STYLE_FPTRAP)
   #include <floatingpoint.h>
 
 PETSC_EXTERN PetscErrorCode ieee_flags(char *, char *, char *, char **);
@@ -220,7 +220,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_SOLARIS_STYLE_FPTRAP)
+#elif PetscDefined(HAVE_SOLARIS_STYLE_FPTRAP)
   #include <sunmath.h>
   #include <floatingpoint.h>
   #include <siginfo.h>
@@ -279,7 +279,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_IRIX_STYLE_FPTRAP)
+#elif PetscDefined(HAVE_IRIX_STYLE_FPTRAP)
   #include <sigfpe.h>
 static struct {
   int   code_no;
@@ -323,7 +323,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_RS6000_STYLE_FPTRAP)
+#elif PetscDefined(HAVE_RS6000_STYLE_FPTRAP)
 /* In "fast" mode, floating point traps are imprecise and ignored.
    This is the reason for the fptrap(FP_TRAP_SYNC) call */
 struct sigcontext;
@@ -398,7 +398,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_WINDOWS_COMPILERS)
+#elif PetscDefined(HAVE_WINDOWS_COMPILERS)
   #include <float.h>
 void PetscDefaultFPTrap(int sig)
 {
@@ -434,7 +434,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#elif defined(PETSC_HAVE_FENV_H) && !defined(__cplusplus)
+#elif PetscDefined(HAVE_FENV_H) && !defined(__cplusplus)
   /*
    C99 style floating point environment.
 
@@ -445,7 +445,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
    granularity, feenableexcept()), xmmintrin.h offers _MM_SET_EXCEPTION_MASK().
 */
   #include <fenv.h>
-  #if defined(PETSC_HAVE_FE_VALUES)
+  #if PetscDefined(HAVE_FE_VALUES)
 typedef struct {
   int         code;
   const char *name;
@@ -462,7 +462,7 @@ static const FPNode error_codes[] = {
 
 void PetscDefaultFPTrap(int sig)
 {
-  #if defined(PETSC_HAVE_FE_VALUES)
+  #if PetscDefined(HAVE_FE_VALUES)
   const FPNode *node;
   int           code;
   PetscBool     matched = PETSC_FALSE;
@@ -474,7 +474,7 @@ void PetscDefaultFPTrap(int sig)
    * useless.  But on a system where the flags can be preserved, it would provide
    * more detail.
    */
-  #if defined(PETSC_HAVE_FE_VALUES)
+  #if PetscDefined(HAVE_FE_VALUES)
   code = fetestexcept(FE_ALL_EXCEPT);
   for (node = &error_codes[0]; node->code; node++) {
     if (code & node->code) {
@@ -495,16 +495,16 @@ void PetscDefaultFPTrap(int sig)
   #endif
 
   (void)(*PetscErrorPrintf)("Try option -start_in_debugger\n");
-  #if PetscDefined(USE_DEBUG)
-    #if !PetscDefined(HAVE_THREADSAFETY)
-  (void)(*PetscErrorPrintf)("likely location of problem given in stack below\n");
-  (void)(*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
-  (void)PetscStackView(PETSC_STDOUT);
-    #endif
-  #else
-  (void)(*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
-  (void)(*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
-  #endif
+  if (PetscDefined(USE_DEBUG)) {
+    if (!PetscDefined(HAVE_THREADSAFETY)) {
+      (void)(*PetscErrorPrintf)("likely location of problem given in stack below\n");
+      (void)(*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
+      (void)PetscStackView(PETSC_STDOUT);
+    }
+  } else {
+    (void)(*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
+    (void)(*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
+  }
   (void)PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_INITIAL, "trapped floating point error");
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
@@ -515,7 +515,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   if (flag == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
     PetscCheck(!feclearexcept(FE_ALL_EXCEPT), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot clear floating point exception flags");
-  #if defined(FE_NOMASK_ENV) && defined(PETSC_HAVE_FE_VALUES)
+  #if defined(FE_NOMASK_ENV) && PetscDefined(HAVE_FE_VALUES)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     /* PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions"); */
     /* Doesn't work on AArch64 targets. There's a known hardware limitation. Need to detect hardware at configure time? */
@@ -569,7 +569,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
   #endif
 }
 
-#elif defined(PETSC_HAVE_IEEEFP_H)
+#elif PetscDefined(HAVE_IEEEFP_H)
   #include <ieeefp.h>
 void PetscDefaultFPTrap(int sig)
 {
@@ -583,17 +583,17 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
-  #if defined(PETSC_HAVE_FPRESETSTICKY)
+  #if PetscDefined(HAVE_FPRESETSTICKY)
     fpresetsticky(fpgetsticky());
-  #elif defined(PETSC_HAVE_FPSETSTICKY)
+  #elif PetscDefined(HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
   #endif
     fpsetmask(FP_X_INV | FP_X_DZ | FP_X_OFL | FP_X_OFL);
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
-  #if defined(PETSC_HAVE_FPRESETSTICKY)
+  #if PetscDefined(HAVE_FPRESETSTICKY)
     fpresetsticky(fpgetsticky());
-  #elif defined(PETSC_HAVE_FPSETSTICKY)
+  #elif PetscDefined(HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
   #endif
     fpsetmask(0);

@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetRandom(A, NULL));
 
   /* Create a CUDA version of A */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatConvert(A, MATSEQDENSECUDA, MAT_INITIAL_MATRIX, &AC));
 #else
   PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &AC));

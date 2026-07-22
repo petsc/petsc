@@ -8,7 +8,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
   KSPCG_STCG *cg = (KSPCG_STCG *)ksp->data;

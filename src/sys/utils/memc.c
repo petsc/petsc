@@ -48,7 +48,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HWLOC)
+#if PetscDefined(HAVE_HWLOC)
   #include <petsc/private/petscimpl.h>
   #include <hwloc.h>
 #endif
@@ -68,7 +68,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_HWLOC)
+#if PetscDefined(HAVE_HWLOC)
   PetscBool        isascii;
   PetscMPIInt      rank;
   hwloc_bitmap_t   set;

@@ -1810,7 +1810,7 @@ static PetscErrorCode MatISSetPreallocation_IS(Mat B, PetscInt d_nz, const Petsc
 
   for (i = 0; i < matis->sf->nleaves; i++) matis->sf_leafdata[i] = PetscMin(matis->sf_leafdata[i], nlocalcols);
   PetscCall(MatSeqAIJSetPreallocation(matis->A, 0, matis->sf_leafdata));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatHYPRESetPreallocation(matis->A, 0, matis->sf_leafdata, 0, NULL));
 #endif
 

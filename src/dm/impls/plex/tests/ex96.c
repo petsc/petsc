@@ -27,9 +27,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsString("-o", "Filename to write", "ex96", ofilename, ofilename, sizeof(ofilename), NULL));
   PetscOptionsEnd();
 
-#ifdef PETSC_USE_DEBUG
-  PetscCallExternal(ex_opts, EX_VERBOSE + EX_DEBUG);
-#endif
+  if (PetscDefined(USE_DEBUG)) PetscCallExternal(ex_opts, EX_VERBOSE + EX_DEBUG);
 
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm));
   PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));

@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matmffdsetfunction_ MATMFFDSETFUNCTION
   #define matmffdsetbase_     MATMFFDSETBASE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matmffdsetfunction_ matmffdsetfunction
   #define matmffdsetbase_     matmffdsetbase
 #endif

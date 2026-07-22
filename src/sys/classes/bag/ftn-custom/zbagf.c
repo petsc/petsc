@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscbag.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscbagregisterenumprivate_ PETSCBAGREGISTERENUMPRIVATE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscbagregisterenumprivate_ petscbagregisterenumprivate
 #endif
 

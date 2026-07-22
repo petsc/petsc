@@ -6,7 +6,7 @@
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 #include <errno.h>
@@ -6444,7 +6444,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
     PetscCall(PetscMPIIntCast(spaceDim, &spaceDimi));
     PetscCallMPI(MPI_Type_contiguous(spaceDimi, MPIU_SCALAR, &coordtype));
     PetscCallMPI(MPI_Type_commit(&coordtype));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     {
       PetscScalar *svertexCoords;
       PetscCall(PetscMalloc1(numVertices * spaceDim, &svertexCoords));

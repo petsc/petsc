@@ -2,7 +2,7 @@
 #include <petsc/private/drawimpl.h>                        /*I  "petscdraw.h" I*/
 #include <petscviewer.h>
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %d out of range [0..255]", (color))
 #else
   #define PetscDrawValidColor(color) \

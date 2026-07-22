@@ -64,7 +64,7 @@ static PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *
   PetscScalar     rscal;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   {
     PetscReal re = PetscRandom123Step(r123);
     PetscReal im = PetscRandom123Step(r123);

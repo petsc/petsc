@@ -113,7 +113,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   dmmoab->hlevel      = 0;
   dmmoab->nghostrings = 0;
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::EntityHandle partnset;
 
   /* Create root sets for each mesh.  Then pass these
@@ -151,7 +151,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
 
 /*@C
   DMMoabGetParallelComm - Get the ParallelComm used with this `DMMOAB`
@@ -198,7 +198,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(mbiface, 2);
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   dmmoab->pcomm = NULL;
 #endif
   dmmoab->mbiface          = mbiface;
@@ -259,7 +259,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 
   dmmoab->vlocal->insert(range->begin(), range->end());
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   /* filter based on parallel status */
   PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal, PSTATUS_NOT_OWNED, PSTATUS_NOT, -1, dmmoab->vowned));
 
@@ -275,7 +275,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
   /* compute and cache the sizes of local and ghosted entities */
   dmmoab->nloc   = dmmoab->vowned->size();
   dmmoab->nghost = dmmoab->vghost->size();
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
 #else
   dmmoab->n = dmmoab->nloc;
@@ -376,13 +376,13 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
   dmmoab->elocal->clear();
   dmmoab->eghost->clear();
   dmmoab->elocal->insert(range->begin(), range->end());
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->elocal, PSTATUS_NOT_OWNED, PSTATUS_NOT));
   *dmmoab->eghost = moab::subtract(*range, *dmmoab->elocal);
 #endif
   dmmoab->neleloc   = dmmoab->elocal->size();
   dmmoab->neleghost = dmmoab->eghost->size();
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
   PetscCall(PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele));
 #else
@@ -914,7 +914,7 @@ static PetscErrorCode DMDestroy_Moab(DM dm)
       delete dmmoab->mbiface;
     }
     dmmoab->mbiface = NULL;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     dmmoab->pcomm = NULL;
 #endif
     PetscCall(VecScatterDestroy(&dmmoab->ltog_sendrecv));
@@ -954,7 +954,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* Get the local and shared vertices and cache it */
   PetscCheck(dmmoab->mbiface != NULL, PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   PetscCheck(dmmoab->pcomm != NULL, PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
 #endif
 
@@ -962,7 +962,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
   if (dmmoab->vlocal->empty()) {
     PetscCallMOAB(dmmoab->mbiface->get_entities_by_dimension(dmmoab->fileset, 0, *dmmoab->vlocal, false));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* filter based on parallel status */
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal, PSTATUS_NOT_OWNED, PSTATUS_NOT, -1, dmmoab->vowned));
 
@@ -980,7 +980,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->nloc   = dmmoab->vowned->size();
     dmmoab->nghost = dmmoab->vghost->size();
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost));
 #else
@@ -1006,7 +1006,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
 
     PetscCall(DMSetDimension(dm, dmmoab->dim));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* filter the ghosted and owned element list */
     *dmmoab->eghost = *dmmoab->elocal;
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->elocal, PSTATUS_NOT_OWNED, PSTATUS_NOT));
@@ -1016,7 +1016,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->neleloc   = dmmoab->elocal->size();
     dmmoab->neleghost = dmmoab->eghost->size();
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost));
 #else
@@ -1133,7 +1133,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
     /* get the entities on the skin - only the faces */
     PetscCallMOAB(skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, true, true, false));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* filter all the non-owned and shared entities out of the list */
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_NOT_OWNED, PSTATUS_NOT));
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_INTERFACE, PSTATUS_NOT));
@@ -1160,7 +1160,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
           if (dmmoab->hierarchy->is_entity_on_boundary(faces[ifa])) dmmoab->bndyfaces->insert(faces[ifa]);
       }
     }
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* filter all the non-owned and shared entities out of the list */
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->bndyvtx, PSTATUS_NOT_OWNED, PSTATUS_NOT));
     PetscCallMOAB(dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_NOT_OWNED, PSTATUS_NOT));
@@ -1181,7 +1181,7 @@ static PetscErrorCode DMSetUp_Moab(DM dm)
     for (unsigned i = 0; i < msets.size(); ++i) {
       moab::Range msetelems;
       PetscCallMOAB(dmmoab->mbiface->get_entities_by_dimension(msets[i], dmmoab->dim, msetelems, true));
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
       /* filter all the non-owned and shared entities out of the list */
       PetscCallMOAB(dmmoab->pcomm->filter_pstatus(msetelems, PSTATUS_NOT_OWNED, PSTATUS_NOT));
 #endif
@@ -1359,7 +1359,7 @@ static PetscErrorCode DMMoabView_VTK(DM dm, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
 static PetscErrorCode DMMoabView_HDF5(DM dm, PetscViewer v)
 {
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1379,7 +1379,7 @@ static PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
   if (isascii) {
     PetscCall(DMMoabView_Ascii(dm, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5) && defined(MOAB_HAVE_HDF5)
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ));
     PetscCall(DMMoabView_HDF5(dm, viewer));
     PetscCall(PetscViewerPopFormat(viewer));

@@ -5,7 +5,7 @@ static char help[] = "Example program demonstrating projection between particle 
 #include <petscdmswarm.h>
 #include <petscksp.h>
 #include <petsc/private/petscimpl.h>
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   #include <omp.h>
 #endif
 
@@ -225,14 +225,14 @@ PetscErrorCode go()
   Mat           M_p_t[MAX_NUM_THRDS];
   PetscLogStage stage;
   PetscLogEvent swarm_create_ev, solve_ev, solve_loop_ev;
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   PetscInt numthreads = PetscNumOMPThreads;
 #else
   PetscInt numthreads = 1;
 #endif
 
   PetscFunctionBeginUser;
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   PetscCheck(numthreads <= MAX_NUM_THRDS, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %" PetscInt_FMT " > %d", numthreads, MAX_NUM_THRDS);
   PetscCheck(numthreads > 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %" PetscInt_FMT " > %d", numthreads, MAX_NUM_THRDS);
 #endif
@@ -335,7 +335,7 @@ PetscErrorCode go()
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE; // use thread multiple if multiple threads call petsc
 #endif
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

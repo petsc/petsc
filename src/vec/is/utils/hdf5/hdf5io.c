@@ -92,11 +92,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
     const PetscInt *range;
     MPI_Comm        comm;
 
-#if defined(PETSC_USE_64BIT_INDICES)
-    inttype = H5T_NATIVE_LLONG;
-#else
-    inttype = H5T_NATIVE_INT;
-#endif
+    inttype = PetscDefined(USE_64BIT_INDICES) ? H5T_NATIVE_LLONG : H5T_NATIVE_INT;
     PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
     PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)viewer), &cmap));
     cmap->bs = 3;
@@ -245,7 +241,7 @@ static PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const cha
   PetscCall(PetscViewerHDF5HasDataset(viewer, name, &has));
   PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group);
   PetscCall(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
     PetscCheck(clazz != H5T_FLOAT, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "", name);

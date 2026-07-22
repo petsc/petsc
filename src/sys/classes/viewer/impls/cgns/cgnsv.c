@@ -1,6 +1,6 @@
 #include <petsc/private/viewercgnsimpl.h> /*I "petscviewer.h" I*/
 #include <petsc/private/dmpleximpl.h>     /*I   "petscdmplex.h"   I*/
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
+#if PetscDefined(HDF5_HAVE_PARALLEL)
   #include <pcgnslib.h>
 #else
   #include <cgnslib.h>
@@ -98,7 +98,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
     PetscCallCGNSWrite(cg_simulation_type_write(cgv->file_num, cgv->base, CGNS_ENUMV(TimeAccurate)), viewer, 0);
   }
   PetscCall(PetscFree(cgv->filename));
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
+#if PetscDefined(HDF5_HAVE_PARALLEL)
   if (cgv->file_num) PetscCallCGNSClose(cgp_close(cgv->file_num), viewer, 0);
 #else
   if (cgv->file_num) PetscCallCGNSClose(cg_close(cgv->file_num), viewer, 0);
@@ -137,7 +137,7 @@ PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt seq
   default:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
   }
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
+#if PetscDefined(HDF5_HAVE_PARALLEL)
   PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
   PetscCallCGNSOpen(cgp_open(cgv->filename, cg_file_mode, &cgv->file_num), viewer, 0);
 #else
@@ -204,7 +204,7 @@ static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char
   char             *has_pattern;
 
   PetscFunctionBegin;
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
+#if PetscDefined(HDF5_HAVE_PARALLEL)
   if (cgv->file_num) PetscCallCGNSClose(cgp_close(cgv->file_num), viewer, 0);
 #else
   if (cgv->file_num) PetscCallCGNSClose(cg_close(cgv->file_num), viewer, 0);

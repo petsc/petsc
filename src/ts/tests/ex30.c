@@ -15,7 +15,7 @@ static char help[] = "Grid based Landau collision operator with PIC interface wi
 #include <petscdmswarm.h>
 #include <petscksp.h>
 #include <petsc/private/petscimpl.h>
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   #include <omp.h>
 #endif
 #include <petsclandau.h>
@@ -462,7 +462,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
   Vec            t_fhat[LANDAU_MAX_GRIDS][EX30_MAX_NUM_THRDS];
   PetscInt       nDMs;
   PetscErrorCode ierr = (PetscErrorCode)0; // used for inside thread loops
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_OPENMP) && PetscDefined(HAVE_THREADSAFETY)
   PetscInt numthreads = PetscNumOMPThreads;
 #else
   PetscInt numthreads = 1;

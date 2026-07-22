@@ -708,11 +708,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
 
 /* this is a private implementation of a SOCKET with ASCII data format
    GLVis does not currently handle binary socket streams */
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 
-#if !defined(PETSC_HAVE_WINDOWS_H)
+#if !PetscDefined(HAVE_WINDOWS_H)
 static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
@@ -740,7 +740,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
 */
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *hostname, PetscInt port, PetscViewer *viewer)
 {
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   PetscFunctionBegin;
   SETERRQ(comm, PETSC_ERR_SUP, "Not implemented for Windows");
 #else
@@ -753,7 +753,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
   PetscAssertPointer(hostname, 2);
   PetscAssertPointer(viewer, 4);
   PetscCall(PetscMPIIntCast(port, &iport));
-  #if defined(PETSC_USE_SOCKET_VIEWER)
+  #if PetscDefined(USE_SOCKET_VIEWER)
   ierr = PetscOpenSocket(hostname, iport, &fd);
   #else
   SETERRQ(comm, PETSC_ERR_SUP, "Missing Socket viewer");
@@ -779,11 +779,11 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_MISSING_SIGPIPE)
+#if !PetscDefined(MISSING_SIGPIPE)
 
   #include <signal.h>
 
-  #if defined(PETSC_HAVE_WINDOWS_H)
+  #if PetscDefined(HAVE_WINDOWS_H)
     #define PETSC_DEVNULL "NUL"
   #else
     #define PETSC_DEVNULL "/dev/null"
@@ -796,7 +796,7 @@ static void (*PetscGLVisSigHandler_save)(int) = NULL;
 static void PetscGLVisSigHandler_SIGPIPE(PETSC_UNUSED int sig)
 {
   PetscGLVisBrokenPipe = PETSC_TRUE;
-  #if !defined(PETSC_MISSING_SIG_IGN)
+  #if !PetscDefined(MISSING_SIG_IGN)
   signal(SIGPIPE, SIG_IGN);
   #endif
 }

@@ -34,7 +34,7 @@ int main(int argc, char **args)
   PetscCall(ISGetLocalSize(iscols, &ncols));
   PetscCall(ISGetIndices(iscols, &cols));
   PetscCall(PetscMalloc1(nrows * ncols, &v));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscRandom rand;
   PetscScalar rval;
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));

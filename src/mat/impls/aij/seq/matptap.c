@@ -8,7 +8,7 @@
 #include <petscbt.h>
 #include <petsctime.h>
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 
@@ -50,7 +50,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
   }
 
   /* hypre */
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscStrcmp(alg, "hypre", &flg));
   if (flg) {
     PetscCall(MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A, P, fill, C));
@@ -174,14 +174,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal 
 
   /* Clean up. */
   PetscCall(MatRestoreSymbolicTranspose_SeqAIJ(P, &pti, &ptj));
-#if defined(PETSC_USE_INFO)
-  if (ci[pn] != 0) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatPtAP(A,P,MatReuse,%g,&C) for best performance.\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[pn] != 0) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", nspacedouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatPtAP(A,P,MatReuse,%g,&C) for best performance.\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -201,7 +199,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C)
   PetscCall(PetscCalloc2(cn, &apa, cn, &apjdense));
   PetscCall(PetscMalloc1(cn, &apj));
   /* trigger CPU copies if needed and flag CPU mask for C */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   {
     const PetscScalar *unused;
     PetscCall(MatSeqAIJGetArrayRead(A, &unused));

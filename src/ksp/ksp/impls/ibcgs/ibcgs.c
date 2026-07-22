@@ -40,7 +40,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 {
   PetscInt  N;
   PetscReal rnorm = 0.0, rnormin = 0.0;
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_MPI_LONG_DOUBLE) && !PetscDefined(USE_COMPLEX) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithmetic
      rather than just 64-bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
@@ -66,7 +66,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
   PetscFunctionBegin;
   PetscCheck(ksp->vec_rhs->petscnative, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Only coded for PETSc vectors");
 
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_MPI_LONG_DOUBLE) && !PetscDefined(USE_COMPLEX) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
      valgrind won't detect MPI_Allreduce() with uninitialized data */
   PetscCall(PetscMemzero(insums, sizeof(insums)));
@@ -223,7 +223,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     insums[6] = rnormin;
 
     PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_MPI_LONG_DOUBLE) && !PetscDefined(USE_COMPLEX) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
       PetscCallMPI(MPIU_Allreduce(insums, outsums, 7, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
     } else {

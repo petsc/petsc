@@ -5,7 +5,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscdmceed.h>
   #include <petscdmplexceed.h>
 #endif
@@ -63,10 +63,10 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   PetscCall(DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, ctx));
   PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, ctx));
   PetscCall(VecAXPY(u, -intc[pfield] / intn[pfield], nullvecs[0]));
-#if defined(PETSC_USE_DEBUG)
-  PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, ctx));
-  PetscCheck(PetscAbsScalar(intc[pfield]) <= PETSC_SMALL, comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double)PetscRealPart(intc[pfield]));
-#endif
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, ctx));
+    PetscCheck(PetscAbsScalar(intc[pfield]) <= PETSC_SMALL, comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double)PetscRealPart(intc[pfield]));
+  }
   PetscCall(PetscFree2(intc, intn));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -783,7 +783,7 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, PetscCtx ctx)
   PetscCall(DMSNESSetBoundaryLocal(dm, DMPlexSNESComputeBoundaryFEM, ctx));
   if (use_obj) PetscCall(DMSNESSetObjectiveLocal(dm, DMPlexSNESComputeObjectiveFEM, ctx));
   if (useCeed) {
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
     PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualCEED, ctx));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot use CEED traversals without LibCEED. Rerun configure with --download-ceed");

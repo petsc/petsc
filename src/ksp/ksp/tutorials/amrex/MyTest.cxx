@@ -121,10 +121,10 @@ void MyTest::readParameters()
   pp.query("reltol", reltol);
   pp.query("linop_maxorder", linop_maxorder);
   pp.query("max_coarsening_level", max_coarsening_level);
-#ifdef AMREX_USE_HYPRE
+#if defined(AMREX_USE_HYPRE)
   pp.query("use_hypre", use_hypre);
 #endif
-#ifdef AMREX_USE_PETSC
+#if defined(AMREX_USE_PETSC)
   pp.query("use_petsc", use_petsc);
 #endif
 }

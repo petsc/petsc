@@ -145,13 +145,13 @@ PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
 static
 PetscErrorCode PetscObjectGetDeviceId(PetscObject o, PetscInt *id)
 {
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscDeviceContext dctx;
   PetscDevice device;
 #endif
   PetscFunctionBegin;
   PetscValidHeader(o,1);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(PetscDeviceContextGetDevice(dctx,&device));
   PetscCall(PetscDeviceGetDeviceId(device,id));

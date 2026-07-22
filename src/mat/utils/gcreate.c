@@ -115,7 +115,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
 
   B->congruentlayouts = PETSC_DECIDE;
   B->preallocated     = PETSC_FALSE;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   B->boundtocpu = PETSC_TRUE;
 #endif
   *A = B;
@@ -383,7 +383,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
       PetscCall(MatSeqAIJSetPreallocation(A, 0, dnnz));
       PetscCall(MatMPIAIJSetPreallocation(A, 0, dnnz, 0, onnz));
       PetscCall(MatISSetPreallocation(A, 0, dnnz, 0, onnz));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
       PetscCall(MatHYPRESetPreallocation(A, 0, dnnz, 0, onnz));
 #endif
     } else { /* Convert block-row precallocation to scalar-row */
@@ -397,7 +397,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
       PetscCall(MatSeqAIJSetPreallocation(A, 0, dnnz ? sdnnz : NULL));
       PetscCall(MatMPIAIJSetPreallocation(A, 0, dnnz ? sdnnz : NULL, 0, onnz ? sonnz : NULL));
       PetscCall(MatISSetPreallocation(A, 0, dnnz ? sdnnz : NULL, 0, onnz ? sonnz : NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
       PetscCall(MatHYPRESetPreallocation(A, 0, dnnz ? sdnnz : NULL, 0, onnz ? sonnz : NULL));
 #endif
       PetscCall(PetscFree2(sdnnz, sonnz));
@@ -585,7 +585,7 @@ PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(A, flg, 2);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (A->boundtocpu == flg) PetscFunctionReturn(PETSC_SUCCESS);
   A->boundtocpu = flg;
   PetscTryTypeMethod(A, bindtocpu, flg);
@@ -611,7 +611,7 @@ PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 2);
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   *flg = A->boundtocpu;
 #else
   *flg = PETSC_TRUE;
@@ -863,7 +863,7 @@ PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   A->bindingpropagates = flg;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -887,7 +887,7 @@ PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 2);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   *flg = A->bindingpropagates;
 #else
   *flg = PETSC_FALSE;

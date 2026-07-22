@@ -3,7 +3,7 @@
 #include <thrust/device_ptr.h>
 #include <thrust/iterator/counting_iterator.h>
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
 struct complexscalelw
   #if PETSC_PKG_CUDA_VERSION_LT(12, 8, 0)
   :
@@ -43,7 +43,7 @@ PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t
   PetscFunctionBegin;
   if (!r->iset) PetscFunctionReturn(PETSC_SUCCESS);
   if (isneg) { /* complex case, need to scale differently */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     thrust::device_ptr<PetscReal> pval  = thrust::device_pointer_cast(val);
     auto                          zibit = thrust::make_zip_iterator(thrust::make_tuple(pval, thrust::counting_iterator<size_t>(0)));
     thrust::transform(zibit, zibit + n, pval, complexscalelw(r->low, r->width));

@@ -92,7 +92,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Basic(PetscSF sf,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_MPIX_STREAM)
+#if PetscDefined(HAVE_MPIX_STREAM)
 // issue MPIX_Isend/Irecv_enqueue()
 static PetscErrorCode PetscSFLinkStartCommunication_MPIX_Stream(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
@@ -163,7 +163,7 @@ static PetscErrorCode PetscSFSetCommunicationOps_Basic(PetscSF sf, PetscSFLink l
   PetscFunctionBegin;
   link->InitMPIRequests    = PetscSFLinkInitMPIRequests_Persistent_Basic;
   link->StartCommunication = PetscSFLinkStartCommunication_Persistent_Basic;
-#if defined(PETSC_HAVE_MPIX_STREAM)
+#if PetscDefined(HAVE_MPIX_STREAM)
   const PetscMemType rootmtype_mpi = link->rootmtype_mpi, leafmtype_mpi = link->leafmtype_mpi;
   if (sf->use_stream_aware_mpi && (PetscMemTypeDevice(rootmtype_mpi) || PetscMemTypeDevice(leafmtype_mpi))) {
     link->StartCommunication  = PetscSFLinkStartCommunication_MPIX_Stream;
@@ -265,11 +265,11 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscCall(PetscFree2(bas->iranks, bas->ioffset));
   PetscCall(PetscFree(bas->irootloc));
 
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   for (int i = 0; i < 2; i++) PetscCall(PetscSFFree(sf, PETSC_MEMTYPE_DEVICE, bas->irootloc_d[i]));
 #endif
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   PetscCall(PetscSFReset_Basic_NVSHMEM(sf));
 #endif
 
@@ -290,7 +290,7 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+#if PetscDefined(USE_SINGLE_LIBRARY)
   #include <petscmat.h>
 
 PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf, PetscViewer viewer)
@@ -338,7 +338,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer, "  MultiSF sort=%s\n", sf->rankorder ? "rank-order" : "unordered"));
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+#if PetscDefined(USE_SINGLE_LIBRARY)
   else {
     PetscBool isdraw, isbinary;
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
@@ -577,14 +577,14 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   PetscCall(PetscSFSetUpPackFields(esf));
 
   /* Copy from PetscSFSetUp(), since this method wants to skip PetscSFSetUp(). */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (esf->backend == PETSCSF_BACKEND_CUDA) {
     esf->ops->Malloc = PetscSFMalloc_CUDA;
     esf->ops->Free   = PetscSFFree_CUDA;
   }
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   /* TODO: Needs debugging */
   if (esf->backend == PETSCSF_BACKEND_HIP) {
     esf->ops->Malloc = PetscSFMalloc_HIP;
@@ -592,7 +592,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   }
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
   if (esf->backend == PETSCSF_BACKEND_KOKKOS) {
     esf->ops->Malloc = PetscSFMalloc_Kokkos;
     esf->ops->Free   = PetscSFFree_Kokkos;

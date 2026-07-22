@@ -63,7 +63,7 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (dp < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -133,7 +133,7 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
       dp = 0.0;
     }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     if (dp < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       break;

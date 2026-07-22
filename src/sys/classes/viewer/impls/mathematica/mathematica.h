@@ -4,7 +4,7 @@
 */
 
 #include <petsc/private/viewerimpl.h> /*I  "petscsys.h"  I*/
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   #include <mathlink.h>
 #endif
 
@@ -15,7 +15,7 @@ typedef enum {
 } LinkMode;
 
 typedef struct {
-#if defined(PETSC_HAVE_MATHEMATICA)
+#if PetscDefined(HAVE_MATHEMATICA)
   MLINK link; /* The link to Mathematica */
 #endif
   char       *linkname; /* The name to link to Mathematica on (usually a port) */

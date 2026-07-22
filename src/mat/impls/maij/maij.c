@@ -530,7 +530,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   PetscBool    flg     = PETSC_FALSE;
   Mat          A = product->A, P = product->B;
   PetscInt     alg = 1; /* set default algorithm */
-#if !defined(PETSC_HAVE_HYPRE)
+#if !PetscDefined(HAVE_HYPRE)
   const char *algTypes[4] = {"scalable", "nonscalable", "allatonce", "allatonce_merged"};
   PetscInt    nalg        = 4;
 #else
@@ -1024,7 +1024,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
   PetscInt  n;
   Mat       B;
   PetscBool flg;
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   /* hack to prevent conversion to AIJ format for CUDA when used inside a parallel MAIJ */
   PetscBool convert = dof < 0 ? PETSC_FALSE : PETSC_TRUE;
 #endif
@@ -1126,7 +1126,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
         B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_N;
         B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_N;
       }
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqmaij_seqaijcusparse_C", MatConvert_SeqMAIJ_SeqAIJ));
 #endif
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqmaij_seqaij_C", MatConvert_SeqMAIJ_SeqAIJ));
@@ -1175,7 +1175,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
       B->ops->multadd          = MatMultAdd_MPIMAIJ_dof;
       B->ops->multtransposeadd = MatMultTransposeAdd_MPIMAIJ_dof;
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpimaij_mpiaijcusparse_C", MatConvert_MPIMAIJ_MPIAIJ));
 #endif
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpimaij_mpiaij_C", MatConvert_MPIMAIJ_MPIAIJ));
@@ -1184,7 +1184,7 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
     B->ops->createsubmatrix   = MatCreateSubMatrix_MAIJ;
     B->ops->createsubmatrices = MatCreateSubMatrices_MAIJ;
     PetscCall(MatSetUp(B));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     /* temporary until we have CUDA implementation of MAIJ */
     {
       PetscBool flg;

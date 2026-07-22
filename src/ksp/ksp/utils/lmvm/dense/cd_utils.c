@@ -102,7 +102,7 @@ PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_Internal(MatLMVMDense
       PetscCall(PetscBLASIntCast(lda, &lda_blas));
       PetscCallBLAS("BLAStrsv", BLAStrsv_("U", hermitian_transpose ? "C" : "N", "NotUnitTriangular", &n, A, &lda_blas, x, &one));
       PetscCall(PetscLogFlops(1.0 * n * n));
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
     } else if (PetscMemTypeDevice(memtype)) {
       PetscCall(MatUpperTriangularSolveInPlace_CUPM(hermitian_transpose, N, A, lda, x, 1));
 #endif
@@ -128,7 +128,7 @@ PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_Internal(MatLMVMDense
         if (n_new > 0) PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "C", "NotUnitTriangular", &n_new, A, &lda_blas, x, &one));
       }
       PetscCall(PetscLogFlops(1.0 * N * N));
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
     } else if (PetscMemTypeDevice(memtype)) {
       PetscCall(MatUpperTriangularSolveInPlaceCyclic_CUPM(hermitian_transpose, m, oldest, next, A, lda, x, stride));
 #endif

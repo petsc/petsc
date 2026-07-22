@@ -8,7 +8,7 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petsc/private/logimpl.h>
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 
@@ -25,11 +25,11 @@ PetscBool PetscFinalizeCalled           = PETSC_FALSE;
 PetscMPIInt PetscGlobalRank = -1;
 PetscMPIInt PetscGlobalSize = -1;
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PetscBool PetscBeganKokkos = PETSC_FALSE;
 #endif
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
 PetscBool PetscBeganNvshmem       = PETSC_FALSE;
 PetscBool PetscNvshmemInitialized = PETSC_FALSE;
 #endif
@@ -38,7 +38,7 @@ PetscBool use_gpu_aware_mpi = PetscDefined(HAVE_MPIUNI) ? PETSC_FALSE : PETSC_TR
 
 PetscBool PetscPrintFunctionList = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
 /*MC
    PETSC_i - the imaginary number i
 
@@ -56,16 +56,16 @@ M*/
 PetscComplex PETSC_i;
 MPI_Datatype MPIU___COMPLEX128 = 0;
 #endif /* PETSC_HAVE_COMPLEX */
-#if defined(PETSC_HAVE_REAL___FLOAT128)
+#if PetscDefined(HAVE_REAL___FLOAT128)
 MPI_Datatype MPIU___FLOAT128 = 0;
 #endif
-#if defined(PETSC_HAVE_REAL___FP16)
+#if PetscDefined(HAVE_REAL___FP16)
 MPI_Datatype MPIU___FP16 = 0;
 #endif
 MPI_Datatype MPIU_2SCALAR    = 0;
 MPI_Datatype MPIU_REAL_INT   = 0;
 MPI_Datatype MPIU_SCALAR_INT = 0;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
 MPI_Datatype MPIU_2INT       = 0;
 MPI_Datatype MPIU_INT_MPIINT = 0;
 #endif
@@ -251,7 +251,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkfunctionlist", &PetscPrintFunctionList, NULL));
 
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   if (!(PETSC_RUNNING_ON_VALGRIND)) {
     /*
       Setup the memory management; support for tracing malloc() usage
@@ -624,36 +624,28 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_left: dump list of unused options\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_left no: don't dump list of unused options\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -memory_view: print memory usage at end of run\n"));
-#if defined(PETSC_USE_LOG)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -get_total_flops: total flops over all processors\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view [:filename:[format]]: logging objects and events\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_trace [filename]: prints trace of all PETSc calls\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_exclude classname1,classname2,...: exclude given classes from logging\n"));
-  #if defined(PETSC_HAVE_DEVICE)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_time: log the GPU time for each event\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy: log the GPU energy (estimated) for each event\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy_meter: log the GPU energy (readings from meters) for each event\n"));
-  #endif
-  #if defined(PETSC_HAVE_MPE)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
-  #endif
-  #if PetscDefined(HAVE_CUDA)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
-  #endif
-  #if PetscDefined(HAVE_HIP)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_roctx: Create roctx event ranges for rocprof\n"));
-  #endif
-#endif
-#if defined(PETSC_USE_INFO)
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names\n"));
-#endif
+    if (PetscDefined(USE_LOG)) {
+      PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -get_total_flops: total flops over all processors\n"));
+      PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view [:filename:[format]]: logging objects and events\n"));
+      PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_trace [filename]: prints trace of all PETSc calls\n"));
+      PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_exclude classname1,classname2,...: exclude given classes from logging\n"));
+      if (PetscDefined(HAVE_DEVICE)) {
+        PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_time: log the GPU time for each event\n"));
+        PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy: log the GPU energy (estimated) for each event\n"));
+        PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_view_gpu_energy_meter: log the GPU energy (readings from meters) for each event\n"));
+      }
+      if (PetscDefined(HAVE_MPE)) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
+      if (PetscDefined(HAVE_CUDA)) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
+      if (PetscDefined(HAVE_HIP)) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -log_roctx: Create roctx event ranges for rocprof\n"));
+    }
+    if (PetscDefined(USE_INFO)) PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -info [filename][:[~]c1,c2,...[:[~]self]]: print verbose information. c1 and c2 are class names\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_file filename: reads options from file\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -options_monitor_cancel: cancels all hardwired option monitors\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -petsc_sleep n: sleeps n seconds before running program\n"));
   }
 
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   {
     char machine[128];
     PetscCall(PetscOptionsGetString(NULL, NULL, "-popen_machine", machine, sizeof(machine), &flg1));

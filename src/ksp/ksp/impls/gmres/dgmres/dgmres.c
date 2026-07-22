@@ -669,9 +669,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   ihi = ldQ = bn;
   PetscCall(PetscBLASIntCast(5 * N, &lwork));
 
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No support for complex numbers.");
-#endif
+  PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No support for complex numbers.");
 
   PetscCall(PetscMalloc1(ldA * ldA, &A));
   PetscCall(PetscMalloc1(ldQ * n, &Q));

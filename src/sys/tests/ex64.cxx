@@ -155,7 +155,7 @@ struct Printer {
   #endif
 #endif
 
-#ifdef PETSC_GCC_LAMBDA_VISIBILITY_WORKAROUND
+#if PetscDefined(GCC_LAMBDA_VISIBILITY_WORKAROUND)
   #pragma GCC visibility push(hidden)
 #endif
 template <typename... T>
@@ -631,7 +631,7 @@ private:
     return v;
   }
 };
-#ifdef PETSC_GCC_LAMBDA_VISIBILITY_WORKAROUND
+#if PetscDefined(GCC_LAMBDA_VISIBILITY_WORKAROUND)
   #pragma GCC visibility pop
 #endif
 

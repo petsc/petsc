@@ -1,5 +1,5 @@
 #include <petscsys.h>
-#if defined(PETSC_HAVE_SYS_TIME_H)
+#if PetscDefined(HAVE_SYS_TIME_H)
   #include <sys/time.h>
 #endif
 #include <time.h>
@@ -31,14 +31,14 @@
 PetscErrorCode PetscGetDate(char date[], size_t len)
 {
   char *str = NULL;
-#if defined(PETSC_HAVE_TIME)
+#if PetscDefined(HAVE_TIME)
   time_t aclock;
 #else
   struct timeval tp;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_TIME)
+#if PetscDefined(HAVE_TIME)
   time(&aclock);
   PetscCall(PetscStrncpy(date, asctime(localtime(&aclock)), len));
 #else

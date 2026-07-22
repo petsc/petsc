@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define kspflexiblesetmodifypc_      KSPFLEXIBLESETMODIFYPC
   #define kspflexiblemodifypcnochange_ KSPFLEXIBLEMODIFYPCNOCHANGE
   #define kspflexiblemodifypcksp_      KSPFLEXIBLEMODIFYPCKSP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define kspflexiblesetmodifypc_      kspflexiblesetmodifypc
   #define kspflexiblemodifypcnochange_ kspflexiblemodifypcnochange
   #define kspflexiblemodifypcksp_      kspflexiblemodifypcksp

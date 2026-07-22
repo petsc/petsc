@@ -18,9 +18,7 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Example for Real DFT. Your current data type is complex!");
-#endif
+  PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Example for Real DFT. Your current data type is complex!");
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &input));

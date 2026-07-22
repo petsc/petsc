@@ -14,11 +14,7 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj, void *me
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(vec, &array));
   PetscCall(VecGetLocalSize(vec, &n));
-#if defined(PETSC_USE_COMPLEX)
-  mat = mxCreateDoubleMatrix(n, 1, mxCOMPLEX);
-#else
-  mat = mxCreateDoubleMatrix(n, 1, mxREAL);
-#endif
+  mat = mxCreateDoubleMatrix(n, 1, PetscDefined(USE_COMPLEX) ? mxCOMPLEX : mxREAL);
   PetscCall(PetscArraycpy(mxGetPr(mat), array, n));
   PetscCall(PetscObjectName(obj));
   engPutVariable((Engine *)mengine, obj->name, mat);

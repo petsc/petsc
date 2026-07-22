@@ -200,7 +200,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
   PetscReal       *s_values;
   PetscScalar     *corr, *work, *scratch_vec, zero = 0.0, one = 1.0;
   PetscBLASInt     blas_m, blas_rank = 0, blas_lwork, blas_one = 1, info;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal *rwork;
 #endif
 
@@ -213,7 +213,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
   if (m > 0) {
     PetscCall(PetscBLASIntCast(m, &blas_m));
     blas_lwork = (/* assume a block size of m */ blas_m + 2) * blas_m;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(PetscCalloc5(m * m, &corr, m, &s_values, blas_lwork, &work, 3 * m - 2, &rwork, m, &scratch_vec));
 #else
     PetscCall(PetscCalloc4(m * m, &corr, m, &s_values, blas_lwork, &work, m, &scratch_vec));
@@ -224,7 +224,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &info));
 #else
     PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, &info));
@@ -270,7 +270,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
     }
     /* Form the initial guess by using b's projection coefficients with the xs */
     PetscCall(VecMAXPY(x, itg->curl, itg->alpha, itg->xtilde));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(PetscFree5(corr, s_values, work, rwork, scratch_vec));
 #else
     PetscCall(PetscFree4(corr, s_values, work, scratch_vec));

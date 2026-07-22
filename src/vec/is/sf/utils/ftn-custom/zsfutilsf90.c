@@ -2,11 +2,11 @@
 #include <petscsf.h>
 #include <petscsection.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsfdestroyremoteoffsets_ PETSCSFDESTROYREMOTEOFFSETS
   #define petscsfdistributesection_    PETSCSFDISTRIBUTESECTION
   #define petscsfcreateremoteoffsets_  PETSCSFCREATEREMOTEOFFSETS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsfdestroyremoteoffsets_ petscsfdestroyremoteoffsets
   #define petscsfdistributesection_    petscsfdistributesection
   #define petscsfcreateremoteoffsets_  petscsfcreateremoteoffsets

@@ -13,7 +13,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscInt    ec = 0; /* Number of nonzero external columns */
   IS          from, to;
   Vec         gvec;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL;
   PetscHashIter tpos;
   PetscInt      gid, lid;
@@ -24,7 +24,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscFunctionBegin;
   if (!aij->garray) {
     PetscCheck(aij->B, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing B mat");
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     /* use a table */
     PetscCall(PetscHMapICreateWithSize(aij->B->rmap->n, &gid1_lid1));
     for (i = 0; i < aij->B->rmap->n; i++) {
@@ -141,7 +141,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
   /* free stuff related to matrix-vec multiply */
   PetscCall(VecDestroy(&aij->lvec));
   if (aij->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&aij->colmap));
 #else
     PetscCall(PetscFree(aij->colmap));

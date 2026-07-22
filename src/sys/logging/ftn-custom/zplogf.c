@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsclogeventbegin_ PETSCLOGEVENTBEGIN
   #define petsclogeventend_   PETSCLOGEVENTEND
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petsclogeventbegin_ petsclogeventbegin
   #define petsclogeventend_   petsclogeventend
 #endif

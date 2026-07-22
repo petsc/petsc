@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define pcfieldsplitgetsubksp_          PCFIELDSPLITGETSUBKSP
   #define pcfieldsplitschurgetsubksp_     PCFIELDSPLITSCHURGETSUBKSP
   #define pcfieldsplitrestoresubksp_      PCFIELDSPLITRESTORESUBKSP
   #define pcfieldsplitschurrestoresubksp_ PCFIELDSPLITSCHURRESTORESUBKSP
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define pcfieldsplitgetsubksp_          pcfieldsplitgetsubksp
   #define pcfieldsplitschurgetsubksp_     pcfieldsplitschurgetsubksp
   #define pcfieldsplitrestoresubksp_      pcfieldsplitrestoresubksp

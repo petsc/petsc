@@ -145,7 +145,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   /* create a partitioner to repartition the sub-matrix */
   PetscCall(MatPartitioningCreate(scomm, &part));
   PetscCall(MatPartitioningSetAdjacency(part, smat[0]));
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   /* if there exists a ParMETIS installation, we try to use ParMETIS
    * because a repartition routine possibly work better
    * */

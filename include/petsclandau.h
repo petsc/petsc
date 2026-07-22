@@ -29,7 +29,7 @@ typedef PetscInt LandauIdx;
 
 /* the Fokker-Planck-Landau context */
 #if !defined(LANDAU_MAX_SPECIES)
-  #if defined(PETSC_USE_DMLANDAU_2D)
+  #if PetscDefined(USE_DMLANDAU_2D)
     #define LANDAU_MAX_SPECIES 10
     #define LANDAU_MAX_GRIDS   3
   #else
@@ -44,7 +44,7 @@ typedef PetscInt LandauIdx;
   #if defined(LANDAU_MAX_NQND)
     #error "LANDAU_MAX_NQND but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
   #endif
-  #if defined(PETSC_USE_DMLANDAU_2D)
+  #if PetscDefined(USE_DMLANDAU_2D)
     #define LANDAU_MAX_Q 6
   #else
     #define LANDAU_MAX_Q 6
@@ -53,7 +53,7 @@ typedef PetscInt LandauIdx;
   #undef LANDAU_MAX_NQND
 #endif
 
-#if defined(PETSC_USE_DMLANDAU_2D)
+#if PetscDefined(USE_DMLANDAU_2D)
   #define LANDAU_MAX_Q_FACE   LANDAU_MAX_Q
   #define LANDAU_MAX_NQND     (LANDAU_MAX_Q * LANDAU_MAX_Q)
   #define LANDAU_MAX_BATCH_SZ 1024
@@ -290,7 +290,7 @@ typedef struct _lP4estVertexMaps {
   PetscInt                  numgrids;
 } P4estVertexMaps;
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[], const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat);
 PETSC_EXTERN PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt);
 PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscInt);

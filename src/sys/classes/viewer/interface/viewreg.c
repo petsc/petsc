@@ -1,6 +1,6 @@
 #include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 #include <petsc/private/hashtable.h>
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -77,7 +77,7 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const char *pre, const char *name, PetscBool *found)
 {
   size_t l1, l2;
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   char *both;
   int   newitem;
 #endif
@@ -89,7 +89,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const ch
     *found = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#if !defined(PETSC_HAVE_THREADSAFETY)
+#if !PetscDefined(HAVE_THREADSAFETY)
   size_t lboth = l1 + l2 + 1;
   PetscCall(PetscSegBufferGet(hp->strings, lboth, &both));
   PetscCall(PetscStrncpy(both, pre, lboth));
@@ -225,25 +225,25 @@ static PetscErrorCode PetscOptionsCreateViewers_Single(MPI_Comm comm, const char
         if (!(*viewer = PETSC_VIEWER_DRAW_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
         break;
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
       case 3:
         if (!(*viewer = PETSC_VIEWER_SOCKET_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
         break;
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
       case 4:
         if (!(*viewer = PETSC_VIEWER_MATLAB_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
         break;
 #endif
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
       case 5:
         if (!(*viewer = PETSC_VIEWER_SAWS_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
         break;
 #endif
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
       case 7:
         if (!(*viewer = PETSC_VIEWER_HDF5_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
@@ -253,7 +253,7 @@ static PetscErrorCode PetscOptionsCreateViewers_Single(MPI_Comm comm, const char
         if (!(*viewer = PETSC_VIEWER_GLVIS_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));
         break;
-#if defined(PETSC_HAVE_EXODUSII)
+#if PetscDefined(HAVE_EXODUSII)
       case 9:
         if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) PetscCall(PETSC_ERR_PLIB);
         PetscCall(PetscObjectReference((PetscObject)*viewer));

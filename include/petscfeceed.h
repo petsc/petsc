@@ -4,7 +4,7 @@
 
 /* MANSEC = DM */
 
-#if defined(PETSC_HAVE_LIBCEED)
+#if PetscDefined(HAVE_LIBCEED)
   #include <ceed.h>
 
 PETSC_EXTERN PetscErrorCode PetscFEGetCeedBasis(PetscFE, CeedBasis *);

@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmshell.h> /*I    "petscdmshell.h"  I*/
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmshellsetcreatematrix_             DMSHELLSETCREATEMATRIX
   #define dmshellsetcreateglobalvector_       DMSHELLSETCREATEGLOBALVECTOR
   #define dmshellsetcreatelocalvector_        DMSHELLSETCREATELOCALVECTOR
@@ -9,7 +9,7 @@
   #define dmshellsetlocaltoglobal_            DMSHELLSETLOCALTOGLOBAL
   #define dmshellsetlocaltolocal_             DMSHELLSETLOCALTOLOCAL
   #define dmshellsetcreatefielddecomposition_ DMSHELLSETCREATEFIELDDECOMPOSITION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmshellsetcreatematrix_             dmshellsetcreatematrix
   #define dmshellsetcreateglobalvector_       dmshellsetcreateglobalvector
   #define dmshellsetcreatelocalvector_        dmshellsetcreatelocalvector

@@ -94,7 +94,7 @@ int main(int argc, char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(MatMultEqual(LR, LRe, 10, &flg));
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error in MatMult\n"));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatMultHermitianTransposeEqual(LR, LRe, 10, &flg));
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error in MatMultTranspose\n"));
 #endif

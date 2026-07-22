@@ -124,7 +124,7 @@ int main(int argc, char **args)
   while (s2 < M) s2 *= 10;
   PetscCall(MatDenseGetArray(A, &data));
   for (j = 0; j < N; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     for (i = 0; i < m; i++) data[j * m + i] = s2 * j + i + s1 + 1 + PETSC_i * (s1 - 1);
 #else
     for (i = 0; i < m; i++) data[j * m + i] = s2 * j + i + s1 + 1;

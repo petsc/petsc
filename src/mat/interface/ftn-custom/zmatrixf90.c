@@ -1,7 +1,7 @@
 #include <petscmat.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matgetrow_                   MATGETROW
   #define matrestorerow_               MATRESTOREROW
   #define matmpiaijgetseqaij_          MATMPIAIJGETSEQAIJ
@@ -29,7 +29,7 @@
   #define matgetghosts_                MATGETGHOSTS
   #define matgetrowij_                 MATGETROWIJ
   #define matrestorerowij_             MATRESTOREROWIJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matgetrow_                   matgetrow
   #define matrestorerow_               matrestorerow
   #define matmpiaijgetseqaij_          matmpiaijgetseqaij

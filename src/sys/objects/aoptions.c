@@ -125,7 +125,7 @@ static PetscErrorCode PetscStrdup(const char s[], char *t[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 
 static int count = 0;
@@ -446,15 +446,15 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems PetscOptions
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <%g>: %s (%s) ", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, *(double *)next->data, next->text, next->man));
       PetscCall(PetscScanString(PETSC_COMM_WORLD, 512, str));
       if (str[0]) {
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
         sscanf(str, "%e", &ir);
-  #elif defined(PETSC_USE_REAL___FP16)
+  #elif PetscDefined(USE_REAL___FP16)
         float irtemp;
         sscanf(str, "%e", &irtemp);
         ir = irtemp;
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
         sscanf(str, "%le", &ir);
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
         ir = strtoflt128(str, 0);
   #else
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unknown scalar type");
@@ -507,7 +507,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems PetscOptionsObject)
   PetscFunctionBegin;
   if (PetscOptionsObject->next) {
     if (!PetscOptionsObject->count) {
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
       PetscCall(PetscOptionsSAWsInput(PetscOptionsObject));
 #else
       PetscCall(PetscOptionsGetFromTextInput(PetscOptionsObject));
@@ -804,7 +804,7 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems PetscOptionsObject, con
 PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems PetscOptionsObject, const char opt[], const char text[], const char man[], PetscScalar currentvalue, PetscScalar *value, PetscBool *set)
 {
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(PetscOptionsReal(opt, text, man, currentvalue, value, set));
 #else
   PetscCall(PetscOptionsGetScalar(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, set));
@@ -855,7 +855,7 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems PetscOptionsObject, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
   #include <type_traits>
 #endif
 
@@ -876,7 +876,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems PetscOptionsObject, co
     PetscCall(PetscStrdup(currentvalue ? currentvalue : "", (char **)&amsopt->data));
     PetscCall(PetscStrNArrayallocpy(ntext, list, (char ***)&amsopt->list));
     PetscCheck(ntext <= CHAR_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of list entries %" PetscInt_FMT " > %d", ntext, CHAR_MAX);
-#ifdef __cplusplus
+#if defined(__cplusplus)
     static_assert(std::is_same<typename std::decay<decltype(amsopt->nlist)>::type, char>::value, "");
 #endif
     amsopt->nlist = (char)ntext;

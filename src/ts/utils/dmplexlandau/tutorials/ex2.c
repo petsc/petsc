@@ -6,7 +6,7 @@ static char help[] = "Runaway electron model with Landau collision operator\n\n"
 #include <petscds.h>
 #include <petscdmcomposite.h>
 
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if PetscDefined(HAVE_CUDA_NVTX)
   #if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
     #include <nvtx3/nvToolsExt.h>
   #else
@@ -701,11 +701,11 @@ int main(int argc, char **argv)
   PetscCall(PetscLogStageRegister("Solve", &stage));
   ctx->stage = 0; // lets not use this stage
   PetscCall(PetscLogStagePush(stage));
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if PetscDefined(HAVE_CUDA_NVTX)
   nvtxRangePushA("ex2-TSSolve-warm");
 #endif
   PetscCall(TSSolve(ts, X));
-#if defined(PETSC_HAVE_CUDA_NVTX)
+#if PetscDefined(HAVE_CUDA_NVTX)
   nvtxRangePop();
 #endif
   PetscCall(PetscLogStagePop());

@@ -167,15 +167,15 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
 
 found:
 
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if ((PetscMemTypeDevice(xrootmtype) || PetscMemTypeDevice(xleafmtype)) && !link->deviceinited) {
-  #if defined(PETSC_HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
     if (sf->backend == PETSCSF_BACKEND_CUDA) PetscCall(PetscSFLinkSetUp_CUDA(sf, link, unit)); /* Setup streams etc */
   #endif
-  #if defined(PETSC_HAVE_HIP)
+  #if PetscDefined(HAVE_HIP)
     if (sf->backend == PETSCSF_BACKEND_HIP) PetscCall(PetscSFLinkSetUp_HIP(sf, link, unit)); /* Setup streams etc */
   #endif
-  #if defined(PETSC_HAVE_KOKKOS)
+  #if PetscDefined(HAVE_KOKKOS)
     if (sf->backend == PETSCSF_BACKEND_KOKKOS) PetscCall(PetscSFLinkSetUp_Kokkos(sf, link, unit));
   #endif
   }
@@ -204,7 +204,7 @@ found:
     }
   }
 
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   /* Allocate buffers on host for buffering data on device in cast not use_gpu_aware_mpi */
   if (PetscMemTypeDevice(rootmtype) && PetscMemTypeHost(rootmtype_mpi)) {
     if (!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) PetscCall(PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE] * link->unitbytes, &link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]));

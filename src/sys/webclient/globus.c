@@ -70,7 +70,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 

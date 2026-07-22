@@ -29,7 +29,7 @@ MatOperation optenum[] = {MATOP_MULT,
                           MATOP_CONJUGATE,
                           MATOP_REAL_PART,
                           MATOP_IMAGINARY_PART,
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
                           MATOP_MULT_DIAGONAL_BLOCK,
                           MATOP_MULT_HERMITIAN_TRANSPOSE,
                           MATOP_MULT_HERMITIAN_TRANS_ADD};
@@ -63,7 +63,7 @@ const char *const optstr[] = {"mult",
                               "conjugate",
                               "realPart",
                               "imagPart",
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
                               "multDiagonalBlock",
                               "multHermitian",
                               "multHermitianAdd"};

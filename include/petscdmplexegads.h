@@ -5,7 +5,7 @@
 /* MANSEC = DM */
 /* SUBMANSEC = DMPlex */
 
-#if !defined(PETSC_HAVE_EGADS)
+#if !PetscDefined(HAVE_EGADS)
   #error "PETSc not configured for EGADS; reconfigrue --with-egads or --download-egads"
 #endif
 

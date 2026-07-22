@@ -2,20 +2,20 @@
       Code for opening and closing files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
   #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
 #include <time.h>
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
 #include <petsc/private/petscimpl.h>
@@ -390,7 +390,7 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
       PetscCall(PetscStrlcat(buffer, url, sizeof(buffer)));
       PetscCall(PetscStrlcat(buffer, " > ", sizeof(buffer)));
       PetscCall(PetscStrlcat(buffer, localname, sizeof(buffer)));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, buffer, "r", &fp));
       PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
 #else
@@ -429,7 +429,7 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
       PetscCall(PetscStrlcat(buffer, localname, sizeof(buffer)));
       PetscCall(PetscStrlcat(buffer, " > ", sizeof(buffer)));
       PetscCall(PetscStrlcat(buffer, name, sizeof(buffer)));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, buffer, "r", &fp));
       PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
 #else

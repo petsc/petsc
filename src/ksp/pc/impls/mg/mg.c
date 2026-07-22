@@ -1259,7 +1259,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
    Only support one or the other at the same time.
   */
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_mg_dump_matlab", &dump, NULL));
   if (dump) viewer = PETSC_VIEWER_SOCKET_(PetscObjectComm((PetscObject)pc));
   dump = PETSC_FALSE;

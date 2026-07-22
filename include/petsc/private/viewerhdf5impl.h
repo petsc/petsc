@@ -8,7 +8,7 @@
 #include <petscviewerhdf5.h>
 #include <petsc/private/viewerimpl.h>
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 
   /*
   HDF5 function specifications usually read:

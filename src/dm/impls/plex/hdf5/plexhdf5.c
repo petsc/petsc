@@ -2957,16 +2957,14 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscCall(PetscSectionSetUp(sectionA));
   }
   PetscCall(PetscSectionGetChart(sectionA, NULL, &n));
-/* Create sfAB: A -> B */
-#if defined(PETSC_USE_DEBUG)
-  {
+  /* Create sfAB: A -> B */
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt N, N1;
 
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "order", NULL, &N1));
     PetscCallMPI(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%" PetscInt_FMT ") != number of loaded section points (%" PetscInt_FMT ")", N1, N);
   }
-#endif
   {
     IS              orderIS;
     const PetscInt *gpoints;
@@ -3109,15 +3107,13 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
     PetscCall(DMGetPointSF(dm, &pointsf));
     PetscCall(DMGetPointSF(sectiondm, &pointsf1));
     PetscCheck(pointsf1 == pointsf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
-#if defined(PETSC_USE_DEBUG)
-    {
+    if (PetscDefined(USE_DEBUG)) {
       PetscInt MA, MA1;
 
       PetscCallMPI(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
       PetscCall(PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1));
       PetscCheck(MA1 == MA, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%" PetscInt_FMT ") != On-disk vector data size (%" PetscInt_FMT ")", MA, MA1);
     }
-#endif
     PetscCall(VecGetLocalSize(vec, &m1));
     PetscCheck(m1 >= m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%" PetscInt_FMT ") < SF leaf size (%" PetscInt_FMT ")", m1, m);
     for (i = 0; i < m; ++i) {

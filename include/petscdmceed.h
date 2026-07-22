@@ -4,10 +4,10 @@
 
 /* MANSEC = DM */
 
-#if defined(PETSC_HAVE_LIBCEED)
+#if PetscDefined(HAVE_LIBCEED)
   #include <ceed.h>
 
-  #if defined(PETSC_CLANG_STATIC_ANALYZER)
+  #if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCallCEED(CeedErrorType);
   #else
     #define PetscCallCEED(...) \

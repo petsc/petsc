@@ -3,7 +3,7 @@
 #include <petscpkg_version.h>
 
 /* Convenience local types and wrappers */
-#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_MPI_LARGE_COUNT) && PetscDefined(USE_64BIT_INDICES)
 typedef MPI_Count PetscSFCount;
 typedef MPI_Aint  PetscSFAint;
   #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)            MPI_Neighbor_alltoallv_c(a, b, c, d, e, f, g, h, i)
@@ -114,7 +114,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Neighbor(PetscSF sf, PetscSF
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
 static PetscErrorCode PetscSFLinkInitMPIRequests_Persistent_Neighbor(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   PetscSF_Neighbor  *dat           = (PetscSF_Neighbor *)sf->data;
@@ -172,7 +172,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Neighbor(PetscSF 
 static PetscErrorCode PetscSFSetCommunicationOps_Neighbor(PetscSF sf, PetscSFLink link)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
   if (sf->persistent) {
     link->InitMPIRequests    = PetscSFLinkInitMPIRequests_Persistent_Neighbor;
     link->StartCommunication = PetscSFLinkStartCommunication_Persistent_Neighbor;
@@ -207,7 +207,7 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
 
   m2 = m;
   n2 = n;
-#if defined(PETSC_HAVE_OPENMPI) // workaround for an OpenMPI 5.0.x bug, https://github.com/open-mpi/ompi/pull/12614
+#if PetscDefined(HAVE_OPENMPI) // workaround for an OpenMPI 5.0.x bug, https://github.com/open-mpi/ompi/pull/12614
   #if PETSC_PKG_OPENMPI_VERSION_LE(5, 0, 3)
   m2 = m ? m : 1;
   n2 = n ? n : 1;
@@ -216,7 +216,7 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   // Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory
   PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
 
-#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_MPI_LARGE_COUNT) && PetscDefined(USE_64BIT_INDICES)
   for (PetscMPIInt i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
     dat->rootdispls[j]  = rootoffset[i] - rootoffset[ndrootranks];
     dat->rootcounts[j]  = rootoffset[i + 1] - rootoffset[i];
@@ -293,7 +293,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
   sf->ops->Destroy             = PetscSFDestroy_Neighbor;
   sf->ops->SetCommunicationOps = PetscSFSetCommunicationOps_Neighbor;
 
-#if defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
   PetscObjectOptionsBegin((PetscObject)sf);
   PetscCall(PetscOptionsBool("-sf_neighbor_persistent", "Use MPI-4 persistent neighborhood collectives; used along with -sf_type neighbor", "PetscSFCreate", sf->persistent, &sf->persistent, NULL));
   PetscOptionsEnd();

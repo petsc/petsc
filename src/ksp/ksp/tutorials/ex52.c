@@ -8,7 +8,7 @@ Input parameters include:\n\
 
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
 /* Subroutine contributed by Varun Hiremath */
 PetscErrorCode printMumpsMemoryInfo(Mat F)
 {
@@ -33,21 +33,21 @@ int main(int argc, char **args)
   PetscReal   norm; /* norm of solution error */
   PetscInt    i, j, Ii, J, Istart, Iend, m = 8, n = 7, its;
   PetscBool   flg = PETSC_FALSE, flg_ilu = PETSC_FALSE, flg_ch = PETSC_FALSE;
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   char      tmpdir[PETSC_MAX_PATH_LEN];
   PetscBool flg_mumps = PETSC_FALSE, flg_mumps_ch = PETSC_FALSE, test_mumps_ooc_api = PETSC_FALSE;
 #endif
-#if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU) || PetscDefined(HAVE_SUPERLU_DIST)
   PetscBool flg_superlu = PETSC_FALSE;
 #endif
-#if defined(PETSC_HAVE_STRUMPACK)
+#if PetscDefined(HAVE_STRUMPACK)
   PetscBool flg_strumpack = PETSC_FALSE;
 #endif
   PetscScalar   v;
   PetscMPIInt   rank, size;
   PetscLogStage stage;
 
-#if defined(PETSC_HAVE_STRUMPACK) && defined(PETSC_HAVE_SLATE)
+#if PetscDefined(HAVE_STRUMPACK) && PetscDefined(HAVE_SLATE)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
 #endif
   PetscFunctionBeginUser;
@@ -170,7 +170,7 @@ int main(int argc, char **args)
           '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_7 3 -mat_mumps_icntl_1 0.0'
           are equivalent to these procedural calls
   */
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   flg_mumps    = PETSC_FALSE;
   flg_mumps_ch = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_mumps_lu", &flg_mumps, NULL));
@@ -238,7 +238,7 @@ int main(int argc, char **args)
           '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_type superlu -mat_superlu_ilu_droptol 1.e-8'
           are equivalent to these procedual calls
   */
-#if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU) || PetscDefined(HAVE_SUPERLU_DIST)
   flg_ilu     = PETSC_FALSE;
   flg_superlu = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_superlu_lu", &flg_superlu, NULL));
@@ -249,13 +249,13 @@ int main(int argc, char **args)
     if (flg_superlu) PetscCall(PCSetType(pc, PCLU));
     else if (flg_ilu) PetscCall(PCSetType(pc, PCILU));
     if (size == 1) {
-  #if !defined(PETSC_HAVE_SUPERLU)
+  #if !PetscDefined(HAVE_SUPERLU)
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires SUPERLU");
   #else
       PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU));
   #endif
     } else {
-  #if !defined(PETSC_HAVE_SUPERLU_DIST)
+  #if !PetscDefined(HAVE_SUPERLU_DIST)
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires SUPERLU_DIST");
   #else
       PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSUPERLU_DIST));
@@ -263,7 +263,7 @@ int main(int argc, char **args)
     }
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc, &F));
-  #if defined(PETSC_HAVE_SUPERLU)
+  #if PetscDefined(HAVE_SUPERLU)
     if (size == 1) PetscCall(MatSuperluSetILUDropTol(F, 1.e-8));
   #endif
   }
@@ -286,7 +286,7 @@ int main(int argc, char **args)
     how to tune the preconditioner, see for instance:
      https://portal.nersc.gov/project/sparse/strumpack/master/prec.html
   */
-#if defined(PETSC_HAVE_STRUMPACK)
+#if PetscDefined(HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
   flg_strumpack = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_strumpack_lu", &flg_strumpack, NULL));
@@ -296,7 +296,7 @@ int main(int argc, char **args)
     PetscCall(KSPGetPC(ksp, &pc));
     if (flg_strumpack) PetscCall(PCSetType(pc, PCLU));
     else if (flg_ilu) PetscCall(PCSetType(pc, PCILU));
-  #if !defined(PETSC_HAVE_STRUMPACK)
+  #if !PetscDefined(HAVE_STRUMPACK)
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This test requires STRUMPACK");
   #endif
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERSTRUMPACK));
@@ -374,7 +374,7 @@ int main(int argc, char **args)
 
   PetscCall(KSPSetFromOptions(ksp));
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   // The OOC options must be set before PCSetUp()/KSPSetUp(), as MUMPS requires them be set after the initialization phase and before the (numeric) factorization phase.
   if (flg_mumps || flg_mumps_ch) {
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mumps_ooc_api", &test_mumps_ooc_api, NULL));
@@ -391,7 +391,7 @@ int main(int argc, char **args)
   /* Get info from matrix factors */
   PetscCall(KSPSetUp(ksp));
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   if (flg_mumps || flg_mumps_ch) {
     PetscInt  icntl, infog34, num_null_pivots, *null_pivots;
     PetscReal cntl, rinfo12, rinfo13;
@@ -439,7 +439,7 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
   }
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   // Get the OCC tmpdir via F before it is destroyed in KSPDestroy().
   if (test_mumps_ooc_api) {
     const char *dir;
@@ -455,7 +455,7 @@ int main(int argc, char **args)
   */
   PetscCall(KSPDestroy(&ksp));
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   // Files created by MUMPS under the OOC tmpdir were automatically deleted by MUMPS with JOB_END (-2)
   // during KSP/PCDestroy(), but we need to remove the tmpdir created by us.
   if (test_mumps_ooc_api && rank == 0) PetscCall(PetscRMTree(tmpdir));

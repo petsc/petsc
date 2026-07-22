@@ -5,7 +5,7 @@
 static PetscErrorCode       MatStashScatterBegin_Ref(Mat, MatStash *, PetscInt *);
 PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *, PetscMPIInt *, PetscInt **, PetscInt **, PetscScalar **, PetscInt *);
 PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
 static PetscErrorCode MatStashScatterBegin_BTS(Mat, MatStash *, PetscInt *);
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *, PetscMPIInt *, PetscInt **, PetscInt **, PetscScalar **, PetscInt *);
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash *);
@@ -77,7 +77,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm, PetscInt bs, MatStash *stas
   stash->blocktype   = MPI_DATATYPE_NULL;
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-matstash_reproduce", &stash->reproduce, NULL));
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-matstash_legacy", &flg, NULL));
   if (!flg) {
@@ -91,7 +91,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm, PetscInt bs, MatStash *stas
     stash->ScatterGetMesg = MatStashScatterGetMesg_Ref;
     stash->ScatterEnd     = MatStashScatterEnd_Ref;
     stash->ScatterDestroy = NULL;
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -564,12 +564,12 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat, MatStash *stash, PetscIn
       PetscCallMPI(MPIU_Isend(svalues + bs2 * startv[i], bs2 * nlengths[i], MPIU_SCALAR, i, tag2, comm, send_waits + count++));
     }
   }
-#if defined(PETSC_USE_INFO)
-  PetscCall(PetscInfo(NULL, "No of messages: %d \n", nsends));
-  for (PetscMPIInt i = 0; i < size; i++) {
-    if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %d: size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
+  if (PetscDefined(USE_INFO)) {
+    PetscCall(PetscInfo(NULL, "No of messages: %d \n", nsends));
+    for (PetscMPIInt i = 0; i < size; i++) {
+      if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %d: size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
+    }
   }
-#endif
   PetscCall(PetscFree(nlengths));
   PetscCall(PetscFree(owner));
   PetscCall(PetscFree2(startv, starti));
@@ -673,7 +673,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash, PetscMPI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
 typedef struct {
   PetscInt    row;
   PetscInt    col;

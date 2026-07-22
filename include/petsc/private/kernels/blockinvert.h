@@ -45,7 +45,7 @@ PETSC_INTERN PetscErrorCode                PetscKernel_A_gets_inverse_A_15(MatSc
 
 /* -----------------------------------------------------------------------*/
 
-#if !defined(PETSC_USE_REAL_MAT_SINGLE)
+#if !PetscDefined(USE_REAL_MAT_SINGLE)
   /*
         Version that calls the BLAS directly
 */
@@ -278,7 +278,7 @@ PETSC_INTERN PetscErrorCode                PetscKernel_A_gets_inverse_A_15(MatSc
       PetscCallBLAS("BLASgemv", BLASgemv_("T", &_bbs, &_bncols, &_one, A, &_bbs, x, &_ione, &_one, z, &_ione)); \
     } while (0)
 
-#else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
+#else /* !PetscDefined(USE_REAL_MAT_SINGLE) */
 /*
        Version that calls Fortran routines; can handle different precision
    of matrix (array) and vectors
@@ -292,14 +292,14 @@ PETSC_INTERN PetscErrorCode                PetscKernel_A_gets_inverse_A_15(MatSc
    code is used.
 */
 
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define msgemv_  MSGEMV
     #define msgemvp_ MSGEMVP
     #define msgemvm_ MSGEMVM
     #define msgemvt_ MSGEMVT
     #define msgemmi_ MSGEMMI
     #define msgemm_  MSGEMM
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define msgemv_  msgemv
     #define msgemvp_ msgemvp
     #define msgemvm_ msgemvm
@@ -386,4 +386,4 @@ PETSC_INTERN void msgemm_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
   #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C)
   #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
 
-#endif /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
+#endif /* !PetscDefined(USE_REAL_MAT_SINGLE) */

@@ -24,7 +24,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 {
   PetscFunctionBegin;
   PetscAssertPointer(filename, 2);
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
   PetscCall(DMPlexCreateCGNSFromFile_Internal(comm, filename, interpolate, dm));
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
@@ -55,7 +55,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CGNS)
+#if PetscDefined(HAVE_CGNS)
   {
     PetscBool use_parallel_viewer = PETSC_FALSE;
 

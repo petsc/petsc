@@ -159,7 +159,7 @@ PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt bs, const VecTaggerBox *s
   PetscFunctionBegin;
   *isSub = PETSC_TRUE;
   for (PetscInt i = 0; i < bs; i++) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     if (superBox[i].min > subBox[i].min || superBox[i].max < subBox[i].max) {
       *isSub = PETSC_FALSE;
       break;
@@ -180,7 +180,7 @@ PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, const VecTaggerBox *
   PetscFunctionBegin;
   *empty = PETSC_FALSE;
   for (PetscInt i = 0; i < bs; i++) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     c[i].min = PetscMax(a[i].min, b[i].min);
     c[i].max = PetscMin(a[i].max, b[i].max);
     if (c[i].max < c[i].min) {

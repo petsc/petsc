@@ -1,7 +1,7 @@
 #if !defined(PETSC4PY_COMPAT_HPDDM_H)
 #define PETSC4PY_COMPAT_HPDDM_H
 
-#if !defined(PETSC_HAVE_HPDDM)
+#if !PetscDefined(HAVE_HPDDM)
 
 #define PetscHPDDMError do { \
     PetscFunctionBegin; \

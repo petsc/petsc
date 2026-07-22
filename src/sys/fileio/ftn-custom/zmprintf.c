@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscfprintf_             PETSCFPRINTF
   #define petscprintf_              PETSCPRINTF
   #define petscsynchronizedfprintf_ PETSCSYNCHRONIZEDFPRINTF
   #define petscsynchronizedprintf_  PETSCSYNCHRONIZEDPRINTF
   #define petscsynchronizedflush_   PETSCSYNCHRONIZEDFLUSH
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscfprintf_             petscfprintf
   #define petscprintf_              petscprintf
   #define petscsynchronizedfprintf_ petscsynchronizedfprintf

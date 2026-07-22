@@ -130,7 +130,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal fill, Ma
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscStrcmp(alg, "hypre", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A, B, fill, C));
@@ -232,14 +232,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A, Mat B, PetscR
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -305,7 +303,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
     cj = PetscSafePointerPlusOffset(cj, cnzi);
     ca += cnzi;
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
@@ -366,7 +364,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, Mat C)
     cj += cnzi;
     ca += cnzi;
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
@@ -469,14 +467,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A, Mat B, Pets
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -572,14 +568,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -674,14 +668,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A, Mat B, PetscReal fil
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -790,14 +782,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A, Mat B, PetscReal f
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1087,14 +1077,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A, Mat B, PetscReal
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
 
   /* Step 4: Free temporary work areas */
   PetscCall(PetscFree(workj_L1));
@@ -1187,14 +1175,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, PetscReal f
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
 
-#if defined(PETSC_USE_INFO)
-  if (ci[am]) {
-    PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
-    PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
-  } else {
-    PetscCall(PetscInfo(C, "Empty matrix product\n"));
+  if (PetscDefined(USE_INFO)) {
+    if (ci[am]) {
+      PetscCall(PetscInfo(C, "Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n", ndouble, (double)fill, (double)afill));
+      PetscCall(PetscInfo(C, "Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n", (double)afill));
+    } else PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1282,7 +1268,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal
     Bt_dense->assembled = PETSC_TRUE;
     abt->ABt_den        = C_dense;
 
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
     {
       Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
       PetscCall(PetscInfo(C, "Use coloring of C=A*B^T; B^T: %" PetscInt_FMT " %" PetscInt_FMT ", Bt_dense: %" PetscInt_FMT ",%" PetscInt_FMT "; Cnz %" PetscInt_FMT " / (cm*ncolors %" PetscInt_FMT ") = %g\n", B->cmap->n, B->rmap->n, Bt_dense->rmap->n,
@@ -1829,13 +1815,10 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
   }
 
   PetscCall(MatDenseRestoreArrayRead(Cden, &ca_den));
-#if defined(PETSC_USE_INFO)
-  if (matcoloring->brows > 0) {
-    PetscCall(PetscInfo(Csp, "Loop over %" PetscInt_FMT " row blocks for den2sp\n", brows));
-  } else {
-    PetscCall(PetscInfo(Csp, "Loop over colors/columns of Cden, inefficient for large sparse matrix product \n"));
+  if (PetscDefined(USE_INFO)) {
+    if (matcoloring->brows > 0) PetscCall(PetscInfo(Csp, "Loop over %" PetscInt_FMT " row blocks for den2sp\n", brows));
+    else PetscCall(PetscInfo(Csp, "Loop over colors/columns of Cden, inefficient for large sparse matrix product \n"));
   }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1987,7 +1970,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AB(Mat C)
   Mat_Product *product = C->product;
   PetscInt     alg     = 0; /* default algorithm */
   PetscBool    flg     = PETSC_FALSE;
-#if !defined(PETSC_HAVE_HYPRE)
+#if !PetscDefined(HAVE_HYPRE)
   const char *algTypes[7] = {"sorted", "scalable", "scalable_fast", "heap", "btheap", "llcondensed", "rowmerge"};
   PetscInt    nalg        = 7;
 #else
@@ -2080,7 +2063,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_PtAP(Mat C)
   Mat_Product *product = C->product;
   PetscBool    flg     = PETSC_FALSE;
   PetscInt     alg     = 0; /* default algorithm -- alg=1 should be default!!! */
-#if !defined(PETSC_HAVE_HYPRE)
+#if !PetscDefined(HAVE_HYPRE)
   const char *algTypes[2] = {"scalable", "rap"};
   PetscInt    nalg        = 2;
 #else

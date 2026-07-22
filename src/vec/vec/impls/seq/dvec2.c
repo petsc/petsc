@@ -5,7 +5,7 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/kernels/petscaxpy.h>
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#if PetscDefined(USE_FORTRAN_KERNEL_MDOT)
   #include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
 PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
@@ -660,7 +660,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec 
   const PetscInt     j_rem = nv & 0x3, n = xin->map->n;
   const PetscScalar *yptr[4];
   PetscScalar       *xx;
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*xx, **yptr, *aptr)
 #endif
 
@@ -768,7 +768,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin, PetscScalar alpha, Vec xin)
       for (PetscInt i = 0; i < n; ++i) yy[i] = xx[i] - yy[i];
       PetscCall(PetscLogFlops(n));
     } else {
-#if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+#if PetscDefined(USE_FORTRAN_KERNEL_AYPX)
       fortranaypx_(&n, &alpha, xx, yy);
 #else
       for (PetscInt i = 0; i < n; ++i) yy[i] = xx[i] + alpha * yy[i];
@@ -809,7 +809,7 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha, Vec xin, Vec yin)
     PetscCall(PetscArraycpy(ww, yy, n));
   } else {
     PetscCall(PetscLogFlops(2.0 * n));
-#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
+#if PetscDefined(USE_FORTRAN_KERNEL_WAXPY)
     fortranwaxpy_(&n, &alpha, xx, yy, ww);
 #else
     for (PetscInt i = 0; i < n; i++) ww[i] = yy[i] + alpha * xx[i];

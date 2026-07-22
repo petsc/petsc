@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
   if (rank == 0) rootdata[nroots * m - 1] = 123; // set the last integer in rootdata and then check on leaves
 
-#if defined(PETSC_HAVE_MPI_LARGE_COUNT)
+#if PetscDefined(HAVE_MPI_LARGE_COUNT)
   PetscCallMPI(MPI_Type_contiguous_c(m, MPI_INT, &newtype));
 #else
   PetscCallMPI(MPI_Type_contiguous(m, MPI_INT, &newtype));

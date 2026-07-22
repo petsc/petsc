@@ -5,18 +5,18 @@ static char help[] = "Tests repeated PetscInitialize/PetscFinalize calls.\n\n";
 int main(int argc, char **argv)
 {
   int i, imax;
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscBool initialized;
 #endif
 
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   imax = 32;
 #else
   imax = 1024;
 #endif
 
   PetscCallMPI(MPI_Init(&argc, &argv));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscElementalInitializePackage());
   PetscCall(PetscElementalInitialized(&initialized));
   PetscCheck(initialized, MPI_COMM_WORLD, PETSC_ERR_PLIB, "Error in Elemental package processing");
@@ -25,13 +25,13 @@ int main(int argc, char **argv)
     PetscFunctionBeginUser;
     PetscCall(PetscInitialize(&argc, &argv, NULL, help));
     PetscCall(PetscFinalize());
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
     // if Elemental is initialized outside of PETSc it should remain initialized
     PetscCall(PetscElementalInitialized(&initialized));
     PetscCheck(initialized, MPI_COMM_WORLD, PETSC_ERR_PLIB, "Error in Elemental package processing");
 #endif
   }
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscElementalFinalizePackage());
   PetscCall(PetscElementalInitialized(&initialized));
   PetscCheck(!initialized, MPI_COMM_WORLD, PETSC_ERR_PLIB, "Error in Elemental package processing");

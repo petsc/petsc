@@ -157,7 +157,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate dynamic library: %s", path);
   /* Eventually ./configure should determine if the system needs an executable dynamic library */
 #define PETSC_USE_NONEXECUTABLE_SO
-#if !defined(PETSC_USE_NONEXECUTABLE_SO)
+#if !PetscDefined(USE_NONEXECUTABLE_SO)
   PetscCall(PetscTestFile(par2, 'x', &foundlibrary));
   PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Dynamic library is not executable: %s %s", path, par2);
 #endif

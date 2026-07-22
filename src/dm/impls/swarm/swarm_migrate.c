@@ -291,7 +291,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   Vec"Type"GetArrays(...), and we still need to pass something to
   DMLocatePoints to avoid deadlock
 */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     if (npoints_from_neighbours > 0) {
       PetscCall(VecGetSubVector(pos, nis, &npos));
       PetscCall(DMLocatePoints(dmcell, npos, DM_POINTLOCATION_NONE, &sfcell));

@@ -2,7 +2,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I  "petscmat.h"  I*/
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
+#if PetscDefined(HAVE_MKL_INTEL_ILP64)
   #define MKL_ILP64
 #endif
 #include <mkl.h>

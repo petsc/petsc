@@ -3,7 +3,7 @@
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <petsc/private/matimpl.h> /*I <petscmat.h> I*/
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
   #include <petsc/private/deviceimpl.h>
   #include <petsc/private/cupmsolverinterface.hpp>
   #include <petsc/private/cupmobject.hpp>

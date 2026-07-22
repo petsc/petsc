@@ -6,7 +6,8 @@ static char help[] = "Artificial test to check that snes->functiondomainerror is
 
   ------------------------------------------------------------------------- */
 
-#if !defined(PETSC_SKIP_COMPLEX)
+#include <petscmacros.h>
+#if !PetscDefined(SKIP_COMPLEX)
   #define PETSC_SKIP_COMPLEX
 #endif
 #include <petscsnes.h>

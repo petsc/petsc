@@ -2,11 +2,11 @@
 
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
-#if defined(PETSC_HAVE_X)
+#if PetscDefined(HAVE_X)
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
 #endif
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
-#if defined(PETSC_USE_WINDOWS_GRAPHICS)
+#if PetscDefined(USE_WINDOWS_GRAPHICS)
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 
@@ -29,9 +29,9 @@ PetscErrorCode PetscDrawRegisterAll(void)
 
   PetscCall(PetscDrawRegister(PETSC_DRAW_IMAGE, PetscDrawCreate_Image));
   PetscCall(PetscDrawRegister(PETSC_DRAW_TIKZ, PetscDrawCreate_TikZ));
-#if defined(PETSC_HAVE_X)
+#if PetscDefined(HAVE_X)
   PetscCall(PetscDrawRegister(PETSC_DRAW_X, PetscDrawCreate_X));
-#elif defined(PETSC_USE_WINDOWS_GRAPHICS)
+#elif PetscDefined(USE_WINDOWS_GRAPHICS)
   PetscCall(PetscDrawRegister(PETSC_DRAW_WIN32, PetscDrawCreate_Win32));
 #endif
   PetscCall(PetscDrawRegister(PETSC_DRAW_NULL, PetscDrawCreate_Null));

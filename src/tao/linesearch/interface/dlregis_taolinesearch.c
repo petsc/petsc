@@ -37,7 +37,7 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   PetscFunctionBegin;
   if (TaoLineSearchPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TaoLineSearchPackageInitialized = PETSC_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(PetscClassIdRegister("TaoLineSearch", &TAOLINESEARCH_CLASSID));
   PetscCall(PetscInfoProcessClass("taolinesearch", 1, &TAOLINESEARCH_CLASSID));
   PetscCall(TaoLineSearchRegister("unit", TaoLineSearchCreate_Unit));

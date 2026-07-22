@@ -1,14 +1,14 @@
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsetfortranbasepointers_ PETSCSETFORTRANBASEPOINTERS
   #define petsc_null_function_         PETSC_NULL_FUNCTION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsetfortranbasepointers_ petscsetfortranbasepointers
   #define petsc_null_function_         petsc_null_function
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if PetscDefined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
   #define petsc_null_function_ petsc_null_function__
 #endif
 

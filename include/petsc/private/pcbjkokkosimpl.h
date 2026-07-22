@@ -7,7 +7,7 @@
 
 #include "Kokkos_Core.hpp"
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   #if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
     #include <nvtx3/nvToolsExt.h>
   #else
@@ -65,6 +65,6 @@ typedef struct {
 } PC_PCBJKOKKOS;
 
 typedef Kokkos::TeamPolicy<>::member_type team_member;
-#if defined(PETSC_HAVE_KOKKOS_KERNELS_BATCH)
+#if PetscDefined(HAVE_KOKKOS_KERNELS_BATCH)
 PETSC_INTERN PetscErrorCode PCApply_BJKOKKOSKERNELS(PC, const PetscScalar *, PetscScalar *, const PetscInt *glb_Aai, const PetscInt *glb_Aaj, const PetscScalar *glb_Aaa, const PetscInt, MatInfo, const PetscInt, PCFailedReason *);
 #endif

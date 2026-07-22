@@ -1,13 +1,13 @@
 #pragma once
 
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>
 typedef cudaStream_t cupmStream_t;
 typedef cudaEvent_t  cupmEvent_t;
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   #include <petscdevice_hip.h>
 typedef hipStream_t cupmStream_t;
 typedef hipEvent_t  cupmEvent_t;
@@ -98,7 +98,7 @@ struct _n_PetscSFLink {
   PetscErrorCode (*h_FetchAndAddLocal)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, void *);
 
   PetscBool deviceinited; /* Are device related fields initialized? */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   /* These fields are lazily initialized in a sense that only when device pointers are passed to an SF, the SF
      will set them, otherwise it just leaves them alone. Packing routines using regular ops when there are no data race chances.
   */
@@ -163,7 +163,7 @@ struct _n_PetscSFLink {
   PetscErrorCode (*da_ScatterAndLXOR)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, PetscInt, PetscSFPackOpt, const PetscInt *, void *);
   PetscErrorCode (*da_ScatterAndBXOR)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, PetscInt, PetscSFPackOpt, const PetscInt *, void *);
   PetscErrorCode (*da_FetchAndAddLocal)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, void *);
-  #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+  #if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   PetscInt     maxResidentThreadsPerGPU; /* It is a copy from SF for convenience */
   cupmStream_t stream;                   /* stream on which input/output root/leafdata is computed on (default is PetscDefaultCudaStream) */
   #endif
@@ -196,7 +196,7 @@ struct _n_PetscSFLink {
   PetscSFLink  next;
 
   PetscBool use_nvshmem; /* Does this link use nvshem (vs. MPI) for communication? */
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   cupmEvent_t  dataReady;        /* Events to mark readiness of root/leafdata */
   cupmEvent_t  endRemoteComm;    /* Events to mark end of local/remote communication */
   cupmStream_t remoteCommStream; /* Streams for remote (i.e., inter-rank) communication */
@@ -221,7 +221,7 @@ static inline PetscErrorCode PetscSFLinkGetPack(PetscSFLink link, PetscMemType m
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) *Pack = link->h_Pack;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   else *Pack = link->d_Pack;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -246,19 +246,19 @@ PETSC_INTERN PetscErrorCode PetscSFSetUpPackFields(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFResetPackFields(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFLinkCreate_MPI(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, const void *, MPI_Op, PetscSFOperation, PetscSFLink *);
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF, PetscSFLink, MPI_Datatype);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF, PetscSFLink, MPI_Datatype);
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF, PetscSFLink, MPI_Datatype);
 #endif
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
 PETSC_INTERN PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, const void *, MPI_Op, PetscSFOperation, PetscSFLink *);
 PETSC_INTERN PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF, PetscMemType, const void *, PetscMemType, const void *, PetscBool *);
 #endif
@@ -293,7 +293,7 @@ static inline PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf, PetscSFL
 }
 
 /* A set of helper routines for Pack/Unpack/Scatter on GPUs */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_SYCL)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP) || PetscDefined(HAVE_SYCL)
 /* PetscSFLinkCopyXxxxBufferInCaseNotUseGpuAwareMPI routines are simple: if not use_gpu_aware_mpi, we need
    to copy the buffer from GPU to CPU before MPI calls, and from CPU to GPU after MPI calls.
 */

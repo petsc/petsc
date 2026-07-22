@@ -1,14 +1,14 @@
 #include <petscvec.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define vecgetarraymystruct_       VECGETARRAYMYSTRUCT
   #define vecrestorearraymystruct_   VECRESTOREARRAYMYSTRUCT
   #define f90array1dcreatemystruct_  F90ARRAY1DCREATEMYSTRUCT
   #define f90array1daccessmystruct_  F90ARRAY1DACCESSMYSTRUCT
   #define f90array1ddestroymystruct_ F90ARRAY1DDESTROYMYSTRUCT
   #define f90array1dgetaddrmystruct_ F90ARRAY1DGETADDRMYSTRUCT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define vecgetarraymystruct_       vecgetarraymystruct
   #define vecrestorearraymystruct_   vecrestorearraymystruct
   #define f90array1dcreatemystruct_  f90array1dcreatemystruct

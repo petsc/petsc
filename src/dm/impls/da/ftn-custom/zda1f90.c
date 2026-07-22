@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmda.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmdavecgetarray1_         DMDAVECGETARRAY1
   #define dmdavecrestorearray1_     DMDAVECRESTOREARRAY1
   #define dmdavecgetarray2_         DMDAVECGETARRAY2
@@ -20,7 +20,7 @@
   #define dmdavecrestorearrayread4_ DMDAVECRESTOREARRAYREAD4
   #define dmdagetelements_          DMDAGETELEMENTS
   #define dmdarestoreelements_      DMDARESTOREELEMENTS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmdavecgetarray1_         dmdavecgetarray1
   #define dmdavecrestorearray1_     dmdavecrestorearray1
   #define dmdavecgetarray2_         dmdavecgetarray2

@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat);
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat);
 
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Elemental(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_Elemental(Mat, Mat, Mat);
 #endif

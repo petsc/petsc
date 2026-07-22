@@ -28,13 +28,13 @@ PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char 
 {
   FILE *fd;
   char  command[512];
-#if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_UCBPS) && PetscDefined(HAVE_POPEN)
   char        buf[1024], *found;
   PetscMPIInt rank;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_UCBPS) && PetscDefined(HAVE_POPEN)
   /* check if MATLAB is not already running */
   PetscCall(PetscPOpen(comm, machine, "/usr/ucb/ps -ugxww | grep matlab | grep -v grep", "r", &fd));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -48,12 +48,12 @@ PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char 
     /* the remote machine won't know about current directory, so add it to MATLAB path */
     /* the extra \" are to protect possible () in the script command from the shell */
     PetscCall(PetscSNPrintf(command, PETSC_STATIC_ARRAY_LENGTH(command), "echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m", script));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
     PetscCall(PetscPOpen(comm, machine, command, "r", &fd));
     PetscCall(PetscPClose(comm, fd));
 #endif
   }
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscCall(PetscPOpen(comm, machine, "xterm -display ${DISPLAY} -e matlab -nosplash", "r", fp));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

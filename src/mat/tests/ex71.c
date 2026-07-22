@@ -45,12 +45,12 @@ int main(int argc, char **args)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   PetscCall(MatView(A, PETSC_VIEWER_SOCKET_WORLD));
 #endif
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &x));
   PetscCall(VecSet(x, one));
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   PetscCall(VecView(x, PETSC_VIEWER_SOCKET_WORLD));
 #endif
 

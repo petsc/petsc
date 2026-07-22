@@ -15,10 +15,10 @@ int main(int argc, char **args)
   Vec         u;
   PetscViewer viewer;
   PetscBool   vstage2, vstage3, mpiio_use, isbinary = PETSC_FALSE;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5 = PETSC_FALSE;
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscBool isadios = PETSC_FALSE;
 #endif
   PetscScalar const *values;
@@ -29,10 +29,10 @@ int main(int argc, char **args)
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-binary", &isbinary, NULL));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-hdf5", &ishdf5, NULL));
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-adios", &isadios, NULL));
 #endif
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-mpiio", &mpiio_use, NULL));
@@ -66,12 +66,12 @@ int main(int argc, char **args)
   if (isbinary) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "writing vector in binary to vector.dat ...\n"));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_WRITE, &viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "writing vector in hdf5 to vector.dat ...\n"));
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_WRITE, &viewer));
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   } else if (isadios) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "writing vector in adios to vector.dat ...\n"));
     PetscCall(PetscViewerADIOSOpen(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_WRITE, &viewer));
@@ -99,12 +99,12 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in binary from %s ...\n", read_file));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));
     PetscCall(PetscViewerBinarySetFlowControl(viewer, 2));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in hdf5 from %s ...\n", read_file));
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   } else if (isadios) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in adios from %s ...\n", read_file));
     PetscCall(PetscViewerADIOSOpen(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));

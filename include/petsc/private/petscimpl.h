@@ -6,7 +6,7 @@
 
 /* SUBMANSEC = Sys */
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...)
 #else
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...) __VA_ARGS__
@@ -147,7 +147,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems, PetscCtx);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscCtxRt);
   void *optionctx[PETSC_MAX_OPTIONS_HANDLER];
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
   PetscBool amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
@@ -410,7 +410,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
   #define PetscCheckPointer(ptr, data_type) (ptr ? PETSC_TRUE : PETSC_FALSE)
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 template <typename T>
 extern void PetscValidHeaderSpecificType(T, PetscClassId, int, const char[]);
 template <typename T>
@@ -497,7 +497,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(int32_t, PETSC_INT32);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(uint32_t, PETSC_INT32);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(int64_t, PETSC_INT64);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(uint64_t, PETSC_INT64);
-      #if defined(PETSC_HAVE_COMPLEX)
+      #if PetscDefined(HAVE_COMPLEX)
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       #endif
 
@@ -608,8 +608,8 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
     } \
   } while (0)
 
-#if !defined(PETSC_CLANG_STATIC_ANALYZER)
-  #if !defined(PETSC_USE_DEBUG)
+#if !PetscDefined(CLANG_STATIC_ANALYZER)
+  #if !PetscDefined(USE_DEBUG)
 
     #define PetscCheckSameType(a, arga, b, argb) \
       do { \
@@ -1324,7 +1324,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define PetscObjectComposedDataSetScalar(obj, id, data) \
     ((PetscErrorCode)((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
@@ -1356,7 +1356,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define PetscObjectComposedDataGetScalar(obj, id, data, flag) \
     ((PetscErrorCode)(((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
@@ -1388,7 +1388,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`
 M*/
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) \
     ((PetscErrorCode)((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
@@ -1423,7 +1423,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) \
     ((PetscErrorCode)(((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
@@ -1493,8 +1493,8 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm, PetscSplitReduction
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *);
 
-#if defined(PETSC_HAVE_THREADSAFETY)
-  #if defined(PETSC_HAVE_CONCURRENCYKIT)
+#if PetscDefined(HAVE_THREADSAFETY)
+  #if PetscDefined(HAVE_CONCURRENCYKIT)
     #if defined(__cplusplus)
 /*  CK does not have extern "C" protection in their include files */
 extern "C" {
@@ -1524,7 +1524,7 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
   return PETSC_SUCCESS;
 }
-  #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
+  #elif (defined(__cplusplus) && PetscDefined(HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && PetscDefined(HAVE_STDATOMIC_H))
     #if defined(__cplusplus)
       // See the example at https://en.cppreference.com/w/cpp/atomic/atomic_flag
       #include <atomic>
@@ -1564,7 +1564,7 @@ static inline PetscErrorCode PetscSpinlockDestroy(PETSC_UNUSED PetscSpinlock *sp
     #undef petsc_atomic_flag_clear
     #undef petsc_atomic_flag
 
-  #elif defined(PETSC_HAVE_OPENMP)
+  #elif PetscDefined(HAVE_OPENMP)
 
     #include <omp.h>
 typedef omp_lock_t PetscSpinlock;
@@ -1605,7 +1605,7 @@ typedef int PetscSpinlock;
   #define PetscSpinlockDestroy(a) PETSC_SUCCESS
 #endif
 
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
@@ -1618,18 +1618,18 @@ PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
 PETSC_EXTERN PetscBool     PetscPrintFunctionList;
 
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_INTERN PetscBool      PetscBeganKokkos;
 PETSC_EXTERN PetscBool      PetscKokkosInitialized;
 PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *);
 PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
 #endif
 
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
 PETSC_EXTERN PetscInt PetscNumOMPThreads;
 #endif
 
@@ -1664,13 +1664,13 @@ typedef enum {
 } PetscPrecision;
 
 // The precision of PetscScalar and PetscReal
-#if defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FP16)
   #define PETSC_SCALAR_PRECISION PETSC_PRECISION___FP16
-#elif defined(PETSC_USE_REAL_SINGLE)
+#elif PetscDefined(USE_REAL_SINGLE)
   #define PETSC_SCALAR_PRECISION PETSC_PRECISION_SINGLE
-#elif defined(PETSC_USE_REAL_DOUBLE)
+#elif PetscDefined(USE_REAL_DOUBLE)
   #define PETSC_SCALAR_PRECISION PETSC_PRECISION_DOUBLE
-#elif defined(PETSC_USE_REAL___FLOAT128)
+#elif PetscDefined(USE_REAL___FLOAT128)
   #define PETSC_SCALAR_PRECISION PETSC_PRECISION___FLOAT128
 #endif
 

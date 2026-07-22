@@ -1,10 +1,10 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PetscStack petscstack;
 #endif
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 
 static PetscBool amsmemstack = PETSC_FALSE;

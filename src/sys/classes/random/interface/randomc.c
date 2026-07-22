@@ -177,7 +177,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
     PetscCall(PetscRandomSeed(rnd));
   }
   PetscCall(PetscOptionsBool("-random_no_imaginary_part", "The imaginary part of the random number will be zero", "PetscRandomSetInterval", noimaginary, &noimaginary, &set));
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   if (set) {
     if (noimaginary) {
       PetscScalar low, high;
@@ -269,7 +269,7 @@ PetscErrorCode PetscRandomGetOptionsPrefix(PetscRandom r, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -322,7 +322,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 {
   PetscBool isascii;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -333,7 +333,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(rnd, 1, viewer, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isascii) {
@@ -344,7 +344,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Random type %s, seed %lu\n", rank, ((PetscObject)rnd)->type_name, rnd->seed));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
     const char *name;

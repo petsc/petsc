@@ -1,10 +1,10 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/dmdaimpl.h>
 #include <petsc/private/snesimpl.h>
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmdasnessetjacobianlocal_ DMDASNESSETJACOBIANLOCAL
   #define dmdasnessetfunctionlocal_ DMDASNESSETFUNCTIONLOCAL
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define dmdasnessetjacobianlocal_ dmdasnessetjacobianlocal
   #define dmdasnessetfunctionlocal_ dmdasnessetfunctionlocal
 #endif

@@ -2,13 +2,13 @@
 #include <petscbt.h>
 #include <errno.h>
 #include <fcntl.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
-#if !defined(PETSC_HAVE_O_BINARY)
+#if !PetscDefined(HAVE_O_BINARY)
   #define O_BINARY 0
 #endif
 
@@ -169,7 +169,7 @@ static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscCount n)
 static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscCount n)
 {
   PetscCount i, j;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal tmp, *buff1 = (PetscReal *)buff;
 #else
   PetscReal tmp, *buff1 = buff;
@@ -177,7 +177,7 @@ static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscCount n)
   char *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   n *= 2;
 #endif
   for (j = 0; j < n; j++) {
@@ -299,7 +299,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
 {
   size_t typesize, m = (size_t)num, n = 0, maxblock = 65536;
   char  *p = (char *)data;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   PetscBool readdouble = PETSC_FALSE;
   double   *pdouble;
 #endif
@@ -323,7 +323,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
 
   PetscCall(PetscDataTypeGetSize(type, &typesize));
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-binary_read_double", &readdouble, NULL));
   /* If using __float128 precision we still read in doubles from file */
   if ((type == PETSC_REAL || type == PETSC_COMPLEX) && readdouble) {
@@ -351,7 +351,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
   num = n / typesize;                             /* Should we require `n % typesize == 0` ? */
   if (count) PetscCall(PetscIntCast(num, count)); /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   if ((type == PETSC_REAL || type == PETSC_COMPLEX) && readdouble) {
     PetscInt   i, cnt = num * ((type == PETSC_REAL) ? 1 : 2);
     PetscReal *preal = (PetscReal *)data;
@@ -365,7 +365,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(ptmp, type, num));
 
   if (type == PETSC_FUNCTION) {
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
     PetscCall(PetscDLSym(NULL, fname, (void **)data));
 #else
     *(void **)data = NULL;
@@ -421,7 +421,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
   const size_t maxblock = 65536;
   const void  *ptmp     = p;
   char        *fname    = NULL;
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   PetscBool  writedouble = PETSC_FALSE;
   double    *ppp;
   PetscReal *pv;
@@ -433,13 +433,13 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
     const char *fnametmp;
 #endif
     m     = 64;
     fname = (char *)malloc(m * sizeof(char));
     PetscCheck(fname, PETSC_COMM_SELF, PETSC_ERR_MEM, "Cannot allocate space for function name");
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
     PetscCheck(n <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only binary view a single function at a time");
     PetscCall(PetscFPTFind(*(void **)p, &fnametmp));
     PetscCall(PetscStrncpy(fname, fnametmp, m));
@@ -451,7 +451,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
     ptmp  = (void *)fname;
   }
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-binary_write_double", &writedouble, NULL));
   /* If using __float128 precision we still write in doubles to file */
   if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) {
@@ -466,7 +466,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
 
   if (wtype == PETSC_INT) m *= sizeof(PetscInt);
   else if (wtype == PETSC_SCALAR) m *= sizeof(PetscScalar);
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   else if (wtype == PETSC_COMPLEX) m *= sizeof(PetscComplex);
 #endif
   else if (wtype == PETSC_REAL) m *= sizeof(PetscReal);
@@ -496,7 +496,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap((void *)ptmp, wtype, n));
 
   if (type == PETSC_FUNCTION) free(fname);
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if PetscDefined(USE_REAL___FLOAT128)
   if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) PetscCall(PetscFree(ppp));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -587,9 +587,9 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
   else if (whence == PETSC_BINARY_SEEK_CUR) iwhence = SEEK_CUR;
   else if (whence == PETSC_BINARY_SEEK_END) iwhence = SEEK_END;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown seek location");
-#if defined(PETSC_HAVE_LSEEK)
+#if PetscDefined(HAVE_LSEEK)
   *offset = lseek(fd, off, iwhence);
-#elif defined(PETSC_HAVE__LSEEK)
+#elif PetscDefined(HAVE__LSEEK)
   *offset = _lseek(fd, (long)off, iwhence);
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "System does not have a way of seeking on a file");
@@ -665,7 +665,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
   if (count) *count = ibuf[1];
 
   if (type == PETSC_FUNCTION) {
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
     PetscCall(PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, fname, (void **)fptr));
 #else
     *(void **)fptr = NULL;
@@ -746,9 +746,9 @@ PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
 
-  #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
+  #if PetscDefined(USE_PETSC_MPI_EXTERNAL32)
 /*
       MPICH does not provide the external32 representation for MPI_File_set_view() so we need to provide the functions.
     These are set into MPI in PetscInitialize() via MPI_Register_datarep()

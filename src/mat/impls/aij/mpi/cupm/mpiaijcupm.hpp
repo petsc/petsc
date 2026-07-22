@@ -152,7 +152,7 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscFunctionBegin;
     PetscCall(PetscFree(mpiaij->garray));
     PetscCall(VecDestroy(&mpiaij->lvec));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&mpiaij->colmap));
 #else
     PetscCall(PetscFree(mpiaij->colmap));
@@ -342,7 +342,7 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     if (PetscDefined(USE_DEBUG) && o_nnz) {
       for (i = 0; i < B->rmap->n; i++) PetscCheck(o_nnz[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT, i, o_nnz[i]);
     }
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
     PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
     PetscCall(PetscFree(b->colmap));

@@ -5,17 +5,17 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for dlopen() */
 #include <petsc/private/petscimpl.h>
 
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   #include <windows.h>
 #endif
-#if defined(PETSC_HAVE_DLFCN_H)
+#if PetscDefined(HAVE_DLFCN_H)
   #include <dlfcn.h>
 #endif
 
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
 typedef HMODULE dlhandle_t;
 typedef FARPROC dlsymbol_t;
-#elif defined(PETSC_HAVE_DLFCN_H)
+#elif PetscDefined(HAVE_DLFCN_H)
 typedef void *dlhandle_t;
 typedef void *dlsymbol_t;
 #else
@@ -58,11 +58,11 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
   /*
      --- LoadLibrary ---
   */
-#if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_LOADLIBRARY)
+#if PetscDefined(HAVE_WINDOWS_H) && PetscDefined(HAVE_LOADLIBRARY)
   dlhandle = LoadLibrary(name);
   if (!dlhandle) {
     /* TODO: Seem to need fixing, why not just return with an error with SETERRQ() */
-  #if defined(PETSC_HAVE_GETLASTERROR)
+  #if PetscDefined(HAVE_GETLASTERROR)
     DWORD erc;
     char *buff = NULL;
     erc        = GetLastError();
@@ -78,31 +78,31 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
   /*
      --- dlopen ---
   */
-#elif defined(PETSC_HAVE_DLFCN_H) && defined(PETSC_HAVE_DLOPEN)
+#elif PetscDefined(HAVE_DLFCN_H) && PetscDefined(HAVE_DLOPEN)
   /*
       Mode indicates symbols required by symbol loaded with dlsym()
      are only loaded when required (not all together) also indicates
      symbols required can be contained in other libraries also opened
      with dlopen()
   */
-  #if defined(PETSC_HAVE_RTLD_LAZY)
+  #if PetscDefined(HAVE_RTLD_LAZY)
   dlflags1 = RTLD_LAZY;
   #endif
-  #if defined(PETSC_HAVE_RTLD_NOW)
+  #if PetscDefined(HAVE_RTLD_NOW)
   if (mode & PETSC_DL_NOW) dlflags1 = RTLD_NOW;
   #endif
-  #if defined(PETSC_HAVE_RTLD_GLOBAL)
+  #if PetscDefined(HAVE_RTLD_GLOBAL)
   dlflags2 = RTLD_GLOBAL;
   #endif
-  #if defined(PETSC_HAVE_RTLD_LOCAL)
+  #if PetscDefined(HAVE_RTLD_LOCAL)
   if (mode & PETSC_DL_LOCAL) dlflags2 = RTLD_LOCAL;
   #endif
-  #if defined(PETSC_HAVE_DLERROR)
+  #if PetscDefined(HAVE_DLERROR)
   dlerror(); /* clear any previous error */
   #endif
   dlhandle = dlopen(name, dlflags1 | dlflags2);
   if (!dlhandle) {
-  #if defined(PETSC_HAVE_DLERROR)
+  #if PetscDefined(HAVE_DLERROR)
     const char *errmsg = dlerror();
   #else
     const char *errmsg = "unavailable";
@@ -140,10 +140,10 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
   /*
      --- FreeLibrary ---
   */
-#if defined(PETSC_HAVE_WINDOWS_H)
-  #if defined(PETSC_HAVE_FREELIBRARY)
+#if PetscDefined(HAVE_WINDOWS_H)
+  #if PetscDefined(HAVE_FREELIBRARY)
   if (FreeLibrary((dlhandle_t)*handle) == 0) {
-    #if defined(PETSC_HAVE_GETLASTERROR)
+    #if PetscDefined(HAVE_GETLASTERROR)
     char *buff = NULL;
     DWORD erc  = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, erc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buff, 0, NULL);
@@ -158,13 +158,13 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
   /*
      --- dclose ---
   */
-#elif defined(PETSC_HAVE_DLFCN_H)
-  #if defined(PETSC_HAVE_DLCLOSE)
-    #if defined(PETSC_HAVE_DLERROR)
+#elif PetscDefined(HAVE_DLFCN_H)
+  #if PetscDefined(HAVE_DLCLOSE)
+    #if PetscDefined(HAVE_DLERROR)
   dlerror(); /* clear any previous error */
     #endif
   if (dlclose((dlhandle_t)*handle) < 0) {
-    #if defined(PETSC_HAVE_DLERROR)
+    #if PetscDefined(HAVE_DLERROR)
     const char *errmsg = dlerror();
     #else
     const char *errmsg = "unavailable";
@@ -223,12 +223,12 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   /*
      --- GetProcAddress ---
   */
-  #if defined(PETSC_HAVE_WINDOWS_H)
-    #if defined(PETSC_HAVE_GETPROCADDRESS)
+  #if PetscDefined(HAVE_WINDOWS_H)
+    #if PetscDefined(HAVE_GETPROCADDRESS)
       if (handle) dlhandle = (dlhandle_t)handle;
       else dlhandle = (dlhandle_t)GetCurrentProcess();
       dlsymbol = (dlsymbol_t)GetProcAddress(dlhandle, symbol);
-      #if defined(PETSC_HAVE_SETLASTERROR)
+      #if PetscDefined(HAVE_SETLASTERROR)
         SetLastError((DWORD)0); /* clear any previous error */
       #endif /* PETSC_HAVE_SETLASTERROR */
     #endif /* !PETSC_HAVE_GETPROCADDRESS */
@@ -236,37 +236,37 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   /*
      --- dlsym ---
   */
-  #elif defined(PETSC_HAVE_DLFCN_H) /* PETSC_HAVE_WINDOWS_H */
-    #if defined(PETSC_HAVE_DLSYM)
+  #elif PetscDefined(HAVE_DLFCN_H) /* PETSC_HAVE_WINDOWS_H */
+    #if PetscDefined(HAVE_DLSYM)
       if (handle) dlhandle = (dlhandle_t)handle;
       else {
-        #if defined(PETSC_HAVE_DLOPEN)
+        #if PetscDefined(HAVE_DLOPEN)
           /* Attempt to retrieve the main executable's dlhandle. */
           {
-            #if !defined(PETSC_HAVE_RTLD_DEFAULT)
+            #if !PetscDefined(HAVE_RTLD_DEFAULT)
             int dlflags1 = 0, dlflags2 = 0;
-              #if defined(PETSC_HAVE_RTLD_LAZY)
+              #if PetscDefined(HAVE_RTLD_LAZY)
               dlflags1 = RTLD_LAZY;
               #endif /* PETSC_HAVE_RTLD_LAZY */
-              #if defined(PETSC_HAVE_RTLD_NOW)
+              #if PetscDefined(HAVE_RTLD_NOW)
               if (!dlflags1) dlflags1 = RTLD_NOW;
               #endif /* PETSC_HAVE_RTLD_NOW */
-              #if defined(PETSC_HAVE_RTLD_LOCAL)
+              #if PetscDefined(HAVE_RTLD_LOCAL)
               dlflags2 = RTLD_LOCAL;
               #endif /* PETSC_HAVE_RTLD_LOCAL */
-              #if defined(PETSC_HAVE_RTLD_GLOBAL)
+              #if PetscDefined(HAVE_RTLD_GLOBAL)
               if (!dlflags2) dlflags2 = RTLD_GLOBAL;
               #endif /* PETSC_HAVE_RTLD_GLOBAL */
             #endif /* !PETSC_HAVE_RTLD_DEFAULT */
-            #if defined(PETSC_HAVE_DLERROR)
+            #if PetscDefined(HAVE_DLERROR)
               if (!(PETSC_RUNNING_ON_VALGRIND)) dlerror(); /* clear any previous error, valgrind does not like this */
             #endif /* PETSC_HAVE_DLERROR */
-            #if defined(PETSC_HAVE_RTLD_DEFAULT)
+            #if PetscDefined(HAVE_RTLD_DEFAULT)
               dlhandle = RTLD_DEFAULT;
             #else /* PETSC_HAVE_RTLD_DEFAULT */
               /* Attempt to open the main executable as a dynamic library. */
               dlhandle = dlopen(NULL, dlflags1 | dlflags2);
-              #if defined(PETSC_HAVE_DLERROR)
+              #if PetscDefined(HAVE_DLERROR)
                 {
                   const char *e = (const char *)dlerror();
                   PetscCheck(!e, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library: error message from dlopen(): '%s'", e);
@@ -276,7 +276,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
           }
         #endif /* PETSC_HAVE_DLOPEN */
       }
-      #if defined(PETSC_HAVE_DLERROR)
+      #if PetscDefined(HAVE_DLERROR)
         dlerror(); /* clear any previous error */
       #endif /* PETSC_HAVE_DLERROR */
       dlsymbol = (dlsymbol_t)dlsym(dlhandle, symbol);
@@ -290,7 +290,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
 
   *value = *((void **)&dlsymbol);
 
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if PetscDefined(SERIALIZE_FUNCTIONS)
   if (*value) PetscCall(PetscFPTAdd(*value, symbol));
 #endif /* PETSC_SERIALIZE_FUNCTIONS */
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -323,7 +323,7 @@ PetscErrorCode PetscDLAddr(PetscVoidFn *func, char *name[])
   PetscFunctionBegin;
   PetscAssertPointer(name, 2);
   *name = NULL;
-#if defined(PETSC_HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
+#if PetscDefined(HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
   dlerror(); /* clear any previous error */
   {
     Dl_info info;

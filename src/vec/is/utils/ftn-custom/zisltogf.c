@@ -2,10 +2,10 @@
 #include <petscis.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define islocaltoglobalmpnggetinfosize_ ISLOCALTOGLOBALMPNGGETINFOSIZE
   #define islocaltoglobalmappinggetinfo_  ISLOCALTOGLOBALMAPPINGGETINFO
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define islocaltoglobalmpnggetinfosize_ islocaltoglobalmpnggetinfosize
   #define islocaltoglobalmappinggetinfo_  islocaltoglobalmappinggetinfo
 #endif

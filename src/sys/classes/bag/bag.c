@@ -673,15 +673,11 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
         PetscCall(PetscViewerASCIIPrintf(view, "; %s\n", nitem->help));
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar *)(((char *)bag) + nitem->offset);
-#if defined(PETSC_USE_COMPLEX)
         if ((double)PetscImaginaryPart(value)) {
           PetscCall(PetscViewerASCIIPrintf(view, "  %s = %g + %gi; %s\n", nitem->name, (double)PetscRealPart(value), (double)PetscImaginaryPart(value), nitem->help));
         } else {
           PetscCall(PetscViewerASCIIPrintf(view, "  %s = %g; %s\n", nitem->name, (double)PetscRealPart(value), nitem->help));
         }
-#else
-        PetscCall(PetscViewerASCIIPrintf(view, "  %s = %g; %s\n", nitem->name, (double)value, nitem->help));
-#endif
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt i, *value = (PetscInt *)(((char *)bag) + nitem->offset);
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = ", nitem->name));

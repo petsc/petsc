@@ -24,7 +24,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscCall(SNESReset_NGMRES(snes));
   PetscCall(PetscFree4(ngmres->h, ngmres->beta, ngmres->xi, ngmres->q));
   PetscCall(PetscFree3(ngmres->xnorms, ngmres->fnorms, ngmres->s));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscFree(ngmres->rwork));
 #endif
   PetscCall(PetscFree(ngmres->work));
@@ -65,7 +65,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     PetscCall(PetscBLASIntCast(msize, &ngmres->lda));
     PetscCall(PetscBLASIntCast(msize, &ngmres->ldb));
     PetscCall(PetscBLASIntCast(12 * msize, &ngmres->lwork));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscCall(PetscMalloc1(ngmres->lwork, &ngmres->rwork));
 #endif
     PetscCall(PetscMalloc1(ngmres->lwork, &ngmres->work));

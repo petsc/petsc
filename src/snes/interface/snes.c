@@ -319,7 +319,7 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -391,7 +391,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
   SNESLineSearch linesearch;
   PetscBool      isascii, isstring, isbinary, isdraw;
   DMSNES         dmsnes;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -405,7 +405,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isascii) {
@@ -505,7 +505,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw, x, bottom));
     PetscTryTypeMethod(snes, view, viewer);
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
     const char *name;
@@ -618,7 +618,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     /* TODO: the version 2 code should be merged into the MatCreateSNESMF() and MatCreateMFFD() infrastructure and then removed */
   } else /* if (version == 2) */ {
     PetscCheck(snes->vec_func, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "SNESSetFunction() must be called first");
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16)
+#if !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_REAL_SINGLE) && !PetscDefined(USE_REAL___FLOAT128) && !PetscDefined(USE_REAL___FP16)
     PetscCall(MatCreateSNESMFMore(snes, snes->vec_func, &J));
 #else
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "matrix-free operator routines (version 2)");
@@ -1150,7 +1150,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   PetscCall(PetscOptionsEnum("-snes_npc_side", "SNES nonlinear preconditioner side", "SNESSetNPCSide", PCSides, (PetscEnum)pcside, (PetscEnum *)&pcside, &flg));
   if (flg) PetscCall(SNESSetNPCSide(snes, pcside));
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   /*
     Publish convergence information using SAWs
   */
@@ -1162,7 +1162,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     PetscCall(SNESMonitorSet(snes, SNESMonitorSAWs, ctx, SNESMonitorSAWsDestroy));
   }
 #endif
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   {
     PetscBool set;
     flg = PETSC_FALSE;
@@ -4583,7 +4583,7 @@ PetscErrorCode SNESSetConvergenceHistory(SNES snes, PetscReal a[], PetscInt its[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   #include <engine.h> /* MATLAB include file */
   #include <mex.h>    /* MATLAB include file */
 

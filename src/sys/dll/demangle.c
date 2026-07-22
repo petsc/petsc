@@ -1,11 +1,11 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for and RTLD_* */
 #include <petsc/private/petscimpl.h>
 
-#if defined(PETSC_HAVE_DLFCN_H)
+#if PetscDefined(HAVE_DLFCN_H)
   #include <dlfcn.h>
 #endif
 
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXXABI_H)
+#if defined(__cplusplus) && PetscDefined(HAVE_CXXABI_H)
   #include <cxxabi.h>
 #endif
 
@@ -40,29 +40,29 @@ PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
   *name = PETSC_NULLPTR;
   if (!mangledName) PetscFunctionReturn(PETSC_SUCCESS);
 
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXXABI_H)
+#if defined(__cplusplus) && PetscDefined(HAVE_CXXABI_H)
   cxa_demangle = __cxxabiv1::__cxa_demangle;
 #endif
 
-#if defined(PETSC_HAVE_DLFCN_H) && defined(PETSC_HAVE_DLOPEN)
+#if PetscDefined(HAVE_DLFCN_H) && PetscDefined(HAVE_DLOPEN)
   if (!cxa_demangle) {
     void *symbol = PETSC_NULLPTR;
-  #if defined(PETSC_HAVE_RTLD_DEFAULT)
+  #if PetscDefined(HAVE_RTLD_DEFAULT)
     symbol = dlsym(RTLD_DEFAULT, "__cxa_demangle");
   #endif
     if (!symbol) {
       int   mode   = 0;
       void *handle = PETSC_NULLPTR;
-  #if defined(PETSC_HAVE_RTLD_LAZY)
+  #if PetscDefined(HAVE_RTLD_LAZY)
       mode |= RTLD_LAZY;
   #endif
-  #if defined(PETSC_HAVE_RTLD_LOCAL)
+  #if PetscDefined(HAVE_RTLD_LOCAL)
       mode |= RTLD_LOCAL;
   #endif
-  #if defined(PETSC_HAVE_RTLD_NOLOAD)
+  #if PetscDefined(HAVE_RTLD_NOLOAD)
       mode |= RTLD_NOLOAD;
   #endif
-  #ifdef __APPLE__
+  #if defined(__APPLE__)
       if (!handle) handle = dlopen("libc++.1.dylib", mode);
   #else
       if (!handle) handle = dlopen("libstdc++.so.6", mode);

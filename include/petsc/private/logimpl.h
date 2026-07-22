@@ -187,7 +187,7 @@ struct _n_PetscIntStack {
 /* SpinLock for shared Log variables */
 PETSC_INTERN PetscSpinlock PetscLogSpinLock;
 
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if PetscDefined(HAVE_THREADSAFETY)
   #if defined(__cplusplus)
     #define PETSC_TLS thread_local
   #else

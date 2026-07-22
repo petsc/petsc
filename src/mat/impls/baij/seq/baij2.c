@@ -4,9 +4,9 @@
 #include <petscbt.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
   #include <immintrin.h>
-#elif defined(PETSC_HAVE_XMMINTRIN_H)
+#elif PetscDefined(HAVE_XMMINTRIN_H)
   #include <xmmintrin.h>
 #endif
 
@@ -340,7 +340,7 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A, Vec xx, Vec zz)
   PetscInt           mbs, i, *idx, *ii, j, n, *ridx = NULL;
   PetscBool          usecprow = a->compressedrow.use;
 
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#if PetscDefined(HAVE_PRAGMA_DISJOINT)
   #pragma disjoint(*v, *z, *xb)
 #endif
 
@@ -664,7 +664,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A, Vec xx, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
 PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A, Vec xx, Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
@@ -1318,7 +1318,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
 PetscErrorCode MatMult_SeqBAIJ_12_AVX2(Mat A, Vec xx, Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
@@ -2500,7 +2500,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
 PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
@@ -3164,7 +3164,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A, NormType type, PetscReal *norm)
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
-#if defined(PETSC_USE_REAL___FP16)
+#if PetscDefined(USE_REAL___FP16)
     PetscBLASInt one = 1, cnt = bs2 * nz;
     PetscCallBLAS("BLASnrm2", *norm = BLASnrm2_(&cnt, v, &one));
 #else

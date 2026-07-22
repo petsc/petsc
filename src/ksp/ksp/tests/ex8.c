@@ -16,7 +16,7 @@ int main(int argc, char **args)
   Mat           F, B;
   PetscBool     solve = PETSC_FALSE, sameA = PETSC_FALSE, setfromoptions_first = PETSC_FALSE;
   PetscLogStage stage;
-#if !defined(PETSC_HAVE_MUMPS)
+#if !PetscDefined(HAVE_MUMPS)
   PetscMPIInt size;
 #endif
 
@@ -112,10 +112,8 @@ int main(int argc, char **args)
   PetscCall(KSPSetType(ksp, KSPPREONLY));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCCHOLESKY));
-#if defined(PETSC_HAVE_MUMPS)
-  #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Spectrum slicing with MUMPS is not available for complex scalars");
-  #endif
+#if PetscDefined(HAVE_MUMPS)
+  PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Spectrum slicing with MUMPS is not available for complex scalars");
   PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
   /*
      must use runtime option '-mat_mumps_icntl_13 1' (turn off ScaLAPACK for

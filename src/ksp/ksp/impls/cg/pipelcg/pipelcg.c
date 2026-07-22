@@ -102,7 +102,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems PetscO
 static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
   PetscMPIInt err;
-#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES)
   err = MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request);
 #else
   err      = MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);

@@ -22,7 +22,7 @@
 
 typedef struct {
   SFBASICHEADER;
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   PetscInt    rootbuflen_rmax;     /* max rootbuflen[REMOTE] over comm */
   PetscMPIInt nRemoteLeafRanks;    /* niranks - ndiranks */
   PetscMPIInt nRemoteLeafRanksMax; /* max nRemoteLeafRanks over comm */
@@ -75,6 +75,6 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF, MPI_Datatype, vo
 PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF, PetscInt, const PetscInt *, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
 
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
 PETSC_INTERN PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF);
 #endif

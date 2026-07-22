@@ -9,7 +9,7 @@
 #include <petscdmplex.h>
 #include <petscdmshell.h>
 
-#if defined(PETSC_HAVE_MPFR)
+#if PetscDefined(HAVE_MPFR)
   #include <mpfr.h>
 #endif
 
@@ -379,7 +379,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
   if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscBLASIntCast(m, &bm));
   PetscCall(PetscBLASIntCast(n, &bn));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscMalloc2(m * n, &Js, m * n, &Jinvs));
   for (i = 0; i < m * n; i++) Js[i] = J[i];
 #else
@@ -453,7 +453,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     PetscCall(PetscFree2(pivots, W));
     PetscCall(PetscFree(JTJ));
   }
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   for (i = 0; i < m * n; i++) Jinv[i] = PetscRealPart(Jinvs[i]);
   PetscCall(PetscFree2(Js, Jinvs));
 #endif
@@ -742,7 +742,7 @@ PetscErrorCode PetscDTJacobiNorm(PetscReal alpha, PetscReal beta, PetscInt n, Pe
   PetscCheck(beta > -1., PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid", (double)beta);
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %" PetscInt_FMT " < 0 invalid", n);
   twoab1 = PetscPowReal(2., alpha + beta + 1.);
-#if defined(PETSC_HAVE_LGAMMA)
+#if PetscDefined(HAVE_LGAMMA)
   if (!n) {
     gr = PetscExpReal(PetscLGamma(alpha + 1.) + PetscLGamma(beta + 1.) - PetscLGamma(alpha + beta + 2.));
   } else {
@@ -1424,7 +1424,7 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
 #endif
   PetscCall(PetscBLASIntCast(n, &bn));
   PetscCall(PetscBLASIntCast(n, &ldz));
-#if !defined(PETSC_MISSING_LAPACK_STEGR)
+#if !PetscDefined(MISSING_LAPACK_STEGR)
   PetscCall(PetscMalloc1(2 * n, &isuppz));
   lwork  = -1;
   liwork = -1;
@@ -1437,7 +1437,7 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscFree2(work, iwork));
   PetscCall(PetscFree(isuppz));
-#elif !defined(PETSC_MISSING_LAPACK_STEQR)
+#elif !PetscDefined(MISSING_LAPACK_STEQR)
   jobz = 'I'; /* Compute eigenvalues and eigenvectors of the
                  tridiagonal matrix.  Z is initialized to the identity
                  matrix. */
@@ -1462,7 +1462,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
 
   PetscFunctionBegin;
   twoab1 = PetscPowReal(2., a + b - 1.);
-#if defined(PETSC_HAVE_LGAMMA)
+#if PetscDefined(HAVE_LGAMMA)
   grb = PetscExpReal(2. * PetscLGamma(b + 1.) + PetscLGamma(m + 1.) + PetscLGamma(m + a + 1.) - (PetscLGamma(m + b + 1) + PetscLGamma(m + a + b + 1.)));
   gra = PetscExpReal(2. * PetscLGamma(a + 1.) + PetscLGamma(m + 1.) + PetscLGamma(m + b + 1.) - (PetscLGamma(m + a + 1) + PetscLGamma(m + a + b + 1.)));
 #else
@@ -1538,7 +1538,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
 
   PetscFunctionBegin;
   a1 = PetscPowReal(2.0, a + b + 1);
-#if defined(PETSC_HAVE_LGAMMA)
+#if PetscDefined(HAVE_LGAMMA)
   {
     PetscReal a2, a3, a4, a5;
     a2 = PetscLGamma(a + npoints + 1);
@@ -1614,7 +1614,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(PetscInt
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(GolubWelschCitation, &GolubWelschCite));
 
-#if defined(PETSC_HAVE_TGAMMA)
+#if PetscDefined(HAVE_TGAMMA)
   ga  = PetscTGamma(a + 1);
   gb  = PetscTGamma(b + 1);
   gab = PetscTGamma(a + b + 2);
@@ -2488,7 +2488,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], PetscCtx
 
 .seealso: `PetscDTTanhSinhIntegrate()`, `PetscDTGaussQuadrature()`
 @*/
-#if defined(PETSC_HAVE_MPFR)
+#if PetscDefined(HAVE_MPFR)
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], PetscCtx, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscCtx ctx, PetscReal *sol)
 {
   const PetscInt safetyFactor = 2; /* Calculate abscissa until 2*p digits */
@@ -2811,7 +2811,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m, PetscInt mstride, Petsc
   PetscScalar *A, *Ainv, *R, *Q, Alpha;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   {
     PetscInt i, j;
     PetscCall(PetscMalloc2(m * n, &A, m * n, &Ainv));
@@ -2846,7 +2846,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m, PetscInt mstride, Petsc
   PetscCallBLAS("BLAStrsm", BLAStrsm_("Right", "Upper", "ConjugateTranspose", "NotUnitTriangular", &M, &N, &Alpha, R, &lda, Q, &ldb));
   /* Ainv is Q, overwritten with inverse */
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   {
     PetscInt i;
     for (i = 0; i < m * n; i++) Ainv_out[i] = PetscRealPart(Ainv[i]);

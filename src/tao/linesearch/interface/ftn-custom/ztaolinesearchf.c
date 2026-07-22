@@ -1,12 +1,12 @@
 #include <petsc/private/ftnimpl.h>
 #include <petsc/private/taolinesearchimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define taolinesearchsetobjectiveroutine_            TAOLINESEARCHSETOBJECTIVEROUTINE
   #define taolinesearchsetgradientroutine_             TAOLINESEARCHSETGRADIENTROUTINE
   #define taolinesearchsetobjectiveandgradientroutine_ TAOLINESEARCHSETOBJECTIVEANDGRADIENTROUTINE
   #define taolinesearchsetobjectiveandgtsroutine_      TAOLINESEARCHSETOBJECTIVEANDGTSROUTINE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define taolinesearchsetobjectiveroutine_            taolinesearchsetobjectiveroutine
   #define taolinesearchsetgradientroutine_             taolinesearchsetgradientroutine
   #define taolinesearchsetobjectiveandgradientroutine_ taolinesearchsetobjectiveandgradientroutine

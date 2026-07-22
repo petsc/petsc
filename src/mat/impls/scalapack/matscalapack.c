@@ -641,7 +641,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
   Mat            Bs   = *B;
   PetscBLASInt   one  = 1;
   PetscScalar    sone = 1.0, zero = 0.0;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscInt i;
 #endif
 
@@ -652,7 +652,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
   *B = Bs;
   b  = (Mat_ScaLAPACK *)Bs->data;
   PetscCallBLAS("PBLAStran", PBLAStran_(&a->N, &a->M, &sone, a->loc, &one, &one, a->desc, &zero, b->loc, &one, &one, b->desc));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   /* undo conjugation */
   for (i = 0; i < b->locr; i++)
     for (PetscInt j = 0; j < b->locc; j++) b->loc[i + j * b->lld] = PetscConj(b->loc[i + j * b->lld]);
@@ -1607,12 +1607,12 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat, MatStash *stash, P
       PetscCallMPI(MPIU_Isend(svalues + bs2 * startv[i], bs2 * nlengths[i], MPIU_SCALAR, i, tag2, comm, send_waits + count++));
     }
   }
-#if defined(PETSC_USE_INFO)
-  PetscCall(PetscInfo(NULL, "No of messages: %" PetscInt_FMT "\n", nsends));
-  for (PetscMPIInt i = 0; i < size; i++) {
-    if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %d: size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
+  if (PetscDefined(USE_INFO)) {
+    PetscCall(PetscInfo(NULL, "No of messages: %" PetscInt_FMT "\n", nsends));
+    for (PetscMPIInt i = 0; i < size; i++) {
+      if (sizes[i]) PetscCall(PetscInfo(NULL, "Mesg_to: %d: size: %zu bytes\n", i, (size_t)(nlengths[i] * (bs2 * sizeof(PetscScalar) + 2 * sizeof(PetscInt)))));
+    }
   }
-#endif
   PetscCall(PetscFree(nlengths));
   PetscCall(PetscFree(owner));
   PetscCall(PetscFree2(startv, starti));

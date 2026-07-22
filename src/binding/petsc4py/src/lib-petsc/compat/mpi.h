@@ -89,7 +89,7 @@ static void * my_dlopen(const char *name, int mode) {
     printf("RTLD_NOW:     0x%X\n", RTLD_NOW);
     printf("RTLD_LOCAL:   0x%X\n", RTLD_LOCAL);
     printf("RTLD_GLOBAL:  0x%X\n", RTLD_GLOBAL);
-    #ifdef RTLD_NOLOAD
+    #if defined(RTLD_NOLOAD)
     printf("RTLD_NOLOAD:  0x%X\n", RTLD_NOLOAD);
     #endif
     printf("\n");
@@ -108,7 +108,7 @@ static void OPENMPI_dlopen_libmpi(void)
   int mode = RTLD_NOW | RTLD_GLOBAL;
 #if defined(__APPLE__)
   /* macOS */
-  #ifdef RTLD_NOLOAD
+  #if defined(RTLD_NOLOAD)
   mode |= RTLD_NOLOAD;
   #endif
   #if defined(OMPI_MAJOR_VERSION)
@@ -127,7 +127,7 @@ static void OPENMPI_dlopen_libmpi(void)
   if (!handle) handle = dlopen("libmpi.dylib", mode);
 #else
   /* GNU/Linux and others */
-  #ifdef RTLD_NOLOAD
+  #if defined(RTLD_NOLOAD)
   mode |= RTLD_NOLOAD;
   #endif
   #if defined(OMPI_MAJOR_VERSION)

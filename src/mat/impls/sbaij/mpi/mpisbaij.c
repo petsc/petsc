@@ -14,7 +14,7 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   PetscCall(MatStashDestroy_Private(&mat->bstash));
   PetscCall(MatDestroy(&baij->A));
   PetscCall(MatDestroy(&baij->B));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
   PetscCall(PetscFree(baij->colmap));
@@ -34,7 +34,7 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   PetscCall(VecDestroy(&baij->diag));
   PetscCall(VecDestroy(&baij->bb1));
   PetscCall(VecDestroy(&baij->xx1));
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
+#if PetscDefined(USE_REAL_MAT_SINGLE)
   PetscCall(PetscFree(baij->setvaluescopy));
 #endif
   PetscCall(PetscFree(baij->in_loc));
@@ -48,10 +48,10 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocationCSR_C", NULL));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_scalapack_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_mpiaij_C", NULL));
@@ -66,10 +66,10 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #undef TYPE
 #undef TYPE_SBAIJ
 
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_SBAIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 
@@ -155,16 +155,12 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, Ma
 
     PetscCall(MatGetRow(A, r, &ncols, &row, &vals));
     PetscCall(MatSetValues(B, 1, &r, ncols, row, vals, INSERT_VALUES));
-#if defined(PETSC_USE_COMPLEX)
-    if (A->hermitian == PETSC_BOOL3_TRUE) {
+    if (PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE) {
       PetscInt i;
       for (i = 0; i < ncols; i++) PetscCall(MatSetValue(B, row[i], r, PetscConj(vals[i]), INSERT_VALUES));
     } else {
       PetscCall(MatSetValues(B, ncols, row, 1, &r, vals, INSERT_VALUES));
     }
-#else
-    PetscCall(MatSetValues(B, ncols, row, 1, &r, vals, INSERT_VALUES));
-#endif
     PetscCall(MatRestoreRow(A, r, &ncols, &row, &vals));
   }
   PetscCall(MatRestoreRowUpperTriangular(A));
@@ -351,7 +347,7 @@ static PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
           /* off-diag entry (B) */
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] / bs + 1, 0, &col));
             col = col - 1;
 #else
@@ -620,7 +616,7 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
             col = col < 1 ? -1 : (col - 1) / bs;
 #else
@@ -668,7 +664,7 @@ static PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
         PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
       } else {
         if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
         data--;
 #else
@@ -1013,7 +1009,7 @@ static PetscErrorCode MatView_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
 static PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISBAIJ      *a   = (Mat_MPISBAIJ *)A->data;
@@ -1518,7 +1514,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_HERMITIAN:
     if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     if (flg) { /* need different mat-vec ops */
       A->ops->mult             = MatMult_MPISBAIJ_Hermitian;
       A->ops->multadd          = MatMultAdd_MPISBAIJ_Hermitian;
@@ -1530,7 +1526,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_SPD:
   case MAT_SYMMETRIC:
     if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     if (flg) { /* restore to use default mat-vec ops */
       A->ops->mult             = MatMult_MPISBAIJ;
       A->ops->multadd          = MatMultAdd_MPISBAIJ;
@@ -2068,7 +2064,7 @@ static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, P
   b->cstartbs = B->cmap->rstart / bs;
   b->cendbs   = B->cmap->rend / bs;
 
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
@@ -2279,10 +2275,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatRetrieveValues_C", MatRetrieveValues_MPISBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPISBAIJSetPreallocation_C", MatMPISBAIJSetPreallocation_MPISBAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPISBAIJSetPreallocationCSR_C", MatMPISBAIJSetPreallocationCSR_MPISBAIJ));
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_elemental_C", MatConvert_MPISBAIJ_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_scalapack_C", MatConvert_SBAIJ_ScaLAPACK));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_mpiaij_C", MatConvert_MPISBAIJ_Basic));
@@ -2293,7 +2289,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   B->structurally_symmetric      = PETSC_BOOL3_TRUE;
   B->symmetry_eternal            = PETSC_TRUE;
   B->structural_symmetry_eternal = PETSC_TRUE;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   B->hermitian = PETSC_BOOL3_TRUE;
 #endif
 
@@ -2593,7 +2589,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin, MatDuplicateOption cpvalu
 
     PetscCall(PetscArraycpy(a->rangebs, oldmat->rangebs, a->size + 2));
     if (oldmat->colmap) {
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
       PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
       PetscCall(PetscMalloc1(a->Nbs, &a->colmap));

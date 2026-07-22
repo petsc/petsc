@@ -117,10 +117,10 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->coarseMatPart, "hierarch_coarse_"));
   /* if did not set partitioning type yet, use parmetis by default */
   if (!hpart->coarseparttype) {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
     PetscCall(MatPartitioningSetType(hpart->coarseMatPart, MATPARTITIONINGPARMETIS));
     PetscCall(PetscStrallocpy(MATPARTITIONINGPARMETIS, &hpart->coarseparttype));
-#elif defined(PETSC_HAVE_PTSCOTCH)
+#elif PetscDefined(HAVE_PTSCOTCH)
     PetscCall(MatPartitioningSetType(hpart->coarseMatPart, MATPARTITIONINGPTSCOTCH));
     PetscCall(PetscStrallocpy(MATPARTITIONINGPTSCOTCH, &hpart->coarseparttype));
 #else
@@ -180,16 +180,16 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->fineMatPart, "hierarch_fine_"));
       /* if do not set partitioning type, use parmetis by default */
       if (!hpart->fineparttype) {
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGPARMETIS));
         PetscCall(PetscStrallocpy(MATPARTITIONINGPARMETIS, &hpart->fineparttype));
-#elif defined(PETSC_HAVE_PTSCOTCH)
+#elif PetscDefined(HAVE_PTSCOTCH)
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGPTSCOTCH));
         PetscCall(PetscStrallocpy(MATPARTITIONINGPTSCOTCH, &hpart->fineparttype));
-#elif defined(PETSC_HAVE_CHACO)
+#elif PetscDefined(HAVE_CHACO)
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGCHACO));
         PetscCall(PetscStrallocpy(MATPARTITIONINGCHACO, &hpart->fineparttype));
-#elif defined(PETSC_HAVE_PARTY)
+#elif PetscDefined(HAVE_PARTY)
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGPARTY));
         PetscCall(PetscStrallocpy(PETSC_HAVE_PARTY, &hpart->fineparttype));
 #else
@@ -514,7 +514,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   Mat                           mat   = part->adj, adj;
   PetscBool                     flg;
   const char                   *prefix;
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   PetscInt *vertex_weights;
 #endif
 
@@ -536,7 +536,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)hpart->improver, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->improver, "hierarch_improver_"));
   /* Only parmetis supports to refine a partition */
-#if defined(PETSC_HAVE_PARMETIS)
+#if PetscDefined(HAVE_PARMETIS)
   PetscCall(MatPartitioningSetType(hpart->improver, MATPARTITIONINGPARMETIS));
   PetscCall(MatPartitioningSetAdjacency(hpart->improver, adj));
   PetscCall(MatPartitioningSetNParts(hpart->improver, part->n));

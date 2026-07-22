@@ -1,7 +1,7 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscksp.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define kspmonitorset_                  KSPMONITORSET
   #define kspconvergeddefaultcreate_      KSPCONVERGEDDEFAULTCREATE
   #define kspconvergeddefaultdestroycptr_ KSPCONVERGEDDEFAULTDESTROYCPTR
@@ -19,7 +19,7 @@
   #define dmkspsetcomputerhs_             DMKSPSETCOMPUTERHS
   #define dmkspsetcomputeinitialguess_    DMKSPSETCOMPUTEINITIALGUESS
   #define dmkspsetcomputeoperators_       DMKSPSETCOMPUTEOPERATORS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define kspmonitorset_                  kspmonitorset
   #define kspconvergeddefaultcreate_      kspconvergeddefaultcreate
   #define kspconvergeddefaultdestroycptr_ kspconvergeddefaultdestroycptr

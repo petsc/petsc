@@ -1,12 +1,12 @@
 #include <petscsection.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsectiongetconstraintindices_          PETSCSECTIONGETCONSTRAINTINDICES
   #define petscsectionrestoreconstraintindices_      PETSCSECTIONRESTORECONSTRAINTINDICES
   #define petscsectiongetfieldconstraintindices_     PETSCSECTIONGETFIELDCONSTRAINTINDICES
   #define petscsectionrestorefieldconstraintindices_ PETSCSECTIONRESTOREFIELDCONSTRAINTINDICES
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsectiongetconstraintindices_          petscsectiongetconstraintindices
   #define petscsectionrestoreconstraintindices_      petscsectionrestoreconstraintindices
   #define petscsectiongetfieldconstraintindices_     petscsectiongetfieldconstraintindices

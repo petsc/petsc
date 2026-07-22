@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   PetscBLASInt      n, lda, lwork;
   PetscScalar      *a_array, *work, *eig_array;
   PetscInt          m_V, N_V;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscReal *rwork = NULL;
 #endif
 
@@ -88,7 +88,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   /* Query optimal workspace size */
   lwork = -1;
   PetscCall(PetscMalloc1(1, &work));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCall(PetscMalloc1(PetscMax(1, 3 * n - 2), &rwork));
   PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
 #else
@@ -103,7 +103,7 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   PetscCall(PetscMalloc1(lwork, &work));
 
   /* Compute eigendecomposition */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscCallLAPACKInfo("LAPACKsyev", LAPACKsyev_("V", "U", &n, a_array, &lda, (PetscReal *)eig_array, work, &lwork, rwork, &info));
   PetscCall(PetscFree(rwork));
 #else

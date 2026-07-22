@@ -1,9 +1,9 @@
 #pragma once
 
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   #include <windows.h>
 #endif
-#if defined(PETSC_HAVE_WINDOWSX_H)
+#if PetscDefined(HAVE_WINDOWSX_H)
   #include <windowsx.h>
 #endif
 #include <petscdraw.h>

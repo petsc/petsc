@@ -122,7 +122,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscCall(VecDestroy(&y));
   }
   /* Compute Fiedler vector (right now, all eigenvectors) */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Spectral partitioning does not support complex numbers");
 #else
   {

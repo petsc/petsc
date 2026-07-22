@@ -230,7 +230,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscBool useCeed;
   PetscCall(DMPlexGetUseCeed(dm, &useCeed));
   if (useCeed) PetscCall(DMCeedCreate(dm, PETSC_TRUE, PlexQFunctionLaplace, PlexQFunctionLaplace_loc));

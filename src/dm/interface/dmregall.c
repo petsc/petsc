@@ -13,12 +13,12 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM);
-#if defined(PETSC_HAVE_MOAB)
+#if PetscDefined(HAVE_MOAB)
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 #endif
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
-#if defined(PETSC_HAVE_P4EST)
+#if PetscDefined(HAVE_P4EST)
 PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 #endif
@@ -48,12 +48,12 @@ PetscErrorCode DMRegisterAll(void)
   PetscCall(DMRegister(DMPLEX, DMCreate_Plex));
   PetscCall(DMRegister(DMPATCH, DMCreate_Patch));
   PetscCall(DMRegister(DMSWARM, DMCreate_Swarm));
-#if defined(PETSC_HAVE_MOAB)
+#if PetscDefined(HAVE_MOAB)
   PetscCall(DMRegister(DMMOAB, DMCreate_Moab));
 #endif
   PetscCall(DMRegister(DMNETWORK, DMCreate_Network));
   PetscCall(DMRegister(DMFOREST, DMCreate_Forest));
-#if defined(PETSC_HAVE_P4EST)
+#if PetscDefined(HAVE_P4EST)
   PetscCall(DMRegister(DMP4EST, DMCreate_p4est));
   PetscCall(DMRegister(DMP8EST, DMCreate_p8est));
 #endif
@@ -129,7 +129,7 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE);
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 #endif
 PETSC_EXTERN PetscErrorCode PetscFECreate_Vector(PetscFE);
@@ -151,7 +151,7 @@ PetscErrorCode PetscFERegisterAll(void)
 
   PetscCall(PetscFERegister(PETSCFEBASIC, PetscFECreate_Basic));
   PetscCall(PetscFERegister(PETSCFECOMPOSITE, PetscFECreate_Composite));
-#if defined(PETSC_HAVE_OPENCL)
+#if PetscDefined(HAVE_OPENCL)
   PetscCall(PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL));
 #endif
   PetscCall(PetscFERegister(PETSCFEVECTOR, PetscFECreate_Vector));

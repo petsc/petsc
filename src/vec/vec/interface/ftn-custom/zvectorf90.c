@@ -1,7 +1,7 @@
 #include <petscvec.h>
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define vecgetarraywrite_     VECGETARRAYWRITE
   #define vecrestorearraywrite_ VECRESTOREARRAYWRITE
   #define vecgetarray_          VECGETARRAY
@@ -10,7 +10,7 @@
   #define vecrestorearrayread_  VECRESTOREARRAYREAD
   #define vecduplicatevecs_     VECDUPLICATEVECS
   #define vecdestroyvecs_       VECDESTROYVECS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define vecgetarraywrite_     vecgetarraywrite
   #define vecrestorearraywrite_ vecrestorearraywrite
   #define vecgetarray_          vecgetarray

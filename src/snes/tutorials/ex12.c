@@ -816,7 +816,7 @@ int main(int argc, char **argv)
   if (user.fieldBC) PetscCall(DMProjectField(dm, 0.0, u, user.exactFields, INSERT_ALL_VALUES, u));
   else PetscCall(DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u));
   if (user.restart) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
 

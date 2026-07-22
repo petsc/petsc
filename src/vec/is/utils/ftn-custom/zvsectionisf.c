@@ -3,12 +3,12 @@
 #include <petscsection.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsectiongetpointsyms_          PETSCSECTIONGETPOINTSYMS
   #define petscsectionrestorepointsyms_      PETSCSECTIONRESTOREPOINTSYMS
   #define petscsectiongetfieldpointsyms_     PETSCSECTIONGETFIELDPOINTSYMS
   #define petscsectionrestorefieldpointsyms_ PETSCSECTIONRESTOREFIELDPOINTSYMS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscsectiongetpointsyms_          petscsectiongetpointsyms
   #define petscsectionrestorepointsyms_      petscsectionrestorepointsyms
   #define petscsectiongetfieldpointsyms_     petscsectiongetfieldpointsyms

@@ -5,7 +5,7 @@
 
 /* MANSEC = DM */
 
-#if !defined(PETSC_HAVE_LIBCEED)
+#if !PetscDefined(HAVE_LIBCEED)
   #error "PETSc not configured for libCEED; reconfigrue --with-libceed or --download-libceed"
 #endif
 

@@ -41,13 +41,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP);
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
 #endif
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
-#if defined(PETSC_HAVE_HPDDM)
+#if PetscDefined(HAVE_HPDDM)
 PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 #endif
 PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP);
@@ -109,13 +109,13 @@ PetscErrorCode KSPRegisterAll(void)
   PetscCall(KSPRegister(KSPGCR, KSPCreate_GCR));
   PetscCall(KSPRegister(KSPPIPEGCR, KSPCreate_PIPEGCR));
   PetscCall(KSPRegister(KSPPGMRES, KSPCreate_PGMRES));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(KSPRegister(KSPDGMRES, KSPCreate_DGMRES));
 #endif
   PetscCall(KSPRegister(KSPTSIRM, KSPCreate_TSIRM));
   PetscCall(KSPRegister(KSPCGLS, KSPCreate_CGLS));
   PetscCall(KSPRegister(KSPFETIDP, KSPCreate_FETIDP));
-#if defined(PETSC_HAVE_HPDDM)
+#if PetscDefined(HAVE_HPDDM)
   PetscCall(KSPRegister(KSPHPDDM, KSPCreate_HPDDM));
 #endif
   PetscCall(KSPRegister(KSPIDR, KSPCreate_IDR));

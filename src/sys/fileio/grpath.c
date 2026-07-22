@@ -1,17 +1,17 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for realpath() */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
+#if PetscDefined(HAVE_PWD_H)
   #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
 #include <errno.h>
@@ -42,7 +42,7 @@
 @*/
 PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
 {
-#if !defined(PETSC_HAVE_REALPATH) && defined(PETSC_HAVE_READLINK)
+#if !PetscDefined(HAVE_REALPATH) && PetscDefined(HAVE_READLINK)
   char tmp1[PETSC_MAX_PATH_LEN], char tmp3[PETSC_MAX_PATH_LEN], tmp4[PETSC_MAX_PATH_LEN], *tmp2;
   size_t N, len1, len2;
   int    n, m;
@@ -50,10 +50,10 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
   size_t len;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_REALPATH)
+#if PetscDefined(HAVE_REALPATH)
   PetscCheck(realpath(path, rpath), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in realpath() due to \"%s\"", strerror(errno));
 #else
-  #if defined(PETSC_HAVE_READLINK)
+  #if PetscDefined(HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   PetscCall(PetscStrlen(path, &N));
   PetscCall(PetscStrncpy(rpath, path, N + 1)); /* assuming adequate buffer */

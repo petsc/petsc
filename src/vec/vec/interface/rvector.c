@@ -1647,7 +1647,7 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
       PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &iscuda, VECSEQCUDA, VECMPICUDA, ""));
       PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &iship, VECSEQHIP, VECMPIHIP, ""));
       if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
         const PetscScalar *x_d;
         PetscMPIInt        size;
         PetscOffloadMask   flg;
@@ -1666,7 +1666,7 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
         Z->offloadmask = flg;
 #endif
       } else if (iship) {
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
         const PetscScalar *x_d;
         PetscMPIInt        size;
         PetscOffloadMask   flg;
@@ -1768,7 +1768,7 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
         PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &iship, VECSEQHIP, VECMPIHIP, ""));
 
         if (iscuda) {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
@@ -1794,7 +1794,7 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
           }
 #endif
         } else if (iship) {
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory

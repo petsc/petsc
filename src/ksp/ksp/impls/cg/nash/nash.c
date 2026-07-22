@@ -8,7 +8,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
   KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;

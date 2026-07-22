@@ -171,7 +171,7 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
   if (Ctx->cnt + nev_zero < MAX_NEV)
     for (PetscInt i = 0; i < nev_zero; i++) Ctx->evres[Ctx->cnt++] = t; // save the repeating zeros separately for easier/unified testing
 
-#ifdef NEW_VERSION
+#if defined(NEW_VERSION)
   Ctx->postcnt++; // sync
   if (Ctx->dtpost > 0) {
     if (Ctx->postcnt % 2 == 0) PetscCall(TSSetPostEventStep(ts, Ctx->dtpost));

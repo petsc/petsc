@@ -162,13 +162,13 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
 @*/
 PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscInt   n;
   PetscReal *work;
 #endif
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatGetColumnSumsRealPart(A, sums));
 #else
   PetscCall(MatGetSize(A, NULL, &n));
@@ -250,13 +250,13 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscInt   n;
   PetscReal *work;
 #endif
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatGetColumnMeansRealPart(A, means));
 #else
   PetscCall(MatGetSize(A, NULL, &n));

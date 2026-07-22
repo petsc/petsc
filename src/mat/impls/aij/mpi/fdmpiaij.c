@@ -303,7 +303,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
                                  /* The 'useless' ifdef is due to a bug in NVIDIA nvc 21.11, which triggers a segfault on this line. We write it in
              another way, and it seems work. See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html
            */
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
           PetscScalar *tmp = Jentry2[nz].valaddr;
           *tmp             = dy[row] * dx;
 #else
@@ -314,7 +314,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       } else { /* htype == 'ds' */
         for (l = 0; l < nrows_k; l++) {
           row = Jentry[nz].row; /* local row index */
-#if defined(PETSC_USE_COMPLEX)  /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)   /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = dy[row] * vscale_array[Jentry[nz].col];
 #else
@@ -368,7 +368,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       if (coloring->htype[0] == 'w') {
         for (l = 0; l < nrows_k; l++) {
           row = Jentry2[nz].row; /* local row index */
-#if defined(PETSC_USE_COMPLEX)   /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)    /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
           PetscScalar *tmp = Jentry2[nz].valaddr;
           *tmp             = y[row] * dx;
 #else
@@ -379,7 +379,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       } else { /* htype == 'ds' */
         for (l = 0; l < nrows_k; l++) {
           row = Jentry[nz].row; /* local row index */
-#if defined(PETSC_USE_COMPLEX)  /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)   /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = y[row] * vscale_array[Jentry[nz].col];
 #else
@@ -414,7 +414,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   MatEntry2             *Jentry2;
   PetscBool              isBAIJ, isSELL;
   PetscInt               bcols = c->bcols;
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
   PetscHMapI colmap = NULL;
 #else
   PetscInt *colmap = NULL; /* local col number of off-diag col */
@@ -583,7 +583,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
           rowhit[*row++]   = col - cstart + 1; /* local column index */
         }
       } else { /* column is in B, off-diagonal block of mat */
-#if defined(PETSC_USE_CTABLE)
+#if PetscDefined(USE_CTABLE)
         PetscCall(PetscHMapIGetWithDefault(colmap, col + 1, 0, &colb));
         colb--;
 #else

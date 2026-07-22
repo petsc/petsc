@@ -1,8 +1,8 @@
 /*
   Implements the Kokkos kernel
 */
-#include <petscconf.h>
-#if defined(PETSC_HAVE_CUDA_CLANG)
+#include <petscmacros.h>
+#if PetscDefined(HAVE_CUDA_CLANG)
   #include <petsclandau.h>
   #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
 
@@ -595,7 +595,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     num_cells_batch += a_numCells[grid]; // we don't have a host element offset here (but in ctx)
   }
   const int elem_mat_num_cells_max_grid = container ? 0 : num_cells_max;
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
   const int                                           totDim_max = Nf_max * Nb, elem_mat_size_max = totDim_max * totDim_max;
   Kokkos::View<PetscScalar ****, Kokkos::LayoutRight> d_elem_mats("element matrices", batch_sz, num_grids, elem_mat_num_cells_max_grid, elem_mat_size_max); // not used (cpu assembly)
   #endif
@@ -711,7 +711,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         const PetscInt loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid];
         const PetscInt moffset = LAND_MOFFSET(b_id, grid, batch_sz, num_grids, d_mat_offset);
         const PetscInt f_off   = d_species_offset[grid];
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
         const PetscInt totDim = loc_Nf * Nb;
   #endif
         g2_scr_t g2(team.team_scratch(jac_shared_level), dim, loc_Nf, Nq);
@@ -823,7 +823,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   }
                 }
                 if (elem_mat_num_cells_max_grid) { // CPU assembly
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
                   const PetscInt fOff                     = (fieldA * Nb + f) * totDim + fieldA * Nb + g;
                   d_elem_mats(b_id, grid, loc_elem, fOff) = t;
   #endif
@@ -836,7 +836,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         }
       } // scope with 'grid'
     };
-  #if defined(PETSC_HAVE_HIP)
+  #if PetscDefined(HAVE_HIP)
     const int lbound2 = 1;
   #else
     const int lbound2 = 2;
@@ -861,7 +861,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         while (b_elem_idx >= d_elem_offset[grid + 1]) grid++;
         {
           const PetscInt loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid], jpidx_0 = d_ip_offset[grid] + loc_elem * Nq;
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
           const PetscInt totDim = loc_Nf * Nb;
   #endif
           const PetscInt moffset = LAND_MOFFSET(b_id, grid, batch_sz, num_grids, d_mat_offset);
@@ -880,7 +880,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   }
                 }
                 if (elem_mat_num_cells_max_grid) {
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
                   const PetscInt fOff                     = (fieldA * Nb + f) * totDim + fieldA * Nb + g;
                   d_elem_mats(b_id, grid, loc_elem, fOff) = t;
   #endif
@@ -902,7 +902,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     Kokkos::fence(); // for timers
   #endif
   } else if (elem_mat_num_cells_max_grid) { // CPU assembly
-  #ifdef LAND_SUPPORT_CPU_ASS
+  #if defined(LAND_SUPPORT_CPU_ASS)
     Kokkos::View<PetscScalar ****, Kokkos::LayoutRight>::HostMirror h_elem_mats = Kokkos::create_mirror_view(d_elem_mats);
     Kokkos::deep_copy(h_elem_mats, d_elem_mats);
     PetscCheck(!container, PETSC_COMM_SELF, PETSC_ERR_PLIB, "?????");

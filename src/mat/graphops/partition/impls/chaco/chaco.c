@@ -1,10 +1,10 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
 
-#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+#if PetscDefined(HAVE_CHACO_INT_ASSIGNMENT)
   #include <chaco.h>
 #else
 /* Older versions of Chaco do not have an include file */
@@ -60,7 +60,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   IS                     isrow, iscol;
   int                    nvtxs, *start, *adjacency, *vwgts, architecture, ndims_tot;
   int                    mesh_dims[3], global_method, local_method, rqi_flag, vmax, ndims;
-#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+#if PetscDefined(HAVE_CHACO_INT_ASSIGNMENT)
   int *assignment;
 #else
   short *assignment;
@@ -68,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   double eigtol;
   long   seed;
   char  *mesg_log;
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   int fd_stdout, fd_pipe[2], count;
 #endif
 
@@ -125,7 +125,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   for (i = 0; i < start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
   /* redirect output to buffer */
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   fd_stdout = dup(1);
   PetscCheck(!pipe(fd_pipe), PETSC_COMM_SELF, PETSC_ERR_SYS, "Could not open pipe");
   close(1);
@@ -136,7 +136,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   /* library call */
   cerr = interface(nvtxs, start, adjacency, vwgts, NULL, NULL, NULL, NULL, NULL, NULL, assignment, architecture, ndims_tot, mesh_dims, NULL, global_method, local_method, rqi_flag, vmax, ndims, eigtol, seed);
 
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   PetscCall(PetscFFlush(stdout));
   count = (int)read(fd_pipe[0], mesg_log, (int)((SIZE_LOG - 1) * sizeof(char)));
   if (count < 0) count = 0;

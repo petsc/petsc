@@ -24,7 +24,7 @@ static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt cou
 {
   PetscMPIInt err;
 
-#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
+#if PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES)
   err = MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request);
 #else
   err      = MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);

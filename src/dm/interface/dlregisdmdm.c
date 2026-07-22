@@ -27,7 +27,7 @@ PetscErrorCode DMFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 #endif
@@ -61,7 +61,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscClassIdRegister("Swarm Sort Ctx", &DMSWARMSORT_CLASSID));
   PetscCall(PetscClassIdRegister("Swarm Cell DM", &DMSWARMCELLDM_CLASSID));
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct));
   PetscCall(MatRegister(MATHYPRESSTRUCT, MatCreate_HYPRESStruct));
 #endif
@@ -130,7 +130,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexGlobalVectorView", DM_CLASSID, &DMPLEX_GlobalVectorView));
   PetscCall(PetscLogEventRegister("DMPlexLocalVectorView", DM_CLASSID, &DMPLEX_LocalVectorView));
   PetscCall(PetscLogEventRegister("DMPlexTopologyLoad", DM_CLASSID, &DMPLEX_TopologyLoad));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscLogEventRegister("DMPlexDistributionView", DM_CLASSID, &DMPLEX_DistributionView));
   PetscCall(PetscLogEventRegister("DMPlexDistributionLoad", DM_CLASSID, &DMPLEX_DistributionLoad));
 #endif
@@ -407,7 +407,7 @@ PetscErrorCode PetscDSInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if PetscDefined(HAVE_DYNAMIC_LIBRARIES)
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

@@ -31,7 +31,7 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 /*
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. That is properly casting with
    checks back and forth between the two types of variables.
@@ -44,11 +44,7 @@ static PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCheck(((PetscObject)is)->name, PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "IS name must be given using PetscObjectSetName() before ISLoad() since HDF5 can store multiple objects in a single file");
   PetscCall(PetscObjectGetName((PetscObject)is, &isname));
-  #if defined(PETSC_USE_64BIT_INDICES)
-  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, H5T_NATIVE_LLONG, (void **)&ind));
-  #else
-  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, H5T_NATIVE_INT, (void **)&ind));
-  #endif
+  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, PetscDefined(USE_64BIT_INDICES) ? H5T_NATIVE_LLONG : H5T_NATIVE_INT, (void **)&ind));
   PetscCall(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
   PetscCall(PetscInfo(is, "Read IS object with name %s of size %" PetscInt_FMT ":%" PetscInt_FMT "\n", isname, is->map->n, is->map->N));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -109,7 +105,7 @@ PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
   if (isbinary) {
     PetscCall(ISLoad_Binary(is, viewer));
   } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     PetscCall(ISLoad_HDF5(is, viewer));
 #endif
   }

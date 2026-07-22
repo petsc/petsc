@@ -1,6 +1,6 @@
-#include <petscconf.h>
+#include <petscmacros.h>
 // We need to define this ahead of any other includes to make sure mkstemp is actually defined
-#if defined(PETSC_HAVE_MKSTEMP)
+#if PetscDefined(HAVE_MKSTEMP)
   #if !defined(_XOPEN_SOURCE)
     #define _XOPEN_SOURCE 600
   #endif
@@ -98,7 +98,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   PetscDraw   draw;
   DM_Network *network = (DM_Network *)dm->data;
   PetscReal   drawPause, viewPadding = 1.0;
-#if defined(PETSC_HAVE_MKSTEMP)
+#if PetscDefined(HAVE_MKSTEMP)
   PetscBool isSharedTmp;
 #endif
 
@@ -116,7 +116,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-#if defined(PETSC_HAVE_MKSTEMP)
+#if PetscDefined(HAVE_MKSTEMP)
   // Get if the temporary directory is shared
   // Note: This must be done collectively on every rank, it cannot be done on a single rank
   PetscCall(PetscSharedTmp(comm, &isSharedTmp));
@@ -141,10 +141,10 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 
   // Generate and broadcast the temporary file name from rank 0
   if (rank == 0) {
-#if defined(PETSC_HAVE_TMPNAM_S)
+#if PetscDefined(HAVE_TMPNAM_S)
     // Acquire a temporary file to write to and open an ASCII/CSV viewer
     PetscCheck(tmpnam_s(filename, sizeof(filename)) == 0, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
-#elif defined(PETSC_HAVE_MKSTEMP)
+#elif PetscDefined(HAVE_MKSTEMP)
     PetscBool isTmpOverridden;
     size_t    numChars;
     // Same thing, but for POSIX systems on which tmpnam is deprecated
@@ -246,7 +246,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   PetscCall(PetscArrayzero(proccall, sizeof(proccall)));
   PetscCall(PetscSNPrintf(proccall, sizeof(proccall), "%s %s %s %s", PETSC_PYTHON_EXE, scriptFile, options, filename));
 
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   // Perform the call to run the python script (Note: while this is called on all ranks POpen will only run on rank 0)
   PetscCall(PetscPOpen(comm, NULL, proccall, "r", &processFile));
   if (processFile != NULL) {

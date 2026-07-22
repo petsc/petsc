@@ -491,7 +491,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscInt         a, b, c, n, global_size, global_rank;
   DM_Moab         *dmmoab;
   moab::Interface *mbImpl;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::ParallelComm *pcomm;
 #endif
   moab::ReadUtilIface   *readMeshIface;
@@ -527,7 +527,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab *)(*dm)->data;
   mbImpl = dmmoab->mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   pcomm       = dmmoab->pcomm;
   global_rank = pcomm->rank();
 #else
@@ -682,7 +682,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
       else PetscCallMOAB(mm.merge_entities(cells, 0.0001));
     }
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* check the handles */
     PetscCallMOAB(pcomm->check_all_shared_handles());
 
@@ -704,7 +704,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     if (genCtx.dim > 1) PetscCallMOAB(mbImpl->get_entities_by_dimension(dmmoab->fileset, 1, toDelete));
     if (genCtx.dim > 2) PetscCallMOAB(mbImpl->get_entities_by_dimension(dmmoab->fileset, 2, toDelete));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     PetscCallMOAB(dmmoab->pcomm->delete_entities(toDelete));
 #endif
   }
@@ -771,7 +771,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   PetscInt         nprocs;
   DM_Moab         *dmmoab;
   moab::Interface *mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::ParallelComm *pcomm;
 #endif
   moab::Range verts, elems;
@@ -786,7 +786,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   /* get all the necessary handles from the private DM object */
   dmmoab  = (DM_Moab *)(*dm)->data;
   mbiface = dmmoab->mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   pcomm  = dmmoab->pcomm;
   nprocs = pcomm->size();
 #else
@@ -814,7 +814,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   /* load the local elements */
   PetscCallMOAB(mbiface->get_entities_by_dimension(dmmoab->fileset, dim, elems, true));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
   PetscCallMOAB(pcomm->exchange_tags(dmmoab->ltog_tag, verts));
@@ -847,7 +847,7 @@ PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   /* Insert new points */
   PetscCallMOAB(((DM_Moab *)dm->data)->pcomm->assign_global_ids(((DM_Moab *)dm->data)->fileset, 3, 0, false, true, false));
 #endif

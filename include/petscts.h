@@ -1622,7 +1622,7 @@ PETSC_EXTERN PetscErrorCode TSDiscGradRestoreX0AndXdot(TS, DM, Vec *, Vec *);
 /*
        PETSc interface to Sundials
 */
-#ifdef PETSC_HAVE_SUNDIALS2
+#if PetscDefined(HAVE_SUNDIALS2)
 /*E
    TSSundialsLmmType - Selects which linear multistep method is used by the `TSSUNDIALS` interface to SUNDIALS' CVODE integrator
 

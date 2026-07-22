@@ -115,7 +115,7 @@ static PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 static PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t        scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
@@ -124,11 +124,11 @@ static PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCheck(((PetscObject)xin)->name, PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
     #error "HDF5 output with 128 bit floats not supported."
-  #elif defined(PETSC_USE_REAL___FP16)
+  #elif PetscDefined(USE_REAL___FP16)
     #error "HDF5 output with 16 bit floats not supported."
   #else
   scalartype = H5T_NATIVE_DOUBLE;
@@ -148,7 +148,7 @@ static PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   #include <adios.h>
   #include <adios_read.h>
   #include <petsc/private/vieweradiosimpl.h>
@@ -194,25 +194,25 @@ static PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
   PetscBool isbinary;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscBool isadios;
 #endif
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
 #endif
 
   if (isbinary) {
     PetscCall(VecLoad_Binary(newvec, viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     if (!((PetscObject)newvec)->name) {
       PetscCall(PetscLogEventEnd(VEC_Load, viewer, 0, 0, 0));
@@ -220,7 +220,7 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
     }
     PetscCall(VecLoad_HDF5(newvec, viewer));
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
   } else if (isadios) {
     if (!((PetscObject)newvec)->name) {
       PetscCall(PetscLogEventEnd(VEC_Load, viewer, 0, 0, 0));

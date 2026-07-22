@@ -7,11 +7,11 @@ static PetscErrorCode VecCreate_Common_Private(Vec v)
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
   v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_VIENNACL) || PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   v->minimum_bytes_pinned_memory = 0;
   v->pinned_memory               = PETSC_FALSE;
 #endif
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   v->boundtocpu = PETSC_TRUE;
 #endif
   PetscCall(PetscStrallocpy(PETSCRANDER48, &v->defaultrandtype));

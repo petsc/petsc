@@ -52,14 +52,14 @@ PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt 
     PetscCall(MatMPIDenseSetPreallocation(*A, data));
   } else if (iscuda) {
     PetscCheck(PetscDefined(HAVE_CUDA), comm, PETSC_ERR_SUP, "PETSc not compiled with CUDA support");
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscCall(MatSetType(*A, MATDENSECUDA));
     if (lda > 0) PetscCall(MatDenseSetLDA(*A, lda));
     PetscCall(MatDenseCUDASetPreallocation(*A, data));
 #endif
   } else if (iship) {
     PetscCheck(PetscDefined(HAVE_HIP), comm, PETSC_ERR_SUP, "PETSc not compiled with HIP support");
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
     PetscCall(MatSetType(*A, MATDENSEHIP));
     if (lda > 0) PetscCall(MatDenseSetLDA(*A, lda));
     PetscCall(MatDenseHIPSetPreallocation(*A, data));

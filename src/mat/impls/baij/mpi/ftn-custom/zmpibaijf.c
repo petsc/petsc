@@ -1,9 +1,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matmpibaijgetseqbaij_ MATMPIBAIJGETSEQBAIJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matmpibaijgetseqbaij_ matmpibaijgetseqbaij
 #endif
 

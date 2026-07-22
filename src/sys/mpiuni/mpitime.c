@@ -9,7 +9,7 @@ extern "C" {
 /*
    Microsoft Windows has its own time routines
 */
-#if defined(PETSC_USE_MICROSOFT_TIME)
+#if PetscDefined(USE_MICROSOFT_TIME)
   #include <windows.h>
   #define FACTOR 4294967296.0 /* pow(2,32) */
 
@@ -28,7 +28,7 @@ double MPI_Wtime(void)
     if (!QueryPerformanceFrequency(&PerfFreq)) PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_LIB);
     /* Explicitly convert the higher 32-bits, and add the lower 32-bits from the counter */
     /* works on non-pentium CPUs ? */
-  #if defined(PETSC_HAVE_LARGE_INTEGER_U)
+  #if PetscDefined(HAVE_LARGE_INTEGER_U)
     SecInTick = 1.0 / ((double)PerfFreq.u.HighPart * FACTOR + (double)PerfFreq.u.LowPart);
   #else
     SecInTick = 1.0 / ((double)PerfFreq.HighPart * FACTOR + (double)PerfFreq.LowPart);
@@ -37,7 +37,7 @@ double MPI_Wtime(void)
   }
 
   if (!QueryPerformanceCounter(&CurTime)) PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_LIB);
-  #if defined(PETSC_HAVE_LARGE_INTEGER_U)
+  #if PetscDefined(HAVE_LARGE_INTEGER_U)
   dwCurHigh   = (DWORD)CurTime.u.HighPart;
   dwStartHigh = (DWORD)StartTime.u.HighPart;
   #else
@@ -47,7 +47,7 @@ double MPI_Wtime(void)
   dHigh = (signed)(dwCurHigh - dwStartHigh);
 
   dTime = dHigh * (double)FACTOR;
-  #if defined(PETSC_HAVE_LARGE_INTEGER_U)
+  #if PetscDefined(HAVE_LARGE_INTEGER_U)
   dTime += (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
   #else
   dTime += (double)CurTime.LowPart - (double)StartTime.LowPart;
@@ -64,7 +64,7 @@ double MPI_Wtime(void)
 */
 #else
 
-  #if defined(PETSC_HAVE_SYS_TIME_H)
+  #if PetscDefined(HAVE_SYS_TIME_H)
     #include <sys/time.h>
   #endif
 

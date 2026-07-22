@@ -13,7 +13,7 @@ struct _p_PetscQuadrature {
   const PetscReal *weights;   /* The quadrature weights */
 };
 
-#if (!defined(PETSC_MISSING_LAPACK_STEQR) || !defined(PETSC_MISSING_LAPACK_STEGR))
+#if (!PetscDefined(MISSING_LAPACK_STEQR) || !PetscDefined(MISSING_LAPACK_STEGR))
   #define PETSCDTGAUSSIANQUADRATURE_EIG 1
 #endif
 

@@ -2757,7 +2757,7 @@ static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer
               if (sl->rots[i] && sl->rots[i][j]) {
                 PetscCall(PetscViewerASCIIPrintf(viewer, "Rotations:  "));
                 PetscCall(PetscViewerASCIISetTab(viewer, 0));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
                 for (k = 0; k < sl->sizes[i]; k++) PetscCall(PetscViewerASCIIPrintf(viewer, " %+g+i*%+g", (double)PetscRealPart(sl->rots[i][j][k]), (double)PetscImaginaryPart(sl->rots[i][j][k])));
 #else
                 for (k = 0; k < sl->sizes[i]; k++) PetscCall(PetscViewerASCIIPrintf(viewer, " %+g", (double)sl->rots[i][j][k]));

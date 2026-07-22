@@ -10,7 +10,7 @@
 static PetscErrorCode DMCreateVector_Moab_Private(DM, moab::Tag, const moab::Range *, PetscBool, PetscBool, Vec *);
 static PetscErrorCode DMVecCtxDestroy_Moab(PetscCtxRt);
 static PetscErrorCode DMVecDuplicate_Moab(Vec, Vec *);
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *, moab::ParallelComm *, char **);
 #else
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *, char **);
@@ -160,7 +160,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
     /* Get the MOAB private data */
     PetscCall(DMMoabGetVecTag(vec, &vtag));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* exchange the data into ghost cells first */
     PetscCallMOAB(dmmoab->pcomm->exchange_tags(vtag, *dmmoab->vlocal));
 #endif
@@ -246,7 +246,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
       //marray[i] = (*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]];
     }
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* reduce the tags correctly -> should probably let the user choose how to reduce in the future
       For all FEM residual based assembly calculations, MPI_SUM should serve well */
     PetscCallMOAB(dmmoab->pcomm->reduce_tags(vtag, MPI_SUM, *dmmoab->vlocal));
@@ -314,7 +314,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
     /* Get the MOAB private data */
     PetscCall(DMMoabGetVecTag(vec, &vtag));
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
     /* exchange the data into ghost cells first */
     PetscCallMOAB(dmmoab->pcomm->exchange_tags(vtag, *dmmoab->vlocal));
 #endif
@@ -394,7 +394,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
 
   Vec_MOAB *vmoab;
   DM_Moab  *dmmoab = (DM_Moab *)dm->data;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   moab::ParallelComm *pcomm = dmmoab->pcomm;
 #endif
   moab::Interface *mbiface = dmmoab->mbiface;
@@ -413,7 +413,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
                    //  lnative_vec=0; /* NOTE: Testing MOAB vector: will force to create MOAB tag_iterate based vector all the time */
 #endif
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   PetscCallMPI(MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 #else
   gnative_vec = lnative_vec;
@@ -429,7 +429,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
     if (!ttname.length() || merr != moab::MB_SUCCESS) {
       /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
       char *tag_name = NULL;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
       PetscCall(DMVecCreateTagName_Moab_Private(mbiface, pcomm, &tag_name));
 #else
       PetscCall(DMVecCreateTagName_Moab_Private(mbiface, &tag_name));
@@ -455,7 +455,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
     vmoab->new_tag = is_newtag;
   }
   vmoab->mbiface = mbiface;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   vmoab->pcomm = pcomm;
 #endif
   vmoab->is_global_vec = is_global_vec;
@@ -519,7 +519,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
  *  NOTE: The tag_name is allocated in this routine; The user needs to free
  *        the character array.
  */
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, moab::ParallelComm *pcomm, char **tag_name)
 #else
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char **tag_name)
@@ -545,7 +545,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, 
   /* increment the new value of n */
   ++n;
 
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   /* Make sure that n is consistent across all processes */
   PetscCallMPI(MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm()));
 #else
@@ -612,7 +612,7 @@ static PetscErrorCode DMVecCtxDestroy_Moab(PetscCtxRt ctx)
   delete vmoab->tag_range;
   vmoab->tag     = NULL;
   vmoab->mbiface = NULL;
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   vmoab->pcomm = NULL;
 #endif
   PetscCall(PetscFree(vmoab));

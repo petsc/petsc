@@ -5,7 +5,7 @@
 /* We cut-and-past below from aij.h to make a "no_function" version of PetscSparseDensePlusDot().
  * This is necessary because the USESHORT case cannot use the inlined functions that may be employed. */
 
-#if defined(PETSC_KERNEL_USE_UNROLL_4)
+#if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
     do { \
       if (nnz > 0) { \
@@ -30,7 +30,7 @@
       } \
     } while (0)
 
-#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#elif PetscDefined(KERNEL_USE_UNROLL_2)
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
@@ -170,7 +170,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
       vj  = aj + ai[i] + 1;
       v   = aa + ai[i] + 1;
       sum = b[i] * d / omega;
-#ifdef USESHORT
+#if defined(USESHORT)
       PetscSparseDensePlusDot_no_function(sum, b, v, vj, nz);
 #else
       PetscSparseDensePlusDot(sum, b, v, vj, nz);

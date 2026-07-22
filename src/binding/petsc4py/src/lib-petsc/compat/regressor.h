@@ -1,6 +1,6 @@
 #if !defined(PETSC4PY_COMPAT_REGRESSOR_H)
 #define PETSC4PY_COMPAT_REGRESSOR_H
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
 
 #define PetscRegressorError do { \
     PetscFunctionBegin; \

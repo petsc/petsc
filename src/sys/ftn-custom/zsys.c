@@ -1,11 +1,11 @@
 #include <petsc/private/ftnimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define chkmemfortran_                     CHKMEMFORTRAN
   #define petscoffsetfortran_                PETSCOFFSETFORTRAN
   #define petscobjectstateincrease_          PETSCOBJECTSTATEINCREASE
   #define petsccienabledportableerroroutput_ PETSCCIENABLEDPORTABLEERROROUTPUT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define chkmemfortran_                     chkmemfortran
   #define petscoffsetfortran_                petscoffsetfortran
   #define petscobjectstateincrease_          petscobjectstateincrease

@@ -161,16 +161,14 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
     }
   }
 
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs]) / ((PetscReal)ai[mbs]);
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)f, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g);\n", (double)af));
     PetscCall(PetscInfo(A, "for best performance.\n"));
-  } else {
-    PetscCall(PetscInfo(A, "Empty matrix\n"));
-  }
+  } else PetscCall(PetscInfo(A, "Empty matrix\n"));
 #endif
 
   PetscCall(ISRestoreIndices(perm, &rip));
@@ -368,15 +366,13 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, cons
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   if (ai[mbs] != 0) {
     PetscReal af = fact->info.fill_ratio_needed;
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)fill, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g) for best performance.\n", (double)af));
-  } else {
-    PetscCall(PetscInfo(A, "Empty matrix\n"));
-  }
+  } else PetscCall(PetscInfo(A, "Empty matrix\n"));
 #endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -541,15 +537,13 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   if (ai[mbs] != 0) {
     PetscReal af = fact->info.fill_ratio_needed;
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)fill, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g) for best performance.\n", (double)af));
-  } else {
-    PetscCall(PetscInfo(A, "Empty matrix\n"));
-  }
+  } else PetscCall(PetscInfo(A, "Empty matrix\n"));
 #endif
   PetscCall(MatSeqSBAIJSetNumericFactorization_inplace(fact, perm_identity));
   PetscFunctionReturn(PETSC_SUCCESS);

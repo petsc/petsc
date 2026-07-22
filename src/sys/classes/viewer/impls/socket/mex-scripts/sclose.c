@@ -9,32 +9,32 @@
 
 #include <errno.h>
 #include <ctype.h>
-#if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
+#if PetscDefined(HAVE_MACHINE_ENDIAN_H)
   #include <machine/endian.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SOCKET_H)
+#if PetscDefined(HAVE_SYS_SOCKET_H)
   #include <sys/socket.h>
 #endif
-#if defined(PETSC_HAVE_SYS_WAIT_H)
+#if PetscDefined(HAVE_SYS_WAIT_H)
   #include <sys/wait.h>
 #endif
-#if defined(PETSC_HAVE_NETINET_IN_H)
+#if PetscDefined(HAVE_NETINET_IN_H)
   #include <netinet/in.h>
 #endif
-#if defined(PETSC_HAVE_NETDB_H)
+#if PetscDefined(HAVE_NETDB_H)
   #include <netdb.h>
 #endif
-#if defined(PETSC_HAVE_FCNTL_H)
+#if PetscDefined(HAVE_FCNTL_H)
   #include <fcntl.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
 
-#if defined(PETSC_NEED_CLOSE_PROTO)
+#if PetscDefined(NEED_CLOSE_PROTO)
 PETSC_EXTERN int close(int);
 #endif
 

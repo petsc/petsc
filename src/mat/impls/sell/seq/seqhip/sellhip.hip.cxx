@@ -105,7 +105,7 @@ static __global__ void matmultadd_seqsell_basic_kernel(PetscInt nrows, PetscInt 
   }
 }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wpass-failed")
 /* use 1 block per slice, suitable for large slice width */
 template <int BLOCKY>
@@ -580,7 +580,7 @@ static PetscErrorCode MatMult_SeqSELLHIP(Mat A, Vec xx, Vec yy)
   PetscInt          *sliidx;
   PetscInt           nblocks, blocksize = 512; /* blocksize is fixed to be 512 */
   dim3               block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscReal maxoveravg;
 #endif
@@ -599,7 +599,7 @@ static PetscErrorCode MatMult_SeqSELLHIP(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogGpuTimeBegin());
 
   switch (hipstruct->kernelchoice) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   case 9: /* 1 slice per block */
     nblocks = 1 + (nrows - 1) / sliceheight;
     if (hipstruct->blocky == 2) {
@@ -654,7 +654,7 @@ static PetscErrorCode MatMult_SeqSELLHIP(Mat A, Vec xx, Vec yy)
     nblocks = 1 + (nrows - 1) / blocksize;
     matmult_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     break;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   case 0:
     maxoveravg = a->maxslicewidth / a->avgslicewidth;
     if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */
@@ -715,7 +715,7 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
   MatScalar         *aval    = hipstruct->val;
   PetscInt          *acolidx = hipstruct->colidx;
   PetscInt          *sliidx  = hipstruct->sliidx;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscReal maxoveravg;
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscInt  blocky = hipstruct->blocky;
@@ -734,7 +734,7 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
     PetscCall(PetscLogGpuTimeBegin());
 
     switch (hipstruct->kernelchoice) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     case 9:
       nblocks = 1 + (nrows - 1) / sliceheight;
       if (blocky == 2) {
@@ -808,7 +808,7 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
       nblocks = 1 + (nrows - 1) / blocksize;
       matmultadd_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       break;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     case 0:
       maxoveravg = a->maxslicewidth / a->avgslicewidth;
       if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */

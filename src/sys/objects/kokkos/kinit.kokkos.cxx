@@ -58,7 +58,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     auto args = Kokkos::InitArguments{}; /* use default constructor */
 #endif
 
-#if (defined(KOKKOS_ENABLE_CUDA) && defined(PETSC_HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && defined(PETSC_HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && defined(PETSC_HAVE_SYCL))
+#if (defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && PetscDefined(HAVE_SYCL))
     /* Kokkos does not support CUDA and HIP at the same time (but we do :)) */
     PetscDevice device;
     PetscInt    deviceId;
@@ -90,18 +90,18 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   }
 
   if (!PetscKokkosExecutionSpacePtr) { // No matter Kokkos is init'ed by PETSc or by user, we need to init PetscKokkosExecutionSpacePtr
-#if (defined(KOKKOS_ENABLE_CUDA) && defined(PETSC_HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && defined(PETSC_HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && defined(PETSC_HAVE_SYCL))
+#if (defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && PetscDefined(HAVE_SYCL))
     PetscDeviceContext dctx;
     PetscDeviceType    dtype;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx)); // it internally sets PetscDefaultCuda/HipStream
     PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
 
-  #if defined(PETSC_HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
     if (dtype == PETSC_DEVICE_CUDA) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
-  #elif defined(PETSC_HAVE_HIP)
+  #elif PetscDefined(HAVE_HIP)
     if (dtype == PETSC_DEVICE_HIP) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultHipStream));
-  #elif defined(PETSC_HAVE_SYCL)
+  #elif PetscDefined(HAVE_SYCL)
     if (dtype == PETSC_DEVICE_SYCL) {
       void *handle;
       PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle)); // Kind of PetscDefaultSyclStream

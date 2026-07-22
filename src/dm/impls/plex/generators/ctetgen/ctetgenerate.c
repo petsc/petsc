@@ -1,6 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
-#ifdef PETSC_HAVE_EGADS
+#if PetscDefined(HAVE_EGADS)
   #include <egads.h>
 #endif
 
@@ -138,7 +138,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
     if (minratio > 0.) t.minratio = minratio;
     if (mindihedral > 0.) t.mindihedral = mindihedral;
 #if 0
-  #ifdef PETSC_HAVE_EGADS
+  #if PetscDefined(HAVE_EGADS)
     /* Need to add in more TetGen code */
     t.nobisect  = 1; /* Add Y to preserve Surface Mesh for EGADS */
   #endif
@@ -204,7 +204,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       }
     }
 
-#ifdef PETSC_HAVE_EGADS
+#if PetscDefined(HAVE_EGADS)
     {
       DMLabel        bodyLabel;
       PetscContainer modelObj;
@@ -473,7 +473,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       }
     }
 
-#ifdef PETSC_HAVE_EGADS
+#if PetscDefined(HAVE_EGADS)
     {
       DMLabel        bodyLabel;
       PetscContainer modelObj;

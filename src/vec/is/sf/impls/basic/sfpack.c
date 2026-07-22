@@ -327,7 +327,7 @@
     CPPJoin4(PackInit_Compare, Type, BS, EQ)(link); \
   }
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   #define DEF_ComplexType(Type, BS, EQ) \
     DEF_Pack(Type, BS, EQ) DEF_Add(Type, BS, EQ) static void CPPJoin4(PackInit_ComplexType, Type, BS, EQ)(PetscSFLink link) \
     { \
@@ -359,7 +359,7 @@ DEF_IntegerType(PetscInt, 1, 1)   /* unit = 1 MPIU_INT  */
   DEF_IntegerType(PetscInt, 4, 0) /* unit = 4*n MPIU_INTs, n>1 */
   DEF_IntegerType(PetscInt, 8, 0) /* unit = 8*n MPIU_INTs, n>1. Routines with bigger BS are tried first. */
 
-#if defined(PETSC_USE_64BIT_INDICES) /* Do not need (though it is OK) to generate redundant functions if PetscInt is int */
+#if PetscDefined(USE_64BIT_INDICES) /* Do not need (though it is OK) to generate redundant functions if PetscInt is int */
   DEF_IntegerType(int, 1, 1) DEF_IntegerType(int, 2, 1) DEF_IntegerType(int, 4, 1) DEF_IntegerType(int, 8, 1) DEF_IntegerType(int, 1, 0) DEF_IntegerType(int, 2, 0) DEF_IntegerType(int, 4, 0) DEF_IntegerType(int, 8, 0)
 #endif
 
@@ -371,7 +371,7 @@ DEF_IntegerType(SignedChar, 1, 1) DEF_IntegerType(SignedChar, 2, 1) DEF_IntegerT
 DEF_IntegerType(UnsignedChar, 1, 1) DEF_IntegerType(UnsignedChar, 2, 1) DEF_IntegerType(UnsignedChar, 4, 1) DEF_IntegerType(UnsignedChar, 8, 1) DEF_IntegerType(UnsignedChar, 1, 0) DEF_IntegerType(UnsignedChar, 2, 0) DEF_IntegerType(UnsignedChar, 4, 0) DEF_IntegerType(UnsignedChar, 8, 0)
 
   DEF_RealType(PetscReal, 1, 1) DEF_RealType(PetscReal, 2, 1) DEF_RealType(PetscReal, 4, 1) DEF_RealType(PetscReal, 8, 1) DEF_RealType(PetscReal, 1, 0) DEF_RealType(PetscReal, 2, 0) DEF_RealType(PetscReal, 4, 0) DEF_RealType(PetscReal, 8, 0)
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
     DEF_ComplexType(PetscComplex, 1, 1) DEF_ComplexType(PetscComplex, 2, 1) DEF_ComplexType(PetscComplex, 4, 1) DEF_ComplexType(PetscComplex, 8, 1) DEF_ComplexType(PetscComplex, 1, 0) DEF_ComplexType(PetscComplex, 2, 0) DEF_ComplexType(PetscComplex, 4, 0) DEF_ComplexType(PetscComplex, 8, 0)
 #endif
 
@@ -421,7 +421,7 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf, MPI_Datatype unit, PetscMemType roo
 {
   PetscFunctionBegin;
   PetscCall(PetscSFSetErrorOnUnsupportedOverlap(sf, unit, rootdata, leafdata));
-#if defined(PETSC_HAVE_NVSHMEM)
+#if PetscDefined(HAVE_NVSHMEM)
   {
     PetscBool use_nvshmem;
     PetscCall(PetscSFLinkNvshmemCheck(sf, rootmtype, rootdata, leafmtype, leafdata, &use_nvshmem));
@@ -511,7 +511,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
   PetscBool   is2Int, is2PetscInt;
   MPIU_Count  ni, na, nc, nd;
   PetscMPIInt combiner;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscInt nPetscComplex = 0;
 #endif
 
@@ -522,7 +522,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_INT, &nInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_INT, &nPetscInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_REAL, &nPetscReal));
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_COMPLEX, &nPetscComplex));
 #endif
   PetscCall(MPIPetsc_Type_compare(unit, MPI_2INT, &is2Int));
@@ -578,7 +578,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
       link->isbuiltin = PETSC_TRUE;
       link->unit      = MPIU_INT;
     }
-#if defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(USE_64BIT_INDICES)
   } else if (nInt) {
     if (nInt == 8) PackInit_IntegerType_int_8_1(link);
     else if (nInt % 8 == 0) PackInit_IntegerType_int_8_0(link);
@@ -628,7 +628,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
       link->isbuiltin = PETSC_TRUE;
       link->unit      = MPI_UNSIGNED_CHAR;
     }
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   } else if (nPetscComplex) {
     if (nPetscComplex == 8) PackInit_ComplexType_PetscComplex_8_1(link);
     else if (nPetscComplex % 8 == 0) PackInit_ComplexType_PetscComplex_8_0(link);
@@ -703,7 +703,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link, PetscMemType mtype, M
     else if (op == MPI_MAXLOC) *UnpackAndOp = link->h_UnpackAndMaxloc;
     else if (op == MPI_MINLOC) *UnpackAndOp = link->h_UnpackAndMinloc;
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) {
     if (op == MPI_REPLACE) *UnpackAndOp = link->d_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->d_UnpackAndAdd;
@@ -756,7 +756,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link, PetscMemType mtype, 
     else if (op == MPI_MAXLOC) *ScatterAndOp = link->h_ScatterAndMaxloc;
     else if (op == MPI_MINLOC) *ScatterAndOp = link->h_ScatterAndMinloc;
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) {
     if (op == MPI_REPLACE) *ScatterAndOp = link->d_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->d_ScatterAndAdd;
@@ -796,7 +796,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link, PetscMemType mtype, MP
   *FetchAndOp = NULL;
   PetscCheck(op == MPI_SUM || op == MPIU_SUM, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MPI_Op in FetchAndOp");
   if (PetscMemTypeHost(mtype)) *FetchAndOp = link->h_FetchAndAdd;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOp = link->d_FetchAndAdd;
   else if (PetscMemTypeDevice(mtype) && atomic) *FetchAndOp = link->da_FetchAndAdd;
 #endif
@@ -809,7 +809,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link, PetscMemType mtyp
   *FetchAndOpLocal = NULL;
   PetscCheck(op == MPI_SUM || op == MPIU_SUM, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for MPI_Op in FetchAndOp");
   if (PetscMemTypeHost(mtype)) *FetchAndOpLocal = link->h_FetchAndAddLocal;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOpLocal = link->d_FetchAndAddLocal;
   else if (PetscMemTypeDevice(mtype) && atomic) *FetchAndOpLocal = link->da_FetchAndAddLocal;
 #endif
@@ -822,7 +822,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf, 
 
   PetscFunctionBegin;
   if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     if (PetscMemTypeDevice(link->rootmtype)) PetscCall(PetscLogGpuFlops(bas->rootbuflen[scope] * link->bs));
     else
 #endif
@@ -835,7 +835,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, 
 {
   PetscFunctionBegin;
   if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     if (PetscMemTypeDevice(link->leafmtype)) PetscCall(PetscLogGpuFlops(sf->leafbuflen[scope] * link->bs)); /* # of roots in buffer x # of scalars in unit */
     else
 #endif
@@ -860,7 +860,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, 
 static inline PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf, PetscSFLink link, PetscInt count, PetscInt start, const PetscInt *indices, void *data, const void *buf, MPI_Op op)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+#if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
   {
     PetscInt i;
     if (indices) {
@@ -882,7 +882,7 @@ static inline PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,
 static inline PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf, PetscSFLink link, PetscInt count, PetscInt srcStart, const PetscInt *srcIdx, const void *src, PetscInt dstStart, const PetscInt *dstIdx, void *dst, MPI_Op op)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+#if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
   {
     PetscInt i, disp;
     if (!srcIdx) {
@@ -1359,7 +1359,7 @@ PetscErrorCode PetscSFResetPackFields(PetscSF sf)
   for (PetscInt i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_HOST, &sf->leafpackopt[i]));
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_HOST, &bas->rootpackopt[i]));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_DEVICE, &sf->leafpackopt_d[i]));
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_DEVICE, &bas->rootpackopt_d[i]));
 #endif

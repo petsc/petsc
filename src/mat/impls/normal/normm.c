@@ -126,7 +126,7 @@ static PetscErrorCode MatDestroy_Normal(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_mpiaij_C", NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_hypre_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_seqdense_C", NULL));
@@ -251,7 +251,7 @@ static PetscErrorCode MatConvert_Normal_AIJ(Mat A, MatType newtype, MatReuse reu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 static PetscErrorCode MatConvert_Normal_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
   PetscFunctionBegin;
@@ -433,7 +433,7 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N)
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatNormalGetMat_C", MatNormalGetMat_Normal));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normal_seqaij_C", MatConvert_Normal_AIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normal_mpiaij_C", MatConvert_Normal_AIJ));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normal_hypre_C", MatConvert_Normal_HYPRE));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_normal_seqdense_C", MatProductSetFromOptions_Normal_Dense));
@@ -444,7 +444,7 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N)
   PetscCall(MatSetOption(*N, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));

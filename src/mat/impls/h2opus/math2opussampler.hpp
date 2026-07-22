@@ -10,7 +10,7 @@ protected:
   typedef typename VectorContainer<H2OPUS_HWTYPE_CPU, int>::type         HIntVector;
   HIntVector                                                             hindexmap;
   HRealVector                                                            hbuffer_in, hbuffer_out;
-#if defined(PETSC_HAVE_CUDA) && defined(H2OPUS_USE_GPU)
+#if PetscDefined(HAVE_CUDA) && defined(H2OPUS_USE_GPU)
   H2OpusDeviceVector<int>         dindexmap;
   H2OpusDeviceVector<H2Opus_Real> dbuffer_in, dbuffer_out;
 #endif
@@ -72,7 +72,7 @@ void PetscMatrixSampler::SetStream(h2opusComputeStream_t stream)
 void PetscMatrixSampler::SetIndexMap(int n, int *indexmap)
 {
   copyVector(this->hindexmap, indexmap, n, H2OPUS_HWTYPE_CPU);
-#if defined(PETSC_HAVE_CUDA) && defined(H2OPUS_USE_GPU)
+#if PetscDefined(HAVE_CUDA) && defined(H2OPUS_USE_GPU)
   copyVector(this->dindexmap, indexmap, n, H2OPUS_HWTYPE_CPU);
 #endif
 }
@@ -85,7 +85,7 @@ void PetscMatrixSampler::VerifyBuffers(int nv)
       if (hbuffer_in.size() < (size_t)n * nv) hbuffer_in.resize(n * nv);
       if (hbuffer_out.size() < (size_t)n * nv) hbuffer_out.resize(n * nv);
     } else {
-#if defined(PETSC_HAVE_CUDA) && defined(H2OPUS_USE_GPU)
+#if PetscDefined(HAVE_CUDA) && defined(H2OPUS_USE_GPU)
       if (dbuffer_in.size() < (size_t)n * nv) dbuffer_in.resize(n * nv);
       if (dbuffer_out.size() < (size_t)n * nv) dbuffer_out.resize(n * nv);
 #endif
@@ -105,7 +105,7 @@ void PetscMatrixSampler::PermuteBuffersIn(int nv, H2Opus_Real *v, H2Opus_Real **
       *w  = this->hbuffer_in.data();
       *ow = this->hbuffer_out.data();
     } else {
-#if defined(PETSC_HAVE_CUDA) && defined(H2OPUS_USE_GPU)
+#if PetscDefined(HAVE_CUDA) && defined(H2OPUS_USE_GPU)
       permute_vectors(v, this->dbuffer_in.data(), n, nv, this->dindexmap.data(), 1, H2OPUS_HWTYPE_GPU, this->stream);
       *w  = this->dbuffer_in.data();
       *ow = this->dbuffer_out.data();
@@ -122,7 +122,7 @@ void PetscMatrixSampler::PermuteBuffersOut(int nv, H2Opus_Real *v)
     if (!this->gpusampling) {
       permute_vectors(this->hbuffer_out.data(), v, n, nv, this->hindexmap.data(), 0, H2OPUS_HWTYPE_CPU, this->stream);
     } else {
-#if defined(PETSC_HAVE_CUDA) && defined(H2OPUS_USE_GPU)
+#if PetscDefined(HAVE_CUDA) && defined(H2OPUS_USE_GPU)
       permute_vectors(this->dbuffer_out.data(), v, n, nv, this->dindexmap.data(), 0, H2OPUS_HWTYPE_GPU, this->stream);
 #endif
     }
@@ -160,7 +160,7 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
     PetscCallVoid(MatSetVecType(Y, vtype));
 
   } else {
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscCallVoid(MatCreateDenseCUDA(comm, n, PETSC_DECIDE, N, samples, px, &X));
     PetscCallVoid(MatCreateDenseCUDA(comm, m, PETSC_DECIDE, M, samples, py, &Y));
     PetscCallVoid(MatSetVecType(X, vtype));
@@ -168,7 +168,7 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
 #endif
   }
   PetscCallVoid(MatMatMult(this->A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   if (this->gpusampling) {
     const PetscScalar *dummy;
     PetscCallVoid(MatDenseCUDAGetArrayRead(Y, &dummy));

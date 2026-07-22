@@ -5,7 +5,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[], PetscInt, const cha
 PETSC_EXTERN PetscErrorCode PetscDrawImageCheckFormat(const char *[]);
 PETSC_EXTERN PetscErrorCode PetscDrawMovieCheckFormat(const char *[]);
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
 static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 #endif
 
@@ -229,7 +229,7 @@ PetscErrorCode PetscDrawSave(PetscDraw draw)
   PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
 
 finally:
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscDrawSave_SAWs(draw));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -271,7 +271,7 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 /*
   The PetscImageList object and functions are used to maintain a list of file images

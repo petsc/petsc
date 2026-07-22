@@ -1,7 +1,7 @@
 #pragma once
 
 #include <petscfe.h>
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscfeceed.h>
 #endif
 #include <petscds.h>
@@ -236,7 +236,7 @@ struct _p_PetscFE {
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
   PetscBool       setupcalled;
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   Ceed      ceed;      /* The LibCEED context, usually set by the DM */
   CeedBasis ceedBasis; /* Basis for libCEED matching this element */
 #endif
@@ -246,9 +246,9 @@ typedef struct {
   PetscInt cellType;
 } PetscFE_Basic;
 
-#ifdef PETSC_HAVE_OPENCL
+#if PetscDefined(HAVE_OPENCL)
 
-  #ifdef __APPLE__
+  #if defined(__APPLE__)
     #include <OpenCL/cl.h>
   #else
     #include <CL/cl.h>

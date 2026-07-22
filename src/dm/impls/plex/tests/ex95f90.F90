@@ -35,7 +35,7 @@ program ex95f90
   PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT, '-dm_view', ierr))
 
   ! enable exodus debugging information
-#ifdef PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
   PetscCallA(exopts(EXVRBS + EXDEBG, ierr))
 #endif
 

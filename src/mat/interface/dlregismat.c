@@ -57,66 +57,66 @@ PetscErrorCode MatFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_DENSECUDA(void);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_DENSEHIP(void);
 #endif
 
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void);
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Kokkos(void);
 #endif
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if PetscDefined(HAVE_ESSL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Essl(void);
 #endif
-#if defined(PETSC_HAVE_SUPERLU)
+#if PetscDefined(HAVE_SUPERLU)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void);
 #endif
-#if defined(PETSC_HAVE_STRUMPACK)
+#if PetscDefined(HAVE_STRUMPACK)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void);
 #endif
-#if defined(PETSC_HAVE_PASTIX)
+#if PetscDefined(HAVE_PASTIX)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
 #endif
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
 #endif
-#if defined(PETSC_HAVE_MKL_PARDISO)
+#if PetscDefined(HAVE_MKL_PARDISO)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
 #endif
-#if defined(PETSC_HAVE_MKL_CPARDISO)
+#if PetscDefined(HAVE_MKL_CPARDISO)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void);
 #endif
-#if defined(PETSC_HAVE_SUITESPARSE)
+#if PetscDefined(HAVE_SUITESPARSE)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void);
 #endif
-#if defined(PETSC_HAVE_LUSOL)
+#if PetscDefined(HAVE_LUSOL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
 #endif
-#if defined(PETSC_HAVE_HTOOL)
+#if PetscDefined(HAVE_HTOOL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Htool(void);
 #endif
 
@@ -124,10 +124,10 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat, MatFactorType, Mat *)
 PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat, MatFactorType, Mat *);
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_cuda(Mat, MatFactorType, Mat *);
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_hip(Mat, MatFactorType, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat, MatFactorType, Mat *);
@@ -342,7 +342,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATCONSTANTDIAGONAL, MAT_FACTOR_ILU, MatGetFactor_constantdiagonal_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATCONSTANTDIAGONAL, MAT_FACTOR_ICC, MatGetFactor_constantdiagonal_petsc));
 
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL, MAT_FACTOR_LU, MatGetFactor_seqaij_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL, MAT_FACTOR_CHOLESKY, MatGetFactor_seqaij_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL, MAT_FACTOR_ILU, MatGetFactor_seqaij_petsc));
@@ -373,10 +373,10 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE, MAT_FACTOR_ILU, MatGetFactor_seqdense_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE, MAT_FACTOR_QR, MatGetFactor_seqdense_petsc));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatSolverTypeRegister_DENSECUDA());
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(MatSolverTypeRegister_DENSEHIP());
 #endif
 
@@ -386,61 +386,61 @@ PetscErrorCode MatInitializePackage(void)
      Register the external package factorization based solvers
         Eventually we don't want to have these hardwired here at compile time of PETSc
   */
-#if defined(PETSC_HAVE_MUMPS)
+#if PetscDefined(HAVE_MUMPS)
   PetscCall(MatSolverTypeRegister_MUMPS());
 #endif
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscCall(MatSolverTypeRegister_CUSPARSE());
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   PetscCall(MatSolverTypeRegister_HIPSPARSE());
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   PetscCall(MatSolverTypeRegister_Kokkos());
 #endif
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
   PetscCall(MatSolverTypeRegister_ViennaCL());
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
+#if PetscDefined(HAVE_ELEMENTAL)
   PetscCall(MatSolverTypeRegister_Elemental());
 #endif
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   PetscCall(MatSolverTypeRegister_ScaLAPACK());
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(MatSolverTypeRegister_Matlab());
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if PetscDefined(HAVE_ESSL)
   PetscCall(MatSolverTypeRegister_Essl());
 #endif
-#if defined(PETSC_HAVE_SUPERLU)
+#if PetscDefined(HAVE_SUPERLU)
   PetscCall(MatSolverTypeRegister_SuperLU());
 #endif
-#if defined(PETSC_HAVE_STRUMPACK)
+#if PetscDefined(HAVE_STRUMPACK)
   PetscCall(MatSolverTypeRegister_STRUMPACK());
 #endif
-#if defined(PETSC_HAVE_PASTIX)
+#if PetscDefined(HAVE_PASTIX)
   PetscCall(MatSolverTypeRegister_Pastix());
 #endif
-#if defined(PETSC_HAVE_SUPERLU_DIST)
+#if PetscDefined(HAVE_SUPERLU_DIST)
   PetscCall(MatSolverTypeRegister_SuperLU_DIST());
 #endif
-#if defined(PETSC_HAVE_MKL_PARDISO)
+#if PetscDefined(HAVE_MKL_PARDISO)
   PetscCall(MatSolverTypeRegister_MKL_Pardiso());
 #endif
-#if defined(PETSC_HAVE_MKL_CPARDISO)
+#if PetscDefined(HAVE_MKL_CPARDISO)
   PetscCall(MatSolverTypeRegister_MKL_CPardiso());
 #endif
-#if defined(PETSC_HAVE_SUITESPARSE)
+#if PetscDefined(HAVE_SUITESPARSE)
   PetscCall(MatSolverTypeRegister_SuiteSparse());
 #endif
-#if defined(PETSC_HAVE_LUSOL)
+#if PetscDefined(HAVE_LUSOL)
   PetscCall(MatSolverTypeRegister_Lusol());
 #endif
-#if defined(PETSC_HAVE_HTOOL)
+#if PetscDefined(HAVE_HTOOL)
   PetscCall(MatSolverTypeRegister_Htool());
 #endif
-#if defined(PETSC_HAVE_HPL)
+#if PetscDefined(HAVE_HPL)
   PetscCall(PetscBenchRegister(PETSCBMHPL, PetscBenchCreate_HPL));
 #endif
   /* Register package finalizer */
@@ -448,7 +448,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if PetscDefined(HAVE_DYNAMIC_LIBRARIES)
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

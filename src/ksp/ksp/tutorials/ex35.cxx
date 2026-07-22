@@ -200,7 +200,7 @@ int main(int argc, char **argv)
   if (user.io) {
     /* Write out the solution along with the mesh */
     PetscCall(DMMoabSetGlobalFieldVector(dmref, x));
-#ifdef MOAB_HAVE_HDF5
+#if defined(MOAB_HAVE_HDF5)
     PetscCall(DMMoabOutput(dmref, "ex35.h5m", NULL));
 #else
     /* MOAB does not support true parallel writers that aren't HDF5 based
@@ -323,7 +323,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
     PetscCall(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
 
     /* get the local DoF numbers to appropriately set the element contribution in the operator */
-#ifdef LOCAL_ASSEMBLY
+#if defined(LOCAL_ASSEMBLY)
     PetscCall(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
 #else
     PetscCall(DMMoabGetFieldDofs(dm, nconn, connect, 0, dof_indices));
@@ -356,7 +356,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
       }
     }
 
-#ifdef LOCAL_ASSEMBLY
+#if defined(LOCAL_ASSEMBLY)
     /* set the values directly into appropriate locations. Can alternately use VecSetValues */
     PetscCall(VecSetValuesLocal(b, nconn, dof_indices, localv, ADD_VALUES));
 #else
@@ -423,7 +423,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
     PetscCall(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
 
     /* get the global DOF number to appropriately set the element contribution in the RHS vector */
-#ifdef LOCAL_ASSEMBLY
+#if defined(LOCAL_ASSEMBLY)
     PetscCall(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
 #else
     PetscCall(DMMoabGetFieldDofs(dm, nconn, connect, 0, dof_indices));
@@ -468,7 +468,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
     }
 
     /* set the values directly into appropriate locations. */
-#ifdef LOCAL_ASSEMBLY
+#if defined(LOCAL_ASSEMBLY)
     PetscCall(MatSetValuesLocal(jac, nconn, dof_indices, nconn, dof_indices, array, ADD_VALUES));
 #else
     PetscCall(MatSetValues(jac, nconn, dof_indices, nconn, dof_indices, array, ADD_VALUES));
@@ -524,7 +524,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
     const moab::EntityHandle vhandle = *iter;
 
     /* get the local DoF numbers to appropriately set the element contribution in the operator */
-#ifdef LOCAL_ASSEMBLY
+#if defined(LOCAL_ASSEMBLY)
     PetscCall(DMMoabGetFieldDofsLocal(dm, 1, &vhandle, 0, &dof_index));
 #else
     PetscCall(DMMoabGetFieldDofs(dm, 1, &vhandle, 0, &dof_index));

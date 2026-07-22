@@ -440,7 +440,7 @@ PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, 
     PetscCall(PetscDrawLGReset(lgctx->lg));
   }
   PetscCall(VecGetArrayRead(v, &a));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   {
     PetscReal *areal;
     PetscInt   n;

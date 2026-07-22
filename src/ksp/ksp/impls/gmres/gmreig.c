@@ -26,7 +26,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
 
   /* compute Singular Values */
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bn, &bn, R, &bN, realpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, &info));
 #else
   PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("N", "N", &bn, &bn, R, &bN, realpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, realpart + N, &info));
@@ -40,7 +40,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
 
 PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig)
 {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
   PetscInt     n = gmres->it + 1, N = gmres->max_k + 1, i, *perm;
   PetscBLASInt bn, bN, lwork, idummy;
@@ -172,12 +172,12 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
     For a complex Ritz pair of eigenvectors at wr(j), wi(j), wr(j+1), and wi(j+1), Q(:,j) + i Q(:,j+1) and Q(:,j) - i Q(:,j+1) are the two eigenvectors
   */
   {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     PetscReal *rwork = NULL;
 #endif
     PetscCall(PetscMalloc1(lwork, &work));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     PetscCallLAPACKInfo("LAPACKgeev", LAPACKgeev_("N", "V", &bn, H, &bN, wr, wi, &sdummy, &idummy, Q, &bn, work, &lwork, &info));
 #else
     PetscCall(PetscMalloc1(2 * n, &rwork));
@@ -189,7 +189,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
   }
   /* sort the (Harmonic) Ritz values */
   PetscCall(PetscMalloc2(bn, &modul, bn, &perm));
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   for (i = 0; i < bn; i++) modul[i] = PetscAbsScalar(wr[i]);
 #else
   for (i = 0; i < bn; i++) modul[i] = PetscSqrtReal(wr[i] * wr[i] + wi[i] * wi[i]);
@@ -197,7 +197,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
   for (i = 0; i < bn; i++) perm[i] = i;
   PetscCall(PetscSortRealWithPermutation(bn, modul, perm));
 
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   /* sort extracted (Harmonic) Ritz pairs */
   nb = NbrRitz;
   PetscCall(PetscMalloc1(nb * bn, &SR));

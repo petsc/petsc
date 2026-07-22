@@ -7,7 +7,7 @@
 static inline
 PyObject *PyPetscScalar_FromPetscScalar(PetscScalar s)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   double a = (double)PetscRealPart(s);
   double b = (double)PetscImaginaryPart(s);
   return PyComplex_FromDoubles(a, b);
@@ -19,7 +19,7 @@ PyObject *PyPetscScalar_FromPetscScalar(PetscScalar s)
 static inline
 PetscScalar PyPetscScalar_AsPetscScalar(PyObject *o)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
 #if defined(Py_LIMITED_API)
   PetscReal a = (PetscReal)PyComplex_RealAsDouble(o);
   PetscReal b = (PetscReal)PyComplex_ImagAsDouble(o);

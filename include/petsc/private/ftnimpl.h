@@ -286,14 +286,14 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
   case PETSC_VIEWER_BINARY_SELF_FORTRAN:
     return PETSC_VIEWER_BINARY_SELF;
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   case PETSC_VIEWER_MATLAB_SELF_FORTRAN:
     return PETSC_VIEWER_MATLAB_SELF;
   case PETSC_VIEWER_MATLAB_WORLD_FORTRAN:
     return PETSC_VIEWER_MATLAB_WORLD;
 #endif
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   case PETSC_VIEWER_SOCKET_WORLD_FORTRAN:
     return PETSC_VIEWER_SOCKET_WORLD;
   case PETSC_VIEWER_SOCKET_SELF_FORTRAN:
@@ -305,7 +305,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
   }
 }
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
   #define PetscPatchDefaultViewers_Fortran_Socket(vin, v) \
     } \
     else if ((*(PetscFortranAddr *)vin) == PETSC_VIEWER_SOCKET_WORLD_FORTRAN) \
@@ -393,7 +393,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
 #define PETSC_DEPRECATED_MACRO(...)
 
 /* PGI compilers pass in f90 pointers as 2 arguments */
-#if defined(PETSC_HAVE_F90_2PTR_ARG)
+#if PetscDefined(HAVE_F90_2PTR_ARG)
   #define PETSC_F90_2PTR_PROTO_NOVAR , void *
   #define PETSC_F90_2PTR_PROTO(ptr)  , void *ptr
   #define PETSC_F90_2PTR_PARAM(ptr)  , ptr

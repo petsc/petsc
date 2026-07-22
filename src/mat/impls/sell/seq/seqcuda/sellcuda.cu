@@ -102,7 +102,7 @@ static __global__ void matmultadd_seqsell_basic_kernel(PetscInt nrows, PetscInt 
   }
 }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 /* use 1 block per slice, suitable for large slice width */
 template <int BLOCKY>
 __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheight, const PetscInt *acolidx, const MatScalar *aval, const PetscInt *sliidx, const PetscScalar *x, PetscScalar *y)
@@ -575,7 +575,7 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   PetscInt          *sliidx;
   PetscInt           nblocks, blocksize = 512; /* blocksize must be multiple of SLICE_HEIGHT*32 */
   dim3               block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscReal maxoveravg;
 #endif
@@ -594,7 +594,7 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogGpuTimeBegin());
 
   switch (cudastruct->kernelchoice) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   case 9:
     nblocks = 1 + (nrows - 1) / sliceheight;
     if (cudastruct->blocky == 2) {
@@ -652,7 +652,7 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
     nblocks = 1 + (nrows - 1) / blocksize;
     matmult_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     break;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   case 0:
     maxoveravg = a->maxslicewidth / a->avgslicewidth;
     if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */
@@ -715,7 +715,7 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
   MatScalar         *aval    = cudastruct->val;
   PetscInt          *acolidx = cudastruct->colidx;
   PetscInt          *sliidx  = cudastruct->sliidx;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscReal maxoveravg;
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscInt  blocky = cudastruct->blocky;
@@ -734,7 +734,7 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
     PetscCall(PetscLogGpuTimeBegin());
 
     switch (cudastruct->kernelchoice) {
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     case 9:
       nblocks = 1 + (nrows - 1) / sliceheight;
       if (blocky == 2) {
@@ -813,7 +813,7 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
       nblocks = 1 + (nrows - 1) / blocksize;
       matmultadd_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       break;
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
     case 0:
       maxoveravg = a->maxslicewidth / a->avgslicewidth;
       if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */

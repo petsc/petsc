@@ -2,9 +2,9 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(HAVE_FORTRAN_CAPS)
   #define matcreatempiadj_ MATCREATEMPIADJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define matcreatempiadj_ matcreatempiadj
 #endif
 

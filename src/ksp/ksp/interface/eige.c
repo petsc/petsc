@@ -151,7 +151,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscCall(MatDenseGetArray(BA, &array));
   }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   if (rank == 0) {
     PetscScalar *work;
     PetscReal   *realpart, *imagpart;

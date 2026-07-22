@@ -3,19 +3,19 @@
       Code for manipulating files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if PetscDefined(HAVE_WINDOWS_H)
   #include <windows.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
+#if PetscDefined(HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_NETDB_H)
+#if PetscDefined(HAVE_NETDB_H)
   #include <netdb.h>
 #endif
 #include <errno.h>
@@ -47,23 +47,23 @@
 PetscErrorCode PetscGetHostName(char name[], size_t nlen)
 {
   char *domain = NULL;
-#if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
+#if PetscDefined(HAVE_UNAME) && !PetscDefined(HAVE_GETCOMPUTERNAME)
   struct utsname utname;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_GETCOMPUTERNAME)
+#if PetscDefined(HAVE_GETCOMPUTERNAME)
   {
     size_t nnlen = nlen;
 
     GetComputerName((LPTSTR)name, (LPDWORD)(&nnlen));
   }
-#elif defined(PETSC_HAVE_UNAME)
+#elif PetscDefined(HAVE_UNAME)
   // According to IEEE Std 1003.1-1988 ("POSIX.1") and 1003.1-2024, upon successful completion, uname returns
   // a non-negative value. Otherwise, -1 shall be returned and errno set to indicate the error.
   PetscCheck(uname(&utname) != -1, PETSC_COMM_SELF, PETSC_ERR_SYS, "uname() due to \"%s\"", strerror(errno));
   PetscCall(PetscStrncpy(name, utname.nodename, nlen));
-#elif defined(PETSC_HAVE_GETHOSTNAME)
+#elif PetscDefined(HAVE_GETHOSTNAME)
   PetscCheck(!gethostname(name, nlen), PETSC_COMM_SELF, PETSC_ERR_SYS, "gethostname() due to \"%s\"", strerror(errno));
 #endif
   /* if there was not enough room then system call will not null terminate name */
@@ -78,7 +78,7 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
     if (l == nlen - 1) PetscFunctionReturn(PETSC_SUCCESS);
     name[l++] = '.';
     name[l]   = 0;
-#if defined(PETSC_HAVE_GETDOMAINNAME)
+#if PetscDefined(HAVE_GETDOMAINNAME)
     PetscCheck(!getdomainname(name + l, (int)(nlen - l)), PETSC_COMM_SELF, PETSC_ERR_SYS, "getdomainname() due to \"%s\"", strerror(errno));
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */

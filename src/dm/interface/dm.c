@@ -8,7 +8,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   #include <petscfeceed.h>
 #endif
 
@@ -775,7 +775,7 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscTryTypeMethod(*dm, destroy);
   PetscCall(DMMonitorCancel(*dm));
   PetscCall(DMCeedDestroy(&(*dm)->dmceed));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCallCEED(CeedElemRestrictionDestroy(&(*dm)->ceedERestrict));
   PetscCallCEED(CeedDestroy(&(*dm)->ceed));
 #endif
@@ -1270,7 +1270,7 @@ PetscErrorCode DMCreateInterpolationScale(DM dac, DM daf, Mat mat, Vec *scale)
 {
   Vec         fine;
   PetscScalar one = 1.0;
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   PetscBool bindingpropagates, isbound;
 #endif
 
@@ -1278,7 +1278,7 @@ PetscErrorCode DMCreateInterpolationScale(DM dac, DM daf, Mat mat, Vec *scale)
   PetscCall(DMCreateGlobalVector(daf, &fine));
   PetscCall(DMCreateGlobalVector(dac, scale));
   PetscCall(VecSet(fine, one));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   /* If the 'fine' Vec is bound to the CPU, it makes sense to bind 'mat' as well.
    * Note that we only do this for the CUDA case, right now, but if we add support for MatMultTranspose() via ViennaCL,
    * we'll need to do it for that case, too.*/
@@ -1734,12 +1734,8 @@ PetscErrorCode DMGetWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, void *m
      Get size directly */
   if (dtype == MPIU_INT) dsize = sizeof(PetscInt);
   else if (dtype == MPIU_REAL) dsize = sizeof(PetscReal);
-#if defined(PETSC_USE_64BIT_INDICES)
-  else if (dtype == MPI_INT) dsize = sizeof(int);
-#endif
-#if defined(PETSC_USE_COMPLEX)
-  else if (dtype == MPIU_SCALAR) dsize = sizeof(PetscScalar);
-#endif
+  else if (PetscDefined(USE_64BIT_INDICES) && dtype == MPI_INT) dsize = sizeof(int);
+  else if (PetscDefined(USE_COMPLEX) && dtype == MPIU_SCALAR) dsize = sizeof(PetscScalar);
   else PetscCallMPI(MPI_Type_size(dtype, &dsize));
 
   if (((size_t)dsize * count) > link->bytes) {
@@ -4704,7 +4700,6 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
 /*
   DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections. Generates and error if they are not consistent.
 
@@ -4780,7 +4775,6 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
 PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf)
 {
@@ -4857,9 +4851,7 @@ PetscErrorCode DMSetGlobalSection(DM dm, PetscSection section)
   PetscCall(PetscObjectReference((PetscObject)section));
   PetscCall(PetscSectionDestroy(&dm->globalSection));
   dm->globalSection = section;
-#if defined(PETSC_USE_DEBUG)
-  if (section) PetscCall(DMDefaultSectionCheckConsistency_Internal(dm, dm->localSection, section));
-#endif
+  if (PetscDefined(USE_DEBUG) && section) PetscCall(DMDefaultSectionCheckConsistency_Internal(dm, dm->localSection, section));
   /* Clear global scratch vectors and sectionSF */
   PetscCall(PetscSFDestroy(&dm->sectionSF));
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &dm->sectionSF));
@@ -6113,7 +6105,7 @@ PetscErrorCode DMCreateDS(DM dm)
     DMLabel  label = dm->fields[f].label;
     PetscInt l;
 
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
     /* Move CEED context to discretizations */
     {
       PetscClassId id;
@@ -6820,7 +6812,7 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char name[]
   PetscAssertPointer(val, 5);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCheck(ishdf5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscScalar value;
 
   PetscCall(DMSequenceLoad_HDF5_Internal(dm, name, num, &value, viewer));
@@ -6862,7 +6854,7 @@ PetscErrorCode DMGetOutputSequenceLength(DM dm, PetscViewer viewer, const char n
   PetscAssertPointer(len, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCheck(ishdf5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(DMSequenceGetLength_HDF5_Internal(dm, name, len, viewer));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

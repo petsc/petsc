@@ -26,7 +26,7 @@ const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
 
 PetscInt SwarmDataFieldId = -1;
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   #include <petscviewerhdf5.h>
 
 static PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
@@ -79,14 +79,14 @@ static PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
 static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
 {
   DM dm;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
   PetscCheck(dm, PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
     PetscCall(VecView_Swarm_HDF5_Internal(v, viewer));
@@ -2615,7 +2615,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
   PetscBool isascii, ibinary, isvtk, isdraw, ispython;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
 
@@ -2625,7 +2625,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &ibinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isvtk));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
@@ -2642,7 +2642,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
       PetscCall(DMView_Swarm_Ascii(dm, viewer));
     }
   } else {
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
     if (ishdf5) PetscCall(DMSwarmView_HDF5(dm, viewer));
 #endif
     if (isdraw) PetscCall(DMSwarmView_Draw(dm, viewer));

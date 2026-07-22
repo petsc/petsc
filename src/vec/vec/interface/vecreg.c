@@ -99,7 +99,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
   is assumed for VECSTANDARD. Thus we just create a new vector, though it is expensive.
   Upcasting is rare and users are not recommended to use it.
   */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   {
     PetscBool dstCUDA = PETSC_FALSE;
     if (!dstStandard) PetscCall(VecTypeCompareAny_Private(newType, &dstCUDA, VECCUDA, VECSEQCUDA, VECMPICUDA, ""));
@@ -110,7 +110,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
     }
   }
 #endif
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   {
     PetscBool dstHIP = PETSC_FALSE;
     if (!dstStandard) PetscCall(VecTypeCompareAny_Private(newType, &dstHIP, VECHIP, VECSEQHIP, VECMPIHIP, ""));
@@ -121,7 +121,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
     }
   }
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
   {
     PetscBool dstKokkos = PETSC_FALSE;
     if (!dstStandard) PetscCall(VecTypeCompareAny_Private(newType, &dstKokkos, VECKOKKOS, VECSEQKOKKOS, VECMPIKOKKOS, ""));

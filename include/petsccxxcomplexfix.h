@@ -42,7 +42,7 @@
 */
 
 // In PETSc, a quad precision PetscComplex is a C type even with clanguage=cxx, therefore no C++ operator overloading needed for it.
-#if !defined(PETSC_USE_REAL___FLOAT128)
+#if !PetscDefined(USE_REAL___FLOAT128)
   #include <type_traits>
 // For operations "Atype op Cmplex" or "Cmplex op Atype" with Cmplex being PetscComplex, the built-in support allows Atype to be PetscComplex or PetscReal.
 // We extend Atype to other C++ arithmetic types, and __fp16, __float128 if available.
@@ -51,10 +51,10 @@
 template <typename Cmplex, typename Atype> // operation on a complex and an arithmetic type
 struct petsccomplex_extended_type :
   std::integral_constant<bool, (std::is_same<Cmplex, PetscComplex>::value && std::is_arithmetic<Atype>::value && !std::is_same<Atype, PetscReal>::value)
-  #if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_USE_REAL___FP16) && !(defined(__NVCC__) && defined(__x86_64__))
+  #if PetscDefined(HAVE_REAL___FP16) && !PetscDefined(USE_REAL___FP16) && !(defined(__NVCC__) && defined(__x86_64__))
                                  || std::is_same<Atype, __fp16>::value
   #endif
-  #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FLOAT128)
+  #if PetscDefined(HAVE_REAL___FLOAT128) && !PetscDefined(USE_REAL___FLOAT128)
                                  || std::is_same<Atype, __float128>::value
   #endif
                          > {

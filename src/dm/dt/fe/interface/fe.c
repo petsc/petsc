@@ -313,7 +313,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   PetscCall(PetscDualSpaceDestroy(&(*fem)->dualSpace));
   PetscCall(PetscQuadratureDestroy(&(*fem)->quadrature));
   PetscCall(PetscQuadratureDestroy(&(*fem)->faceQuadrature));
-#ifdef PETSC_HAVE_LIBCEED
+#if PetscDefined(HAVE_LIBCEED)
   PetscCallCEED(CeedBasisDestroy(&(*fem)->ceedBasis));
   PetscCallCEED(CeedDestroy(&(*fem)->ceed));
 #endif

@@ -18,7 +18,7 @@
 #if defined(__clang__)
   #pragma clang diagnostic pop
 #endif
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
   #include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
 #endif
 
@@ -93,7 +93,7 @@ PETSC_EXTERN PetscErrorCode DMMoabOutput(DM, const char *, const char *);
 
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM, moab::Interface *);
 PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM, moab::Interface **);
-#ifdef MOAB_HAVE_MPI
+#if defined(MOAB_HAVE_MPI)
 PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM, moab::ParallelComm **);
 #endif
 

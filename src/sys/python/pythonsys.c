@@ -31,7 +31,7 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const c
   PetscCall(PetscStrncpy(command, pythonexe, sizeof(command)));
   PetscCall(PetscStrlcat(command, " ", sizeof(command)));
   PetscCall(PetscStrlcat(command, attempt, sizeof(command)));
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, command, "r", &fp));
   if (!fgets(pythonlib, (int)pl, fp)) {
     PetscCall(PetscPClose(PETSC_COMM_SELF, fp));

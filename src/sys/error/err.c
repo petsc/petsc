@@ -64,7 +64,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
   if (ierr) return ierr;
   ierr = PetscSNPrintf(command, PETSC_STATIC_ARRAY_LENGTH(command), "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
   if (ierr) return ierr;
-#if defined(PETSC_HAVE_POPEN)
+#if PetscDefined(HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD, (char *)ctx, command, "r", &fp);
   if (ierr) return ierr;
   ierr = PetscPClose(MPI_COMM_WORLD, fp);
@@ -299,7 +299,7 @@ PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_CLANGUAGE_CXX)
+#if PetscDefined(CLANGUAGE_CXX)
   /* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
  * would be broken if implementations did not handle it in some common cases. However, keep in mind
  *
@@ -418,7 +418,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
       PETSCABORT(comm, ierr);
     }
   }
-#if defined(PETSC_CLANGUAGE_CXX)
+#if PetscDefined(CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) PetscCxxErrorThrow();
 #endif
   return ierr;
@@ -681,7 +681,7 @@ PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscS
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * i));
       }
       for (j = 0; j < Ncol; j++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[i * Ncol + j]), (double)PetscImaginaryPart(idx[i * Ncol + j])));
 #else
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * Ncol + j]));
@@ -696,7 +696,7 @@ PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscS
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * n));
       }
       for (i = 0; i < p; i++) {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[n * Ncol + i]), (double)PetscImaginaryPart(idx[n * Ncol + i])));
 #else
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[Ncol * n + i]));
@@ -837,7 +837,7 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>
 PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status)
 {
@@ -948,7 +948,7 @@ PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult result)
 }
 #endif
 
-#if defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_HIP)
   #include <petscdevice_hip.h>
 PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t status)
 {

@@ -34,7 +34,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact, PetscBool natural)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
       break;
     case 9:
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering;
 #else
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
@@ -280,16 +280,14 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   if (ai[n] != 0) {
     PetscReal af = B->info.fill_ratio_needed;
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)f, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g);\n", (double)af));
     PetscCall(PetscInfo(A, "for best performance.\n"));
-  } else {
-    PetscCall(PetscInfo(A, "Empty matrix\n"));
-  }
+  } else PetscCall(PetscInfo(A, "Empty matrix\n"));
 #endif
 
   PetscCall(ISIdentity(isrow, &row_identity));

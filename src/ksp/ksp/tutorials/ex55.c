@@ -55,7 +55,7 @@ int main(int argc, char **args)
   PetscCall(MatSetBlockSize(Amat, 2));
   PetscCall(MatSeqAIJSetPreallocation(Amat, 18, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Amat, 18, NULL, 18, NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatHYPRESetPreallocation(Amat, 18, NULL, 18, NULL));
 #endif
 

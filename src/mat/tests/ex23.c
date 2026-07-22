@@ -164,7 +164,7 @@ int main(int argc, char **args)
   PetscCall(MatSetLocalToGlobalMapping(B, rmap, cmap));
   PetscCall(MatMPIAIJSetPreallocation(B, 3, NULL, 3, NULL));
   PetscCall(MatMPIBAIJSetPreallocation(B, 1, 3, NULL, 3, NULL));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatHYPRESetPreallocation(B, 3, NULL, 3, NULL));
 #endif
   PetscCall(MatISSetPreallocation(B, 3, NULL, 3, NULL));

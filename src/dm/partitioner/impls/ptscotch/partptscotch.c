@@ -1,6 +1,6 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
-#if defined(PETSC_HAVE_PTSCOTCH)
+#if PetscDefined(HAVE_PTSCOTCH)
 EXTERN_C_BEGIN
   #include <ptscotch.h>
 EXTERN_C_END
@@ -24,7 +24,7 @@ typedef struct {
   PetscReal imbalance;
 } PetscPartitioner_PTScotch;
 
-#if defined(PETSC_HAVE_PTSCOTCH)
+#if PetscDefined(HAVE_PTSCOTCH)
 
   #define PetscCallPTSCOTCH(...) \
     do { \
@@ -201,7 +201,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner p
 
 static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
-#if defined(PETSC_HAVE_PTSCOTCH)
+#if PetscDefined(HAVE_PTSCOTCH)
   MPI_Comm    comm;
   PetscInt    nvtxs = numVertices; /* The number of vertices in full graph */
   PetscInt   *vtxdist;             /* Distribution of vertices across processes */

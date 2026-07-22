@@ -8,7 +8,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   const PetscScalar vals[] = {100, 2,  3,  4,  5,  600, 7,  8,  9,  100, 11, 1200, 13, 14, 15, 1600, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 2800, 29, 30, 31, 32,
                               33,  34, 35, 36, 37, 38,  39, 40, 41, 42,  43, 44,   45, 46, 47, 48,   49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 49, 60,   61, 62, 63, 64};
   Mat               A;
-#if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
+#if PetscDefined(HAVE_MUMPS) || PetscDefined(HAVE_MKL_CPARDISO)
   Mat           F;
   MatSolverType stype = MATSOLVERPETSC;
   PetscRandom   rdm;
@@ -35,7 +35,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   PetscCall(MatView(A, viewer));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscCall(MatView(A, viewer));
-#if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
+#if PetscDefined(HAVE_MUMPS) || PetscDefined(HAVE_MKL_CPARDISO)
   PetscCall(PetscStrcmp(mtype, MATMPISBAIJ, &issbaij));
   if (!issbaij) PetscCall(MatShift(A, 10));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
@@ -43,13 +43,13 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   PetscCall(MatCreateVecs(A, &x, &y));
   PetscCall(VecDuplicate(x, &b));
   for (PetscInt j = 0; j < 2; j++) {
-  #if defined(PETSC_HAVE_MUMPS)
+  #if PetscDefined(HAVE_MUMPS)
     if (j == 0) stype = MATSOLVERMUMPS;
     if (PetscDefined(USE_REAL___FLOAT128)) tol = 1e-10;
   #else
     if (j == 0) continue;
   #endif
-  #if defined(PETSC_HAVE_MKL_CPARDISO)
+  #if PetscDefined(HAVE_MKL_CPARDISO)
     if (j == 1) {
       if (issbaij && PetscDefined(USE_COMPLEX)) continue;
       stype = MATSOLVERMKL_CPARDISO;

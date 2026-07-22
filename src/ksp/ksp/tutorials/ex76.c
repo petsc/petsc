@@ -104,7 +104,7 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCHPDDM));
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset", &flg, NULL));
   if (flg) {
@@ -197,7 +197,7 @@ int main(int argc, char **args)
     }
     PetscCall(KSPGetType(ksp, &type));
     PetscCall(PetscStrcmp(type, KSPHPDDM, &flg));
-#if defined(PETSC_HAVE_HPDDM)
+#if PetscDefined(HAVE_HPDDM)
     if (flg) {
       PetscReal    norm;
       KSPHPDDMType type;
@@ -224,7 +224,7 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&B));
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
   if (flg) PetscCall(PCHPDDMGetSTShareSubKSP(pc, &flg));
 #endif
   if (flg && PetscDefined(USE_LOG)) {
@@ -246,7 +246,7 @@ int main(int argc, char **args)
       } else PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
     }
   }
-#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
   if (N == 1) {
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-successive_solves", &flg, NULL));

@@ -319,7 +319,7 @@ static PetscErrorCode MatProductNumeric_X_Dense(Mat C)
       }
       PetscCall(MatConvert(C, MATDENSECUDA, MAT_INPLACE_MATRIX, &C));
     } else { /* Make sure we have up-to-date data on the CPU */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_VIENNACL)
       Bcpu = B->boundtocpu;
       Ccpu = C->boundtocpu;
 #endif
@@ -822,7 +822,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
     PetscCheck(!missing, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Unspecified symbolic phase for product %s. The product is not supported", errstr);
     PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after symbolic phase for product %s", errstr);
   }
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   PetscBool bindingpropagates;
   bindingpropagates = (PetscBool)((A->boundtocpu && A->bindingpropagates) || (B->boundtocpu && B->bindingpropagates));
   if (C) bindingpropagates = (PetscBool)(bindingpropagates || (C->boundtocpu && C->bindingpropagates));

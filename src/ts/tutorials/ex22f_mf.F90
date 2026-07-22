@@ -113,7 +113,7 @@ contains
       end do
     end do
 
-#ifdef EXPLICIT_INTEGRATOR22
+#if defined(EXPLICIT_INTEGRATOR22)
     f(1, :) = f(1, :) - (k(1)*x(1, :) - k(2)*x(2, :) - s(1))
     f(2, :) = f(2, :) - (-k(1)*x(1, :) + k(2)*x(2, :) - s(2))
 #endif

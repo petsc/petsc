@@ -499,7 +499,7 @@ inline void SfInterface<T>::PackInit_IntegerType(PetscSFLink link) noexcept
   PackInit_IntegerType_Atomic<Type, BS, EQ, sizeof(Type)>::Init(link);
 }
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
 template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
 inline void SfInterface<T>::PackInit_ComplexType(PetscSFLink link) noexcept
@@ -643,7 +643,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 {
   PetscInt  nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
   PetscBool is2Int, is2PetscInt;
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscInt nPetscComplex = 0;
 #endif
 
@@ -655,7 +655,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_INT, &nInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_INT, &nPetscInt));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_REAL, &nPetscReal));
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_COMPLEX, &nPetscComplex));
 #endif
   PetscCall(MPIPetsc_Type_compare(unit, MPI_2INT, &is2Int));
@@ -666,7 +666,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
   } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
     PackInit_PairType<PairPetscInt>(link);
   } else if (nPetscReal) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nPetscReal == 8) PackInit_RealType<PetscReal, 8, 1>(link);
     else if (nPetscReal % 8 == 0) PackInit_RealType<PetscReal, 8, 0>(link);
     else if (nPetscReal == 4) PackInit_RealType<PetscReal, 4, 1>(link);
@@ -678,7 +678,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
       PackInit_RealType<PetscReal, 1, 0>(link);
   } else if (nPetscInt && sizeof(PetscInt) == sizeof(llint)) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nPetscInt == 8) PackInit_IntegerType<llint, 8, 1>(link);
     else if (nPetscInt % 8 == 0) PackInit_IntegerType<llint, 8, 0>(link);
     else if (nPetscInt == 4) PackInit_IntegerType<llint, 4, 1>(link);
@@ -690,7 +690,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
       PackInit_IntegerType<llint, 1, 0>(link);
   } else if (nInt) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nInt == 8) PackInit_IntegerType<int, 8, 1>(link);
     else if (nInt % 8 == 0) PackInit_IntegerType<int, 8, 0>(link);
     else if (nInt == 4) PackInit_IntegerType<int, 4, 1>(link);
@@ -702,7 +702,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
       PackInit_IntegerType<int, 1, 0>(link);
   } else if (nSignedChar) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nSignedChar == 8) PackInit_IntegerType<SignedChar, 8, 1>(link);
     else if (nSignedChar % 8 == 0) PackInit_IntegerType<SignedChar, 8, 0>(link);
     else if (nSignedChar == 4) PackInit_IntegerType<SignedChar, 4, 1>(link);
@@ -714,7 +714,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
       PackInit_IntegerType<SignedChar, 1, 0>(link);
   } else if (nUnsignedChar) {
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
     if (nUnsignedChar == 8) PackInit_IntegerType<UnsignedChar, 8, 1>(link);
     else if (nUnsignedChar % 8 == 0) PackInit_IntegerType<UnsignedChar, 8, 0>(link);
     else if (nUnsignedChar == 4) PackInit_IntegerType<UnsignedChar, 4, 1>(link);
@@ -725,9 +725,9 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
     else if (nUnsignedChar % 1 == 0)
 #endif
       PackInit_IntegerType<UnsignedChar, 1, 0>(link);
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   } else if (nPetscComplex) {
-  #if !defined(PETSC_HAVE_DEVICE)
+  #if !PetscDefined(HAVE_DEVICE)
     if (nPetscComplex == 8) PackInit_ComplexType<PetscComplex, 8, 1>(link);
     else if (nPetscComplex % 8 == 0) PackInit_ComplexType<PetscComplex, 8, 0>(link);
     else if (nPetscComplex == 4) PackInit_ComplexType<PetscComplex, 4, 1>(link);
@@ -745,7 +745,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
     PetscCallMPI(MPI_Type_get_extent(unit, &lb, &nbyte));
     PetscCheck(lb == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
       if (nbyte == 4) PackInit_DumbType<char, 4, 1>(link);
       else if (nbyte % 4 == 0) PackInit_DumbType<char, 4, 0>(link);
       else if (nbyte == 2) PackInit_DumbType<char, 2, 1>(link);
@@ -756,7 +756,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
         PackInit_DumbType<char, 1, 0>(link);
     } else {
       PetscCall(PetscIntCast(nbyte / sizeof(int), &nInt));
-#if !defined(PETSC_HAVE_DEVICE)
+#if !PetscDefined(HAVE_DEVICE)
       if (nInt == 8) PackInit_DumbType<int, 8, 1>(link);
       else if (nInt % 8 == 0) PackInit_DumbType<int, 8, 0>(link);
       else if (nInt == 4) PackInit_DumbType<int, 4, 1>(link);

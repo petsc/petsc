@@ -13,19 +13,19 @@ typedef PetscInt HYPRE_BigInt;
 
 #if defined(HYPRE_BIGINT) || defined(HYPRE_MIXEDINT)
   #define PetscHYPRE_BigInt_FMT "lld"
-  #ifdef __cplusplus /* make sure our format specifiers line up */
+  #if defined(__cplusplus) /* make sure our format specifiers line up */
     #include <type_traits>
 static_assert(std::is_same<HYPRE_BigInt, long long int>::value, "");
   #endif
 #else
   #define PetscHYPRE_BigInt_FMT "d"
-  #ifdef __cplusplus /* make sure our format specifiers line up */
+  #if defined(__cplusplus) /* make sure our format specifiers line up */
     #include <type_traits>
 static_assert(std::is_same<HYPRE_BigInt, int>::value, "");
   #endif
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 void PetscCallHYPRE(HYPRE_Int);
 #else
   #if PETSC_PKG_HYPRE_VERSION_GT(2, 0, 0) /* HYPRE_DescribeError() added in 2.0.0 */

@@ -4,10 +4,10 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for posix_memalign() */
 #include <petscsys.h>                    /*I   "petscsys.h"   I*/
 #include <stdarg.h>
-#if defined(PETSC_HAVE_MALLOC_H)
+#if PetscDefined(HAVE_MALLOC_H)
   #include <malloc.h>
 #endif
-#if defined(PETSC_HAVE_MEMKIND)
+#if PetscDefined(HAVE_MEMKIND)
   #include <errno.h>
   #include <memkind.h>
 typedef enum {
@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
       PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_PLIB, "System free returned error %d", err);
     }
   #else
-    #if defined(PETSC_HAVE_MEMKIND)
+    #if PetscDefined(HAVE_MEMKIND)
     memkind_free(0, *result);
     #else
     free(*result);
@@ -302,7 +302,7 @@ PetscErrorCode PetscMallocSetDRAM(void)
 {
   PetscFunctionBegin;
   if (PetscTrMalloc == PetscMallocAlign) {
-#if defined(PETSC_HAVE_MEMKIND)
+#if PetscDefined(HAVE_MEMKIND)
     previousmktype = currentmktype;
     currentmktype  = PETSC_MK_DEFAULT;
 #endif
@@ -331,7 +331,7 @@ PetscErrorCode PetscMallocResetDRAM(void)
 {
   PetscFunctionBegin;
   if (PetscTrMalloc == PetscMallocAlign) {
-#if defined(PETSC_HAVE_MEMKIND)
+#if PetscDefined(HAVE_MEMKIND)
     currentmktype = previousmktype;
 #endif
   } else {

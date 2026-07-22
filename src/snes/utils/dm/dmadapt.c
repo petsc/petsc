@@ -750,15 +750,15 @@ static PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscCall(DMIsForest(adaptor->idm, &isForest));
   if (adaptor->adaptCriterion == DM_ADAPTATION_NONE) {
     if (isForest) adaptor->adaptCriterion = DM_ADAPTATION_LABEL;
-#if defined(PETSC_HAVE_PRAGMATIC)
+#if PetscDefined(HAVE_PRAGMATIC)
     else {
       adaptor->adaptCriterion = DM_ADAPTATION_METRIC;
     }
-#elif defined(PETSC_HAVE_MMG)
+#elif PetscDefined(HAVE_MMG)
     else {
       adaptor->adaptCriterion = DM_ADAPTATION_METRIC;
     }
-#elif defined(PETSC_HAVE_PARMMG)
+#elif PetscDefined(HAVE_PARMMG)
     else {
       adaptor->adaptCriterion = DM_ADAPTATION_METRIC;
     }

@@ -6,7 +6,7 @@
 #include <petsc/private/hashsetij.h>
 
 // This is sometimes needed for PETSC_Prefetch.
-#if defined(PETSC_HAVE_XMMINTRIN_H)
+#if PetscDefined(HAVE_XMMINTRIN_H)
   #include <xmmintrin.h>
 #endif
 
@@ -699,7 +699,7 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_7(PetscScalar 
   return PETSC_SUCCESS;
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES) && !PetscDefined(SKIP_IMMINTRIN_H_CUDAWORKAROUND)
   #include <immintrin.h>
 static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
 {
@@ -973,7 +973,7 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, cons
 }
 #endif
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
+#if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES) && !PetscDefined(SKIP_IMMINTRIN_H_CUDAWORKAROUND)
 static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
 {
   PetscInt i;

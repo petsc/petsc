@@ -16,8 +16,8 @@
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
 const cuComplex PETSC_CUSPARSE_ONE  = {1.0f, 0.0f};
 const cuComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
     #define cusparseXcsrilu02_bufferSize(a, b, c, d, e, f, g, h, i)  cusparseCcsrilu02_bufferSize(a, b, c, d, (cuComplex *)e, f, g, h, i)
@@ -26,7 +26,7 @@ const cuComplex PETSC_CUSPARSE_ZERO = {0.0f, 0.0f};
     #define cusparseXcsric02_bufferSize(a, b, c, d, e, f, g, h, i)   cusparseCcsric02_bufferSize(a, b, c, d, (cuComplex *)e, f, g, h, i)
     #define cusparseXcsric02_analysis(a, b, c, d, e, f, g, h, i, j)  cusparseCcsric02_analysis(a, b, c, d, (cuComplex *)e, f, g, h, i, j)
     #define cusparseXcsric02(a, b, c, d, e, f, g, h, i, j)           cusparseCcsric02(a, b, c, d, (cuComplex *)e, f, g, h, i, j)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
 const cuDoubleComplex PETSC_CUSPARSE_ONE  = {1.0, 0.0};
 const cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
     #define cusparseXcsrilu02_bufferSize(a, b, c, d, e, f, g, h, i)  cusparseZcsrilu02_bufferSize(a, b, c, d, (cuDoubleComplex *)e, f, g, h, i)
@@ -39,14 +39,14 @@ const cuDoubleComplex PETSC_CUSPARSE_ZERO = {0.0, 0.0};
 #else
 const PetscScalar PETSC_CUSPARSE_ONE  = 1.0;
 const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define cusparseXcsrilu02_bufferSize cusparseScsrilu02_bufferSize
     #define cusparseXcsrilu02_analysis   cusparseScsrilu02_analysis
     #define cusparseXcsrilu02            cusparseScsrilu02
     #define cusparseXcsric02_bufferSize  cusparseScsric02_bufferSize
     #define cusparseXcsric02_analysis    cusparseScsric02_analysis
     #define cusparseXcsric02             cusparseScsric02
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define cusparseXcsrilu02_bufferSize cusparseDcsrilu02_bufferSize
     #define cusparseXcsrilu02_analysis   cusparseDcsrilu02_analysis
     #define cusparseXcsrilu02            cusparseDcsrilu02
@@ -59,22 +59,22 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
 #define csrsvInfo_t              csrsv2Info_t
 #define cusparseCreateCsrsvInfo  cusparseCreateCsrsv2Info
 #define cusparseDestroyCsrsvInfo cusparseDestroyCsrsv2Info
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define cusparseXcsrsv_buffsize(a, b, c, d, e, f, g, h, i, j)          cusparseCcsrsv2_bufferSize(a, b, c, d, e, (cuComplex *)(f), g, h, i, j)
     #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k)       cusparseCcsrsv2_analysis(a, b, c, d, e, (const cuComplex *)(f), g, h, i, j, k)
     #define cusparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k, l, m, n) cusparseCcsrsv2_solve(a, b, c, d, (const cuComplex *)(e), f, (const cuComplex *)(g), h, i, j, (const cuComplex *)(k), (cuComplex *)(l), m, n)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define cusparseXcsrsv_buffsize(a, b, c, d, e, f, g, h, i, j)          cusparseZcsrsv2_bufferSize(a, b, c, d, e, (cuDoubleComplex *)(f), g, h, i, j)
     #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k)       cusparseZcsrsv2_analysis(a, b, c, d, e, (const cuDoubleComplex *)(f), g, h, i, j, k)
     #define cusparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k, l, m, n) cusparseZcsrsv2_solve(a, b, c, d, (const cuDoubleComplex *)(e), f, (const cuDoubleComplex *)(g), h, i, j, (const cuDoubleComplex *)(k), (cuDoubleComplex *)(l), m, n)
   #endif
 #else /* not complex */
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define cusparseXcsrsv_buffsize cusparseScsrsv2_bufferSize
     #define cusparseXcsrsv_analysis cusparseScsrsv2_analysis
     #define cusparseXcsrsv_solve    cusparseScsrsv2_solve
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define cusparseXcsrsv_buffsize cusparseDcsrsv2_bufferSize
     #define cusparseXcsrsv_analysis cusparseDcsrsv2_analysis
     #define cusparseXcsrsv_solve    cusparseDcsrsv2_solve
@@ -82,13 +82,13 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
 #endif
 
 #define cusparse_csr2csc cusparseCsr2cscEx2
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define cusparse_scalartype                                                             CUDA_C_32F
     #define cusparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) cusparseCcsrgeam2(a, b, c, (cuComplex *)d, e, f, (cuComplex *)g, h, i, (cuComplex *)j, k, l, (cuComplex *)m, n, o, p, (cuComplex *)q, r, s, t)
     #define cusparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
       cusparseCcsrgeam2_bufferSizeExt(a, b, c, (cuComplex *)d, e, f, (cuComplex *)g, h, i, (cuComplex *)j, k, l, (cuComplex *)m, n, o, p, (cuComplex *)q, r, s, t)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define cusparse_scalartype CUDA_C_64F
     #define cusparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
       cusparseZcsrgeam2(a, b, c, (cuDoubleComplex *)d, e, f, (cuDoubleComplex *)g, h, i, (cuDoubleComplex *)j, k, l, (cuDoubleComplex *)m, n, o, p, (cuDoubleComplex *)q, r, s, t)
@@ -96,11 +96,11 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
       cusparseZcsrgeam2_bufferSizeExt(a, b, c, (cuDoubleComplex *)d, e, f, (cuDoubleComplex *)g, h, i, (cuDoubleComplex *)j, k, l, (cuDoubleComplex *)m, n, o, p, (cuDoubleComplex *)q, r, s, t)
   #endif
 #else /* not complex */
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define cusparse_scalartype            CUDA_R_32F
     #define cusparse_csr_spgeam            cusparseScsrgeam2
     #define cusparse_csr_spgeam_bufferSize cusparseScsrgeam2_bufferSizeExt
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define cusparse_scalartype            CUDA_R_64F
     #define cusparse_csr_spgeam            cusparseDcsrgeam2
     #define cusparse_csr_spgeam_bufferSize cusparseDcsrgeam2_bufferSizeExt

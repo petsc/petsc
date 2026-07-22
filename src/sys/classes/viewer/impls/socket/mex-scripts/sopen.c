@@ -13,7 +13,7 @@
 
 #include <petscsys.h>
 
-#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
+#if PetscDefined(NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
    ensure that the following definitions are made */
 typedef unsigned char  u_char;
@@ -24,37 +24,37 @@ typedef unsigned long  u_long;
 
 #include <errno.h>
 #include <ctype.h>
-#if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
+#if PetscDefined(HAVE_MACHINE_ENDIAN_H)
   #include <machine/endian.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H)
+#if PetscDefined(HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SOCKET_H)
+#if PetscDefined(HAVE_SYS_SOCKET_H)
   #include <sys/socket.h>
 #endif
-#if defined(PETSC_HAVE_SYS_WAIT_H)
+#if PetscDefined(HAVE_SYS_WAIT_H)
   #include <sys/wait.h>
 #endif
-#if defined(PETSC_HAVE_NETINET_IN_H)
+#if PetscDefined(HAVE_NETINET_IN_H)
   #include <netinet/in.h>
 #endif
-#if defined(PETSC_HAVE_NETDB_H)
+#if PetscDefined(HAVE_NETDB_H)
   #include <netdb.h>
 #endif
-#if defined(PETSC_HAVE_FCNTL_H)
+#if PetscDefined(HAVE_FCNTL_H)
   #include <fcntl.h>
 #endif
-#if defined(PETSC_HAVE_IO_H)
+#if PetscDefined(HAVE_IO_H)
   #include <io.h>
 #endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
+#if PetscDefined(HAVE_SYS_UTSNAME_H)
   #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_WINSOCK2_H)
+#if PetscDefined(HAVE_WINSOCK2_H)
   #include <Winsock2.h>
 #endif
-#if defined(PETSC_HAVE_WS2TCPIP_H)
+#if PetscDefined(HAVE_WS2TCPIP_H)
   #include <Ws2tcpip.h>
 #endif
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
@@ -85,20 +85,20 @@ static int establish(u_short portnum)
   int                s;
   struct sockaddr_in sa;
   struct hostent    *hp;
-#if defined(PETSC_HAVE_UNAME)
+#if PetscDefined(HAVE_UNAME)
   struct utsname utname;
-#elif defined(PETSC_HAVE_GETCOMPUTERNAME)
+#elif PetscDefined(HAVE_GETCOMPUTERNAME)
   int namelen = MAXHOSTNAME;
 #endif
 
   /* Note we do not use gethostname since that is not POSIX */
-#if defined(PETSC_HAVE_GETCOMPUTERNAME)
+#if PetscDefined(HAVE_GETCOMPUTERNAME)
   GetComputerName((LPTSTR)myname, (LPDWORD)&namelen);
-#elif defined(PETSC_HAVE_UNAME)
+#elif PetscDefined(HAVE_UNAME)
   uname(&utname);
   strncpy(myname, utname.nodename, MAXHOSTNAME);
 #endif
-#if defined(PETSC_HAVE_BZERO)
+#if PetscDefined(HAVE_BZERO)
   bzero(&sa, sizeof(struct sockaddr_in));
 #else
   memset(&sa, 0, sizeof(struct sockaddr_in));
@@ -117,7 +117,7 @@ static int establish(u_short portnum)
   }
 
   while (bind(s, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-#if defined(PETSC_HAVE_WSAGETLASTERROR)
+#if PetscDefined(HAVE_WSAGETLASTERROR)
     PetscErrorCode ierr;
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
@@ -137,7 +137,7 @@ static int establish(u_short portnum)
 static int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa;
-#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
+#if PetscDefined(HAVE_ACCEPT_SIZE_T)
   size_t i;
 #else
   int i;

@@ -26,8 +26,8 @@
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
 const hipComplex PETSC_HIPSPARSE_ONE  = {1.0f, 0.0f};
 const hipComplex PETSC_HIPSPARSE_ZERO = {0.0f, 0.0f};
     #define hipsparseXcsrilu02_bufferSize(a, b, c, d, e, f, g, h, i)  hipsparseCcsrilu02_bufferSize(a, b, c, d, (hipComplex *)e, f, g, h, i)
@@ -36,7 +36,7 @@ const hipComplex PETSC_HIPSPARSE_ZERO = {0.0f, 0.0f};
     #define hipsparseXcsric02_bufferSize(a, b, c, d, e, f, g, h, i)   hipsparseCcsric02_bufferSize(a, b, c, d, (hipComplex *)e, f, g, h, i)
     #define hipsparseXcsric02_analysis(a, b, c, d, e, f, g, h, i, j)  hipsparseCcsric02_analysis(a, b, c, d, (hipComplex *)e, f, g, h, i, j)
     #define hipsparseXcsric02(a, b, c, d, e, f, g, h, i, j)           hipsparseCcsric02(a, b, c, d, (hipComplex *)e, f, g, h, i, j)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
 const hipDoubleComplex PETSC_HIPSPARSE_ONE  = {1.0, 0.0};
 const hipDoubleComplex PETSC_HIPSPARSE_ZERO = {0.0, 0.0};
     #define hipsparseXcsrilu02_bufferSize(a, b, c, d, e, f, g, h, i)  hipsparseZcsrilu02_bufferSize(a, b, c, d, (hipDoubleComplex *)e, f, g, h, i)
@@ -49,14 +49,14 @@ const hipDoubleComplex PETSC_HIPSPARSE_ZERO = {0.0, 0.0};
 #else    /* not complex */
 const PetscScalar PETSC_HIPSPARSE_ONE  = 1.0;
 const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparseXcsrilu02_bufferSize hipsparseScsrilu02_bufferSize
     #define hipsparseXcsrilu02_analysis   hipsparseScsrilu02_analysis
     #define hipsparseXcsrilu02            hipsparseScsrilu02
     #define hipsparseXcsric02_bufferSize  hipsparseScsric02_bufferSize
     #define hipsparseXcsric02_analysis    hipsparseScsric02_analysis
     #define hipsparseXcsric02             hipsparseScsric02
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparseXcsrilu02_bufferSize hipsparseDcsrilu02_bufferSize
     #define hipsparseXcsrilu02_analysis   hipsparseDcsrilu02_analysis
     #define hipsparseXcsrilu02            hipsparseDcsrilu02
@@ -69,22 +69,22 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
 #define csrsvInfo_t               csrsv2Info_t
 #define hipsparseCreateCsrsvInfo  hipsparseCreateCsrsv2Info
 #define hipsparseDestroyCsrsvInfo hipsparseDestroyCsrsv2Info
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparseXcsrsv_buffsize(a, b, c, d, e, f, g, h, i, j)          hipsparseCcsrsv2_bufferSize(a, b, c, d, e, (hipComplex *)(f), g, h, i, j)
     #define hipsparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k)       hipsparseCcsrsv2_analysis(a, b, c, d, e, (const hipComplex *)(f), g, h, i, j, k)
     #define hipsparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k, l, m, n) hipsparseCcsrsv2_solve(a, b, c, d, (const hipComplex *)(e), f, (const hipComplex *)(g), h, i, j, (const hipComplex *)(k), (hipComplex *)(l), m, n)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparseXcsrsv_buffsize(a, b, c, d, e, f, g, h, i, j)          hipsparseZcsrsv2_bufferSize(a, b, c, d, e, (hipDoubleComplex *)(f), g, h, i, j)
     #define hipsparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k)       hipsparseZcsrsv2_analysis(a, b, c, d, e, (const hipDoubleComplex *)(f), g, h, i, j, k)
     #define hipsparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k, l, m, n) hipsparseZcsrsv2_solve(a, b, c, d, (const hipDoubleComplex *)(e), f, (const hipDoubleComplex *)(g), h, i, j, (const hipDoubleComplex *)(k), (hipDoubleComplex *)(l), m, n)
   #endif /* Single or double */
 #else    /* not complex */
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparseXcsrsv_buffsize hipsparseScsrsv2_bufferSize
     #define hipsparseXcsrsv_analysis hipsparseScsrsv2_analysis
     #define hipsparseXcsrsv_solve    hipsparseScsrsv2_solve
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparseXcsrsv_buffsize hipsparseDcsrsv2_bufferSize
     #define hipsparseXcsrsv_analysis hipsparseDcsrsv2_analysis
     #define hipsparseXcsrsv_solve    hipsparseDcsrsv2_solve
@@ -92,13 +92,13 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
 #endif   /* not complex */
 
 // #define cusparse_csr2csc cusparseCsr2cscEx2
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparse_scalartype                                                             HIP_C_32F
     #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) hipsparseCcsrgeam2(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
     #define hipsparse_csr_spgeam_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
       hipsparseCcsrgeam2_bufferSizeExt(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s, t)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparse_scalartype HIP_C_64F
     #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) \
       hipsparseZcsrgeam2(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
@@ -106,19 +106,19 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
       hipsparseZcsrgeam2_bufferSizeExt(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s, t)
   #endif /* Single or double */
 #else    /* not complex */
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparse_scalartype            HIP_R_32F
     #define hipsparse_csr_spgeam            hipsparseScsrgeam2
     #define hipsparse_csr_spgeam_bufferSize hipsparseScsrgeam2_bufferSizeExt
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparse_scalartype            HIP_R_64F
     #define hipsparse_csr_spgeam            hipsparseDcsrgeam2
     #define hipsparse_csr_spgeam_bufferSize hipsparseDcsrgeam2_bufferSizeExt
   #endif /* Single or double */
 #endif   /* complex or not */
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_COMPLEX)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparse_scalartype                                               HIP_C_32F
     #define hipsparse_csr_spmv(a, b, c, d, e, f, g, h, i, j, k, l, m)          hipsparseCcsrmv((a), (b), (c), (d), (e), (hipComplex *)(f), (g), (hipComplex *)(h), (i), (j), (hipComplex *)(k), (hipComplex *)(l), (hipComplex *)(m))
     #define hipsparse_csr_spmm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) hipsparseCcsrmm((a), (b), (c), (d), (e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (j), (k), (hipComplex *)(l), (m), (hipComplex *)(n), (hipComplex *)(o), (p))
@@ -128,7 +128,7 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
     #define hipsparse_hyb2csr(a, b, c, d, e, f)                                hipsparseChyb2csr((a), (b), (c), (hipComplex *)(d), (e), (f))
     #define hipsparse_csr_spgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t) hipsparseCcsrgemm(a, b, c, d, e, f, g, h, (hipComplex *)i, j, k, l, m, (hipComplex *)n, o, p, q, (hipComplex *)r, s, t)
   // #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)    hipsparseCcsrgeam(a, b, c, (hipComplex *)d, e, f, (hipComplex *)g, h, i, (hipComplex *)j, k, l, (hipComplex *)m, n, o, p, (hipComplex *)q, r, s)
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparse_scalartype                                      HIP_C_64F
     #define hipsparse_csr_spmv(a, b, c, d, e, f, g, h, i, j, k, l, m) hipsparseZcsrmv((a), (b), (c), (d), (e), (hipDoubleComplex *)(f), (g), (hipDoubleComplex *)(h), (i), (j), (hipDoubleComplex *)(k), (hipDoubleComplex *)(l), (hipDoubleComplex *)(m))
     #define hipsparse_csr_spmm(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
@@ -141,7 +141,7 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
   // #define hipsparse_csr_spgeam(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)    hipsparseZcsrgeam(a, b, c, (hipDoubleComplex *)d, e, f, (hipDoubleComplex *)g, h, i, (hipDoubleComplex *)j, k, l, (hipDoubleComplex *)m, n, o, p, (hipDoubleComplex *)q, r, s)
   #endif /* Single or double */
 #else    /* not complex */
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
     #define hipsparse_scalartype HIP_R_32F
     #define hipsparse_csr_spmv   hipsparseScsrmv
     #define hipsparse_csr_spmm   hipsparseScsrmm
@@ -151,7 +151,7 @@ const PetscScalar PETSC_HIPSPARSE_ZERO = 0.0;
     #define hipsparse_hyb2csr    hipsparseShyb2csr
     #define hipsparse_csr_spgemm hipsparseScsrgemm
   // #define hipsparse_csr_spgeam hipsparseScsrgeam
-  #elif defined(PETSC_USE_REAL_DOUBLE)
+  #elif PetscDefined(USE_REAL_DOUBLE)
     #define hipsparse_scalartype HIP_R_64F
     #define hipsparse_csr_spmv   hipsparseDcsrmv
     #define hipsparse_csr_spmm   hipsparseDcsrmm

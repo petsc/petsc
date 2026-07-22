@@ -86,7 +86,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A, Mat R, PetscReal f
   /* clean up */
   PetscCall(MatDestroy(&P));
 
-#if defined(PETSC_USE_INFO)
+#if PetscDefined(USE_INFO)
   {
     Mat_SeqAIJ *c       = (Mat_SeqAIJ *)C->data;
     PetscReal   density = (PetscReal)c->nz / (RARt_dense->rmap->n * RARt_dense->cmap->n);

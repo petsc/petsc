@@ -186,7 +186,7 @@ int main(int argc, char **argv)
   if (user.io) {
     /* Write out the solution along with the mesh */
     PetscCall(DMMoabSetGlobalFieldVector(dmref, x));
-#ifdef MOAB_HAVE_HDF5
+#if defined(MOAB_HAVE_HDF5)
     PetscCall(DMMoabOutput(dmref, "ex36.h5m", ""));
 #else
     /* MOAB does not support true parallel writers that aren't HDF5 based

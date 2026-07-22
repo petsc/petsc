@@ -166,7 +166,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
    */
   bas = (PetscSF_Basic *)sf->data;
   for (i = 0; i < bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i] * bs] / bs;
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFLinkGetRootPackOptAndIndices() */
   for (i = 0; i < 2; i++) PetscCall(PetscSFFree(sf, PETSC_MEMTYPE_DEVICE, bas->irootloc_d[i]));
 #endif

@@ -14,7 +14,7 @@
 #include <petsc/private/kspimpl.h>
 #include <petscts.h>
 #include <petsctao.h>
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
   #include <pthread.h>
 #endif
 
@@ -44,7 +44,7 @@ static PetscBool     PCMPICommSet = PETSC_FALSE;
 static PetscInt      PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
 static PetscInt      PCMPIIterations[PC_MPI_MAX_RANKS], PCMPISizes[PC_MPI_MAX_RANKS], PCMPIIterationsSeq = 0, PCMPISizesSeq = 0;
 static PetscLogEvent EventServerDist, EventServerDistMPI;
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
 static pthread_mutex_t *PCMPIServerLocks;
 #else
 static void *PCMPIServerLocks;
@@ -482,19 +482,19 @@ static PetscErrorCode PCMPIDestroy(PC pc)
 
 static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
 {
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
   PetscMPIInt dummy1 = 1, dummy2;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
   if (PCMPIServerUseShmget) {
     for (PetscMPIInt i = 1; i < PetscGlobalSize; i++) pthread_mutex_unlock(&PCMPIServerLocks[i]);
   }
 #endif
   PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, MPI_COMM_WORLD));
   /* next line ensures the sender has already taken the lock */
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
   if (PCMPIServerUseShmget) {
     PetscCallMPI(MPI_Reduce(&dummy1, &dummy2, 1, MPI_INT, MPI_SUM, 0, PC_MPI_COMM_WORLD));
     for (PetscMPIInt i = 1; i < PetscGlobalSize; i++) pthread_mutex_lock(&PCMPIServerLocks[i]);
@@ -570,7 +570,7 @@ PetscErrorCode PCMPIServerBegin(void)
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (PCMPIServerUseShmget) {
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
     PetscMPIInt size;
 
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
@@ -605,16 +605,16 @@ PetscErrorCode PCMPIServerBegin(void)
 
   while (PETSC_TRUE) {
     PCMPICommand request = PCMPI_CREATE;
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
     PetscMPIInt dummy1 = 1, dummy2;
 #endif
 
     // TODO: can we broadcast the number of active ranks here so only the correct subset of processes waits on the later scatters?
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
     if (PCMPIServerUseShmget) pthread_mutex_lock(&PCMPIServerLocks[PetscGlobalRank]);
 #endif
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, PC_MPI_COMM_WORLD));
-#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+#if PetscDefined(HAVE_PTHREAD_MUTEX)
     if (PCMPIServerUseShmget) {
       /* next line ensures PetscGlobalRank has locked before rank 0 can take the lock back */
       PetscCallMPI(MPI_Reduce(&dummy1, &dummy2, 1, MPI_INT, MPI_SUM, 0, PC_MPI_COMM_WORLD));

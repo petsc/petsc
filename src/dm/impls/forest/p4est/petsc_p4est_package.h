@@ -1,14 +1,14 @@
 #pragma once
 #include <petscsys.h>
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #undef MPI_SUCCESS
 #endif
 #include <p4est_base.h>
-#if defined(PETSC_HAVE_MPIUNI)
+#if PetscDefined(HAVE_MPIUNI)
   #define MPI_SUCCESS 0
 #endif
 
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
+#if PetscDefined(HAVE_SETJMP_H) && PetscDefined(USE_DEBUG)
   #include <setjmp.h>
 PETSC_INTERN jmp_buf PetscScJumpBuf;
 
@@ -59,9 +59,7 @@ static inline PetscErrorCode P4estLocidxCast(PetscInt a, p4est_locidx_t *b)
 {
   PetscFunctionBegin;
   *b = (p4est_locidx_t)(a);
-#if defined(PETSC_USE_64BIT_INDICES)
-  PetscCheck((a) <= P4EST_LOCIDX_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index to large for p4est_locidx_t");
-#endif
+  PetscCheck(!PetscDefined(USE_64BIT_INDICES) || (a) <= P4EST_LOCIDX_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index to large for p4est_locidx_t");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -69,8 +67,6 @@ static inline PetscErrorCode P4estTopidxCast(PetscInt a, p4est_topidx_t *b)
 {
   PetscFunctionBegin;
   *b = (p4est_topidx_t)(a);
-#if defined(PETSC_USE_64BIT_INDICES)
-  PetscCheck((a) <= P4EST_TOPIDX_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index to large for p4est_topidx_t");
-#endif
+  PetscCheck(!PetscDefined(USE_64BIT_INDICES) || (a) <= P4EST_TOPIDX_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index to large for p4est_topidx_t");
   PetscFunctionReturn(PETSC_SUCCESS);
 }

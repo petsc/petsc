@@ -3068,7 +3068,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             const PetscScalar *point;
             PetscTabulation    Tchild;
             PetscInt           childCellShapeOff, pointMatOff;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
             for (PetscInt d = 0; d < dim; d++) pointScalar[d] = points[dim * j + d];
             point = pointScalar;
 #else

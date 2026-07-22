@@ -32,7 +32,7 @@ static PetscErrorCode TSCreate_Dummy(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
 static PetscErrorCode CharacteristicCreate_Dummy(Characteristic chr)
 {
   PetscFunctionBeginUser;
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
   PetscCall(TSBasicSymplecticRegister("dummy", 0, 0, c, d));
   PetscCall(TSAdaptRegister("dummy", TSAdaptCreate_Dummy));
   PetscCall(TSRegister("dummy", TSCreate_Dummy));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(CharacteristicRegister("dummy", CharacteristicCreate_Dummy));
 #endif
   PetscCall(SNESLineSearchRegister("dummy", SNESLineSearchCreate_Dummy));

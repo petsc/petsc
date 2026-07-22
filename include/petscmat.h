@@ -425,7 +425,7 @@ typedef enum {
 } MatStructure;
 PETSC_EXTERN const char *const MatStructures[];
 
-#if defined(PETSC_HAVE_MKL_SPARSE)
+#if PetscDefined(HAVE_MKL_SPARSE)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode MatDiagonalRestoreInverseDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatConstantDiagonalGetConstant(Mat, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatGetCurrentMemType(Mat, PetscMemType *);
 
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatHYPRESetPreallocation(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 #endif
 
@@ -2403,7 +2403,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetType(MatFDColoring, MatMFFDType);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
-#ifdef PETSC_HAVE_H2OPUS
+#if PetscDefined(HAVE_H2OPUS)
 PETSC_EXTERN_TYPEDEF typedef PetscScalar(MatH2OpusKernelFn)(PetscInt, PetscReal[], PetscReal[], void *);
 PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel;
 
@@ -2523,19 +2523,19 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetBlk(Mat, PetscInt, const PetscInt[], cons
 PETSC_EXTERN PetscErrorCode MatMumpsSetOocTmpDir(Mat, const char *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetOocTmpDir(Mat, const char *[]);
 
-#ifdef PETSC_HAVE_MKL_PARDISO
+#if PetscDefined(HAVE_MKL_PARDISO)
 PETSC_EXTERN PetscErrorCode MatMkl_PardisoSetCntl(Mat, PetscInt, PetscInt);
 #endif
 
-#ifdef PETSC_HAVE_MKL_CPARDISO
+#if PetscDefined(HAVE_MKL_CPARDISO)
 PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat, PetscInt, PetscInt);
 #endif
 
-#ifdef PETSC_HAVE_SUPERLU
+#if PetscDefined(HAVE_SUPERLU)
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat, PetscReal);
 #endif
 
-#ifdef PETSC_HAVE_SUPERLU_DIST
+#if PetscDefined(HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat, PetscScalar *);
 #endif
 
@@ -2642,7 +2642,7 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "MatBindToCPU()", ) static inline PetscError
 PETSC_EXTERN PetscErrorCode MatSetBindingPropagates(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatGetBindingPropagates(Mat, PetscBool *);
 
-#ifdef PETSC_HAVE_CUDA
+#if PetscDefined(HAVE_CUDA)
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for `MATAIJCUSPARSE` (GPU)
     matrices.
@@ -2717,7 +2717,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSELLCUDA(MPI_Comm, PetscInt, PetscInt, P
 PETSC_EXTERN PetscErrorCode MatCreateSELLCUDA(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 
-#ifdef PETSC_HAVE_HIP
+#if PetscDefined(HAVE_HIP)
 /*E
     MatHIPSPARSEStorageFormat - indicates the storage format for `MATAIJHIPSPARSE` (GPU)
     matrices.
@@ -2791,7 +2791,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSELLHIP(MPI_Comm, PetscInt, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode MatCreateSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
@@ -2801,13 +2801,13 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJKokkos(MPI_Comm, PetscInt, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJKokkos(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 #endif
 
-#if defined(PETSC_HAVE_FFTW)
+#if PetscDefined(HAVE_FFTW)
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat, Vec *, Vec *, Vec *);
 #endif
 
-#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+#if PetscDefined(HAVE_SCALAPACK) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
 PETSC_EXTERN PetscErrorCode MatCreateScaLAPACK(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKSetBlockSizes(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKGetBlockSizes(Mat, PetscInt *, PetscInt *);

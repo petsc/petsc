@@ -1,7 +1,7 @@
 #if !defined(PETSC4PY_COMPAT_PLEXEXODUSII_H)
 #define PETSC4PY_COMPAT_PLEXEXODUSII_H
 
-#if !defined(PETSC_HAVE_EXODUSII)
+#if !PetscDefined(HAVE_EXODUSII)
 
 #define PetscPlexExodusIIError do { \
     PetscFunctionBegin; \

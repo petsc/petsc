@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&tsirm));
   ksp->data = (void *)tsirm;
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   tsirm->tol_ls = 1e-25;
 #else
   tsirm->tol_ls = 1e-50;

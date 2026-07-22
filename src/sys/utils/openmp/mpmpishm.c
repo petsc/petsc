@@ -11,7 +11,7 @@
 */
 #define USE_MMAP_ALLOCATE_SHARED_MEMORY
 
-#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && PetscDefined(HAVE_MMAP)
   #include <sys/mman.h>
   #include <sys/types.h>
   #include <sys/stat.h>
@@ -42,7 +42,7 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   void                 *baseptr;
   pthread_barrierattr_t attr;
 
-#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && PetscDefined(HAVE_MMAP)
   int  fd;
   char pathname[PETSC_MAX_PATH_LEN];
 #else
@@ -50,7 +50,7 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 #endif
 
   PetscFunctionBegin;
-#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && PetscDefined(HAVE_MMAP)
   size = sizeof(pthread_barrier_t);
   if (ctrl->is_omp_master) {
     /* use PETSC_COMM_SELF in PetscGetTmp, since it is a collective call. Using omp_comm would otherwise bcast the partially populated pathname to slaves */
@@ -105,7 +105,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
   PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
   if (ctrl->is_omp_master) PetscCallExternal(pthread_barrier_destroy, ctrl->barrier);
 
-#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && PetscDefined(HAVE_MMAP)
   PetscCallExternal(munmap, ctrl->barrier, sizeof(pthread_barrier_t));
 #else
   PetscCallMPI(MPI_Win_free(&ctrl->omp_win));

@@ -164,7 +164,7 @@ struct _p_Vec {
   PetscStack lockstack; /* the file,func,line of where locks are added */
 #endif
   PetscOffloadMask offloadmask; /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
-#if defined(PETSC_HAVE_DEVICE)
+#if PetscDefined(HAVE_DEVICE)
   void     *spptr; /* this is the special pointer to the array on the GPU */
   PetscBool boundtocpu;
   PetscBool bindingpropagates;
@@ -219,7 +219,7 @@ PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 #endif
@@ -305,7 +305,7 @@ PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec, PetscInt, const P
 PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 
 PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
 #endif
@@ -380,7 +380,7 @@ PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqHIP_inplace(Vec);
 PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec);
 #endif
 
-#if defined(PETSC_HAVE_KOKKOS)
+#if PetscDefined(HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);

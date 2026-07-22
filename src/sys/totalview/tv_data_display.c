@@ -73,7 +73,7 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
 
   remaining = TV_data_buffer_ptr + DATA_FORMAT_BUFFER_SIZE - TV_data_format_buffer;
 
-#if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
+#if PetscDefined(HAVE__SNPRINTF) && !PetscDefined(HAVE_SNPRINTF)
   #define snprintf _snprintf
 #endif
   out = snprintf(TV_data_buffer_ptr, remaining, "%s\t%s\t%p\n", field_name, type_name, value);

@@ -48,7 +48,7 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
     }
   }
   try {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
     gpustruct = NULL;
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for complex arithmetic in CHOWILUVIENNACL preconditioner");
 #else
@@ -94,7 +94,7 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc, Vec x, Vec y)
   PetscCall(VecViennaCLGetArrayRead(x, &xarray));
   PetscCall(VecViennaCLGetArrayWrite(y, &yarray));
   try {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
 
 #else
     *yarray = *xarray;

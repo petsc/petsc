@@ -72,7 +72,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscCall(MatDenseGetArray(jac->U, &u));
   PetscCall(MatDenseGetArray(jac->Vt, &v));
   PetscCall(VecGetArray(jac->diag, &d));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallLAPACKInfo("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, d, u, &nb, v, &nb, work, &lwork, &info));
   PetscCall(PetscFPTrapPop());
@@ -209,13 +209,13 @@ static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   PetscCall(PCSVDGetVec(pc, PC_RIGHT, READ, x, &xred));
   PetscCall(PCSVDGetVec(pc, PC_LEFT, WRITE, y, &yred));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatMultTranspose(jac->U, xred, work));
 #else
   PetscCall(MatMultHermitianTranspose(jac->U, xred, work));
 #endif
   PetscCall(VecPointwiseMult(work, work, jac->diag));
-#if !defined(PETSC_USE_COMPLEX)
+#if !PetscDefined(USE_COMPLEX)
   PetscCall(MatMultTranspose(jac->Vt, work, yred));
 #else
   PetscCall(MatMultHermitianTranspose(jac->Vt, work, yred));
@@ -369,7 +369,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
       not needed.
   */
 
-#if defined(PETSC_HAVE_COMPLEX)
+#if PetscDefined(HAVE_COMPLEX)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
 #endif
   if (size == 1) pc->ops->matapply = PCMatApply_SVD;

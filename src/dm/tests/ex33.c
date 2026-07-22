@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscReal       norm;
   PetscViewer     viewer;
   PetscRandom     rdm;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-threed", &flg3));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-binary", &isbinary));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-hdf5", &ishdf5));
 #endif
   PetscCall(PetscOptionsHasName(NULL, NULL, "-mpiio", &mpiio));
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   if (isbinary) {
     if (mpiio) PetscCall(PetscOptionsSetValue(NULL, "-viewer_binary_mpiio", ""));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "temp", FILE_MODE_WRITE, &viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "temp", FILE_MODE_WRITE, &viewer));
 #endif
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
   if (isbinary) {
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "temp", FILE_MODE_READ, &viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "temp", FILE_MODE_READ, &viewer));
 #endif

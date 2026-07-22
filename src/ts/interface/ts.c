@@ -140,7 +140,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
   PetscCall(PetscOptionsBool("-ts_rhs_jacobian_test_mult", "Test the RHS Jacobian for consistency with RHS at each solve ", "None", ts->testjacobian, &ts->testjacobian, NULL));
   PetscCall(PetscOptionsBool("-ts_rhs_jacobian_test_mult_transpose", "Test the RHS Jacobian transpose for consistency with RHS at each solve ", "None", ts->testjacobiantranspose, &ts->testjacobiantranspose, NULL));
   PetscCall(PetscOptionsBool("-ts_use_splitrhsfunction", "Use the split RHS function for multirate solvers ", "TSSetUseSplitRHSFunction", ts->use_splitrhsfunction, &ts->use_splitrhsfunction, NULL));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   {
     PetscBool set;
     flg = PETSC_FALSE;
@@ -1876,7 +1876,7 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
 
@@ -1941,7 +1941,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
   TSType    type;
   PetscBool isascii, isstring, issundials, isbinary, isdraw;
   DMTS      sdm;
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscBool issaws;
 #endif
 
@@ -1955,7 +1955,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
   if (isascii) {
@@ -2029,7 +2029,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
     if (ts->adapt) PetscCall(TSAdaptView(ts->adapt, viewer));
     if (ts->snes) PetscCall(SNESView(ts->snes, viewer));
     PetscCall(PetscDrawPopCurrentPoint(draw));
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
     const char *name;

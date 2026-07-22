@@ -310,7 +310,7 @@ static PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension, PetscInt timestep, hsize_t *chunkDims)
 {
   PetscMPIInt comm_size;
@@ -406,7 +406,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
 }
 #endif
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   PetscViewer_HDF5  *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -479,23 +479,23 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
     chunkDims[dim] = dims[dim];
     ++dim;
   }
-  #if defined(PETSC_USE_COMPLEX)
-  dims[dim]      = 2;
-  maxDims[dim]   = dims[dim];
-  chunkDims[dim] = dims[dim];
-  ++dim;
-  #endif
+  if (PetscDefined(USE_COMPLEX)) {
+    dims[dim]      = 2;
+    maxDims[dim]   = dims[dim];
+    chunkDims[dim] = dims[dim];
+    ++dim;
+  }
 
   PetscCall(VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims));
 
   PetscCallHDF5Return(filespace, H5Screate_simple, ((int)dim, dims, maxDims));
 
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
   memscalartype  = H5T_NATIVE_FLOAT;
   filescalartype = H5T_NATIVE_FLOAT;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
     #error "HDF5 output with 128 bit floats not supported."
-  #elif defined(PETSC_USE_REAL___FP16)
+  #elif PetscDefined(USE_REAL___FP16)
     #error "HDF5 output with 16 bit floats not supported."
   #else
   memscalartype = H5T_NATIVE_DOUBLE;
@@ -527,9 +527,7 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
   if (dimension > 1) PetscCall(PetscHDF5IntCast(da->ys, offset + dim++));
   PetscCall(PetscHDF5IntCast(da->xs / da->w, offset + dim++));
   if (da->w > 1 || dim2) offset[dim++] = 0;
-  #if defined(PETSC_USE_COMPLEX)
-  offset[dim++] = 0;
-  #endif
+  if (PetscDefined(USE_COMPLEX)) offset[dim++] = 0;
   dim = 0;
   if (timestep >= 0) {
     count[dim] = 1;
@@ -539,9 +537,7 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
   if (dimension > 1) PetscCall(PetscHDF5IntCast(da->ye - da->ys, count + dim++));
   PetscCall(PetscHDF5IntCast((da->xe - da->xs) / da->w, count + dim++));
   if (da->w > 1 || dim2) PetscCall(PetscHDF5IntCast(da->w, count + dim++));
-  #if defined(PETSC_USE_COMPLEX)
-  count[dim++] = 2;
-  #endif
+  if (PetscDefined(USE_COMPLEX)) count[dim++] = 2;
   PetscCallHDF5Return(memspace, H5Screate_simple, ((int)dim, count, NULL));
   PetscCallHDF5Return(filespace, H5Dget_space, (dset_id));
   PetscCallHDF5(H5Sselect_hyperslab, (filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
@@ -551,12 +547,10 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscCallHDF5(H5Fflush, (file_id, H5F_SCOPE_GLOBAL));
   PetscCall(VecRestoreArrayRead(xin, &x));
 
-  #if defined(PETSC_USE_COMPLEX)
-  {
+  if (PetscDefined(USE_COMPLEX)) {
     PetscBool tru = PETSC_TRUE;
     PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "complex", PETSC_BOOL, &tru));
   }
-  #endif
   if (timestepping) PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)xin, "timestepping", PETSC_BOOL, &timestepping));
 
   /* Close/release resources */
@@ -571,7 +565,7 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
 
 extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec, PetscViewer);
 
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
 static PetscErrorCode DMDAArrayMPIIO(DM da, PetscViewer viewer, Vec xin, PetscBool write)
 {
   MPI_File           mfdes;
@@ -639,7 +633,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
   PetscInt  dim;
   Vec       natural;
   PetscBool isdraw, isvtk, isglvis;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
   const char       *prefix, *name;
@@ -650,7 +644,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
   PetscCheck(da, PetscObjectComm((PetscObject)xin), PETSC_ERR_ARG_WRONG, "Vector not generated from a DMDA");
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isvtk));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
@@ -680,14 +674,14 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
       }
       PetscCall(PetscViewerVTKAddField(viewer, (PetscObject)da, DMDAVTKWriteAll, PETSC_DEFAULT, PETSC_VTK_POINT_FIELD, PETSC_FALSE, (PetscObject)Y));
     }
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(VecView_MPI_HDF5_DA(xin, viewer));
 #endif
   } else if (isglvis) {
     PetscCall(VecView_GLVis(xin, viewer));
   } else {
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
     PetscBool isbinary, isMPIIO;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
@@ -756,7 +750,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
 static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -775,11 +769,11 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   DM_DA            *dd;
 
   PetscFunctionBegin;
-  #if defined(PETSC_USE_REAL_SINGLE)
+  #if PetscDefined(USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
+  #elif PetscDefined(USE_REAL___FLOAT128)
     #error "HDF5 output with 128 bit floats not supported."
-  #elif defined(PETSC_USE_REAL___FP16)
+  #elif PetscDefined(USE_REAL___FP16)
     #error "HDF5 output with 16 bit floats not supported."
   #else
   scalartype = H5T_NATIVE_DOUBLE;
@@ -808,9 +802,7 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   dim = (int)dimension;
   if (dd->w > 1) ++dim;
   if (timestep >= 0) ++dim;
-  #if defined(PETSC_USE_COMPLEX)
-  ++dim;
-  #endif
+  if (PetscDefined(USE_COMPLEX)) ++dim;
 
   /* In this case the input dataset have one extra, unexpected dimension. */
   if (rdim == dim + 1) {
@@ -848,11 +840,11 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
     PetscCall(PetscHDF5IntCast(dd->w, count + dim));
     ++dim;
   }
-  #if defined(PETSC_USE_COMPLEX)
-  offset[dim] = 0;
-  count[dim]  = 2;
-  ++dim;
-  #endif
+  if (PetscDefined(USE_COMPLEX)) {
+    offset[dim] = 0;
+    count[dim]  = 2;
+    ++dim;
+  }
 
   /* Create the memory and filespace */
   PetscCallHDF5Return(memspace, H5Screate_simple, (dim, count, NULL));
@@ -879,14 +871,14 @@ static PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   PetscInt    bs;
   PetscBool   flag;
   DM_DA      *dd;
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
   PetscBool isMPIIO;
 #endif
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(xin, &da));
   dd = (DM_DA *)da->data;
-#if defined(PETSC_HAVE_MPIIO)
+#if PetscDefined(HAVE_MPIIO)
   PetscCall(PetscViewerBinaryGetUseMPIIO(viewer, &isMPIIO));
   if (isMPIIO) {
     PetscCall(DMDAArrayMPIIO(da, viewer, xin, PETSC_FALSE));
@@ -912,7 +904,7 @@ PetscErrorCode VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   DM        da;
   PetscBool isbinary;
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
 
@@ -920,14 +912,14 @@ PetscErrorCode VecLoad_Default_DA(Vec xin, PetscViewer viewer)
   PetscCall(VecGetDM(xin, &da));
   PetscCheck(da, PetscObjectComm((PetscObject)xin), PETSC_ERR_ARG_WRONG, "Vector not generated from a DMDA");
 
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
 
   if (isbinary) {
     PetscCall(VecLoad_Binary_DA(xin, viewer));
-#if defined(PETSC_HAVE_HDF5)
+#if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(VecLoad_HDF5_DA(xin, viewer));
 #endif

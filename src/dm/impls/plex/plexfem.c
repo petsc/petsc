@@ -578,7 +578,7 @@ static PetscErrorCode DMPlexBasisTransformGetMatrix_Rotation_Internal(DM dm, con
 PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[], PetscBool l2g, PetscInt dim, const PetscReal *y, PetscReal *z, PetscCtx ctx)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   switch (dim) {
   case 2: {
     PetscScalar yt[2] = {y[0], y[1]}, zt[2] = {0.0, 0.0};

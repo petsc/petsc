@@ -4,7 +4,7 @@
 
 /* SUBMANSEC = Mat */
 
-#if defined(PETSC_HAVE_ELEMENTAL) && defined(__cplusplus)
+#if PetscDefined(HAVE_ELEMENTAL) && defined(__cplusplus)
   #if defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -24,7 +24,7 @@
   #elif defined(__GNUC__) || defined(__GNUG__)
     #pragma GCC diagnostic pop
   #endif
-  #if defined(PETSC_USE_COMPLEX)
+  #if PetscDefined(USE_COMPLEX)
 typedef El::Complex<PetscReal> PetscElemScalar;
   #else
 /*MC

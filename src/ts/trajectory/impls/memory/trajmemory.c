@@ -1,6 +1,6 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 #include <petscsys.h>
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   #include <revolve_c.h>
 
   /* Limit Revolve to 32-bits */
@@ -11,15 +11,15 @@ typedef int PetscRevolveInt;
 static inline PetscErrorCode PetscRevolveIntCast(PetscInt a, PetscRevolveInt *b)
 {
   PetscFunctionBegin;
-  #if defined(PETSC_USE_64BIT_INDICES)
-  *b = 0;
-  PetscCheck(a <= PETSC_REVOLVE_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is too large for Revolve, which is restricted to 32-bit integers");
-  #endif
+  if (PetscDefined(USE_64BIT_INDICES)) {
+    *b = 0;
+    PetscCheck(a <= PETSC_REVOLVE_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is too large for Revolve, which is restricted to 32-bit integers");
+  }
   *b = (PetscRevolveInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
   #include <offline_schedule.h>
 #endif
 
@@ -59,7 +59,7 @@ typedef struct _StackElement {
   CheckpointType cptype;
 } *StackElement;
 
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
 typedef struct _RevolveCTX {
   PetscBool       reverseonestep;
   PetscRevolveInt where;
@@ -73,7 +73,7 @@ typedef struct _RevolveCTX {
 } RevolveCTX;
 #endif
 
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
 typedef struct _CAMSCTX {
   PetscInt lastcheckpointstep;
   PetscInt lastcheckpointtype;
@@ -105,12 +105,12 @@ typedef struct _DiskStack {
 typedef struct _TJScheduler {
   SchedulerType          stype;
   TSTrajectoryMemoryType tj_memory_type;
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   RevolveCTX *rctx, *rctx2;
   PetscBool   use_online;
   PetscInt    store_stride;
 #endif
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
   CAMSCTX *actx;
 #endif
   PetscBool   recompute;
@@ -413,14 +413,14 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj, TS ts, Stack *stack, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
 static PetscErrorCode StackLoadLast(TSTrajectory tj, TS ts, Stack *stack, PetscInt id)
 {
   Vec        *Y;
   PetscInt    size;
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
-  #if defined(PETSC_HAVE_MPIIO)
+  #if PetscDefined(HAVE_MPIIO)
   PetscBool usempiio;
   #endif
   int   fd;
@@ -441,7 +441,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj, TS ts, Stack *stack, PetscI
   PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj), filename, FILE_MODE_READ, &viewer));
   PetscCall(PetscViewerBinarySetSkipInfo(viewer, PETSC_TRUE));
   PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE));
-  #if defined(PETSC_HAVE_MPIIO)
+  #if PetscDefined(HAVE_MPIIO)
   PetscCall(PetscViewerBinaryGetUseMPIIO(viewer, &usempiio));
   if (usempiio) {
     PetscCall(PetscViewerBinaryGetMPIIODescriptor(viewer, (MPI_File *)&fd));
@@ -450,7 +450,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj, TS ts, Stack *stack, PetscI
   #endif
     PetscCall(PetscViewerBinaryGetDescriptor(viewer, &fd));
     PetscCall(PetscBinarySeek(fd, off, PETSC_BINARY_SEEK_END, &offset));
-  #if defined(PETSC_HAVE_MPIIO)
+  #if PetscDefined(HAVE_MPIIO)
   }
   #endif
   /* load the last step into TS */
@@ -804,7 +804,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_TLNR(TSTrajectory tj, TS ts, TJSched
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
 static PetscErrorCode printwhattodo(PetscViewer viewer, PetscRevolveInt whattodo, RevolveCTX *rctx, PetscRevolveInt shift)
 {
   PetscFunctionBegin;
@@ -1564,7 +1564,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_RMS(TSTrajectory tj, TS ts, TJSchedu
 }
 #endif
 
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
 /* Optimal offline adjoint checkpointing for multistage time integration methods */
 static PetscErrorCode TSTrajectoryMemorySet_AOF(TSTrajectory tj, TS ts, TJScheduler *tjsch, PetscInt stepnum, PetscReal time, Vec X)
 {
@@ -1700,7 +1700,7 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj, TS ts, PetscInt st
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemorySet_TLNR(tj, ts, tjsch, stepnum, time, X));
     break;
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   case TWO_LEVEL_REVOLVE:
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemorySet_TLR(tj, ts, tjsch, stepnum, time, X));
@@ -1722,7 +1722,7 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj, TS ts, PetscInt st
     PetscCall(TSTrajectoryMemorySet_RMS(tj, ts, tjsch, stepnum, time, X));
     break;
 #endif
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
   case CAMS_OFFLINE:
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemorySet_AOF(tj, ts, tjsch, stepnum, time, X));
@@ -1755,7 +1755,7 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj, TS ts, PetscInt st
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemoryGet_TLNR(tj, ts, tjsch, stepnum));
     break;
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   case TWO_LEVEL_REVOLVE:
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemoryGet_TLR(tj, ts, tjsch, stepnum));
@@ -1777,7 +1777,7 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj, TS ts, PetscInt st
     PetscCall(TSTrajectoryMemoryGet_RMS(tj, ts, tjsch, stepnum));
     break;
 #endif
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
   case CAMS_OFFLINE:
     PetscCheck(tj->adjoint_solve_mode, PetscObjectComm((PetscObject)tj), PETSC_ERR_SUP, "Not implemented");
     PetscCall(TSTrajectoryMemoryGet_AOF(tj, ts, tjsch, stepnum));
@@ -1846,7 +1846,7 @@ static PetscErrorCode TSTrajectoryMemorySetType_Memory(TSTrajectory tj, TSTrajec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj, PetscBool use_online)
 {
   TJScheduler *tjsch = (TJScheduler *)tj->data;
@@ -2005,7 +2005,7 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(TSTrajectory tj, PetscOp
     PetscCall(PetscOptionsInt("-ts_trajectory_max_units_disk", "Maximum number of checkpointing units on disk", "TSTrajectorySetMaxUnitsDisk", tjsch->max_units_disk, &max_units_disk, &flg));
     if (flg) PetscCall(TSTrajectorySetMaxUnitsDisk(tj, max_units_disk));
     PetscCall(PetscOptionsInt("-ts_trajectory_stride", "Stride to save checkpoints to file", "TSTrajectorySetStride", tjsch->stride, &tjsch->stride, NULL));
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
     PetscCall(PetscOptionsBool("-ts_trajectory_revolve_online", "Trick TS trajectory into using online mode of revolve", "TSTrajectorySetRevolveOnline", tjsch->use_online, &tjsch->use_online, NULL));
 #endif
     PetscCall(PetscOptionsBool("-ts_trajectory_save_stack", "Save all stack to disk", "TSTrajectorySetSaveStack", tjsch->save_stack, &tjsch->save_stack, NULL));
@@ -2021,7 +2021,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 {
   TJScheduler *tjsch = (TJScheduler *)tj->data;
   Stack       *stack = &tjsch->stack;
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   RevolveCTX *rctx, *rctx2;
   DiskStack  *diskstack = &tjsch->diskstack;
   PetscInt    diskblocks;
@@ -2077,13 +2077,13 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
         }
       }
     } else tjsch->stype = NONE; /* checkpoint all for adaptive time step */
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
     if (tjsch->use_online) tjsch->stype = REVOLVE_ONLINE; /* trick into online (for testing purpose only) */
 #endif
     PetscCheck(tjsch->stype == NONE || tjsch->max_cps_ram >= 1 || tjsch->max_cps_disk >= 1, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "The specified storage capacity is insufficient for one checkpoint, which is the minimum");
   }
   if (tjsch->stype >= CAMS_OFFLINE) {
-#if !defined(PETSC_HAVE_CAMS)
+#if !PetscDefined(HAVE_CAMS)
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "CAMS is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-cams.");
 #else
     CAMSCTX *actx;
@@ -2103,7 +2103,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     tjsch->actx              = actx;
 #endif
   } else if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
-#if !defined(PETSC_HAVE_REVOLVE)
+#if !PetscDefined(HAVE_REVOLVE)
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #else
     PetscRevolveInt rfine, rsnaps, rsnaps2;
@@ -2194,12 +2194,12 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 
 static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
 {
-#if defined(PETSC_HAVE_REVOLVE) || defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_REVOLVE) || PetscDefined(HAVE_CAMS)
   TJScheduler *tjsch = (TJScheduler *)tj->data;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
     revolve_reset();
     if (tjsch->stype == TWO_LEVEL_TWO_REVOLVE) {
@@ -2212,7 +2212,7 @@ static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
     PetscCall(PetscFree(tjsch->rctx2));
   }
 #endif
-#if defined(PETSC_HAVE_CAMS)
+#if PetscDefined(HAVE_CAMS)
   if (tjsch->stype == CAMS_OFFLINE) {
     if (tjsch->stack.solution_only) offline_ca_destroy();
     else offline_ca_destroy();
@@ -2262,7 +2262,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj, TS ts)
   tjsch->max_cps_ram  = -1; /* -1 indicates that it is not set */
   tjsch->max_cps_disk = -1; /* -1 indicates that it is not set */
   tjsch->stride       = 0;  /* if not zero, two-level checkpointing will be used */
-#if defined(PETSC_HAVE_REVOLVE)
+#if PetscDefined(HAVE_REVOLVE)
   tjsch->use_online = PETSC_FALSE;
 #endif
   tjsch->save_stack = PETSC_TRUE;

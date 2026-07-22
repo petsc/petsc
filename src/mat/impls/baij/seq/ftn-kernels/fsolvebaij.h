@@ -1,11 +1,11 @@
 #pragma once
 
 #include <petscsys.h>
-#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
-  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#if PetscDefined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
+  #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortransolvebaij4_       FORTRANSOLVEBAIJ4
     #define fortransolvebaij4unroll_ FORTRANSOLVEBAIJ4UNROLL
-  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
     #define fortransolvebaij4_       fortransolvebaij4
     #define fortransolvebaij4unroll_ fortransolvebaij4unroll
   #endif

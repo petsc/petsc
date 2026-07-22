@@ -23,7 +23,7 @@ static PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n,
   size_t              nn     = n < 0 ? (size_t)(-2 * n) : (size_t)n; /* handle complex case */
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_REAL_SINGLE)
+#if PetscDefined(USE_REAL_SINGLE)
   PetscCallCURAND(curandGenerateUniform(curand->gen, val, nn));
 #else
   PetscCallCURAND(curandGenerateUniformDouble(curand->gen, val, nn));
@@ -35,7 +35,7 @@ static PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n,
 static PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   /* pass negative size to flag complex scaling (if needed) */
   PetscCall(PetscRandomGetValuesReal_CURAND(r, -n, (PetscReal *)val));
 #else

@@ -405,7 +405,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 
 static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems PetscOptionsObject)
 {
-#if !defined(PETSC_HAVE_MPIUNI)
+#if !PetscDefined(HAVE_MPIUNI)
   PetscBool flg = PETSC_FALSE, set;
 
   PetscFunctionBegin;
@@ -606,7 +606,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), 1, &v->stash));
   PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), v->map->bs, &v->bstash));
 
-#if defined(PETSC_HAVE_MATLAB)
+#if PetscDefined(HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", VecMatlabEnginePut_Default));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEngineGet_C", VecMatlabEngineGet_Default));
 #endif

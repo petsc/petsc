@@ -1,7 +1,7 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for strdup() */
 #include <petsc/private/petscimpl.h>     /*I  "petscsys.h"  I*/
 
-#if defined(PETSC_HAVE_YAML)
+#if PetscDefined(HAVE_YAML)
   #include <yaml.h> /* use external LibYAML */
 #else
   #include <../src/sys/yaml/include/yaml.h>
@@ -274,10 +274,10 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_HAVE_YAML)
+#if !PetscDefined(HAVE_YAML)
 
   /*
-#if !defined(PETSC_HAVE_STRDUP)
+#if !PetscDefined(HAVE_STRDUP)
 #define strdup(s) (char*)memcpy(malloc(strlen(s)+1),s,strlen(s)+1)
 #endif
 */

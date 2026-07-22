@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
     /* View Wave */
     /* Set Up Display to Show Heat Graph */
-#if defined(PETSC_USE_SOCKET_VIEWER)
+#if PetscDefined(USE_SOCKET_VIEWER)
     PetscCall(VecView(global, PETSC_VIEWER_SOCKET_WORLD));
 #endif
   }

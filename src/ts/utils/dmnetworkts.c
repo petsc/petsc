@@ -133,7 +133,7 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
 @*/
 PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
-#if defined(PETSC_USE_COMPLEX)
+#if PetscDefined(USE_COMPLEX)
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 #else

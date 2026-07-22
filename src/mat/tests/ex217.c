@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATMPIAIJHIPSPARSE, MATSEQAIJHIPSPARSE, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iskokkos, MATMPIAIJKOKKOS, MATSEQAIJKOKKOS, ""));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATHYPRE, &ishypre));
-#if defined(PETSC_HAVE_HYPRE)
+#if PetscDefined(HAVE_HYPRE)
   PetscCall(MatHYPRESetPreallocation(A, 1, NULL, 1, NULL));
 #endif
   PetscCall(MatSeqAIJSetPreallocation(A, 1, NULL));

@@ -599,7 +599,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     }
   }
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   /*
     Publish convergence information using AMS
   */
@@ -618,7 +618,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   if (ksp->viewSV || ksp->viewEV) PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));
 
-#if defined(PETSC_HAVE_SAWS)
+#if PetscDefined(HAVE_SAWS)
   {
     PetscBool set;
     flg = PETSC_FALSE;

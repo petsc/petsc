@@ -3,7 +3,7 @@
 #include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
 
-#if defined(PETSC_HAVE_CUPM)
+#if PetscDefined(HAVE_CUPM)
 PETSC_INTERN int PetscDeviceCUPMRuntimeArch; // The real CUDA/HIP arch the code is run with. For log view and error diagnosis
 #endif
 
@@ -37,7 +37,7 @@ PETSC_INTERN PetscLogEvent DCONTEXT_Mark;
   #define PetscDeviceInitTypeCast(...) ((PetscDeviceInitType)(__VA_ARGS__))
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if PetscDefined(CLANG_STATIC_ANALYZER)
 template <typename T>
 extern void PetscValidDeviceType(T, int);
 template <typename T, typename U>
