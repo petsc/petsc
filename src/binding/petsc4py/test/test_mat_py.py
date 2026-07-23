@@ -318,6 +318,7 @@ class TestMatrix(unittest.TestCase):
             self.assertTrue(self._getCtx() is not None)
         else:  # python way
             context = globals()[self.PYCLS]()
+            rc = getrefcount(context)
             if self.CREATE_WITH_NONE:  # test passing None as context
                 self.A.createPython([N, N], None, comm=self.COMM)
                 self.A.setPythonContext(context)
@@ -325,7 +326,7 @@ class TestMatrix(unittest.TestCase):
             else:
                 self.A.createPython([N, N], context, comm=self.COMM)
             self.assertTrue(self._getCtx() is context)
-            self.assertEqual(getrefcount(context), 3)
+            self.assertEqual(getrefcount(context), rc + 1)
             del context
             self.assertEqual(getrefcount(self._getCtx()), 2)
 
