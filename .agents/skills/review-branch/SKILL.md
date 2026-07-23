@@ -4,7 +4,7 @@ description: Review a local PETSc branch's changes against its target branch (or
 argument-hint: <branch | commit-ref | empty for HEAD>
 ---
 
-Adhere to @CLAUDE.md.
+Adhere to @AGENTS.md.
 
 `SRC` is `$ARGUMENTS` if given, else `HEAD`. Reject anything that isn't a single ref matching `^[A-Za-z0-9._/@][A-Za-z0-9._/@~^-]*$`.
 

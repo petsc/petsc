@@ -188,7 +188,6 @@ compile_commands.json
 .cache/
 .vscode/
 .claude/*
-!.claude/skills/
 include/petsc/private/generated_*
 configtest.mod
 *gcovr-report.json
