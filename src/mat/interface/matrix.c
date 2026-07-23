@@ -2173,11 +2173,14 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
 
   Notes:
   The user must allocate space (m*n `PetscScalar`s) for the values, `v`.
-  The values, `v`, are then returned in a row-oriented format,
-  analogous to that used by default in `MatSetValues()`.
+
+  The values, `v`, are returned in a row-oriented format, analogous to that used by default in `MatSetValues()`,
+  unless `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` is called in which case they are returned column oriented.
 
   `MatGetValues()` uses 0-based row and column numbers in
   Fortran as well as in C.
+
+  For `MATSBAIJ` matrices only the block upper triangular entries will be set.
 
   `MatGetValues()` requires that the matrix has been assembled
   with `MatAssemblyBegin()`/`MatAssemblyEnd()`.  Thus, calls to
@@ -2188,7 +2191,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
   left unchanged.
 
   For the standard row-based matrix formats, `idxm` can only contain rows owned by the requesting MPI process.
-  That is, rows with global index greater than or equal to rstart and less than rend where rstart and rend are obtainable
+  That is, rows with global index greater than or equal to `rstart` and less than `rend` where `rstart` and `rend` are obtainable
   from `MatGetOwnershipRange`(mat,&rstart,&rend).
 
 .seealso: [](ch_matrices), `Mat`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatSetValues()`, `MatGetOwnershipRange()`, `MatGetValuesLocal()`, `MatGetValue()`
@@ -6391,11 +6394,11 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    These are not really options of the matrix, they are knowledge about the structure of the matrix that users may provide so that they
    do not need to be computed (usually at a high cost)
 
-   Options For Use with `MatSetValues()`:
+   Options For Use with `MatSetValues()` and `MatGetValues()`:
    Insert a logically dense subblock, which can be
 . `MAT_ROW_ORIENTED`                - row-oriented (default)
 
-   These options reflect the data you pass in with `MatSetValues()`; it has
+   These options reflect the data you pass in with `MatSetValues()` or receive with `MatGetValues()`; it has
    nothing to do with how the data is stored internally in the matrix
    data structure.
 
@@ -6407,11 +6410,11 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
 . `MAT_NEW_NONZERO_LOCATION_ERR`    - generates an error for new matrix entry
 . `MAT_USE_HASH_TABLE`              - uses a hash table to speed up matrix assembly
 . `MAT_NO_OFF_PROC_ENTRIES`         - you know each process will only set values for its own rows, will generate an error if
-        any process sets values for another process. This avoids all reductions in the MatAssembly routines and thus improves
-        performance for very large process counts.
+                                      any process sets values for another process. This avoids all reductions in the MatAssembly routines and thus improves
+                                      performance for very large process counts.
 - `MAT_SUBSET_OFF_PROC_ENTRIES`     - you know that the first assembly after setting this flag will set a superset
-        of the off-process entries required for all subsequent assemblies. This avoids a rendezvous step in the MatAssembly
-        functions, instead sending only neighbor messages.
+                                      of the off-process entries required for all subsequent assemblies. This avoids a rendezvous step in the MatAssembly
+                                      functions, instead sending only neighbor messages.
 
   Level: intermediate
 
@@ -6568,6 +6571,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
   default:
     break;
   }
+  PetscCheck((op != MAT_ROW_ORIENTED) || ((PetscObject)mat)->type_name, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "The matrix type must be set (MatSetType()) before setting this option");
   PetscTryTypeMethod(mat, setoption, op, flg);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

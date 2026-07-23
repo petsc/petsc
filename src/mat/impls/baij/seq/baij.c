@@ -2050,31 +2050,28 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
   PetscInt    *ai = a->i, *ailen = a->ilen;
   PetscInt     brow, bcol, ridx, cidx, bs = A->rmap->bs, bs2 = a->bs2;
   MatScalar   *ap, *aa = a->a;
+  PetscBool    roworiented = a->roworiented;
+  PetscScalar *value;
 
   PetscFunctionBegin;
   for (k = 0; k < m; k++) { /* loop over rows */
-    row  = im[k];
+    row = im[k];
+    if (row < 0) continue; /* negative row */
     brow = row / bs;
-    if (row < 0) {
-      v += n;
-      continue;
-    } /* negative row */
     PetscCheck(row < A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " too large", row);
     rp   = PetscSafePointerPlusOffset(aj, ai[brow]);
     ap   = PetscSafePointerPlusOffset(aa, bs2 * ai[brow]);
     nrow = ailen[brow];
-    for (l = 0; l < n; l++) { /* loop over columns */
-      if (in[l] < 0) {
-        v++;
-        continue;
-      } /* negative column */
+    for (l = 0; l < n; l++) {  /* loop over columns */
+      if (in[l] < 0) continue; /* negative column */
       PetscCheck(in[l] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column %" PetscInt_FMT " too large", in[l]);
-      col  = in[l];
-      bcol = col / bs;
-      cidx = col % bs;
-      ridx = row % bs;
-      high = nrow;
-      low  = 0; /* assume unsorted */
+      value = roworiented ? &v[l + k * n] : &v[k + l * m];
+      col   = in[l];
+      bcol  = col / bs;
+      cidx  = col % bs;
+      ridx  = row % bs;
+      high  = nrow;
+      low   = 0; /* assume unsorted */
       while (high - low > 5) {
         t = (low + high) / 2;
         if (rp[t] > bcol) high = t;
@@ -2083,11 +2080,11 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
       for (i = low; i < high; i++) {
         if (rp[i] > bcol) break;
         if (rp[i] == bcol) {
-          *v++ = ap[bs2 * i + bs * cidx + ridx];
+          *value = ap[bs2 * i + bs * cidx + ridx];
           goto finished;
         }
       }
-      *v++ = 0.0;
+      *value = 0.0;
     finished:;
     }
   }

@@ -1045,6 +1045,8 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
   PetscInt    *cp, i, k, low, high, t, row, col, l;
   PetscInt     shift;
   MatScalar   *vp;
+  PetscBool    roworiented = a->roworiented;
+  PetscScalar *value;
 
   PetscFunctionBegin;
   for (k = 0; k < m; k++) { /* loop over requested rows */
@@ -1058,8 +1060,9 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       col = in[l];
       if (col < 0) continue;
       PetscCheck(col < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: row %" PetscInt_FMT " max %" PetscInt_FMT, col, A->cmap->n - 1);
-      high = a->rlen[row];
-      low  = 0; /* assume unsorted */
+      value = roworiented ? &v[l + k * n] : &v[k + l * m];
+      high  = a->rlen[row];
+      low   = 0; /* assume unsorted */
       while (high - low > 5) {
         t = (low + high) / 2;
         if (*(cp + a->sliceheight * t) > col) high = t;
@@ -1068,11 +1071,11 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       for (i = low; i < high; i++) {
         if (*(cp + a->sliceheight * i) > col) break;
         if (*(cp + a->sliceheight * i) == col) {
-          *v++ = *(vp + a->sliceheight * i);
+          *value = *(vp + a->sliceheight * i);
           goto finished;
         }
       }
-      *v++ = 0.0;
+      *value = 0.0;
     finished:;
     }
   }
