@@ -3,8 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.6.0.tar.gz',
-                         'https://web.cels.anl.gov/projects/petsc/download/externalpackages/tetgen1.6.0.tar.gz']
+    self.version      = '1.6.0'
+    self.gitcommit    = 'v'+self.version
+    self.download     = ['git://https://codeberg.org/TetGen/TetGen.git', 'https://codeberg.org/TetGen/TetGen/archive/'+self.gitcommit+'.tar.gz',
+                         'https://web.cels.anl.gov/projects/petsc/download/externalpackages/tetgen'+self.version+'.tar.gz']
     self.liblist      = [['libtet.a']]
     self.includes     = ['tetgen.h']
     self.buildLanguage= 'Cxx'
