@@ -15,7 +15,7 @@ PETSC_HASH_MAP(HMapIJV, PetscHashIJKey, PetscScalar, PetscHashIJKeyHash, PetscHa
 
   Synopsis:
   #include <petsc/private/hashmapijv.h>
-  PetscErrorCode PetscHMapIJVQueryAdd(PetscHMapT ht,PetscHashIJKey key,PetscScalar val,PetscBool *missing)
+  PetscErrorCode PetscHMapIJVQueryAdd(PetscHMapT ht, PetscHashIJKey key, PetscScalar val, PetscBool *missing)
 
   Input Parameters:
 + ht  - The hash table

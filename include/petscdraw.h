@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
 
    Synopsis:
    #include <petscdraw.h>
-   int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
+   int PetscDrawRealToColor(PetscReal value, PetscReal min, PetscReal max)
 
    Not Collective
 

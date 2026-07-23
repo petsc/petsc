@@ -1739,7 +1739,7 @@ M*/
 
    Synopsis:
    #include <petscmath.h>
-   type PetscMin(type v1,type v2)
+   type PetscMin(type v1, type v2)
 
    Not Collective
 
@@ -1761,7 +1761,7 @@ M*/
 
    Synopsis:
    #include <petscmath.h>
-   type max PetscMax(type v1,type v2)
+   type max PetscMax(type v1, type v2)
 
    Not Collective
 
@@ -1783,7 +1783,7 @@ M*/
 
    Synopsis:
    #include <petscmath.h>
-   type clip PetscClipInterval(type x,type a,type b)
+   type clip PetscClipInterval(type x, type a, type b)
 
    Not Collective
 
@@ -2256,7 +2256,7 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
 
    Synopsis:
    #include <petscmath.h>
-   bool PetscApproximateLTE(PetscReal x,constant float)
+   bool PetscApproximateLTE(PetscReal x, constant float)
 
    Not Collective
 
@@ -2289,7 +2289,7 @@ M*/
 
    Synopsis:
    #include <petscmath.h>
-   bool PetscApproximateGTE(PetscReal x,constant float)
+   bool PetscApproximateGTE(PetscReal x, constant float)
 
    Not Collective
 

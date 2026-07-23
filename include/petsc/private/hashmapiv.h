@@ -14,7 +14,7 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
   Synopsis:
   #include <petsc/private/hashmapiv.h>
-  PetscErrorCode PetscHMapIVAddValue(PetscHMapT ht,PetscInt key,PetscScalar val)
+  PetscErrorCode PetscHMapIVAddValue(PetscHMapT ht, PetscInt key, PetscScalar val)
 
   Input Parameters:
 + ht  - The hash table

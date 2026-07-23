@@ -209,7 +209,7 @@ PetscErrorCode          PetscOptionsEnd(void);
 
     Synopsis:
     #include <petscoptions.h>
-    PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
+    PetscErrorCode PetscOptionsBegin(MPI_Comm comm, const char prefix[], const char title[], const char mansec[])
 
     Collective
 
