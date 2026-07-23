@@ -821,9 +821,6 @@ PETSC_EXTERN PetscErrorCode VecStepBoundInfo(Vec, Vec, Vec, Vec, PetscReal *, Pe
 PETSC_EXTERN PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecStepMaxBounded(Vec, Vec, Vec, Vec, PetscReal *);
 
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
-
 struct _n_Vecs {
   PetscInt n;
   Vec      v;
@@ -852,22 +849,14 @@ PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs, Vecs *);
 
   Level: developer
 
-.seealso: `Vec`, `VECVIENNACL`, `VecCreateSeqViennaCL()`, `VecCreateMPIViennaCL()`, `VecViennaCLCopyToGPUSome_Public()`, `VecViennaCLCopyFromGPUSome_Public()`
+.seealso: `Vec`, `VECVIENNACL`, `VecCreateSeqViennaCL()`
 S*/
 typedef struct _p_PetscViennaCLIndices *PetscViennaCLIndices;
-PETSC_EXTERN PetscErrorCode             VecViennaCLCopyToGPUSome_Public(Vec, PetscViennaCLIndices);
-PETSC_EXTERN PetscErrorCode             VecViennaCLCopyFromGPUSome_Public(Vec, PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode             VecCreateSeqViennaCL(MPI_Comm, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode             VecCreateMPIViennaCL(MPI_Comm, PetscInt, PetscInt, Vec *);
-#endif
-#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
-PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter, Vec);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 #endif
 #if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPIKokkos(MPI_Comm, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, Vec *);
 PETSC_EXTERN PetscErrorCode VecKokkosPlaceArray(Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecKokkosResetArray(Vec);
@@ -1010,9 +999,6 @@ PETSC_EXTERN PetscErrorCode VecTaggerAndGetSubs(VecTagger, PetscInt *, VecTagger
 
 PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
-
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetVector(PetscViewer, Vec);
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
 
 PETSC_EXTERN PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);

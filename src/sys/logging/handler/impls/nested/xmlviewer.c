@@ -7,7 +7,6 @@
  *************************************************************************************/
 #include <petscviewer.h>
 #include <petsc/private/logimpl.h>
-#include "xmlviewer.h"
 #include "lognested.h"
 
 static PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, const char *desc)

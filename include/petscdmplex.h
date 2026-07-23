@@ -439,7 +439,6 @@ PETSC_EXTERN PetscErrorCode DMPlexGetMaxProjectionHeight(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetActivePoint(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetActivePoint(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2DiffLocal(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeL2FieldDiff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2DiffVec(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2FluxDiffVecLocal(Vec, PetscInt, Vec, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2FluxDiffVec(Vec, PetscInt, Vec, PetscInt, Vec);
@@ -453,7 +452,6 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientClementInterpolant(DM, Vec, Vec
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixNested(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeGradientMatrixNested(DM, DM, Mat, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, PetscInt, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);

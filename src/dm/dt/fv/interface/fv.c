@@ -45,7 +45,7 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
   Note:
   `PetscLimiterRegister()` may be called multiple times to add several user-defined PetscLimiters
 
-.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterRegisterAll()`, `PetscLimiterRegisterDestroy()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterRegisterAll()`
 @*/
 PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*function)(PetscLimiter))
 {
@@ -921,7 +921,7 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
   Note:
   `PetscFVRegister()` may be called multiple times to add several user-defined PetscFVs
 
-.seealso: `PetscFV`, `PetscFVType`, `PetscFVRegisterAll()`, `PetscFVRegisterDestroy()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVRegisterAll()`
 @*/
 PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(PetscFV))
 {

@@ -221,8 +221,6 @@ PETSC_INTERN PetscErrorCode MatDuplicate_SeqSELL(Mat, MatDuplicateOption, Mat *)
 PETSC_INTERN PetscErrorCode MatEqual_SeqSELL(Mat, Mat, PetscBool *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat, MatType, MatReuse, Mat *);
-PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqSELL(Mat, ISColoring, MatFDColoring);
-PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqSELL(Mat, ISColoring, MatFDColoring);
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatConjugate_SeqSELL(Mat A);

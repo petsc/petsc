@@ -166,7 +166,7 @@ typedef const char *PetscLogHandlerType;
 
   Level: developer
 
-.seealso: `PetscLogState`, `PetscLogStateGetRegistry()`, `PetscLogHandler`, `PetscLogEventRegister()`, `PetscLogStageRegister()`
+.seealso: `PetscLogState`, `PetscLogHandler`, `PetscLogEventRegister()`, `PetscLogStageRegister()`
 S*/
 typedef struct _n_PetscLogRegistry *PetscLogRegistry;
 

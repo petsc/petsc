@@ -6,7 +6,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat, MatOrderingType, IS *, IS *)
 PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat, MatOrderingType, IS *, IS *);
 PETSC_INTERN PetscErrorCode MatGetOrdering_RCM(Mat, MatOrderingType, IS *, IS *);
 PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat, MatOrderingType, IS *, IS *);
-PETSC_INTERN PetscErrorCode MatGetOrdering_DSC(Mat, MatOrderingType, IS *, IS *);
 PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat, MatOrderingType, IS *, IS *);
 PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat, MatOrderingType, IS *, IS *);
 #if PetscDefined(HAVE_SUITESPARSE)

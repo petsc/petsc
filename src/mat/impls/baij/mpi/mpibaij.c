@@ -2831,8 +2831,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
 .seealso: `Mat`, `MATBAIJ`, `MATSEQBAIJ`, `MatCreateBAIJ`
 M*/
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat, MatType, MatReuse, Mat *);
-
 static PetscErrorCode MatGetMultPetscSF_MPIBAIJ(Mat A, PetscSF *sf)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;

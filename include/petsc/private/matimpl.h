@@ -524,8 +524,6 @@ PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat, Mat, PetscScalar
 PETSC_INTERN PetscErrorCode MatAXPY_Basic_Preallocate(Mat, Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat, PetscScalar, Mat);
 
-PETSC_INTERN PetscErrorCode MatSetUp_Default(Mat);
-
 /*
     Utility for MatZeroRows
 */

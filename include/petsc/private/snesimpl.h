@@ -284,7 +284,6 @@ PETSC_EXTERN PetscErrorCode                                 SNESVIProjectOntoBou
 PETSC_INTERN PetscErrorCode                                 SNESVICheckLocalMin_Private(SNES, Mat, Vec, Vec, PetscReal, PetscBool *);
 PETSC_INTERN PetscErrorCode                                 SNESReset_VI(SNES);
 PETSC_INTERN PetscErrorCode                                 SNESDestroy_VI(SNES);
-PETSC_INTERN PetscErrorCode                                 SNESView_VI(SNES, PetscViewer);
 PETSC_INTERN PetscErrorCode                                 SNESSetFromOptions_VI(SNES, PetscOptionItems);
 PETSC_INTERN PetscErrorCode                                 SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode                 SNESVIComputeVariableBoundsFn(SNES, Vec, Vec);

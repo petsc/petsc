@@ -41,9 +41,6 @@ typedef struct {
   PetscObjectState Fprev_state;
 } Mat_DQN;
 
-PETSC_INTERN PetscErrorCode MatView_LMVMDDFP(Mat, PetscViewer);
-PETSC_INTERN PetscErrorCode MatView_LMVMDBFGS(Mat, PetscViewer);
-
 PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_CUPM(PetscBool, PetscInt, const PetscScalar[], PetscInt, PetscScalar[], PetscInt);
 PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlaceCyclic_CUPM(PetscBool, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscInt, PetscScalar[], PetscInt);
 

@@ -73,8 +73,6 @@ PETSC_INTERN PetscErrorCode MatZeroEntries_SeqBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat, MatAssemblyType);
 
-PETSC_INTERN PetscErrorCode MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat);
-
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat, Vec, Vec);

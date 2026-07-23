@@ -53,6 +53,5 @@ PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, PetscInt, Vec);
 PETSC_INTERN PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal, PetscReal, PetscReal, PetscReal *, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscBool);
-PETSC_INTERN PetscErrorCode TaoBNCGComputeDiagScaling(Tao, PetscReal, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGResetUpdate(Tao, PetscReal);
 PETSC_INTERN PetscErrorCode TaoBNCGCheckDynamicRestart(Tao, PetscReal, PetscReal, PetscReal, PetscBool *, PetscReal);

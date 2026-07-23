@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
   Level: advanced
 
-.seealso: `DMRegister()`, `DMRegisterDestroy()`
+.seealso: `DMRegister()`
 @*/
 PetscErrorCode DMRegisterAll(void)
 {
@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace);
 
   Level: advanced
 
-.seealso: `PetscSpaceRegister()`, `PetscSpaceRegisterDestroy()`
+.seealso: `PetscSpaceRegister()`
 @*/
 PetscErrorCode PetscSpaceRegisterAll(void)
 {
@@ -98,7 +98,6 @@ PetscErrorCode PetscSpaceRegisterAll(void)
 }
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange_BDM(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Sum(PetscDualSpace);
@@ -110,7 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Sum(PetscDualSpace);
 
   Level: advanced
 
-.seealso: `PetscDualSpaceRegister()`, `PetscDualSpaceRegisterDestroy()`
+.seealso: `PetscDualSpaceRegister()`
 @*/
 PetscErrorCode PetscDualSpaceRegisterAll(void)
 {
@@ -127,7 +126,6 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
 }
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
-PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE);
 #if PetscDefined(HAVE_OPENCL)
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
@@ -141,7 +139,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Vector(PetscFE);
 
   Level: advanced
 
-.seealso: `PetscFERegister()`, `PetscFERegisterDestroy()`
+.seealso: `PetscFERegister()`
 @*/
 PetscErrorCode PetscFERegisterAll(void)
 {
@@ -175,7 +173,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
   Level: advanced
 
-.seealso: `PetscLimiterRegister()`, `PetscLimiterRegisterDestroy()`
+.seealso: `PetscLimiterRegister()`
 @*/
 PetscErrorCode PetscLimiterRegisterAll(void)
 {
@@ -204,7 +202,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
   Level: advanced
 
-.seealso: `PetscFVRegister()`, `PetscFVRegisterDestroy()`
+.seealso: `PetscFVRegister()`
 @*/
 PetscErrorCode PetscFVRegisterAll(void)
 {
@@ -227,7 +225,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
   Level: advanced
 
-.seealso: `PetscDSRegister()`, `PetscDSRegisterDestroy()`
+.seealso: `PetscDSRegister()`
 @*/
 PetscErrorCode PetscDSRegisterAll(void)
 {

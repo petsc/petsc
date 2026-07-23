@@ -110,7 +110,6 @@ PETSC_EXTERN PetscErrorCode DMMoabSetBlockFills(DM, const PetscInt *, const Pets
 PETSC_EXTERN PetscErrorCode DMMoabGetHierarchyLevel(DM, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM, moab::Range *, moab::Range *, moab::Range *);
 PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM, const moab::EntityHandle, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM, PetscInt *, PetscInt *);

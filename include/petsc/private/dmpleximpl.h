@@ -280,13 +280,6 @@ PETSC_INTERN PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM, PetscSection, P
 PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject, PetscViewer);
 #if PetscDefined(HAVE_HDF5)
-PETSC_EXTERN PetscErrorCode VecView_Plex_Local_HDF5(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Plex_HDF5(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5_Native(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Plex_HDF5_Native(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM, IS, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM, IS, PetscViewer);
@@ -350,7 +343,6 @@ PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM, DMPolytopeType, const
 PETSC_INTERN PetscErrorCode DMPlexRestoreRawFaces_Internal(DM, DMPolytopeType, const PetscInt[], PetscInt *, const DMPolytopeType *[], const PetscInt *[], const PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexComputeCellType_Internal(DM, PetscInt, PetscInt, DMPolytopeType *);
 PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscScalar[], InsertMode);
-PETSC_INTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM, PetscSection, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM, DM, const char *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM, DM, PetscSF, PetscInt *, Mat);
@@ -872,7 +864,6 @@ PETSC_INTERN void coordMap_torus(PetscInt, PetscInt, PetscInt, const PetscInt[],
 PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
 // FIXME: DM with Attached CAD Models (STEP, IGES, BRep, EGADS, EGADSlite)
-PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
 // Coordinate <-> Reference mapping functions
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesToReference_FE(DM, PetscFE, PetscInt, PetscInt, const PetscReal[], PetscReal[], Vec, PetscInt, PetscInt, PetscInt, PetscReal *);

@@ -62,7 +62,6 @@ typedef struct {
 PETSC_INTERN PetscErrorCode VecMTDot_MPI(Vec, PetscInt, const Vec[], PetscScalar *);
 PETSC_INTERN PetscErrorCode VecView_MPI_Binary(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Draw_LG(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecGetSize_MPI(Vec, PetscInt *);

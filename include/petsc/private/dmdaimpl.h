@@ -111,7 +111,6 @@ PETSC_INTERN PetscErrorCode DMCoarsen_DA(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMRefineHierarchy_DA(DM, PetscInt, DM[]);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_DA(DM, PetscInt, DM[]);
 PETSC_INTERN PetscErrorCode DMCreateInjection_DA(DM, DM, Mat *);
-PETSC_INTERN PetscErrorCode DMView_DA(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMSetUp_DA(DM);
 PETSC_INTERN PetscErrorCode DMDestroy_DA(DM);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_DA(DM, PetscInt *, char ***, IS **, IS **, DM **);

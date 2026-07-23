@@ -16,7 +16,6 @@ PETSC_EXTERN PetscErrorCode DMLabelRegister(const char[], PetscErrorCode (*)(DML
 PETSC_EXTERN PetscErrorCode DMLabelRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMLabelRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMLabelSetUp(DMLabel);
-PETSC_EXTERN PetscErrorCode DMLabelSetFromOptions(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLabelViewFromOptions(DMLabel, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);

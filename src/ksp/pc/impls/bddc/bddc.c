@@ -55,7 +55,7 @@ static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems PetscOptions
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level", "Verbose output for PCBDDC (intended for debug)", "none", pcbddc->dbg_flag, &pcbddc->dbg_flag, NULL));
   /* Approximate solvers */
-  PetscCall(PetscOptionsEnum("-pc_bddc_interface_ext_type", "Use DIRICHLET or LUMP to extend interface corrections to interior", "PCBDDCSetInterfaceExtType", PCBDDCInterfaceExtTypes, (PetscEnum)pcbddc->interface_extension, (PetscEnum *)&pcbddc->interface_extension, NULL));
+  PetscCall(PetscOptionsEnum("-pc_bddc_interface_ext_type", "Use DIRICHLET or LUMP to extend interface corrections to interior", "PCBDDCInterfaceExtType", PCBDDCInterfaceExtTypes, (PetscEnum)pcbddc->interface_extension, (PetscEnum *)&pcbddc->interface_extension, NULL));
   if (pcbddc->interface_extension == PC_BDDC_INTERFACE_EXT_DIRICHLET) {
     PetscCall(PetscOptionsBool("-pc_bddc_dirichlet_approximate", "Inform PCBDDC that we are using approximate Dirichlet solvers", "none", pcbddc->NullSpace_corr[0], &pcbddc->NullSpace_corr[0], NULL));
     PetscCall(PetscOptionsBool("-pc_bddc_dirichlet_approximate_scale", "Inform PCBDDC that we need to scale the Dirichlet solve", "none", pcbddc->NullSpace_corr[1], &pcbddc->NullSpace_corr[1], NULL));

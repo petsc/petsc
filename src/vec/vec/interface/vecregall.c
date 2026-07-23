@@ -4,9 +4,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec);
-#if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
-PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec);
-#endif
 #if PetscDefined(HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec);

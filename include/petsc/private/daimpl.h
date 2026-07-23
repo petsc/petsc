@@ -42,6 +42,3 @@ typedef struct {
   Vec sqrt_eigen_vals; /* Square root of eigen values */
   Mat I_StS;           /* T = (1/rho)I + S^T * S matrix (rho = inflation) */
 } PetscDA_Ensemble;
-
-/* Internal utility functions shared across PetscDA implementations */
-PETSC_INTERN PetscErrorCode PetscDASymmetricEigenSqrt_Private(Mat, Mat *);

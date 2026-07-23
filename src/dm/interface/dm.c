@@ -4251,7 +4251,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     -da_type my_da
 .ve
 
-.seealso: [](ch_dmbase), `DM`, `DMType`, `DMSetType()`, `DMRegisterAll()`, `DMRegisterDestroy()`
+.seealso: [](ch_dmbase), `DM`, `DMType`, `DMSetType()`, `DMRegisterAll()`
 @*/
 PetscErrorCode DMRegister(const char sname[], PetscErrorCode (*function)(DM dm))
 {

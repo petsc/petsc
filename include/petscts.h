@@ -99,7 +99,6 @@ typedef enum {
   TS_EQ_DAE_IMPLICIT_INDEX3       = 1300,
   TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500
 } TSEquationType;
-PETSC_EXTERN const char *const *TSEquationTypes;
 
 /*E
    TSConvergedReason - reason a `TS` method has converged (integrated to the requested time) or not
@@ -1663,7 +1662,6 @@ PETSC_EXTERN PetscErrorCode TSSundialsSetMinTimeStep(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxTimeStep(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSSundialsGetIterations(TS, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSSundialsSetGramSchmidtType(TS, TSSundialsGramSchmidtType);
-PETSC_EXTERN PetscErrorCode TSSundialsSetGMRESRestart(TS, PetscInt);
 PETSC_EXTERN PetscErrorCode TSSundialsSetLinearTolerance(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS, PetscBool);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS, PetscInt);

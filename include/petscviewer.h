@@ -356,9 +356,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const cha
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
 
-PETSC_EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
-
 /*E
    PetscViewerVTKFieldType - Categorizes a field that is being written through a `PETSCVIEWERVTK` viewer so that the VTK writer can place it on the correct mesh entity and with the correct component layout
 

@@ -960,6 +960,34 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 }
 
 /*@
+  SNESFASGetRScale - Gets the scaling factor of the restriction operator from level $l$ to $l-1$
+
+  Input Parameters:
++ snes  - the `SNESFAS` nonlinear multigrid context
+- level - the level (0 is coarsest) to supply
+
+  Output Parameter:
+. rscale - the restriction scaling
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESFAS`, `SNESFASSetRScale()`, `SNESFASCycleGetRScale()`, `SNESFASGetRestriction()`
+@*/
+PetscErrorCode SNESFASGetRScale(SNES snes, PetscInt level, Vec *rscale)
+{
+  SNES_FAS *fas;
+  SNES      levelsnes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
+  PetscAssertPointer(rscale, 3);
+  PetscCall(SNESFASGetCycleSNES(snes, level, &levelsnes));
+  fas     = (SNES_FAS *)levelsnes->data;
+  *rscale = fas->rscale;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   SNESFASGetSmoother - Gets the default smoother on a level.
 
   Input Parameters:

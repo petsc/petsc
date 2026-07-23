@@ -613,9 +613,6 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
 {
   PetscBool isascii, isbinary, isdraw;
-#if PetscDefined(HAVE_MATHEMATICA)
-  PetscBool ismathematica;
-#endif
 #if PetscDefined(HAVE_HDF5)
   PetscBool ishdf5;
 #endif
@@ -631,9 +628,6 @@ PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-#if PetscDefined(HAVE_MATHEMATICA)
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATHEMATICA, &ismathematica));
-#endif
 #if PetscDefined(HAVE_HDF5)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
@@ -656,10 +650,6 @@ PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
     } else {
       PetscCall(VecView_MPI_Draw(xin, viewer));
     }
-#if PetscDefined(HAVE_MATHEMATICA)
-  } else if (ismathematica) {
-    PetscCall(PetscViewerMathematicaPutVector(viewer, xin));
-#endif
 #if PetscDefined(HAVE_HDF5)
   } else if (ishdf5) {
     PetscCall(VecView_MPI_HDF5(xin, viewer));

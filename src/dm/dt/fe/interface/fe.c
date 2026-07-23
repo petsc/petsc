@@ -84,7 +84,7 @@ PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
   Note:
   `PetscFERegister()` may be called multiple times to add several user-defined `PetscFE`s
 
-.seealso: `PetscFE`, `PetscFEType`, `PetscFERegisterAll()`, `PetscFERegisterDestroy()`
+.seealso: `PetscFE`, `PetscFEType`, `PetscFERegisterAll()`
 @*/
 PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(PetscFE))
 {

@@ -43,10 +43,7 @@ PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPISELL(Mat, MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPISELL(Mat);
 
-PETSC_INTERN PetscErrorCode MatProductCtxDestroy_MPISELL_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPISELL(Mat);
-
-PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat, Mat *);
 
 PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat, MatType, MatReuse, Mat *);

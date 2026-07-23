@@ -169,8 +169,6 @@ PETSC_INTERN PetscInt      *PCTFS_ivec_copy(PetscInt *, PetscInt *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_ivec_zero(PetscInt *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_ivec_set(PetscInt *, PetscInt, PetscInt);
 
-PETSC_INTERN PetscInt PCTFS_ivec_lb(PetscInt *, PetscInt);
-PETSC_INTERN PetscInt PCTFS_ivec_ub(PetscInt *, PetscInt);
 PETSC_INTERN PetscInt PCTFS_ivec_sum(PetscInt *, PetscInt);
 PETSC_INTERN vfp      PCTFS_ivec_fct_addr(PetscInt);
 
@@ -211,7 +209,6 @@ PETSC_INTERN PetscErrorCode PCTFS_rvec_max(PetscScalar *, PetscScalar *, PetscIn
 PETSC_INTERN PetscErrorCode PCTFS_rvec_max_abs(PetscScalar *, PetscScalar *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_rvec_min(PetscScalar *, PetscScalar *, PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_rvec_min_abs(PetscScalar *, PetscScalar *, PetscInt);
-PETSC_INTERN PetscErrorCode PCTFS_vec_exists(PetscScalar *, PetscScalar *, PetscInt);
 
 /*
 Author: Henry M. Tufo III
