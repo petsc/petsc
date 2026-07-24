@@ -10,9 +10,9 @@ Adhere to @CLAUDE.md while reviewing and drafting comments.
 Follow @../review-mr/identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for drift.
 
 ## Review
-Follow @../review-mr/review-procedure.md (Sections 4–6) to classify and verify findings. Then continue below to filter and post.
+Follow @../review-mr/review-procedure.md (Sections 4–7) to classify and verify findings. Then continue below to filter and post.
 
-## 7. Filter findings
+## 8. Filter findings
 Only post findings that have a **concrete, actionable fix** (a code change the author can apply). Do NOT post:
 - Informational or observational notes ("just noting...", "no issue, but...")
 - Findings that acknowledge correctness but flag theoretical fragility
@@ -21,7 +21,7 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 
 Each posted comment opens a discussion thread the author must resolve — avoid noise.
 
-## 8. Post inline comments as DiffNotes
+## 9. Post inline comments as DiffNotes
 Use the GitLab Discussions API with JSON input to create inline DiffNote comments.
 
 **IMPORTANT:** Use `--input -` with `-H "Content-Type: application/json"` — the `-f` flag with bracket notation does NOT work for nested `position` fields.
@@ -61,7 +61,7 @@ p = subprocess.run(
 assert '"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
 ```
 
-## 9. Use GitLab suggestion blocks for concrete fixes
+## 10. Use GitLab suggestion blocks for concrete fixes
 When a comment has a specific code fix, include a suggestion block in the body so the author can click "Apply suggestion":
 
 ````
@@ -77,9 +77,10 @@ corrected line here
 - Only use suggestions for concrete fixes. Use plain comments for design/architectural feedback.
 - **Only comment on lines that are part of the MR diff.** Do not suggest changes to unchanged code that happens to be near the diff.
 
-## 10. Line number mapping
+## 11. Line number mapping
 - For **new files**: `new_line` = the line number in the file itself.
 - For **modified files**: `new_line` = the line number in the new version of the file. Parse the `@@` hunk headers to map correctly.
 
-## 11. Verify
-After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
+## 12. Verify
+- After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
+- Verify that the ai-review.html report was written, as instructed in Section 7.
