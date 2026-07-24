@@ -53,6 +53,7 @@
 
 ## IS
 
+- Add `PetscLayoutGetComm()` to obtain the MPI communicator of a `PetscLayout`
 
 ## VecScatter / PetscSF
 
