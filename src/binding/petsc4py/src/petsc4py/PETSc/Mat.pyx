@@ -6549,6 +6549,80 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(submat.obj))
         return submat
 
+    def createNestFromMultipleShifts(
+        self,
+        Mat K,
+        sigma: Sequence[Scalar],
+        sigma_imaginary: Sequence[Scalar] | None = None,
+        Mat M: Mat | None = None,
+        explicit: bool | None = None,
+        structure: Structure | None = None) -> Self:
+        """Create a `Type.NEST` matrix representing a family of shifted matrices.
+
+        Collective.
+
+        Parameters
+        ----------
+        K
+            The first `Mat` (stiffness) forming the shifted matrices.
+        sigma
+            List of shifts.
+        sigma_imaginary
+            Imaginary parts of the shifts in case petsc4py works with
+            real scalars and complex-conjugate pairs of shifts are wanted.
+        M
+            The second `Mat` (mass) forming the shifted matrices (`None`
+            means identity).
+        explicit
+            Whether the shifted matrices should be built explicitly or not.
+        structure
+            `Structure` flag.
+
+        See Also
+        --------
+        createVecNestFromMultipleShifts, petsc.MatCreateNestFromMultipleShifts
+        petsc.MATNEST
+
+        """
+        cdef PetscMat newmat = NULL
+        cdef PetscMat Kmat = K.mat
+        cdef PetscInt ns = 0
+        cdef PetscScalar *s = NULL
+        sigma = iarray_s(sigma, &ns, &s)
+        cdef PetscInt nc = 0
+        cdef PetscScalar *si = NULL
+        if sigma_imaginary is not None:
+            sigma_imaginary = iarray_s(sigma_imaginary, &nc, &si)
+            if nc != ns:
+                raise ValueError("sigma and sigma_imaginary have different length")
+        cdef PetscMat Mmat = M.mat if M is not None else <PetscMat>NULL
+        cdef PetscBool expl = asBool(explicit)
+        cdef PetscMatStructure flag = matstructure(structure)
+        CHKERR(MatCreateNestFromMultipleShifts(Kmat, ns, s, si, Mmat, expl, flag, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        return self
+
+    def createVecNestFromMultipleShifts(self, Vec v: Vec | None = None) -> Vec:
+        """Create a `Vec.Type.NEST` for a `Mat` from `createNestFromMultipleShifts`.
+
+        Collective.
+
+        Parameters
+        ----------
+        v
+            An optional vector that will be inserted in all subvectors of the
+            result.
+
+        See Also
+        --------
+        createNestFromMultipleShifts, petsc.MatCreateVecNestFromMultipleShifts
+
+        """
+        cdef Vec vout = Vec()
+        cdef PetscVec vvec = v.vec if v is not None else <PetscVec>NULL
+        CHKERR(MatCreateVecNestFromMultipleShifts(self.mat, vvec, &vout.vec))
+        return vout
+
     # DM
 
     def getDM(self) -> DM:

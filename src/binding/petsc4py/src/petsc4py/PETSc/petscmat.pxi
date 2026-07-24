@@ -285,6 +285,8 @@ cdef extern from * nogil:
     PetscErrorCode MatNestGetSize(PetscMat, PetscInt*, PetscInt*)
     PetscErrorCode MatNestGetSubMat(PetscMat, PetscInt, PetscInt, PetscMat*)
     PetscErrorCode MatNestSetVecType(PetscMat, PetscVecType)
+    PetscErrorCode MatCreateNestFromMultipleShifts(PetscMat, PetscInt, const PetscScalar[], const PetscScalar[], PetscMat, PetscBool, PetscMatStructure, PetscMat*)
+    PetscErrorCode MatCreateVecNestFromMultipleShifts(PetscMat, PetscVec, PetscVec*)
 
     PetscErrorCode MatEqual(PetscMat, PetscMat, PetscBool*)
     PetscErrorCode MatLoad(PetscMat, PetscViewer)

@@ -2907,6 +2907,9 @@ PETSC_EXTERN PetscErrorCode MatNestSetVecType(Mat, VecType);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat, PetscInt, const IS[], PetscInt, const IS[], const Mat[]);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat, PetscInt, PetscInt, Mat);
 
+PETSC_EXTERN PetscErrorCode MatCreateNestFromMultipleShifts(Mat, PetscInt, const PetscScalar[], const PetscScalar[], Mat, PetscBool, MatStructure, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateVecNestFromMultipleShifts(Mat, Vec, Vec *);
+
 PETSC_EXTERN PetscErrorCode MatFilter(Mat, PetscReal, PetscBool, PetscBool);
 PETSC_DEPRECATED_FUNCTION(3, 20, 0, "MatFilter()", ) static inline PetscErrorCode MatChop(Mat A, PetscReal tol)
 {

@@ -126,6 +126,7 @@
 - Add `MatNullSpaceLoad()` to load a `MatNullSpace` object dump in binary with `MatNullSpaceView()`
 - Fix the symbolic phase of a `MatProduct` with a dense result to propagate the `VecType` of the dense operand to the `Mat` it creates
 - Fix `MatDenseGetSubMatrix()` to propagate the `VecType` to the submatrix
+- Add `MatCreateNestFromMultipleShifts()` to create a `MATNEST` that represents a family of shifted matrices, and `MatCreateVecNestFromMultipleShifts()` to create a compatible `VECNEST` vector
 
 ## MatCoarsen
 
