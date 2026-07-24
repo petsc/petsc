@@ -1751,6 +1751,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultAddColumnRange_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeColumnRange_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeAddColumnRange_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseUpdateColumnLayout_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3586,6 +3587,13 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatDenseUpdateColumnLayout_SeqDense(Mat A, PetscLayout clayout)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLayoutReference(clayout, &A->cmap));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATSEQDENSE - MATSEQDENSE = "seqdense" - A matrix type to be used for sequential dense matrices.
 
@@ -3662,6 +3670,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMultAddColumnRange_C", MatMultAddColumnRange_SeqDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMultHermitianTransposeColumnRange_C", MatMultHermitianTransposeColumnRange_SeqDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMultHermitianTransposeAddColumnRange_C", MatMultHermitianTransposeAddColumnRange_SeqDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseUpdateColumnLayout_C", MatDenseUpdateColumnLayout_SeqDense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQDENSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3970,6 +3979,40 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
   PetscAssertPointer(v, 2);
   PetscValidHeaderSpecific(*v, MAT_CLASSID, 2);
   PetscUseMethod(A, "MatDenseRestoreSubMatrix_C", (Mat, Mat *), (A, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatDenseUpdateColumnLayout - Update the column layout of the dense matrix.
+
+  Collective
+
+  Input Parameters:
++ A       - the `Mat` object
+- clayout - the `PetscLayout` object (cannot be `NULL`)
+
+  Level: advanced
+
+  Notes:
+  Because a dense matrix's storage is independent of its column layout, this routine can update the layout without modifying the underlying storage.
+
+  It can be useful when users want to apply the operator, with `MatMult()` on a right vector with a different layout.
+
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `PetscLayout`, `MatMult()`, `MatMultAdd()`
+@*/
+PetscErrorCode MatDenseUpdateColumnLayout(Mat A, PetscLayout clayout)
+{
+  PetscMPIInt flag;
+  MPI_Comm    lcomm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidType(A, 1);
+  PetscCall(PetscLayoutGetComm(clayout, &lcomm));
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)A), lcomm, &flag));
+  PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "Different communicators in the two objects: flag %d", flag);
+  PetscCheck(A->cmap->N == clayout->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Mat global dim %" PetscInt_FMT " does not match layout global dim %" PetscInt_FMT, A->cmap->N, clayout->N);
+  PetscUseMethod(A, "MatDenseUpdateColumnLayout_C", (Mat, PetscLayout), (A, clayout));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

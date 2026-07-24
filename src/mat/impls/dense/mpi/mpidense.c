@@ -809,6 +809,7 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeColumnRange_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeAddColumnRange_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseUpdateColumnLayout_C", NULL));
 
   PetscCall(PetscObjectCompose((PetscObject)mat, "DiagonalBlock", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1737,6 +1738,19 @@ static PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A, Mat *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatDenseUpdateColumnLayout_MPIDense(Mat A, PetscLayout clayout)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  if (A->cmap == clayout) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  PetscCall(PetscLayoutReference(clayout, &A->cmap));
+  PetscCall(MatDestroy(&a->cmat));
+  PetscCall(PetscSFDestroy(&a->Mvctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
 
@@ -1817,6 +1831,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeColumnRange_C", MatMultHermitianTransposeColumnRange_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeAddColumnRange_C", MatMultHermitianTransposeAddColumnRange_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", MatGetMultPetscSF_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseUpdateColumnLayout_C", MatDenseUpdateColumnLayout_MPIDense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, MATMPIDENSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
