@@ -175,5 +175,6 @@
 
 ## DT
 
+- Add `PetscWeakFormGetKeys()`
 
 ## Fortran

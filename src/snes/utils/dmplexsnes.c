@@ -322,25 +322,63 @@ PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode CreateSurfaceCellIS_Private(DM dm, IS *cohesiveCells)
+{
+  PetscInt    cMax, cEnd;
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, NULL, &cMax));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
+  if (size > 1) {
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt       *points;
+    PetscInt        Nl, l, Ncoh = 0;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+    for (PetscInt c = cMax; c < cEnd; ++c) {
+      if (leaves) PetscCall(PetscFindInt(c, Nl, leaves, &l));
+      else l = (c >= 0 && c < Nl) ? c : -1;
+      if (l < 0) ++Ncoh;
+    }
+    PetscCall(PetscMalloc1(Ncoh, &points));
+    Ncoh = 0;
+    for (PetscInt c = cMax; c < cEnd; ++c) {
+      if (leaves) PetscCall(PetscFindInt(c, Nl, leaves, &l));
+      else l = (c >= 0 && c < Nl) ? c : -1;
+      if (l < 0) points[Ncoh++] = c;
+    }
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncoh, points, PETSC_OWN_POINTER, cohesiveCells));
+  } else {
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, cEnd - cMax, cMax, 1, cohesiveCells));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
-  DMPlexSNESComputeResidualFEM - Sums the local residual into vector `F` from the local input `X` using pointwise functions specified by the user
+  DMPlexSNESComputeResidualFEM - Sums the local residual into vector `locF` from the local input `locX` using pointwise functions specified by the user
+
+  Collective
 
   Input Parameters:
-+ dm  - The mesh
-. X   - Local solution
-- ctx - The application context
++ dm   - The mesh
+. locX - Local solution
+- ctx  - The application context
 
   Output Parameter:
-. F - Local output vector
+. locF - Local output vector
 
   Level: developer
 
   Note:
-  The residual is summed into `F`; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in `F` is intentional.
+  The residual is summed into `locF`; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in `locF` is intentional.
 
 .seealso: [](ch_snes), `DM`, `DMPLEX`, `DMSNESComputeJacobianAction()`
 @*/
-PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, PetscCtx ctx)
+PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec locX, Vec locF, PetscCtx ctx)
 {
   DM       plex;
   IS       allcellIS;
@@ -351,9 +389,13 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, PetscCtx ctx)
   PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
-    PetscDS      ds;
-    IS           cellIS;
-    PetscFormKey key;
+    PetscDS       ds;
+    IS            cellIS;
+    PetscWeakForm wf;
+    PetscFormKey  key;
+    PetscFormKey  keys[3];
+    PetscFormKey *bdf0keys, *bdf1keys;
+    PetscInt      bdf0Nk, bdf1Nk;
 
     PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
@@ -370,8 +412,51 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, PetscCtx ctx)
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, ctx));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, PETSC_MIN_REAL, locX, NULL, 0.0, locF, ctx));
     PetscCall(ISDestroy(&cellIS));
+    // Hybrid evaluation
+    PetscCall(PetscDSGetWeakForm(ds, &wf));
+    PetscCall(PetscWeakFormGetKeys(wf, PETSC_WF_BDF0, &bdf0Nk, &bdf0keys));
+    PetscCall(PetscWeakFormGetKeys(wf, PETSC_WF_BDF1, &bdf1Nk, &bdf1keys));
+    if (bdf0Nk + bdf1Nk > 1) {
+      IS       cohesiveCells;
+      DMLabel  label0 = NULL, label1 = NULL;
+      PetscInt value0A = 0, value0B = 0, value1 = 0;
+
+      // In the future, we need a way to construct the keys for both sides and the surface, and also the cellIS from the label
+      for (PetscInt i = 0; i < bdf0Nk; ++i) {
+        if (bdf0keys[i].field == 0) {
+          if (!label0) {
+            label0  = bdf0keys[i].label;
+            value0A = bdf0keys[i].value;
+            value0B = value0A;
+          } else if (bdf0keys[i].value != value0A) {
+            value0B = bdf0keys[i].value;
+          }
+        }
+        if (bdf0keys[i].field == 1) {
+          label1 = bdf0keys[i].label;
+          value1 = bdf0keys[i].value;
+        }
+      }
+      keys[0].label = label0;
+      keys[0].value = value0A;
+      keys[0].field = 0;
+      keys[0].part  = 0;
+      keys[1].label = label0;
+      keys[1].value = value0B;
+      keys[1].field = 0;
+      keys[1].part  = 1;
+      keys[2].label = label1;
+      keys[2].value = value1;
+      keys[2].field = 1;
+      keys[2].part  = 2;
+      PetscCall(CreateSurfaceCellIS_Private(plex, &cohesiveCells));
+      PetscCall(DMPlexComputeResidualHybridByKey(plex, keys, cohesiveCells, PETSC_MIN_REAL, locX, NULL, 0.0, locF, ctx));
+      PetscCall(ISDestroy(&cohesiveCells));
+    }
+    PetscCall(PetscFree(bdf0keys));
+    PetscCall(PetscFree(bdf1keys));
   }
   PetscCall(ISDestroy(&allcellIS));
   PetscCall(DMDestroy(&plex));
@@ -1141,12 +1226,32 @@ PetscErrorCode DMPlexSetSNESVariableBounds(DM dm, SNES snes)
   PetscCall(DMCreateGlobalVector(dm, &ub));
   PetscCall(PetscObjectSetName((PetscObject)lb, "Lower Bound"));
   PetscCall(PetscObjectSetName((PetscObject)ub, "Upper Bound"));
-  PetscCall(VecSet(lb, PETSC_NINFINITY));
-  PetscCall(VecSet(ub, PETSC_INFINITY));
-  if (hasLower) PetscCall(DMProjectFunction(dm, 0., lfuncs, lctxs, INSERT_VALUES, lb));
-  if (hasUpper) PetscCall(DMProjectFunction(dm, 0., ufuncs, uctxs, INSERT_VALUES, ub));
-  PetscCall(DMPlexInsertBounds(dm, PETSC_TRUE, 0., lb));
-  PetscCall(DMPlexInsertBounds(dm, PETSC_FALSE, 0., ub));
+  if (hasLower) {
+    Vec locb;
+
+    PetscCall(DMGetLocalVector(dm, &locb));
+    PetscCall(VecSet(locb, PETSC_NINFINITY));
+    PetscCall(DMProjectFunctionLocal(dm, 0., lfuncs, lctxs, INSERT_VALUES, locb));
+    PetscCall(DMPlexInsertBounds(dm, PETSC_TRUE, 0., locb));
+    PetscCall(DMLocalToGlobalBegin(dm, locb, INSERT_VALUES, lb));
+    PetscCall(DMLocalToGlobalEnd(dm, locb, INSERT_VALUES, lb));
+    PetscCall(DMRestoreLocalVector(dm, &locb));
+  } else {
+    PetscCall(VecSet(lb, PETSC_NINFINITY));
+  }
+  if (hasUpper) {
+    Vec locb;
+
+    PetscCall(DMGetLocalVector(dm, &locb));
+    PetscCall(VecSet(locb, PETSC_INFINITY));
+    PetscCall(DMProjectFunctionLocal(dm, 0., ufuncs, uctxs, INSERT_VALUES, locb));
+    PetscCall(DMPlexInsertBounds(dm, PETSC_FALSE, 0., locb));
+    PetscCall(DMLocalToGlobalBegin(dm, locb, INSERT_VALUES, ub));
+    PetscCall(DMLocalToGlobalEnd(dm, locb, INSERT_VALUES, ub));
+    PetscCall(DMRestoreLocalVector(dm, &locb));
+  } else {
+    PetscCall(VecSet(ub, PETSC_INFINITY));
+  }
   PetscCall(VecViewFromOptions(lb, NULL, "-dm_plex_snes_lb_view"));
   PetscCall(VecViewFromOptions(ub, NULL, "-dm_plex_snes_ub_view"));
   PetscCall(SNESVISetVariableBounds(snes, lb, ub));

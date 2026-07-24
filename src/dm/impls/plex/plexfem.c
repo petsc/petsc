@@ -5199,7 +5199,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX
     PetscFormKey            key;
 
     PetscCall(PetscDSGetBoundary(prob, bd, &wf, &type, NULL, &label, &numValues, &values, &field, NULL, NULL, NULL, NULL, NULL));
-    if (type & DM_BC_ESSENTIAL) continue;
+    if (!(type & DM_BC_NATURAL)) continue;
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id != PETSCFE_CLASSID) continue;
