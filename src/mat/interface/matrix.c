@@ -1316,7 +1316,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
   `MatLoad()` automatically loads into the options database any options
   given in the file filename.info where filename is the name of the file
   that was passed to the `PetscViewerBinaryOpen()`. The options in the info
-  file will be ignored if you use the -viewer_binary_skip_info option.
+  file will be ignored if you use the `-viewer_binary_skip_info` option.
 
   If the type or size of mat is not set before a call to `MatLoad()`, PETSc
   sets the default matrix type AIJ and sets the local and global sizes.
@@ -1334,16 +1334,16 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
   Such viewer can be created using `PetscViewerBinaryOpen()` or `PetscViewerHDF5Open()`,
   or the sequence like
 .vb
-    `PetscViewer` v;
-    `PetscViewerCreate`(`PETSC_COMM_WORLD`,&v);
-    `PetscViewerSetType`(v,`PETSCVIEWERBINARY`);
-    `PetscViewerSetFromOptions`(v);
-    `PetscViewerFileSetMode`(v,`FILE_MODE_READ`);
-    `PetscViewerFileSetName`(v,"datafile");
+    PetscViewer v;
+    PetscViewerCreate(PETSC_COMM_WORLD, &v);
+    PetscViewerSetType(v, PETSCVIEWERBINARY);
+    PetscViewerSetFromOptions(v);
+    PetscViewerFileSetMode(v, FILE_MODE_READ);
+    PetscViewerFileSetName(v, "datafile");
 .ve
   The optional `PetscViewerSetFromOptions()` call allows overriding `PetscViewerSetType()` using the option
 .vb
-  -viewer_type {binary, hdf5}
+  -viewer_type (binary|hdf5)
 .ve
 
   See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
@@ -1393,12 +1393,12 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
   Depending on your MATLAB version, this format might be a default,
   otherwise you can set it as default in Preferences.
 
-  Unless -nocompression flag is used to save the file in MATLAB,
+  Unless `-nocompression` flag is used to save the file in MATLAB,
   PETSc must be configured with ZLIB package.
 
-  See also examples src/mat/tutorials/ex10.c and src/ksp/ksp/tutorials/ex27.c
+  See also examples `src/mat/tutorials/ex10.c` and `src/ksp/ksp/tutorials/ex27.c`
 
-  This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices for `PETSCVIEWERHDF5`
+  This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE`, and `MATMPIDENSE` matrices for `PETSCVIEWERHDF5`
 
   Corresponding `MatView()` is not yet implemented.
 
