@@ -221,14 +221,13 @@ static PetscErrorCode ISFindRun_Private(const PetscInt indices[], PetscInt len, 
 static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
 {
   const PetscInt  minRun = 8;
-  PetscBool       lcompress;
   const PetscInt *idx;
   PetscInt        n, off = 0;
 
   PetscFunctionBegin;
   *compress = PETSC_FALSE;
-  PetscCall(ISGetCompressOutput(is, &lcompress));
-  if (!lcompress) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(ISGetCompressOutput(is, compress));
+  if (!*compress) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(ISGetIndices(is, &idx));
   PetscCall(ISGetLocalSize(is, &n));
   while (off < n) {
@@ -236,12 +235,12 @@ static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
 
     PetscCall(ISFindRun_Private(idx, n, off, minRun, &len, NULL, NULL));
     if (!len) {
-      lcompress = PETSC_FALSE;
+      *compress = PETSC_FALSE;
       break;
     }
     off += len;
   }
-  PetscCallMPI(MPIU_Allreduce(&lcompress, compress, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, compress, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -128,19 +128,19 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
   PetscInt                 cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd, c, depth, cellHeight, t;
   PetscInt                *sStart, *sEnd;
   PetscViewerVTKFieldType *ft;
-  PetscInt                 vcdof[DM_NUM_POLYTOPES + 1], globalvcdof[DM_NUM_POLYTOPES + 1];
+  PetscInt                 globalvcdof[DM_NUM_POLYTOPES + 1];
   DMLabel                  depthLabel, ctLabel;
 
   PetscFunctionBegin;
   /* the vcdof and globalvcdof are sized to allow every polytope type and simple vertex at DM_NUM_POLYTOPES */
-  PetscCall(PetscArrayzero(vcdof, DM_NUM_POLYTOPES + 1));
+  PetscCall(PetscArrayzero(globalvcdof, DM_NUM_POLYTOPES + 1));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   if (field >= 0) {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &vcdof[DM_NUM_POLYTOPES]));
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[DM_NUM_POLYTOPES]));
   } else {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &vcdof[DM_NUM_POLYTOPES]));
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[DM_NUM_POLYTOPES]));
   }
 
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
@@ -158,13 +158,13 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
       if (dep != depth - cellHeight) continue;
     }
     if (field >= 0) {
-      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &vcdof[c]));
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[c]));
     } else {
-      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[c]));
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[c]));
     }
   }
 
-  PetscCallMPI(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   *types = 0;
 
   for (c = 0; c < DM_NUM_POLYTOPES + 1; ++c) {
@@ -219,7 +219,7 @@ PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM dm, PetscSection section, Pet
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd;
-  PetscInt vcdof[2] = {0, 0}, globalvcdof[2];
+  PetscInt globalvcdof[2] = {0, 0};
 
   PetscFunctionBegin;
   *ft = PETSC_VTK_INVALID;
@@ -228,13 +228,13 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   if (field >= 0) {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &vcdof[0]));
-    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &vcdof[1]));
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[0]));
+    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[1]));
   } else {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &vcdof[0]));
-    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[1]));
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[0]));
+    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[1]));
   }
-  PetscCallMPI(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (globalvcdof[0]) {
     *sStart = vStart;
     *sEnd   = vEnd;
@@ -1641,7 +1641,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscScalar           *array, nid;
     const PetscInt        *idxs;
     PetscInt              *idxs2, *start, *adjacency, *work;
-    PetscInt64             lm[3], gm[3];
+    PetscInt64             gm[3];
     PetscInt               i, c, cStart, cEnd, cum, numVertices, ect, ectn, cellHeight;
     PetscMPIInt            d1, d2, rank;
 
@@ -1714,14 +1714,14 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     PetscCall(PetscFree(work));
     PetscCall(VecRestoreArray(acown, &array));
-    lm[0] = numVertices > 0 ? numVertices : PETSC_INT_MAX;
-    lm[1] = -numVertices;
-    PetscCallMPI(MPIU_Allreduce(lm, gm, 2, MPIU_INT64, MPI_MIN, comm));
+    gm[0] = numVertices > 0 ? numVertices : PETSC_INT_MAX;
+    gm[1] = -numVertices;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gm, 2, MPIU_INT64, MPI_MIN, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cell balance: %.2f (max %" PetscInt64_FMT ", min %" PetscInt64_FMT, -((double)gm[1]) / ((double)gm[0]), -gm[1], gm[0]));
-    lm[0] = ect;                     /* edgeCut */
-    lm[1] = ectn;                    /* node-aware edgeCut */
-    lm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
-    PetscCallMPI(MPIU_Allreduce(lm, gm, 3, MPIU_INT64, MPI_SUM, comm));
+    gm[0] = ect;                     /* edgeCut */
+    gm[1] = ectn;                    /* node-aware edgeCut */
+    gm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gm, 3, MPIU_INT64, MPI_SUM, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, ", empty %" PetscInt64_FMT ")\n", gm[2]));
 #if PetscDefined(HAVE_MPI_PROCESS_SHARED_MEMORY)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt64_FMT " (on node %.3f)\n", gm[0] / 2, gm[0] ? ((double)gm[1]) / ((double)gm[0]) : 1.));
@@ -1735,7 +1735,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   } else {
     const char    *name;
     PetscInt      *sizes, *hybsizes, *ghostsizes;
-    PetscInt       locDepth, depth, cellHeight, dim, d;
+    PetscInt       depth, cellHeight, dim, d;
     PetscInt       pStart, pEnd, p, gcStart, gcEnd, gcNum;
     PetscInt       numLabels, l, maxSize = 17;
     DMPolytopeType ct0 = DM_POLYTOPE_UNKNOWN;
@@ -1751,8 +1751,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "%s in %" PetscInt_FMT " dimension%s:\n", name, dim, dim == 1 ? "" : "s"));
     else PetscCall(PetscViewerASCIIPrintf(viewer, "Mesh in %" PetscInt_FMT " dimension%s:\n", dim, dim == 1 ? "" : "s"));
     if (cellHeight) PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells are at height %" PetscInt_FMT "\n", cellHeight));
-    PetscCall(DMPlexGetDepth(dm, &locDepth));
-    PetscCallMPI(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCall(DMPlexGetDepth(dm, &depth));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &depth, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, &gcEnd));
     gcNum = gcEnd - gcStart;
     if (size < maxSize) PetscCall(PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes));
@@ -9538,17 +9538,18 @@ PetscErrorCode DMPlexGetDepthStratumGlobalSize(DM dm, PetscInt depth, PetscInt *
 {
   PetscSF         sf;
   const PetscInt *leaves;
-  PetscInt        Nl, loc, start, end, lsize = 0;
+  PetscInt        Nl, loc, start, end;
 
   PetscFunctionBegin;
+  *gsize = 0;
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
   PetscCall(DMPlexGetDepthStratum(dm, depth, &start, &end));
   for (PetscInt p = start; p < end; ++p) {
     PetscCall(PetscFindInt(p, Nl, leaves, &loc));
-    if (loc < 0) ++lsize;
+    if (loc < 0) ++(*gsize);
   }
-  PetscCallMPI(MPIU_Allreduce(&lsize, gsize, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gsize, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -10876,15 +10877,15 @@ static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
 {
   PetscSection section, newSection, gsection;
   PetscSF      sf;
-  PetscBool    hasConstraints, ghasConstraints;
+  PetscBool    hasConstraints;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(odm, 2);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
-  PetscCallMPI(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  if (!ghasConstraints) {
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &hasConstraints, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  if (!hasConstraints) {
     PetscCall(PetscObjectReference((PetscObject)dm));
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);

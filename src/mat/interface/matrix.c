@@ -8951,7 +8951,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
 
   if (!iscol || isrow == iscol) {
     PetscBool   stride;
-    PetscMPIInt grabentirematrix = 0, grab;
+    PetscMPIInt grab = 0;
     PetscCall(PetscObjectTypeCompare((PetscObject)isrow, ISSTRIDE, &stride));
     if (stride) {
       PetscInt first, step, n, rstart, rend;
@@ -8960,11 +8960,11 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
         PetscCall(MatGetOwnershipRange(mat, &rstart, &rend));
         if (rstart == first) {
           PetscCall(ISGetLocalSize(isrow, &n));
-          if (n == rend - rstart) grabentirematrix = 1;
+          if (n == rend - rstart) grab = 1;
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&grabentirematrix, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
     if (grab) {
       PetscCall(PetscInfo(mat, "Getting entire matrix as submatrix\n"));
       if (cll == MAT_INITIAL_MATRIX) {

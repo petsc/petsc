@@ -454,12 +454,11 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *root
       if (!link->persistent) continue;
       match = (link->flavor == w->flavor && link->rootdata == rootdata && link->leafdata == leafdata) ? PETSC_TRUE : PETSC_FALSE;
       if (PetscDefined(USE_DEBUG)) {
-        PetscInt matches[2];
         PetscInt all_matches[2];
 
-        matches[0] = match ? 1 : 0;
-        matches[1] = match ? -1 : 0;
-        PetscCallMPI(MPIU_Allreduce(matches, all_matches, 2, MPIU_INT, MPI_MAX, wcomm));
+        all_matches[0] = match ? 1 : 0;
+        all_matches[1] = match ? -1 : 0;
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, all_matches, 2, MPIU_INT, MPI_MAX, wcomm));
         all_matches[1] = -all_matches[1];
         PetscCheck(all_matches[0] == all_matches[1], wcomm, PETSC_ERR_ARG_INCOMP,
                    "Inconsistent use across MPI processes of persistent leaf and root data registered with PetscSFRegisterPersistent().\n"

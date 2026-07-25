@@ -415,12 +415,8 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   if (coords) {
     PetscInt           n;
     const PetscScalar *array;
-    PetscReal          mins[3][2] = {
-      {PETSC_MAX_REAL, PETSC_MAX_REAL},
-      {PETSC_MAX_REAL, PETSC_MAX_REAL},
-      {PETSC_MAX_REAL, PETSC_MAX_REAL}
-    };
 
+    for (j = 0; j < dim; j++) dafield->coordRange[j][0] = dafield->coordRange[j][1] = PETSC_MAX_REAL;
     PetscCall(VecGetLocalSize(coords, &n));
     n /= dim;
     PetscCall(VecGetArrayRead(coords, &array));
@@ -428,12 +424,12 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       for (j = 0; j < dim; j++, k++) {
         PetscReal val = PetscRealPart(array[k]);
 
-        mins[j][0] = PetscMin(mins[j][0], val);
-        mins[j][1] = PetscMin(mins[j][1], -val);
+        dafield->coordRange[j][0] = PetscMin(dafield->coordRange[j][0], val);
+        dafield->coordRange[j][1] = PetscMin(dafield->coordRange[j][1], -val);
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &array));
-    PetscCallMPI(MPIU_Allreduce(mins, &dafield->coordRange[0][0], 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dafield->coordRange[0][0], 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) dafield->coordRange[j][1] = -dafield->coordRange[j][1];
   } else {
     for (j = 0; j < dim; j++) {

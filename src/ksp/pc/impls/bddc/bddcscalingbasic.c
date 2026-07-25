@@ -300,15 +300,15 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
     }
     PetscCall(PCBDDCScalingExtension(pc, pcis->vec1_B, pcis->vec1_global));
     if (pcbddc->benign_saddle_point) {
-      PetscReal errorl = 0.;
+      error = 0.;
       PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_global, pcis->vec1_B, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(pcis->global_to_B, pcis->vec1_global, pcis->vec1_B, INSERT_VALUES, SCATTER_FORWARD));
       if (pcbddc->benign_n) {
         PetscCall(MatMult(B0_B, pcis->vec1_B, B0_Bv2));
         PetscCall(VecAXPY(B0_Bv, -1.0, B0_Bv2));
-        PetscCall(VecNorm(B0_Bv, NORM_INFINITY, &errorl));
+        PetscCall(VecNorm(B0_Bv, NORM_INFINITY, &error));
       }
-      PetscCallMPI(MPIU_Allreduce(&errorl, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Error benign extension %1.14e\n", (double)error));
     }
     PetscCall(VecAXPY(pcis->vec1_global, -1.0, vec2_global));

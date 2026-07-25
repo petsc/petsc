@@ -252,14 +252,13 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscInt        pStart, pEnd, nfields, ncdof, nfcdof, p, f, n1, n2;
   const PetscInt *idx1, *idx2;
   IS              perm1, perm2;
-  PetscBool       flg;
   PetscMPIInt     mflg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s1, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(s2, PETSC_SECTION_CLASSID, 2);
   PetscAssertPointer(congruent, 3);
-  flg = PETSC_FALSE;
+  *congruent = PETSC_FALSE;
 
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)s1), PetscObjectComm((PetscObject)s2), &mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
@@ -326,9 +325,9 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
     }
   }
 
-  flg = PETSC_TRUE;
+  *congruent = PETSC_TRUE;
 not_congruent:
-  PetscCallMPI(MPIU_Allreduce(&flg, congruent, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, congruent, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

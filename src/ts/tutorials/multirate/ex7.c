@@ -170,12 +170,13 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
 {
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, Mx, dof, xs, xm, sf = ctx->sf, fs = ctx->fs;
-  PetscReal    hf, hs, cfl_idt = 0;
+  PetscReal    hf, hs;
   PetscScalar *x, *f, *r, *min, *alpha, *gamma;
   Vec          Xloc;
   DM           da;
 
   PetscFunctionBeginUser;
+  ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
@@ -211,7 +212,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
         u[j]   = x[(i - 1) * dof + j] + PetscMax(0, PetscMin(min[j], alpha[0] + gamma[0] * r[j])) * (x[(i - 1) * dof + j] - x[(i - 2) * dof + j]);
       }
       PetscCall((*ctx->physics.flux)(ctx->physics.user, u, ctx->flux, &maxspeed));
-      cfl_idt = PetscMax(cfl_idt, PetscAbsScalar(maxspeed / hs));
+      ctx->cfl_idt = PetscMax(ctx->cfl_idt, PetscAbsScalar(maxspeed / hs));
       if (i > xs) {
         for (j = 0; j < dof; j++) f[(i - 1) * dof + j] -= ctx->flux[j] / hs;
       }
@@ -303,7 +304,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   PetscCall(DMDAVecRestoreArray(da, Xloc, &x));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt, tnow;
@@ -598,7 +599,7 @@ PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
 static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
 {
   PetscReal          xmin, xmax;
-  PetscScalar        sum, tvsum, tvgsum;
+  PetscScalar        sum, tvsum;
   const PetscScalar *x;
   PetscInt           imin, imax, Mx, i, j, xs, xm, dof;
   Vec                Xloc;
@@ -618,14 +619,14 @@ static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
   for (i = xs; i < xs + xm; i++) {
     for (j = 0; j < dof; j++) tvsum += PetscAbsScalar(x[i * dof + j] - x[(i - 1) * dof + j]);
   }
-  PetscCallMPI(MPIU_Allreduce(&tvsum, &tvgsum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &tvsum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   PetscCall(DMDAVecRestoreArrayRead(da, Xloc, (void *)&x));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
 
   PetscCall(VecMin(X, &imin, &xmin));
   PetscCall(VecMax(X, &imax, &xmax));
   PetscCall(VecSum(X, &sum));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%g,%g] with minimum at %" PetscInt_FMT ", mean %g, ||x||_TV %g\n", (double)xmin, (double)xmax, imin, (double)(sum / Mx), (double)(tvgsum / Mx)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%g,%g] with minimum at %" PetscInt_FMT ", mean %g, ||x||_TV %g\n", (double)xmin, (double)xmax, imin, (double)(sum / Mx), (double)(tvsum / Mx)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -763,7 +764,7 @@ int main(int argc, char *argv[])
   PetscCall(SolutionStatsView(da, X, PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscInt           steps;
-    PetscScalar        mass_initial, mass_final, mass_difference, mass_differenceg;
+    PetscScalar        mass_initial, mass_final, mass_difference;
     const PetscScalar *ptr_X, *ptr_X0;
     const PetscReal    hs = (ctx.xmax - ctx.xmin) / 2.0 / count_slow;
     const PetscReal    hf = (ctx.xmax - ctx.xmin) / 2.0 / count_fast;
@@ -791,8 +792,8 @@ int main(int argc, char *argv[])
     PetscCall(DMDAVecRestoreArrayRead(da, X0, (void *)&ptr_X0));
     PetscCall(DMDAVecRestoreArrayRead(da, X, (void *)&ptr_X));
     mass_difference = mass_final - mass_initial;
-    PetscCallMPI(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
-    PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_differenceg));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mass_difference, 1, MPIU_SCALAR, MPIU_SUM, comm));
+    PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_difference));
     PetscCall(PetscPrintf(comm, "Final time %g, steps %" PetscInt_FMT "\n", (double)ptime, steps));
     if (ctx.exact) {
       PetscReal nrm1 = 0;

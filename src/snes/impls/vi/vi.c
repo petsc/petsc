@@ -99,10 +99,10 @@ static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, v
 {
   PetscViewer        viewer = (PetscViewer)dummy;
   const PetscScalar *x, *xl, *xu, *f;
-  PetscInt           i, n, act[2] = {0, 0}, fact[2], N;
+  PetscInt           i, n, fact[2] = {0, 0}, N;
   /* Number of components that actually hit the bounds (c.f. active variables) */
-  PetscInt  act_bound[2] = {0, 0}, fact_bound[2];
-  PetscReal rnorm, fnorm, zerotolerance = snes->vizerotolerance;
+  PetscInt  fact_bound[2] = {0, 0};
+  PetscReal fnorm, zerotolerance = snes->vizerotolerance;
   double    tmp;
 
   PetscFunctionBegin;
@@ -114,25 +114,25 @@ static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, v
   PetscCall(VecGetArrayRead(snes->vec_sol, &x));
   PetscCall(VecGetArrayRead(snes->vec_func, &f));
 
-  rnorm = 0.0;
+  fnorm = 0.0;
   for (i = 0; i < n; i++) {
-    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
-    else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance && PetscRealPart(f[i]) > 0.0) act[0]++;
-    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance && PetscRealPart(f[i]) < 0.0) act[1]++;
+    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) fnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
+    else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance && PetscRealPart(f[i]) > 0.0) fact[0]++;
+    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance && PetscRealPart(f[i]) < 0.0) fact[1]++;
     else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_PLIB, "Can never get here");
   }
 
   for (i = 0; i < n; i++) {
-    if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance) act_bound[0]++;
-    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance) act_bound[1]++;
+    if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance) fact_bound[0]++;
+    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance) fact_bound[1]++;
   }
   PetscCall(VecRestoreArrayRead(snes->vec_func, &f));
   PetscCall(VecRestoreArrayRead(snes->xl, &xl));
   PetscCall(VecRestoreArrayRead(snes->xu, &xu));
   PetscCall(VecRestoreArrayRead(snes->vec_sol, &x));
-  PetscCallMPI(MPIU_Allreduce(&rnorm, &fnorm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
-  PetscCallMPI(MPIU_Allreduce(act, fact, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
-  PetscCallMPI(MPIU_Allreduce(act_bound, fact_bound, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &fnorm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fact, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fact_bound, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
   fnorm = PetscSqrtReal(fnorm);
 
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
@@ -534,7 +534,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 {
   const PetscScalar *xxl, *xxu;
-  PetscInt           i, n, cnt = 0;
+  PetscInt           i, n;
 
   PetscFunctionBegin;
   PetscCall(SNESGetFunction(snes, &snes->vec_func, NULL, NULL));
@@ -556,9 +556,10 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
   PetscCall(VecGetLocalSize(xl, &n));
   PetscCall(VecGetArrayRead(xl, &xxl));
   PetscCall(VecGetArrayRead(xu, &xxu));
-  for (i = 0; i < n; i++) cnt += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
+  snes->ntruebounds = 0;
+  for (i = 0; i < n; i++) snes->ntruebounds += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
 
-  PetscCallMPI(MPIU_Allreduce(&cnt, &snes->ntruebounds, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &snes->ntruebounds, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
   PetscCall(VecRestoreArrayRead(xl, &xxl));
   PetscCall(VecRestoreArrayRead(xu, &xxu));
   PetscFunctionReturn(PETSC_SUCCESS);

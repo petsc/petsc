@@ -178,8 +178,8 @@ int main(int argc, char **args)
   PetscCall(MatGetSize(A, &M, NULL));
   PetscCall(VecGetSize(b, &m));
   PetscCall(VecGetLocalSize(b, &p));
-  preload = (PetscBool)(M != m || p != n); /* Global or local dimension mismatch */
-  PetscCallMPI(MPIU_Allreduce(&preload, &flg, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+  flg = (PetscBool)(M != m || p != n); /* Global or local dimension mismatch */
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
   if (flg) { /* Create a new vector b by padding the old one */
     PetscInt     j, mvec, start, end, indx;
     Vec          tmp;

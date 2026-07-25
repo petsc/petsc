@@ -527,7 +527,7 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
   PetscInt        pStart, pEnd, size, sizeNew, i, p, *valsNew = NULL;
   const PetscInt *vals;
   PetscSection    secNew;
-  PetscBool       anyNew, globalAnyNew;
+  PetscBool       anyNew;
   PetscBool       compress;
 
   PetscFunctionBegin;
@@ -610,8 +610,8 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
     }
   }
   PetscCall(ISRestoreIndices(is, &vals));
-  PetscCallMPI(MPIU_Allreduce(&anyNew, &globalAnyNew, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
-  if (!globalAnyNew) {
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &anyNew, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
+  if (!anyNew) {
     PetscCall(PetscSectionDestroy(&secNew));
     *sectionNew = NULL;
     *isNew      = NULL;

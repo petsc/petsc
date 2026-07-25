@@ -185,7 +185,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscMPIInt       *counts, *displs;
   const PetscSFNode *foundCells;
   const PetscInt    *foundPoints;
-  PetscMPIInt       *foundProcs, *globalProcs, in;
+  PetscMPIInt       *globalProcs, in;
   PetscInt           n, N, numFound;
 
   PetscFunctionBegin;
@@ -227,17 +227,17 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   globalPointsScalar = globalPoints;
   #endif
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N * ctx->dim, globalPointsScalar, &pointVec));
-  PetscCall(PetscMalloc2(N, &foundProcs, N, &globalProcs));
-  for (p = 0; p < N; ++p) foundProcs[p] = size;
+  PetscCall(PetscMalloc1(N, &globalProcs));
+  for (p = 0; p < N; ++p) globalProcs[p] = size;
   cellSF = NULL;
   PetscCall(DMLocatePoints(dm, pointVec, DM_POINTLOCATION_REMOVE, &cellSF));
   PetscCall(PetscSFGetGraph(cellSF, NULL, &numFound, &foundPoints, &foundCells));
 #endif
   for (p = 0; p < numFound; ++p) {
-    if (foundCells[p].index >= 0) foundProcs[foundPoints ? foundPoints[p] : p] = rank;
+    if (foundCells[p].index >= 0) globalProcs[foundPoints ? foundPoints[p] : p] = rank;
   }
   /* Let the lowest rank process own each point */
-  PetscCallMPI(MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, globalProcs, N, MPI_INT, MPI_MIN, comm));
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
@@ -269,7 +269,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 #if 0
   PetscCall(PetscFree3(foundCells,foundProcs,globalProcs));
 #else
-  PetscCall(PetscFree2(foundProcs, globalProcs));
+  PetscCall(PetscFree(globalProcs));
   PetscCall(PetscSFDestroy(&cellSF));
   PetscCall(VecDestroy(&pointVec));
 #endif

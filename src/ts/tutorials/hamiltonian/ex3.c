@@ -486,10 +486,10 @@ static PetscErrorCode InitializeParticles_Centroid(DM sw)
   Np  = (xcEnd - xcStart) * Npc;
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
   if (debug) {
-    PetscInt gNp, gNc, Nc = xcEnd - xcStart;
+    PetscInt gNp, gNc = xcEnd - xcStart;
     PetscCallMPI(MPIU_Allreduce(&Np, &gNp, 1, MPIU_INT, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Global Np = %" PetscInt_FMT "\n", gNp));
-    PetscCallMPI(MPIU_Allreduce(&Nc, &gNc, 1, MPIU_INT, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gNc, 1, MPIU_INT, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Global X-cells = %" PetscInt_FMT "\n", gNc));
     PetscCall(PetscPrintf(comm, "Global V-cells = %" PetscInt_FMT "\n", vcEnd - vcStart));
   }
@@ -680,11 +680,11 @@ static PetscErrorCode InitializeWeights(DM sw, PetscReal totalWeight, PetscProbF
   PetscCall(PetscQuadratureDestroy(&xquad));
 
   if (debug) {
-    PetscReal wtot[2] = {pwtot, xwtot}, gwtot[2];
+    PetscReal wtot[2] = {pwtot, xwtot};
 
     PetscCall(PetscSynchronizedFlush(comm, NULL));
-    PetscCallMPI(MPIU_Allreduce(wtot, gwtot, 2, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-    PetscCall(PetscPrintf(comm, "particle weight sum = %1.10f cell weight sum = %1.10f\n", (double)gwtot[0], (double)gwtot[1]));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, wtot, 2, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCall(PetscPrintf(comm, "particle weight sum = %1.10f cell weight sum = %1.10f\n", (double)wtot[0], (double)wtot[1]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -705,7 +705,7 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
 {
   DM         dm;
   PetscInt  *species;
-  PetscReal *weight, totalCharge = 0., totalWeight = 0., gmin[3], gmax[3], global_charge, global_weight;
+  PetscReal *weight, totalCharge = 0., totalWeight = 0., gmin[3], gmax[3];
   PetscInt   Np, dim;
 
   PetscFunctionBegin;
@@ -739,10 +739,10 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Dimension %" PetscInt_FMT " not supported", dim);
     }
-    PetscCallMPI(MPIU_Allreduce(&totalWeight, &global_weight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-    PetscCallMPI(MPIU_Allreduce(&totalCharge, &global_charge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim = %" PetscInt_FMT "\ttotalWeight = %f, user->charges[species[0]] = %f\ttotalCharge = %f, Total Area = %f\n", dim, (double)global_weight, (double)user->charges[0], (double)global_charge, (double)Area));
-    param->sigma = PetscAbsReal(global_charge / (Area));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &totalWeight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &totalCharge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim = %" PetscInt_FMT "\ttotalWeight = %f, user->charges[species[0]] = %f\ttotalCharge = %f, Total Area = %f\n", dim, (double)totalWeight, (double)user->charges[0], (double)totalCharge, (double)Area));
+    param->sigma = PetscAbsReal(totalCharge / (Area));
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sigma: %g\n", (double)param->sigma));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(x0,v0,t0,m0,q0,phi0): (%e, %e, %e, %e, %e, %e) - (P, V) = (%e, %e)\n", (double)param->x0, (double)param->v0, (double)param->t0, (double)param->m0, (double)param->q0, (double)param->phi0, (double)param->poissonNumber,

@@ -1296,14 +1296,13 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
 @*/
 PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt keys[], PetscBool *is_sorted)
 {
-  PetscBool   sorted;
   PetscInt    i, min, max, prevmax;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  sorted = PETSC_TRUE;
-  min    = PETSC_INT_MAX;
-  max    = PETSC_INT_MIN;
+  *is_sorted = PETSC_TRUE;
+  min        = PETSC_INT_MAX;
+  max        = PETSC_INT_MIN;
   if (n) {
     min = keys[0];
     max = keys[0];
@@ -1313,12 +1312,12 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
     min = PetscMin(min, keys[i]);
     max = PetscMax(max, keys[i]);
   }
-  if (i < n) sorted = PETSC_FALSE;
+  if (i < n) *is_sorted = PETSC_FALSE;
   prevmax = PETSC_INT_MIN;
   PetscCallMPI(MPI_Exscan(&max, &prevmax, 1, MPIU_INT, MPI_MAX, comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) prevmax = PETSC_INT_MIN;
-  if (prevmax > min) sorted = PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&sorted, is_sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
+  if (prevmax > min) *is_sorted = PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, is_sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

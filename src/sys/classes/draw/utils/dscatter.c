@@ -367,10 +367,10 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
     PetscCall(PetscDrawClear(draw));
   }
   {
-    PetscReal lower[2] = {sp->xmin, sp->ymin}, glower[2];
-    PetscReal upper[2] = {sp->xmax, sp->ymax}, gupper[2];
-    PetscCallMPI(MPIU_Allreduce(lower, glower, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)sp)));
-    PetscCallMPI(MPIU_Allreduce(upper, gupper, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)sp)));
+    PetscReal glower[2] = {sp->xmin, sp->ymin};
+    PetscReal gupper[2] = {sp->xmax, sp->ymax};
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, glower, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)sp)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gupper, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)sp)));
     PetscCall(PetscDrawAxisSetLimits(sp->axis, glower[0], gupper[0], glower[1], gupper[1]));
     PetscCall(PetscDrawAxisDraw(sp->axis));
   }

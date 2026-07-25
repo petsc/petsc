@@ -1936,7 +1936,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS(Mat C, PetscInt ismax
 
 PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
 {
-  PetscInt     nmax, nstages = 0, max_no, nrow, ncol, in[2], out[2];
+  PetscInt     nmax, nstages = 0, max_no, nrow, ncol, out[2];
   PetscBool    rowflag, colflag, wantallmatrix = PETSC_FALSE;
   Mat_SeqAIJ  *subc;
   Mat_SubSppt *smat;
@@ -1975,9 +1975,9 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C, PetscInt ismax, const IS isrow
     */
     nstages = ismax / nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
 
-    in[0] = -1 * (PetscInt)wantallmatrix;
-    in[1] = nstages;
-    PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    out[0] = -1 * (PetscInt)wantallmatrix;
+    out[1] = nstages;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
     wantallmatrix = (PetscBool)(-out[0]);
     nstages       = out[1]; /* Make sure every processor loops through the global nstages */
 

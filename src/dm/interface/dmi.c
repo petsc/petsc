@@ -5,7 +5,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
 {
   PetscSection gSection;
   PetscInt     localSize, bs, blockSize = -1, pStart, pEnd, p;
-  PetscInt     in[2], out[2];
+  PetscInt     out[2];
 
   PetscFunctionBegin;
   PetscCall(DMGetGlobalSection(dm, &gSection));
@@ -27,9 +27,9 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
   }
 
   // You cannot negate PETSC_INT_MIN
-  in[0] = blockSize < 0 ? -PETSC_INT_MAX : -blockSize;
-  in[1] = blockSize;
-  PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  out[0] = blockSize < 0 ? -PETSC_INT_MAX : -blockSize;
+  out[1] = blockSize;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
   if (-out[0] == out[1]) {
     bs = out[1];
@@ -216,16 +216,16 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)gs), subSize, subIndices, PETSC_OWN_POINTER, is));
   if (bs > 1) {
     // We need to check that the block size does not come from non-contiguous fields
-    PetscInt set = 1, rset = 1;
+    PetscInt rset = 1;
     for (PetscInt i = 0; i < subSize; i += bs) {
       for (PetscInt j = 0; j < bs; ++j) {
         if (subIndices[i + j] != subIndices[i] + j) {
-          set = 0;
+          rset = 0;
           break;
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
     if (rset) PetscCall(ISSetBlockSize(*is, bs));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

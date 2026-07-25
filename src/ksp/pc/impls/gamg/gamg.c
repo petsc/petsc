@@ -90,14 +90,14 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     PetscShmComm pshmcomm;
     PetscMPIInt  locrank;
     MPI_Comm     loccomm;
-    PetscInt     s_nnodes, r_nnodes, new_new_size;
+    PetscInt     r_nnodes, new_new_size;
     cudaError_t  cerr;
     int          devCount;
     PetscCall(PetscShmCommGet(comm, &pshmcomm));
     PetscCall(PetscShmCommGetMpiShmComm(pshmcomm, &loccomm));
     PetscCallMPI(MPI_Comm_rank(loccomm, &locrank));
-    s_nnodes = !locrank;
-    PetscCallMPI(MPIU_Allreduce(&s_nnodes, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
+    r_nnodes = !locrank;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck((size % r_nnodes) == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "odd number of nodes np=%d nnodes%" PetscInt_FMT, size, r_nnodes);
     devCount = 0;
     cerr     = cudaGetDeviceCount(&devCount);

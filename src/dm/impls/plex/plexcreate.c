@@ -1174,7 +1174,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
       PetscInt     coords_size, centroid_comps = dim - 1;
       PetscScalar *coords = NULL;
       PetscReal   *donor_centroids, *periodic_centroids;
-      PetscReal    loc_periodic[2] = {PETSC_MIN_REAL, PETSC_MIN_REAL}, loc_periodic_global[2]; // Location of donor (0) and periodic (1) faces in periodic direction
+      PetscReal    loc_periodic_global[2] = {PETSC_MIN_REAL, PETSC_MIN_REAL}; // Location of donor (0) and periodic (1) faces in periodic direction
 
       PetscCall(DMGetStratumIS(dm, "Face Sets", face_pairings[dim - 2][d][0], &donor_is));
       PetscCall(DMGetStratumIS(dm, "Face Sets", face_pairings[dim - 2][d][1], &periodic_is));
@@ -1192,8 +1192,8 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
         PetscCall(DMPlexVecGetClosureAtDepth(cdm, csection, coordinates, face, 0, &coords_size, &coords));
         num_coords = coords_size / dim;
         for (PetscInt c = 0; c < num_coords; c++) {
-          PetscInt comp_index = 0;
-          loc_periodic[0]     = PetscRealPart(coords[c * dim + d]);
+          PetscInt comp_index    = 0;
+          loc_periodic_global[0] = PetscRealPart(coords[c * dim + d]);
           for (PetscInt i = 0; i < dim; i++) {
             if (i == d) continue; // Periodic direction not used for centroid calculation
             donor_centroids[f * centroid_comps + comp_index] += PetscRealPart(coords[c * dim + i]) / num_coords;
@@ -1208,8 +1208,8 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
         PetscCall(DMPlexVecGetClosureAtDepth(cdm, csection, coordinates, face, 0, &coords_size, &coords));
         num_coords = coords_size / dim;
         for (PetscInt c = 0; c < num_coords; c++) {
-          PetscInt comp_index = 0;
-          loc_periodic[1]     = PetscRealPart(coords[c * dim + d]);
+          PetscInt comp_index    = 0;
+          loc_periodic_global[1] = PetscRealPart(coords[c * dim + d]);
           for (PetscInt i = 0; i < dim; i++) {
             if (i == d) continue; // Periodic direction not used for centroid calculation
             periodic_centroids[f * centroid_comps + comp_index] += PetscRealPart(coords[c * dim + i]) / num_coords;
@@ -1218,7 +1218,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
         }
         PetscCall(DMPlexVecRestoreClosure(cdm, csection, coordinates, face, &coords_size, &coords));
       }
-      PetscCallMPI(MPIU_Allreduce(loc_periodic, loc_periodic_global, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, loc_periodic_global, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
       donor_to_periodic_distance = loc_periodic_global[1] - loc_periodic_global[0];
 
       PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &centroidsf));

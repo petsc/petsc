@@ -2158,14 +2158,14 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
     if (B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
       MatInfo   Ainfo, Binfo;
       PetscInt  nz_local;
-      PetscBool alg_scalable_loc = PETSC_FALSE, alg_scalable;
+      PetscBool alg_scalable = PETSC_FALSE;
 
       PetscCall(MatGetInfo(A, MAT_LOCAL, &Ainfo));
       PetscCall(MatGetInfo(B, MAT_LOCAL, &Binfo));
       nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
-      if (B->cmap->N > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-      PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
+      if (B->cmap->N > product->fill * nz_local) alg_scalable = PETSC_TRUE;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2224,14 +2224,14 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   if (alg && B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
     MatInfo   Ainfo, Binfo;
     PetscInt  nz_local;
-    PetscBool alg_scalable_loc = PETSC_FALSE, alg_scalable;
+    PetscBool alg_scalable = PETSC_FALSE;
 
     PetscCall(MatGetInfo(A, MAT_LOCAL, &Ainfo));
     PetscCall(MatGetInfo(B, MAT_LOCAL, &Binfo));
     nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
-    if (B->cmap->N > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-    PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
+    if (B->cmap->N > product->fill * nz_local) alg_scalable = PETSC_TRUE;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
 
     if (alg_scalable) {
       alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2289,14 +2289,14 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
     if (pN > 100000) {
       MatInfo   Ainfo, Pinfo;
       PetscInt  nz_local;
-      PetscBool alg_scalable_loc = PETSC_FALSE, alg_scalable;
+      PetscBool alg_scalable = PETSC_FALSE;
 
       PetscCall(MatGetInfo(A, MAT_LOCAL, &Ainfo));
       PetscCall(MatGetInfo(P, MAT_LOCAL, &Pinfo));
       nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated);
 
-      if (pN > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-      PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
+      if (pN > product->fill * nz_local) alg_scalable = PETSC_TRUE;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &alg_scalable, 1, MPI_C_BOOL, MPI_LOR, comm));
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */

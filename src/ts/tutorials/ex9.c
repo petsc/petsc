@@ -1158,12 +1158,13 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
 {
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm;
-  PetscReal    hx, cfl_idt = 0;
+  PetscReal    hx;
   PetscScalar *x, *f, *slope;
   Vec          Xloc;
   DM           da;
 
   PetscFunctionBeginUser;
+  ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
@@ -1227,7 +1228,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
       uR[j] = x[(i - 0) * dof + j] - slope[(i - 0) * dof + j] * hx / 2;
     }
     PetscCall((*ctx->physics.riemann)(ctx->physics.user, dof, uL, uR, ctx->flux, &maxspeed));
-    cfl_idt = PetscMax(cfl_idt, PetscAbsScalar(maxspeed / hx)); /* Max allowable value of 1/Delta t */
+    ctx->cfl_idt = PetscMax(ctx->cfl_idt, PetscAbsScalar(maxspeed / hx)); /* Max allowable value of 1/Delta t */
 
     if (i > xs) {
       for (j = 0; j < dof; j++) f[(i - 1) * dof + j] -= ctx->flux[j] / hx;
@@ -1242,7 +1243,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
 
-  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->cfl_idt, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt, tnow;
@@ -1333,7 +1334,7 @@ static PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
 static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
 {
   PetscReal          xmin, xmax;
-  PetscScalar        sum, tvsum, tvgsum;
+  PetscScalar        sum, tvsum;
   const PetscScalar *x;
   PetscInt           imin, imax, Mx, i, j, xs, xm, dof;
   Vec                Xloc;
@@ -1353,14 +1354,14 @@ static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
   for (i = xs; i < xs + xm; i++) {
     for (j = 0; j < dof; j++) tvsum += PetscAbsScalar(x[i * dof + j] - x[(i - 1) * dof + j]);
   }
-  PetscCallMPI(MPIU_Allreduce(&tvsum, &tvgsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &tvsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   PetscCall(DMDAVecRestoreArrayRead(da, Xloc, (void *)&x));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
 
   PetscCall(VecMin(X, &imin, &xmin));
   PetscCall(VecMax(X, &imax, &xmax));
   PetscCall(VecSum(X, &sum));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%8.5f,%8.5f] with extrema at %" PetscInt_FMT " and %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n", (double)xmin, (double)xmax, imin, imax, (double)(sum / Mx), (double)(tvgsum / Mx)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%8.5f,%8.5f] with extrema at %" PetscInt_FMT " and %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n", (double)xmin, (double)xmax, imin, imax, (double)(sum / Mx), (double)(tvsum / Mx)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

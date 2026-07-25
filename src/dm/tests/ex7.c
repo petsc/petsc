@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   DM              da;
   Vec             local, global, local_copy;
   PetscScalar     value;
-  PetscReal       norm, work;
+  PetscReal       norm;
   PetscViewer     viewer;
   char            filename[64];
   FILE           *file;
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
   }
 
   PetscCall(VecAXPY(local_copy, -1.0, local));
-  PetscCall(VecNorm(local_copy, NORM_MAX, &work));
-  PetscCallMPI(MPIU_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCall(VecNorm(local_copy, NORM_MAX, &norm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of difference %g should be zero\n", (double)norm));
 
   PetscCall(VecDestroy(&local_copy));

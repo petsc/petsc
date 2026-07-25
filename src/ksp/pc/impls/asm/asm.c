@@ -199,12 +199,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     { /* determine the global and max number of subdomains */
       struct {
         PetscInt max, sum;
-      } inwork, outwork;
+      } outwork;
       PetscMPIInt size;
 
-      inwork.max = osm->n_local_true;
-      inwork.sum = osm->n_local_true;
-      PetscCallMPI(MPIU_Allreduce(&inwork, &outwork, 1, MPIU_2INT, MPIU_MAXSUM_OP, PetscObjectComm((PetscObject)pc)));
+      outwork.max = osm->n_local_true;
+      outwork.sum = osm->n_local_true;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &outwork, 1, MPIU_2INT, MPIU_MAXSUM_OP, PetscObjectComm((PetscObject)pc)));
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
 

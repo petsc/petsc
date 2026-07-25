@@ -388,7 +388,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
   moab::ErrorCode    merr;
   PetscBool          is_newtag;
   const moab::Range *range;
-  PetscInt           count, lnative_vec, gnative_vec;
+  PetscInt           count, gnative_vec;
   std::string        ttname;
   PetscScalar       *data_ptr, *defaultvals;
 
@@ -407,16 +407,14 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
 
 #if !defined(USE_NATIVE_PETSCVEC)
   /* If the tag data is in a single sequence, use PETSc native vector since tag_iterate isn't useful anymore */
-  lnative_vec = (range->psize() - 1);
+  gnative_vec = (range->psize() - 1);
 #else
-  lnative_vec = 1; /* NOTE: Testing PETSc vector: will force to create native vector all the time */
-                   //  lnative_vec=0; /* NOTE: Testing MOAB vector: will force to create MOAB tag_iterate based vector all the time */
+  gnative_vec = 1; /* NOTE: Testing PETSc vector: will force to create native vector all the time */
+                   //  gnative_vec=0; /* NOTE: Testing MOAB vector: will force to create MOAB tag_iterate based vector all the time */
 #endif
 
 #if defined(MOAB_HAVE_MPI)
-  PetscCallMPI(MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
-#else
-  gnative_vec = lnative_vec;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gnative_vec, 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 #endif
 
   /* Create the MOAB internal data object */
@@ -526,7 +524,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, 
 #endif
 {
   moab::ErrorCode mberr;
-  PetscInt        n, global_n;
+  PetscInt        global_n;
   moab::Tag       indexTag;
 
   PetscFunctionBegin;
@@ -538,18 +536,16 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, 
   /* Check to see if there are any PETSc vectors defined */
   /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
   PetscCallMOAB(mbiface->tag_get_handle("__PETSC_VECS__", 1, moab::MB_TYPE_INTEGER, indexTag, moab::MB_TAG_SPARSE | moab::MB_TAG_CREAT, 0));
-  mberr = mbiface->tag_get_data(indexTag, &rootset, 1, &n);
-  if (mberr == moab::MB_TAG_NOT_FOUND) n = 0; /* this is the first temporary vector */
+  mberr = mbiface->tag_get_data(indexTag, &rootset, 1, &global_n);
+  if (mberr == moab::MB_TAG_NOT_FOUND) global_n = 0; /* this is the first temporary vector */
   else PetscCheck(mberr == moab::MB_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "MOAB error %d in tag_get_data", mberr);
 
   /* increment the new value of n */
-  ++n;
+  ++global_n;
 
 #if defined(MOAB_HAVE_MPI)
   /* Make sure that n is consistent across all processes */
-  PetscCallMPI(MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm()));
-#else
-  global_n = n;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm()));
 #endif
 
   /* Set the new name accordingly and return */

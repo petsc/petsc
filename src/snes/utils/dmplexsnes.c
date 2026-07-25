@@ -170,7 +170,7 @@ static PetscErrorCode SNESMonitorFields_ASCII(SNES snes, PetscInt its, PetscReal
   DM                 dm;
   PetscSection       s;
   const PetscScalar *r;
-  PetscReal         *lnorms, *norms;
+  PetscReal         *norms;
   PetscInt           numFields, f, pStart, pEnd, p;
 
   PetscFunctionBegin;
@@ -179,7 +179,7 @@ static PetscErrorCode SNESMonitorFields_ASCII(SNES snes, PetscInt its, PetscReal
   PetscCall(DMGetLocalSection(dm, &s));
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
-  PetscCall(PetscCalloc2(numFields, &lnorms, numFields, &norms));
+  PetscCall(PetscCalloc1(numFields, &norms));
   PetscCall(VecGetArrayRead(res, &r));
   for (p = pStart; p < pEnd; ++p) {
     for (f = 0; f < numFields; ++f) {
@@ -187,11 +187,11 @@ static PetscErrorCode SNESMonitorFields_ASCII(SNES snes, PetscInt its, PetscReal
 
       PetscCall(PetscSectionGetFieldDof(s, p, f, &fdof));
       PetscCall(PetscSectionGetFieldOffset(s, p, f, &foff));
-      for (d = 0; d < fdof; ++d) lnorms[f] += PetscRealPart(PetscSqr(r[foff + d]));
+      for (d = 0; d < fdof; ++d) norms[f] += PetscRealPart(PetscSqr(r[foff + d]));
     }
   }
   PetscCall(VecRestoreArrayRead(res, &r));
-  PetscCallMPI(MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e [", its, (double)fgnorm));
@@ -202,7 +202,7 @@ static PetscErrorCode SNESMonitorFields_ASCII(SNES snes, PetscInt its, PetscReal
   PetscCall(PetscViewerASCIIPrintf(viewer, "]\n"));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscCall(PetscFree2(lnorms, norms));
+  PetscCall(PetscFree(norms));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

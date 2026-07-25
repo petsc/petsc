@@ -48,9 +48,9 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 
      Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double
      precision into a 16 byte space (the rest of the space is ignored)  */
-  long double insums[7], outsums[7];
+  long double outsums[7];
 #else
-  PetscScalar insums[7], outsums[7];
+  PetscScalar outsums[7];
 #endif
   PetscScalar                       sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin, tmp1, tmp2;
   PetscScalar                       taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
@@ -69,8 +69,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 #if PetscDefined(HAVE_MPI_LONG_DOUBLE) && !PetscDefined(USE_COMPLEX) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
   /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
      valgrind won't detect MPI_Allreduce() with uninitialized data */
-  PetscCall(PetscMemzero(insums, sizeof(insums)));
-  PetscCall(PetscMemzero(insums, sizeof(insums)));
+  PetscCall(PetscMemzero(outsums, sizeof(outsums)));
 #endif
 
   PetscCall(PCGetOperators(ksp->pc, &A, NULL));
@@ -214,26 +213,26 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     PetscCall(PetscLogFlops(12.0 * N));
     PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
 
-    insums[0] = phin;
-    insums[1] = pin;
-    insums[2] = gamman;
-    insums[3] = etan;
-    insums[4] = thetan;
-    insums[5] = kappan;
-    insums[6] = rnormin;
+    outsums[0] = phin;
+    outsums[1] = pin;
+    outsums[2] = gamman;
+    outsums[3] = etan;
+    outsums[4] = thetan;
+    outsums[5] = kappan;
+    outsums[6] = rnormin;
 
     PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
 #if PetscDefined(HAVE_MPI_LONG_DOUBLE) && !PetscDefined(USE_COMPLEX) && (PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
-      PetscCallMPI(MPIU_Allreduce(insums, outsums, 7, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 7, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
     } else {
-      PetscCallMPI(MPIU_Allreduce(insums, outsums, 6, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 6, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
     }
 #else
     if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) {
-      PetscCallMPI(MPIU_Allreduce(insums, outsums, 7, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 7, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
     } else {
-      PetscCallMPI(MPIU_Allreduce(insums, outsums, 6, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 6, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
     }
 #endif
     PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
@@ -275,9 +274,9 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its && ksp->normtype != KSP_NORM_NONE) {
       PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
-      PetscCallMPI(MPIU_Allreduce(&rnormin, &rnorm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &rnormin, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
       PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
-      rnorm = PetscSqrtReal(rnorm);
+      rnorm = PetscSqrtReal(rnormin);
     }
 
     /* Test for convergence */

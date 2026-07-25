@@ -221,10 +221,10 @@ static PetscErrorCode computeParticleMoments(DM sw, Vec u, PetscReal moments[3],
   DM                 dm;
   const PetscReal   *coords;
   const PetscScalar *w;
-  PetscReal          mom[3] = {0.0, 0.0, 0.0};
   PetscInt           dim, cStart, cEnd, Nc;
 
   PetscFunctionBeginUser;
+  moments[0] = moments[1] = moments[2] = 0.0;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -242,9 +242,9 @@ static PetscErrorCode computeParticleMoments(DM sw, Vec u, PetscReal moments[3],
       const PetscReal *x   = &coords[idx * dim];
 
       for (PetscInt c = 0; c < Nc; ++c) {
-        mom[0] += PetscRealPart(w[idx * Nc + c]);
-        mom[1] += PetscRealPart(w[idx * Nc + c]) * x[0];
-        for (PetscInt d = 0; d < dim; ++d) mom[2] += PetscRealPart(w[idx * Nc + c]) * PetscSqr(x[d]);
+        moments[0] += PetscRealPart(w[idx * Nc + c]);
+        moments[1] += PetscRealPart(w[idx * Nc + c]) * x[0];
+        for (PetscInt d = 0; d < dim; ++d) moments[2] += PetscRealPart(w[idx * Nc + c]) * PetscSqr(x[d]);
       }
     }
     PetscCall(DMSwarmSortRestorePointsPerCell(sw, cell, &Np, &pidx));
@@ -252,7 +252,7 @@ static PetscErrorCode computeParticleMoments(DM sw, Vec u, PetscReal moments[3],
   PetscCall(VecRestoreArrayRead(u, &w));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmSortRestoreAccess(sw));
-  PetscCallMPI(MPIU_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

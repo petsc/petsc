@@ -88,7 +88,7 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   DM                       dm;
   DMLabel                  active;
-  PetscInt                 dim, dimExtPoint, dimExtPointG;
+  PetscInt                 dim, dimExtPoint;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
@@ -118,9 +118,9 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
   } else dimExtPoint = dim;
-  PetscCallMPI(MPIU_Allreduce(&dimExtPoint, &dimExtPointG, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)tr)));
-  ex->dimEx  = PetscMax(dim, dimExtPointG + 1);
-  ex->cdimEx = ex->cdim == dimExtPointG ? ex->cdim + 1 : ex->cdim;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dimExtPoint, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)tr)));
+  ex->dimEx  = PetscMax(dim, dimExtPoint + 1);
+  ex->cdimEx = ex->cdim == dimExtPoint ? ex->cdim + 1 : ex->cdim;
   PetscCheck(ex->dimEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Topological dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->dimEx);
   PetscCheck(ex->cdimEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->cdimEx);
   PetscFunctionReturn(PETSC_SUCCESS);

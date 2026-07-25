@@ -224,7 +224,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   struct triangulateio in;
   struct triangulateio out;
   DMLabel              label;
-  PetscInt             vStart, vEnd, v, gcStart, cStart, cEnd, c, depth, depthGlobal;
+  PetscInt             vStart, vEnd, v, gcStart, cStart, cEnd, c, depth;
   PetscMPIInt          rank;
   double              *maxVolumes;
 
@@ -234,7 +234,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   PetscCall(InitInput_Triangle(&in));
   PetscCall(InitOutput_Triangle(&out));
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCallMPI(MPIU_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &depth, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetLabel(dm, labelName, &label));
 
@@ -311,7 +311,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     const PetscInt numVertices = out.numberofpoints;
     PetscInt      *cells;
     PetscReal     *meshCoords;
-    PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool      interpolate = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
 
     if (sizeof(PetscReal) == sizeof(out.pointlist[0])) {
       meshCoords = (PetscReal *)out.pointlist;

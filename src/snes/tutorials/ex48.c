@@ -876,11 +876,12 @@ static PetscErrorCode THISurfaceStatistics(DM da, Vec X, PetscReal *min, PetscRe
 {
   Node     ***x;
   PetscInt    i, j, xs, ys, zs, xm, ym, zm, mx, my, mz;
-  PetscReal   umin = 1e100, umax = -1e100;
-  PetscScalar usum = 0.0, gusum;
+  PetscScalar gusum = 0.0;
 
   PetscFunctionBeginUser;
-  *min = *max = *mean = 0;
+  *min  = 1e100;
+  *max  = -1e100;
+  *mean = 0;
   PetscCall(DMDAGetInfo(da, 0, &mz, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   PetscCall(DMDAGetCorners(da, &zs, &ys, &xs, &zm, &ym, &xm));
   PetscCheck(zs == 0 && zm == mz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected decomposition");
@@ -888,14 +889,14 @@ static PetscErrorCode THISurfaceStatistics(DM da, Vec X, PetscReal *min, PetscRe
   for (i = xs; i < xs + xm; i++) {
     for (j = ys; j < ys + ym; j++) {
       PetscReal u = PetscRealPart(x[i][j][zm - 1].u);
-      RangeUpdate(&umin, &umax, u);
-      usum += u;
+      RangeUpdate(min, max, u);
+      gusum += u;
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscCallMPI(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
-  PetscCallMPI(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
-  PetscCallMPI(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   *mean = PetscRealPart(gusum) / (mx * my);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -920,7 +921,7 @@ static PetscErrorCode THISolveStatistics(THI thi, SNES snes, PetscInt coarsened,
     PetscCall(PetscPrintf(comm, "%s: Number of SNES iterations = %" PetscInt_FMT ", total linear iterations = %" PetscInt_FMT "\n", SNESConvergedReasons[reason], its, lits));
   }
   {
-    PetscReal          nrm2, tmin[3] = {1e100, 1e100, 1e100}, tmax[3] = {-1e100, -1e100, -1e100}, min[3], max[3];
+    PetscReal          nrm2, min[3] = {1e100, 1e100, 1e100}, max[3] = {-1e100, -1e100, -1e100};
     PetscInt           i, j, m;
     const PetscScalar *x;
     PetscCall(VecNorm(X, NORM_2, &nrm2));
@@ -928,16 +929,16 @@ static PetscErrorCode THISolveStatistics(THI thi, SNES snes, PetscInt coarsened,
     PetscCall(VecGetArrayRead(X, &x));
     for (i = 0; i < m; i += 2) {
       PetscReal u = PetscRealPart(x[i]), v = PetscRealPart(x[i + 1]), c = PetscSqrtReal(u * u + v * v);
-      tmin[0] = PetscMin(u, tmin[0]);
-      tmin[1] = PetscMin(v, tmin[1]);
-      tmin[2] = PetscMin(c, tmin[2]);
-      tmax[0] = PetscMax(u, tmax[0]);
-      tmax[1] = PetscMax(v, tmax[1]);
-      tmax[2] = PetscMax(c, tmax[2]);
+      min[0] = PetscMin(u, min[0]);
+      min[1] = PetscMin(v, min[1]);
+      min[2] = PetscMin(c, min[2]);
+      max[0] = PetscMax(u, max[0]);
+      max[1] = PetscMax(v, max[1]);
+      max[2] = PetscMax(c, max[2]);
     }
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCallMPI(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
-    PetscCallMPI(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j = 0; j < 3; j++) {

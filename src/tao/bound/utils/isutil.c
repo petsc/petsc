@@ -403,7 +403,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 @*/
 PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
 {
-  PetscInt           i, n, low, high, nDiff_loc = 0;
+  PetscInt           i, n, low, high;
   PetscScalar       *xout;
   const PetscScalar *x, *xl, *xu;
 
@@ -429,6 +429,7 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
 
   PetscCall(VecGetOwnershipRange(X, &low, &high));
   PetscCall(VecGetLocalSize(X, &n));
+  *nDiff = 0;
   if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
     PetscCall(VecGetArrayRead(XL, &xl));
@@ -438,10 +439,10 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     for (i = 0; i < n; ++i) {
       if (xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + bound_tol) {
         xout[i] = xl[i];
-        ++nDiff_loc;
+        ++(*nDiff);
       } else if (xu[i] < PETSC_INFINITY && x[i] >= xu[i] - bound_tol) {
         xout[i] = xu[i];
-        ++nDiff_loc;
+        ++(*nDiff);
       }
     }
 
@@ -450,6 +451,6 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     PetscCall(VecRestoreArrayRead(XU, &xu));
     PetscCall(VecRestoreArray(Xout, &xout));
   }
-  PetscCallMPI(MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

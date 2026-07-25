@@ -373,7 +373,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
   PetscInt        i, n1, n2, nout, *iout;
   const PetscInt *i1, *i2;
   IS              is1sorted = NULL, is2sorted = NULL;
-  PetscBool       sorted, lsorted;
+  PetscBool       sorted;
   MPI_Comm        comm;
 
   PetscFunctionBegin;
@@ -394,8 +394,8 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     n1  = n2;
     n2  = ntemp;
   }
-  PetscCall(ISSorted(is1, &lsorted));
-  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
+  PetscCall(ISSorted(is1, &sorted));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is1, &is1sorted));
     PetscCall(ISSort(is1sorted));
@@ -405,8 +405,8 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     PetscCall(PetscObjectReference((PetscObject)is1));
     PetscCall(ISGetIndices(is1, &i1));
   }
-  PetscCall(ISSorted(is2, &lsorted));
-  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
+  PetscCall(ISSorted(is2, &sorted));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is2, &is2sorted));
     PetscCall(ISSort(is2sorted));
@@ -619,7 +619,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
   IS              indis = xis, coloris = yis;
   PetscInt       *inds, *colors, llen, ilen, lstart, lend, lcount, l;
-  PetscMPIInt     rank, size, llow, lhigh, low, high, color, subsize;
+  PetscMPIInt     rank, size, low, high, color, subsize;
   const PetscInt *ccolors, *cinds;
   MPI_Comm        comm, subcomm;
 
@@ -643,19 +643,19 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscCall(PetscArraycpy(colors, ccolors, llen));
   PetscCall(PetscSortIntWithArray(llen, colors, inds));
   /* Determine the global extent of colors. */
-  llow   = 0;
-  lhigh  = -1;
+  low    = 0;
+  high   = -1;
   lstart = 0;
   lcount = 0;
   while (lstart < llen) {
     lend = lstart + 1;
     while (lend < llen && colors[lend] == colors[lstart]) ++lend;
-    PetscCall(PetscMPIIntCast(PetscMin(llow, colors[lstart]), &llow));
-    PetscCall(PetscMPIIntCast(PetscMax(lhigh, colors[lstart]), &lhigh));
+    PetscCall(PetscMPIIntCast(PetscMin(low, colors[lstart]), &low));
+    PetscCall(PetscMPIIntCast(PetscMax(high, colors[lstart]), &high));
     ++lcount;
   }
-  PetscCallMPI(MPIU_Allreduce(&llow, &low, 1, MPI_INT, MPI_MIN, comm));
-  PetscCallMPI(MPIU_Allreduce(&lhigh, &high, 1, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &low, 1, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &high, 1, MPI_INT, MPI_MAX, comm));
   *listlen = 0;
   if (low <= high) {
     if (lcount > 0) {

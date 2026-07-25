@@ -25,7 +25,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   Mat_SeqAIJ       *matA, *matB = NULL;
   Mat_MPIAIJ       *mpimat = NULL;
   MPI_Comm          comm;
-  PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ii, Iend, my0, nremoved, gid, lid, cpid, lidj, sgid, t1, t2, slid, nDone, nselected = 0, state, statej;
+  PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ii, Iend, my0, nremoved, gid, lid, cpid, lidj, sgid, t2, slid, nDone, nselected = 0, state, statej;
   PetscInt         *cpcol_gid, *cpcol_state, *lid_cprowID, *lid_gid, *cpcol_sel_gid, *icpcol_gid, *lid_state, *lid_parent_gid = NULL, nrm_tot = 0;
   PetscBool        *lid_removed;
   PetscBool         isMPI, isAIJ, isOK;
@@ -199,8 +199,8 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
         }
       }
       /* all done? */
-      t1 = nloc - nDone;
-      PetscCallMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
+      t2 = nloc - nDone;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
       if (!t2) break;
     } else break; /* all done */
   } /* outer parallel MIS loop */
@@ -230,13 +230,13 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   PetscCall(PetscFree4(lid_gid, lid_cprowID, lid_removed, lid_state));
   if (strict_aggs) {
     // check sizes -- all vertices must get in graph
-    PetscInt aa[2] = {0, nrm_tot}, bb[2], MM;
+    PetscInt bb[2] = {0, nrm_tot}, MM;
 
     PetscCall(PetscFree(lid_parent_gid));
     PetscCall(MatGetSize(Gmat, &MM, NULL));
     // check sizes -- all vertices must get in graph
-    PetscCall(PetscCDCount(agg_lists, &aa[0]));
-    PetscCallMPI(MPIU_Allreduce(aa, bb, 2, MPIU_INT, MPI_SUM, comm));
+    PetscCall(PetscCDCount(agg_lists, &bb[0]));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, bb, 2, MPIU_INT, MPI_SUM, comm));
     if (MM != bb[0]) PetscCall(PetscInfo(info_is, "Warning: N = %" PetscInt_FMT ", sum of aggregates %" PetscInt_FMT ", %" PetscInt_FMT " removed total\n", MM, bb[0], bb[1]));
     PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs is too large");
   }

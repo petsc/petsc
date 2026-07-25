@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
   PetscInt           its;
   SNESFunctionFn    *func;
   void              *fctx;
-  PetscBool          mat = gs->secant_mat, equal, isdone, alldone;
+  PetscBool          mat = gs->secant_mat, equal, alldone;
   PetscScalar       *xa, *wa;
   const PetscScalar *fa, *ga;
 
@@ -100,11 +100,11 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
 
       if (k == 0) ft1 = PetscSqrtReal(ft);
       if (k < its - 1) {
-        isdone = PETSC_FALSE;
-        if (stol * PetscSqrtReal(xt) > PetscSqrtReal(dxt)) isdone = PETSC_TRUE;
-        if (PetscSqrtReal(ft) < atol) isdone = PETSC_TRUE;
-        if (rtol * ft1 > PetscSqrtReal(ft)) isdone = PETSC_TRUE;
-        PetscCallMPI(MPIU_Allreduce(&isdone, &alldone, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)snes)));
+        alldone = PETSC_FALSE;
+        if (stol * PetscSqrtReal(xt) > PetscSqrtReal(dxt)) alldone = PETSC_TRUE;
+        if (PetscSqrtReal(ft) < atol) alldone = PETSC_TRUE;
+        if (rtol * ft1 > PetscSqrtReal(ft)) alldone = PETSC_TRUE;
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &alldone, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)snes)));
         if (alldone) break;
       }
       if (i < ncolors - 1 || k < its - 1) {

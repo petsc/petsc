@@ -721,8 +721,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   minl  = 1;
   label = NULL;
   if (enable_emark) {
-    PetscInt lminl = PETSC_INT_MAX;
-
+    minl = PETSC_INT_MAX;
     PetscCall(DMGetLabel(dm, emark, &label));
     if (label) {
       IS       vals;
@@ -730,11 +729,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
       PetscCall(DMLabelGetDefaultValue(label, &ldef));
       PetscCall(DMLabelGetValueIS(label, &vals));
-      PetscCall(ISGetMinMax(vals, &lminl, NULL));
+      PetscCall(ISGetMinMax(vals, &minl, NULL));
       PetscCall(ISDestroy(&vals));
-      lminl = PetscMin(ldef, lminl);
+      minl = PetscMin(ldef, minl);
     }
-    PetscCallMPI(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     if (minl == PETSC_INT_MAX) minl = 1;
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, "\nelements\n"));
@@ -920,8 +919,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     minl  = 1;
     label = NULL;
     if (enable_bmark) {
-      PetscInt lminl = PETSC_INT_MAX;
-
+      minl = PETSC_INT_MAX;
       PetscCall(DMGetLabel(dm, bmark, &label));
       if (label) {
         IS       vals;
@@ -929,11 +927,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
         PetscCall(DMLabelGetDefaultValue(label, &ldef));
         PetscCall(DMLabelGetValueIS(label, &vals));
-        PetscCall(ISGetMinMax(vals, &lminl, NULL));
+        PetscCall(ISGetMinMax(vals, &minl, NULL));
         PetscCall(ISDestroy(&vals));
-        lminl = PetscMin(ldef, lminl);
+        minl = PetscMin(ldef, minl);
       }
-      PetscCallMPI(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
       if (minl == PETSC_INT_MAX) minl = 1;
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", bf));

@@ -1366,15 +1366,13 @@ PetscErrorCode DMLabelGetValueISGlobal(MPI_Comm comm, DMLabel label, PetscBool g
 
   PetscCall(PetscGlobalMinMaxInt(comm, minmax_values_loc, minmax_values));
   PetscInt value_range = minmax_values[1] - minmax_values[0] + 1;
-  PetscBT  local_values_bt, global_values_bt;
+  PetscBT  global_values_bt;
 
   // Create a "ballot" where each rank marks which values they have into the PetscBT.
   // An Allreduce using bitwise-OR over the ranks then communicates which values are owned by a rank in comm
-  PetscCall(PetscBTCreate(value_range, &local_values_bt));
   PetscCall(PetscBTCreate(value_range, &global_values_bt));
-  for (PetscInt i = 0; i < num_values_local; i++) PetscCall(PetscBTSet(local_values_bt, values_local[i] - minmax_values[0]));
-  PetscCallMPI(MPIU_Allreduce(local_values_bt, global_values_bt, PetscBTLength(value_range), MPI_CHAR, MPI_BOR, comm));
-  PetscCall(PetscBTDestroy(&local_values_bt));
+  for (PetscInt i = 0; i < num_values_local; i++) PetscCall(PetscBTSet(global_values_bt, values_local[i] - minmax_values[0]));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, global_values_bt, PetscBTLength(value_range), MPI_CHAR, MPI_BOR, comm));
   {
     PetscCount num_values_global_count;
     num_values_global_count = PetscBTCountSet(global_values_bt, value_range);

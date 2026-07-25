@@ -549,16 +549,16 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 
   /* Determine if we are in 2D or 3D */
   if (!graph->twodimset) {
-    PetscBool twodim = PETSC_TRUE;
+    graph->twodim = PETSC_TRUE;
     for (PetscInt i = 0; i < graph->ncc; i++) {
       PetscInt repdof = graph->queue[graph->cptr[i]];
       PetscInt ccsize = graph->cptr[i + 1] - graph->cptr[i];
       if (graph->nodes[repdof].count > 2 && ccsize > graph->custom_minimal_size) {
-        twodim = PETSC_FALSE;
+        graph->twodim = PETSC_FALSE;
         break;
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &graph->twodim, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
     graph->twodimset = PETSC_TRUE;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

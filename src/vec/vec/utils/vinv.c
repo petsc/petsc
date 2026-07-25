@@ -116,7 +116,6 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 {
   PetscInt           i, n, bs;
   const PetscScalar *x;
-  PetscReal          tnorm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -131,19 +130,19 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
     for (i = start; i < n; i += bs) sum += x[i] * (PetscConj(x[i]));
-    tnorm = PetscRealPart(sum);
-    PetscCallMPI(MPIU_Allreduce(&tnorm, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+    *nrm = PetscRealPart(sum);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)v)));
     *nrm = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
-    tnorm = 0.0;
-    for (i = start; i < n; i += bs) tnorm += PetscAbsScalar(x[i]);
-    PetscCallMPI(MPIU_Allreduce(&tnorm, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+    *nrm = 0.0;
+    for (i = start; i < n; i += bs) *nrm += PetscAbsScalar(x[i]);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)v)));
   } else if (ntype == NORM_INFINITY) {
-    tnorm = 0.0;
+    *nrm = 0.0;
     for (i = start; i < n; i += bs) {
-      if (PetscAbsScalar(x[i]) > tnorm) tnorm = PetscAbsScalar(x[i]);
+      if (PetscAbsScalar(x[i]) > *nrm) *nrm = PetscAbsScalar(x[i]);
     }
-    PetscCallMPI(MPIU_Allreduce(&tnorm, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
   } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -182,41 +181,40 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 {
   PetscInt           i, n, bs, id = -1;
   const PetscScalar *x;
-  PetscReal          max = PETSC_MIN_REAL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
+  *nrm = PETSC_MIN_REAL;
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
   PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) > max) {
-      max = PetscRealPart(x[i]);
-      id  = i;
+    if (PetscRealPart(x[i]) > *nrm) {
+      *nrm = PetscRealPart(x[i]);
+      id   = i;
     }
   }
   PetscCall(VecRestoreArrayRead(v, &x));
 #if PetscDefined(HAVE_MPIUNI)
-  *nrm = max;
   if (idex) *idex = id;
 #else
   if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(&max, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
   } else {
     struct {
       PetscReal v;
       PetscInt  i;
-    } in, out;
+    } out;
     PetscInt rstart;
 
     PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    in.v = max;
-    in.i = rstart + id;
-    PetscCallMPI(MPIU_Allreduce(&in, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)v)));
+    out.v = *nrm;
+    out.i = rstart + id;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)v)));
     *nrm  = out.v;
     *idex = out.i;
   }
@@ -257,41 +255,40 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 {
   PetscInt           i, n, bs, id = -1;
   const PetscScalar *x;
-  PetscReal          min = PETSC_MAX_REAL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
+  *nrm = PETSC_MAX_REAL;
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
   PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) < min) {
-      min = PetscRealPart(x[i]);
-      id  = i;
+    if (PetscRealPart(x[i]) < *nrm) {
+      *nrm = PetscRealPart(x[i]);
+      id   = i;
     }
   }
   PetscCall(VecRestoreArrayRead(v, &x));
 #if PetscDefined(HAVE_MPIUNI)
-  *nrm = min;
   if (idex) *idex = id;
 #else
   if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(&min, nrm, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)v)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)v)));
   } else {
     struct {
       PetscReal v;
       PetscInt  i;
-    } in, out;
+    } out;
     PetscInt rstart;
 
     PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    in.v = min;
-    in.i = rstart + id;
-    PetscCallMPI(MPIU_Allreduce(&in, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
+    out.v = *nrm;
+    out.i = rstart + id;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
     *nrm  = out.v;
     *idex = out.i;
   }
@@ -327,7 +324,6 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
 {
   PetscInt           i, n, bs;
   const PetscScalar *x;
-  PetscScalar        local_sum = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -337,9 +333,10 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
   PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  *sum = 0.0;
   PetscCall(VecGetArrayRead(v, &x));
-  for (i = start; i < n; i += bs) local_sum += x[i];
-  PetscCallMPI(MPIU_Allreduce(&local_sum, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+  for (i = start; i < n; i += bs) *sum += x[i];
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -415,7 +412,6 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
 {
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
-  PetscReal          tnorm[128];
   MPI_Comm           comm;
   PetscMPIInt        ibs;
 
@@ -436,33 +432,33 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
     for (i = 0; i < n; i += bs) {
       for (j = 0; j < bs; j++) sum[j] += x[i + j] * (PetscConj(x[i + j]));
     }
-    for (j = 0; j < bs; j++) tnorm[j] = PetscRealPart(sum[j]);
+    for (j = 0; j < bs; j++) nrm[j] = PetscRealPart(sum[j]);
 
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
     for (j = 0; j < bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
-    for (j = 0; j < bs; j++) tnorm[j] = 0.0;
+    for (j = 0; j < bs; j++) nrm[j] = 0.0;
 
     for (i = 0; i < n; i += bs) {
-      for (j = 0; j < bs; j++) tnorm[j] += PetscAbsScalar(x[i + j]);
+      for (j = 0; j < bs; j++) nrm[j] += PetscAbsScalar(x[i + j]);
     }
 
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
-    for (j = 0; j < bs; j++) tnorm[j] = 0.0;
+    for (j = 0; j < bs; j++) nrm[j] = 0.0;
 
     for (i = 0; i < n; i += bs) {
       for (j = 0; j < bs; j++) {
-        if ((tmp = PetscAbsScalar(x[i + j])) > tnorm[j]) tnorm[j] = tmp;
+        if ((tmp = PetscAbsScalar(x[i + j])) > nrm[j]) nrm[j] = tmp;
         /* check special case of tmp == NaN */
         if (tmp != tmp) {
-          tnorm[j] = tmp;
+          nrm[j] = tmp;
           break;
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
   } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -496,7 +492,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
 {
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
-  PetscReal          max[128], tmp;
+  PetscReal          tmp;
   MPI_Comm           comm;
   PetscMPIInt        ibs;
 
@@ -513,17 +509,17 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
   PetscCall(PetscMPIIntCast(bs, &ibs));
 
   if (!n) {
-    for (j = 0; j < bs; j++) max[j] = PETSC_MIN_REAL;
+    for (j = 0; j < bs; j++) nrm[j] = PETSC_MIN_REAL;
   } else {
-    for (j = 0; j < bs; j++) max[j] = PetscRealPart(x[j]);
+    for (j = 0; j < bs; j++) nrm[j] = PetscRealPart(x[j]);
 
     for (i = bs; i < n; i += bs) {
       for (j = 0; j < bs; j++) {
-        if ((tmp = PetscRealPart(x[i + j])) > max[j]) max[j] = tmp;
+        if ((tmp = PetscRealPart(x[i + j])) > nrm[j]) nrm[j] = tmp;
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(max, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -557,7 +553,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
 {
   PetscInt           i, n, bs, j;
   const PetscScalar *x;
-  PetscReal          min[128], tmp;
+  PetscReal          tmp;
   MPI_Comm           comm;
   PetscMPIInt        ibs;
 
@@ -574,17 +570,17 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
   PetscCall(PetscMPIIntCast(bs, &ibs));
 
   if (!n) {
-    for (j = 0; j < bs; j++) min[j] = PETSC_MAX_REAL;
+    for (j = 0; j < bs; j++) nrm[j] = PETSC_MAX_REAL;
   } else {
-    for (j = 0; j < bs; j++) min[j] = PetscRealPart(x[j]);
+    for (j = 0; j < bs; j++) nrm[j] = PetscRealPart(x[j]);
 
     for (i = bs; i < n; i += bs) {
       for (j = 0; j < bs; j++) {
-        if ((tmp = PetscRealPart(x[i + j])) < min[j]) min[j] = tmp;
+        if ((tmp = PetscRealPart(x[i + j])) < nrm[j]) nrm[j] = tmp;
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(min, nrm, ibs, MPIU_REAL, MPIU_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, ibs, MPIU_REAL, MPIU_MIN, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -616,7 +612,6 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 {
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
-  PetscScalar        local_sums[128];
   MPI_Comm           comm;
   PetscMPIInt        ibs;
 
@@ -631,11 +626,11 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
   PetscCheck(bs <= 128, comm, PETSC_ERR_SUP, "Currently supports only blocksize up to 128");
   PetscCall(PetscMPIIntCast(bs, &ibs));
 
-  for (j = 0; j < bs; j++) local_sums[j] = 0.0;
+  for (j = 0; j < bs; j++) sums[j] = 0.0;
   for (i = 0; i < n; i += bs) {
-    for (j = 0; j < bs; j++) local_sums[j] += x[i + j];
+    for (j = 0; j < bs; j++) sums[j] += x[i + j];
   }
-  PetscCallMPI(MPIU_Allreduce(local_sums, sums, ibs, MPIU_SCALAR, MPIU_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sums, ibs, MPIU_SCALAR, MPIU_SUM, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1711,7 +1706,6 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 {
   const PetscScalar *v1, *v2;
   PetscInt           n1, n2, N1, N2;
-  PetscBool          flg1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1, VEC_CLASSID, 1);
@@ -1721,21 +1715,21 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
   else {
     PetscCall(VecGetSize(vec1, &N1));
     PetscCall(VecGetSize(vec2, &N2));
-    if (N1 != N2) flg1 = PETSC_FALSE;
+    if (N1 != N2) *flg = PETSC_FALSE;
     else {
       PetscCall(VecGetLocalSize(vec1, &n1));
       PetscCall(VecGetLocalSize(vec2, &n2));
-      if (n1 != n2) flg1 = PETSC_FALSE;
+      if (n1 != n2) *flg = PETSC_FALSE;
       else {
         PetscCall(VecGetArrayRead(vec1, &v1));
         PetscCall(VecGetArrayRead(vec2, &v2));
-        PetscCall(PetscArraycmp(v1, v2, n1, &flg1));
+        PetscCall(PetscArraycmp(v1, v2, n1, flg));
         PetscCall(VecRestoreArrayRead(vec1, &v1));
         PetscCall(VecRestoreArrayRead(vec2, &v2));
       }
     }
     /* combine results from all processors */
-    PetscCallMPI(MPIU_Allreduce(&flg1, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)vec1)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)vec1)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -5,15 +5,15 @@ static char help[] = "Tests DMDA ghost coordinates\n\n";
 
 static PetscErrorCode CompareGhostedCoords(Vec gc1, Vec gc2)
 {
-  PetscReal nrm, gnrm;
+  PetscReal nrm;
   Vec       tmp;
 
   PetscFunctionBeginUser;
   PetscCall(VecDuplicate(gc1, &tmp));
   PetscCall(VecWAXPY(tmp, -1.0, gc1, gc2));
   PetscCall(VecNorm(tmp, NORM_INFINITY, &nrm));
-  PetscCallMPI(MPIU_Allreduce(&nrm, &gnrm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm of difference of ghosted coordinates %8.2e\n", (double)gnrm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nrm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm of difference of ghosted coordinates %8.2e\n", (double)nrm));
   PetscCall(VecDestroy(&tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -92,7 +92,7 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
   PetscMPIInt    tag;
   MPI_Comm       comm;
   MPI_Request   *rootreqs, *leafreqs;
-  PetscInt       tmp, stmp[4], rtmp[4]; /* tmps for send/recv buffers */
+  PetscInt       tmp, rtmp[4]; /* tmps for send/recv buffers */
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
@@ -105,12 +105,12 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
 
   PetscCall(PetscMalloc2(nRemoteLeafRanks, &rootreqs, nRemoteRootRanks, &leafreqs));
 
-  stmp[0] = nRemoteRootRanks;
-  stmp[1] = sf->leafbuflen[PETSCSF_REMOTE];
-  stmp[2] = nRemoteLeafRanks;
-  stmp[3] = bas->rootbuflen[PETSCSF_REMOTE];
+  rtmp[0] = nRemoteRootRanks;
+  rtmp[1] = sf->leafbuflen[PETSCSF_REMOTE];
+  rtmp[2] = nRemoteLeafRanks;
+  rtmp[3] = bas->rootbuflen[PETSCSF_REMOTE];
 
-  PetscCallMPI(MPIU_Allreduce(stmp, rtmp, 4, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, rtmp, 4, MPIU_INT, MPI_MAX, comm));
 
   sf->nRemoteRootRanksMax  = rtmp[0];
   sf->leafbuflen_rmax      = rtmp[1];

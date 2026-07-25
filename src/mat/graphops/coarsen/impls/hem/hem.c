@@ -673,7 +673,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     PetscCall(MatSetUp(P));
     /* process - communicate - process */
     for (PetscInt sub_it = 0, old_num_edge = 0; /* sub_it < n_sub_its */; /* sub_it++ */) {
-      PetscInt    nactive_edges = 0, n_act_n[3], gn_act_n[3];
+      PetscInt    nactive_edges = 0, gn_act_n[3];
       PetscMPIInt tag1, tag2;
 
       PetscCall(VecGetArrayRead(locMaxEdge, &lid_max_ew));
@@ -810,11 +810,11 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       if (isMPI) PetscCall(VecRestoreArrayRead(ghostMaxEdge, &lghost_max_ew));
       PetscCall(VecRestoreArrayRead(locMaxEdge, &lid_max_ew));
       // count active for test, latter, update deleted ghosts
-      n_act_n[0] = nactive_edges;
-      if (ghost_deleted_list) PetscCall(PetscCDCount(ghost_deleted_list, &n_act_n[2]));
-      else n_act_n[2] = 0;
-      PetscCall(PetscCDCount(agg_llists, &n_act_n[1]));
-      PetscCallMPI(MPIU_Allreduce(n_act_n, gn_act_n, 3, MPIU_INT, MPI_SUM, comm));
+      gn_act_n[0] = nactive_edges;
+      if (ghost_deleted_list) PetscCall(PetscCDCount(ghost_deleted_list, &gn_act_n[2]));
+      else gn_act_n[2] = 0;
+      PetscCall(PetscCDCount(agg_llists, &gn_act_n[1]));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gn_act_n, 3, MPIU_INT, MPI_SUM, comm));
       PetscCall(PetscInfo(info_is, "[%d] %" PetscInt_FMT ".%" PetscInt_FMT ") nactive edges=%" PetscInt_FMT ", ncomm_procs=%d, nEdges=%" PetscInt_FMT ", %" PetscInt_FMT " deleted ghosts, N=%" PetscInt_FMT "\n", rank, iter, sub_it, gn_act_n[0], ncomm_procs, nEdges, gn_act_n[2], gn_act_n[1]));
       /* deal with deleted ghost */
       if (isMPI) {
@@ -1145,11 +1145,11 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
   }
   {
     // check sizes -- all vertices must get in graph
-    PetscInt sz, globalsz, MM;
+    PetscInt globalsz, MM;
 
     PetscCall(MatGetSize(a_Gmat, &MM, NULL));
-    PetscCall(PetscCDCount(agg_llists, &sz));
-    PetscCallMPI(MPIU_Allreduce(&sz, &globalsz, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(PetscCDCount(agg_llists, &globalsz));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &globalsz, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(MM == globalsz, comm, PETSC_ERR_SUP, "lost %" PetscInt_FMT " equations ?", MM - globalsz);
   }
   // cleanup

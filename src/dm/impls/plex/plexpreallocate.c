@@ -240,7 +240,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
 {
   MPI_Comm           comm;
   PetscMPIInt        myrank;
-  PetscBool          doCommLocal, doComm, debug = PETSC_FALSE;
+  PetscBool          doComm, debug = PETSC_FALSE;
   PetscSF            sf, sfAdj;
   PetscSection       section, sectionGlobal, leafSectionAdj, rootSectionAdj, sectionAdj, anchorSectionAdj, myRankPairSection;
   PetscInt           nroots, nleaves, l, p, r;
@@ -258,8 +258,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &sectionGlobal));
   PetscCall(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL));
-  doCommLocal = nroots >= 0 ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&doCommLocal, &doComm, 1, MPI_C_BOOL, MPI_LAND, comm));
+  doComm = nroots >= 0 ? PETSC_TRUE : PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &doComm, 1, MPI_C_BOOL, MPI_LAND, comm));
   /* Create section for dof adjacency (dof ==> # adj dof) */
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   PetscCall(PetscSectionGetStorageSize(section, &numDof));

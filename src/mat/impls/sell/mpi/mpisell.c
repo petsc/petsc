@@ -347,8 +347,8 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqSELL *)sell->A->data)->nonew) {
-    PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
-    PetscCallMPI(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
+    mat->nonzerostate = sell->A->nonzerostate + sell->B->nonzerostate;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
 #if PetscDefined(HAVE_CUDA)
   mat->offloadmask = PETSC_OFFLOAD_BOTH;
@@ -706,33 +706,33 @@ static PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *i
 {
   Mat_MPISELL   *mat = (Mat_MPISELL *)matin->data;
   Mat            A = mat->A, B = mat->B;
-  PetscLogDouble isend[5], irecv[5];
+  PetscLogDouble irecv[5];
 
   PetscFunctionBegin;
   info->block_size = 1.0;
   PetscCall(MatGetInfo(A, MAT_LOCAL, info));
 
-  isend[0] = info->nz_used;
-  isend[1] = info->nz_allocated;
-  isend[2] = info->nz_unneeded;
-  isend[3] = info->memory;
-  isend[4] = info->mallocs;
+  irecv[0] = info->nz_used;
+  irecv[1] = info->nz_allocated;
+  irecv[2] = info->nz_unneeded;
+  irecv[3] = info->memory;
+  irecv[4] = info->mallocs;
 
   PetscCall(MatGetInfo(B, MAT_LOCAL, info));
 
-  isend[0] += info->nz_used;
-  isend[1] += info->nz_allocated;
-  isend[2] += info->nz_unneeded;
-  isend[3] += info->memory;
-  isend[4] += info->mallocs;
+  irecv[0] += info->nz_used;
+  irecv[1] += info->nz_allocated;
+  irecv[2] += info->nz_unneeded;
+  irecv[3] += info->memory;
+  irecv[4] += info->mallocs;
   if (flag == MAT_LOCAL) {
-    info->nz_used      = isend[0];
-    info->nz_allocated = isend[1];
-    info->nz_unneeded  = isend[2];
-    info->memory       = isend[3];
-    info->mallocs      = isend[4];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)matin)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -740,7 +740,7 @@ static PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *i
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)matin)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -850,7 +850,6 @@ static PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
 {
   Mat_MPISELL *matB = (Mat_MPISELL *)B->data, *matA = (Mat_MPISELL *)A->data;
   Mat          a, b, c, d;
-  PetscBool    flg;
 
   PetscFunctionBegin;
   a = matA->A;
@@ -858,9 +857,9 @@ static PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
   c = matB->A;
   d = matB->B;
 
-  PetscCall(MatEqual(a, c, &flg));
-  if (flg) PetscCall(MatEqual(b, d, &flg));
-  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCall(MatEqual(a, c, flag));
+  if (*flag) PetscCall(MatEqual(b, d, flag));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, flag, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

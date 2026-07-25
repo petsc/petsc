@@ -160,11 +160,11 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     if (dm->coordinates[i].dm) {
       DM           ncdm;
       PetscSection cs;
-      PetscInt     pEnd = -1, pEndMax = -1;
+      PetscInt     pEndMax = -1;
 
       PetscCall(DMGetLocalSection(dm->coordinates[i].dm, &cs));
-      if (cs) PetscCall(PetscSectionGetChart(cs, NULL, &pEnd));
-      PetscCallMPI(MPIU_Allreduce(&pEnd, &pEndMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+      if (cs) PetscCall(PetscSectionGetChart(cs, NULL, &pEndMax));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &pEndMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
       if (pEndMax >= 0) {
         PetscCall(DMClone(dm->coordinates[i].dm, &ncdm));
         PetscCall(DMCopyDisc(dm->coordinates[i].dm, ncdm));
@@ -2028,12 +2028,12 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (fields) {
       PetscCall(PetscMalloc1(nF, fields));
       for (f = 0; f < nF; ++f) {
-        PetscInt bs, in[2], out[2];
+        PetscInt bs, out[2];
 
         PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]));
-        in[0] = -fieldNc[f];
-        in[1] = fieldNc[f];
-        PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+        out[0] = -fieldNc[f];
+        out[1] = fieldNc[f];
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
         bs = (-out[0] == out[1]) ? out[1] : 1;
         PetscCall(ISSetBlockSize((*fields)[f], bs));
       }
@@ -4719,7 +4719,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   const PetscInt *ranges;
   PetscInt        pStart, pEnd, p, nroots;
   PetscMPIInt     size, rank;
-  PetscBool       valid = PETSC_TRUE, gvalid;
+  PetscBool       valid = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -4768,8 +4768,8 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscSynchronizedFlush(comm, NULL));
-  PetscCallMPI(MPIU_Allreduce(&valid, &gvalid, 1, MPI_C_BOOL, MPI_LAND, comm));
-  if (!gvalid) {
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPI_C_BOOL, MPI_LAND, comm));
+  if (!valid) {
     PetscCall(DMView(dm, NULL));
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
   }
@@ -5556,7 +5556,7 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
   DMLabel     *labels, *glabels;
   const char **names;
   char        *sendNames, *recvNames;
-  PetscInt     Nds, s, maxLabels = 0, maxLen = 0, gmaxLen, Nl = 0, gNl, l, gl, m;
+  PetscInt     Nds, s, maxLabels = 0, maxLen = 0, Nl = 0, gNl, l, gl, m;
   size_t       len;
   MPI_Comm     comm;
   PetscMPIInt  rank, size, p, *counts, *displs;
@@ -5605,9 +5605,9 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
     maxLen = PetscMax(maxLen, (PetscInt)len + 2);
   }
   PetscCall(PetscFree(labels));
-  PetscCallMPI(MPIU_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCall(PetscCalloc1(Nl * gmaxLen, &sendNames));
-  for (l = 0; l < Nl; ++l) PetscCall(PetscStrncpy(&sendNames[gmaxLen * l], names[l], gmaxLen));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &maxLen, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(PetscCalloc1(Nl * maxLen, &sendNames));
+  for (l = 0; l < Nl; ++l) PetscCall(PetscStrncpy(&sendNames[maxLen * l], names[l], maxLen));
   PetscCall(PetscFree(names));
   /* Put all names on all processes */
   PetscCall(PetscCalloc2(size, &counts, size + 1, &displs));
@@ -5615,16 +5615,16 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
   for (p = 0; p < size; ++p) displs[p + 1] = displs[p] + counts[p];
   gNl = displs[size];
   for (p = 0; p < size; ++p) {
-    counts[p] *= gmaxLen;
-    displs[p] *= gmaxLen;
+    counts[p] *= maxLen;
+    displs[p] *= maxLen;
   }
-  PetscCall(PetscCalloc2(gNl * gmaxLen, &recvNames, gNl, &glabels));
+  PetscCall(PetscCalloc2(gNl * maxLen, &recvNames, gNl, &glabels));
   PetscCallMPI(MPI_Allgatherv(sendNames, counts[rank], MPI_CHAR, recvNames, counts, displs, MPI_CHAR, comm));
   PetscCall(PetscFree2(counts, displs));
   PetscCall(PetscFree(sendNames));
   for (l = 0, gl = 0; l < gNl; ++l) {
-    PetscCall(DMGetLabel(dm, &recvNames[l * gmaxLen], &glabels[gl]));
-    PetscCheck(glabels[gl], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Label %s missing on rank %d", &recvNames[l * gmaxLen], rank);
+    PetscCall(DMGetLabel(dm, &recvNames[l * maxLen], &glabels[gl]));
+    PetscCheck(glabels[gl], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Label %s missing on rank %d", &recvNames[l * maxLen], rank);
     for (m = 0; m < gl; ++m)
       if (glabels[m] == glabels[gl]) goto next_label;
     PetscCall(DMConvert(dm, DMPLEX, &plex));
@@ -6225,7 +6225,7 @@ PetscErrorCode DMCreateDS(DM dm)
     {
       DMPolytopeType ct;
       PetscInt       lStart, lEnd;
-      PetscBool      isCohesiveLocal = PETSC_FALSE, isCohesive;
+      PetscBool      isCohesive = PETSC_FALSE;
 
       PetscCall(DMLabelGetBounds(label, &lStart, &lEnd));
       if (lStart >= 0) {
@@ -6235,13 +6235,13 @@ PetscErrorCode DMCreateDS(DM dm)
         case DM_POLYTOPE_SEG_PRISM_TENSOR:
         case DM_POLYTOPE_TRI_PRISM_TENSOR:
         case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          isCohesiveLocal = PETSC_TRUE;
+          isCohesive = PETSC_TRUE;
           break;
         default:
           break;
         }
       }
-      PetscCallMPI(MPIU_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPI_C_BOOL, MPI_LOR, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &isCohesive, 1, MPI_C_BOOL, MPI_LOR, comm));
       if (isCohesive) {
         PetscCall(PetscDSCreate(PETSC_COMM_SELF, &dsIn));
         PetscCall(PetscDSSetCoordinateDimension(dsIn, dE));
@@ -6679,7 +6679,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection section;
   IS           perm;
-  PetscBool    hasConstraints, newDM, gnewDM;
+  PetscBool    hasConstraints, newDM;
   PetscInt     num_face_sfs = 0;
 
   PetscFunctionBegin;
@@ -6690,8 +6690,8 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscCall(PetscSectionGetPermutation(section, &perm));
   PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, NULL));
   newDM = hasConstraints || perm || (num_face_sfs > 0) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&newDM, &gnewDM, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  if (!gnewDM) {
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &newDM, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  if (!newDM) {
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

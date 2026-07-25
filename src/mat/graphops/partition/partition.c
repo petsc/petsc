@@ -460,7 +460,7 @@ PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
 PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitioning)
 {
   PetscMPIInt     nparts;
-  PetscInt       *subdomainsizes, *subdomainsizes_tmp, nlocal, maxsub, minsub, avgsub;
+  PetscInt       *subdomainsizes, nlocal, maxsub, minsub, avgsub;
   const PetscInt *indices;
   PetscViewer     viewer;
 
@@ -468,11 +468,11 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
   PetscValidHeaderSpecific(partitioning, IS_CLASSID, 2);
   PetscCall(PetscMPIIntCast(matp->n, &nparts));
-  PetscCall(PetscCalloc2(nparts, &subdomainsizes, nparts, &subdomainsizes_tmp));
+  PetscCall(PetscCalloc1(nparts, &subdomainsizes));
   PetscCall(ISGetLocalSize(partitioning, &nlocal));
   PetscCall(ISGetIndices(partitioning, &indices));
-  for (PetscInt i = 0; i < nlocal; i++) subdomainsizes_tmp[indices[i]] += matp->vertex_weights ? matp->vertex_weights[i] : 1;
-  PetscCallMPI(MPIU_Allreduce(subdomainsizes_tmp, subdomainsizes, nparts, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)matp)));
+  for (PetscInt i = 0; i < nlocal; i++) subdomainsizes[indices[i]] += matp->vertex_weights ? matp->vertex_weights[i] : 1;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, subdomainsizes, nparts, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)matp)));
   PetscCall(ISRestoreIndices(partitioning, &indices));
   minsub = PETSC_INT_MAX, maxsub = PETSC_INT_MIN, avgsub = 0;
   for (PetscMPIInt i = 0; i < nparts; i++) {
@@ -481,7 +481,7 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
     avgsub += subdomainsizes[i];
   }
   avgsub /= nparts;
-  PetscCall(PetscFree2(subdomainsizes, subdomainsizes_tmp));
+  PetscCall(PetscFree(subdomainsizes));
   PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp), &viewer));
   PetscCall(MatPartitioningView(matp, viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Partitioning Imbalance Info: Max %" PetscInt_FMT ", Min %" PetscInt_FMT ", Avg %" PetscInt_FMT ", R %g\n", maxsub, minsub, avgsub, (double)(maxsub / (PetscReal)minsub)));
