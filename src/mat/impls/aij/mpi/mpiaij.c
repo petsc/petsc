@@ -302,38 +302,33 @@ static PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A, PetscInt type, PetscR
   PetscInt           i, m, n, *garray = aij->garray;
   Mat_SeqAIJ        *a_aij = (Mat_SeqAIJ *)aij->A->data;
   Mat_SeqAIJ        *b_aij = (Mat_SeqAIJ *)aij->B->data;
-  PetscReal         *work;
   const PetscScalar *dummy;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(A, &m, &n));
-  PetscCall(PetscCalloc1(n, &work));
+  PetscCall(PetscArrayzero(reductions, n));
   PetscCall(MatSeqAIJGetArrayRead(aij->A, &dummy));
   PetscCall(MatSeqAIJRestoreArrayRead(aij->A, &dummy));
   PetscCall(MatSeqAIJGetArrayRead(aij->B, &dummy));
   PetscCall(MatSeqAIJRestoreArrayRead(aij->B, &dummy));
   if (type == NORM_2) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i] * a_aij->a[i]);
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i] * b_aij->a[i]);
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) reductions[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i] * a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) reductions[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i] * b_aij->a[i]);
   } else if (type == NORM_1) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) reductions[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) reductions[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
   } else if (type == NORM_INFINITY) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]), work[garray[b_aij->j[i]]]);
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) reductions[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), reductions[A->cmap->rstart + a_aij->j[i]]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) reductions[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]), reductions[garray[b_aij->j[i]]]);
   } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscRealPart(a_aij->a[i]);
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscRealPart(b_aij->a[i]);
-  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
-    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]);
-    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]);
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
-  if (type == NORM_INFINITY) {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, n, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) reductions[A->cmap->rstart + a_aij->j[i]] += PetscRealPart(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) reductions[garray[b_aij->j[i]]] += PetscRealPart(b_aij->a[i]);
   } else {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, n, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCheck(type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
+    for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) reductions[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]);
+    for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) reductions[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]);
   }
-  PetscCall(PetscFree(work));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, reductions, n, MPIU_REAL, type == NORM_INFINITY ? MPIU_MAX : MPIU_SUM, PetscObjectComm((PetscObject)A)));
   if (type == NORM_2) {
     for (i = 0; i < n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
   } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
