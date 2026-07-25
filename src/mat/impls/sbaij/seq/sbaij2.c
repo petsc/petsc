@@ -229,26 +229,30 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   Mat       C[2];
   IS        is1, is2, intersect = NULL;
   PetscInt  n1, n2, ni;
-  PetscBool sym = PETSC_TRUE;
+  PetscBool implicit, sym;
 
   PetscFunctionBegin;
+  implicit = sym = (PetscBool)(A->rmap->N == A->cmap->N && (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE));
   PetscCall(ISCompressIndicesGeneral(A->rmap->N, A->rmap->n, A->rmap->bs, 1, &isrow, &is1));
   if (isrow == iscol) {
     is2 = is1;
     PetscCall(PetscObjectReference((PetscObject)is2));
   } else {
     PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, A->cmap->bs, 1, &iscol, &is2));
-    PetscCall(ISIntersect(is1, is2, &intersect));
-    PetscCall(ISGetLocalSize(intersect, &ni));
-    PetscCall(ISDestroy(&intersect));
-    if (ni == 0) sym = PETSC_FALSE;
-    else if (PetscDefined(USE_DEBUG)) {
-      PetscCall(ISGetLocalSize(is1, &n1));
-      PetscCall(ISGetLocalSize(is2, &n2));
-      PetscCheck(ni == n1 && ni == n2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create such a submatrix");
+    if (implicit) {
+      PetscCall(ISIntersect(is1, is2, &intersect));
+      PetscCall(ISGetLocalSize(intersect, &ni));
+      PetscCall(ISDestroy(&intersect));
+      if (ni == 0) sym = PETSC_FALSE;
+      else if (PetscDefined(USE_DEBUG)) {
+        PetscCall(ISGetLocalSize(is1, &n1));
+        PetscCall(ISGetLocalSize(is2, &n2));
+        PetscCheck(ni == n1 && ni == n2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create such a submatrix");
+      }
     }
   }
-  if (sym) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, sym));
+  // rectangular and nonsymmetric SeqSBAIJ matrices store their entries explicitly
+  if (sym || !implicit) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, !implicit ? PETSC_FALSE : sym));
   else {
     PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, MAT_INITIAL_MATRIX, C, sym));
     PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is2, is1, MAT_INITIAL_MATRIX, C + 1, sym));
@@ -264,7 +268,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   PetscCall(ISDestroy(&is1));
   PetscCall(ISDestroy(&is2));
 
-  if (sym && isrow != iscol) {
+  if (implicit && sym && isrow != iscol) {
     PetscBool isequal;
     PetscCall(ISEqual(isrow, iscol, &isequal));
     if (!isequal) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
@@ -277,7 +281,7 @@ PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[],
   PetscInt i;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n, B));
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
