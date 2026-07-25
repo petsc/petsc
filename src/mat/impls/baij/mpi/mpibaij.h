@@ -51,5 +51,6 @@ PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat, PetscInt, IS[], Pets
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat, PetscInt, IS *);
 PETSC_INTERN PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt *d_nnz, PetscInt o_nz, const PetscInt *o_nnz);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat, const PetscInt *, Mat, const PetscInt *, PetscInt *);
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIBAIJ_MPIDense(Mat);
 
 PETSC_INTERN PetscErrorCode MatConjugate_SeqBAIJ(Mat);

@@ -32,6 +32,7 @@ configure_options = [
   '--download-hypre',
   '--download-ks',
   '--download-sprng',
+  '--download-libxsmm',
   '--with-ssl=1',
   '--with-tau-perfstubs=0',
   '--with-strict-petscerrorcode',

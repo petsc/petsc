@@ -29,6 +29,7 @@ configure_options = [
   #'--download-spai=1', has MPI leaks
   '--download-parms=1',
   '--download-libceed',
+  '--download-libxsmm',
   '--download-chaco=1',
   '--with-strict-petscerrorcode',
   '--with-coverage',

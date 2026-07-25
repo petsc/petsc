@@ -27,6 +27,9 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
 #if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat, MatType, MatReuse, Mat *);
 #endif
+#if PetscDefined(HAVE_LIBXSMM)
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJLIBXSMM(Mat, MatType, MatReuse, Mat *);
+#endif
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat, MatType, MatReuse, Mat *);
 
 MatGetDiagonalMarkers(SeqBAIJ, A->rmap->bs)
@@ -1546,6 +1549,11 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqbaij_hypre_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqbaij_is_C", NULL));
+#if PetscDefined(HAVE_LIBXSMM)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqbaij_seqbaijlibxsmm_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqbaijlibxsmm_seqdense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqbaijlibxsmm_seqbaij_C", NULL));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3511,6 +3519,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqbaij_hypre_C", MatConvert_AIJ_HYPRE));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqbaij_is_C", MatConvert_XAIJ_IS));
+#if PetscDefined(HAVE_LIBXSMM)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqbaij_seqbaijlibxsmm_C", MatConvert_SeqBAIJ_SeqBAIJLIBXSMM));
+#endif
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

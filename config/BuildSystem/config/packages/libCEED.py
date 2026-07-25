@@ -21,12 +21,13 @@ class Configure(config.package.Package):
     self.make            = framework.require('config.packages.make',self)
     self.cuda            = framework.require('config.packages.CUDA',self)
     self.hip             = framework.require('config.packages.HIP',self)
-    self.odeps           = [self.cuda,self.hip]
+    self.libxsmm         = framework.require('config.packages.LIBXSMM',self)
+    self.odeps           = [self.cuda,self.hip,self.libxsmm]
     return
 
   def Install(self):
     import os
-    # TODO: maybe add support for various backends, libXSMM, OCCA, MAGMA?
+    # TODO: maybe add support for various backends, OCCA, MAGMA?
     args = ['prefix={0}'.format(self.installDir), 'V=1']
     with self.Language('C'):
       args += [
@@ -56,6 +57,8 @@ class Configure(config.package.Package):
           'HIPCCFLAGS={0}'.format(self.getCompilerFlags()),
           'HIP_ARCH={0}'.format(self.hip.hipArch),
         ]
+    if self.libxsmm.found:
+      args += ['XSMM_DIR=' + self.libxsmm.directory]
     if self.setCompilers.LDFLAGS: args += ['LDFLAGS={0}'.format(self.setCompilers.LDFLAGS)]
     try:
       self.logPrintBox('Compiling libCEED; this may take several minutes')
