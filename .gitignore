@@ -199,3 +199,4 @@ branch-review-raw.diff
 mr-*-raw.diff
 mr-*-meta.json
 mr-*-diff.txt
+/.codegraph/

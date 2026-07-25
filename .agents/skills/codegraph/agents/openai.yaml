@@ -1,0 +1,4 @@
+interface:
+  display_name: "PETSc CodeGraph"
+  short_description: "Navigate PETSc code and runtime dispatch"
+  default_prompt: "Use $codegraph to find existing PETSc functionality, trace runtime dispatch, and assess a proposed change's blast radius."
