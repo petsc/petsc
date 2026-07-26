@@ -35,6 +35,53 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat, MatType, MatReuse, Ma
 
 MatGetDiagonalMarkers(SeqSBAIJ, A->rmap->bs)
 
+static PetscErrorCode MatGetColumnReductions_SeqSBAIJ(Mat A, PetscInt type, PetscReal *reductions)
+{
+  Mat_SeqSBAIJ    *aij = (Mat_SeqSBAIJ *)A->data;
+  PetscInt         m, n, bs = A->rmap->bs, bs2 = aij->bs2;
+  PetscBool        implicit, hermitian;
+  const PetscInt  *ai = aij->i, *aj = aij->j;
+  const MatScalar *aa = aij->a;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetSize(A, &m, &n));
+  PetscCheck(type == NORM_2 || type == NORM_1 || type == NORM_INFINITY || type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART || type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
+  PetscCall(PetscArrayzero(reductions, n));
+  implicit  = (PetscBool)(m == n && (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE));
+  hermitian = (PetscBool)(implicit && PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE);
+  for (PetscInt i = 0; i < aij->mbs; i++) {
+    for (PetscInt k = ai[i]; k < ai[i + 1]; k++) {
+      const PetscBool offdiag = (PetscBool)(implicit && aj[k] != i);
+
+      for (PetscInt jb = 0; jb < bs; jb++) {
+        for (PetscInt ib = 0; ib < bs; ib++) {
+          const MatScalar value = aa[k * bs2 + jb * bs + ib];
+          const PetscInt  col = aj[k] * bs + jb, row = i * bs + ib;
+          PetscReal       reduction;
+
+          if (type == NORM_2) reduction = PetscAbsScalar(value * value);
+          else if (type == NORM_1 || type == NORM_INFINITY) reduction = PetscAbsScalar(value);
+          else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) reduction = PetscRealPart(value);
+          else reduction = PetscImaginaryPart(value);
+          if (type == NORM_INFINITY) reductions[col] = PetscMax(reduction, reductions[col]);
+          else reductions[col] += reduction;
+          if (offdiag) {
+            if (hermitian && (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART)) reduction = -reduction;
+            if (type == NORM_INFINITY) reductions[row] = PetscMax(reduction, reductions[row]);
+            else reductions[row] += reduction;
+          }
+        }
+      }
+    }
+  }
+  if (type == NORM_2) {
+    for (PetscInt i = 0; i < n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (PetscInt i = 0; i < n; i++) reductions[i] /= m;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool blockcompressed, PetscInt *nn, const PetscInt *inia[], const PetscInt *inja[], PetscBool *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
@@ -1284,7 +1331,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        /*114*/ NULL,
-                                       NULL,
+                                       MatGetColumnReductions_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,

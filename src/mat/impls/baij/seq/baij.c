@@ -80,7 +80,8 @@ static PetscErrorCode MatGetColumnReductions_SeqBAIJ(Mat A, PetscInt type, Petsc
         }
       }
     }
-  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+  } else {
+    PetscCheck(type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
     for (PetscInt i = a_aij->i[0]; i < a_aij->i[A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
@@ -89,7 +90,7 @@ static PetscErrorCode MatGetColumnReductions_SeqBAIJ(Mat A, PetscInt type, Petsc
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
+  }
   if (type == NORM_2) {
     for (PetscInt i = 0; i < n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
   } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {

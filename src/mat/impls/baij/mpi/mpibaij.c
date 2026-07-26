@@ -2238,16 +2238,15 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
   MatScalar   *a_val = a_aij->a;
   Mat_SeqBAIJ *b_aij = (Mat_SeqBAIJ *)aij->B->data;
   MatScalar   *b_val = b_aij->a;
-  PetscReal   *work;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(A, &m, &N));
-  PetscCall(PetscCalloc1(N, &work));
+  PetscCall(PetscArrayzero(reductions, N));
   if (type == NORM_2) {
     for (i = a_aij->i[0]; i < a_aij->i[aij->A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val * *a_val);
+          reductions[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val * *a_val);
           a_val++;
         }
       }
@@ -2255,7 +2254,7 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = b_aij->i[0]; i < b_aij->i[aij->B->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val * *b_val);
+          reductions[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val * *b_val);
           b_val++;
         }
       }
@@ -2264,7 +2263,7 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = a_aij->i[0]; i < a_aij->i[aij->A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val);
+          reductions[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val);
           a_val++;
         }
       }
@@ -2272,7 +2271,7 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = b_aij->i[0]; i < b_aij->i[aij->B->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val);
+          reductions[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val);
           b_val++;
         }
       }
@@ -2281,8 +2280,8 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = a_aij->i[0]; i < a_aij->i[aij->A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          PetscInt col = A->cmap->rstart + a_aij->j[i] * bs + jb;
-          work[col]    = PetscMax(PetscAbsScalar(*a_val), work[col]);
+          PetscInt col    = A->cmap->rstart + a_aij->j[i] * bs + jb;
+          reductions[col] = PetscMax(PetscAbsScalar(*a_val), reductions[col]);
           a_val++;
         }
       }
@@ -2290,8 +2289,8 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = b_aij->i[0]; i < b_aij->i[aij->B->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          PetscInt col = garray[b_aij->j[i]] * bs + jb;
-          work[col]    = PetscMax(PetscAbsScalar(*b_val), work[col]);
+          PetscInt col    = garray[b_aij->j[i]] * bs + jb;
+          reductions[col] = PetscMax(PetscAbsScalar(*b_val), reductions[col]);
           b_val++;
         }
       }
@@ -2300,7 +2299,7 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = a_aij->i[0]; i < a_aij->i[aij->A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscRealPart(*a_val);
+          reductions[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscRealPart(*a_val);
           a_val++;
         }
       }
@@ -2308,16 +2307,17 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = b_aij->i[0]; i < b_aij->i[aij->B->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[garray[b_aij->j[i]] * bs + jb] += PetscRealPart(*b_val);
+          reductions[garray[b_aij->j[i]] * bs + jb] += PetscRealPart(*b_val);
           b_val++;
         }
       }
     }
-  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+  } else {
+    PetscCheck(type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
     for (i = a_aij->i[0]; i < a_aij->i[aij->A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscImaginaryPart(*a_val);
+          reductions[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscImaginaryPart(*a_val);
           a_val++;
         }
       }
@@ -2325,18 +2325,13 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
     for (i = b_aij->i[0]; i < b_aij->i[aij->B->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          work[garray[b_aij->j[i]] * bs + jb] += PetscImaginaryPart(*b_val);
+          reductions[garray[b_aij->j[i]] * bs + jb] += PetscImaginaryPart(*b_val);
           b_val++;
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
-  if (type == NORM_INFINITY) {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, N, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
-  } else {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
   }
-  PetscCall(PetscFree(work));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, reductions, N, MPIU_REAL, type == NORM_INFINITY ? MPIU_MAX : MPIU_SUM, PetscObjectComm((PetscObject)A)));
   if (type == NORM_2) {
     for (i = 0; i < N; i++) reductions[i] = PetscSqrtReal(reductions[i]);
   } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
