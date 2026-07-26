@@ -296,7 +296,7 @@ pause-for-approval:
   when: manual
   allow_failure: false
 
-ai-review-optional:
+.ai-review:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: manual
@@ -319,12 +319,12 @@ ai-review-optional:
         REVIEW_CMD="/review-mr"
       fi
       # --max-turns 100: large MRs were hitting the 30-turn cap before the review finished.
-      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --dangerously-skip-permissions --max-turns 100
+      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --model "${ANTHROPIC_MODEL}" --dangerously-skip-permissions --max-turns 100
   timeout: 1h
   allow_failure: true
   interruptible: true
   environment:
-    name: AI-Review/$CI_COMMIT_REF_SLUG
+    name: AI-Review/$ANTHROPIC_MODEL/$CI_COMMIT_REF_SLUG
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/ai-review.html
     auto_stop_in: one week
     deployment_tier: development
@@ -332,6 +332,12 @@ ai-review-optional:
     paths:
       - ai-review.*
     expire_in: one week
+
+ai-review:
+  extends: .ai-review
+  parallel:
+    matrix:
+      - ANTHROPIC_MODEL: [haiku, sonnet, opus]
 
 #
 # Basic template for code coverage generation. Tests should additionally inherit from the more
