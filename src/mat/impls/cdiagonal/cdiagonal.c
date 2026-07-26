@@ -116,6 +116,8 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_constantdiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_diagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_diagonal_constantdiagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_seqdense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_constantdiagonal_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_anytype_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -347,6 +349,38 @@ static PetscErrorCode MatConstantDiagonalGetConstant_ConstantDiagonal(Mat mat, P
 
   PetscFunctionBegin;
   *value = ctx->diag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductNumeric_ConstDiag_Dense(Mat C)
+{
+  Mat_ConstantDiagonal *p = (Mat_ConstantDiagonal *)C->product->A->data;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCall(MatCopy(C->product->B, C, SAME_NONZERO_PATTERN));
+  PetscCall(MatScale(C, p->diag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_ConstDiag_Dense(Mat C)
+{
+  Mat      A, B;
+  PetscInt n, N, m, M;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  A = C->product->A;
+  B = C->product->B;
+  PetscCall(MatGetLocalSize(B, NULL, &n));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatGetSize(A, &M, NULL));
+  PetscCall(MatSetSizes(C, m, n, M, N));
+  PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(C));
+  C->ops->productnumeric = MatProductNumeric_ConstDiag_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -757,6 +791,23 @@ static PetscErrorCode MatProductSetFromOptions_Diagonal_ConstDiag(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatProductSetFromOptions_ConstDiag_Dense_AB(Mat C)
+{
+  PetscFunctionBegin;
+  C->ops->productsymbolic = MatProductSymbolic_ConstDiag_Dense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_ConstDiag_Dense(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB) PetscCall(MatProductSetFromOptions_ConstDiag_Dense_AB(C));
+  else if (product->type == MATPRODUCT_PtAP) C->ops->productsymbolic = MatProductSymbolic_PtAP_ConstDiag_Anytype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatProductSetFromOptions_ConstDiag_Anytype(Mat C)
 {
   Mat_Product *product = C->product;
@@ -829,6 +880,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_constantdiagonal_C", MatProductSetFromOptions_ConstDiag_ConstDiag));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_diagonal_C", MatProductSetFromOptions_ConstDiag_Diagonal));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_diagonal_constantdiagonal_C", MatProductSetFromOptions_Diagonal_ConstDiag));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_seqdense_C", MatProductSetFromOptions_ConstDiag_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_constantdiagonal_mpidense_C", MatProductSetFromOptions_ConstDiag_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_ConstDiag_Anytype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
