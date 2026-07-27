@@ -16,7 +16,7 @@ merge request.
 
 The `release` branch contains the latest PETSc release including bug-fixes.
 
-Bug-fixes, along with most documentation fixes, should start from `release`.
+Crucial bug fixes should start from `release`, as well as changes intended to affect CI or the website immediately, for example, news or meeting information.
 
 ```console
 $ git fetch
@@ -44,7 +44,7 @@ $ git checkout -b yourname/fix-component-name origin/main
 
 ## Start a new feature branch
 
-- Determine the appropriate integration_branch to start from, `main` or `release` (for documentation and bug fixes only).
+- Determine the appropriate integration_branch to start from, `main` or `release` (for bug fixes only).
 
 - Create and switch to a new feature branch:
 
@@ -66,7 +66,7 @@ $ git checkout -b yourname/fix-component-name origin/main
 
 - Write code and tests.
 
-- For any new features or API changes you introduced add information on them to `doc/changes/dev.rst`.
+- For any new features or API changes you introduced add information on them to `doc/changes/dev.md`.
 
 - Inspect changes and stage code using standard Git commands, e.g.
 
@@ -121,6 +121,12 @@ $ git checkout -b yourname/fix-component-name origin/main
 
   ```console
   $ make alltests TIMEOUT=600
+  ```
+
+- Test generating the documentation.
+
+  ```console
+  $ make docs
   ```
 
 - Run the source checkers on your machine.

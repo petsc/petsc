@@ -13,9 +13,7 @@
 
 ## Documentation with Sphinx
 
-We use [Sphinx](https://www.sphinx-doc.org/en/master/) to build our web pages and documentation. Most content is written using [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html), a simple markup language.
-
-[These slides](https://gitlab.com/psanan/petsc-sphinx-slides) contain an overview of Sphinx and how we use(d) it, as of October 2020.
+We use [Sphinx](https://www.sphinx-doc.org/en/master/) to build our web pages and documentation. Most content is written using [Markdown](https://www.sphinx-doc.org/en/master/usage/markdown.html), a simple markup language.
 
 (sec_local_html_docs)=
 
@@ -26,15 +24,7 @@ We use a [Python 3 virtual environment](https://docs.python.org/3/tutorial/venv.
 ```console
 $ cd $PETSC_DIR
 $ make docs
-$ open doc/_build/html/index.html  # in a browser
-```
-
-or
-
-```console
-$ cd $PETSC_DIR/doc
-$ make sphinxhtml
-$ open _build/html/index.html
+$ open $PETSC_ARCH-doc/_build/html/index.html # in a browser
 ```
 
 (sec_local_docs_latex)=
@@ -47,19 +37,18 @@ local LaTeX installation and the ability to install additional packages,
 if need be, to resolve LaTeX errors.
 :::
 
-Set up your local Python environment (e.g., ref:`as above <sec_local_html_docs>`), then
-
 ```console
-$ cd doc
-$ make sphinxpdf
-$ open _build/latex/manual.pdf  # in PDF viewer
+$ cd $PETSC_DIR
+$ make docs
+$ make docspdf
+$ open $PETSC_ARCH-doc/_build/latex/manual.pdf # in a PDF viewer
 ```
 
 (sphinx_guidelines)=
 
 ### Sphinx Documentation Guidelines
 
-Refer to Sphinx's [own documentation](https://https://www.sphinx-doc.org) for general information on how to use Sphinx, and note the following additional guidelines.
+Refer to Sphinx's [own documentation](https://www.sphinx-doc.org) for general information on how to use Sphinx, and note the following additional guidelines.
 
 - Use the [literalinclude directive](https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude) to directly include pieces of source code. Use a path beginning with `/`, relative to the root for the Sphinx docs (where `conf.py` is found).
 
