@@ -3397,6 +3397,7 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   PetscInt     header[4], M, N, nz, bs, m, n, mbs, nbs, rows, cols, sum, i, j, k;
   PetscInt    *rowidxs, *colidxs, rs, cs, ce;
   PetscScalar *matvals;
+  PetscBool    nooffprocentries = mat->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
@@ -3488,8 +3489,10 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
 
   PetscCall(PetscFree(rowidxs));
   PetscCall(PetscFree2(colidxs, matvals));
+  mat->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  mat->nooffprocentries = nooffprocentries;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
