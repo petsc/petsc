@@ -4,6 +4,7 @@
 */
 #include <../src/mat/impls/baij/seq/baij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <petsc/private/kernels/blocktranspose.h>
 #include <petscblaslapack.h>
 
 #include <../src/mat/impls/sbaij/seq/relax.h>
@@ -592,15 +593,117 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
 
 static PetscErrorCode MatPermute_SeqSBAIJ(Mat A, IS rowp, IS colp, Mat *B)
 {
-  Mat       C;
-  PetscBool flg = (PetscBool)(rowp == colp);
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *b = NULL;
+  Mat_SeqBAIJ    *c = NULL;
+  Mat             C;
+  IS              browp, bcolp;
+  const PetscInt *row, *col;
+  PetscInt       *irow, *icol, *lens, *bi, *bj, *bilen;
+  MatScalar      *ba, *work;
+  PetscInt        mbs, nbs, bs = A->rmap->bs, bs2 = a->bs2;
+  PetscBool       same = (PetscBool)(rowp == colp), implicit = (PetscBool)(A->rmap->N == A->cmap->N && (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE)), hermitian;
 
   PetscFunctionBegin;
-  PetscCall(MatConvert(A, MATSEQBAIJ, MAT_INITIAL_MATRIX, &C));
-  PetscCall(MatPermute(C, rowp, colp, B));
-  PetscCall(MatDestroy(&C));
-  if (!flg) PetscCall(ISEqual(rowp, colp, &flg));
-  if (flg) PetscCall(MatConvert(*B, MATSEQSBAIJ, MAT_INPLACE_MATRIX, B));
+  if (same == PETSC_FALSE) PetscCall(ISEqualUnsorted(rowp, colp, &same));
+  hermitian = (PetscBool)(implicit == PETSC_TRUE && PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE);
+  same      = (PetscBool)(implicit == PETSC_TRUE && same == PETSC_TRUE);
+  PetscCall(ISCompressIndicesGeneral(A->rmap->N, A->rmap->n, bs, 1, &rowp, &browp));
+  if (rowp == colp) {
+    bcolp = browp;
+    PetscCall(PetscObjectReference((PetscObject)bcolp));
+  } else PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, bs, 1, &colp, &bcolp));
+  PetscCall(ISGetLocalSize(browp, &mbs));
+  PetscCall(ISGetLocalSize(bcolp, &nbs));
+  PetscCheck(mbs == a->mbs && nbs == a->nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row and column index sets must be block permutations");
+  PetscCall(ISGetIndices(browp, &row));
+  PetscCall(ISGetIndices(bcolp, &col));
+  PetscCall(PetscMalloc2(mbs, &irow, nbs, &icol));
+  for (PetscInt i = 0; i < mbs; i++) {
+    PetscCheck(row[i] >= 0 && row[i] < mbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row index set is not a block permutation");
+    irow[row[i]] = i;
+  }
+  for (PetscInt i = 0; i < nbs; i++) {
+    PetscCheck(col[i] >= 0 && col[i] < nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column index set is not a block permutation");
+    icol[col[i]] = i;
+  }
+  PetscCall(PetscCalloc1(mbs, &lens));
+  for (PetscInt i = 0; i < a->mbs; i++) {
+    for (PetscInt k = a->i[i]; k < a->i[i + 1]; k++) {
+      const PetscInt j = a->j[k];
+
+      if (same == PETSC_TRUE) lens[PetscMin(irow[i], icol[j])]++;
+      else {
+        lens[irow[i]]++;
+        if (implicit == PETSC_TRUE && i != j) lens[irow[j]]++;
+      }
+    }
+  }
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
+  PetscCall(MatSetSizes(C, mbs * bs, nbs * bs, mbs * bs, nbs * bs));
+  PetscCall(MatSetType(C, same == PETSC_TRUE ? ((PetscObject)A)->type_name : MATSEQBAIJ));
+  if (same == PETSC_TRUE) {
+    PetscCall(MatSeqSBAIJSetPreallocation(C, bs, 0, lens));
+    b     = (Mat_SeqSBAIJ *)C->data;
+    bi    = b->i;
+    bj    = b->j;
+    ba    = b->a;
+    bilen = b->ilen;
+  } else {
+    PetscCall(MatSeqBAIJSetPreallocation(C, bs, 0, lens));
+    c     = (Mat_SeqBAIJ *)C->data;
+    bi    = c->i;
+    bj    = c->j;
+    ba    = c->a;
+    bilen = c->ilen;
+  }
+  PetscCall(PetscFree(lens));
+  for (PetscInt i = 0; i < a->mbs; i++) {
+    for (PetscInt k = a->i[i]; k < a->i[i + 1]; k++) {
+      const PetscInt j = a->j[k];
+      PetscInt       r = irow[i], colidx = icol[j], pos;
+      MatScalar     *block;
+
+      if (same == PETSC_TRUE && r > colidx) {
+        pos    = r;
+        r      = colidx;
+        colidx = pos;
+      }
+      pos     = bi[r] + bilen[r]++;
+      bj[pos] = colidx;
+      block   = ba + pos * bs2;
+      PetscCall(PetscArraycpy(block, a->a + k * bs2, bs2));
+      if (same == PETSC_TRUE && irow[i] > icol[j]) {
+        PetscCall(PetscKernel_A_gets_transpose_A_N(block, bs));
+        if (hermitian == PETSC_TRUE) {
+          for (PetscInt q = 0; q < bs2; q++) block[q] = PetscConj(block[q]);
+        }
+      }
+      if (same == PETSC_FALSE && implicit == PETSC_TRUE && i != j) {
+        r       = irow[j];
+        colidx  = icol[i];
+        pos     = bi[r] + bilen[r]++;
+        bj[pos] = colidx;
+        block   = ba + pos * bs2;
+        PetscCall(PetscArraycpy(block, a->a + k * bs2, bs2));
+        PetscCall(PetscKernel_A_gets_transpose_A_N(block, bs));
+        if (hermitian == PETSC_TRUE) {
+          for (PetscInt q = 0; q < bs2; q++) block[q] = PetscConj(block[q]);
+        }
+      }
+    }
+  }
+  PetscCall(PetscMalloc1(bs2, &work));
+  for (PetscInt i = 0; i < mbs; i++) PetscCall(PetscSortIntWithDataArray(bilen[i], PetscSafePointerPlusOffset(bj, bi[i]), PetscSafePointerPlusOffset(ba, bi[i] * bs2), bs2 * sizeof(MatScalar), work));
+  PetscCall(PetscFree(work));
+  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  if (same == PETSC_TRUE) PetscCall(MatPropagateSymmetryOptions(A, C));
+  PetscCall(PetscFree2(irow, icol));
+  PetscCall(ISRestoreIndices(browp, &row));
+  PetscCall(ISRestoreIndices(bcolp, &col));
+  PetscCall(ISDestroy(&browp));
+  PetscCall(ISDestroy(&bcolp));
+  *B = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
