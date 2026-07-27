@@ -6,6 +6,7 @@ import re
 import itertools
 from hashlib import sha256 as checksum_algo
 import platform
+from config.utilities.parseVersion import parseVersion
 
 def sliding_window(seq, n=2):
   """
@@ -1350,16 +1351,16 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
           suggest += ' after running "rm -rf ' + self.getDir() +'"\n'
           suggest += 'DO NOT DO THIS if you rely on the exact version of the currently installed ' + self.name
     if self.minversion:
-      if self.versionToTuple(self.minversion) > self.version_tuple:
+      if parseVersion(self.minversion) > parseVersion(self.foundversion):
         raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(zeroPatch(self.version)) > self.version_tuple:
+      if parseVersion(zeroPatch(self.version)) > parseVersion(self.foundversion):
         self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
-      if self.versionToTuple(self.maxversion) < self.version_tuple:
+      if parseVersion(self.maxversion) < parseVersion(self.foundversion):
         raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
-      if self.versionToTuple(infinitePatch(self.version)) < self.version_tuple:
+      if parseVersion(infinitePatch(self.version)) < parseVersion(self.foundversion):
         self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
