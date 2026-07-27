@@ -346,7 +346,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 {
   PetscMPIInt size, rank, tag;
   PetscInt    base, top, i;
-  PetscInt    nc, ncwork;
+  PetscInt    nc;
   MPI_Status  status;
 
   PetscFunctionBegin;
@@ -373,12 +373,12 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
   if (rank < size - 1) PetscCallMPI(MPI_Send(&top, 1, MPIU_INT, rank + 1, tag, comm));
 
   /* compute the total number of colors */
-  ncwork = 0;
+  nc = 0;
   for (i = 0; i < n; i++) {
-    if (ncwork < colors[i]) ncwork = colors[i];
+    if (nc < colors[i]) nc = colors[i];
   }
-  ncwork++;
-  PetscCallMPI(MPIU_Allreduce(&ncwork, &nc, 1, MPIU_INT, MPI_MAX, comm));
+  nc++;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nc, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheck(nc <= ncolors, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of colors passed in %" PetscInt_FMT " is less than the actual number of colors in array %" PetscInt_FMT, ncolors, nc);
   (*iscoloring)->n     = nc;
   (*iscoloring)->is    = NULL;
@@ -536,7 +536,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
   IS              ndorder;
   PetscInt        n, *starts = NULL, *sums = NULL, *lsizes = NULL, *newi = NULL;
   const PetscInt *indices = NULL;
-  PetscMPIInt     np, npt;
+  PetscMPIInt     np;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, IS_CLASSID, 1);
@@ -555,8 +555,8 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
   PetscCall(ISGetIndices(part, &indices));
   np = 0;
   for (PetscInt i = 0; i < n; i++) PetscCall(PetscMPIIntCast(PetscMax(np, indices[i]), &np));
-  PetscCallMPI(MPIU_Allreduce(&np, &npt, 1, MPI_INT, MPI_MAX, comm));
-  np = npt + 1; /* so that it looks like a MPI_Comm_size output */
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &np, 1, MPI_INT, MPI_MAX, comm));
+  np++; /* so that it looks like a MPI_Comm_size output */
 
   /*
      lsizes - number of elements of each partition on this particular processor
@@ -619,7 +619,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
 PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
 {
   MPI_Comm        comm;
-  PetscInt        i, n, *lsizes;
+  PetscInt        i, n;
   const PetscInt *indices;
 
   PetscFunctionBegin;
@@ -635,10 +635,10 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
   PetscCall(ISGetLocalSize(part, &n));
   PetscCall(ISGetIndices(part, &indices));
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt np = 0, npt;
+    PetscInt np = 0;
     for (i = 0; i < n; i++) np = PetscMax(np, indices[i]);
-    PetscCallMPI(MPIU_Allreduce(&np, &npt, 1, MPIU_INT, MPI_MAX, comm));
-    np = npt + 1; /* so that it looks like a MPI_Comm_size output */
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &np, 1, MPIU_INT, MPI_MAX, comm));
+    np++; /* so that it looks like a MPI_Comm_size output */
     PetscCheck(np <= len, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT, len, np);
   }
 
@@ -647,13 +647,12 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  PetscCall(PetscCalloc1(len, &lsizes));
+  PetscCall(PetscArrayzero(count, len));
   for (i = 0; i < n; i++) {
-    if (indices[i] > -1) lsizes[indices[i]]++;
+    if (indices[i] > -1) count[indices[i]]++;
   }
   PetscCall(ISRestoreIndices(part, &indices));
-  PetscCallMPI(MPIU_Allreduce(lsizes, count, len, MPIU_INT, MPI_SUM, comm));
-  PetscCall(PetscFree(lsizes));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, count, len, MPIU_INT, MPI_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

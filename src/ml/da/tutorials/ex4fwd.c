@@ -39,10 +39,11 @@ static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal t
   PetscInt             xs, ys, xm, ym;
   PetscInt             nx, ny;
   PetscReal            dx, dy, dA;
-  PetscReal            L1_local = 0.0, L2_local = 0.0, Linf_local = 0.0;
+  PetscReal            L1_local = 0.0, L2_local = 0.0;
   PetscReal            sums[2];
 
   PetscFunctionBeginUser;
+  *Linf_error = 0.0;
   PetscCall(DMDAGetInfo(da, NULL, &nx, &ny, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dx = Lx / nx;
   dy = Ly / ny;
@@ -61,7 +62,7 @@ static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal t
       error = PetscAbsReal(PetscRealPart(x_num[j][i][0]) - h_exact);
       L1_local += error * dA;
       L2_local += error * error * dA;
-      Linf_local = PetscMax(Linf_local, error);
+      *Linf_error = PetscMax(*Linf_error, error);
     }
   }
 
@@ -71,7 +72,7 @@ static PetscErrorCode ComputeManufacturedError(Vec numerical, DM da, PetscReal t
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sums, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   *L1_error = sums[0];
   *L2_error = PetscSqrtReal(sums[1]);
-  PetscCallMPI(MPIU_Allreduce(&Linf_local, Linf_error, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, Linf_error, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

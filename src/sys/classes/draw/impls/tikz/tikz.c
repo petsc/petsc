@@ -71,12 +71,11 @@ static inline const char *TikZColorMap(int cl)
 static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
-  PetscBool       written;
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empty pictures for them */
-  PetscCallMPI(MPIU_Allreduce(&win->written, &written, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)draw)));
-  if (!written) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &win->written, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)draw)));
+  if (!win->written) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_END_FRAME));
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));
   win->written = PETSC_FALSE;

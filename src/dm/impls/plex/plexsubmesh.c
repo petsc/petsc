@@ -372,7 +372,7 @@ PetscErrorCode DMPlexCheckLabel(DM dm, MPI_Op reduceop, DMLabel label)
   const PetscSFNode *remotes;
   PetscInt          *rvalues, *lvalues;
   PetscInt           Nr, Nl, Nv;
-  PetscBool          mismatch = PETSC_FALSE, gmismatch;
+  PetscBool          gmismatch = PETSC_FALSE;
   MPI_Comm           comm;
   PetscMPIInt        rank;
 
@@ -422,7 +422,7 @@ PetscErrorCode DMPlexCheckLabel(DM dm, MPI_Op reduceop, DMLabel label)
         PetscCall(DMLabelGetValue(label, point, &val));
         if (val != rvalues[point]) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Label value mismatch (%" PetscInt_FMT " != %" PetscInt_FMT ") at point %" PetscInt_FMT "\n", rank, val, rvalues[point], point));
-          mismatch = PETSC_TRUE;
+          gmismatch = PETSC_TRUE;
         }
       }
     }
@@ -432,7 +432,7 @@ PetscErrorCode DMPlexCheckLabel(DM dm, MPI_Op reduceop, DMLabel label)
   PetscCall(ISRestoreIndices(valueIS, &values));
   PetscCall(ISDestroy(&valueIS));
   PetscCall(PetscFree2(rvalues, lvalues));
-  PetscCallMPI(MPIU_Allreduce(&mismatch, &gmismatch, 1, MPI_C_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gmismatch, 1, MPI_C_BOOL, MPI_LOR, comm));
   PetscCheck(!gmismatch, comm, PETSC_ERR_ARG_WRONG, "Label value mismatch detected");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4269,10 +4269,9 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     sdim = dim;
   } else {
     // We reset the subdimension based on what is being selected
-    PetscInt lsdim;
-    for (lsdim = dim; lsdim >= 0; --lsdim)
-      if (numSubPoints[lsdim]) break;
-    PetscCallMPI(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPI_MAX, comm));
+    for (sdim = dim; sdim >= 0; --sdim)
+      if (numSubPoints[sdim]) break;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sdim, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMSetDimension(subdm, sdim));
     PetscCall(DMSetCoordinateDim(subdm, cdim));
   }
@@ -5132,7 +5131,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool 
     PetscSF         sf;
     const PetscInt *leaves;
     PetscInt        cStart, cEnd, Nl;
-    PetscBool       hasSubcell = PETSC_FALSE, ghasSubcell;
+    PetscBool       ghasSubcell = PETSC_FALSE;
 
     PetscCall(DMPlexGetHeightStratum(*subdm, 0, &cStart, &cEnd));
     PetscCall(DMGetPointSF(*subdm, &sf));
@@ -5141,11 +5140,11 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool 
       const PetscInt point = leaves ? leaves[l] : l;
 
       if (point >= cStart && point < cEnd) {
-        hasSubcell = PETSC_TRUE;
+        ghasSubcell = PETSC_TRUE;
         break;
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ghasSubcell, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -79,7 +79,7 @@ static char PetscDisplay[256];
 static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
 {
   char        hostname[256], roothostname[256];
-  PetscMPIInt localmatch, allmatch;
+  PetscMPIInt allmatch;
   PetscBool   flag;
 
   PetscFunctionBegin;
@@ -88,9 +88,9 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
   PetscCallMPI(MPI_Bcast(roothostname, sizeof(roothostname), MPI_CHAR, 0, PETSC_COMM_WORLD));
   PetscCall(PetscStrcmp(hostname, roothostname, &flag));
 
-  localmatch = (PetscMPIInt)flag;
+  allmatch = (PetscMPIInt)flag;
 
-  PetscCallMPI(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
 
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -159,17 +159,17 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
   PetscLogDouble min, tot, ratio, avg;
   MPI_Comm       comm;
   PetscMPIInt    rank, size;
-  PetscLogDouble valrank[2], max[2];
+  PetscLogDouble max[2];
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  valrank[0] = local_val;
-  valrank[1] = (PetscLogDouble)rank;
+  max[0] = local_val;
+  max[1] = (PetscLogDouble)rank;
   PetscCallMPI(MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCallMPI(MPIU_Allreduce(valrank, &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
   PetscCallMPI(MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max[0] / min;
@@ -240,7 +240,7 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
 {
   MPI_Comm       comm; /* MPI communicator in reduction */
   PetscMPIInt    rank; /* rank of this process */
-  PetscLogDouble val_in[2], max[2], min[2];
+  PetscLogDouble max[2], min[2];
   PetscLogDouble minvalue, maxvalue, tot;
   PetscMPIInt    size;
   PetscMPIInt    minLoc, maxLoc;
@@ -249,10 +249,10 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  val_in[0] = value;
-  val_in[1] = (PetscLogDouble)rank;
-  PetscCallMPI(MPIU_Allreduce(val_in, max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
-  PetscCallMPI(MPIU_Allreduce(val_in, min, 1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
+  max[0] = min[0] = value;
+  max[1] = min[1] = (PetscLogDouble)rank;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, min, 1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
   maxvalue = max[0];
   maxLoc   = (PetscMPIInt)max[1];
   minvalue = min[0];

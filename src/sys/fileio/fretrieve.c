@@ -113,7 +113,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
 @*/
 PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 {
-  PetscMPIInt size, rank, *tagvalp, sum, cnt, i;
+  PetscMPIInt size, rank, *tagvalp, sum, i;
   PetscBool   flg;
   PetscMPIInt iflg;
   FILE       *fd;
@@ -171,15 +171,15 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
       PetscCallMPI(MPI_Barrier(comm));
       if (rank >= i) {
         fd = fopen(filename, "r");
-        if (fd) cnt = 1;
-        else cnt = 0;
+        if (fd) sum = 1;
+        else sum = 0;
         if (fd) {
           err = fclose(fd);
           PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
         }
-      } else cnt = 0;
+      } else sum = 0;
 
-      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -232,7 +232,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 @*/
 PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 {
-  PetscMPIInt size, rank, *tagvalp, sum, cnt, i;
+  PetscMPIInt size, rank, *tagvalp, sum, i;
   PetscBool   flg;
   PetscMPIInt iflg;
   FILE       *fd;
@@ -284,15 +284,15 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
       PetscCallMPI(MPI_Barrier(comm));
       if (rank >= i) {
         fd = fopen(filename, "r");
-        if (fd) cnt = 1;
-        else cnt = 0;
+        if (fd) sum = 1;
+        else sum = 0;
         if (fd) {
           err = fclose(fd);
           PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
         }
-      } else cnt = 0;
+      } else sum = 0;
 
-      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {

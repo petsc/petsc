@@ -457,7 +457,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   PetscScalar        vpos[3];
   const PetscScalar *x;
   PetscScalar       *e;
-  PetscReal          l2err = 0.0, linferr = 0.0, global_l2, global_linf;
+  PetscReal          l2err = 0.0, linferr = 0.0;
   PetscInt           dof_index, N;
   const moab::Range *ownedvtx;
 
@@ -498,9 +498,9 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
     }
   }
 
-  PetscCallMPI(MPIU_Allreduce(&l2err, &global_l2, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPIU_Allreduce(&linferr, &global_linf, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2 / N), global_linf));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &l2err, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &linferr, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(l2err / N), linferr));
 
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(sol, &x));

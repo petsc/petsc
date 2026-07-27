@@ -342,19 +342,18 @@ static PetscErrorCode MatGetRow_MPIAdj(Mat A, PetscInt row, PetscInt *nz, PetscI
 static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
-  PetscBool   flag;
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) flag = PETSC_FALSE;
+  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) *flg = PETSC_FALSE;
 
   /* if the a->i are the same */
-  PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, &flag));
+  PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, flg));
 
   /* if a->j are the same */
-  PetscCall(PetscArraycmp(a->j, b->j, a->nz, &flag));
+  PetscCall(PetscArraycmp(a->j, b->j, a->nz, flg));
 
-  PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -720,15 +719,14 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
 static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, PetscInt *j, PetscInt *values)
 {
   Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
-  PetscBool   useedgeweights;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-  if (values) useedgeweights = PETSC_TRUE;
-  else useedgeweights = PETSC_FALSE;
+  if (values) b->useedgeweights = PETSC_TRUE;
+  else b->useedgeweights = PETSC_FALSE;
   /* Make everybody knows if they are using edge weights or not */
-  PetscCallMPI(MPIU_Allreduce(&useedgeweights, &b->useedgeweights, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &b->useedgeweights, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
 
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(i[0] == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "First i[] index must be zero, instead it is %" PetscInt_FMT, i[0]);

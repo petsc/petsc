@@ -253,11 +253,11 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
 
   p = 0;
   while (p < size) {
-    PetscInt my_loc, next_loc;
+    PetscInt next_loc;
     PetscInt num_to_add;
 
-    my_loc = num_names_local_remaining > 0 ? rank : PETSC_MPI_INT_MAX;
-    PetscCallMPI(MPIU_Allreduce(&my_loc, &next_loc, 1, MPIU_INT, MPI_MIN, comm));
+    next_loc = num_names_local_remaining > 0 ? rank : PETSC_MPI_INT_MAX;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &next_loc, 1, MPIU_INT, MPI_MIN, comm));
     if (next_loc == PETSC_MPI_INT_MAX) break;
     PetscAssert(next_loc >= p, comm, PETSC_ERR_PLIB, "Failed invariant, expected increasing next process");
     PetscCall(PetscCIntCast(next_loc, &p));

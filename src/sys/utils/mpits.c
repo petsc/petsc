@@ -28,10 +28,10 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) { /* We don't have a PetscObject so can't use PetscValidLogicalCollectiveEnum */
-    PetscMPIInt b1[2], b2[2];
-    b1[0] = -(PetscMPIInt)twosided;
-    b1[1] = (PetscMPIInt)twosided;
-    PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, comm));
+    PetscMPIInt b2[2];
+    b2[0] = -(PetscMPIInt)twosided;
+    b2[1] = (PetscMPIInt)twosided;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b2, 2, MPI_INT, MPI_MAX, comm));
     PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes");
   }
   _twosided_type = twosided;

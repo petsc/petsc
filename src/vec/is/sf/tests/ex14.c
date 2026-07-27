@@ -4,7 +4,7 @@ static char help[] = "Test event log of VecScatter with various block sizes\n\n"
 
 int main(int argc, char **argv)
 {
-  PetscInt           i, j, low, high, n = 256, N, errors, tot_errors;
+  PetscInt           i, j, low, high, n = 256, N, tot_errors;
   PetscInt           bs = 1, ix[2], iy[2];
   PetscMPIInt        nproc, rank;
   PetscScalar       *xval;
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscLogStagePush(stage1));
   PetscCall(PetscLogEventBegin(event1, 0, 0, 0, 0));
-  errors = 0;
+  tot_errors = 0;
   for (i = 0; i < niter; i++) {
     /* set x = 0+i, 1+i, 2+i, ..., N-1+i */
     PetscCall(VecGetArray(x, &xval));
@@ -67,29 +67,28 @@ int main(int argc, char **argv)
     PetscCall(VecScatterEnd(ctx, x, y, INSERT_VALUES, SCATTER_FORWARD));
     /* check if y has correct values */
     PetscCall(VecGetArrayRead(y, &yval));
-    if ((PetscInt)PetscRealPart(yval[0]) != ix[0] + i) errors++;
-    if ((PetscInt)PetscRealPart(yval[1]) != ix[1] + i) errors++;
+    if ((PetscInt)PetscRealPart(yval[0]) != ix[0] + i) tot_errors++;
+    if ((PetscInt)PetscRealPart(yval[1]) != ix[1] + i) tot_errors++;
     PetscCall(VecRestoreArrayRead(y, &yval));
   }
   PetscCall(PetscLogEventEnd(event1, 0, 0, 0, 0));
   PetscCall(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  PetscCallMPI(MPIU_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (tot_errors) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n", bs));
 
   /* print out event log of VecScatter(bs=1) */
   if (PetscDefined(USE_LOG)) {
-    PetscLogDouble     numMessages, messageLength;
     PetscEventPerfInfo eventInfo;
     PetscInt           tot_msg, tot_len, avg_len;
 
     PetscCall(PetscLogEventGetPerfInfo(stage1, event1, &eventInfo));
-    PetscCallMPI(MPIU_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-    PetscCallMPI(MPIU_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-    tot_msg = (PetscInt)numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
-    tot_len = (PetscInt)messageLength * 0.5;
-    avg_len = tot_msg ? (PetscInt)(messageLength / numMessages) : 0;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eventInfo.numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eventInfo.messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    tot_msg = (PetscInt)eventInfo.numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
+    tot_len = (PetscInt)eventInfo.messageLength * 0.5;
+    avg_len = tot_msg ? (PetscInt)(eventInfo.messageLength / eventInfo.numMessages) : 0;
     /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n", bs, tot_msg, tot_len, avg_len));
   }
@@ -118,7 +117,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscLogStagePush(stage2));
   PetscCall(PetscLogEventBegin(event2, 0, 0, 0, 0));
-  errors = 0;
+  tot_errors = 0;
   for (i = 0; i < niter; i++) {
     /* set x = 0+i, 1+i, 2+i, ..., N-1+i */
     PetscCall(VecGetArray(x, &xval));
@@ -129,29 +128,28 @@ int main(int argc, char **argv)
     PetscCall(VecScatterEnd(ctx, x, y, INSERT_VALUES, SCATTER_FORWARD));
     /* check if y has correct values */
     PetscCall(VecGetArrayRead(y, &yval));
-    if ((PetscInt)PetscRealPart(yval[0]) != ix[0] * bs + i) errors++;
-    if ((PetscInt)PetscRealPart(yval[bs]) != ix[1] * bs + i) errors++;
+    if ((PetscInt)PetscRealPart(yval[0]) != ix[0] * bs + i) tot_errors++;
+    if ((PetscInt)PetscRealPart(yval[bs]) != ix[1] * bs + i) tot_errors++;
     PetscCall(VecRestoreArrayRead(y, &yval));
   }
   PetscCall(PetscLogEventEnd(event2, 0, 0, 0, 0));
   PetscCall(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  PetscCallMPI(MPIU_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (tot_errors) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n", bs));
 
   /* print out event log of VecScatter(bs=4) */
   if (PetscDefined(USE_LOG)) {
-    PetscLogDouble     numMessages, messageLength;
     PetscEventPerfInfo eventInfo;
     PetscInt           tot_msg, tot_len, avg_len;
 
     PetscCall(PetscLogEventGetPerfInfo(stage2, event2, &eventInfo));
-    PetscCallMPI(MPIU_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-    PetscCallMPI(MPIU_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-    tot_msg = (PetscInt)numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
-    tot_len = (PetscInt)messageLength * 0.5;
-    avg_len = tot_msg ? (PetscInt)(messageLength / numMessages) : 0;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eventInfo.numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eventInfo.messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    tot_msg = (PetscInt)eventInfo.numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
+    tot_len = (PetscInt)eventInfo.messageLength * 0.5;
+    avg_len = tot_msg ? (PetscInt)(eventInfo.messageLength / eventInfo.numMessages) : 0;
     /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n", bs, tot_msg, tot_len, avg_len));
   }

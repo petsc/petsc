@@ -1484,12 +1484,12 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   PetscFEGeom      fegeom;
   PetscScalar     *funcVal, *interpolant;
   PetscReal       *coords, *gcoords;
-  PetscReal        localDiff = 0.0;
   const PetscReal *quadWeights;
   PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, c, field, fieldOffset;
   PetscBool        transform;
 
   PetscFunctionBegin;
+  *diff = 0.0;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
   fegeom.dimEmbed = coordDim;
@@ -1591,10 +1591,10 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     }
     PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
     if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " diff %g\n", c, (double)elemDiff));
-    localDiff += elemDiff;
+    *diff += elemDiff;
   }
   PetscCall(PetscFree6(funcVal, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
-  PetscCallMPI(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1610,11 +1610,11 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   const PetscReal *quadWeights;
   PetscFEGeom      fegeom;
   PetscReal       *coords, *gcoords;
-  PetscReal        localDiff = 0.0;
   PetscInt         dim, coordDim, qNc = 0, Nq = 0, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset;
   PetscBool        transform;
 
   PetscFunctionBegin;
+  *diff = 0.0;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
   fegeom.dimEmbed = coordDim;
@@ -1704,11 +1704,11 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     }
     PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
     if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " diff %g\n", c, (double)elemDiff));
-    localDiff += elemDiff;
+    *diff += elemDiff;
   }
   PetscCall(PetscFree6(funcVal, coords, fegeom.J, fegeom.invJ, interpolant, fegeom.detJ));
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCallMPI(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1720,7 +1720,6 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   DMLabel        depthLabel;
   PetscSection   section;
   Vec            localX, tv;
-  PetscReal     *localDiff;
   PetscInt       dim, depth, dE, Nf, f, Nds, s;
   PetscBool      transform;
 
@@ -1741,7 +1740,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX));
   PetscCall(DMProjectFunctionLocal(dm, time, funcs, ctxs, INSERT_BC_VALUES, localX));
   PetscCall(DMGetNumDS(dm, &Nds));
-  PetscCall(PetscCalloc1(Nf, &localDiff));
+  PetscCall(PetscArrayzero(diff, Nf));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     DMLabel          label;
@@ -1851,8 +1850,8 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
         }
         fOff += Nb;
         qc += Nc;
-        localDiff[fields[f]] += elemDiff;
-        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  cell %" PetscInt_FMT " field %" PetscInt_FMT " cum diff %g\n", cell, fields[f], (double)localDiff[fields[f]]));
+        diff[fields[f]] += elemDiff;
+        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  cell %" PetscInt_FMT " field %" PetscInt_FMT " cum diff %g\n", cell, fields[f], (double)diff[fields[f]]));
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, cell, NULL, &x));
     }
@@ -1864,8 +1863,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscFree6(funcVal, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCallMPI(MPIU_Allreduce(localDiff, diff, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
-  PetscCall(PetscFree(localDiff));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, diff, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   for (f = 0; f < Nf; ++f) diff[f] = PetscSqrtReal(diff[f]);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2618,7 +2616,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
 PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, PetscCtx ctx)
 {
   PetscInt     printFEM;
-  PetscScalar *cintegral, *lintegral;
+  PetscScalar *cintegral;
   PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
   Vec          locX;
 
@@ -2632,7 +2630,8 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, Pet
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
-  PetscCall(PetscCalloc2(Nf, &lintegral, (cEnd - cStart) * Nf, &cintegral));
+  PetscCall(PetscArrayzero(integral, Nf));
+  PetscCall(PetscCalloc1((cEnd - cStart) * Nf, &cintegral));
   /* Get local solution with boundary values */
   PetscCall(DMGetLocalVector(dm, &locX));
   PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locX, 0.0, NULL, NULL, NULL));
@@ -2646,15 +2645,15 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, Pet
     const PetscInt c = cell - cStart;
 
     if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
-    for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c * Nf + f];
+    for (f = 0; f < Nf; ++f) integral[f] += cintegral[c * Nf + f];
   }
-  PetscCallMPI(MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   if (printFEM) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Integral:"));
     for (f = 0; f < Nf; ++f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " %g", (double)PetscRealPart(integral[f])));
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "\n"));
   }
-  PetscCall(PetscFree2(lintegral, cintegral));
+  PetscCall(PetscFree(cintegral));
   PetscCall(PetscLogEventEnd(DMPLEX_IntegralFEM, dm, 0, 0, 0));
   PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -6445,10 +6444,10 @@ PetscErrorCode DMPlexComputeJacobianByKey(DM dm, PetscFormKey key, IS cellIS, Pe
   PetscCall(DMPlexComputeBdJacobian_Internal(dm, locX, locX_t, t, X_tShift, Jac, JacP, ctx));
   /* Assemble matrix */
 end: {
-  PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
+  PetscBool gassOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE;
 
   if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gassOp, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
@@ -6692,10 +6691,10 @@ PetscErrorCode DMPlexComputeJacobianByKeyGeneral(DM dmr, DM dmc, PetscFormKey ke
   PetscCall(DMPlexComputeBdJacobian_Internal(dmr, locX, locX_t, t, X_tShift, Jac, JacP, ctx));
   /* Assemble matrix */
 end: {
-  PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
+  PetscBool gassOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE;
 
   if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPI_C_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gassOp, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));

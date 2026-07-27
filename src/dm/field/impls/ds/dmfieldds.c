@@ -1201,14 +1201,14 @@ PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec,
   if (!disc || isContainer) {
     MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
     PetscFE        fe;
-    DMPolytopeType ct, locct = DM_POLYTOPE_UNKNOWN;
+    DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       dim, cStart, cEnd, cellHeight;
 
     PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
-    if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &locct));
-    PetscCallMPI(MPIU_Allreduce(&locct, &ct, 1, MPI_INT, MPI_MIN, comm));
+    if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ct, 1, MPI_INT, MPI_MIN, comm));
     PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, numComponents, ct, 1, PETSC_DETERMINE, &fe));
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-field_fe_view"));
     disc = (PetscObject)fe;

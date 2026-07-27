@@ -588,12 +588,12 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
 static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
 {
   p4est_topidx_t     t, flt, llt;
-  DM_Forest         *forest      = (DM_Forest *)dm->data;
-  DM_Forest_pforest *pforest     = (DM_Forest_pforest *)forest->data;
-  PetscInt           maxlevelloc = 0;
+  DM_Forest         *forest  = (DM_Forest *)dm->data;
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *)forest->data;
   p4est_t           *p4est;
 
   PetscFunctionBegin;
+  *lev = 0;
   PetscCheck(pforest, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing DM_Forest_pforest");
   PetscCheck(pforest->forest, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing p4est_t");
   p4est = pforest->forest;
@@ -601,9 +601,9 @@ static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
   llt   = p4est->last_local_tree;
   for (t = flt; t <= llt; t++) {
     p4est_tree_t *tree = &(((p4est_tree_t *)p4est->trees->array)[t]);
-    maxlevelloc        = PetscMax((PetscInt)tree->maxlevel, maxlevelloc);
+    *lev               = PetscMax((PetscInt)tree->maxlevel, *lev);
   }
-  PetscCallMPI(MPIU_Allreduce(&maxlevelloc, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -855,7 +855,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   if (adaptFrom) { /* start with the old forest */
     DMLabel            adaptLabel;
     PetscInt           defaultValue;
-    PetscInt           numValues, numValuesGlobal, cLocalStart, count;
+    PetscInt           numValuesGlobal, cLocalStart, count;
     DM_Forest         *aforest  = (DM_Forest *)adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest *)aforest->data;
     PetscBool          computeAdaptSF;
@@ -869,8 +869,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscCall(DMForestGetAdaptivityLabel(dm, &adaptLabel));
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
-      PetscCall(DMLabelGetNumValues(adaptLabel, &numValues));
-      PetscCallMPI(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
+      PetscCall(DMLabelGetNumValues(adaptLabel, &numValuesGlobal));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
       PetscCall(DMLabelGetDefaultValue(adaptLabel, &defaultValue));
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         PetscCall(DMForestGetMinimumRefinement(dm, &ctx.minLevel));
@@ -4586,13 +4586,13 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
   /* Check this plex is compatible with the base */
   {
     IS       gnum[2];
-    PetscInt ncells[2], gncells[2];
+    PetscInt gncells[2];
 
     PetscCall(DMPlexGetCellNumbering(base, &gnum[0]));
     PetscCall(DMPlexGetCellNumbering(plex, &gnum[1]));
-    PetscCall(ISGetMinMax(gnum[0], NULL, &ncells[0]));
-    PetscCall(ISGetMinMax(gnum[1], NULL, &ncells[1]));
-    PetscCallMPI(MPIU_Allreduce(ncells, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCall(ISGetMinMax(gnum[0], NULL, &gncells[0]));
+    PetscCall(ISGetMinMax(gnum[1], NULL, &gncells[1]));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCheck(gncells[0] == gncells[1], PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Invalid number of base cells! Expected %" PetscInt_FMT ", found %" PetscInt_FMT, gncells[0] + 1, gncells[1] + 1);
   }
 

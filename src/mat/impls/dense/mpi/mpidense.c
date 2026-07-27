@@ -906,26 +906,26 @@ static PetscErrorCode MatGetInfo_MPIDense(Mat A, MatInfoType flag, MatInfo *info
 {
   Mat_MPIDense  *mat = (Mat_MPIDense *)A->data;
   Mat            mdn = mat->A;
-  PetscLogDouble isend[5], irecv[5];
+  PetscLogDouble irecv[5];
 
   PetscFunctionBegin;
   info->block_size = 1.0;
 
   PetscCall(MatGetInfo(mdn, MAT_LOCAL, info));
 
-  isend[0] = info->nz_used;
-  isend[1] = info->nz_allocated;
-  isend[2] = info->nz_unneeded;
-  isend[3] = info->memory;
-  isend[4] = info->mallocs;
+  irecv[0] = info->nz_used;
+  irecv[1] = info->nz_allocated;
+  irecv[2] = info->nz_unneeded;
+  irecv[3] = info->memory;
+  irecv[4] = info->mallocs;
   if (flag == MAT_LOCAL) {
-    info->nz_used      = isend[0];
-    info->nz_allocated = isend[1];
-    info->nz_unneeded  = isend[2];
-    info->memory       = isend[3];
-    info->mallocs      = isend[4];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -933,7 +933,7 @@ static PetscErrorCode MatGetInfo_MPIDense(Mat A, MatInfoType flag, MatInfo *info
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -1037,7 +1037,6 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
   Mat_MPIDense      *mdn = (Mat_MPIDense *)A->data;
   PetscInt           i, j;
   PetscMPIInt        size;
-  PetscReal          sum = 0.0;
   const PetscScalar *av, *v;
 
   PetscFunctionBegin;
@@ -1048,11 +1047,12 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
     PetscCall(MatNorm(mdn->A, type, nrm));
   } else {
     if (type == NORM_FROBENIUS) {
+      *nrm = 0.0;
       for (i = 0; i < mdn->A->cmap->n * mdn->A->rmap->n; i++) {
-        sum += PetscRealPart(PetscConj(*v) * (*v));
+        *nrm += PetscRealPart(PetscConj(*v) * (*v));
         v++;
       }
-      PetscCallMPI(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       *nrm = PetscSqrtReal(*nrm);
       PetscCall(PetscLogFlops(2.0 * mdn->A->cmap->n * mdn->A->rmap->n));
     } else if (type == NORM_1) {

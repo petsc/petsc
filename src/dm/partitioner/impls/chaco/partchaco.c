@@ -77,11 +77,11 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)part, &comm));
   if (PetscDefined(USE_DEBUG)) {
-    int       ival, isum;
+    int       isum;
     PetscBool distributed;
 
-    ival = (numVertices > 0);
-    PetscCallMPI(MPIU_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm));
+    isum = (numVertices > 0);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &isum, 1, MPI_INT, MPI_SUM, comm));
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
     PetscCheck(!distributed, comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }

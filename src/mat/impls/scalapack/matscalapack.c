@@ -58,22 +58,22 @@ static PetscErrorCode MatView_ScaLAPACK(Mat A, PetscViewer viewer)
 static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A, MatInfoType flag, MatInfo *info)
 {
   Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data;
-  PetscLogDouble isend[2], irecv[2];
+  PetscLogDouble irecv[2];
 
   PetscFunctionBegin;
   info->block_size = 1.0;
 
-  isend[0] = a->lld * a->locc;  /* locally allocated */
-  isend[1] = a->locr * a->locc; /* used submatrix */
+  irecv[0] = a->lld * a->locc;  /* locally allocated */
+  irecv[1] = a->locr * a->locc; /* used submatrix */
   if (flag == MAT_LOCAL || flag == MAT_GLOBAL_MAX) {
-    info->nz_allocated = isend[0];
-    info->nz_used      = isend[1];
+    info->nz_allocated = irecv[0];
+    info->nz_used      = irecv[1];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 2, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 2, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
     info->nz_allocated = irecv[0];
     info->nz_used      = irecv[1];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCallMPI(MPIU_Allreduce(isend, irecv, 2, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, irecv, 2, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
     info->nz_allocated = irecv[0];
     info->nz_used      = irecv[1];
   }

@@ -118,7 +118,6 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   PetscBool               g_computed = PETSC_FALSE; /* to prevent extra gradient computation */
   Vec                     g_old;
   PetscReal               owlqn_minstep = 0.005;
-  PetscReal               partgdx;
   MPI_Comm                comm;
 
   PetscFunctionBegin;
@@ -212,9 +211,9 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     ++its;
     PetscCall(VecWAXPY(armP->work, ls->step, s, x));
 
-    partgdx = 0.0;
-    PetscCall(ProjWork_OWLQN(armP->work, x, g_old, &partgdx));
-    PetscCallMPI(MPIU_Allreduce(&partgdx, &gdx, 1, MPIU_REAL, MPIU_SUM, comm));
+    gdx = 0.0;
+    PetscCall(ProjWork_OWLQN(armP->work, x, g_old, &gdx));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gdx, 1, MPIU_REAL, MPIU_SUM, comm));
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {

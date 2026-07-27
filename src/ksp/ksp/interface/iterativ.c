@@ -295,7 +295,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
 {
   Vec                resid;
   const PetscScalar *r;
-  PetscReal          rmax, pwork;
+  PetscReal          rmax;
   PetscInt           i, n, N;
 
   PetscFunctionBegin;
@@ -304,11 +304,11 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   PetscCall(VecGetLocalSize(resid, &n));
   PetscCall(VecGetSize(resid, &N));
   PetscCall(VecGetArrayRead(resid, &r));
-  pwork = 0.0;
-  for (i = 0; i < n; ++i) pwork += (PetscAbsScalar(r[i]) > .20 * rmax);
+  *per = 0.0;
+  for (i = 0; i < n; ++i) *per += (PetscAbsScalar(r[i]) > .20 * rmax);
   PetscCall(VecRestoreArrayRead(resid, &r));
   PetscCall(VecDestroy(&resid));
-  PetscCallMPI(MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
   *per = *per / N;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

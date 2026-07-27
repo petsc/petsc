@@ -1261,7 +1261,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   DMLabel          depthLabel;
   PetscMPIInt      rank;
   PetscInt         depth, d, numLabels, numLocalLabels, l;
-  PetscBool        hasLabels  = PETSC_FALSE, lsendDepth, sendDepth;
+  PetscBool        hasLabels  = PETSC_FALSE, sendDepth;
   PetscObjectState depthState = -1;
 
   PetscFunctionBegin;
@@ -1276,8 +1276,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   if (depthLabel) PetscCall(PetscObjectStateGet((PetscObject)depthLabel, &depthState));
-  lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPI_C_BOOL, MPI_LOR, comm));
+  sendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sendDepth, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (sendDepth) {
     PetscCall(DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel));
     PetscCall(DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE));
@@ -1289,7 +1289,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
   for (l = 0; l < numLabels; ++l) {
     DMLabel     label = NULL, labelNew = NULL;
-    PetscBool   isDepth, lisOutput     = PETSC_TRUE, isOutput;
+    PetscBool   isDepth, isOutput      = PETSC_TRUE;
     const char *name = NULL;
 
     if (hasLabels) {
@@ -1318,8 +1318,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     }
     PetscCall(DMAddLabel(dmParallel, labelNew));
     /* Put the output flag in the new label */
-    if (hasLabels) PetscCall(DMGetLabelOutput(dm, name, &lisOutput));
-    PetscCallMPI(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPI_C_BOOL, MPI_LAND, comm));
+    if (hasLabels) PetscCall(DMGetLabelOutput(dm, name, &isOutput));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &isOutput, 1, MPI_C_BOOL, MPI_LAND, comm));
     PetscCall(PetscObjectGetName((PetscObject)labelNew, &name));
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));
@@ -1331,7 +1331,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     // Check that each point has a valid cell type
     if (PetscDefined(USE_DEBUG)) {
       PetscInt  pStart, pEnd;
-      PetscBool defined = PETSC_TRUE, gdefined;
+      PetscBool gdefined = PETSC_TRUE;
 
       PetscCall(DMPlexGetChart(dmParallel, &pStart, &pEnd));
       for (PetscInt p = pStart; p < pEnd; ++p) {
@@ -1339,11 +1339,11 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
 
         PetscCall(DMLabelGetValue(ctLabel, p, &val));
         if (val < 0) {
-          defined = PETSC_FALSE;
+          gdefined = PETSC_FALSE;
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Point %" PetscInt_FMT " has no cell type\n", rank, p));
         }
       }
-      PetscCallMPI(MPIU_Allreduce(&defined, &gdefined, 1, MPI_C_BOOL, MPI_LAND, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gdefined, 1, MPI_C_BOOL, MPI_LAND, comm));
       PetscCheck(gdefined, comm, PETSC_ERR_PLIB, "Not all points have a valid cell type");
     }
     // Reset label for fast lookup

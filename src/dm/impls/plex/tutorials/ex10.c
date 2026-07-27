@@ -88,10 +88,9 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
   while (adapt) {
     DM       dmAdapt;
     DMLabel  adaptLabel;
-    PetscInt nAdaptLoc[2], nAdapt[2];
+    PetscInt nAdapt[2];
 
-    adapt        = PETSC_FALSE;
-    nAdaptLoc[0] = nAdaptLoc[1] = 0;
+    adapt     = PETSC_FALSE;
     nAdapt[0] = nAdapt[1] = 0;
     /* Adaptation is not preserving the domain label */
     PetscCall(DMHasLabel(dmCur, "Cell Sets", &hasLabel));
@@ -118,16 +117,16 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
       PetscCheck(vidx >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %" PetscInt_FMT " for cell %" PetscInt_FMT " does not exist in label", value, c);
       if (volume > volConst[vidx]) {
         PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
-        ++nAdaptLoc[0];
+        ++nAdapt[0];
       }
       if (volume < volConst[vidx] * ratio) {
         PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN));
-        ++nAdaptLoc[1];
+        ++nAdapt[1];
       }
     }
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
-    PetscCallMPI(MPIU_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dmCur)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dmCur)));
     if (nAdapt[0]) {
       PetscCall(PetscInfo(dmCur, "Adapted mesh, marking %" PetscInt_FMT " cells for refinement, and %" PetscInt_FMT " cells for coarsening\n", nAdapt[0], nAdapt[1]));
       PetscCall(DMAdaptLabel(dmCur, adaptLabel, &dmAdapt));

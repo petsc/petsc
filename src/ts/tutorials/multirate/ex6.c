@@ -206,12 +206,13 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
 {
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, sf = ctx->sf, fs = ctx->fs;
-  PetscReal    hxf, hxs, cfl_idt = 0;
+  PetscReal    hxf, hxs;
   PetscScalar *x, *f, *slope;
   Vec          Xloc;
   DM           da;
 
   PetscFunctionBeginUser;
+  ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
@@ -325,7 +326,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
         uR[j] = x[(i - 0) * dof + j] - slope[(i - 0) * dof + j] * hxs / 2;
       }
       PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user, dof, uL, uR, ctx->flux, &maxspeed));
-      cfl_idt = PetscMax(cfl_idt, PetscAbsScalar(maxspeed / hxs)); /* Max allowable value of 1/Delta t */
+      ctx->cfl_idt = PetscMax(ctx->cfl_idt, PetscAbsScalar(maxspeed / hxs)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j = 0; j < dof; j++) f[(i - 1) * dof + j] -= ctx->flux[j] / hxs;
       }
@@ -338,7 +339,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt, tnow;
@@ -357,12 +358,13 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
 {
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, islow = 0, sf = ctx->sf, fs = ctx->fs, lsbwidth = ctx->lsbwidth, rsbwidth = ctx->rsbwidth;
-  PetscReal    hxs, hxf, cfl_idt = 0;
+  PetscReal    hxs, hxf;
   PetscScalar *x, *f, *slope;
   Vec          Xloc;
   DM           da;
 
   PetscFunctionBeginUser;
+  ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
   PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
@@ -427,7 +429,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
         uR[j] = x[(i - 0) * dof + j] - slope[(i - 0) * dof + j] * hxs / 2;
       }
       PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user, dof, uL, uR, ctx->flux, &maxspeed));
-      cfl_idt = PetscMax(cfl_idt, PetscAbsScalar(maxspeed / hxs)); /* Max allowable value of 1/Delta t */
+      ctx->cfl_idt = PetscMax(ctx->cfl_idt, PetscAbsScalar(maxspeed / hxs)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j = 0; j < dof; j++) f[(islow - 1) * dof + j] -= ctx->flux[j] / hxs;
       }
@@ -476,7 +478,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -875,7 +877,7 @@ int main(int argc, char *argv[])
   PetscCall(SolutionStatsView(da, X, PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscInt           steps;
-    PetscScalar        mass_initial, mass_final, mass_difference, mass_differenceg;
+    PetscScalar        mass_initial, mass_final, mass_difference;
     const PetscScalar *ptr_X, *ptr_X0;
     const PetscReal    hs = (ctx.xmax - ctx.xmin) * 3.0 / 4.0 / count_slow;
     const PetscReal    hf = (ctx.xmax - ctx.xmin) / 4.0 / count_fast;
@@ -904,8 +906,8 @@ int main(int argc, char *argv[])
     PetscCall(DMDAVecRestoreArrayRead(da, X0, (void *)&ptr_X0));
     PetscCall(DMDAVecRestoreArrayRead(da, X, (void *)&ptr_X));
     mass_difference = mass_final - mass_initial;
-    PetscCallMPI(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
-    PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_differenceg));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mass_difference, 1, MPIU_SCALAR, MPIU_SUM, comm));
+    PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_difference));
     PetscCall(PetscPrintf(comm, "Final time %g, steps %" PetscInt_FMT "\n", (double)ptime, steps));
     PetscCall(PetscPrintf(comm, "Maximum allowable stepsize according to CFL %g\n", (double)(1 / ctx.cfl_idt)));
     if (ctx.exact) {

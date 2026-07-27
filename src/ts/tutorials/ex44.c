@@ -40,7 +40,7 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
   Vec          V;
   PetscScalar *u, *v;
   PetscMPIInt  rank;
-  PetscBool    inflag = PETSC_FALSE, outflag;
+  PetscBool    inflag = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -60,8 +60,8 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball bounced %" PetscInt_FMT " times\n", rank, app->bounces));
     inflag = PETSC_TRUE; // current process requested to terminate
   }
-  PetscCallMPI(MPIU_Allreduce(&inflag, &outflag, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ts)));
-  if (outflag) PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER)); // request TS to terminate, sync on all ranks
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &inflag, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ts)));
+  if (inflag) PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER)); // request TS to terminate, sync on all ranks
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

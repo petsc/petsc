@@ -520,6 +520,12 @@ Even with the use of `clang-format` there are still many decisions about code fo
     an `MPI_Allreduce()` on it. Instead, use the MPI routine
     `MPI_Allreduce()` directly in the code.
 
+    For `MPIU_Allreduce()`, prefer `MPI_IN_PLACE` when the receive buffer is
+    writable and can be initialized with the local contribution before the
+    collective. Do not introduce a separate auxiliary send buffer solely for
+    the reduction; retain one when the receive buffer cannot safely hold the
+    local contribution.
+
 13. Never use a local variable counter such as `PetscInt flops = 0;` to
     accumulate flops and then call `PetscLogFlops();` *always* just
     call `PetscLogFlops()` directly when needed.

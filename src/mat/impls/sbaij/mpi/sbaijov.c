@@ -369,7 +369,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
       k++;
       odata2 += len;
       len_unused -= len;
-      PetscCall(PetscMPIIntCast(len, &len_s[proc_id])); /* length of message sending back to proc_id */
+      PetscCall(PetscMPIIntCast(len, &iwork[proc_id])); /* length of message sending back to proc_id */
     }
   }
   PetscCall(PetscFree(odata1));
@@ -390,7 +390,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
 
   /* 4. Receive work done on other processors, then merge */
   /* get max number of messages that this processor expects to recv */
-  PetscCallMPI(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, iwork, size, MPI_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(iwork[rank] + 1, &data2));
   PetscCall(PetscFree4(len_s, btable, iwork, Bowners));
 

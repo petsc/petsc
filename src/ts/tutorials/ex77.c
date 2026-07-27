@@ -831,7 +831,7 @@ static PetscErrorCode AdvectParticles(TS ts)
   Vec       coordinates;
   AdvCtx   *adv;
   PetscReal time;
-  PetscBool lreset, reset;
+  PetscBool reset;
   PetscInt  dim, n, N, newn, newN;
 
   PetscFunctionBeginUser;
@@ -853,8 +853,8 @@ static PetscErrorCode AdvectParticles(TS ts)
   PetscCall(DMSwarmMigrate(sdm, PETSC_TRUE));
   PetscCall(DMSwarmGetSize(sdm, &newN));
   PetscCall(DMSwarmGetLocalSize(sdm, &newn));
-  lreset = (n != newn || N != newN) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&lreset, &reset, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sts)));
+  reset = (n != newn || N != newN) ? PETSC_TRUE : PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reset, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sts)));
   if (reset) {
     PetscCall(TSReset(sts));
     PetscCall(DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor));

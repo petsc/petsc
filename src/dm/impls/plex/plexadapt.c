@@ -291,11 +291,11 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
   PetscCall(ISRestoreIndices(flagIS, &flags));
   PetscCall(ISDestroy(&flagIS));
   {
-    PetscInt minMaxFlag[2], minMaxFlagGlobal[2];
+    PetscInt minMaxFlagGlobal[2];
 
-    minMaxFlag[0] = minFlag;
-    minMaxFlag[1] = -maxFlag;
-    PetscCallMPI(MPIU_Allreduce(minMaxFlag, minMaxFlagGlobal, 2, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    minMaxFlagGlobal[0] = minFlag;
+    minMaxFlagGlobal[1] = -maxFlag;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, minMaxFlagGlobal, 2, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     minFlag = minMaxFlagGlobal[0];
     maxFlag = -minMaxFlagGlobal[1];
   }

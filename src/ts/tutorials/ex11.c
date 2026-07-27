@@ -1110,7 +1110,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscBool          computeGradient;
   Vec                grad, locGrad, locX, errVec;
   PetscInt           cStart, cEnd, c, dim, nRefine, nCoarsen;
-  PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
+  PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL};
   PetscScalar       *errArray;
   const PetscScalar *pointVals;
   const PetscScalar *pointGrads;
@@ -1182,8 +1182,8 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscCall(PetscFVSetComputeGradients(fvm, computeGradient));
   PetscCall(PetscFVSetLimiter(fvm, tctx->limiter));
   minMaxInd[1] = -minMaxInd[1];
-  PetscCallMPI(MPIU_Allreduce(minMaxInd, minMaxIndGlobal, 2, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-  PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", (double)minMaxIndGlobal[0], (double)(-minMaxIndGlobal[1])));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, minMaxInd, 2, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", (double)minMaxInd[0], (double)(-minMaxInd[1])));
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     PetscCall(DMAdaptLabel(dm, adaptLabel, &adaptedDM));
   }

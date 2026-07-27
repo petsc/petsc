@@ -379,10 +379,10 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 
     /* Now the subdomains are defined.  Determine their global and max local numbers, if necessary. */
     if (osm->nmax == PETSC_DETERMINE) {
-      PetscInt inwork, outwork;
+      PetscInt outwork;
       /* determine global number of subdomains and the max number of local subdomains */
-      inwork = osm->n;
-      PetscCallMPI(MPIU_Allreduce(&inwork, &outwork, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
+      outwork = osm->n;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &outwork, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
       osm->nmax = outwork;
     }
     if (osm->N == PETSC_DETERMINE) {

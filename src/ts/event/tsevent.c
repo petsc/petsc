@@ -439,7 +439,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   PetscBool terminate    = PETSC_FALSE;
   PetscBool statechanged = PETSC_FALSE;
   PetscInt  ctr, stepnum;
-  PetscBool inflag[3], outflag[3];
+  PetscBool outflag[3];
   PetscBool forwardsolve = PETSC_TRUE; // Flag indicating that TS is doing a forward solve
 
   PetscFunctionBegin;
@@ -457,10 +457,10 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   // Handle termination events and step restart
   for (PetscInt i = 0; i < event->nevents_zero; i++)
     if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
-  inflag[0] = restart;
-  inflag[1] = terminate;
-  inflag[2] = statechanged;
-  PetscCallMPI(MPIU_Allreduce(inflag, outflag, 3, MPI_C_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
+  outflag[0] = restart;
+  outflag[1] = terminate;
+  outflag[2] = statechanged;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outflag, 3, MPI_C_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
   restart      = outflag[0];
   terminate    = outflag[1];
   statechanged = outflag[2];
@@ -776,9 +776,9 @@ PetscErrorCode TSEventHandler(TS ts)
   TSEvent   event;
   PetscReal t, dt_next = 0.0;
   Vec       U;
-  PetscInt  minsidein = 2, minsideout = 2; // minsideout is sync on all ranks
-  PetscBool finished = PETSC_FALSE;        // should stay sync on all ranks
-  PetscBool revisit_right_cache;           // [sync] flag for inner consistency checks
+  PetscInt  minsideout = 2;           // minsideout is sync on all ranks
+  PetscBool finished   = PETSC_FALSE; // should stay sync on all ranks
+  PetscBool revisit_right_cache;      // [sync] flag for inner consistency checks
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -817,9 +817,9 @@ PetscErrorCode TSEventHandler(TS ts)
 
   for (PetscInt i = 0; i < event->nevents; i++) { // check for brackets on the left/right of 't'
     if (event->side[i] != 0) event->side[i] = TSEventTestBracket(event->fsign_prev[i], event->fsign[i], event->fsign_right[i], event->direction[i], event->iterctr);
-    minsidein = PetscMin(minsidein, event->side[i]);
+    minsideout = PetscMin(minsideout, event->side[i]);
   }
-  PetscCallMPI(MPIU_Allreduce(&minsidein, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
   /*
     minsideout (sync on all ranks) indicates the minimum of the following states:
     -1 : [ptime_prev, t] is a bracket for some indicator-function-i
@@ -844,14 +844,14 @@ PetscErrorCode TSEventHandler(TS ts)
       // [--------|-------------]
       if (bracket_size <= 2 * event->timestep_min) dt_next = bracket_size / 2; // the bracket is almost small -> bisect it
       else {                                                                   // the bracket is not small -> use Anderson-Bjorck
-        PetscReal dti_min = PETSC_MAX_REAL;
+        dt_next = PETSC_MAX_REAL;
         for (PetscInt i = 0; i < event->nevents; i++) {
           if (event->side[i] == minsideout) { // only refine the appropriate brackets
             PetscReal dti = RefineAndersonBjorck(event->ptime_prev, t, event->ptime_right, event->fvalue_prev[i], event->fvalue[i], event->fvalue_right[i], event->side[i], &event->side_prev[i], event->justrefined_AB[i], &event->gamma_AB[i]);
-            dti_min       = PetscMin(dti_min, dti);
+            dt_next       = PetscMin(dt_next, dti);
           }
         }
-        PetscCallMPI(MPIU_Allreduce(&dti_min, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
         if (dt_next < event->timestep_min) dt_next = event->timestep_min;
         if (bracket_size - dt_next < event->timestep_min) dt_next = bracket_size - event->timestep_min;
       }

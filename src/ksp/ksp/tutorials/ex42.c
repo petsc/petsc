@@ -1276,8 +1276,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
   PetscScalar gp_weight[GAUSS_POINTS];
   PetscInt    i;
   PetscScalar J_p, fac;
-  PetscScalar h, p_e_L2, u_e_L2, u_e_H1, p_L2, u_L2, u_H1, tp_L2, tu_L2, tu_H1;
-  PetscScalar tint_p_ms, tint_p, int_p_ms, int_p;
+  PetscScalar h, p_e_L2, u_e_L2, u_e_H1, p_L2, u_L2, u_H1;
+  PetscScalar int_p_ms, int_p;
   PetscInt    M;
   PetscReal   xymin[NSD], xymax[NSD];
 
@@ -1307,8 +1307,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
 
   h = (xymax[0] - xymin[0]) / ((PetscReal)(M - 1));
 
-  tp_L2 = tu_L2 = tu_H1 = 0.0;
-  tint_p_ms = tint_p = 0.0;
+  p_L2 = u_L2 = u_H1 = 0.0;
+  int_p_ms = int_p = 0.0;
 
   PetscCall(DMDAGetElementsCorners(stokes_da, &sex, &sey, &sez));
   PetscCall(DMDAGetElementsSizes(stokes_da, &mx, &my, &mz));
@@ -1328,15 +1328,15 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
           fac = gp_weight[p] * J_p;
 
           for (i = 0; i < NODES_PER_EL; i++) {
-            tint_p_ms = tint_p_ms + fac * Ni_p[i] * stokes_analytic_e[i].p_dof;
-            tint_p    = tint_p + fac * Ni_p[i] * stokes_e[i].p_dof;
+            int_p_ms = int_p_ms + fac * Ni_p[i] * stokes_analytic_e[i].p_dof;
+            int_p    = int_p + fac * Ni_p[i] * stokes_e[i].p_dof;
           }
         }
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(&tint_p_ms, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPIU_Allreduce(&tint_p, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\\int P dv %1.4e (h)  %1.4e (ms)\n", (double)PetscRealPart(int_p), (double)PetscRealPart(int_p_ms)));
 
@@ -1398,15 +1398,15 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
           }
         }
 
-        tp_L2 += p_e_L2;
-        tu_L2 += u_e_L2;
-        tu_H1 += u_e_H1;
+        p_L2 += p_e_L2;
+        u_L2 += u_e_L2;
+        u_H1 += u_e_H1;
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);

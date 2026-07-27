@@ -665,7 +665,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
   DM               dmc;
   PetscQuadrature  quadrature;
   const PetscReal *xi;
-  PetscInt         npoints_q, cnt, cnt_g;
+  PetscInt         npoints_q, cnt;
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetElements(dm_vp, &_nel, &_npe, &element));
@@ -689,8 +689,8 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
       cnt++;
     }
   }
-  PetscCallMPI(MPIU_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
-  if (cnt_g > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &cnt, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  if (cnt > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt));
 
   PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));
   PetscCall(PetscQuadratureDestroy(&quadrature));

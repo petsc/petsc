@@ -18,7 +18,7 @@
 @*/
 PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
 {
-  PetscInt lbw[2] = {0, 0}, gbw[2];
+  PetscInt gbw[2] = {0, 0};
   PetscInt rStart, rEnd, r;
 
   PetscFunctionBegin;
@@ -33,12 +33,12 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
 
     PetscCall(MatGetRow(A, r, &ncols, &cols, NULL));
     if (ncols) {
-      lbw[0] = PetscMax(lbw[0], r - cols[0]);
-      lbw[1] = PetscMax(lbw[1], cols[ncols - 1] - r);
+      gbw[0] = PetscMax(gbw[0], r - cols[0]);
+      gbw[1] = PetscMax(gbw[1], cols[ncols - 1] - r);
     }
     PetscCall(MatRestoreRow(A, r, &ncols, &cols, NULL));
   }
-  PetscCallMPI(MPIU_Allreduce(lbw, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
   *bw = 2 * PetscMax(gbw[0], gbw[1]) + 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

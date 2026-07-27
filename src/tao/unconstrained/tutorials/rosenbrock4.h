@@ -464,8 +464,7 @@ static PetscErrorCode RosenbrockHessian_Host(Rosenbrock r, const PetscScalar x[]
 
 PetscErrorCode FormObjective(Tao tao, Vec X, PetscReal *f, void *ptr)
 {
-  AppCtx             user    = (AppCtx)ptr;
-  PetscReal          f_local = 0.0;
+  AppCtx             user = (AppCtx)ptr;
   const PetscScalar *x;
   const PetscScalar *o = NULL;
   PetscMemType       memtype_x;
@@ -477,8 +476,8 @@ PetscErrorCode FormObjective(Tao tao, Vec X, PetscReal *f, void *ptr)
   PetscCall(VecGetArrayReadAndMemType(user->off_process_values, &o, NULL));
   PetscCall(VecGetArrayReadAndMemType(X, &x, &memtype_x));
   if (memtype_x == PETSC_MEMTYPE_HOST) {
-    PetscCall(RosenbrockObjective_Host(user->problem, x, o, &f_local));
-    PetscCallMPI(MPIU_Allreduce(&f_local, f, 1, MPI_DOUBLE, MPI_SUM, user->comm));
+    PetscCall(RosenbrockObjective_Host(user->problem, x, o, f));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, f, 1, MPI_DOUBLE, MPI_SUM, user->comm));
 #if PetscDefined(USING_CUPMCC)
   } else if (memtype_x == PETSC_MEMTYPE_DEVICE) {
     PetscScalar       *_fvec;
@@ -558,8 +557,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
 */
 PetscErrorCode FormObjectiveGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
-  AppCtx             user    = (AppCtx)ptr;
-  PetscReal          f_local = 0.0;
+  AppCtx             user = (AppCtx)ptr;
   PetscScalar       *g;
   const PetscScalar *x;
   const PetscScalar *o = NULL;
@@ -574,8 +572,8 @@ PetscErrorCode FormObjectiveGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *
   PetscCall(VecGetArrayWriteAndMemType(user->gvalues, &g, &memtype_g));
   PetscAssert(memtype_x == memtype_g, user->comm, PETSC_ERR_ARG_INCOMP, "solution vector and gradient must have save memtype");
   if (memtype_x == PETSC_MEMTYPE_HOST) {
-    PetscCall(RosenbrockObjectiveGradient_Host(user->problem, x, o, &f_local, g));
-    PetscCallMPI(MPIU_Allreduce((void *)&f_local, (void *)f, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    PetscCall(RosenbrockObjectiveGradient_Host(user->problem, x, o, f, g));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, f, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
 #if PetscDefined(USING_CUPMCC)
   } else if (memtype_x == PETSC_MEMTYPE_DEVICE) {
     PetscScalar       *_fvec;

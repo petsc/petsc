@@ -3017,7 +3017,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   PetscSection coordSection;
   Vec          coordinates;
   PetscScalar *fgeom, *cgeom;
-  PetscReal    minradius, gminradius;
+  PetscReal    minradius;
   PetscInt     dim, cStart, cEnd, cEndInterior, c, fStart, fEnd, f;
 
   PetscFunctionBegin;
@@ -3109,8 +3109,8 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
-  PetscCall(DMPlexSetMinRadius(dm, gminradius));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &minradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMPlexSetMinRadius(dm, minradius));
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
     PetscFVFaceGeom *fg;

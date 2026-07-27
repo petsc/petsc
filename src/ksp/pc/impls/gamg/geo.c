@@ -133,7 +133,6 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   PetscInt             Istart, Iend, nFineLoc, myFine0;
   int                  kk, nPlotPts, sid;
   MPI_Comm             comm;
-  PetscReal            tm;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)a_Prol, &comm));
@@ -142,8 +141,8 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0;                    /* this will cause a stop, but not globalized (should not happen) */
   } else *a_worst_best = 0.0;
-  PetscCallMPI(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
-  if (tm > 0.0) {
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a_worst_best, 1, MPIU_REAL, MPIU_MAX, comm));
+  if (*a_worst_best > 0.0) {
     *a_worst_best = 100.0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

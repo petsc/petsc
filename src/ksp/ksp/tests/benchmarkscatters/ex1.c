@@ -71,8 +71,8 @@ typedef enum {
 PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
 {
   MPI_Comm           comm = PetscObjectComm((PetscObject)viewer);
-  PetscEventPerfInfo eventInfo;
-  PetscLogDouble     locTotalTime, stats[6], maxstats[6], minstats[6], sumstats[6], avetime, ksptime;
+  PetscEventPerfInfo kspInfo;
+  PetscLogDouble     locTotalTime, stats[6], maxstats[6], minstats[6], sumstats[6], avetime;
   const int          stage    = 2;
   int                events[] = {VEC_ScatterBegin, VEC_ScatterEnd};
   PetscMPIInt        rank, size;
@@ -107,9 +107,9 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "                Time     Min to Max Range   Proportion of KSP\n"));
 
-  PetscCall(PetscLogEventGetPerfInfo(stage, KSP_Solve, &eventInfo));
-  PetscCallMPI(MPIU_Allreduce(&eventInfo.time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-  ksptime = ksptime / size;
+  PetscCall(PetscLogEventGetPerfInfo(stage, KSP_Solve, &kspInfo));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &kspInfo.time, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  kspInfo.time /= size;
 
   for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(events); i++) {
     PetscEventPerfInfo eventInfo;
@@ -128,7 +128,7 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
     PetscCallMPI(MPIU_Allreduce(stats, sumstats, 6, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
 
     avetime = sumstats[1] / size;
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n", name, avetime, 100. * (avetime - minstats[1]) / avetime, 100. * (maxstats[1] - avetime) / avetime, 100. * avetime / ksptime));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n", name, avetime, 100. * (avetime - minstats[1]) / avetime, 100. * (maxstats[1] - avetime) / avetime, 100. * avetime / kspInfo.time));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

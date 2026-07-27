@@ -385,13 +385,13 @@ PetscErrorCode PetscPartitionerMultistageSetStages(PetscPartitioner part, PetscI
       if (PetscDefined(USE_DEBUG)) {
         MPI_Group    group, igroup = lgroup[0];
         PetscMPIInt *ranks, *granks;
-        PetscMPIInt  b[2], b2[2], csize, gsize;
+        PetscMPIInt  b[2], csize, gsize;
 
         PetscCallMPI(MPI_Group_size(igroup, &gsize));
         b[0] = -gsize;
         b[1] = +gsize;
-        PetscCallMPI(MPIU_Allreduce(b, b2, 2, MPI_INT, MPI_MAX, comm));
-        PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b, 2, MPI_INT, MPI_MAX, comm));
+        PetscCheck(-b[0] == b[1], comm, PETSC_ERR_ARG_WRONG, "Initial group must be collectively specified");
         PetscCallMPI(MPI_Comm_group(comm, &group));
         PetscCallMPI(MPI_Group_size(group, &csize));
         PetscCall(PetscMalloc2(gsize, &ranks, (csize * gsize), &granks));
@@ -460,8 +460,8 @@ PetscErrorCode PetscPartitionerMultistageSetStages(PetscPartitioner part, PetscI
     for (PetscInt l = p->levels - 1; l >= 0; l--) {
       MPI_Comm    pcomm;
       MPI_Group   igroup;
-      PetscMPIInt isize, isizer = 0;
-      PetscInt    a, b, wgtr;
+      PetscMPIInt isizer = 0;
+      PetscInt    b, wgtr;
       PetscMPIInt gsize;
       PetscBool   usep = PETSC_FALSE;
 
@@ -493,23 +493,21 @@ PetscErrorCode PetscPartitionerMultistageSetStages(PetscPartitioner part, PetscI
 
       /* determine number of processes shared by two consecutive levels */
       PetscCallMPI(MPI_Group_intersection(p->lgroup[l], p->lgroup[l - 1], &igroup));
-      PetscCallMPI(MPI_Group_size(igroup, &isize));
+      PetscCallMPI(MPI_Group_size(igroup, &isizer));
       PetscCallMPI(MPI_Group_free(&igroup));
-      if (!p->ppart[l] && touched) isize = 1; /* if this process gets touched, needs to propagate its data from one level to the other */
+      if (!p->ppart[l] && touched) isizer = 1; /* if this process gets touched, needs to propagate its data from one level to the other */
 
       /* reduce on level partitioner comm the size of the max size of the igroup */
-      PetscCallMPI(MPIU_Allreduce(&isize, &isizer, 1, MPI_INT, MPI_MAX, pcomm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &isizer, 1, MPI_INT, MPI_MAX, pcomm));
 
       /* sum previously computed partition weights on the level comm */
-      wgt  = lwgts[rank];
-      wgtr = wgt;
-      PetscCallMPI(MPIU_Allreduce(&wgt, &wgtr, 1, MPIU_INT, MPI_SUM, pcomm));
+      wgtr = lwgts[rank];
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &wgtr, 1, MPIU_INT, MPI_SUM, pcomm));
 
       /* partition weights are given with integers; to properly compute these and be able to propagate them to the next level,
          we need to compute the least common multiple of isizer across the global comm */
-      a = isizer ? isizer : 1;
-      b = a;
-      PetscCallMPI(MPIU_Allreduce(&a, &b, 1, MPIU_INT, MPIU_LCM, comm));
+      b = isizer ? isizer : 1;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &b, 1, MPIU_INT, MPIU_LCM, comm));
 
       /* finally share this process weight with all the other processes */
       wgt = isizer ? (b * wgtr) / isizer : 0;

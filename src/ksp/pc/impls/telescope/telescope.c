@@ -502,7 +502,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     } else { /* query PC for DM, check communicators */
       DM          dm, dm_coarse_partition          = NULL;
       MPI_Comm    comm_fine, comm_coarse_partition = MPI_COMM_NULL;
-      PetscMPIInt csize_fine = 0, csize_coarse_partition = 0, cs[2], csg[2], cnt = 0;
+      PetscMPIInt csize_fine = 0, csize_coarse_partition = 0, csg[2], cnt = 0;
       PetscBool   isvalidsubcomm = PETSC_TRUE;
 
       PetscCall(PCGetDM(pc, &dm));
@@ -518,9 +518,9 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
         PetscCallMPI(MPI_Comm_size(comm_coarse_partition, &csize_coarse_partition));
       }
 
-      cs[0] = csize_fine;
-      cs[1] = csize_coarse_partition;
-      PetscCallMPI(MPIU_Allreduce(cs, csg, 2, MPI_INT, MPI_MAX, comm_fine));
+      csg[0] = csize_fine;
+      csg[1] = csize_coarse_partition;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, csg, 2, MPI_INT, MPI_MAX, comm_fine));
       PetscCheck(csg[0] != csg[1], comm_fine, PETSC_ERR_SUP, "Coarse DM uses the same size communicator as the parent DM attached to the PC");
 
       PetscCall(PCTelescopeTestValidSubcomm(comm_fine, comm_coarse_partition, &isvalidsubcomm));

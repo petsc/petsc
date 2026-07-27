@@ -556,11 +556,11 @@ static PetscErrorCode PetscLogHandlerEventBegin_Default(PetscLogHandler h, Petsc
     if (PetscUnlikely(o3)) PetscValidHeader(o3, 5);
     if (PetscUnlikely(o4)) PetscValidHeader(o4, 6);
     if (event_info.collective && o1) {
-      PetscInt64 b1[2], b2[2];
+      PetscInt64 b2[2];
 
-      b1[0] = -o1->cidx;
-      b1[1] = o1->cidx;
-      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
+      b2[0] = -o1->cidx;
+      b2[1] = o1->cidx;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
       PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, -b2[0], b2[1]);
     }
   }
@@ -621,11 +621,11 @@ static PetscErrorCode PetscLogHandlerEventEnd_Default(PetscLogHandler h, PetscLo
     if (PetscUnlikely(o3)) PetscValidHeader(o3, 5);
     if (PetscUnlikely(o4)) PetscValidHeader(o4, 6);
     if (event_info.collective && o1) {
-      PetscInt64 b1[2], b2[2];
+      PetscInt64 b2[2];
 
-      b1[0] = -o1->cidx;
-      b1[1] = o1->cidx;
-      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
+      b2[0] = -o1->cidx;
+      b2[1] = o1->cidx;
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
       PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, -b2[0], b2[1]);
     }
   }
@@ -1284,7 +1284,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscMPIInt   minC, maxC;
   PetscMPIInt   size, rank;
   PetscBool    *localStageUsed, *stageUsed;
-  PetscBool    *localStageVisible, *stageVisible;
+  PetscBool    *stageVisible;
   PetscInt      numStages, numEvents;
   int           stage, oclass;
   PetscLogEvent event;
@@ -1433,7 +1433,6 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscMemzero(&zero_info, sizeof(zero_info)));
   PetscCall(PetscMalloc1(numStages, &localStageUsed));
   PetscCall(PetscMalloc1(numStages, &stageUsed));
-  PetscCall(PetscMalloc1(numStages, &localStageVisible));
   PetscCall(PetscMalloc1(numStages, &stageVisible));
   if (numStages > 0) {
     for (stage = 0; stage < numStages; stage++) {
@@ -1444,15 +1443,15 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscStagePerf *stage_info;
 
         PetscCall(PetscLogHandlerDefaultGetStageInfo(handler, stage, &stage_info));
-        localStageUsed[stage]    = stage_info->used;
-        localStageVisible[stage] = stage_info->perfInfo.visible;
+        localStageUsed[stage] = stage_info->used;
+        stageVisible[stage]   = stage_info->perfInfo.visible;
       } else {
-        localStageUsed[stage]    = PETSC_FALSE;
-        localStageVisible[stage] = PETSC_TRUE;
+        localStageUsed[stage] = PETSC_FALSE;
+        stageVisible[stage]   = PETSC_TRUE;
       }
     }
     PetscCallMPI(MPIU_Allreduce(localStageUsed, stageUsed, numStages, MPI_C_BOOL, MPI_LOR, comm));
-    PetscCallMPI(MPIU_Allreduce(localStageVisible, stageVisible, numStages, MPI_C_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, stageVisible, numStages, MPI_C_BOOL, MPI_LAND, comm));
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage] && stageVisible[stage]) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
@@ -1762,7 +1761,6 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 
   PetscCall(PetscFree(localStageUsed));
   PetscCall(PetscFree(stageUsed));
-  PetscCall(PetscFree(localStageVisible));
   PetscCall(PetscFree(stageVisible));
   PetscCall(PetscLogGlobalNamesDestroy(&global_stages));
   PetscCall(PetscLogGlobalNamesDestroy(&global_events));

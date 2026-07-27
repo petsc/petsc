@@ -73,7 +73,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscSF      sf, sfEmbed, sfField;
   PetscSection gSection, sectionDist, gLocSection;
   PetscInt    *spoints, *remoteOffsets;
-  PetscInt     ssize, pStart, pEnd, p, localSize, maxStorageSize;
+  PetscInt     ssize, pStart, pEnd, p, maxStorageSize;
   PetscBool    destroyFlag = PETSC_FALSE, debug = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -102,8 +102,8 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   if (debug) PetscCall(PetscSectionView(sectionDist, NULL));
   PetscCall(DMSetLocalSection(dm, sectionDist));
   /* If a sequential section is provided but no dof is affected, sfNatural cannot be computed and is set to NULL */
-  PetscCall(PetscSectionGetStorageSize(sectionDist, &localSize));
-  PetscCallMPI(MPIU_Allreduce(&localSize, &maxStorageSize, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCall(PetscSectionGetStorageSize(sectionDist, &maxStorageSize));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &maxStorageSize, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (maxStorageSize) {
     const PetscInt *leaves;
     PetscInt       *sortleaves, *indices;

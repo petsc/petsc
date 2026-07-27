@@ -208,13 +208,13 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer, P
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscViewer      window = NULL;
-  PetscBool        ldis, dis;
+  PetscBool        dis;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIISocketOpen(PETSC_COMM_SELF, socket->name, socket->port, &window));
   /* if we could not establish a connection, we disable the socket viewer on all MPI ranks */
-  ldis = !viewer ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&ldis, &dis, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)viewer)));
+  dis = !viewer ? PETSC_TRUE : PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dis, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)viewer)));
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
     PetscCall(PetscViewerDestroy(&window));
@@ -324,12 +324,12 @@ PetscErrorCode PetscViewerGLVisGetStatus_Internal(PetscViewer viewer, PetscViewe
     socket->status = PETSCVIEWERGLVIS_DISCONNECTED;
   } else if (socket->status == PETSCVIEWERGLVIS_DISCONNECTED && socket->nwindow) {
     PetscInt  i;
-    PetscBool lconn, conn;
+    PetscBool conn;
 
-    for (i = 0, lconn = PETSC_TRUE; i < socket->nwindow; i++)
-      if (!socket->window[i]) lconn = PETSC_FALSE;
+    for (i = 0, conn = PETSC_TRUE; i < socket->nwindow; i++)
+      if (!socket->window[i]) conn = PETSC_FALSE;
 
-    PetscCallMPI(MPIU_Allreduce(&lconn, &conn, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)viewer)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &conn, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)viewer)));
     if (conn) socket->status = PETSCVIEWERGLVIS_CONNECTED;
   }
   *sockstatus = socket->status;
@@ -812,11 +812,11 @@ PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm, PETSC_UNUSE
 
 PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm comm, PetscViewer *win)
 {
-  PetscBool flag, brokenpipe;
+  PetscBool brokenpipe;
 
   PetscFunctionBegin;
-  flag = PetscGLVisBrokenPipe;
-  PetscCallMPI(MPIU_Allreduce(&flag, &brokenpipe, 1, MPI_C_BOOL, MPI_LOR, comm));
+  brokenpipe = PetscGLVisBrokenPipe;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &brokenpipe, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (brokenpipe) {
     FILE *sock, *null = fopen(PETSC_DEVNULL, "w");
     PetscCall(PetscViewerASCIIGetPointer(*win, &sock));

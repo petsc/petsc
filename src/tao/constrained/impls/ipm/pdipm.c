@@ -151,7 +151,7 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
   const PetscScalar *xl, *xu;
   PetscInt           n, *ixlb, *ixub, *ixfixed, *ixfree, *ixbox, i, low, high, idx;
   MPI_Comm           comm;
-  PetscInt           sendbuf[5], recvbuf[5];
+  PetscInt           recvbuf[5];
 
   PetscFunctionBegin;
   /* Creates upper and lower bounds vectors on x, if not created already */
@@ -181,13 +181,13 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
   PetscCall(VecRestoreArrayRead(tao->XU, &xu));
 
   PetscCall(PetscObjectGetComm((PetscObject)tao, &comm));
-  sendbuf[0] = pdipm->nxlb;
-  sendbuf[1] = pdipm->nxub;
-  sendbuf[2] = pdipm->nxfixed;
-  sendbuf[3] = pdipm->nxbox;
-  sendbuf[4] = pdipm->nxfree;
+  recvbuf[0] = pdipm->nxlb;
+  recvbuf[1] = pdipm->nxub;
+  recvbuf[2] = pdipm->nxfixed;
+  recvbuf[3] = pdipm->nxbox;
+  recvbuf[4] = pdipm->nxfree;
 
-  PetscCallMPI(MPIU_Allreduce(sendbuf, recvbuf, 5, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, recvbuf, 5, MPIU_INT, MPI_SUM, comm));
   pdipm->Nxlb    = recvbuf[0];
   pdipm->Nxub    = recvbuf[1];
   pdipm->Nxfixed = recvbuf[2];
@@ -704,7 +704,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, PetscCtx c
   SNES               snes;
   Vec                X, F, Y;
   PetscInt           i, iter;
-  PetscReal          alpha_p = 1.0, alpha_d = 1.0, alpha[4];
+  PetscReal          alpha_p = 1.0, alpha_d = 1.0, alpha[2];
   PetscScalar       *Xarr, *z, *lambdai, dot, *taosolarr;
   const PetscScalar *dXarr, *dz, *dlambdai;
 
@@ -736,10 +736,10 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, PetscCtx c
   PetscCall(VecRestoreArrayWrite(X, &Xarr));
 
   /* alpha = min(alpha) over all processes */
-  PetscCallMPI(MPIU_Allreduce(alpha, alpha + 2, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)tao)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, alpha, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)tao)));
 
-  alpha_p = alpha[2];
-  alpha_d = alpha[3];
+  alpha_p = alpha[0];
+  alpha_d = alpha[1];
 
   /* X = X - alpha * Y */
   PetscCall(VecGetArrayWrite(X, &Xarr));

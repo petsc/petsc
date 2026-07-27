@@ -320,7 +320,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscSF         sfPoint;
   const PetscInt *rows, *cols, *ii, *jj;
   PetscInt       *idxs, *idxs2;
-  PetscInt        dim, depth, floc, cloc, i, M, N, c, lm, m, cStart, cEnd, fStart, fEnd;
+  PetscInt        dim, depth, floc, cloc, i, M, N, c, m, cStart, cEnd, fStart, fEnd;
   PetscMPIInt     rank;
   PetscBool       flg;
 
@@ -393,8 +393,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), &conn));
   PetscCall(MatSetSizes(conn, floc, cloc, M, N));
   PetscCall(MatSetType(conn, MATMPIAIJ));
-  PetscCall(DMPlexGetMaxSizes(dm, NULL, &lm));
-  PetscCallMPI(MPIU_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMPlexGetMaxSizes(dm, NULL, &m));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(MatMPIAIJSetPreallocation(conn, m, NULL, m, NULL));
 
   /* Assemble matrix */
@@ -1296,8 +1296,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
   /* Try to communicate overlap using All-to-All */
   if (!processSF) {
-    PetscCount   counter     = 0;
-    PetscBool    locOverflow = PETSC_FALSE;
+    PetscCount   counter = 0;
     PetscMPIInt *scounts, *sdispls, *rcounts, *rdispls;
 
     PetscCall(PetscCalloc4(size, &scounts, size, &sdispls, size, &rcounts, size, &rdispls));
@@ -1306,11 +1305,11 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
       PetscCall(PetscSectionGetOffset(rootSection, neighbors[n], &off));
 #if PetscDefined(USE_64BIT_INDICES)
       if (dof > PETSC_MPI_INT_MAX) {
-        locOverflow = PETSC_TRUE;
+        mpiOverflow = PETSC_TRUE;
         break;
       }
       if (off > PETSC_MPI_INT_MAX) {
-        locOverflow = PETSC_TRUE;
+        mpiOverflow = PETSC_TRUE;
         break;
       }
 #endif
@@ -1322,8 +1321,8 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
       PetscCall(PetscMPIIntCast(counter, &rdispls[r]));
       counter += rcounts[r];
     }
-    if (counter > PETSC_MPI_INT_MAX) locOverflow = PETSC_TRUE;
-    PetscCallMPI(MPIU_Allreduce(&locOverflow, &mpiOverflow, 1, MPI_C_BOOL, MPI_LOR, comm));
+    if (counter > PETSC_MPI_INT_MAX) mpiOverflow = PETSC_TRUE;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mpiOverflow, 1, MPI_C_BOOL, MPI_LOR, comm));
     if (!mpiOverflow) {
       PetscCall(PetscInfo(dm, "Using MPI_Alltoallv() for mesh distribution\n"));
       PetscCall(PetscIntCast(counter, &leafSize));
@@ -1676,7 +1675,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscInt           nparts, wgtflag, numflag, ncon, edgecut;
   real_t            *ubvec;
   PetscInt          *firstVertices, *renumbering;
-  PetscInt           failed, failedGlobal;
+  PetscInt           failed;
   MPI_Comm           comm;
   Mat                A;
   PetscViewer        viewer;
@@ -1959,9 +1958,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   /* Check if the renumbering worked (this can fail when ParMETIS gives fewer partitions than there are processes) */
   failed = (PetscInt)(part[0] != rank);
-  PetscCallMPI(MPIU_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
-  if (failedGlobal > 0) {
-    PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &failed, 1, MPIU_INT, MPI_SUM, comm));
+  if (failed > 0) {
+    PetscCheck(failed <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
     PetscCall(PetscFree(vtxwgt));
     PetscCall(PetscFree(toBalance));
     PetscCall(PetscFree(isLeaf));

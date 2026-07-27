@@ -255,7 +255,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, PetscCt
   const PetscScalar *x;
   MPI_Comm           comm;
   PetscMPIInt        rank;
-  PetscReal          fin;
   AppCtx            *user = (AppCtx *)ctx;
   Vec                Xseq = user->Xseq;
   VecScatter         scat = user->scat;
@@ -268,13 +267,13 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, PetscCt
   PetscCall(VecScatterBegin(scat, X, Xseq, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(scat, X, Xseq, INSERT_VALUES, SCATTER_FORWARD));
 
-  fin = 0.0;
+  *f = 0.0;
   if (rank == 0) {
     PetscCall(VecGetArrayRead(Xseq, &x));
-    fin = (x[0] - 2.0) * (x[0] - 2.0) + (x[1] - 2.0) * (x[1] - 2.0) - 2.0 * (x[0] + x[1]);
+    *f = (x[0] - 2.0) * (x[0] - 2.0) + (x[1] - 2.0) * (x[1] - 2.0) - 2.0 * (x[0] + x[1]);
     PetscCall(VecRestoreArrayRead(Xseq, &x));
   }
-  PetscCallMPI(MPIU_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, f, 1, MPIU_REAL, MPIU_SUM, comm));
 
   /* G = 2*X - 6 */
   PetscCall(VecSet(G, -6.0));

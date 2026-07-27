@@ -204,13 +204,11 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     PetscCall(PetscLogEventEnd(ce->event, ce, 0, 0, 0));
     for (f = 0; f < Nf; ++f) {
       PetscSection s, fs;
-      PetscInt     lsize;
-
       /* Could use DMGetOutputDM() to add in Dirichlet dofs */
       PetscCall(DMGetLocalSection(dm[r], &s));
       PetscCall(PetscSectionGetField(s, f, &fs));
-      PetscCall(PetscSectionGetConstrainedStorageSize(fs, &lsize));
-      PetscCallMPI(MPIU_Allreduce(&lsize, &ce->dofs[r * Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)ts)));
+      PetscCall(PetscSectionGetConstrainedStorageSize(fs, &ce->dofs[r * Nf + f]));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ce->dofs[r * Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)ts)));
       PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r * Nf + f]));
       PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r * Nf + f]));
     }

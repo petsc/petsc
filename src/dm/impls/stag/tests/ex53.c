@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   Vec         g, l1, l2;
   PetscMPIInt rank;
   PetscScalar value;
-  PetscReal   norm, work;
+  PetscReal   norm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -46,8 +46,8 @@ int main(int argc, char **argv)
 
   /* l1 and l2 must be same. */
   PetscCall(VecAXPY(l2, -1.0, l1));
-  PetscCall(VecNorm(l2, NORM_MAX, &work));
-  PetscCallMPI(MPIU_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCall(VecNorm(l2, NORM_MAX, &norm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm = %g\n", (double)norm));
 
   PetscCall(VecDestroy(&g));

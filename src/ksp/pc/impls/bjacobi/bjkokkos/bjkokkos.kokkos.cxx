@@ -661,7 +661,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
 #if PCBJKOKKOS_VERBOSE_LEVEL > 1
       PetscInt mbid = 0;
 #endif
-      int in[2], out[2];
+      int out[2];
       if (jac->reason) { // -pc_bjkokkos_ksp_converged_reason
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 3
   #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
@@ -712,9 +712,9 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
             }
           }
         }
-        in[0] = max_nnit;
-        in[1] = rank;
-        PetscCallMPI(MPIU_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
+        out[0] = max_nnit;
+        out[1] = rank;
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
 #if PCBJKOKKOS_VERBOSE_LEVEL > 1
         if (0 == rank) {
           if (batch_sz != 1)

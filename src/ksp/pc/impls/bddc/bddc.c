@@ -1411,7 +1411,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscMPIInt     size;
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
-  PetscBool       new_nearnullspace_provided, ismatis, rl;
+  PetscBool       new_nearnullspace_provided, ismatis;
   PetscBool       isset, issym, isspd;
 
   PetscFunctionBegin;
@@ -1425,9 +1425,8 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetUp
      Also, BDDC builds its own KSP for the Dirichlet problem */
-  rl = pcbddc->recompute_topography;
-  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
-  PetscCallMPI(MPIU_Allreduce(&rl, &pcbddc->recompute_topography, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &pcbddc->recompute_topography, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
   if (pcbddc->recompute_topography) {
     pcbddc->graphanalyzed    = PETSC_FALSE;
     computeconstraintsmatrix = PETSC_TRUE;

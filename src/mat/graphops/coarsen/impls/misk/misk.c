@@ -71,7 +71,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     const PetscInt    nloc_inner = cMat->rmap->n;
     PetscCoarsenData *agg_lists;
     PetscInt         *cpcol_gid = NULL, *cpcol_state, *lid_cprowID, *lid_state, *lid_parent_gid = NULL;
-    PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ai, Iend, my0, nremoved, gid, cpid, lidj, sgid, t1, t2, slid, nDone, nselected = 0, state;
+    PetscInt          num_fine_ghosts, kk, n, ix, j, *idx, *ai, Iend, my0, nremoved, gid, cpid, lidj, sgid, t2, slid, nDone, nselected = 0, state;
     PetscBool        *lid_removed, isOK;
     PetscSF           sf;
 
@@ -209,8 +209,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
           }
         }
         /* all done? */
-        t1 = nloc_inner - nDone;
-        PetscCallMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
+        t2 = nloc_inner - nDone;
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
         if (!t2) break;
       } else break; /* no mpi - all done */
     } /* outer parallel MIS loop */

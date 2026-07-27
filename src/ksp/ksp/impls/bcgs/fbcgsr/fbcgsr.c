@@ -23,7 +23,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
   Vec                         X, B, P, P2, RP, R, V, S, T, S2;
   PetscScalar *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT p;
   PetscScalar *PETSC_RESTRICT v, *PETSC_RESTRICT s, *PETSC_RESTRICT t, *PETSC_RESTRICT s2;
-  PetscScalar insums[4], outsums[4];
+  PetscScalar outsums[4];
   KSP_BCGS   *bcgs = (KSP_BCGS *)ksp->data;
   PC          pc;
   Mat         mat;
@@ -114,10 +114,10 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
       }
       PetscCall(PetscLogFlops(4.0 * N));
       PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
-      insums[0] = tau;
-      insums[1] = sigma;
+      outsums[0] = tau;
+      outsums[1] = sigma;
       PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
-      PetscCallMPI(MPIU_Allreduce(insums, outsums, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
       PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
       tau   = outsums[0];
       sigma = outsums[1];
@@ -145,13 +145,13 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
     PetscCall(PetscLogFlops(8.0 * N));
     PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
 
-    insums[0] = xi1;
-    insums[1] = xi2;
-    insums[2] = xi3;
-    insums[3] = xi4;
+    outsums[0] = xi1;
+    outsums[1] = xi2;
+    outsums[2] = xi3;
+    outsums[3] = xi4;
 
     PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
-    PetscCallMPI(MPIU_Allreduce(insums, outsums, 4, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, outsums, 4, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
     PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
     xi1 = outsums[0];
     xi2 = outsums[1];

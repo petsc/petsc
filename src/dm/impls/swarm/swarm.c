@@ -1780,11 +1780,10 @@ PetscErrorCode DMSwarmGetLocalSize(DM dm, PetscInt *nlocal)
 PetscErrorCode DMSwarmGetSize(DM dm, PetscInt *n)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
-  PetscInt  nlocal;
 
   PetscFunctionBegin;
-  PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &nlocal, NULL, NULL));
-  PetscCallMPI(MPIU_Allreduce(&nlocal, n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMSwarmDataBucketGetSizes(swarm->db, n, NULL, NULL));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2768,7 +2767,6 @@ PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char 
 {
   const PetscReal *coords;
   const PetscReal *w;
-  PetscReal       *mom;
   PetscDataType    dtc, dtw;
   PetscInt         bsc, bsw, Np;
   MPI_Comm         comm;
@@ -2785,22 +2783,20 @@ PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char 
   PetscCheck(dtw == PETSC_REAL, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must be real, not %s", weight, PetscDataTypes[dtw]);
   PetscCheck(bsw == 1, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must be a scalar, not blocksize %" PetscInt_FMT, weight, bsw);
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
-  PetscCall(DMGetWorkArray(sw, bsc + 2, MPIU_REAL, &mom));
-  PetscCall(PetscArrayzero(mom, bsc + 2));
+  PetscCall(PetscArrayzero(moments, bsc + 2));
   for (PetscInt p = 0; p < Np; ++p) {
     const PetscReal *c  = &coords[p * bsc];
     const PetscReal  wp = w[p];
 
-    mom[0] += wp;
+    moments[0] += wp;
     for (PetscInt d = 0; d < bsc; ++d) {
-      mom[d + 1] += wp * c[d];
-      mom[d + bsc + 1] += wp * PetscSqr(c[d]);
+      moments[d + 1] += wp * c[d];
+      moments[d + bsc + 1] += wp * PetscSqr(c[d]);
     }
   }
   PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
-  PetscCallMPI(MPIU_Allreduce(mom, moments, bsc + 2, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
-  PetscCall(DMRestoreWorkArray(sw, bsc + 2, MPIU_REAL, &mom));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, moments, bsc + 2, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

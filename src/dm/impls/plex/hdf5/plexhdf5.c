@@ -1199,15 +1199,15 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
     const DMPolytopeType ict = (DMPolytopeType)c;
     PetscInt             pStart, pEnd, dep, numCorners;
-    PetscBool            output = PETSC_FALSE, doOutput;
+    PetscBool            doOutput = PETSC_FALSE;
 
     if (ict == DM_POLYTOPE_FV_GHOST) continue;
     PetscCall(DMLabelGetStratumBounds(ctLabel, ict, &pStart, &pEnd));
     if (pStart >= 0) {
       PetscCall(DMLabelGetValue(depthLabel, pStart, &dep));
-      if (dep == depth - cellHeight) output = PETSC_TRUE;
+      if (dep == depth - cellHeight) doOutput = PETSC_TRUE;
     }
-    PetscCallMPI(MPIU_Allreduce(&output, &doOutput, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &doOutput, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (!doOutput) continue;
     PetscCall(CreateConesIS_Private(dm, pStart, pEnd, globalCellNumbers, &numCorners, &cellIS));
     if (!n) {
