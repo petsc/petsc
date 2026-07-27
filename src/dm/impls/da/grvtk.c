@@ -468,9 +468,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
             }
             PetscCall(PetscViewerVTKFWrite(viewer, fp, array2, nnodes, MPIU_SCALAR));
           }
-        }
-        PetscCall(PetscViewerVTKFWrite(viewer, fp, array, nnodes * bs, MPIU_SCALAR));
-
+        } else PetscCall(PetscViewerVTKFWrite(viewer, fp, array, nnodes * bs, MPIU_SCALAR));
       } else if (r == rank) {
         PetscCallMPI(MPIU_Send((void *)x, nnodes * bs, MPIU_SCALAR, 0, tag, comm));
       }
