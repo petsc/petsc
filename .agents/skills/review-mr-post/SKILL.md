@@ -4,7 +4,7 @@ description: Review a PETSc GitLab merge request and post the findings back as i
 argument-hint: <MR_IID | diff-file | empty for current branch>
 ---
 
-Adhere to @CLAUDE.md while reviewing and drafting comments.
+Adhere to @AGENTS.md while reviewing and drafting comments.
 
 ## Identify and fetch
 Follow @../review-mr/identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for drift.

@@ -140,7 +140,7 @@ When in doubt, pattern-match against existing well-formatted docstrings in the s
 - `make checkbadSource` - run PETSc source-style checks
 - `make test search='<pattern>'` - run tests matching a pattern
 - `make alltests TIMEOUT=600` - run the full suite with an extended timeout
-- `make branch-review CLAUDE_OPTS='<options>'` - run AI-assisted review on the current branch
+- `make branch-review [PETSC_LLM_CLI=command] [PETSC_LLM_MODEL=modelname]` - run AI-assisted review on the current branch. `PETSC_LLM_CLI` defaults to `claude`
 
 ## Merge Request Expectations
 

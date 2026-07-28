@@ -30,7 +30,7 @@ def main(petsc_dir,build_dir,loc,c2html,mapnames):
     fdw.write(fd.read())
 
   # walk directories generating list of all source code that needs processing and creating index.html for each directory
-  SKIPDIRS = set('.claude public html benchmarks output doc docs binding config petsc-doc lib bin systems share mpiuni kernels khash valgrind interfaces data linter'.split())
+  SKIPDIRS = set('.claude .agents public html benchmarks output doc docs binding config petsc-doc lib bin systems share mpiuni kernels khash valgrind interfaces data linter'.split())
   SKIPDIRSPREFIX = set('arch- venv- .git'.split())
   SUFFIXES = set('.F90 .F .c .cxx .cpp .h .cu .hpp'.split())
   allfiles = []

@@ -13,6 +13,7 @@ petsc-dist/.hg
 petsc-dist/.hgignore
 petsc-dist/.editorconfig
 petsc-dist/.claude
+petsc-dist/.agents
 petsc-dist/.clang-format
 petsc-dist/CLAUDE.md
 petsc-dist/AGENTS.md

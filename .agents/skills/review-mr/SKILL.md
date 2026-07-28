@@ -4,7 +4,7 @@ description: Review code changes in a PETSc GitLab merge request and report find
 argument-hint: <MR_IID | diff-file | empty for current branch>
 ---
 
-Reviews the **remote MR state**, not local `HEAD`. Adhere to @CLAUDE.md.
+Reviews the **remote MR state**, not local `HEAD`. Adhere to @AGENTS.md.
 
 ## Identify and fetch
 Follow @identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for local-vs-remote drift.

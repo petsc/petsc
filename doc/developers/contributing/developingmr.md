@@ -137,6 +137,22 @@ $ git checkout -b yourname/fix-component-name origin/main
   $ make lint
   ```
 
+- Run LLM reviews of your branch
+
+  ```console
+  $ [PETSC_LLM_CLI=command] [PETSC_LLM_MODEL=modelname] make branch-review
+  ```
+
+  CLI refers to a command line interface tool such as `claude` that runs Claude Code.
+  `claude`, `gemini`, `codex`, and `opencode` are supported directly. For other LLM CLIs, you must export `PETSC_LLM_CLI_OPTS` with the appropriate value to make the CLI run
+  the command-line request; for example, `PETSC_LLM_CLI_OPTS=--prompt`.
+
+  When possible (this depends on the capabilities of the LLM CLI), `make branch-review` runs interactively and leaves the terminal in the LLM CLI when the review is complete.
+  This allows users to issue additional commands to the LLM CLI, such as requesting that it fix certain issues it may have detected in the review.
+
+  Many LLM CLIs look for skills in `.agents/skills` directory.
+  Claude Code looks in `.claude/skills`, hence the PETSc Git repository has a soft link from `.claude/skills` to `.agents/skills`.
+
 (sec_clean_commit_history)=
 
 ## Maintain a clean commit history

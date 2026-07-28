@@ -12,7 +12,7 @@
 
 Severity weights for PETSc:
 - **CRITICAL / HIGH / MEDIUM** — correctness, performance, real bugs.
-- **Style** — important. PETSc convention violations (clang-format, naming, idioms, CLAUDE.md anti-patterns) are real review blockers. Treat at par with MEDIUM.
+- **Style** — important. PETSc convention violations (clang-format, naming, idioms, AGENTS.md anti-patterns) are real review blockers. Treat at par with MEDIUM.
 - **LOW** — count, do not list. End the report with `(N LOW findings suppressed; ask to show them.)` when `N > 0`. List individual LOW items only if asked.
 
 ### 5. Verify each finding before reporting
