@@ -1444,40 +1444,110 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A, Vec v)
 
 PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A, Vec ll, Vec rr)
 {
-  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
-  PetscScalar        x;
-  const PetscScalar *l, *li, *ri;
-  MatScalar         *aa, *v;
-  PetscInt           i, j, k, lm, M, m, mbs, tmp, bs, bs2;
-  const PetscInt    *ai, *aj;
+  Mat_SeqSBAIJ      *a  = (Mat_SeqSBAIJ *)A->data;
+  const PetscScalar *l  = NULL;
+  MatScalar         *aa = a->a;
+  PetscInt           lm, m = A->rmap->N, mbs = a->mbs, bs = A->rmap->bs, bs2 = a->bs2;
+  const PetscInt    *ai = a->i, *aj = a->j;
 
   PetscFunctionBegin;
-  if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
-  ai  = a->i;
-  aj  = a->j;
-  aa  = a->a;
-  m   = A->rmap->N;
-  bs  = A->rmap->bs;
-  mbs = a->mbs;
-  bs2 = a->bs2;
+  if (ll != rr) {
+    Mat_SeqBAIJ       *b;
+    Mat                B;
+    const PetscScalar *r = NULL;
+    PetscInt          *browlengths, *browstart, *bj;
+    MatScalar         *ba;
+    PetscInt           n         = A->cmap->N;
+    PetscBool          hermitian = (PetscBool)(PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE);
 
+    if (ll) {
+      PetscCall(VecGetLocalSize(ll, &lm));
+      PetscCheck(lm == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vector wrong length");
+    }
+    if (rr) {
+      PetscInt rn;
+
+      PetscCall(VecGetLocalSize(rr, &rn));
+      PetscCheck(rn == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling vector wrong length");
+    }
+    if (ll) PetscCall(VecGetArrayRead(ll, &l));
+    if (rr) PetscCall(VecGetArrayRead(rr, &r));
+    PetscCall(PetscCalloc1(mbs, &browlengths));
+    PetscCall(PetscMalloc1(mbs, &browstart));
+    for (PetscInt i = 0; i < mbs; i++) {
+      for (PetscInt k = ai[i]; k < ai[i + 1]; k++) {
+        browlengths[i]++;
+        if (aj[k] != i) browlengths[aj[k]]++;
+      }
+    }
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
+    PetscCall(MatSetSizes(B, m, n, m, n));
+    PetscCall(MatSetType(B, MATSEQBAIJ));
+    PetscCall(MatSeqBAIJSetPreallocation(B, bs, 0, browlengths));
+    b  = (Mat_SeqBAIJ *)B->data;
+    ba = b->a;
+    bj = b->j;
+    for (PetscInt i = 0; i < mbs; i++) {
+      b->ilen[i]   = browlengths[i];
+      browstart[i] = b->i[i];
+    }
+    PetscCall(PetscFree(browlengths));
+    for (PetscInt i = 0; i < mbs; i++) {
+      for (PetscInt k = ai[i]; k < ai[i + 1]; k++) {
+        const PetscInt     j  = aj[k];
+        const MatScalar   *av = aa + k * bs2;
+        MatScalar         *v  = ba + browstart[i] * bs2;
+        const PetscScalar *li = PetscSafePointerPlusOffset(l, i * bs), *ri = PetscSafePointerPlusOffset(r, j * bs);
+
+        bj[browstart[i]++] = j;
+        for (PetscInt col = 0; col < bs; col++) {
+          const PetscScalar x = r != NULL ? ri[col] : 1.0;
+
+          for (PetscInt row = 0; row < bs; row++) v[col * bs + row] = av[col * bs + row] * (l != NULL ? li[row] : 1.0) * x;
+        }
+        if (j != i) {
+          MatScalar         *v  = ba + browstart[j] * bs2;
+          const PetscScalar *li = PetscSafePointerPlusOffset(l, j * bs), *ri = PetscSafePointerPlusOffset(r, i * bs);
+
+          bj[browstart[j]++] = i;
+          for (PetscInt col = 0; col < bs; col++) {
+            const PetscScalar x = r != NULL ? ri[col] : 1.0;
+
+            for (PetscInt row = 0; row < bs; row++) v[col * bs + row] = (hermitian == PETSC_TRUE ? PetscConj(av[row * bs + col]) : av[row * bs + col]) * (l != NULL ? li[row] : 1.0) * x;
+          }
+        }
+      }
+    }
+    PetscCall(PetscFree(browstart));
+    if (ll) PetscCall(VecRestoreArrayRead(ll, &l));
+    if (rr) PetscCall(VecRestoreArrayRead(rr, &r));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscLogFlops(((ll ? 1.0 : 0.0) + (rr ? 1.0 : 0.0)) * b->nz * bs2));
+    B->symmetric              = A->symmetric;
+    B->structurally_symmetric = A->structurally_symmetric;
+    B->hermitian              = A->hermitian;
+    PetscCall(MatHeaderReplace(A, &B));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(ll, &l));
   PetscCall(VecGetLocalSize(ll, &lm));
   PetscCheck(lm == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vector wrong length");
-  for (i = 0; i < mbs; i++) { /* for each block row */
-    M  = ai[i + 1] - ai[i];
-    li = l + i * bs;
-    v  = aa + bs2 * ai[i];
-    for (j = 0; j < M; j++) { /* for each block */
-      ri = l + bs * aj[ai[i] + j];
-      for (k = 0; k < bs; k++) {
-        x = ri[k];
-        for (tmp = 0; tmp < bs; tmp++) (*v++) *= li[tmp] * x;
+  for (PetscInt i = 0; i < mbs; i++) { /* for each block row */
+    const PetscScalar *li = l + i * bs;
+    MatScalar         *v  = aa + bs2 * ai[i];
+
+    for (PetscInt j = 0; j < ai[i + 1] - ai[i]; j++) { /* for each block */
+      const PetscScalar *ri = l + bs * aj[ai[i] + j];
+
+      for (PetscInt k = 0; k < bs; k++) {
+        for (PetscInt row = 0; row < bs; row++) (*v++) *= li[row] * ri[k];
       }
     }
   }
   PetscCall(VecRestoreArrayRead(ll, &l));
-  PetscCall(PetscLogFlops(2.0 * a->nz));
+  PetscCall(PetscLogFlops(2.0 * a->nz * bs2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

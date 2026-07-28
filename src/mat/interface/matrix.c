@@ -5901,8 +5901,8 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
     if (!PetscDefined(USE_COMPLEX) || PetscBool3ToBool(mat->symmetric)) {
       if (l && r) PetscCall(VecEqual(l, r, &flg));
       if (!flg) {
-        PetscCall(PetscObjectTypeCompareAny((PetscObject)mat, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
-        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format, left and right scaling vectors must be the same");
+        PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &flg));
+        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For MATMPISBAIJ, left and right scaling vectors must be the same");
         mat->symmetric = mat->spd = PETSC_BOOL3_FALSE;
         if (!PetscDefined(USE_COMPLEX)) mat->hermitian = PETSC_BOOL3_FALSE;
         else mat->hermitian = PETSC_BOOL3_UNKNOWN;
@@ -5920,8 +5920,8 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
         PetscCall(VecDestroy(&conjugate));
       }
       if (!flg) {
-        PetscCall(PetscObjectTypeCompareAny((PetscObject)mat, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
-        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format and Hermitian matrix, left and right scaling vectors must be conjugate one of the other");
+        PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &flg));
+        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For Hermitian MATMPISBAIJ, left and right scaling vectors must be conjugate one of the other");
         mat->hermitian = PETSC_BOOL3_FALSE;
         mat->symmetric = mat->spd = PETSC_BOOL3_UNKNOWN;
       }
