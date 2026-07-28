@@ -270,6 +270,12 @@ test:
 cleantest:
 	+${OMAKE} -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleantest
 
+#********* gmake rules ***************************************************************************************************************************
+
+.PHONY: branch-review
+branch-review:
+	+${OMAKE} -f lib/petsc/conf/rules_gm.mk branch-review
+
 #********* Rules for cleaning ***************************************************************************************************************************
 
 deletelibs:
