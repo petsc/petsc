@@ -1212,14 +1212,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''This can be overloaded by packages that have their own unique representation of versions; for example CUDA'''
     return version
 
-  def versionToTuple(self,version):
-    '''Converts string of the form x.y to (x,y)'''
-    if not version: return ()
-    vl = version.split('.')
-    if len(vl) > 2:
-      vl[-1] = re.compile(r'^[0-9]+').search(vl[-1]).group(0)
-    return tuple(map(int,vl))
-
   def checkVersion(self):
     '''Uses self.version, self.minversion, self.maxversion, self.versionname, and self.versioninclude to determine if package has required version'''
     def dropPatch(str):
@@ -1329,7 +1321,7 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
     self.log.write('For '+self.package+' need '+self.minversion+' <= '+self.foundversion+' <= '+self.maxversion+'\n')
 
     try:
-      self.version_tuple = self.versionToTuple(self.foundversion)
+      self.version_tuple = parseVersion(self.foundversion).release
     except:
       self.log.write('For '+self.package+' unable to convert version string to tuple, skipping version check\n')
       if self.requiresversion:
@@ -1969,7 +1961,7 @@ class CMakePackage(Package):
       pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
-    if self.versionToTuple(self.cmake.foundversion) >= (3,17):
+    if self.cmake.foundversion and parseVersion(self.cmake.foundversion) >= parseVersion('3.17'):
       args.append('--debug-find')
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+self.libDir+'"')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')

@@ -1,5 +1,6 @@
 import config.package
 import os
+from config.utilities.parseVersion import parseVersion
 
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
@@ -101,8 +102,8 @@ class Configure(config.package.GNUPackage):
         except: pass
         else:
           self.log.write('CMake version found '+self.foundversion+'\n')
-          if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
-            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
+          if parseVersion(self.foundversion) < parseVersion('.'.join(map(str, self.maxminCmakeVersion))):
+            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+self.foundversion+'): use --download-cmake')
           return
       gver = None
       try:
@@ -116,8 +117,8 @@ class Configure(config.package.GNUPackage):
         except: pass
         else:
           self.log.write('CMake version found '+self.foundversion+'\n')
-          if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
-            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
+          if parseVersion(self.foundversion) < parseVersion('.'.join(map(str, self.maxminCmakeVersion))):
+            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+self.foundversion+'): use --download-cmake')
           return
         self.log.write('CMake version check failed\n')
     else:

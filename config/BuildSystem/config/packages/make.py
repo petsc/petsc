@@ -1,5 +1,6 @@
 import config.package
 import os
+from config.utilities.parseVersion import parseVersion
 
 def getMakeUserPath(arch):
   import re
@@ -144,7 +145,7 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
       if not status and gver:
         major = int(gver.group(1))
         minor = int(gver.group(2))
-        if (major,minor) >= self.versionToTuple(self.minversion): haveGNUMake = True
+        if parseVersion('%d.%d' % (major,minor)) >= parseVersion(self.minversion): haveGNUMake = True
         if (major > 3): haveGNUMake4 = True
         foundVersion = ".".join([str(major),str(minor)])
         if (major,minor) >= (4,4): haveGNUMake44 = True
