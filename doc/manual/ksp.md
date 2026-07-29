@@ -152,11 +152,14 @@ operations will *not* be repeated for successive solves.
 
 To solve successive linear systems that have *different* matrix values, because you
 have changed the matrix values in the `Mat` objects you passed to `KSPSetOperators()`,
-still simply call `KPSSolve()`. In this case the preconditioner will be recomputed
+still simply call `KSPSolve()`. In this case the preconditioner will be recomputed
 automatically. Use the option `-ksp_reuse_preconditioner true`, or call
 `KSPSetReusePreconditioner()`, to reuse the previously computed preconditioner.
 For many problems, if the matrix changes values only slightly, reusing the
 old preconditioner can be more efficient.
+
+See also {any}`sec_multishift` for the case of successive linear systems where the matrix
+changes by shifting.
 
 If you wish to reuse the `KSP` with a different sized matrix and vectors, you must
 call `KSPReset()` before calling `KSPSetOperators()` with the new matrix.
@@ -396,6 +399,9 @@ KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
   * - Generalized Minimal Residual with Accelerated Restart
     - ``KSPLGMRES``
     - ``lgmres``
+  * - Extended Krylov Subspace Method for multiple shifted systems
+    - ``KSPEKSM``
+    - ``eksm``
   * - Conjugate Residual :cite:`eisenstat1983variational`
     - ``KSPCR``
     - ``cr``
@@ -2795,6 +2801,71 @@ on the `mpiexec` command, it is recommended that both sets of
 preallocation routines are called for these communicator morphing types.
 The call for the incorrect type will simply be ignored without any harm
 or message.
+
+(sec_multishift)=
+
+## Solving Multiple Shifted Linear Systems
+
+In some applications it is necessary to solve a sequence of linear systems where the
+right-hand side does not change and the matrix changes by shifting. More generally,
+suppose you have a discretized PDE with a stiffness matrix $K$ and a mass matrix $M$,
+and the linear systems to be solved are
+
+$$
+(K + \sigma_i M) x_i = b, \qquad i=1,\dots,n_s,
+$$ (eq_shiftedsys)
+
+where we have $n_s$ shifts $\sigma_i$. If $M$ is not provided, then we fall back to the
+case of shifted matrices $K + \sigma_i I$.
+
+PETSc provides a specific `KSP` solver for this case, `KSPEKSM`, that will solve all the
+linear systems in {eq}`eq_shiftedsys` simultaneously, exploiting the property that
+(extended) Krylov subspaces are shift-invariant. The user interface is organized in a
+way that one can choose `KSPEKSM`, but also other `KSP` solvers. Mathematically,
+we create a single linear system that encompasses all the linear systems in {eq}`eq_shiftedsys`
+
+$$
+\left( \begin{array}{cccc}
+K + \sigma_1 M   & & & \\
+& K + \sigma_2 M & & \\
+& & \ddots & \\
+& & & K + \sigma_{n_s} M \\
+\end{array} \right)
+\left( \begin{array}{c}
+x_1 \\ x_2 \\ \vdots \\ x_{n_s}
+\end{array} \right)
+=
+\left( \begin{array}{c}
+b \\ b \\ \vdots \\ b
+\end{array} \right).
+$$ (eq_shiftedsyssingle)
+
+The first step is to call `MatCreateNestFromMultipleShifts()` and `MatCreateVecNestFromMultipleShifts()` to build
+the coefficient matrix and right-hand side of {eq}`eq_shiftedsyssingle` as a `MATNEST`
+and `VECNEST`, respectively.  Then these objects can be passed to `KSP` as usual, and only
+`KSPEKSM` will exploit the structure to compute the solution more efficiently than standard solvers.
+
+When PETSc is built with real scalars, the shifts $\sigma_i$ must either be real or come in
+complex conjugate pairs. In that case, the two shifted matrices can be represented together
+using real values with the equivalent $2\times 2$ block form
+
+$$
+\left( \begin{array}{cc}
+K + \sigma_i^R M & -\sigma_i^I M \\
+\sigma_i^I M & K + \sigma_i^R M
+\end{array} \right)
+\left( \begin{array}{c}
+x_i^R \\ x_i^I
+\end{array} \right)
+=
+\left( \begin{array}{c}
+b \\ 0
+\end{array} \right),
+$$ (eq_complexpair)
+
+where the $R$ and $I$ superscripts denote the real and imaginary parts, respectively. Hence, the
+solutions for the pair of complex shifts are $x_i^R \pm x_i^I\mathrm{i}$ and the real and
+imaginary parts are returned in two consecutive subvectors of $x$.
 
 (sec_pcmpi)=
 

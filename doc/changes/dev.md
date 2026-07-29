@@ -164,6 +164,8 @@
 - Change `KSPRichardsonSetSelfScale()` to trigger a `KSPSetUp()` re-run when the flag changes, fixing an out-of-bounds work vector access when it was set after `KSPSetUp()`
 - GMRES orthogonalization routines have been promoted to the main `KSP` level, and GMRES has been dropped from the name. The new names are `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`, `KSPOrthogonalizationModifiedGramSchmidt()`, `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`. Note that the signature of orthogonalization functions has changed, see `KSPOrthogonalizationFn`. The related enumeration is now `KSP_ORTHOGONALIZATION_CGS_REFINE_*` and command-line options are now `-ksp_orthogonalization (cgs|mgs)` and `-ksp_orthogonalization_cgs_refinement_type (refine_never|refine_ifneeded|refine_always)`
 - Add new `KSPConvergedReason` `KSP_DIVERGED_INNER_SOLVE_FAILED` for solvers such as `KSPEKSM` that have an inner `KSP` object
+- Add `KSPEKSM` - the Extended Krylov Subspace Method for multiple shifted linear systems which can be defined via `MatCreateNestFromMultipleShifts()`
+- Add `KSPEKSMSetHapTol()`, `KSPEKSMGetHapTol()`, `KSPEKSMSetKSP()`, `KSPEKSMGetKSP()`, `KSPEKSMSetShift()`, and `KSPEKSMGetShift()`
 
 ## SNES
 

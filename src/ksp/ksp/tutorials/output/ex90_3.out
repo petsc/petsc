@@ -1,0 +1,4 @@
+sigma=-0.00068+0.0001i: Relative residual error < 10 * 1e-05
+sigma=-0.00068-0.0001i: Relative residual error < 10 * 1e-05
+sigma=-0.00044: Relative residual error < 10 * 1e-05
+sigma=-0.00032: Relative residual error < 10 * 1e-05

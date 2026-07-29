@@ -113,7 +113,7 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-              Build the matrices and right-hand-side vector
+              Build the matrices and right-hand side
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
@@ -153,7 +153,7 @@ int main(int argc, char **args)
   }
 
   /*
-     Assemble right-hand-side vector
+     Assemble right-hand side
   */
   PetscCall(MatCreateVecs(K, &r, &b));
   if (M) PetscCall(VecDuplicate(b, &w));
@@ -274,12 +274,17 @@ int main(int argc, char **args)
 
    testset:
       nsize: 2
-      args: -ksp_atol 1e-10 -ksp_rtol 1e-20 -explicitmat {{0 1}}
+      args: -ksp_type {{gmres eksm}} -explicitmat {{0 1}}
       output_file: output/ex90_1.out
       test:
          suffix: 1
       test:
          suffix: 2
          args: -mass
+
+   test:
+      args: -ksp_type {{gmres eksm}} -explicitmat {{0 1}} -cmplx
+      suffix: 3
+      requires: !complex
 
 TEST*/
